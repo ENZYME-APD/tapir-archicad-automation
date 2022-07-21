@@ -14,6 +14,33 @@ except:
 
 # """
 
+def composeAddonCommand(commandName,commandParams={}):
+
+	# '''
+	# Composes json command for Custom Addon: AdditionalJsonCommands
+	# if commands requires parameters provide it in form of dictionary
+	# Parametername:value
+	# '''
+	json_command = {}
+	json_command['command'] = 'API.ExecuteAddOnCommand'
+    
+
+	addOnCommandId  ={}
+	addOnCommandId['commandNamespace'] = 'AdditionalJSONCommands'
+	addOnCommandId['commandName'] = commandName
+
+
+	addOnCommandParameters = {}    
+	if len(commandParams) > 0:
+		_parameters={}
+		for command,value in commandParams.items():
+			_parameters[command] = value
+		addOnCommandParameters = _parameters
+		json_command['parameters'] = {'addOnCommandId':addOnCommandId,'addOnCommandParameters':addOnCommandParameters}
+	else:
+		json_command['parameters'] = {'addOnCommandId':addOnCommandId}
+	return json_command
+
 def extract_xml_from_bimx(bimxFile):
 	with open(bimxFile,'r') as file:
 	# with open(bimxFile,'r',encoding='utf-8') as file:
@@ -134,6 +161,8 @@ def get_port():
 		return _ports
 	except:
 		return False
+
+
 
 def connect(json_definition,port):
 	"""
