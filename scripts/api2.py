@@ -169,7 +169,7 @@ def connect(json_definition,port):
 	Connects to ARCHICAD API
 	"""
 	try:
-		request = rq.Request ('http://localhost:{}'.format(port))
+		request = rq.Request ('http://127.0.0.1:{}'.format(port))
 		response = rq.urlopen (request, json.dumps (json_definition).encode ("UTF-8"))
 		Result = json.loads (response.read ())
 		return Result
