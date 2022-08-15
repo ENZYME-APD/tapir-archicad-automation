@@ -1,0 +1,33 @@
+{
+    "elem_context_menu": [
+        {
+            "title": "Window Spec", 
+            "style": "popover", 
+            "position": "left", 
+            "url": "bimxapplication://Show2dDocument?hypermodel=tAPIr_demo&layoutGuid=270CB8C9-F151-24F2-4BA9-E1BC1BAE4A6B", 
+            "shown_only_if": {
+                "element_guids": [
+                    "7185C747-5547-D840-BA30-D7772875BC58", 
+                    "8EE576D8-4BCB-0F4F-BF99-4A55D8856929", 
+                    "63789389-042C-5549-997A-9156E1D6727E", 
+                    "FEF0E60F-C11A-984E-AD33-B6951A3288B4", 
+                    "10F1DE8A-0E25-494A-9B4F-6DFF3FADDF8D", 
+                    "9DBCE8D2-9472-C144-9B08-572244A9D67F", 
+                    "D4A04DEA-53B7-F546-94DD-44012555411A", 
+                    "C59231AE-0CE7-874F-B79C-3246E79158C1", 
+                    "CFEA760B-CFF8-2F4E-9A46-2B4A8753579F", 
+                    "C5344E36-12CE-204D-AE38-5248CAEAAC4A", 
+                    "B2DB79AE-E02F-D947-8C14-DB068D2B334A", 
+                    "40438DF3-7FAA-9A45-8EA1-5F7DB242A6CC", 
+                    "A4BA8069-2A79-5940-AC51-D970DF3D1E95", 
+                    "84F1A68B-5D0D-DA49-9BEA-B2D55512FAE3", 
+                    "B6BF4C84-8CC9-1C41-A2CD-44148391592C", 
+                    "8146CF05-07B2-4440-BCCC-476E4298A4F3"
+                ]
+            }
+        }
+    ], 
+    "developer_id": "8ad9b618-3206-4f60-b7df-24f97986aa65", 
+    "update_url": "https://www.dropbox.com/s/cf4fyzzyjwekbqk/tapir_extension.bimxx?dl=0&raw=1", 
+    "name": "tAPIr Extension"
+}
