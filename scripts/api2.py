@@ -1,3 +1,47 @@
+#!/usr/bin/env python27
+# -*- coding: utf-8 -*-
+
+# - - - - - - - - BUILT-IN IMPORTS
+import json, urllib2
+from urllib import response
+from xml.etree import ElementTree
+
+# - - - - - - - - RH/GH IMPORTS
+import scriptcontext
+
+
+
+ATTRIBUTE_NAMES = [	'BuildingMaterial',
+					'Composite',
+					'Fill',
+					'Layer',
+					'LayerCombination',
+					'Line',
+					'PenTable',
+					'Profile',
+					'Surface',
+					'ZoneCategory']
+
+
+API_COMMANDS = {	'BuildingMaterial':"API.GetBuildingMaterialAttributes",
+					'Composite':"API.GetCompositeAttributes",
+					'Fill':"API.GetFillAttributes",
+					'Layer':"API.GetLayerAttributes",
+					'LayerCombination':"API.GetLayerCombinationAttributes",
+					'Line':"API.GetLineAttributes",
+					'PenTable':"API.GetPenTableAttributes",
+					'Profile':"API.GetProfileAttributes",
+					'Surface':"API.GetSurfaceAttributes",
+					'ZoneCategory':"API.GetZoneCategoryAttributes"}
+
+
+attr = 'API.Get{}Attributes'.format('BuildingMaterial')
+
+
+
+
+
+
 import json
 import urllib2 as rq
 from collections import OrderedDict
@@ -102,6 +146,7 @@ def get_layouts():
 		return dict(zip(_layoutName,_layoutID))
 	except:
 		return False
+
 def set_global_toggle(on_off):
 	"""
 	global turnoff/on variable
@@ -115,7 +160,6 @@ def set_global_toggle(on_off):
 			sc.sticky['toggle'] = False
 	except:
 		print 'Run outside GH'
-
 
 def get_global_toggle():
 	"""Gets global toggle"""
@@ -134,6 +178,7 @@ def set_active_port(ports):
 		sc.sticky['activeports'] = ports
 	except:
 		print 'Run outside GH'
+
 def get_active_port():
 	try:
 		return sc.sticky['activeports']
@@ -162,6 +207,12 @@ def get_port():
 	except:
 		return False
 
+
+def sync(data, port, host='http://127.0.0.1'):
+	
+	request = urllib2.Request('{}:{}'.format(host, port))
+	response = urllib2.urlopen(request, json.dumps(data).encode)
+	return json.loads(response.read())
 
 
 def connect(json_definition,port):
@@ -204,9 +255,6 @@ def open_ports():
 	set_ports(ports)
 	return ports
 
-	
-
-
 def pack(name,dictionary):
 	"""
 	Packing dictionary to json and dumps it to string
@@ -216,6 +264,7 @@ def pack(name,dictionary):
 	"""
 	json_def = {name:dictionary}
 	return json.dumps(json_def)
+
 def packlist(_list):
 	"""
 	Packing list to json and dumps it to string
@@ -234,8 +283,6 @@ def unpack(json_def):
 	"""
 	return json.loads(json_def)
 
-
-
 # # wrapping_index
 def get_wrapped_value(current_index,lista):
 	'''
@@ -246,8 +293,6 @@ def get_wrapped_value(current_index,lista):
 		multiplication = int(current_index/len(lista)) 
 		wrapped_index = current_index - (multiplication*len(lista))
 	return int(wrapped_index)
-
-
 
 def show_menu(header_name,lista,current_index):
 	'''
@@ -304,7 +349,6 @@ def show_menu_two_inputs(header_name,lista,current_index,current_index2):
 	show_content = '\n'.join(rows)
 	# print show_content
 	return show_content
-
 
 def getBuiltInPropertiesOfType(builtInPropertyNames,port,propType = 'General'):
 	"""
@@ -383,7 +427,6 @@ def getUserDefinedPropertyId(group,propertyName,port):
 
 	return id['result']['properties'][0]['propertyId']['guid']
 
-
 def getBuiltInPropertyId(propertyName,port):
 	'''
 	input: 
@@ -408,7 +451,6 @@ def getBuiltInPropertyId(propertyName,port):
 	id = connect(command,port)
 
 	return id['result']['properties'][0]['propertyId']['guid']
-
 
 def getUserDefinedPropertyGroups(port):
 	"""
@@ -455,7 +497,6 @@ def getUserDefinedPropertiesOfGroup(port,group):
 	Output: list of properties in provided group
 	"""
 	print "props in group: {}".format(group)
-
 
 def getPropertyValue(elements,propertyId,port):
 	'''
@@ -564,7 +605,6 @@ def getElementsByType(elementType,port):
 	# _elements = json.dumps({'elements':elements})
 	return _elements
 
-
 def getClassificationSystems(port):
 	"""
 	"""
@@ -636,9 +676,6 @@ def setPropertyValue(e,p,v,port):
 	return 'Set new Parameter value to {0} elements:{1} '.format(len(e),str(result['succeeded']))
 	# # return result
 	# # return json.dumps(json_def,indent=4,sort_keys=True)
-
-
-
 #-------- CLASSIFICATION SYSTEM
 
 def getAllClassificationSystems(port):
@@ -683,7 +720,6 @@ def GetAllClassificationsInSystem(port,_classSystemID):
 	if response:
 		return result['result']['classificationItems']
 
-
 # def SetClassificationsOfElements():
 def SetClassificationsOfElements(port,_elements,_systemID,_classificationID):
 	json_def = {}
@@ -724,6 +760,7 @@ def GetElementsByClassification(port,_classificationID):
 		return json.dumps(elements)
 	else:
 		return False
+
 def attributes_names():
 	att = [
 	'BuildingMaterial',
@@ -738,6 +775,7 @@ def attributes_names():
 	'ZoneCategory'
 	]
 	return att
+
 def GetAttributes(att_type,guid):
 
 	commands = {
@@ -797,6 +835,13 @@ def getAttributeDetails(attr,port):
 
 if __name__ == '__main__':
 
+	for attribute in ATTRIBUTE_NAMES:
+		pass
+	
+	
+	
+	
+	
 	# print r
 
 	for attr in attributes_names():
