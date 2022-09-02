@@ -21,6 +21,7 @@ Currently only two nodes use this Addon:
  * Pick Connection Port
  * Get Project Info
 Direct links to addon:
+
  **[Additional Commands Addon for Windows](https://github.com/tlorantfy/archicad-additional-json-commands/releases/download/25.4/archicad-additional-json-commands.apx)
  **[Additional Commands Addon for Mac](https://github.com/tlorantfy/archicad-additional-json-commands/releases/download/25.3/archicad-additional-json-commands.bundle.zip)
 
