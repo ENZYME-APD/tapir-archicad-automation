@@ -13,3 +13,11 @@ Download mannualy api.zip file
 
 ## How to use it 
 Goto [archicad-api.com](https://www.archicad-api.com/) to get more info on plugin usage
+
+## ARCHICAD Addon
+To use experimental nodes with extended functionality (Additional Commands)  download Addon developed by **[TLorantfy](https://github.com/tlorantfy/archicad-additional-json-commands)
+
+Currently only two nodes use this Addon:
+• Pick Connection Port
+• Get Project Info
+
