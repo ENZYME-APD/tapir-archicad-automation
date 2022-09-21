@@ -1,4 +1,6 @@
 import json
+import csv
+import os
 import urllib2 as rq
 from collections import OrderedDict
 import  xml.etree.ElementTree as e
@@ -13,8 +15,34 @@ except:
 # Archicad API 3.0 for grasshopper nodes and ARCHICAD 25 Python pallete
 
 # """
-
-def composeAddonCommand(commandName,commandParams={}):
+def readFromFile(csvFile):
+	'''
+	Reads list of elements from file previouslly saved
+	'''
+	#path validation
+	isFile = os.path.isfile(csvFile)
+	if isFile:
+		with open(csvFile,'r') as file:
+			reader = csv.reader(file)
+			_list =[row[0] for row in reader]
+			print _list
+		file.close()
+		return _list
+	return []
+def bakeToFile(_list,csvFile):
+	'''
+	Saves list to a textfile in one column
+	INPUT:
+		_list:		list - list of elements 
+		csv_file: 	str  - path to a location where file will be saved
+	'''
+	with open(csvFile,'w') as f:
+		write = csv.writer(f)
+		for row in _list:
+			write.writerow([row])
+	return '{} elements saved to file: {}'.format(len(_list),csvFile)
+	f.close()
+def composeAddonCommand(commandName,commandParams={},namespace='AdditionalJSONCommands'):
 
 	# '''
 	# Composes json command for Custom Addon: AdditionalJsonCommands
@@ -26,7 +54,7 @@ def composeAddonCommand(commandName,commandParams={}):
     
 
 	addOnCommandId  ={}
-	addOnCommandId['commandNamespace'] = 'AdditionalJSONCommands'
+	addOnCommandId['commandNamespace'] = namespace
 	addOnCommandId['commandName'] = commandName
 
 
