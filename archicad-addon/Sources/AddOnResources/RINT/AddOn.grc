@@ -1,0 +1,7 @@
+#include "ResourceIds.hpp"
+#include "AddOnVersion.hpp"
+
+'STR#' ID_ADDON_INFO "Add-on Name and Description" {
+/* [  1] */		"Tapir Additional JSON Commands"
+/* [  2] */		"Tapir Additional JSON Commands"
+}

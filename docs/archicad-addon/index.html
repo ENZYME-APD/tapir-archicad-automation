@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+
+	<title>Tapir Additional JSON Commands</title>
+
+	<link rel="stylesheet" type="text/css" href="highlight-js/styles/github.min.css">
+	<script type="text/javascript" src="highlight-js/highlight.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="json-schema-viewer-js/json-schema-view-js.min.css">
+    <script type="text/javascript" src="json-schema-viewer-js/json-schema-view-js.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/javascript" src="schema.js"></script>
+    <script type="text/javascript" src="commands.js"></script>
+    <script type="text/javascript" src="renderer.js"></script>
+    
+</head>
+
+<body>
+    <div class="header">
+        <div class="header_frame">
+            <div class="title">Tapir Additional JSON Commands</div>
+        </div>
+    </div>
+    <div class="frame">
+        <p>
+            This is the documentation for the Tapir Additional JSON Commands Add-On for Archicad. The Add-On
+            registers several new commands in Archicad in the <b>TapirCommand</b> namespace.
+        </p>
+    
+        <p>
+        Here is an example of calling a command using the official archicad python package:
+        <pre><code class="language-python">from archicad import ACConnection
+
+conn = ACConnection.connect ()
+acc = conn.commands
+act = conn.types
+
+response = acc.ExecuteAddOnCommand (act.AddOnCommandId ('TapirCommand', 'GetAddOnVersion'))
+print (response)</code></pre>
+        </p>
+
+        <script type="text/javascript">
+            hljs.highlightAll ();
+        </script>
+
+        <div id="commands">
+            <script type="text/javascript">
+                let commandsDiv = document.getElementById ('commands');
+                RenderCommands (commandsDiv, gCommands, gSchemaDefinitions);
+            </script>
+        </div>
+    </div>
+</body>
+
+</html>
