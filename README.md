@@ -15,7 +15,7 @@ Download mannualy api.zip file
 Goto [archicad-api.com](https://www.archicad-api.com/) to get more info on plugin usage
 
 ## ARCHICAD Addon
-For some functions one must install an Addon developed by [Kovacsv](https://github.com/ENZYME-APD/archicad-api-dev/commits?author=kovacsv) which is based on [TLorantfy](https://github.com/tlorantfy/archicad-additional-json-commands) work. (Thank You guys!)
+For some functions one must install an Addon developed by [kovacsv](https://github.com/kovacsv) which is based on [tlorantfy](https://github.com/tlorantfy/archicad-additional-json-commands)'s work. (Thank You guys!)
 
 ## How to use?
 
