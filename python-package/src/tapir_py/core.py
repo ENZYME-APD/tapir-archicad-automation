@@ -18,12 +18,23 @@ from tapir_py.parts import Element, ClassificationSystem, BoundingBox
 
 # - - - - - - - - CLASS LIBRARY
 class Link(dotNETBase):
-
+    """Represents a Link to ArchiCAD, through which all commands are executed.
+    
+    Args:
+        port (int): A valid port number between 19723 and 19743,
+    
+    """
     _PORT = range(19723, 19743)
     _HOST = 'http://127.0.0.1'
     
     @property
     def port(self):
+        """:int: Port number this instance uses.
+
+        Raises:
+            Exception: If port is invalid.
+        
+        """
         return self._port
 
     @port.setter
@@ -35,10 +46,16 @@ class Link(dotNETBase):
     
     @property
     def host(self):
+        """str: Default localhost address.
+        
+        """
         return self._HOST
 
     @property
     def address(self):
+        """str: Network address that is used by the Link instance.
+        
+        """
         return '{}:{}'.format(self.host, self.port)
     
     def __init__(self, port=19723):
@@ -46,12 +63,36 @@ class Link(dotNETBase):
 
     @staticmethod
     def is_valid(port):
+        """ Checks if the port is valid.
+        
+        Args:
+            port (int): A valid port number between 19723 and 19743,
+        
+        Returns:
+            bool: True if successful, False otherwise.
+        
+        """
         return port in Link._PORT
 
     def is_alive(self):
+        """Checks if a connection can be established with ArchiCAD.
+    
+        Returns:
+            bool: True if successful, False otherwise.
+        
+        """
         return Command(self).IsAlive()
 
     def post(self, data):
+        """Sends data to ArchiCAD using the POST method.
+
+        Args:
+            data (dict): Data to be sent.
+        
+        Returns:
+            CommandResult: Response from ArchiCAD.
+        
+        """
         connection_object = Request(self.address)
         connection_object.add_header('Content-Type', 'application/json')
         
@@ -119,6 +160,12 @@ class Command(dotNETBase):
 
     #region Basic Commands
     def IsAlive(self):
+        """Checks if a connection can be established with ArchiCAD.
+        
+        Returns:
+            bool: True if successful, False otherwise.
+        
+        """
         cmd = {'command' : 'API.IsAlive'}
         try:
             response = self.link.post(cmd)
@@ -130,6 +177,17 @@ class Command(dotNETBase):
                 raise ex
 
     def GetProductInfo(self):
+        """Accesses ArchiCAD's version information.
+        
+        Returns:
+            int: Version number.
+            int: Build number.
+            int: Language code.
+        
+        Raises:
+            Exception: If command was unsuccessful.
+
+        """
         cmd = {'command' : 'API.GetProductInfo'}
         response = self.link.post(cmd)
         if response.success:
@@ -140,6 +198,15 @@ class Command(dotNETBase):
 
     #region Element Listing Commands
     def GetAllElements(self):
+        """Returns all elements in the current document.
+        
+        Returns:
+            :obj:`list` of :obj:`Element`: A list of Element instances that represent the elements in the current document.
+
+        Raises:
+            Exception: If command was unsuccessful.
+        
+        """
         cmd = {'command' : 'API.GetAllElements'}
         response = self.link.post(cmd)
         if response.success:
@@ -148,7 +215,19 @@ class Command(dotNETBase):
             raise response.exception()
 
     def GetElementsByType(self, element_type):
+        """Returns all elements in the current document that match the specified element type.
         
+        Args:
+            element_type (str): The element type to match.
+            
+        Returns:
+            :obj:`list` of :obj:`Element`: A list of elements in the current document of specified type.
+        
+        Raises:
+            TypeError: If element type is invalid.
+            Exception: If command was unsuccessful.
+        
+        """
         for item in Element._TYPES:
             if item.lower() == element_type.lower():
                 element_type = item
@@ -166,6 +245,18 @@ class Command(dotNETBase):
             raise response.exception()
 
     def GetElementsByClassification(self, classification_system_id):
+        """Returns all elements in the current document that match the specified classification system.
+        
+        Args:
+            classification_system_id (str): The id of the classification system to match.
+            
+        Returns:
+            :obj:`list` of :obj:`Element`: A list of elements in the current document of specified classification system.
+        
+        Raises:
+            Exception: If command was unsuccessful.
+        
+        """
         cmd = { 'command' : 'API.GetElementsByClassification',
                 'parameters' : { 'classificationSystemId' : {'guid' : classification_system_id}}
                 }
@@ -178,6 +269,15 @@ class Command(dotNETBase):
 
     #region Classification Commands
     def GetAllClassificationSystems(self):
+        """Returns all classification systems in the current document.
+        
+        Returns:
+            :obj:`list` of :obj:`ClassificationSystem`: A list of ClassificationSystem instances that represent the classification systems in the current document.
+
+        Raises:
+            Exception: If command was unsuccessful.
+        
+        """
         cmd = {'command' : 'API.GetAllClassificationSystems'}
         response = self.link.post(cmd)
         if response.success:
@@ -188,6 +288,18 @@ class Command(dotNETBase):
 
     #region Element Geometry Commands
     def Get2DBoundingBoxes(self, elements):
+        """Returns a list of bounding boxes for the specified elements.
+
+        Note:
+            The 2D bounding box is calculated from the global origin on the floor plan view. Only works for elements detailled in <i>Element Information</i>.
+        
+        Args:
+            elements (:obj:`list` of :obj:`Element`): A list of elements.
+        
+        Returns:
+            :obj:`list` of :obj:`BoundingBox`: A list of BoundingBox instances that represent the elements provided.
+        
+        """
         element_list = []
         for element in elements:
             element_list.append(element.ToDictionary())
@@ -201,6 +313,18 @@ class Command(dotNETBase):
             raise response.exception()
     
     def Get3DBoundingBoxes(self, elements):
+        """Returns a list of bounding boxes for the specified elements.
+
+        Note:
+            The 3D bounding box is calculated from the global origin in the 3D view. Only works for elements detailled in <i>Element Information</i>.
+        
+        Args:
+            elements (:obj:`list` of :obj:`Element`): A list of elements.
+        
+        Returns:
+            :obj:`list` of :obj:`BoundingBox`: A list of BoundingBox instances that represent the elements provided.
+        
+        """
         element_list = []
         for element in elements:
             element_list.append(element.ToDictionary())
