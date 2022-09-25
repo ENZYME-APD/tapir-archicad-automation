@@ -20,10 +20,10 @@ For some functions one must install an Addon developed by [kovacsv](https://gith
 ### Installation
 
 Download the latest version here:
-- [Archicad 25 (Windows)](https://github.com/ENZYME-APD/archicad-api-dev/releases/latest/download/TapirAddOn_AC25_Win.apx)
-- [Archicad 26 (Windows)](https://github.com/ENZYME-APD/archicad-api-dev/releases/latest/download/TapirAddOn_AC26_Win.apx)
-- [Archicad 25 (Mac)](https://github.com/ENZYME-APD/archicad-api-dev/releases/latest/download/TapirAddOn_AC25_Mac.dmg)
-- [Archicad 26 (Mac)](https://github.com/ENZYME-APD/archicad-api-dev/releases/latest/download/TapirAddOn_AC26_Mac.dmg)
+- [Archicad 25 (Windows)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC25_Win.apx)
+- [Archicad 26 (Windows)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC26_Win.apx)
+- [Archicad 25 (Mac)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC25_Mac.dmg)
+- [Archicad 26 (Mac)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC26_Mac.dmg)
 
 Once you downloaded the Add-On files you have to install it in Archicad. Follow these steps to install the Add-On.
 
