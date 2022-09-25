@@ -1,5 +1,0 @@
-HYPERMODEL NAME,tAPIr_demo
-LAYOUT NAME,HYPERLINK TO LAYOUT
-A.01.1 Ground Floor,bimxapplication://Show2dDocument?hypermodel=tAPIr_demo&layoutGuid=8BD84037-E50C-2145-2053-E892B703B664
-A.01.2 1. Story,bimxapplication://Show2dDocument?hypermodel=tAPIr_demo&layoutGuid=2F0CFE49-ED3B-AF3F-3EFA-E140E6AA5BE6
-A.01.3 Window Spec,bimxapplication://Show2dDocument?hypermodel=tAPIr_demo&layoutGuid=270CB8C9-F151-24F2-4BA9-E1BC1BAE4A6B
