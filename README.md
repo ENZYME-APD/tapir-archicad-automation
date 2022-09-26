@@ -41,3 +41,8 @@ Currently three experimental  nodes use this Addon:
  * Get Project Info
  * GetSelectedElements (NEW!!)
  and they can be found in 'Addon Commands' group on ARCHICAD_API Ribbon
+ 
+ ### Documentation
+ 
+ You can find the documentaiton of the implemented commands here: https://enzyme-apd.github.io/archicad-api/archicad-addon.
+ 
