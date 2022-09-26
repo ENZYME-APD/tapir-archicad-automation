@@ -3,8 +3,14 @@
 
 __all__ = ['Element', 'ClassificationSystem', 'BoundingBox']
 
+# - - - - - - - - BUILT-IN IMPORTS
+import sys
+
 # - - - - - - - - LOCAL IMPORTS
-from tapir_py.utility import dotNETBase, RuntimeHelper
+if sys.version_info.major == 3:
+    from .utility import dotNETBase, RuntimeHelper
+else:
+    from utility import dotNETBase, RuntimeHelper
 
 # - - - - - - - - CLASS LIBRARY
 class Element(dotNETBase):

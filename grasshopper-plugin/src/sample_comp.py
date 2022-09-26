@@ -6,6 +6,9 @@ __all__ = ['ElementInfo_Component']
 # - - - - - - - - BUILT-IN IMPORTS
 import json
 
+# - - - - - - - - LOCAL IMPORTS
+import tapir_py
+
 # - - - - - - - - RH/GH IMPORTS
 from ghpythonlib.componentbase import dotnetcompiledcomponent as component
 from Grasshopper.Kernel import GH_RuntimeMessageLevel as RML
@@ -53,8 +56,7 @@ class ElementInfo_Component(component):
 
     def RunScript(self, URL):
         
-        # Updated so we can differentiate between old and new component.
-        self.Message = '0.1.1'
+        self.Message = tapir_py.core.Command.create().link.address
 
         if URL:
             element = { 'url' : URL}

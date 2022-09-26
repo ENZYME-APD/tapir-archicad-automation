@@ -13,8 +13,12 @@ else:
     from urllib2 import urlopen, Request
 
 # - - - - - - - - LOCAL IMPORTS
-from tapir_py.utility import dotNETBase, JsonExtensions
-from tapir_py.parts import Element, ClassificationSystem, BoundingBox
+if sys.version_info.major == 3:
+    from .utility import dotNETBase, JsonExtensions
+    from .parts import Element, ClassificationSystem, BoundingBox
+else:
+    from utility import dotNETBase, JsonExtensions
+    from parts import Element, ClassificationSystem, BoundingBox
 
 # - - - - - - - - CLASS LIBRARY
 class Link(dotNETBase):
