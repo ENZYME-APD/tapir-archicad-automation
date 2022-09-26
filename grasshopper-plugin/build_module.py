@@ -42,13 +42,12 @@ License:
 """
 
 # - - - - - - - - IN-BUILT IMPORTS
-
 import os
 from traceback import format_exc
-from shutil import copy2
+from distutils.dir_util import copy_tree
+from shutil import rmtree, copy2
 
 # - - - - - - - - CLASS LIBRARY
-
 class Compiler:
 
     @staticmethod
@@ -103,13 +102,12 @@ class Compiler:
         
         # Collect necessary files from project folder.
         program_files = Compiler.collect_files(source_folder)
-
-        for file in program_files: print(file)
+        print("\nCollected {} files".format(len(program_files)))
 
         try:
             from clr import CompileModules
             CompileModules(target_file, *program_files)
-            print("\nBUILD SUCCESSFUL\nTarget: {}\n".format(target_file))
+            print("BUILD SUCCESSFUL\nTarget: {}\n".format(target_file))
             
             # Copy output file to user specified location.
             if copy_target and os.path.exists(copy_target):
@@ -128,9 +126,19 @@ class Compiler:
             return False
 
 # - - - - - - - - RUN SCRIPT
-
 def Run():
-    Compiler.Build("tapir_gh.ghpy", source_folder='src')
+    # Copy python-package pre-build.
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    package_source = os.path.join(root, 'python-package', 'src', 'tapir_py')
+    package_target = os.path.join(root, 'grasshopper-plugin', 'src', 'tapir_py')
+    if os.path.exists(package_source):
+        copy_tree(package_source, package_target)
+        # Build grasshopper-plugin.
+        Compiler.Build("tapir_gh.ghpy", source_folder='src')
+        # Clean up post-build
+        rmtree(package_target)
+    else:
+        print("\nBUILD FAILED\n'tapir_py' package not found.\n")
 
 if __name__ == "__main__":
     Run()
