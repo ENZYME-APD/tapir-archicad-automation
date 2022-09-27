@@ -25,3 +25,11 @@ jobs:
       with:
         name: Tapir Grasshopper Plugin
         path: grasshopper-plugin/bin/tapir_gh.ghpy
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: grasshopper-plugin/bin/tapir_gh.ghpy
+        draft: true
+        allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
