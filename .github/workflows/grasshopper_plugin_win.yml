@@ -1,0 +1,27 @@
+name: Grasshopper Plugin Build
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
+    paths:
+      - 'grasshopper-plugin/**'
+      - '.github/workflows/**'
+
+jobs:
+  build:
+    runs-on: [ windows-2019 ]
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+    - name: Install IronPython
+      run: choco install ironpython --version=2.7.12
+    - name: Build Grasshopper Plugin
+      run: ipy grasshopper-plugin/build_module.py
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Tapir Grasshopper Plugin
+        path: grasshopper-plugin/bin/tapir_gh.ghpy
