@@ -8,7 +8,7 @@ This repository contains the Archicad Python API Grasshopper Plugin, the easiest
 ## Grasshopper Plugin
 
 ### Installation
-* Download manualy the [api.zip](https://github.com/ENZYME-APD/tapir-archicad-automation/raw/move_grasshopper_plugin/grasshopper-plugin/api.zip) file, and extract it on your computer.
+* Download manualy the [api.zip](https://github.com/ENZYME-APD/tapir-archicad-automation/raw/main/grasshopper-plugin/api.zip) file, and extract it on your computer.
 * Copy ARCHICAD_API folder to Grasshopper's UserObjects folder (GH Menu: File/Special Folders/User Object Folder).
 * Copy api2.py to Rhino's scripts folder. See [how to locate scripts Folder](https://wiki.mcneel.com/rhino/macroscriptsetup) for details.
 
