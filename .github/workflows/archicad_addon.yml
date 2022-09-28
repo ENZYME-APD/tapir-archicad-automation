@@ -62,7 +62,6 @@ jobs:
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
-jobs:
   build_mac_ac25:
     runs-on: [ macos-12 ]
     steps:
