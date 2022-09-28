@@ -1,5 +1,8 @@
 # tapir-archicad-automation
 
+[![Archicad Add-On Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml)
+[![Grasshopper Plugin Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml)
+
 This repository contains the Archicad Python API Grasshopper Plugin, the easiest way to use the JSON/Python API from Archicad without knowing how to code. The repository contains the following components:
 - [grasshopper-plugin](grasshopper-plugin): This is set of nodes for a Grasshopper that handles functions of ARCHICAD Python API and helps with creation BIMx extensions (.bimxx).
 - [archicad-addon](archicad-addon): The source code of the Tapir Additional JSON Commands Archicad Add-On. This Add-On registers some additional JSON commands on the Archicad JSON API.
