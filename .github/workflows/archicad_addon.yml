@@ -1,4 +1,4 @@
-name: Archicad Add-On Windows Build
+name: Archicad Add-On Build
 
 on:
   push:
