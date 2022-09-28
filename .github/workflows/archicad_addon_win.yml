@@ -6,9 +6,6 @@ on:
       - '*'
     tags:
       - '*'
-    paths:
-      - 'archicad-addon/**'
-      - '.github/workflows/**'
 
 jobs:
   build_win_ac25:

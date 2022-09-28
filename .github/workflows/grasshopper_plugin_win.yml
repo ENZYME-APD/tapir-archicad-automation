@@ -6,10 +6,6 @@ on:
       - '*'
     tags:
       - '*'
-    paths:
-      - 'python-package/**'
-      - 'grasshopper-plugin/**'
-      - '.github/workflows/**'
 
 jobs:
   build:
