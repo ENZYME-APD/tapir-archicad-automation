@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # - - - - - - - - LOCAL IMPORTS
-from tapir_py import core, parts, utility
+from tapir_py import core, parts, utility,tools
 
 # - - - - - - - - GLOBAL METHODS
 def is_alive():

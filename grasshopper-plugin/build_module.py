@@ -126,7 +126,7 @@ class Compiler:
             return False
 
 # - - - - - - - - RUN SCRIPT
-def Run():
+def Run(target):
     # Copy python-package pre-build.
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     package_source = os.path.join(root, 'python-package', 'src', 'tapir_py')
@@ -134,11 +134,12 @@ def Run():
     if os.path.exists(package_source):
         copy_tree(package_source, package_target)
         # Build grasshopper-plugin.
-        Compiler.Build("tapir_gh.ghpy", source_folder='src')
+        Compiler.Build(target, source_folder='src')
         # Clean up post-build
         rmtree(package_target)
     else:
         print("\nBUILD FAILED\n'tapir_py' package not found.\n")
 
 if __name__ == "__main__":
-    Run()
+    target='/Users/GrzegorzWilk/Library/Application Support/McNeel/Rhinoceros/7.0/Plug-ins/Grasshopper (b45a29b1-4343-4035-989e-044e8580d9cf)/Libraries/tapir/tapir_gh2.ghpy'
+    Run(target)

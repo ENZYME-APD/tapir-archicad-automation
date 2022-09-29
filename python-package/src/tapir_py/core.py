@@ -341,3 +341,24 @@ class Command(dotNETBase):
         else:
             raise response.exception()
     #endregion Element Geometry Commands
+
+    def GetProductInfo(self):
+        """Accesses ArchiCAD's version information.
+        
+        Returns:
+            int: Version number.
+            int: Build number.
+            int: Language code.
+        
+        Raises:
+            Exception: If command was unsuccessful.
+
+        """
+        cmd = {'command' : 'API.GetProductInfo'}
+        response = self.link.post(cmd)
+        if response.success:
+            return response.result["version"], response.result["buildNumber"], response.result["languageCode"]
+        else:
+            raise response.exception()
+
+

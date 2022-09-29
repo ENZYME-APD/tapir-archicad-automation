@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # - - - - - - - - LOCAL IMPORTS
-import core, parts, utility
+import core, parts, utility, tools
 
 # - - - - - - - - GLOBAL METHODS
 def is_alive():
