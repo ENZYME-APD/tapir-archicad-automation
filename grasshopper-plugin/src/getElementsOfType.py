@@ -56,27 +56,25 @@ class ElementInfo_Component(component):
         result = self.RunScript(p0)
 
         if result is not None:
-            self.marshal.SetOutput(result, DA, 0, True)
+            self.marshal.SetOutput(result[0], DA, 0, True)
+            self.marshal.SetOutput(result[1], DA, 1, True)
         
     def get_Internal_Icon_24x24(self):
         o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAJOgAACToAYJjBRwAAAGaSURBVEhL3ZRNSwJRFIYNonWbmbX+hSKoyFq0adOiNiEU1PwLNwkl/YH29kEwtCh0NgWBhkWRtWoRRAkFJRF96FCYX72d2z2KqYwjThsfeBjm3HPuqzPDdXUs3aTaomLGFr3kHvncogekQjZlRFEURCIRxGIxRKPRivFDaXVNaBgGVFUFzc7KLazxejwe5HI51JLKSmsRvWKGZhfkFtZ43W43TNPkccn1KzCuS5PvXGREr5ih2Xm5hTUNA+7SwPQuMGcATx9cZBwJEHzmgeI331ThSEC+BNy8AeuXwC1dq2k7IF8Elo6BsS2gfw04feAFxpF/IH79xDYwvAmcPXKRcSTApK92agcY+q+AzNc/B2QLwEwYGNwAEikuMm0HlOjTvM/Id9BHL3k/Kb+qMm0HpOnxrF4AgSNgMQ6snABXL7xItBwgzpVCgZ6JTUQvn0W2AkbFaRoKhaDr+h/FCRsOh+vqolfM0Kwmt7BmgBTNdQaDQfj9/oZr7CTZlB4yQCbIc77+qmlawufzVe7Zcs8yKWZt09WiHYnL9QMms/gCrBIbcAAAAABJRU5ErkJggg=="
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     def RunScript(self, ElementType):
-        
-        # self.Message = tapir_py.tools.SwissKnife.component_guid(1)
         self.Message = '0.1.1'
-
-        
 
         if ElementType is not None:
             types = tapir_py.parts.Element._TYPES
             _ElementType = tapir_py.tools.SwissKnife.get_wrapped_value(ElementType,types)
-            # # tapir_py.tools.SwissKnife.save_port(ports[_PickPort])
             PrintToPanel  = tapir_py.tools.SwissKnife.show_menu('Element Types',_ElementType,types)
-            Elements = 'asd'
+
+            _link_from_sticky  = tapir_py.tools.SwissKnife.load_link()
+            _Elements = tapir_py.core.Command.create(_link_from_sticky.port).GetElementsByType(types[_ElementType])
+            Elements =[e.guid for e in _Elements]
             return PrintToPanel,Elements
-            # return tapir_py.tools.SwissKnife.show_menu('Element Types',_ElementType,types)
             
             
         else:

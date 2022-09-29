@@ -57,10 +57,16 @@ class SwissKnife:
         # print show_content
         return show_content
     @staticmethod
-    def save_port(obj):
+    def save_link(obj):
         try:
 
             scriptcontext.sticky['link'] = obj
+            return scriptcontext.sticky['link']
+        except:
+            print 'Run outside GH'
+    @staticmethod
+    def load_link():
+        try:    
             return scriptcontext.sticky['link']
         except:
             print 'Run outside GH'

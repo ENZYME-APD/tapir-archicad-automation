@@ -58,8 +58,7 @@ class ElementInfo_Component(component):
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     def RunScript(self, PickPort):
-        
-        # self.Message = tapir_py.tools.SwissKnife.component_guid(1)
+
         self.Message = '0.1.1'
 
         if PickPort is not None:
@@ -69,8 +68,7 @@ class ElementInfo_Component(component):
                 if connection.is_alive():
                     ports.append(connection)
             _PickPort = tapir_py.tools.SwissKnife.get_wrapped_value(PickPort,ports)
-            tapir_py.tools.SwissKnife.save_port(ports[_PickPort])
-            # return tapir_py.tools.SwissKnife.show_menu('Pick Port',_PickPort,ports)
-            return ports[_PickPort].port
+            tapir_py.tools.SwissKnife.save_link(ports[_PickPort])
+            return tapir_py.tools.SwissKnife.show_menu('Pick Port',_PickPort,ports)
         else:
             self.AddRuntimeMessage(RML.Warning, 'No Input!')
