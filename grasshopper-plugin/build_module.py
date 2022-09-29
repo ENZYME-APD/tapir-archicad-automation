@@ -141,5 +141,6 @@ def Run(target):
         print("\nBUILD FAILED\n'tapir_py' package not found.\n")
 
 if __name__ == "__main__":
-    target='/Users/GrzegorzWilk/Library/Application Support/McNeel/Rhinoceros/7.0/Plug-ins/Grasshopper (b45a29b1-4343-4035-989e-044e8580d9cf)/Libraries/tapir/tapir_gh2.ghpy'
+    
+    target='tapir_2909.ghpy'
     Run(target)
