@@ -132,3 +132,4 @@ dmypy.json
 bin/
 local/
 .local/
+.DS_Store
