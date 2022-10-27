@@ -8,6 +8,10 @@ This repository contains the Archicad Python API Grasshopper Plugin, the easiest
 - [archicad-addon](archicad-addon): The source code of the Tapir Additional JSON Commands Archicad Add-On. This Add-On registers some additional JSON commands on the Archicad JSON API.
 - [python-package](python-package): Contains the source code for IronPython friendly adaptation of the official [archicad](https://pypi.org/project/archicad/) package.
 
+## Roadmap
+
+[The roadmap is publicly available here.](https://github.com/orgs/ENZYME-APD/projects/4)
+
 ## Grasshopper Plugin
 
 ### Installation
