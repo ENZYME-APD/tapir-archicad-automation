@@ -51,5 +51,5 @@ Currently three experimental  nodes use this Addon:
  
  ### Documentation
  
- You can find the documentaiton of the implemented commands here: https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon.
+ You can find the documentation of the implemented commands here: https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon.
  
