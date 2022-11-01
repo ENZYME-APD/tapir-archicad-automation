@@ -1,6 +1,4 @@
 #include "ProjectCommands.hpp"
-#include "SchemaDefinitions.hpp"
-
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable ()
 {
@@ -94,9 +92,9 @@ GS::String GetHotlinksCommand::GetName () const
     return "GetHotlinks";
 }
 
-GS::Optional<GS::UniString> GetHotlinksCommand::GetSchemaDefinitions () const
+bool GetHotlinksCommand::IsUsingCommonSchemaDefinitions () const
 {
-    return GetCommonSchemaDefinitions ();
+    return true;
 }
 
 GS::Optional<GS::UniString> GetHotlinksCommand::GetResponseSchema () const
