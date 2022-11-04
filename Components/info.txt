@@ -1,0 +1,7 @@
+The attached components -- ProjectInfo and Change ProjectInfo -- take advantage of the data_access AddOn to address ProjectInformation.
+These properties are not available to the Python API. ProjectInfo lists all Project Info fields and their values. It can also get and set Project Info fields. Three functions available in one component by changing the input command.
+Change Project Info loads a CSV file containing Project fields and new Values and then changes these Values in the plan to the new values allowing the mass load of values.
+A video describing the process is loaded on YouTube:
+   https://www.youtube.com/watch?v=Vypeq9OpOxQ
+   
+   i would be interested in any comments and if additional components would be of interest. What would be the priorities?
