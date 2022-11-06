@@ -1,10 +1,26 @@
-from archicad import ACConnection
+import json
+import urllib.request
 
-conn = ACConnection.connect ()
+command = 'GetSelectedElements'
+commandParameters = {}
 
-acc = conn.commands
-act = conn.types
+host = 'http://127.0.0.1'
+port = '19723'
 
-response = acc.ExecuteAddOnCommand (act.AddOnCommandId ('TapirCommand', 'GetSelectedElements'))
+connection_object = urllib.request.Request('{}:{}'.format(host, port))
+connection_object.add_header('Content-Type', 'application/json')
 
-print (response)
+data = {
+    'command' : 'API.ExecuteAddOnCommand',
+    'parameters': {
+        'addOnCommandId': {
+            'commandNamespace': 'TapirCommand',
+            'commandName': command
+        },
+        'addOnCommandParameters': commandParameters
+    }    
+}
+
+response = urllib.request.urlopen(connection_object, json.dumps(data).encode('utf8'))
+responseJson = json.loads (response.read())
+print (json.dumps (responseJson, indent = 4))
