@@ -1,0 +1,2 @@
+Merged data_access AddOn into Tapir apx. Also included the source code here. Updated the two grasshopper ProjInfo components.
+Include a docx file which discribes the functions of the data_acces AddOn into Tapir. Included all function of data_access into one class to make the Tipar AddOn more clear. There are some 29 additional functions but many many be not be applicable. I included them all mostly for trial and comment and to create some ideas for other functions.include is merged Tapir AddOn - TapirAddOn_AC26_win. For windows only.
