@@ -1,0 +1,71 @@
+#include "ResourceIds.hpp"
+#include "AddOnVersion.hpp"
+
+'STR#' ID_ADDON_INFO "Add-on Name and Description" {
+/* [  1] */		"Tapir Additional JSON Commands"
+/* [  2] */		"Tapir Additional JSON Commands"
+}
+
+'DATA' 1000 "JSON file containing schema  format"{
+		"utilities.json"
+}
+
+/* ---------------------------------------------------------- FontPopupDialog */
+	'STR#' DGTEST_FONTPOPUPDIALOG_RESID "Context Menu strings" {
+	/* [  1] */		"Restore formatting"
+	/* [  2] */		"Close"
+}
+
+'GDLG'  DGTEST_FONTPOPUPDIALOG_RESID  Modal | grow    316   89  316  250  "Python Output Dialog" {
+/* [  1] */ PopupControl		    5    5  221   22	80  3																/* will be FontPopUp */
+/* [  2] */ RichEdit			    5   35  307   150	LargePlain  HVScroll
+/* [  3] */ PushCheck			  231    5   25   22	LargeBold	noFrame  	"B"
+/* [  4] */ PushCheck			  259    5   25   22	LargeItalic noFrame		"I"
+/* [  5] */ PushCheck			  287    5   25   22	LargeUnderline 	noFrame	"U"
+/* [  6] */ Button				  242   200   70   24	LargePlain  "Close"
+}
+
+'DLGH'  DGTEST_FONTPOPUPDIALOG_RESID  DLG_FontPopupt_Example_Dialog {
+1	"Select the font family"	FontPopup_0
+2	"Example text"				RichEd_0
+3	"Boldface"					PushCheck_3
+4	"Italic"					PushCheck_0
+5	"Underlined"				PushCheck_1
+6	""							Button_0
+}
+
+/* ---------------------------------------------------------- SpliButtonDialog */
+
+'GDLG'  DGTEST_SPLITBUTTONDIALOG_RESID  Modal  0    0   320   190  "Split Button Dialog" {
+/* [  1] */ Button				  240  158   70   24	LargePlain  "Close"
+/* [  2] */ LeftText			   20   48  300   18	LargePlain  vCenter  "Alignment, font style and font size of the split button:"
+/* [  3] */ RadioButton			   20   78  250   18	LargePlain  1  "left, plain, extra small"
+/* [  4] */ RadioButton			   20  104  250   18	LargePlain  1  "center, bold, large"
+/* [  5] */ RadioButton			   20  130  250   18	LargePlain  1  "right, italic, small"
+/* [  6] */ SplitButton			   60   8  200   24	LargePlain  6 "SplitButton"
+}
+
+'DLGH'  DGTEST_SPLITBUTTONDIALOG_RESID  DLG_SplitButton_Dialog {
+1	""							Button_0
+2	""							Text_0
+3	""							RadioButton_0
+4	""							RadioButton_1
+5	""							RadioButton_2
+6	""							SplitButton_0
+}
+
+/* ---------------------------------------------------------- Owner Drawn ListBox Example Palette */
+
+'GDLG'  DGTEST_OWNERDRAWNLISTBOXPLT_RESID  Palette | grow | close	    0    0  680  620  "Owner Drawn ListBox Example" {
+/* [  1] */ Button				  530  588  140   24	LargePlain  "OK"
+/* [  2] */ Button				  320  588  200   24	LargePlain  "Switch Images"
+/* [  3] */ Button				  110  588  200   24	LargePlain  "Get all objects"
+/* [  4] */ SingleSelList		   10   10  660  570	LargePlain  PartialItems  HVScroll  150
+}
+
+'DLGH'  DGTEST_OWNERDRAWNLISTBOXPLT_RESID  Owner_Drawn_ListBox_Example {
+1	""							Button_0
+2	""							Button_1
+3	""							Button_2
+4	""							SingleSelListBox_0
+}

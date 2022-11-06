@@ -1,0 +1,4 @@
+cmake -G "Visual Studio 15 2017" -A "x64" -DAC_API_DEVKIT_DIR="C:\API Development Kit 24.3009"
+cmake -G "Visual Studio 16 2019" -A "x64" -DAC_API_DEVKIT_DIR="C:\API Development Kit 25.3002"
+cmake -G "Visual Studio 16 2019" -A "x64" -DAC_API_DEVKIT_DIR="C:\API Development Kit 26.2100"
+cmake -G "Visual Studio 16 2019" -A "x64" -DAC_API_DEVKIT_DIR="C:\API Development Kit 26.3000"
