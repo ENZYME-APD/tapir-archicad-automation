@@ -1,0 +1,1 @@
+Updated files to include the ability to list all parameters of a library object and a second function to change a Library parameter. Added a new Class Name - GetParams and new commands  LibPart and ChangeLibPart to get all parameters and to change the value of one parameter. Not all parameters are changeable. See docx file for the additional command formats.
