@@ -21,6 +21,11 @@ data = {
     }    
 }
 
+print ('Command: {command}'.format (command = command))
+print ('Parameters:')
+print (json.dumps (commandParameters, indent = 4))
+
 response = urllib.request.urlopen(connection_object, json.dumps(data).encode('utf8'))
 responseJson = json.loads (response.read())
+print ('Response:')
 print (json.dumps (responseJson, indent = 4))
