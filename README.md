@@ -7,6 +7,7 @@ This repository contains the Archicad Python API Grasshopper Plugin, the easiest
 - [grasshopper-plugin](grasshopper-plugin): This is set of nodes for a Grasshopper that handles functions of ARCHICAD Python API and helps with creation BIMx extensions (.bimxx).
 - [archicad-addon](archicad-addon): The source code of the Tapir Additional JSON Commands Archicad Add-On. This Add-On registers some additional JSON commands on the Archicad JSON API.
 - [python-package](python-package): Contains the source code for IronPython friendly adaptation of the official [archicad](https://pypi.org/project/archicad/) package.
+- [sandbox](sandbox): Several useful information and code examples that we would like to keep for later reference.
 
 ## Roadmap
 
