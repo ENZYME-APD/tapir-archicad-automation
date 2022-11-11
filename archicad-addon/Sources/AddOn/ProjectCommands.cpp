@@ -109,11 +109,11 @@ GS::Optional<GS::UniString> GetProjectInfoFieldsCommand::GetResponseSchema () co
                         },
                         "projectInfoName": {
                             "type": "string",
-                            "description": "Name of the project info field visible on UI."
+                            "description": "The name of the project info field visible on UI."
                         },
                         "projectInfoValue": {
                             "type": "string",
-                            "description": "Value of the project info field"
+                            "description": "The value of the project info field."
                         }
                     }
                 }
@@ -133,7 +133,7 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
 
     GSErrCode err = ACAPI_Goodies (APIAny_GetAutoTextsID, &autoTexts, (void*) (GS::IntPtr) type);
     if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to retrieve project information.");
+        return CreateErrorResponse (err, "Failed to retrieve project information fields.");
     }
 
     static const GS::Array<GS::UniString> validPrefixes = {
@@ -150,7 +150,7 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
 
         bool isValidPrefix = false;
         for (const GS::UniString& validPrefix : validPrefixes) {
-            if (autoTextId.BeginsWith (validPrefix)) {
+            if (autoTextId.BeginsWith (validPrefix) || autoTextId.BeginsWith ("autotext-" + validPrefix)) {
                 isValidPrefix = true;
                 break;
             }
@@ -167,6 +167,52 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
     }
 
     return response;
+}
+
+
+GS::String SetProjectInfoFieldCommand::GetName () const
+{
+    return "SetProjectInfoField";
+}
+
+GS::Optional<GS::UniString> SetProjectInfoFieldCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoId": {
+                "type": "string",
+                "description": "The id of the project info field.",
+                "minLength": 1
+            },
+            "projectInfoValue": {
+                "type": "string",
+                "description": "The new value of the project info field.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoId",
+            "projectInfoValue"
+        ]
+    })";
+}
+
+GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString projectInfoId;
+    GS::UniString projectInfoValue;
+    if (!parameters.Get ("projectInfoId", projectInfoId) || !parameters.Get ("projectInfoValue", projectInfoValue)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
+
+    GSErrCode err = ACAPI_Goodies (APIAny_SetAnAutoTextID, &projectInfoId, &projectInfoValue);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set project information field.");
+    }
+
+    return {};
 }
 
 GS::String GetHotlinksCommand::GetName () const
@@ -195,7 +241,7 @@ GS::Optional<GS::UniString> GetHotlinksCommand::GetResponseSchema () const
     })";
 }
 
-static GS::Optional<GS::UniString>    GetLocationOfHotlink (const API_Guid& hotlinkGuid)
+static GS::Optional<GS::UniString> GetLocationOfHotlink (const API_Guid& hotlinkGuid)
 {
     API_HotlinkNode hotlinkNode = {};
     hotlinkNode.guid = hotlinkGuid;

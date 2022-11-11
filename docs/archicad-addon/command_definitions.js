@@ -96,7 +96,7 @@
             {
                 name : "GetProjectInfoFields",
                 version : "0.1.2",
-                description : "Retrieves project info fields.",
+                description : "Retrieves the names and values of all project info fields.",
                 inputScheme : null,
                 outputScheme : {
                     "type": "object",
@@ -113,11 +113,11 @@
                                     },
                                     "projectInfoName": {
                                         "type": "string",
-                                        "description": "Name of the project info field visible on UI."
+                                        "description": "The name of the project info field visible on UI."
                                     },
                                     "projectInfoValue": {
                                         "type": "string",
-                                        "description": "Value of the project info field"
+                                        "description": "The value of the project info field."
                                     }
                                 }
                             }
@@ -128,7 +128,33 @@
                         "fields"
                     ]
                 }
-            },            
+            },
+            {
+                name : "SetProjectInfoField",
+                version : "0.1.2",
+                description : "Sets the value of a project info field.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoId": {
+                            "type": "string",
+                            "description": "The id of the project info field.",
+                            "minLength": 1
+                        },
+                        "projectInfoValue": {
+                            "type": "string",
+                            "description": "The new value of the project info field.",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoId",
+                        "projectInfoValue"
+                    ]
+                },
+                outputScheme : null
+            },
             {
                 name : "GetHotlinks",
                 version : "0.1.0",
