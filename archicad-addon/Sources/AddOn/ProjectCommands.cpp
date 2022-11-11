@@ -87,6 +87,88 @@ GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*paramet
     return response;
 }
 
+GS::String GetProjectInfoFieldsCommand::GetName () const
+{
+    return "GetProjectInfoFields";
+}
+
+GS::Optional<GS::UniString> GetProjectInfoFieldsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "fields": {
+                "type": "array",
+                "description": "A list of project info fields.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoId": {
+                            "type": "string",
+                            "description": "The id of the project info field."
+                        },
+                        "projectInfoName": {
+                            "type": "string",
+                            "description": "Name of the project info field visible on UI."
+                        },
+                        "projectInfoValue": {
+                            "type": "string",
+                            "description": "Value of the project info field"
+                        }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fields"
+        ]
+    })";
+}
+
+GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    API_AutotextType type = APIAutoText_All;
+
+    GSErrCode err = ACAPI_Goodies (APIAny_GetAutoTextsID, &autoTexts, (void*) (GS::IntPtr) type);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve project information.");
+    }
+
+    static const GS::Array<GS::UniString> validPrefixes = {
+        "PROJECT", "KEYWORD", "NOTES", "SITE", "BUILDING", "CONTACT", "CAD_TECHNICIAN", "CLIENT"
+    };
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("fields");
+
+    for (const auto& autoText : autoTexts) {
+        const GS::UniString& autoTextName = autoText[0];
+        const GS::UniString& autoTextId = autoText[1];
+        const GS::UniString& autoTextValue = autoText[2];
+
+        bool isValidPrefix = false;
+        for (const GS::UniString& validPrefix : validPrefixes) {
+            if (autoTextId.BeginsWith (validPrefix)) {
+                isValidPrefix = true;
+                break;
+            }
+        }
+        if (!isValidPrefix) {
+            continue;
+        }
+
+        GS::ObjectState projectInfoData;
+        projectInfoData.Add ("projectInfoId", autoTextId);
+        projectInfoData.Add ("projectInfoName", autoTextName);
+        projectInfoData.Add ("projectInfoValue", autoTextValue);
+        listAdder (projectInfoData);
+    }
+
+    return response;
+}
+
 GS::String GetHotlinksCommand::GetName () const
 {
     return "GetHotlinks";
@@ -128,7 +210,7 @@ static GS::Optional<GS::UniString>    GetLocationOfHotlink (const API_Guid& hotl
 }
 
 static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
-                                                 GS::HashTable<API_Guid, GS::Array<API_Guid>>& hotlinkTree)
+    GS::HashTable<API_Guid, GS::Array<API_Guid>>& hotlinkTree)
 {
     GS::ObjectState hotlinkNodeOS;
 
