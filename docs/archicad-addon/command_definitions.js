@@ -94,6 +94,42 @@
                 }
             },
             {
+                name : "GetProjectInfoFields",
+                version : "0.1.2",
+                description : "Retrieves project info fields.",
+                inputScheme : null,
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "fields": {
+                            "type": "array",
+                            "description": "A list of project info fields.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "projectInfoId": {
+                                        "type": "string",
+                                        "description": "The id of the project info field."
+                                    },
+                                    "projectInfoName": {
+                                        "type": "string",
+                                        "description": "Name of the project info field visible on UI."
+                                    },
+                                    "projectInfoValue": {
+                                        "type": "string",
+                                        "description": "Value of the project info field"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "fields"
+                    ]
+                }
+            },            
+            {
                 name : "GetHotlinks",
                 version : "0.1.0",
                 description : "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project.",
