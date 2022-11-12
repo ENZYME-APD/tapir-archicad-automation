@@ -74,6 +74,47 @@ class ClassificationSystem(dotNETBase):
     def __str__(self):
         return '<{} : {}>'.format(self.GetType(), self.name)
 
+class ClassificationItem(dotNETBase):
+
+    def __init__(self, guid, id, name, description, children=None):
+        self.guid = guid
+        self.id = id
+        self.name = name
+        self.description = description
+        self.children = children
+    def ToDictionary(self):
+        return {'guid':self.guid,
+                'id':self.id,
+                'name':self.name,
+                'description':self.description,
+                'children':self.children}
+    
+    @classmethod
+    def FromDictionary(cls, json_data):
+        if isinstance(json_data, dict):
+            itemData = json_data.get('classificationItem')
+            guid = itemData.get('classificationItemId',{}).get('guid')
+            id= itemData.get('id')
+            name = itemData.get('name')
+            description = itemData.get('description')
+            children = []
+            hasChildren = itemData.has_key('children')
+            if hasChildren:
+                for data in itemData.get('children'):
+                    childItem = ClassificationItem.FromDictionary(data)
+                    children.append(childItem)
+                #children = [ClassificationItem.FromDictionary(data) for data in json_data.get('children',[])]
+            return cls(guid,id,name,description,children)
+        else:
+            raise ValueError('json_data must be a dictionary')
+    @staticmethod
+    def from_command_result(result):
+        
+        return [ClassificationItem.FromDictionary(classItemData) for classItemData in result.get('classificationItems',[])]
+
+    def __str__(self):
+        return '<{} : {}>'.format(self.GetType(), self.name)
+
 class BoundingBox(dotNETBase):
 
     @property

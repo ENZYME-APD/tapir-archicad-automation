@@ -15,10 +15,10 @@ else:
 # - - - - - - - - LOCAL IMPORTS
 if sys.version_info.major == 3:
     from .utility import dotNETBase, JsonExtensions
-    from .parts import Element, ClassificationSystem, BoundingBox
+    from .parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 else:
     from utility import dotNETBase, JsonExtensions
-    from parts import Element, ClassificationSystem, BoundingBox
+    from parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 
 # - - - - - - - - CLASS LIBRARY
 class Link(dotNETBase):
@@ -130,6 +130,9 @@ class CommandResult(dotNETBase):
     def elements(self):
         return Element.from_command_result(self.result)
     
+    def classification_items(self):
+        return ClassificationItem.from_command_result(self.result)
+    
     def __str__(self):
         return '{} CommandResult'.format('Success' if self.success else 'Failed')
 
@@ -158,7 +161,7 @@ class Command(dotNETBase):
     
     def __init__(self, link):
         self.link = link
-
+        
     def __str__(self):
         return 'ArchiCAD Command Object'
 
@@ -361,4 +364,44 @@ class Command(dotNETBase):
         else:
             raise response.exception()
 
+    def GetAllClassificationsInSystem(self, Classification_System_id):
+        """ Return the tree of classifications in the given classification system
 
+        Args:
+            Classification_system_id (str): The id of the classification system
+
+        Returns:
+            :obj:`list` of :obj:`ClassificationItem`: A Tree of classificationItems in the given classification system.
+        """
+        cmd = {'command':'API.GetAllClassificationsInSystem',
+            'parameters':{'classificationSystemId':{'guid':Classification_System_id}}}
+        
+        commandResult = self.link.post(cmd)
+        print ('hey')
+        if commandResult.success:
+            return commandResult.classification_items()
+        else:
+            raise commandResult.exception()
+    
+    def GetDetailsOfClassificationItems(self,classification_item_guids):
+        """Returns the detail of classification items
+        
+        Arg:
+            :obj:`list` of Classification_item_guid (str): A list of classification item guids
+
+        Returns:
+            :obj:`list` of :obj: `ClassificationItem` : A list of classification items.
+
+        """
+        
+        idList=[]
+        for guid in classification_item_guids:
+            idList.append({'classificationItemId':{'guid':guid}})
+        cmd = {'command':'API.GetDetailsOfClassificationItems',
+        'parameters' : {'classificationItemIds':idList}}
+
+        response = self.link.post(cmd)
+        if response.success:
+            return response.classification_items()
+        else:
+            raise response.exception()
