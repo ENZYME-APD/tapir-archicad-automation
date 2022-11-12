@@ -1,14 +1,22 @@
-# archicad-api
+# tapir-archicad-automation
+
+[![Archicad Add-On Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml)
+[![Grasshopper Plugin Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml)
 
 This repository contains the Archicad Python API Grasshopper Plugin, the easiest way to use the JSON/Python API from Archicad without knowing how to code. The repository contains the following components:
 - [grasshopper-plugin](grasshopper-plugin): This is set of nodes for a Grasshopper that handles functions of ARCHICAD Python API and helps with creation BIMx extensions (.bimxx).
 - [archicad-addon](archicad-addon): The source code of the Tapir Additional JSON Commands Archicad Add-On. This Add-On registers some additional JSON commands on the Archicad JSON API.
 - [python-package](python-package): Contains the source code for IronPython friendly adaptation of the official [archicad](https://pypi.org/project/archicad/) package.
+- [sandbox](sandbox): Several useful information and code examples that we would like to keep for later reference.
+
+## Roadmap
+
+[The roadmap is publicly available here.](https://github.com/orgs/ENZYME-APD/projects/4)
 
 ## Grasshopper Plugin
 
 ### Installation
-* Download mannualy the [api.zip](https://github.com/ENZYME-APD/archicad-api/raw/move_grasshopper_plugin/grasshopper-plugin/api.zip) file, and extract it on your computer.
+* Download manualy the [api.zip](https://github.com/ENZYME-APD/tapir-archicad-automation/raw/main/grasshopper-plugin/api.zip) file, and extract it on your computer.
 * Copy ARCHICAD_API folder to Grasshopper's UserObjects folder (GH Menu: File/Special Folders/User Object Folder).
 * Copy api2.py to Rhino's scripts folder. See [how to locate scripts Folder](https://wiki.mcneel.com/rhino/macroscriptsetup) for details.
 
@@ -21,10 +29,10 @@ For some functions one must install an Addon developed by [kovacsv](https://gith
 ### Installation
 
 Download the latest version here:
-- [Archicad 25 (Windows)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC25_Win.apx)
-- [Archicad 26 (Windows)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC26_Win.apx)
-- [Archicad 25 (Mac)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC25_Mac.dmg)
-- [Archicad 26 (Mac)](https://github.com/ENZYME-APD/archicad-api/releases/latest/download/TapirAddOn_AC26_Mac.dmg)
+- [Archicad 25 (Windows)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC25_Win.apx)
+- [Archicad 26 (Windows)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC26_Win.apx)
+- [Archicad 25 (Mac)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC25_Mac.dmg)
+- [Archicad 26 (Mac)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC26_Mac.dmg)
 
 Once you downloaded the Add-On files you have to install it in Archicad. Follow these steps to install the Add-On.
 
@@ -44,5 +52,5 @@ Currently three experimental  nodes use this Addon:
  
  ### Documentation
  
- You can find the documentaiton of the implemented commands here: https://enzyme-apd.github.io/archicad-api/archicad-addon.
+ You can find the documentation of the implemented commands here: https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon.
  

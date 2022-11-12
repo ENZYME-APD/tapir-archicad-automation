@@ -1,0 +1,3 @@
+Attached is a revised Classification componet which retrieves all Classification Items and subitems from the tree.
+I just revised the exiting component by inserting a recusive function.
+Not thoughly tested.Some outputs may not be compatiable but I assume will be tested by the group.

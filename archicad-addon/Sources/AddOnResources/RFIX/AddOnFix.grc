@@ -1,7 +1,6 @@
 #include "ResourceIds.hpp"
-#include "ResourceMDIDIds.hpp"
 
 'MDID' ID_ADDON_ID "Add-On Identifier" {
-	826567491 /* Set AC_MDID_DEV value as your developer id. */
-	368333322 /* Set AC_MDID_LOC value as your local id. */
+	826567491
+	368333322
 }

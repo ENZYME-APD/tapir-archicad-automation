@@ -1,0 +1,9 @@
+Attached is a AddOn -data_access.apx - which I  have used myself to extend the Python API through the Commandhandler functions
+The addon is compiled for Windows Only but I have also included the source. 
+Note that most of the functions have just been copied from the Grafhisoft examples. 
+The docx file explains the usage. The source must be cleaned up as it contains a lot of commented out false starts and 
+debug info. I did not do so as the functions may not be acceptable -- so pointless to do so now.
+I did not include any associated grasshopper Python components for the functions since I am not at that stage.
+I  include here just for comment and testing if anyone is interested. Use with coution.
+Perhaps some code may be helpful to be included in TaPir's AddOn?? 
+Interested in any other suggestions and if this type thing is of any value to anyone?

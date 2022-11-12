@@ -1,0 +1,14 @@
+I suggest that some guidelines need be established for the submission of AddOns and new Components that use a AddOn.
+I believe that it is unlikely that Graphisoft will meaningly update the Python/JSON API in the future – at least based on past progress. Therefore, the expansion of Tapir may necessitate the inclusion of a large number of AddOns. To eliminate confusion, some rules need be established. I suggest, as a starting point, the following:
+
+1. A developer ID should be established for the AddOn(s). If that would be kept confidential, then the responsibility for compilation would fall on the team and contributors would submit only raw code.
+2. I agree that Addons should be minimized but recognize that the number of proposed functions may make that a confusing mess? Also most users may not be interested in all functions – code bloat.
+3. Proposed components should be submitted in both binary – ghuser – and the Python code (py).
+4. C++ AddOn(s) should be submitted with the raw code – source, RFIX & CMakeLists.txt. For convivence the apx file could be submitted for quick testing . if so, only the release version should be submitted as most users may not have the necessary debug dll’s needed to run the code. Submission need specify if the file is compiled for windows or the mac.
+5. Some type of review status together with required issues to be resolved, should be published for each submission.
+6. NameSpace – “AdditionalJOSONCommands”,     NameSpaceName = “Tapir”   
+7. I suggest a command system to identify functions within each NameSpace class as in parameters[‘Command’] = ‘MyFunction’
+8. Input types need be standardized as to list of strings or other types. A List should be required to allow multiple inputs  
+9. The JSON verification scheme should establish by the team and the scheme file should be external RFIX\images.Set a common resource number for the file. 
+10. I am sure that there will be a number of other issues as we move along we need to expedite the process of review/testing and
+ final release. 

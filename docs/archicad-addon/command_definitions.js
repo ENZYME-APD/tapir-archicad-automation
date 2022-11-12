@@ -94,6 +94,68 @@
                 }
             },
             {
+                name : "GetProjectInfoFields",
+                version : "0.1.2",
+                description : "Retrieves the names and values of all project info fields.",
+                inputScheme : null,
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "fields": {
+                            "type": "array",
+                            "description": "A list of project info fields.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "projectInfoId": {
+                                        "type": "string",
+                                        "description": "The id of the project info field."
+                                    },
+                                    "projectInfoName": {
+                                        "type": "string",
+                                        "description": "The name of the project info field visible on UI."
+                                    },
+                                    "projectInfoValue": {
+                                        "type": "string",
+                                        "description": "The value of the project info field."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "fields"
+                    ]
+                }
+            },
+            {
+                name : "SetProjectInfoField",
+                version : "0.1.2",
+                description : "Sets the value of a project info field.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoId": {
+                            "type": "string",
+                            "description": "The id of the project info field.",
+                            "minLength": 1
+                        },
+                        "projectInfoValue": {
+                            "type": "string",
+                            "description": "The new value of the project info field.",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoId",
+                        "projectInfoValue"
+                    ]
+                },
+                outputScheme : null
+            },
+            {
                 name : "GetHotlinks",
                 version : "0.1.0",
                 description : "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project.",
