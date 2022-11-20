@@ -377,7 +377,7 @@ class Command(dotNETBase):
             'parameters':{'classificationSystemId':{'guid':Classification_System_id}}}
         
         commandResult = self.link.post(cmd)
-        print ('hey')
+        
         if commandResult.success:
             return commandResult.classification_items()
         else:

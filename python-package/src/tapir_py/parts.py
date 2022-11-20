@@ -75,13 +75,22 @@ class ClassificationSystem(dotNETBase):
         return '<{} : {}>'.format(self.GetType(), self.name)
 
 class ClassificationItem(dotNETBase):
+    """ Represents a Classification Item
 
+    Args:
+        guid (str): A valid guid of classification item.
+        id (str) : A short name used to identify the classification item.
+        name (str) : A long name used to identify the classification item.
+        description (str) : A description of classification item
+        children (list) : A list of ClassificationItem
+    """
     def __init__(self, guid, id, name, description, children=None):
         self.guid = guid
         self.id = id
         self.name = name
         self.description = description
         self.children = children
+
     def ToDictionary(self):
         return {'guid':self.guid,
                 'id':self.id,
@@ -103,10 +112,11 @@ class ClassificationItem(dotNETBase):
                 for data in itemData.get('children'):
                     childItem = ClassificationItem.FromDictionary(data)
                     children.append(childItem)
-                #children = [ClassificationItem.FromDictionary(data) for data in json_data.get('children',[])]
+                
             return cls(guid,id,name,description,children)
         else:
             raise ValueError('json_data must be a dictionary')
+    
     @staticmethod
     def from_command_result(result):
         
