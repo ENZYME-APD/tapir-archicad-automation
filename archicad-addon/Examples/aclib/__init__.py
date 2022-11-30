@@ -19,8 +19,11 @@ def RunCommand (command, parameters):
         }    
     }
     request_string = json.dumps (request_data).encode ('utf8')
+    
     response_data = urllib.request.urlopen (connection_object, request_string)
     response_json = json.loads (response_data.read())
+    
     if not response_json['succeeded']:
         return None
+    
     return response_json['result']['addOnCommandResponse']
