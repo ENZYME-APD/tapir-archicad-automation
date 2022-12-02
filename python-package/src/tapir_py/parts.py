@@ -101,9 +101,9 @@ class BoundingBox(dotNETBase):
         return (self.x[1], self.y[1], self.z[1])
 
     def __init__(self, x_min, x_max, y_min, y_max, z_min, z_max):
-        self.x = (x_min, x_max)
-        self.y = (y_min, y_max)
-        self.z = (z_min, z_max)        
+        self.x = (float(x_min), float(x_max))
+        self.y = (float(y_min), float(y_max))
+        self.z = (float(z_min), float(z_max))
 
     def get_box_type(self):
         return '2D' if self.is_2D else '3D'
@@ -156,6 +156,6 @@ class BoundingBox(dotNETBase):
 
     def __str__(self):
         if self.is_2D:
-            return '<{}2D : ({:.2f}x{:.2f})>'.format(self.__class__.__name__, self.length, self.breadth)
+            return '<{}2D : ({:.2f} x {:.2f})>'.format(self.__class__.__name__, self.length, self.breadth)
         else:
-            return '<{}3D : ({:.2f}x{:.2f}x{:.2f})>'.format(self.__class__.__name__, self.length, self.breadth, self.height)
+            return '<{}3D : ({:.2f} x {:.2f} x {:.2f})>'.format(self.__class__.__name__, self.length, self.breadth, self.height)
