@@ -1,10 +1,10 @@
 import json
-import lib
+import aclib
 
-response = lib.RunCommand ('GetProjectInfoFields', {})
+response = aclib.RunCommand ('GetProjectInfoFields', {})
 for field in response['fields']:
     print (field)
-    lib.RunCommand ('SetProjectInfoField', {
+    aclib.RunCommand ('SetProjectInfoField', {
         'projectInfoId' : field['projectInfoId'],
         'projectInfoValue' : 'Tapir'
     })

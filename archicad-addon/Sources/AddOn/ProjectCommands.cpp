@@ -296,8 +296,6 @@ GS::ObjectState GetHotlinksCommand::Execute (const GS::ObjectState& /*parameters
     return response;
 }
 
-// --- PublishCommand ----------------------------------------------------------------------------------
-
 GS::String PublishPublisherSetCommand::GetName () const
 {
     return "PublishPublisherSet";

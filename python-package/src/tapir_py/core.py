@@ -201,6 +201,16 @@ class Command(dotNETBase):
             return response.result["version"], response.result["buildNumber"], response.result["languageCode"]
         else:
             raise response.exception()
+
+    def GetProjectInfo(self):
+        """Retrieves details of the current archicad file.
+
+        Returns:
+            str: Project name.
+            str: Project location.
+            bool: True if project is a Teamwork (BIMcloud) project.
+        """
+        raise NotImplementedError()
     #endregion Basic Commands
 
     #region Element Listing Commands
@@ -221,11 +231,11 @@ class Command(dotNETBase):
         else:
             raise response.exception()
 
-    def GetElementsByType(self, element_type):
+    def GetElementsByType(self, element_type_id):
         """Returns all elements in the current document that match the specified element type.
         
         Args:
-            element_type (str): The element type to match.
+            element_type_id (str): The element type to match.
             
         Returns:
             :obj:`list` of :obj:`Element`: A list of elements in the current document of specified type.
@@ -236,14 +246,14 @@ class Command(dotNETBase):
         
         """
         for item in Element._TYPES:
-            if item.lower() == element_type.lower():
-                element_type = item
+            if item.lower() == element_type_id.lower():
+                element_type_id = item
                 break
         else:
-            raise TypeError("Couldn't find element type: {}".format(element_type))
+            raise TypeError("Couldn't find element type: {}".format(element_type_id))
         
         cmd = { 'command' : 'API.GetElementsByType',
-                'parameters' : {'elementType': element_type}
+                'parameters' : {'elementType': element_type_id}
                 }
         response = self.link.post(cmd)
         if response.success:
