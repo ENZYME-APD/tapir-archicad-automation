@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   id="Layer_2"
+   x="0px"
+   y="0px"
+   viewBox="0 0 32 32"
+   enable-background="new 0 0 32 32"
+   xml:space="preserve"
+   sodipodi:docname="tapir_logo_black.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:export-filename="C:\Users\Viktor\GitRepos\tapir-archicad-automation\logo\pack\svg\tapir_logo_black_512.png"
+   inkscape:export-xdpi="1536"
+   inkscape:export-ydpi="1536"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs11" /><sodipodi:namedview
+   id="namedview9"
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1.0"
+   inkscape:pageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   showgrid="false"
+   inkscape:zoom="18.959301"
+   inkscape:cx="11.788409"
+   inkscape:cy="15.902485"
+   inkscape:window-width="1920"
+   inkscape:window-height="1017"
+   inkscape:window-x="-8"
+   inkscape:window-y="-8"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="g6" />
+<g
+   id="g6">
+	<circle
+   fill="#202225"
+   cx="14.9"
+   cy="14.9"
+   r="1.1"
+   id="circle2" />
+	<path
+   fill="#202225"
+   d="M16,0C9,0,3.1,4.5,0.9,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   c-3.3,0.1-5.1,1.4-6.5,2.9C6,29.4,10.7,32,16,32c8.8,0,16-7.2,16-16C32,7.2,24.8,0,16,0z"
+   id="path4" />
+</g>
+</svg>
