@@ -14,10 +14,10 @@ else:
 
 # - - - - - - - - LOCAL IMPORTS
 if sys.version_info.major == 3:
-    from .utility import dotNETBase, JsonExtensions
+    from .utility import dotNETBase, JsonExtensions, RuntimeHelper
     from .parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 else:
-    from utility import dotNETBase, JsonExtensions
+    from utility import dotNETBase, JsonExtensions, RuntimeHelper
     from parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 
 # - - - - - - - - CLASS LIBRARY
@@ -110,9 +110,22 @@ class Link(dotNETBase):
 
 class CommandResult(dotNETBase):
     
-    def __init__(self, response):
+    @staticmethod
+    def _format_response(data):
+        remove_key = "addOnCommandResponse"
+        for key in data["result"][remove_key].keys():
+            data["result"][key] = data["result"][remove_key][key]
+        
+        data["result"].pop(remove_key)
+        return data
+    
+    def _unpack_reponse(self, response):
         #TODO: Check if deepcopy is necessary here
-        self._data = json.loads(response, object_hook=JsonExtensions.strip_unicode)
+        data = json.loads(response, object_hook=JsonExtensions.strip_unicode)
+        return CommandResult._format_response(data)
+
+    def __init__(self, response):
+        self._data = self._unpack_reponse(response)
         self.success = self._data.get('succeeded')
         self.result = self._data.get('result', {})
         self.error = self._data.get('error', {})
@@ -129,6 +142,9 @@ class CommandResult(dotNETBase):
 
     def elements(self):
         return Element.from_command_result(self.result)
+    
+    def object(self, data, pseudo_type='runtime_helper'):
+        return RuntimeHelper(data, pseudo_type)
     
     def __str__(self):
         return '{} CommandResult'.format('Success' if self.success else 'Failed')
@@ -155,15 +171,25 @@ class Parameter(dotNETBase):
 
 class Command(dotNETBase):
     
+    @staticmethod
+    def FormatAddOnCommand(command, parameters = ""):
+        cmd = {
+        'command' : 'API.ExecuteAddOnCommand',
+        'parameters': {
+            'addOnCommandId': {
+                'commandNamespace': 'TapirCommand',
+                'commandName': command
+            },
+            'addOnCommandParameters': parameters }
+        }
+        return cmd
+    
     @classmethod
     def create(cls, port=19723):
         return cls(Link(port))
     
     def __init__(self, link):
         self.link = link
-
-    def __str__(self):
-        return 'ArchiCAD Command Object'
 
     #region Basic Commands
     def IsAlive(self):
@@ -201,16 +227,6 @@ class Command(dotNETBase):
             return response.result["version"], response.result["buildNumber"], response.result["languageCode"]
         else:
             raise response.exception()
-
-    def GetProjectInfo(self):
-        """Retrieves details of the current archicad file.
-
-        Returns:
-            str: Project name.
-            str: Project location.
-            bool: True if project is a Teamwork (BIMcloud) project.
-        """
-        raise NotImplementedError()
     #endregion Basic Commands
 
     #region Element Listing Commands
@@ -282,6 +298,23 @@ class Command(dotNETBase):
             return response.elements()
         else:
             raise response.exception()
+    
+    def GetSelectedElements(self):
+        """Returns all elements in the current document.
+        
+        Returns:
+            :obj:`list` of :obj:`Element`: A list of Element instances that represent the elements in the current document.
+
+        Raises:
+            Exception: If command was unsuccessful.
+        
+        """
+        cmd = Command.FormatAddOnCommand("GetSelectedElements")
+        response = self.link.post(cmd)
+        if response.success:
+            return response.elements()
+        else:
+            return response.exception()
     #endregion Element Listing Commands
 
     #region Classification Commands
@@ -396,4 +429,107 @@ class Command(dotNETBase):
             return response.bounding_box()
         else:
             raise response.exception()
+    
     #endregion Element Geometry Commands
+
+    #region Project Commands
+    def GetProjectInfo(self):
+        """Retrieves details of the current archicad file.
+
+        Attributes:
+            str: projectPath
+            str: projectName
+            str: projectLocation
+            bool: isTeamWork
+            bool: isUntitled
+
+        Returns:
+            obj: ProjectInfo
+        """
+        cmd = Command.FormatAddOnCommand("GetProjectInfo")
+        response = self.link.post(cmd)
+        if response.success:
+            return response.object(response._data["result"], "ProjectInfo")
+        else:
+            return response.exception()
+    
+    def GetHotlinks(self): # TODO: Create Hotlink Class
+        """Performs a publish operation on the currently opened project. Only the given publisher set will be published.
+
+        Attributes:
+            :obj:`list` of :obj:`dict`: A list of dictionaries that represent hotlink nodes.
+
+        Returns:
+            obj: HotlinkCollection
+        """
+        cmd = Command.FormatAddOnCommand("GetHotlinks")
+        response = self.link.post(cmd)
+        if response.success:
+            return response.object(response._data["result"], "HotlinkCollection")
+        else:
+            return response.exception()
+    
+    #endregion Project Commands
+
+    #region Application Commands
+    def GetAddOnVersion(self):
+        """Retrieves the version of the Tapir Additional JSON Commands Add-On.
+
+        Returns:
+            str: Version of the Tapir Additional JSON Commands Add-On.
+        """
+        cmd = Command.FormatAddOnCommand("GetAddOnVersion")
+        response = self.link.post(cmd)
+        if response.success:
+            return response._data["result"]["version"]
+        else:
+            return response.exception()
+    
+    def GetArchicadLocation(self):
+        """Retrieves the location of the currently running Archicad executable.
+
+        Returns:
+            str: Location of current Archicad executable.
+        """
+        cmd = Command.FormatAddOnCommand("GetArchicadLocation")
+        response = self.link.post(cmd)
+        if response.success:
+            return response._data["result"]["archicadLocation"]
+        else:
+            return response.exception()
+    
+    def QuitArchicad(self):
+        """Performs a quit operation on the currently running Archicad instance.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
+        cmd = Command.FormatAddOnCommand("QuitArchicad")
+        response = self.link.post(cmd)
+        return response.success
+    #endregion Application Commands
+
+    #region Teamwork Commands
+    def TeamworkSend(self):
+        """Performs a send operation on the currently opened Teamwork project.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
+        cmd = Command.FormatAddOnCommand("TeamworkSend")
+        response = self.link.post(cmd)
+        return response.success
+
+    def TeamworkReceive(self):
+        """Performs a receive operation on the currently opened Teamwork project.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
+        cmd = Command.FormatAddOnCommand("TeamworkReceive")
+        response = self.link.post(cmd)
+        return response.success
+    #endregion Teamwork Commands
+
+    def __str__(self):
+        return 'ArchiCAD Command Object'

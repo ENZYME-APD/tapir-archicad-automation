@@ -37,7 +37,7 @@ class dotNETBase(object):
 
 class RuntimeHelper(dotNETBase):
 
-    def __init__(self, data, pseudo_type='runtime_helper'):
+    def __init__(self, data, pseudo_type):
         self.name = pseudo_type
 
         if isinstance(data, list):
