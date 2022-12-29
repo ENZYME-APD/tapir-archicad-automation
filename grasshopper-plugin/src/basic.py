@@ -3,21 +3,25 @@
 
 __all__ = ['Handshake_Component']
 
+# - - - - - - - - BUILT-IN IMPORTS
+import System
+import traceback
+
 # - - - - - - - - LOCAL IMPORTS
+import tapir
 from tapir_py import core
 
 # - - - - - - - - RH/GH IMPORTS
 from ghpythonlib.componentbase import dotnetcompiledcomponent as component
 from Grasshopper.Kernel import GH_RuntimeMessageLevel as RML
 import Grasshopper
-import System
 
 # - - - - - - - - COMPONENT
 class Handshake_Component(component):
 
     def __new__(cls):
         instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "Handshake", "Handshake_Component", """Establishes connection between current Grasshopper document, and any open ArchiCAD project.""", "tAPIr", "Connect")
+            "Handshake", "Handshake", """Establishes connection between current Grasshopper document, and any open ArchiCAD project.""", "tAPIr", "Connect")
         return instance
     
     def get_ComponentGuid(self):
@@ -31,13 +35,13 @@ class Handshake_Component(component):
     
     def RegisterInputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Boolean()
-        self.SetUpParam(p, "Refresh", "Refresh", "Script variable Python")
+        self.SetUpParam(p, "Refresh", "R", "Refreshes the link to the ArchiCAD project.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         self.Params.Input.Add(p)
     
     def RegisterOutputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_GenericObject()
-        self.SetUpParam(p, "Link", "ArchiCAD", "Script output ArchiCAD.")
+        self.SetUpParam(p, "Link", "A", "ArchiCAD Command Object, that can execute commands.")
         self.Params.Output.Add(p)
         
     def SolveInstance(self, DA):
@@ -52,14 +56,40 @@ class Handshake_Component(component):
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     def __init__(self):
-        self.link = None
+        self.is_valid = False
         self.archicad = None
-    
-    def RunScript(self, Refresh):
-        self.archicad = core.Command.create()
-        self.Message = "Port: {}".format(self.archicad.link.address)
+
+    def RunScript(self, refresh):
         
-        if not self.archicad.IsAlive():
+        if refresh:
+            self.archicad = core.Command.create()
+            self.is_valid = self.archicad.IsAlive()
+        
+        tapir.Plugin.is_active = self.is_valid
+
+        if self.is_valid:
+            tapir.Plugin.Archicad = self.archicad
+            self.Message = "Port: {}".format(self.archicad.link.port)
+            return self.archicad
+        
+        else:
+            tapir.Plugin.Archicad = None
+            self.Message = ""
             self.AddRuntimeMessage(RML.Warning, "Connection Failed: Unable to connect to ArchiCAD.")
-        
-        return self.archicad
+            return None
+    
+    def on_disconnect_click(self, sender, args):
+        try:
+            self.__init__()
+            self.ExpireSolution(True)
+        except Exception as ex:
+            System.Windows.Forms.MessageBox.Show(traceback.format_exc(), ex)
+
+    def AppendAdditionalMenuItems(self , items):
+        component.AppendAdditionalMenuItems(self , items)
+        try:
+            disconnect_menu_item = items.Items.Add('Disconnect', None, self.on_disconnect_click)
+        except Exception as ex:
+            System.Windows.Forms.MessageBox.Show(traceback.format_exc(), ex)
+
+# TODO: ProjectInfo / ProductInfo / 

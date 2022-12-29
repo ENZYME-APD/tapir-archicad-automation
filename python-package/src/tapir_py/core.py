@@ -113,10 +113,13 @@ class CommandResult(dotNETBase):
     @staticmethod
     def _format_response(data):
         remove_key = "addOnCommandResponse"
-        for key in data["result"][remove_key].keys():
-            data["result"][key] = data["result"][remove_key][key]
         
-        data["result"].pop(remove_key)
+        # Check if command belonged to aAddOn.
+        if remove_key in data["result"]:
+            for key in data["result"][remove_key].keys():
+                data["result"][key] = data["result"][remove_key][key]
+        
+            data["result"].pop(remove_key)
         return data
     
     def _unpack_reponse(self, response):
