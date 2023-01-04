@@ -42,10 +42,11 @@ License:
 """
 
 # - - - - - - - - IN-BUILT IMPORTS
-import os
+import sys, os
 from traceback import format_exc
 from distutils.dir_util import copy_tree
 from shutil import rmtree, copy2
+from datetime import datetime
 
 # - - - - - - - - CLASS LIBRARY
 class Compiler:
@@ -110,7 +111,9 @@ class Compiler:
             print("BUILD SUCCESSFUL\nTarget: {}\n".format(target_file))
             
             # Copy output file to user specified location.
-            if copy_target and os.path.exists(copy_target):
+            if copy_target:
+                if not os.path.exists(copy_target):
+                    os.makedirs(copy_target)
                 copy2(target_file, copy_target)
                 print("COPY SUCCESSFUL\n")
             
@@ -126,19 +129,30 @@ class Compiler:
             return False
 
 # - - - - - - - - RUN SCRIPT
-def Run():
+def Run(copy_target = ""):
     # Copy python-package pre-build.
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     package_source = os.path.join(root, 'python-package', 'src', 'tapir_py')
     package_target = os.path.join(root, 'grasshopper-plugin', 'src', 'tapir_py')
     if os.path.exists(package_source):
         copy_tree(package_source, package_target)
+        # TODO: Refactor
+        # Generate Unique Name 
+        package_name = datetime.now().strftime("tapir_gh_%Y_%b_%d-%H_%M_%S.ghpy")
         # Build grasshopper-plugin.
-        Compiler.Build("tapir_gh.ghpy", source_folder='src')
+        Compiler.Build(package_name, source_folder='src', copy_target=copy_target)
         # Clean up post-build
         rmtree(package_target)
     else:
         print("\nBUILD FAILED\n'tapir_py' package not found.\n")
 
 if __name__ == "__main__":
-    Run()
+    
+    if len(sys.argv) > 1:
+        # Copy path is provided
+        copy_target = sys.argv[1]
+        if not os.path.exists(copy_target):
+            os.makedirs(copy_target)
+        Run(copy_target) 
+    else:    
+        Run()
