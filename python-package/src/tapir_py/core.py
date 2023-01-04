@@ -5,7 +5,6 @@ __all__ = ['Link', 'Parameter', 'Command', 'CommandResult']
 
 # - - - - - - - - BUILT-IN IMPORTS
 import json
-import time
 import sys
 if sys.version_info.major == 3:
     from urllib.request import urlopen, Request
@@ -14,10 +13,10 @@ else:
 
 # - - - - - - - - LOCAL IMPORTS
 if sys.version_info.major == 3:
-    from .utility import dotNETBase, JsonExtensions, RuntimeHelper
+    from .utility import dotNETBase, JsonExtensions, RuntimeHelper, debug
     from .parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 else:
-    from utility import dotNETBase, JsonExtensions, RuntimeHelper
+    from utility import dotNETBase, JsonExtensions, RuntimeHelper, debug
     from parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 
 # - - - - - - - - CLASS LIBRARY
@@ -87,6 +86,7 @@ class Link(dotNETBase):
         """
         return Command(self).IsAlive()
 
+    @debug
     def post(self, data):
         """Sends data to ArchiCAD using the POST method.
 
@@ -99,10 +99,7 @@ class Link(dotNETBase):
         """
         connection_object = Request(self.address)
         connection_object.add_header('Content-Type', 'application/json')
-        
-        start_time = time.time()
         response = urlopen(connection_object, json.dumps(data).encode('utf8'))
-        print('Completed in {:.3f} seconds'.format(time.time() - start_time))
         return CommandResult(response.read())
 
     def __str__(self):

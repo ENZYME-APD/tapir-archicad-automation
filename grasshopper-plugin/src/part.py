@@ -56,19 +56,12 @@ class GetElements_Component(component):
     def __init__(self):
         self.state = 0
     
+    @tapir.connect
     def RunScript(self, refresh):
-        Elements = None
-        if tapir.Plugin.is_active:
-            
-            if self.state == 0:
-                Elements = tapir.Plugin.Archicad.GetAllElements()
-            elif self.state == 1:
-                Elements = tapir.Plugin.Archicad.GetSelectedElements()
-        
-        else:
-            self.AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, "Plugin Disconnected!")
-        
-        return Elements
+        if self.state == 0:
+            return tapir.Plugin.Archicad.GetAllElements()
+        elif self.state == 1:
+            return tapir.Plugin.Archicad.GetSelectedElements()
 
     def on_get_all_click(self, sender, args):
         try:
@@ -140,17 +133,14 @@ class GetBoundingBox_Component(component):
         o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAASlJREFUSEuVlAGSwyAMA5P/PzoFWQQZ25DuzQVjS4J0Or2Um+tbYdH6QNC4xl1mzD4rLF6tu6AfLNsUNaMOJjby4aQa5XmbIEVls64/OsDhhyMOyqSP1sFWDNRVWgXVLPrKvrHUBFPmrNIOp4TswH09bfC0qv1T0nrtMfov2GNGzGto33M7A5ax9gcPbn/Use5DHzoP8/CmEL+StkegBQGG9gqHDsabZl/r3mnBMrB6udmydngY3wo54w1X7OaPfixW95sNE6/Q+y7IhVpNacRuhNIolcZ75oJrbDP8UHeo58Pj+lxzrW/MnZo2bOcns6DSP2x7EDQfCaN/OHKO9TvOCsshwKhESdCXvC8ag7fW7IO5GGuCF83aW7ELeq8pyH5PInoACKbr+gEavy6K5E85VAAAAABJRU5ErkJggg=="
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
+    @tapir.connect
     def RunScript(self, Elements):
         bBox = []
-        if tapir.Plugin.is_active:
-            if Elements:
-                bBox = tapir.Plugin.Archicad.Get3DBoundingBoxes(Elements)
-                
-                success, message, bBox = tapir.RhinoWrapper.BoundingBox(bBox)
-                
-                if not success:
-                    self.AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, message)
-        else:
-            self.AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, "Plugin Disconnected!")
-        
+        if Elements:
+            bBox = tapir.Plugin.Archicad.Get3DBoundingBoxes(Elements)
+            
+            success, message, bBox = tapir.RhinoWrapper.BoundingBox(bBox)
+            
+            if not success:
+                self.AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, message)
         return bBox   

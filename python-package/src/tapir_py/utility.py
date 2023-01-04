@@ -3,6 +3,24 @@
 
 __all__ = ['dotNETBase', 'RuntimeHelper', 'JsonExtensions']
 
+# - - - - - - - - BUILT-IN IMPORTS
+import traceback, time
+# - - - - - - - - DECORATORS
+def debug(function):
+
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = None
+        try:
+            result = function(*args, **kwargs)
+            elapsed_time = time.time() - start_time
+            print("<DEBUG> '{}' completed in {} seconds.".format(function.__name__, elapsed_time))
+        except Exception as ex:
+            print(traceback.format_exc(), str(ex))
+        finally:
+            return result
+    return wrapper
+
 # - - - - - - - - CLASS LIBRARY
 class dotNETBase(object):
     """Base class for all classes that need to be compatible with .NET environment.

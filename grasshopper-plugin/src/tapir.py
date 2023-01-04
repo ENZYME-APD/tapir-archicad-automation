@@ -3,15 +3,27 @@
 
 __all__ = ['Plugin', 'RhinoWrapper']
 
+# - - - - - - - - BUILT-IN IMPORTS
+import traceback, time
+import System
+
 # - - - - - - - - LOCAL IMPORTS
 from tapir_py import parts, utility
 
 # - - - - - - - - RH/GH IMPORTS
-import System
 import Rhino, Grasshopper, GhPython
 
 # - - - - - - - - GLOBAL VARIABLES
 Plugin = utility.RuntimeHelper({ "is_active" : False, "Archicad" : None }, "TapirPlugin")
+
+# - - - - - - - - DECORATORS
+def connect(function):
+    def wrapper(*args, **kwargs):
+        if Plugin.is_active:
+            return function(*args, **kwargs)
+        else:
+            args[0].AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, "Plugin Disconnected!")
+    return wrapper
 
 # - - - - - - - - CLASS LIBRARY
 class AssemblyInfo(GhPython.Assemblies.PythonAssemblyInfo):
