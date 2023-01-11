@@ -99,7 +99,7 @@ jobs:
     - name: Download Development Kit
       run: python3 archicad-addon/Tools/download_and_unzip.py ${{ secrets.MAC_DEVKIT_AC26 }} archicad-addon/Build
     - name: Generate Project
-      run: cmake -B archicad-addon/Build/AC26 -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DAC_API_DEVKIT_DIR="archicad-addon/Build/Graphisoft Archicad API DevKit 26.3000" archicad-addon
+      run: cmake -B archicad-addon/Build/AC26 -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAC_API_DEVKIT_DIR="archicad-addon/Build/Graphisoft Archicad API DevKit 26.3000" archicad-addon
     - name: Build Debug
       run: cmake --build archicad-addon/Build/AC26 --config Debug
     - name: Build RelWithDebInfo
