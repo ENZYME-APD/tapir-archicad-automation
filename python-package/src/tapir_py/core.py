@@ -99,14 +99,17 @@ class Link(dotNETBase):
         """
         connection_object = Request(self.address)
         connection_object.add_header('Content-Type', 'application/json')
-        response = urlopen(connection_object, json.dumps(data).encode('utf8'))
-        return CommandResult(response.read())
+        try:
+            response = urlopen(connection_object, json.dumps(data).encode('utf8'))
+            return CommandResult(response.read())
+        except:
+            return None
 
     def __str__(self):
-        return 'TapirLink : {}'.format(self.address)
+        return 'Link : {}'.format(self.address)
 
 class CommandResult(dotNETBase):
-    
+
     @staticmethod
     def _format_response(data):
         remove_key = "addOnCommandResponse"
@@ -202,7 +205,10 @@ class Command(dotNETBase):
         cmd = {'command' : 'API.IsAlive'}
         try:
             response = self.link.post(cmd)
-            return response.success
+            if response is None:
+                return False
+            else:
+                return response.success
         except Exception as ex:
             if type(ex).__name__ == 'URLError':
                 return False
