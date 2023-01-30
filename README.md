@@ -1,3 +1,8 @@
+<div style="overflow:hidden;">
+   <img src="branding\logo\png\tapir_background_1600_900.png" alt="" style="margin:-20% 0px -20% 0px;" />
+</div>
+<br>
+
 # tapir-archicad-automation
 
 [![Archicad Add-On Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml)
