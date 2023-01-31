@@ -35,7 +35,7 @@ class AssemblyInfo(GhPython.Assemblies.PythonAssemblyInfo):
         return """Grasshopper components to access ArchiCAD via JSON API."""
 
     def get_AssemblyVersion(self):
-        return "0.1.0"
+        return "0.2.0"
 
     def get_AuthorName(self):
         return "EnzymeAPD"
@@ -65,3 +65,39 @@ class RhinoWrapper(object):
                 message = "Some inputs were skipped."
 
         return success, message, rhino_boxes
+
+class Factory(object):
+
+    @staticmethod
+    def create_value_list(component, param_index, name, items, x_offset = 27, y_offset = 11):
+        source_input = component.Params.Input[param_index]
+
+        # Create new Value List component
+        source_pivot = source_input.Attributes.Pivot
+
+        new_value_list = Grasshopper.Kernel.Special.GH_ValueList()
+        # Add component to current Grasshopper Document
+        doc = component.OnPingDocument()
+        doc.AddObject(new_value_list, False, doc.ObjectCount + 1)
+
+        new_value_list.Name = name
+        new_value_list.NickName = name[0].upper()
+        new_value_list.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - x_offset, source_pivot.Y - y_offset)
+        new_value_list.ListItems.Clear()
+
+        # Populate list
+        Factory.update_value_list(new_value_list, items)
+
+        # Connect Value List to component
+        source_input.AddSource(new_value_list)
+
+    @staticmethod
+    def update_value_list(component, items):
+        if isinstance(component, Grasshopper.Kernel.Special.GH_ValueList):
+            component.ListItems.Clear()
+            for item in items:
+                list_item = Grasshopper.Kernel.Special.GH_ValueListItem(str(item), item)
+                component.ListItems.Add(list_item)
+            return True
+        else:
+            return False

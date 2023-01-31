@@ -2,6 +2,8 @@
 
 Contains the source code for Grasshopper® components that use the [Archicad JSON API](https://archicadapi.graphisoft.com/JSONInterfaceDocumentation/#Introduction).
 
+## View plugin changelogs [here](CHANGELOG.md)
+
 ## Pre-requisites
 1. [IronPython](https://ironpython.net/) is required to build the plugin (2.7+)
 
