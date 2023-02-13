@@ -37,59 +37,49 @@ constexpr const char* CopyField = "copy";
 GS::Optional<GS::UniString> MoveElementsCommand::GetInputParametersSchema () const
 {
     return GS::UniString::Printf (R"({
-        "type": "object",
-        "properties": {
-            "%s": {
-                "type": "array",
-                "description": "The elements with move vector pairs.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "%s": {
-                            "$ref": "APITypes.json#/definitions/ElementId"
-                        },
-                        "%s": {
-                            "type": "object",
-                            "description" : "Move vector of a 3D point.",
-                            "properties" : {
-                                "x": {
-                                    "type": "number",
-                                    "description" : "X value of the vector."
-                                },
-                                "y" : {
-                                    "type": "number",
-                                    "description" : "Y value of the vector."
-                                },
-                                "z" : {
-                                    "type": "number",
-                                    "description" : "Z value of the vector."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required" : [
-                                "x",
-                                "y",
-                                "z"
-                            ]
-                        },
-                        "%s": {
-                            "type": "boolean",
-                            "description" : "Optional parameter. If true, then a copy of the element will be moved. By default it's false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "%s",
-                        "%s"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-        "%s"
-        ]
-    })",
+		"type": "object",
+		"properties": {
+			"properties" : {
+				"type": "array",
+				"description" : "Physical properties list.",
+				"items": {
+					"type": "object",
+					"properties": {
+						"properties": {
+							"type": "object",
+							"description": "Physical properties.",
+							"properties": {
+								"thermalConductivity": {
+									"type": "number",
+									"description": "Thermal Conductivity."
+								},
+								"density": {
+									"type": "number",
+									"description": "Density."
+								},
+								"heatCapacity": {
+									"type": "number",
+									"description": "Heat Capacity."
+								},
+								"embodiedEnergy": {
+									"type": "number",
+									"description": "Embodied Energy."
+								},
+								"embodiedCarbon": {
+									"type": "number",
+									"description": "Embodied Carbon."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"additionalProperties": false,
+		"required": [
+			"properties"
+		]
+	})",
     ElementsWithMoveVectorsParameterField,
     ElementIdField,
     MoveVectorField,
@@ -244,16 +234,16 @@ GS::ObjectState CreateColumnsCommand::Execute (const GS::ObjectState& parameters
 
             if (err != NoError) {
                 return err;
-            }
         }
+    }
 
         return NoError;
-    });
+});
 
     if (err != NoError) {
         const GS::UniString errorMsg = GS::UniString::Printf ("Failed to create column to coordinate: {%.2f, %.2f}!", apiCoordinate.x, apiCoordinate.y);
         return CreateErrorResponse (err, errorMsg.ToCStr ().Get ());
-}
+    }
 
     return {};
 }

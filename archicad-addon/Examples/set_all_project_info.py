@@ -1,10 +1,10 @@
 import json
 import aclib
 
-response = aclib.RunCommand ('GetProjectInfoFields', {})
+response = aclib.RunTapirCommand ('GetProjectInfoFields', {})
 for field in response['fields']:
     print (field)
-    aclib.RunCommand ('SetProjectInfoField', {
+    aclib.RunTapirCommand ('SetProjectInfoField', {
         'projectInfoId' : field['projectInfoId'],
         'projectInfoValue' : 'Tapir'
     })

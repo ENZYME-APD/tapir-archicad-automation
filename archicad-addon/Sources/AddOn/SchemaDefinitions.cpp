@@ -36,6 +36,38 @@ const GS::UniString& GetCommonSchemaDefinitions ()
                 "guid"
             ]
         },
+        "AttributeIds": {
+            "type": "array",
+            "description": "A list of attributes.",
+            "items": {
+                "$ref": "#/AttributeIdArrayItem"
+            }
+        },
+        "AttributeIdArrayItem": {
+            "type": "object",
+            "properties": {
+                "attributeId": {
+                    "$ref": "#/AttributeId"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "attributeId"
+            ]
+        },
+        "AttributeId": {
+            "type": "object",
+            "description": "The identifier of an attribute.",
+            "properties": {
+                "guid": {
+                    "$ref": "#/Guid"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "guid"
+            ]
+        },
         "Guid": {
             "type": "string",
             "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",

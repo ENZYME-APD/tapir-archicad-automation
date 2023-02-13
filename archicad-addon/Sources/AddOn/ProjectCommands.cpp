@@ -169,7 +169,6 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
     return response;
 }
 
-
 GS::String SetProjectInfoFieldCommand::GetName () const
 {
     return "SetProjectInfoField";

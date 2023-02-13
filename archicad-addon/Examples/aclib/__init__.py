@@ -9,14 +9,8 @@ def RunCommand (command, parameters):
     connection_object.add_header ('Content-Type', 'application/json')
 
     request_data = {
-        'command' : 'API.ExecuteAddOnCommand',
-        'parameters': {
-            'addOnCommandId': {
-                'commandNamespace': 'TapirCommand',
-                'commandName': command
-            },
-            'addOnCommandParameters': parameters
-        }    
+        'command' : command,
+        'parameters': parameters
     }
     request_string = json.dumps (request_data).encode ('utf8')
     
@@ -26,4 +20,16 @@ def RunCommand (command, parameters):
     if not response_json['succeeded']:
         return None
     
-    return response_json['result']['addOnCommandResponse']
+    return response_json['result']
+
+def RunTapirCommand (command, parameters):
+    commandResult = RunCommand ('API.ExecuteAddOnCommand', {
+        'addOnCommandId': {
+            'commandNamespace': 'TapirCommand',
+            'commandName': command
+        },
+        'addOnCommandParameters': parameters
+    })
+    if commandResult == None:
+        return None
+    return commandResult['addOnCommandResponse']
