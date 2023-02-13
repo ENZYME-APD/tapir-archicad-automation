@@ -1,7 +1,4 @@
-<div style="overflow:hidden;">
-   <img src="branding\logo\png\tapir_background_1600_900.png" alt="" style="margin:-20% 0px -20% 0px;" />
-</div>
-<br>
+![Tapir](branding/logo/png/tapir_bar_2000_600.png?raw=true)
 
 # tapir-archicad-automation
 
