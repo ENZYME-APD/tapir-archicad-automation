@@ -136,11 +136,8 @@ def Run(copy_target = ""):
     package_target = os.path.join(root, 'grasshopper-plugin', 'src', 'tapir_py')
     if os.path.exists(package_source):
         copy_tree(package_source, package_target)
-        # TODO: Refactor
-        # Generate Unique Name 
-        package_name = datetime.now().strftime("tapir_gh_%Y_%b_%d-%H_%M_%S.ghpy")
         # Build grasshopper-plugin.
-        Compiler.Build(package_name, source_folder='src', copy_target=copy_target)
+        Compiler.Build("tapir_gh.ghpy", source_folder='src', copy_target=copy_target)
         # Clean up post-build
         rmtree(package_target)
     else:
