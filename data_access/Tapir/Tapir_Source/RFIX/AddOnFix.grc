@@ -1,0 +1,6 @@
+#include "ResourceIds.hpp"
+
+'MDID' ID_ADDON_ID "Add-On Identifier" {
+	826567491
+	368333322
+}

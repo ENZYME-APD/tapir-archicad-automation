@@ -1,0 +1,1 @@
+Contains twocomponents to retrive Library parameters from any selected Library object. And second component to change the value of a object parameter. uses the latest Tapit Addon with the LibParams class.
