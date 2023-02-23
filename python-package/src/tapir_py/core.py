@@ -175,6 +175,12 @@ class Parameter(dotNETBase):
 class Command(dotNETBase):
     
     @staticmethod
+    def FormatCommand(command, parameters = ""):
+        cmd = {'command' : command}
+        if parameters !="":
+            cmd['parameters'] = parameters
+        return cmd
+    @staticmethod
     def FormatAddOnCommand(command, parameters = ""):
         cmd = {
         'command' : 'API.ExecuteAddOnCommand',
