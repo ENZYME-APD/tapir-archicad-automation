@@ -3,26 +3,6 @@
 #include "FileSystem.hpp"
 #include "OnExit.hpp"
 
-// --- ReloadLibrariesCommand ----------------------------------------------------------------------------------
-
-GS::String ReloadLibrariesCommand::GetName () const
-{
-    return "ReloadLibraries";
-}
-
-GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
-{
-    GSErrCode err = ACAPI_Automate (APIDo_ReloadLibrariesID);
-
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Reloading Libraries failed. Check internet connection if you have active libraries from BIMcloud!");
-    }
-
-    return {};
-}
-
-// --- MoveElementsCommand ----------------------------------------------------------------------------------
-
 GS::String MoveElementsCommand::GetName () const
 {
     return "MoveElements";
@@ -154,8 +134,6 @@ GS::ObjectState    MoveElementsCommand::Execute (const GS::ObjectState& paramete
     return {};
 }
 
-// --- CreateColumnsCommand ----------------------------------------------------------------------------------
-
 GS::String CreateColumnsCommand::GetName () const
 {
     return "CreateColumns";
@@ -234,11 +212,11 @@ GS::ObjectState CreateColumnsCommand::Execute (const GS::ObjectState& parameters
 
             if (err != NoError) {
                 return err;
+            }
         }
-    }
 
         return NoError;
-});
+    });
 
     if (err != NoError) {
         const GS::UniString errorMsg = GS::UniString::Printf ("Failed to create column to coordinate: {%.2f, %.2f}!", apiCoordinate.x, apiCoordinate.y);

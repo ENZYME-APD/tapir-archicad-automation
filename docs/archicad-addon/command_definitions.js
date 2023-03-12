@@ -201,6 +201,18 @@
         ]
     },
     {
+        name : 'Library Commands',
+        commands : [
+            {
+                name : "ReloadLibraries",
+                version : "1.0.0",
+                description : "Executes the reload libraries command.",
+                inputScheme : null,
+                outputScheme : null             
+            }        
+        ]
+    },
+    {
         name : 'Element Commands',
         commands : [
             {
@@ -220,7 +232,7 @@
                         "elements"
                     ]  
                 }              
-            },
+            }
         ]
     },
     {
