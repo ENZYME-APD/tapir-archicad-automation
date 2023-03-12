@@ -42,7 +42,7 @@ class Sample_Component(component):
                                                             "SubCategory")
         return instance
     
-    def get_ComponetnGuid(self):
+    def get_ComponentGuid(self):
         # It is better to generate a GUID and then paste it here.
         # guid = System.Guid.NewGuid()
         # But this GUID needs to be static, and should be unique
