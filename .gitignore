@@ -134,3 +134,4 @@ local/
 .local/
 .DS_Store
 grasshopper-plugin/src/components/
+grasshopper-plugin/src/test.py

@@ -129,7 +129,7 @@ class Sample_Component(component):
         # Repeat same if you want to add more outputs
         second_parameter = Grasshopper.Kernel.Parameters.Param_Line()
         self.SetUpParam(second_parameter,
-                        name="Line"
+                        name="Line",
                         nickname="L",
                         description="Line representing the Position Vector")
         self.Params.Output.Add(second_parameter)
