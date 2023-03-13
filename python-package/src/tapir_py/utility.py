@@ -22,15 +22,6 @@ def debug(function):
             return result
     return wrapper
 
-def ico2base64(ico_file):
-    """
-    Converts icon image to base64 string 
-    to be used by get_internal_Icon_24x24 method
-    """
-    with open(ico_file, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-        image_file.close()
-    return encoded_string
 # - - - - - - - - CLASS LIBRARY
 class dotNETBase(object):
     """Base class for all classes that need to be compatible with .NET environment.
