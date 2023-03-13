@@ -134,6 +134,21 @@ class Sample_Component(component):
                         description="Line representing the Position Vector")
         self.Params.Output.Add(second_parameter)
     
+    # This is the method that the component calls
+    # to execute your script.
+    # It interacts directly with IGH_DataAccess class (input / output data)
+    # It calls the RunScript method where you can place the business logic.
+    def SolveInstance(self, DA):
+        # number of inputs need to match the number of inputs registered.
+        p0 = self.marshal.GetInput(DA, 0)
+        #p1 = self.marshal.GetInput(DA, 1) # If there are two inputs
+        result = self.RunScript(p0) #result = self.RunScript(01, 01) # If there are two inputs
+
+        # Pass result / return values from RunScript to output params
+        if result is not None:
+            self.marshal.SetOutput(result[0], DA, 0, True) # Vector - Check RunScript
+            self.nmarshal.SetOutput(result[1], DA, 1, True)  # Line - Check RunScript
+
     # Set the Icon for this component.
     # NOTE: Creating Icon as a 64Base String is outside the scope of this tutorial. I will skip it for now.
     def get_internal_Icon_24x24(self):
@@ -145,8 +160,6 @@ class Sample_Component(component):
     def __init__(self):
         # Any initialisations can be done here
         pass
-
-    
 
     # NOTE: The number of arguments for Runscript
     # should match the number of inputs that were
