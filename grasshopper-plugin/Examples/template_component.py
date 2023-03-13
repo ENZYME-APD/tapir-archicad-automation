@@ -147,7 +147,7 @@ class Sample_Component(component):
         # Pass result / return values from RunScript to output params
         if result is not None:
             self.marshal.SetOutput(result[0], DA, 0, True) # Vector - Check RunScript
-            self.nmarshal.SetOutput(result[1], DA, 1, True)  # Line - Check RunScript
+            self.marshal.SetOutput(result[1], DA, 1, True)  # Line - Check RunScript
 
     # Set the Icon for this component.
     # NOTE: Creating Icon as a 64Base String is outside the scope of this tutorial. I will skip it for now.
