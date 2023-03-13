@@ -5,6 +5,7 @@ __all__ = ['dotNETBase', 'RuntimeHelper', 'JsonExtensions']
 
 # - - - - - - - - BUILT-IN IMPORTS
 import traceback, time
+import base64
 # - - - - - - - - DECORATORS
 def debug(function):
 
