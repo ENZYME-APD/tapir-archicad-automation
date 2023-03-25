@@ -1,7 +1,7 @@
 #!/usr/bin/env python27
 # -*- coding: utf-8 -*-
 
-__all__ = ['dotNETBase', 'RuntimeHelper', 'JsonExtensions']
+__all__ = ['dotNETBase', 'RuntimeObject', 'JsonExtensions']
 
 # - - - - - - - - BUILT-IN IMPORTS
 import traceback, time
@@ -54,7 +54,7 @@ class dotNETBase(object):
         name = self.__class__.__name__
         return name[0].lower() + name[1:]
 
-class RuntimeHelper(dotNETBase):
+class RuntimeObject(dotNETBase):
 
     def __init__(self, data, pseudo_type):
         self.name = pseudo_type
