@@ -133,27 +133,16 @@ class CommandResult(dotNETBase):
         self.result = self._data.get('result', {})
         self.error = self._data.get('error', {})
 
-    def bounding_box(self):
-        return BoundingBox.from_command_result(self.result)
-    
-    def classification_systems(self):
-        return ClassificationSystem.from_command_result(self.result)
-    
-    def exception(self):
-        if self.error is not None:
-            return Exception('{}:\n{}'.format(self.error['code'], self.error['message']))
+    def get_result(self):
+        if not self.success:
+            if self.error is not None:
+                raise Exception('{}:\n{}'.format(self.error['code'], self.error['message']))
+            else:
+                raise Exception('Unknown error')
+        return self.result
 
-    def elements(self):
-        return Element.from_command_result(self.result)
-    
-    def object(self, pseudo_type='runtime_helper'):
-        return RuntimeObject(self._data['result'], pseudo_type)
-    
     def __str__(self):
         return '{} CommandResult'.format('Success' if self.success else 'Failed')
-    
-    def classification_items(self):
-        return ClassificationItem.from_command_result(self.result)
 
 class Parameter(dotNETBase):
 
@@ -180,6 +169,7 @@ class Command(dotNETBase):
         if parameters !="":
             cmd['parameters'] = parameters
         return cmd
+
     @staticmethod
     def FormatAddOnCommand(command, parameters = ""):
         cmd = {
@@ -235,10 +225,8 @@ class Command(dotNETBase):
         """
         cmd = {'command' : 'API.GetProductInfo'}
         response = self.link.post(cmd)
-        if response.success:
-            return response.result["version"], response.result["buildNumber"], response.result["languageCode"]
-        else:
-            raise response.exception()
+        result = response.get_result()
+        return result['version'], result['buildNumber'], result['languageCode']
     #endregion Basic Commands
 
     #region Element Listing Commands
@@ -254,10 +242,7 @@ class Command(dotNETBase):
         """
         cmd = {'command' : 'API.GetAllElements'}
         response = self.link.post(cmd)
-        if response.success:
-            return response.elements()
-        else:
-            raise response.exception()
+        return Element.list_from_command_result(response.get_result())
 
     def GetElementsByType(self, element_type_id):
         """Returns all elements in the current document that match the specified element type.
@@ -284,10 +269,7 @@ class Command(dotNETBase):
                 'parameters' : {'elementType': element_type_id}
                 }
         response = self.link.post(cmd)
-        if response.success:
-            return response.elements()
-        else:
-            raise response.exception()
+        return Element.list_from_command_result(response.get_result())
 
     def GetElementsByClassification(self, classification_system_id):
         """Returns all elements in the current document that match the specified classification system.
@@ -306,10 +288,7 @@ class Command(dotNETBase):
                 'parameters' : { 'classificationSystemId' : {'guid' : classification_system_id}}
                 }
         response = self.link.post(cmd)
-        if response.success:
-            return response.elements()
-        else:
-            raise response.exception()
+        return Element.list_from_command_result(response.get_result())
     
     def GetSelectedElements(self):
         """Returns all elements in the current document.
@@ -323,10 +302,7 @@ class Command(dotNETBase):
         """
         cmd = Command.FormatAddOnCommand("GetSelectedElements")
         response = self.link.post(cmd)
-        if response.success:
-            return response.elements()
-        else:
-            return response.exception()
+        return Element.list_from_command_result(response.get_result())
     #endregion Element Listing Commands
 
     #region Classification Commands
@@ -342,10 +318,7 @@ class Command(dotNETBase):
         """
         cmd = {'command' : 'API.GetAllClassificationSystems'}
         response = self.link.post(cmd)
-        if response.success:
-            return response.classification_systems()
-        else:
-            raise response.exception()
+        return ClassificationSystem.list_from_command_result(response.get_result())
     
     def GetAllClassificationsInSystem(self, Classification_System_id):
         """ Return the tree of classifications in the given classification system
@@ -359,12 +332,8 @@ class Command(dotNETBase):
         cmd = {'command':'API.GetAllClassificationsInSystem',
             'parameters':{'classificationSystemId':{'guid':Classification_System_id}}}
         
-        commandResult = self.link.post(cmd)
-        
-        if commandResult.success:
-            return commandResult.classification_items()
-        else:
-            raise commandResult.exception()
+        response = self.link.post(cmd)
+        return ClassificationItem.list_from_command_result(response.get_result())
     
     def GetDetailsOfClassificationItems(self,classification_item_guids):
         """Returns the detail of classification items
@@ -384,10 +353,7 @@ class Command(dotNETBase):
         'parameters' : {'classificationItemIds':idList}}
 
         response = self.link.post(cmd)
-        if response.success:
-            return response.classification_items()
-        else:
-            raise response.exception()
+        return ClassificationItem.list_from_command_result(response.get_result())
 
     #endregion Classification Commands
 
@@ -412,11 +378,8 @@ class Command(dotNETBase):
         cmd = {'command' : 'API.Get2DBoundingBoxes'}
         cmd.update(Parameter('elements', element_list).ToDictionary())
         response = self.link.post(cmd)
-        if response.success:
-            return response.bounding_box()
-        else:
-            raise response.exception()
-    
+        return BoundingBox.list_from_command_result(response.get_result())
+
     def Get3DBoundingBoxes(self, elements):
         """Returns a list of bounding boxes for the specified elements.
 
@@ -437,10 +400,7 @@ class Command(dotNETBase):
         cmd = {'command' : 'API.Get3DBoundingBoxes'}
         cmd.update(Parameter('elements', element_list).ToDictionary())
         response = self.link.post(cmd)
-        if response.success:
-            return response.bounding_box()
-        else:
-            raise response.exception()
+        return BoundingBox.list_from_command_result(response.get_result())
     
     #endregion Element Geometry Commands
 
@@ -460,10 +420,7 @@ class Command(dotNETBase):
         """
         cmd = Command.FormatAddOnCommand("GetProjectInfo")
         response = self.link.post(cmd)
-        if response.success:
-            return response.object("ProjectInfo")
-        else:
-            return response.exception()
+        return RuntimeObject(response.get_result(), 'ProjectInfo')
     
     def GetHotlinks(self): # TODO: Create Hotlink Class
         """Performs a publish operation on the currently opened project. Only the given publisher set will be published.
@@ -476,10 +433,7 @@ class Command(dotNETBase):
         """
         cmd = Command.FormatAddOnCommand("GetHotlinks")
         response = self.link.post(cmd)
-        if response.success:
-            return response.object("HotlinkCollection")
-        else:
-            return response.exception()
+        return RuntimeObject(response.get_result(), 'HotlinkCollection')
     
     #endregion Project Commands
 
@@ -492,10 +446,7 @@ class Command(dotNETBase):
         """
         cmd = Command.FormatAddOnCommand("GetAddOnVersion")
         response = self.link.post(cmd)
-        if response.success:
-            return response._data["result"]["version"]
-        else:
-            return response.exception()
+        return response.get_result()['version']
     
     def GetArchicadLocation(self):
         """Retrieves the location of the currently running Archicad executable.
@@ -505,10 +456,7 @@ class Command(dotNETBase):
         """
         cmd = Command.FormatAddOnCommand("GetArchicadLocation")
         response = self.link.post(cmd)
-        if response.success:
-            return response._data["result"]["archicadLocation"]
-        else:
-            return response.exception()
+        return response.get_result()['archicadLocation']
     
     def QuitArchicad(self):
         """Performs a quit operation on the currently running Archicad instance.
