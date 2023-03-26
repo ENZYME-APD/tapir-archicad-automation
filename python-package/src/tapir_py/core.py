@@ -13,10 +13,10 @@ else:
 
 # - - - - - - - - LOCAL IMPORTS
 if sys.version_info.major == 3:
-    from .utility import dotNETBase, JsonExtensions, RuntimeHelper, debug
+    from .utility import dotNETBase, JsonExtensions, RuntimeObject, debug
     from .parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 else:
-    from utility import dotNETBase, JsonExtensions, RuntimeHelper, debug
+    from utility import dotNETBase, JsonExtensions, RuntimeObject, debug
     from parts import Element, ClassificationSystem, BoundingBox, ClassificationItem
 
 # - - - - - - - - CLASS LIBRARY
@@ -146,8 +146,8 @@ class CommandResult(dotNETBase):
     def elements(self):
         return Element.from_command_result(self.result)
     
-    def object(self, data, pseudo_type='runtime_helper'):
-        return RuntimeHelper(data, pseudo_type)
+    def object(self, pseudo_type='runtime_helper'):
+        return RuntimeObject(self._data['result'], pseudo_type)
     
     def __str__(self):
         return '{} CommandResult'.format('Success' if self.success else 'Failed')
@@ -452,7 +452,7 @@ class Command(dotNETBase):
             str: projectPath
             str: projectName
             str: projectLocation
-            bool: isTeamWork
+            bool: isTeamwork
             bool: isUntitled
 
         Returns:
@@ -461,7 +461,7 @@ class Command(dotNETBase):
         cmd = Command.FormatAddOnCommand("GetProjectInfo")
         response = self.link.post(cmd)
         if response.success:
-            return response.object(response._data["result"], "ProjectInfo")
+            return response.object("ProjectInfo")
         else:
             return response.exception()
     
@@ -477,7 +477,7 @@ class Command(dotNETBase):
         cmd = Command.FormatAddOnCommand("GetHotlinks")
         response = self.link.post(cmd)
         if response.success:
-            return response.object(response._data["result"], "HotlinkCollection")
+            return response.object("HotlinkCollection")
         else:
             return response.exception()
     

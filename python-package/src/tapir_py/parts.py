@@ -8,16 +8,16 @@ import sys
 
 # - - - - - - - - LOCAL IMPORTS
 if sys.version_info.major == 3:
-    from .utility import dotNETBase, RuntimeHelper
+    from .utility import dotNETBase, RuntimeObject
 else:
-    from utility import dotNETBase, RuntimeHelper
+    from utility import dotNETBase, RuntimeObject
 
 # - - - - - - - - CLASS LIBRARY
 class Element(dotNETBase):
     
     _TYPES = ['Wall', 'Column', 'Beam', 'Window', 'Door', 'Object', 'Lamp', 'Slab', 'Roof', 'Mesh', 'Zone', 'CurtainWall', 'Shell', 'Skylight', 'Morph', 'Stair', 'Railing', 'Opening']
 
-    ELEMENT_TYPE = RuntimeHelper(_TYPES, 'ElementTypeEnumerator')
+    ELEMENT_TYPE = RuntimeObject(_TYPES, 'ElementTypeEnumerator')
 
     def __init__(self, guid):
         self.guid = guid
