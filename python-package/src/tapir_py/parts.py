@@ -31,7 +31,7 @@ class Element(dotNETBase):
         if id: return cls(id)
     
     @staticmethod
-    def from_command_result(result):
+    def list_from_command_result(result):
         return [Element.FromDictionary(data) for data in result.get('elements', [])]
 
     def __str__(self):
@@ -68,7 +68,7 @@ class ClassificationSystem(dotNETBase):
             raise ValueError('json_data must be a dictionary')
 
     @staticmethod
-    def from_command_result(result):
+    def list_from_command_result(result):
         return [ClassificationSystem.FromDictionary(data) for data in result.get('classificationSystems', [])]
 
     def __str__(self):
@@ -103,11 +103,11 @@ class ClassificationItem(dotNETBase):
         if isinstance(json_data, dict):
             itemData = json_data.get('classificationItem')
             guid = itemData.get('classificationItemId',{}).get('guid')
-            id= itemData.get('id')
+            id = itemData.get('id')
             name = itemData.get('name')
             description = itemData.get('description')
             children = []
-            hasChildren = itemData.has_key('children')
+            hasChildren = ('children' in itemData)
             if hasChildren:
                 for data in itemData.get('children'):
                     childItem = ClassificationItem.FromDictionary(data)
@@ -115,9 +115,9 @@ class ClassificationItem(dotNETBase):
             return cls(guid,id,name,description,children)
         else:
             raise ValueError('json_data must be a dictionary')
-    @staticmethod
-    def from_command_result(result):
 
+    @staticmethod
+    def list_from_command_result(result):
         return [ClassificationItem.FromDictionary(classItemData) for classItemData in result.get('classificationItems',[])]
 
     def __str__(self):
@@ -192,15 +192,13 @@ class BoundingBox(dotNETBase):
             raise ValueError('json_data must be a dictionary')
 
     @staticmethod
-    def from_command_result(result):
+    def list_from_command_result(result):
         if 'boundingBoxes2D' in result.keys():
             key = 'boundingBox2D'
             bounding_boxes = result['boundingBoxes2D']
         else:
             key = 'boundingBox3D'
             bounding_boxes = result['boundingBoxes3D']
-
-
         return [BoundingBox.FromDictionary(data.get(key, {})) for data in bounding_boxes]
 
     def __str__(self):
