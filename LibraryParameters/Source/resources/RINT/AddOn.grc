@@ -1,0 +1,11 @@
+#include "ResourceIds.hpp"
+#include "AddOnVersion.hpp"
+
+'STR#' ID_ADDON_INFO "Add-on Name and Description" {
+/* [  1] */		"Tapir  Commands"
+/* [  2] */		"Tapir  Commands"
+}
+
+'DATA' 1000 "JSON file containing schema  format"{
+		"utilities.json"
+}
