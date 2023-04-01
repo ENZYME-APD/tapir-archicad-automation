@@ -1,0 +1,46 @@
+{
+	"MyOutputParameters": {
+		"type": "object",
+		"properties": {
+			"outparams": {
+				"type": "array",
+				"description": "Response Data",
+				"minLength": 1
+			},
+			"outparms2": {
+				"type": "array",
+				"items": {
+					"type": "Array",
+					"description": "Response Data",
+					"minLength": 1,
+					"items": {
+						"type": "string" 
+					}
+				} 
+			}
+
+		},
+		"additionalProperties": false,
+		"required": []
+	},
+	"MyInputParameters": {
+		"type": "object",
+		"properties": {
+			"command": {
+				"type": "string",
+				"description": "Command String",
+				"minLength": 1
+			},
+			"inParams": {
+				"type": "array",
+				"description": "Input Parameters",
+				"items": {
+					"type": "string"
+				}
+
+			}
+		},
+		"additionalProperties": false,
+		"required": ["command"]
+	}
+}

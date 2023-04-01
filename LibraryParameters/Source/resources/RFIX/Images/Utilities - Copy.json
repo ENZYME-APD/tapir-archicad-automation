@@ -1,0 +1,36 @@
+
+{
+	"MyOutputParameters": {
+		"type": "object",
+		"properties": {
+			"outParams": {
+				"type": "array",
+				"description": "Response Data",
+				"minLength": 1
+				}
+				
+			 },
+			"additionalProperties": false,
+		    "required": []
+		},
+	"MyInputParameters": {
+		"type": "object",
+		"properties": {
+			"command": {
+				"type": "string",
+				"description": "Command String",
+				"minLength": 1
+			 },
+			 "inParams" : {
+					"type" : "array",
+					"description" : "Input Parameters",
+					"items" : {
+						"type" : "string"
+				     }
+			 
+		       }
+		},
+		"additionalProperties": false,
+		"required": ["command"]
+	}
+}  

@@ -1,0 +1,36 @@
+Element Quantities 
+
+mpalenik commented:
+Hello,
+your extensive map could work. The main problem is that ACAPI_ELEMENT_QUANTITY_MASK_SET is a macro so the pre-compiler will replace it based on its #define part so that’s why you can’t set parameter in dynamic time.
+One way which can work:
+enum Mask {
+  wallVolume = 1,
+  wallVolume_cond,
+  ...
+  columnCoreSurface,
+  ...
+};
+
+void foo (int maskFromPython)
+{
+  API_QuantitiesMask quantityMask;
+  Mask mask = static_cast<Mask> (maskFromPython);
+  
+  switch (mask) {
+    case wallVolume:
+      ACAPI_ELEMENT_QUANTITY_MASK_SET (quantityMask, wall, volume);
+      break;
+    case wallVolume_cond:
+      ACAPI_ELEMENT_QUANTITY_MASK_SET (quantityMask, wall, volume_cond);
+      break;
+  }
+  ...
+}
+Unfortunately this switch can be enormous.
+If you have any question feel free to ask!
+________________________________________
+mpalenik resolved this as Done.
+
+Kind regards, 
+Developer Support Customer Service Team 
