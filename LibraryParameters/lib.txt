@@ -1,1 +1,2 @@
 
+Lists the Parameters of a Library Object. Data is returned in a list of list. Each parameter listed contains the parameter name, value and type. Does not handle dictionaries or Arrays.
