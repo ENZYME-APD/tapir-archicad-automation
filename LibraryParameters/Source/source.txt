@@ -1,1 +1,2 @@
 
+Adds new Files LibraryParams coo & hpp to add listing function Requires two input parameters - command "LibPart" and inParams = [obj] where obj is string form of selected UUID. accepts only one obj. A command to change a Library Parameter "ChangeLibPart" will be added later if acceptable
