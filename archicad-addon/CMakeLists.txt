@@ -60,65 +60,25 @@ endif ()
 set (OutputName ${AC_ADDON_NAME}_AC${ARCHICAD_VERSION}_${OutputPostfix})
 project (${OutputName})
 
-set (AddOnSourcesFolder Sources/AddOn)
-set (AddOnResourcesFolder Sources/AddOnResources)
-
-# AddOnResources
+set (AddOnSourcesFolder Sources)
 
 set (ResourceObjectsDir ${CMAKE_BINARY_DIR}/ResourceObjects)
+set (ResourceStampFile "${ResourceObjectsDir}/AddOnResources.stamp")
 
-file (GLOB AddOnImageFiles
-	${AddOnResourcesFolder}/RFIX/Images/*.svg
-)
 if (WIN32)
 	file (GLOB AddOnResourceFiles
-		${AddOnResourcesFolder}/R${AC_ADDON_LANGUAGE}/*.grc
-		${AddOnResourcesFolder}/RFIX/*.grc
-		${AddOnResourcesFolder}/RFIX/*.grc
-		${AddOnResourcesFolder}/RFIX.win/*.rc2
-		${AddOnResourcesFolder}/Tools/*.py
+		${AddOnSourcesFolder}/R${AC_ADDON_LANGUAGE}/*.grc
+		${AddOnSourcesFolder}/RFIX/*.grc
+		${AddOnSourcesFolder}/RFIX/*.grc
+		${AddOnSourcesFolder}/RFIX.win/*.rc2
 	)
 else ()
 	file (GLOB AddOnResourceFiles
-		${AddOnResourcesFolder}/R${AC_ADDON_LANGUAGE}/*.grc
-		${AddOnResourcesFolder}/RFIX/*.grc
-		${AddOnResourcesFolder}/RFIX.mac/*.plist
-		${AddOnResourcesFolder}/Tools/*.py
+		${AddOnSourcesFolder}/R${AC_ADDON_LANGUAGE}/*.grc
+		${AddOnSourcesFolder}/RFIX/*.grc
+		${AddOnSourcesFolder}/RFIX.mac/*.plist
 	)
 endif ()
-
-source_group ("Images" FILES ${AddOnImageFiles})
-source_group ("Resources" FILES ${AddOnResourceFiles})
-add_custom_target (
-	AddOnResources ALL
-	DEPENDS "${ResourceObjectsDir}/AddOnResources.stamp"
-	SOURCES ${AddOnResourceFiles} ${AddOnImageFiles}
-)
-
-get_filename_component (AddOnSourcesFolderAbsolute "${CMAKE_CURRENT_LIST_DIR}/${AddOnSourcesFolder}" ABSOLUTE)
-get_filename_component (AddOnResourcesFolderAbsolute "${CMAKE_CURRENT_LIST_DIR}/${AddOnResourcesFolder}" ABSOLUTE)
-if (WIN32)
-	add_custom_command (
-		OUTPUT "${ResourceObjectsDir}/AddOnResources.stamp"
-		DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles}
-		COMMENT "Compiling resources..."
-		COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
-		COMMAND python "${AddOnResourcesFolderAbsolute}/Tools/CompileResources.py" "${AC_ADDON_LANGUAGE}" "${AC_API_DEVKIT_DIR}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${ResourceObjectsDir}/${OutputName}.res"
-		COMMAND ${CMAKE_COMMAND} -E touch "${ResourceObjectsDir}/AddOnResources.stamp"
-	)
-else ()
-	add_custom_command (
-		OUTPUT "${ResourceObjectsDir}/AddOnResources.stamp"
-		DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles}
-		COMMENT "Compiling resources..."
-		COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
-		COMMAND python3 "${AddOnResourcesFolderAbsolute}/Tools/CompileResources.py" "${AC_ADDON_LANGUAGE}" "${AC_API_DEVKIT_DIR}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${CMAKE_BINARY_DIR}/$<CONFIG>/${OutputName}.bundle/Contents/Resources"
-		COMMAND ${CMAKE_COMMAND} -E copy "${AC_API_DEVKIT_DIR}/Support/Inc/PkgInfo" "${CMAKE_BINARY_DIR}/$<CONFIG>/${OutputName}.bundle/Contents/PkgInfo"
-		COMMAND ${CMAKE_COMMAND} -E touch "${ResourceObjectsDir}/AddOnResources.stamp"
-	)
-endif ()
-
-# AddOn
 
 file (GLOB AddOnHeaderFiles
 	${AddOnSourcesFolder}/*.h
@@ -132,12 +92,40 @@ set (
 	AddOnFiles
 	${AddOnHeaderFiles}
 	${AddOnSourceFiles}
+	${AddOnResourceFiles}
+	${ResourceStampFile}
 )
-source_group ("Sources" FILES ${AddOnFiles})
+
+source_group ("Sources" FILES ${AddOnHeaderFiles} ${AddOnSourceFiles})
+source_group ("Resources" FILES ${AddOnResourceFiles})
+
 if (WIN32)
 	add_library (AddOn SHARED ${AddOnFiles})
 else ()
 	add_library (AddOn MODULE ${AddOnFiles})
+endif ()
+
+
+get_filename_component (AddOnSourcesFolderAbsolute "${CMAKE_CURRENT_LIST_DIR}/${AddOnSourcesFolder}" ABSOLUTE)
+if (WIN32)
+	add_custom_command (
+		OUTPUT ${ResourceStampFile}
+		DEPENDS ${AddOnResourceFiles}
+		COMMENT "Compiling resources..."
+		COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
+		COMMAND python "${AddOnSourcesFolderAbsolute}/Tools/CompileResources.py" "${AC_ADDON_LANGUAGE}" "${AC_API_DEVKIT_DIR}" "${AddOnSourcesFolderAbsolute}" "${AddOnSourcesFolderAbsolute}" "${ResourceObjectsDir}" "${ResourceObjectsDir}/${OutputName}.res"
+		COMMAND ${CMAKE_COMMAND} -E touch ${ResourceStampFile}
+	)
+else ()
+	add_custom_command (
+		OUTPUT ${ResourceStampFile}
+		DEPENDS ${AddOnResourceFiles}
+		COMMENT "Compiling resources..."
+		COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
+		COMMAND python3 "${AddOnSourcesFolderAbsolute}/Tools/CompileResources.py" "${AC_ADDON_LANGUAGE}" "${AC_API_DEVKIT_DIR}" "${AddOnSourcesFolderAbsolute}" "${AddOnSourcesFolderAbsolute}" "${ResourceObjectsDir}" "${CMAKE_BINARY_DIR}/$<CONFIG>/${OutputName}.bundle/Contents/Resources"
+		COMMAND ${CMAKE_COMMAND} -E copy "${AC_API_DEVKIT_DIR}/Support/Inc/PkgInfo" "${CMAKE_BINARY_DIR}/$<CONFIG>/${OutputName}.bundle/Contents/PkgInfo"
+		COMMAND ${CMAKE_COMMAND} -E touch ${ResourceStampFile}
+	)
 endif ()
 
 set_target_properties (AddOn PROPERTIES OUTPUT_NAME ${OutputName})
@@ -145,7 +133,7 @@ if (WIN32)
 	set_target_properties (AddOn PROPERTIES SUFFIX ".apx")
 else ()
 	set_target_properties (AddOn PROPERTIES BUNDLE TRUE)
-	set_target_properties (AddOn PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/${AddOnResourcesFolder}/RFIX.mac/Info.plist")
+	set_target_properties (AddOn PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/${AddOnSourcesFolder}/RFIX.mac/Info.plist")
 	set_target_properties (AddOn PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
 endif ()
 
@@ -185,4 +173,3 @@ else ()
 	file (GLOB FrameworkFilesInFolder ${AC_API_DEVKIT_DIR}/Support/Frameworks/*.framework)
 	target_link_libraries (AddOn ${FrameworkFilesInFolder})
 endif ()
-add_dependencies (AddOn AddOnResources)
