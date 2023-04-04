@@ -15,7 +15,7 @@ from tapir_py import parts, utility
 import Rhino, Grasshopper, GhPython
 
 # - - - - - - - - GLOBAL VARIABLES
-Plugin = utility.RuntimeHelper({ "is_active" : False, "Archicad" : None }, "TapirPlugin")
+Plugin = utility.RuntimeObject({ "is_active" : False, "Archicad" : None }, "TapirPlugin")
 
 # - - - - - - - - DECORATORS
 def connect(function):
