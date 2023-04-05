@@ -56,6 +56,9 @@ div.command_header
 {
     padding: 0.5em 0.6em;
     border-radius: 5px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;	
     cursor: pointer;
 }
 
@@ -96,7 +99,7 @@ div.scheme_title
 
 div.scheme_container
 {
-    
+    overflow: auto;
 }
 
 code.language-python.hljs
