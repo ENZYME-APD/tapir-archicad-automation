@@ -239,68 +239,148 @@
         name : 'Attribute Commands',
         commands : [
             {
+                name : "CreateBuildingMaterials",
+                version : "1.1.0",
+                description : "Creates Building Material attributes based on the given parameters.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "buildingMaterialDataArray": {
+                            "type": "array",
+                            "description" : "Array of data to create Building Materials.",
+                            "items": {
+                                "type": "object",
+                                "description": "Data to create a Building Material.",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Name."
+                                    },
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Identifier."
+                                    },
+                                    "manufacturer": {
+                                        "type": "string",
+                                        "description": "Manufacturer."
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "Decription."
+                                    },
+                                    "thermalConductivity": {
+                                        "type": "number",
+                                        "description": "Thermal Conductivity."
+                                    },
+                                    "density": {
+                                        "type": "number",
+                                        "description": "Density."
+                                    },
+                                    "heatCapacity": {
+                                        "type": "number",
+                                        "description": "Heat Capacity."
+                                    },
+                                    "embodiedEnergy": {
+                                        "type": "number",
+                                        "description": "Embodied Energy."
+                                    },
+                                    "embodiedCarbon": {
+                                        "type": "number",
+                                        "description": "Embodied Carbon."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required" : [
+                                    "name"
+                                ]
+                            }
+                        },
+                        "overwriteExisting": {
+                            "type": "boolean",
+                            "description": "Overwrite the Building Material if exists with the same name. The default is false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "buildingMaterialDataArray"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "attributes": {
+                            "$ref": "#/AttributeIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributes"
+                    ]
+                }
+            },
+            {
                 name : "GetBuildingMaterialPhysicalProperties",
                 version : "0.1.3",
                 description : "Retrieves the physical properties of the given Building Materials.",
                 inputScheme : {
-					"type": "object",
-					"properties": {
-						"attributeIds": {
-							"$ref": "#/AttributeIds"
-						}
-					},
-					"additionalProperties": false,
-					"required": [
-						"attributeIds"
-					]
-				},
+                    "type": "object",
+                    "properties": {
+                        "attributeIds": {
+                            "$ref": "#/AttributeIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeIds"
+                    ]
+                },
                 outputScheme : {
-					"type": "object",
-					"properties": {
-						"properties" : {
-							"type": "array",
-							"description" : "Physical properties list.",
-							"items": {
-								"type": "object",
-								"properties": {
-									"properties": {
-										"type": "object",
-										"description": "Physical properties.",
-										"properties": {
-											"thermalConductivity": {
-												"type": "number",
-												"description": "Thermal Conductivity."
-											},
-											"density": {
-												"type": "number",
-												"description": "Density."
-											},
-											"heatCapacity": {
-												"type": "number",
-												"description": "Heat Capacity."
-											},
-											"embodiedEnergy": {
-												"type": "number",
-												"description": "Embodied Energy."
-											},
-											"embodiedCarbon": {
-												"type": "number",
-												"description": "Embodied Carbon."
-											}
-										}
-									}
-								}
-							}
-						}
-					},
-					"additionalProperties": false,
-					"required": [
-						"properties"
-					]
-				}              
+                    "type": "object",
+                    "properties": {
+                        "properties" : {
+                            "type": "array",
+                            "description" : "Physical properties list.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "properties": {
+                                        "type": "object",
+                                        "description": "Physical properties.",
+                                        "properties": {
+                                            "thermalConductivity": {
+                                                "type": "number",
+                                                "description": "Thermal Conductivity."
+                                            },
+                                            "density": {
+                                                "type": "number",
+                                                "description": "Density."
+                                            },
+                                            "heatCapacity": {
+                                                "type": "number",
+                                                "description": "Heat Capacity."
+                                            },
+                                            "embodiedEnergy": {
+                                                "type": "number",
+                                                "description": "Embodied Energy."
+                                            },
+                                            "embodiedCarbon": {
+                                                "type": "number",
+                                                "description": "Embodied Carbon."
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "properties"
+                    ]
+                }              
             },
         ]
-    },	
+    },    
     {
         name : 'Teamwork Commands',
         commands : [

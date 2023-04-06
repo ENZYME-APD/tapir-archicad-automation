@@ -29,49 +29,49 @@ GS::Optional<GS::UniString> GetBuildingMaterialPhysicalPropertiesCommand::GetInp
 GS::Optional<GS::UniString> GetBuildingMaterialPhysicalPropertiesCommand::GetResponseSchema () const
 {
     return R"({
-		"type": "object",
-		"properties": {
-			"properties" : {
-				"type": "array",
-				"description" : "Physical properties list.",
-				"items": {
-					"type": "object",
-					"properties": {
-						"properties": {
-							"type": "object",
-							"description": "Physical properties.",
-							"properties": {
-								"thermalConductivity": {
-									"type": "number",
-									"description": "Thermal Conductivity."
-								},
-								"density": {
-									"type": "number",
-									"description": "Density."
-								},
-								"heatCapacity": {
-									"type": "number",
-									"description": "Heat Capacity."
-								},
-								"embodiedEnergy": {
-									"type": "number",
-									"description": "Embodied Energy."
-								},
-								"embodiedCarbon": {
-									"type": "number",
-									"description": "Embodied Carbon."
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"additionalProperties": false,
-		"required": [
-			"properties"
-		]
-	})";
+        "type": "object",
+        "properties": {
+            "properties" : {
+                "type": "array",
+                "description" : "Physical properties list.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "properties": {
+                            "type": "object",
+                            "description": "Physical properties.",
+                            "properties": {
+                                "thermalConductivity": {
+                                    "type": "number",
+                                    "description": "Thermal Conductivity."
+                                },
+                                "density": {
+                                    "type": "number",
+                                    "description": "Density."
+                                },
+                                "heatCapacity": {
+                                    "type": "number",
+                                    "description": "Heat Capacity."
+                                },
+                                "embodiedEnergy": {
+                                    "type": "number",
+                                    "description": "Embodied Energy."
+                                },
+                                "embodiedCarbon": {
+                                    "type": "number",
+                                    "description": "Embodied Carbon."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    })";
 }
 
 GS::ObjectState GetBuildingMaterialPhysicalPropertiesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -130,47 +130,47 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
         "properties": {
             "buildingMaterialDataArray": {
                 "type": "array",
-				"description" : "Array of data to create Building Materials.",
-				"items": {
+                "description" : "Array of data to create Building Materials.",
+                "items": {
                     "type": "object",
-                    "description": "Data to create Building Material.",
+                    "description": "Data to create a Building Material.",
                     "properties": {
                         "name": {
-						    "type": "string",
-							"description": "Name."
-					    },
+                            "type": "string",
+                            "description": "Name."
+                        },
                         "id": {
-						    "type": "string",
-							"description": "Identifier."
-					    },
+                            "type": "string",
+                            "description": "Identifier."
+                        },
                         "manufacturer": {
-						    "type": "string",
-							"description": "Manufacturer."
-					    },
+                            "type": "string",
+                            "description": "Manufacturer."
+                        },
                         "description": {
-						    "type": "string",
-							"description": "Decription."
-					    },
-						"thermalConductivity": {
-							"type": "number",
-							"description": "Thermal Conductivity."
-						},
-						"density": {
-							"type": "number",
-							"description": "Density."
-						},
-						"heatCapacity": {
-							"type": "number",
-							"description": "Heat Capacity."
-						},
-						"embodiedEnergy": {
-							"type": "number",
-							"description": "Embodied Energy."
-						},
-						"embodiedCarbon": {
-							"type": "number",
-							"description": "Embodied Carbon."
-						}
+                            "type": "string",
+                            "description": "Decription."
+                        },
+                        "thermalConductivity": {
+                            "type": "number",
+                            "description": "Thermal Conductivity."
+                        },
+                        "density": {
+                            "type": "number",
+                            "description": "Density."
+                        },
+                        "heatCapacity": {
+                            "type": "number",
+                            "description": "Heat Capacity."
+                        },
+                        "embodiedEnergy": {
+                            "type": "number",
+                            "description": "Embodied Energy."
+                        },
+                        "embodiedCarbon": {
+                            "type": "number",
+                            "description": "Embodied Carbon."
+                        }
                     },
                     "additionalProperties": false,
                     "required" : [
@@ -179,9 +179,9 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
                 }
             },
             "overwriteExisting": {
-				"type": "boolean",
-				"description": "Overwrite the Building Material if exists with the same name. The default is false."
-			}
+                "type": "boolean",
+                "description": "Overwrite the Building Material if exists with the same name. The default is false."
+            }
         },
         "additionalProperties": false,
         "required": [
