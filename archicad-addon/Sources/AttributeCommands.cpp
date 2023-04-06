@@ -151,6 +151,26 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
                             "type": "string",
                             "description": "Decription."
                         },
+                        "connPriority": {
+                            "type": "integer",
+                            "description": "Intersection priority."
+                        },
+                        "cutFill": {
+                            "type": "integer",
+                            "description": "Cut Fill."
+                        },
+                        "cutFillPen": {
+                            "type": "integer",
+                            "description": "Cut Fill Foreground Pen."
+                        },
+                        "cutFillBackgroundPen": {
+                            "type": "integer",
+                            "description": "Cut Fill Background Pen."
+                        },
+                        "cutMaterial": {
+                            "type": "integer",
+                            "description": "Cut Surface."
+                        },
                         "thermalConductivity": {
                             "type": "number",
                             "description": "Thermal Conductivity."
@@ -244,6 +264,31 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
         GS::UniString description;
         if (buildingMaterialData.Get ("description", description)) {
             buildMat.buildingMaterial.description = &description;
+        }
+
+        API_AttributeIndex cutFill;
+        if (buildingMaterialData.Get ("cutFill", cutFill)) {
+            buildMat.buildingMaterial.cutFill = cutFill;
+        }
+
+        Int32 connPriority;
+        if (buildingMaterialData.Get ("connPriority", connPriority)) {
+            ACAPI_Goodies (APIAny_UI2ElemPriorityID, (void*) &connPriority, &buildMat.buildingMaterial.connPriority);
+        }
+
+        short cutFillPen;
+        if (buildingMaterialData.Get ("cutFillPen", cutFillPen)) {
+            buildMat.buildingMaterial.cutFillPen = cutFillPen;
+        }
+
+        short cutFillBackgroundPen;
+        if (buildingMaterialData.Get ("cutFill", cutFillBackgroundPen)) {
+            buildMat.buildingMaterial.cutFillBackgroundPen = cutFillBackgroundPen;
+        }
+
+        API_AttributeIndex cutMaterial;
+        if (buildingMaterialData.Get ("cutMaterial", cutMaterial)) {
+            buildMat.buildingMaterial.cutMaterial = cutMaterial;
         }
 
         double thermalConductivity;

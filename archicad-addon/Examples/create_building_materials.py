@@ -2,12 +2,17 @@ import json
 import aclib
 
 buildMats = []
-for i in range (1, 11):
+for i in range (1, 51):
     buildMats.append ({
         'name' : 'New Building Material ' + str (i),
         'id' : str (i),
         'manufacturer' : 'Tapir',
         'description' : 'This is an example Building Material',
+        'connPriority' : i,
+        'cutFill' : 1,
+        'cutFillPen' : 2,
+        'cutFillBackgroundPen' : 3,
+        'cutMaterial' : 4,
         'thermalConductivity' : 1.0,
         'density' : 2.0,
         'heatCapacity' : 3.0,

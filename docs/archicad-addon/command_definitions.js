@@ -268,6 +268,26 @@
                                         "type": "string",
                                         "description": "Decription."
                                     },
+                                    "connPriority": {
+                                        "type": "integer",
+                                        "description": "Intersection priority."
+                                    },
+                                    "cutFill": {
+                                        "type": "integer",
+                                        "description": "Cut Fill."
+                                    },
+                                    "cutFillPen": {
+                                        "type": "integer",
+                                        "description": "Cut Fill Foreground Pen."
+                                    },
+                                    "cutFillBackgroundPen": {
+                                        "type": "integer",
+                                        "description": "Cut Fill Background Pen."
+                                    },
+                                    "cutMaterial": {
+                                        "type": "integer",
+                                        "description": "Cut Surface."
+                                    },
                                     "thermalConductivity": {
                                         "type": "number",
                                         "description": "Thermal Conductivity."
