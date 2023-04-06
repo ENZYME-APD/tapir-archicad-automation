@@ -1,6 +1,5 @@
 #include "AttributeCommands.hpp"
 
-
 GetBuildingMaterialPhysicalPropertiesCommand::GetBuildingMaterialPhysicalPropertiesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -109,6 +108,190 @@ GS::ObjectState GetBuildingMaterialPhysicalPropertiesCommand::Execute (const GS:
         propertiesObj.Add ("properties", properties);
 
         listAdder (propertiesObj);
+    }
+
+    return response;
+}
+
+CreateBuildingMaterialsCommand::CreateBuildingMaterialsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateBuildingMaterialsCommand::GetName () const
+{
+    return "CreateBuildingMaterials";
+}
+
+GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "buildingMaterialDataArray": {
+                "type": "array",
+				"description" : "Array of data to create Building Materials.",
+				"items": {
+                    "type": "object",
+                    "description": "Data to create Building Material.",
+                    "properties": {
+                        "name": {
+						    "type": "string",
+							"description": "Name."
+					    },
+                        "id": {
+						    "type": "string",
+							"description": "Identifier."
+					    },
+                        "manufacturer": {
+						    "type": "string",
+							"description": "Manufacturer."
+					    },
+                        "description": {
+						    "type": "string",
+							"description": "Decription."
+					    },
+						"thermalConductivity": {
+							"type": "number",
+							"description": "Thermal Conductivity."
+						},
+						"density": {
+							"type": "number",
+							"description": "Density."
+						},
+						"heatCapacity": {
+							"type": "number",
+							"description": "Heat Capacity."
+						},
+						"embodiedEnergy": {
+							"type": "number",
+							"description": "Embodied Energy."
+						},
+						"embodiedCarbon": {
+							"type": "number",
+							"description": "Embodied Carbon."
+						}
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "name"
+                    ]
+                }
+            },
+            "overwriteExisting": {
+				"type": "boolean",
+				"description": "Overwrite the Building Material if exists with the same name. The default is false."
+			}
+        },
+        "additionalProperties": false,
+        "required": [
+            "buildingMaterialDataArray"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributes": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    })";
+}
+
+GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> buildingMaterialDataArray;
+    parameters.Get ("buildingMaterialDataArray", buildingMaterialDataArray);
+
+    bool overwriteExisting = false;
+    parameters.Get ("overwriteExisting", overwriteExisting);
+
+    GS::ObjectState response;
+    const auto& attributeList = response.AddList<GS::ObjectState> ("attributes");
+
+    for (const GS::ObjectState& buildingMaterialData : buildingMaterialDataArray) {
+        API_Attribute buildMat = {};
+        buildMat.header.typeID = API_BuildingMaterialID;
+
+        GS::UniString name;
+        buildingMaterialData.Get ("name", name);
+        buildMat.header.uniStringNamePtr = &name;
+
+        bool doesExist = (ACAPI_Attribute_Get (&buildMat) == NoError);
+        if (doesExist && !overwriteExisting) {
+            attributeList (CreateErrorResponse (Error, "Building Material already exists."));
+            continue;
+        }
+
+        GS::UniString id;
+        if (buildingMaterialData.Get ("id", id)) {
+            buildMat.buildingMaterial.id = &id;
+        }
+
+        GS::UniString manufacturer;
+        if (buildingMaterialData.Get ("manufacturer", manufacturer)) {
+            buildMat.buildingMaterial.manufacturer = &manufacturer;
+        }
+
+        GS::UniString description;
+        if (buildingMaterialData.Get ("description", description)) {
+            buildMat.buildingMaterial.description = &description;
+        }
+
+        double thermalConductivity;
+        if (buildingMaterialData.Get ("thermalConductivity", thermalConductivity)) {
+            buildMat.buildingMaterial.thermalConductivity = thermalConductivity;
+        }
+
+        double density;
+        if (buildingMaterialData.Get ("density", density)) {
+            buildMat.buildingMaterial.density = density;
+        }
+
+        double heatCapacity;
+        if (buildingMaterialData.Get ("heatCapacity", heatCapacity)) {
+            buildMat.buildingMaterial.heatCapacity = heatCapacity;
+        }
+
+        double embodiedEnergy;
+        if (buildingMaterialData.Get ("embodiedEnergy", embodiedEnergy)) {
+            buildMat.buildingMaterial.embodiedEnergy = embodiedEnergy;
+        }
+
+        double embodiedCarbon;
+        if (buildingMaterialData.Get ("embodiedCarbon", embodiedCarbon)) {
+            buildMat.buildingMaterial.embodiedCarbon = embodiedCarbon;
+        }
+
+        if (doesExist) {
+            GSErrCode err = ACAPI_Attribute_Modify (&buildMat, nullptr);
+            if (err != NoError) {
+                attributeList (CreateErrorResponse (err, "Failed to modify attribute."));
+                continue;
+            }
+        } else {
+            GSErrCode err = ACAPI_Attribute_Create (&buildMat, nullptr);
+            if (err != NoError) {
+                attributeList (CreateErrorResponse (err, "Failed to create attribute."));
+                continue;
+            }
+        }
+
+        GS::ObjectState attributeId;
+        attributeId.Add ("guid", APIGuidToString (buildMat.header.guid));
+
+        GS::ObjectState attributeIdArrayItem;
+        attributeIdArrayItem.Add ("attributeId", attributeId);
+
+        attributeList (attributeIdArrayItem);
     }
 
     return response;
