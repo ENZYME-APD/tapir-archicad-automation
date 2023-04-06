@@ -328,13 +328,13 @@
                 outputScheme : {
                     "type": "object",
                     "properties": {
-                        "attributes": {
+                        "attributeIds": {
                             "$ref": "#/AttributeIds"
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "attributes"
+                        "attributeIds"
                     ]
                 }
             },

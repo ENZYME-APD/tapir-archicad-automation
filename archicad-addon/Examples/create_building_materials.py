@@ -26,3 +26,9 @@ result = aclib.RunTapirCommand ('CreateBuildingMaterials', {
 })
 
 print (result)
+
+result = aclib.RunCommand ('API.GetBuildingMaterialAttributes', {
+    'attributeIds' : result['attributeIds']
+})
+
+print (result)

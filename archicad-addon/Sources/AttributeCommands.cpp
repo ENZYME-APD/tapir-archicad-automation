@@ -215,13 +215,13 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetResponseSchema ()
     return R"({
         "type": "object",
         "properties": {
-            "attributes": {
+            "attributeIds": {
                 "$ref": "#/AttributeIds"
             }
         },
         "additionalProperties": false,
         "required": [
-            "attributes"
+            "attributeIds"
         ]
     })";
 }
@@ -235,7 +235,7 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
     parameters.Get ("overwriteExisting", overwriteExisting);
 
     GS::ObjectState response;
-    const auto& attributeList = response.AddList<GS::ObjectState> ("attributes");
+    const auto& attributeIds = response.AddList<GS::ObjectState> ("attributeIds");
 
     for (const GS::ObjectState& buildingMaterialData : buildingMaterialDataArray) {
         API_Attribute buildMat = {};
@@ -247,7 +247,7 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
 
         bool doesExist = (ACAPI_Attribute_Get (&buildMat) == NoError);
         if (doesExist && !overwriteExisting) {
-            attributeList (CreateErrorResponse (Error, "Building Material already exists."));
+            attributeIds (CreateErrorResponse (Error, "Building Material already exists."));
             continue;
         }
 
@@ -319,13 +319,13 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
         if (doesExist) {
             GSErrCode err = ACAPI_Attribute_Modify (&buildMat, nullptr);
             if (err != NoError) {
-                attributeList (CreateErrorResponse (err, "Failed to modify attribute."));
+                attributeIds (CreateErrorResponse (err, "Failed to modify attribute."));
                 continue;
             }
         } else {
             GSErrCode err = ACAPI_Attribute_Create (&buildMat, nullptr);
             if (err != NoError) {
-                attributeList (CreateErrorResponse (err, "Failed to create attribute."));
+                attributeIds (CreateErrorResponse (err, "Failed to create attribute."));
                 continue;
             }
         }
@@ -336,7 +336,7 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
         GS::ObjectState attributeIdArrayItem;
         attributeIdArrayItem.Add ("attributeId", attributeId);
 
-        attributeList (attributeIdArrayItem);
+        attributeIds (attributeIdArrayItem);
     }
 
     return response;
