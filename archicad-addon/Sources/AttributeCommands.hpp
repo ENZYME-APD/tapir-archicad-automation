@@ -5,6 +5,7 @@
 class GetBuildingMaterialPhysicalPropertiesCommand : public CommandBase
 {
 public:
+    GetBuildingMaterialPhysicalPropertiesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;

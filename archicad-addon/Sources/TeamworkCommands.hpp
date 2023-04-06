@@ -5,6 +5,7 @@
 class TeamworkSendCommand : public CommandBase
 {
 public:
+    TeamworkSendCommand ();
     virtual GS::String GetName () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
@@ -12,6 +13,7 @@ public:
 class TeamworkReceiveCommand : public CommandBase
 {
 public:
+    TeamworkReceiveCommand ();
     virtual GS::String GetName () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };

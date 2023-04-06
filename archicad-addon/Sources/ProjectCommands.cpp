@@ -18,6 +18,11 @@ static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable ()
     return table;
 }
 
+GetProjectInfoCommand::GetProjectInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
 GS::String GetProjectInfoCommand::GetName () const
 {
     return "GetProjectInfo";
@@ -85,6 +90,11 @@ GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*paramet
     }
 
     return response;
+}
+
+GetProjectInfoFieldsCommand::GetProjectInfoFieldsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
 }
 
 GS::String GetProjectInfoFieldsCommand::GetName () const
@@ -169,6 +179,11 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
     return response;
 }
 
+SetProjectInfoFieldCommand::SetProjectInfoFieldCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
 GS::String SetProjectInfoFieldCommand::GetName () const
 {
     return "SetProjectInfoField";
@@ -214,14 +229,14 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
     return {};
 }
 
+GetHotlinksCommand::GetHotlinksCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
 GS::String GetHotlinksCommand::GetName () const
 {
     return "GetHotlinks";
-}
-
-bool GetHotlinksCommand::IsUsingCommonSchemaDefinitions () const
-{
-    return true;
 }
 
 GS::Optional<GS::UniString> GetHotlinksCommand::GetResponseSchema () const
@@ -293,6 +308,11 @@ GS::ObjectState GetHotlinksCommand::Execute (const GS::ObjectState& /*parameters
     }
 
     return response;
+}
+
+PublishPublisherSetCommand::PublishPublisherSetCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
 }
 
 GS::String PublishPublisherSetCommand::GetName () const

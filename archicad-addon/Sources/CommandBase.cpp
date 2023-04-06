@@ -4,6 +4,11 @@
 
 constexpr const char* CommandNamespace = "TapirCommand";
 
+CommandBase::CommandBase (CommonSchema commonSchema) :
+    mCommonSchema (commonSchema)
+{
+}
+
 GS::String CommandBase::GetNamespace () const
 {
     return CommandNamespace;
@@ -28,16 +33,11 @@ bool CommandBase::IsProcessWindowVisible () const
 
 GS::Optional<GS::UniString> CommandBase::GetSchemaDefinitions () const
 {
-    if (IsUsingCommonSchemaDefinitions ()) {
+    if (mCommonSchema == CommonSchema::Used) {
         return GetCommonSchemaDefinitions ();
     } else {
         return {};
     }
-}
-
-bool CommandBase::IsUsingCommonSchemaDefinitions () const
-{
-    return false;
 }
 
 GS::Optional<GS::UniString> CommandBase::GetInputParametersSchema () const

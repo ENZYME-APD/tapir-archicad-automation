@@ -9,7 +9,6 @@
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
 #include "LibraryCommands.hpp"
-#include "Commands.hpp"
 
 API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
 {
@@ -44,8 +43,6 @@ GSErrCode __ACENV_CALL Initialize (void)
 
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<ReloadLibrariesCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<MoveElementsCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<CreateColumnsCommand> ());
 
     return err;
 }

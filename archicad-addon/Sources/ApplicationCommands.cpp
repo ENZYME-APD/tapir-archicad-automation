@@ -3,6 +3,12 @@
 #include "FileSystem.hpp"
 #include "AddOnVersion.hpp"
 
+GetAddOnVersionCommand::GetAddOnVersionCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+
+}
+
 GS::String GetAddOnVersionCommand::GetName () const
 {
     return "GetAddOnVersion";
@@ -29,6 +35,11 @@ GS::Optional<GS::UniString> GetAddOnVersionCommand::GetResponseSchema () const
 GS::ObjectState GetAddOnVersionCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     return GS::ObjectState ("version", ADDON_VERSION);
+}
+
+GetArchicadLocationCommand::GetArchicadLocationCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
 }
 
 GS::String GetArchicadLocationCommand::GetName () const
@@ -62,6 +73,11 @@ GS::ObjectState GetArchicadLocationCommand::Execute (const GS::ObjectState& /*pa
         return CreateErrorResponse (err, "Failed to get the location of the Archicad application!");
     }
     return GS::ObjectState ("archicadLocation", applicationFileLocation.ToDisplayText ());
+}
+
+QuitArchicadCommand::QuitArchicadCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
 }
 
 GS::String QuitArchicadCommand::GetName () const

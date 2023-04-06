@@ -1,5 +1,10 @@
 #include "TeamworkCommands.hpp"
 
+TeamworkSendCommand::TeamworkSendCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
 GS::String TeamworkSendCommand::GetName () const
 {
     return "TeamworkSend";
@@ -14,6 +19,11 @@ GS::ObjectState TeamworkSendCommand::Execute (const GS::ObjectState& /*parameter
     }
 
     return {};
+}
+
+TeamworkReceiveCommand::TeamworkReceiveCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
 }
 
 GS::String TeamworkReceiveCommand::GetName () const

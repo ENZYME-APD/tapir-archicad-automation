@@ -1,6 +1,11 @@
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
 
+ReloadLibrariesCommand::ReloadLibrariesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
 GS::String ReloadLibrariesCommand::GetName () const
 {
     return "ReloadLibraries";

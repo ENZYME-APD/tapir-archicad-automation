@@ -1,6 +1,11 @@
 #include "AttributeCommands.hpp"
 
 
+GetBuildingMaterialPhysicalPropertiesCommand::GetBuildingMaterialPhysicalPropertiesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
 GS::String GetBuildingMaterialPhysicalPropertiesCommand::GetName () const
 {
     return "GetBuildingMaterialPhysicalProperties";

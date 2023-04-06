@@ -1,13 +1,13 @@
 #include "ElementCommands.hpp"
 
+GetSelectedElementsCommand::GetSelectedElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
 GS::String GetSelectedElementsCommand::GetName () const
 {
     return "GetSelectedElements";
-}
-
-bool GetSelectedElementsCommand::IsUsingCommonSchemaDefinitions () const
-{
-    return true;
 }
 
 GS::Optional<GS::UniString> GetSelectedElementsCommand::GetResponseSchema () const
