@@ -155,9 +155,9 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
                             "type": "integer",
                             "description": "Intersection priority."
                         },
-                        "cutFill": {
+                        "cutFillIndex": {
                             "type": "integer",
-                            "description": "Cut Fill."
+                            "description": "Index of the Cut Fill."
                         },
                         "cutFillPen": {
                             "type": "integer",
@@ -167,9 +167,9 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
                             "type": "integer",
                             "description": "Cut Fill Background Pen."
                         },
-                        "cutMaterial": {
+                        "cutSurfaceIndex": {
                             "type": "integer",
-                            "description": "Cut Surface."
+                            "description": "Index of the Cut Surface."
                         },
                         "thermalConductivity": {
                             "type": "number",
@@ -266,9 +266,9 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
             buildMat.buildingMaterial.description = &description;
         }
 
-        API_AttributeIndex cutFill;
-        if (buildingMaterialData.Get ("cutFill", cutFill)) {
-            buildMat.buildingMaterial.cutFill = cutFill;
+        API_AttributeIndex cutFillIndex;
+        if (buildingMaterialData.Get ("cutFillIndex", cutFillIndex)) {
+            buildMat.buildingMaterial.cutFill = cutFillIndex;
         }
 
         Int32 connPriority;
@@ -286,9 +286,9 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
             buildMat.buildingMaterial.cutFillBackgroundPen = cutFillBackgroundPen;
         }
 
-        API_AttributeIndex cutMaterial;
-        if (buildingMaterialData.Get ("cutMaterial", cutMaterial)) {
-            buildMat.buildingMaterial.cutMaterial = cutMaterial;
+        API_AttributeIndex cutSurfaceIndex;
+        if (buildingMaterialData.Get ("cutSurfaceIndex", cutSurfaceIndex)) {
+            buildMat.buildingMaterial.cutMaterial = cutSurfaceIndex;
         }
 
         double thermalConductivity;

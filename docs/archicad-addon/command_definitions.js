@@ -243,88 +243,88 @@
                 version : "1.1.0",
                 description : "Creates Building Material attributes based on the given parameters.",
                 inputScheme : {
-                    "type": "object",
-                    "properties": {
-                        "buildingMaterialDataArray": {
-                            "type": "array",
-                            "description" : "Array of data to create Building Materials.",
-                            "items": {
-                                "type": "object",
-                                "description": "Data to create a Building Material.",
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "description": "Name."
-                                    },
-                                    "id": {
-                                        "type": "string",
-                                        "description": "Identifier."
-                                    },
-                                    "manufacturer": {
-                                        "type": "string",
-                                        "description": "Manufacturer."
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "description": "Decription."
-                                    },
-                                    "connPriority": {
-                                        "type": "integer",
-                                        "description": "Intersection priority."
-                                    },
-                                    "cutFill": {
-                                        "type": "integer",
-                                        "description": "Cut Fill."
-                                    },
-                                    "cutFillPen": {
-                                        "type": "integer",
-                                        "description": "Cut Fill Foreground Pen."
-                                    },
-                                    "cutFillBackgroundPen": {
-                                        "type": "integer",
-                                        "description": "Cut Fill Background Pen."
-                                    },
-                                    "cutMaterial": {
-                                        "type": "integer",
-                                        "description": "Cut Surface."
-                                    },
-                                    "thermalConductivity": {
-                                        "type": "number",
-                                        "description": "Thermal Conductivity."
-                                    },
-                                    "density": {
-                                        "type": "number",
-                                        "description": "Density."
-                                    },
-                                    "heatCapacity": {
-                                        "type": "number",
-                                        "description": "Heat Capacity."
-                                    },
-                                    "embodiedEnergy": {
-                                        "type": "number",
-                                        "description": "Embodied Energy."
-                                    },
-                                    "embodiedCarbon": {
-                                        "type": "number",
-                                        "description": "Embodied Carbon."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required" : [
-                                    "name"
-                                ]
-                            }
-                        },
-                        "overwriteExisting": {
-                            "type": "boolean",
-                            "description": "Overwrite the Building Material if exists with the same name. The default is false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "buildingMaterialDataArray"
-                    ]
-                },
+					"type": "object",
+					"properties": {
+						"buildingMaterialDataArray": {
+							"type": "array",
+							"description" : "Array of data to create Building Materials.",
+							"items": {
+								"type": "object",
+								"description": "Data to create a Building Material.",
+								"properties": {
+									"name": {
+										"type": "string",
+										"description": "Name."
+									},
+									"id": {
+										"type": "string",
+										"description": "Identifier."
+									},
+									"manufacturer": {
+										"type": "string",
+										"description": "Manufacturer."
+									},
+									"description": {
+										"type": "string",
+										"description": "Decription."
+									},
+									"connPriority": {
+										"type": "integer",
+										"description": "Intersection priority."
+									},
+									"cutFillIndex": {
+										"type": "integer",
+										"description": "Index of the Cut Fill."
+									},
+									"cutFillPen": {
+										"type": "integer",
+										"description": "Cut Fill Foreground Pen."
+									},
+									"cutFillBackgroundPen": {
+										"type": "integer",
+										"description": "Cut Fill Background Pen."
+									},
+									"cutSurfaceIndex": {
+										"type": "integer",
+										"description": "Index of the Cut Surface."
+									},
+									"thermalConductivity": {
+										"type": "number",
+										"description": "Thermal Conductivity."
+									},
+									"density": {
+										"type": "number",
+										"description": "Density."
+									},
+									"heatCapacity": {
+										"type": "number",
+										"description": "Heat Capacity."
+									},
+									"embodiedEnergy": {
+										"type": "number",
+										"description": "Embodied Energy."
+									},
+									"embodiedCarbon": {
+										"type": "number",
+										"description": "Embodied Carbon."
+									}
+								},
+								"additionalProperties": false,
+								"required" : [
+									"name"
+								]
+							}
+						},
+						"overwriteExisting": {
+							"type": "boolean",
+							"description": "Overwrite the Building Material if exists with the same name. The default is false."
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"buildingMaterialDataArray"
+					]
+				},
                 outputScheme : {
                     "type": "object",
                     "properties": {
