@@ -30,7 +30,7 @@ def Main ():
     
     replaceRules = [
         {
-            'filePath' : os.path.join (rootPath, 'archicad-addon', 'Sources', 'AddOn', 'AddOnVersion.hpp'),
+            'filePath' : os.path.join (rootPath, 'archicad-addon', 'Sources', 'AddOnVersion.hpp'),
             'oldRegex' : r'#define ADDON_VERSION "{0}"'.format (versionPattern),
             'newRegex' : r'#define ADDON_VERSION "{0}"'.format (version)
         },
