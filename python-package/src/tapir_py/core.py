@@ -285,9 +285,9 @@ class Command(dotNETBase):
         
         """
         cmd = { 'command' : 'API.GetElementsByClassification',
-                'parameters' : { 'classificationSystemId' : {'guid' : classification_system_id}}
+                'parameters' : { 'classificationItemId' : {'guid' : classification_system_id}}
                 }
-        response = self.link.post(cmd)
+        response = self.link.post(cmd) #TODO: Check format
         return Element.list_from_command_result(response.get_result())
     
     def GetSelectedElements(self):
