@@ -70,7 +70,7 @@ class RhinoWrapper(object):
 class Factory(object):
 
     @staticmethod
-    def create_value_list(component, param_index, name, items, x_offset = 27, y_offset = 11):
+    def create_value_list(component, param_index, name, items, x_offset=27, y_offset=11):
         source_input = component.Params.Input[param_index]
 
         # Create new Value List component
@@ -82,7 +82,7 @@ class Factory(object):
         doc.AddObject(new_value_list, False, doc.ObjectCount + 1)
 
         new_value_list.Name = name
-        new_value_list.NickName = name[0].upper()
+        new_value_list.NickName = name
         new_value_list.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - x_offset, source_pivot.Y - y_offset)
         new_value_list.ListItems.Clear()
 
@@ -97,7 +97,7 @@ class Factory(object):
         if isinstance(component, Grasshopper.Kernel.Special.GH_ValueList):
             component.ListItems.Clear()
             for item in items:
-                list_item = Grasshopper.Kernel.Special.GH_ValueListItem(str(item), item)
+                list_item = Grasshopper.Kernel.Special.GH_ValueListItem(str(item), '"{}"'.format(item))
                 component.ListItems.Add(list_item)
             return True
         else:
