@@ -83,12 +83,12 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
     for (UInt32 i = 0; i < libs.GetSize (); i++) {
 
         GS::ObjectState libraryData;
-        GS::UniString twServerUrl;
-        GS::UniString urlWebLibrary;
+        GS::UniString   twServerUrl;
+        GS::UniString   urlWebLibrary;
         switch (libs[i].libraryType) {
-            case 7: twServerUrl  = libs[i].twServerUrl; break;
-            case 2: urlWebLibrary = libs[i].twServerUrl; break;
-            case 6: urlWebLibrary = libs[i].twServerUrl; break;
+            case API_LibraryTypeID::API_ServerLibrary:  twServerUrl   = libs[i].twServerUrl; break;
+            case API_LibraryTypeID::API_UrlLibrary:     urlWebLibrary = libs[i].twServerUrl; break;
+            case API_LibraryTypeID::API_UrlOtherObject: urlWebLibrary = libs[i].twServerUrl; break;
         }
 
         libraryData.Add ("name", libs[i].name);
@@ -96,7 +96,6 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
         libraryData.Add ("type", libs[i].libraryType);
         libraryData.Add ("available", libs[i].available);
         libraryData.Add ("readOnly", libs[i].readOnly);
-      //libraryData.Add ("filler", libs[i].filler[2]);    // no documentation
         libraryData.Add ("twServerUrl", twServerUrl);
         libraryData.Add ("urlWebLibrary", urlWebLibrary);
         listAdder (libraryData);
