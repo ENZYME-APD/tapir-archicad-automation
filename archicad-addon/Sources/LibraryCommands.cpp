@@ -22,7 +22,7 @@ GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
                             "description": "A filesystem path to library location."
                         },
                         "type": {
-                            "type": "integer",
+                            "type": "string",
                             "description": "Library type."
                         },
                         "available": {
@@ -35,11 +35,11 @@ GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
                         },
                         "twServerUrl": {
                             "type": "string",
-                            "description": "URL address of the TeamWork server hosting the library"
+                            "description": "URL address of the TeamWork server hosting the library."
                         },
                         "urlWebLibrary": {
                             "type": "string",
-                            "description": "URL of the downloaded Internet library"
+                            "description": "URL of the downloaded Internet library."
                         }
                     },
                     "additionalProperties": false,
@@ -83,17 +83,42 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
     for (UInt32 i = 0; i < libs.GetSize (); i++) {
 
         GS::ObjectState libraryData;
+        GS::UniString   type;
         GS::UniString   twServerUrl;
         GS::UniString   urlWebLibrary;
         switch (libs[i].libraryType) {
-            case API_LibraryTypeID::API_ServerLibrary:  twServerUrl   = libs[i].twServerUrl; break;
-            case API_LibraryTypeID::API_UrlLibrary:     urlWebLibrary = libs[i].twServerUrl; break;
-            case API_LibraryTypeID::API_UrlOtherObject: urlWebLibrary = libs[i].twServerUrl; break;
+            case API_LibraryTypeID::API_Undefined:
+                type = "Undefined";
+                break;
+            case API_LibraryTypeID::API_LocalLibrary:
+                type = "LocalLibrary";
+                break;
+            case API_LibraryTypeID::API_UrlLibrary:
+                type = "UrlLibrary";
+                urlWebLibrary = libs[i].twServerUrl;
+                break;
+            case API_LibraryTypeID::API_BuiltInLibrary:
+                type = "BuiltInLibrary";
+                break;
+            case API_LibraryTypeID::API_EmbeddedLibrary:
+                type = "EmbeddedLibrary";
+                break;
+            case API_LibraryTypeID::API_OtherObject:
+                type = "OtherObject";
+                break;
+            case API_LibraryTypeID::API_UrlOtherObject:
+                type = "UrlOtherObject";
+                urlWebLibrary = libs[i].twServerUrl;
+                break;
+            case API_LibraryTypeID::API_ServerLibrary:
+                type = "ServerLibrary";
+                twServerUrl = libs[i].twServerUrl;
+                break;
         }
 
         libraryData.Add ("name", libs[i].name);
         libraryData.Add ("path", libs[i].location.ToDisplayText());
-        libraryData.Add ("type", libs[i].libraryType);
+        libraryData.Add ("type", type);
         libraryData.Add ("available", libs[i].available);
         libraryData.Add ("readOnly", libs[i].readOnly);
         libraryData.Add ("twServerUrl", twServerUrl);
