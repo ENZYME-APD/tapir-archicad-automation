@@ -209,7 +209,66 @@
                 description : "Executes the reload libraries command.",
                 inputScheme : null,
                 outputScheme : null             
-            }        
+            },
+            {
+                name : "GetLibraries",
+                version : "1.1.0",
+                description : "Gets the list of loaded libraries.",
+                inputScheme : null,
+                outputScheme : {
+					"type": "object",
+					"properties": {
+						"libraries": {
+							"type": "array",
+							"description": "A list of project libraries.",
+							"items": {
+								"type": "object",
+								"description": "Library",
+								"properties": {
+									"name": {
+										"type": "string",
+										"description": "Library name."
+									},
+									"path": {
+										"type": "string",
+										"description": "A filesystem path to library location."
+									},
+									"type": {
+										"type": "string",
+										"description": "Library type."
+									},
+									"available": {
+										"type": "boolean",
+										"description": "Is library not missing."
+									},
+									"readOnly": {
+										"type": "boolean",
+										"description": "Is library not writable."
+									},
+									"twServerUrl": {
+										"type": "string",
+										"description": "URL address of the TeamWork server hosting the library."
+									},
+									"urlWebLibrary": {
+										"type": "string",
+										"description": "URL of the downloaded Internet library."
+									}
+								},
+								"additionalProperties": false,
+								"required": [
+									"name",
+									"type",
+									"path"
+								]
+							}
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"libraries"
+					]
+				}             
+            }
         ]
     },
     {
