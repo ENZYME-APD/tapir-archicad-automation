@@ -71,7 +71,6 @@ GS::String GetLibrariesCommand::GetName () const
 GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_LibraryInfo> libs;
-    UInt32 i;
 
     GSErrCode err = ACAPI_Environment (APIEnv_GetLibrariesID, &libs);
     if (err != NoError) {
@@ -81,7 +80,7 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("libraries");
 
-    for (i = 0; i < libs.GetSize (); i++) {
+    for (UInt32 i = 0; i < libs.GetSize (); i++) {
 
         GS::ObjectState libraryData;
         GS::UniString twServerUrl;
