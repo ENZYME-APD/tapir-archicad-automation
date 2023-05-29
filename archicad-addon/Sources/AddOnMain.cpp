@@ -45,6 +45,7 @@ GSErrCode __ACENV_CALL Initialize (void)
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetLibrariesCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetLibPartCommand> ());
+    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetLibPartsCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<ReloadLibrariesCommand> ());
 
     return err;

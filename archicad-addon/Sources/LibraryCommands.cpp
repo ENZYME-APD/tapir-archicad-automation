@@ -1,5 +1,6 @@
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
+#include <numeric>
 
 GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
 {
@@ -242,15 +243,9 @@ GS::String GetLibPartCommand::GetName () const
 
 GS::ObjectState GetLibPartCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    Int32 i;
-    parameters.Get ("index", i);
-    if (i <= 0) {
-        return CreateErrorResponse (APIERR_GENERAL, "Invalid given index.");
-    }
-
     API_LibPart  libPart;
     BNZeroMemory (&libPart, sizeof (API_LibPart));
-    libPart.index = i;
+    parameters.Get ("index", libPart.index);
 
     GSErrCode err = ACAPI_LibPart_Get (&libPart);
     if (err != NoError) {
@@ -323,5 +318,78 @@ GS::ObjectState GetLibPartCommand::Execute (const GS::ObjectState& parameters, G
     if (libPart.location != nullptr)
         delete libPart.location;
 
+    ACAPI_WriteReport ("test", false);
+
     return response;
 }
+
+GS::Optional<GS::UniString> GetLibPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "indexes": {
+                "type": "array",
+                "description": "Array of library part indexes."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibPartsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libparts": {
+                "type": "array",
+                "description": "test"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libparts"
+        ]
+    })";
+}
+
+GetLibPartsCommand::GetLibPartsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetLibPartsCommand::GetName () const
+{
+    return "GetLibParts";
+}
+
+GS::ObjectState GetLibPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
+{
+    GS::Array<Int32> indexes;
+    parameters.Get ("indexes", indexes);
+    Int32 count = indexes.GetSize ();
+    GS::ObjectState response;
+
+    if (count <= 0 || indexes.IsEmpty()) {
+        GSErrCode err = ACAPI_LibPart_GetNum (&count);
+        indexes.SetSize (count);
+        std::iota (indexes.Begin (), indexes.End (), 1);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrive any library parts.");
+        }
+    }
+
+    const auto& listAdder = response.AddList<GS::ObjectState> ("libparts");
+    for (const auto& i : indexes) {
+        GS::ObjectState params;
+        params.Add ("index", i);
+        GetLibPartCommand libPart;
+        listAdder (libPart.Execute (params, processControl));
+    }
+
+    return response;
+}
+
+// todo: add indexes to response
