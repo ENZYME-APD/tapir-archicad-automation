@@ -83,9 +83,9 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
     for (UInt32 i = 0; i < libs.GetSize (); i++) {
 
         GS::ObjectState libraryData;
-        GS::UniString   type;
-        GS::UniString   twServerUrl;
-        GS::UniString   urlWebLibrary;
+        GS::UniString type;
+        GS::UniString twServerUrl;
+        GS::UniString urlWebLibrary;
         switch (libs[i].libraryType) {
             case API_LibraryTypeID::API_Undefined:
                 type = "Undefined";
@@ -148,4 +148,180 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     }
 
     return {};
+}
+
+GS::Optional<GS::UniString> GetLibPartCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "Application index position of library part."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibPartCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "Library part type."
+            },
+            "docuName": {
+                "type": "string",
+                "description": "Library part name."
+            },
+            "fileName": {
+                "type": "string",
+                "description": "Library part filesystem name."
+            },
+            "isMissing": {
+                "type": "boolean",
+                "description": "Is this library part missing."
+            },
+            "isTemplate": {
+                "type": "boolean",
+                "description": "Is this library part a template."
+            },
+            "isPlaceable": {
+                "type": "boolean",
+                "description": "Is this library part can be placed."
+            },
+            "ownerID": {
+                "type": "integer",
+                "description": "Signature ID of the owner, used by external objects."
+            },
+            "version": {
+                "type": "integer",
+                "description": "Library part version."
+            },
+            "platformSign": {
+                "type": "integer",
+                "description": "Library part platform ID."
+            },
+            "location": {
+                "type": "string",
+                "description": "A filesystem path to this library part."
+            },
+            "ownUnID": {
+                "type": "string",
+                "description": "The own GUID of the library part."
+            },
+            "parentUnID": {
+                "type": "string",
+                "description": "The GUID of the parent library part subtype in the hierarchy."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "docuName",
+            "fileName"
+        ]
+    })";
+}
+
+GetLibPartCommand::GetLibPartCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetLibPartCommand::GetName () const
+{
+    return "GetLibPart";
+}
+
+GS::ObjectState GetLibPartCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 i;
+    parameters.Get ("index", i);
+    if (i <= 0) {
+        return CreateErrorResponse (APIERR_GENERAL, "Invalid given index.");
+    }
+
+    API_LibPart  libPart;
+    BNZeroMemory (&libPart, sizeof (API_LibPart));
+    libPart.index = i;
+
+    GSErrCode err = ACAPI_LibPart_Get (&libPart);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive library part.");
+    }
+
+    GS::ObjectState response;
+    GS::UniString docuName = GS::UniString (libPart.docu_UName).ToCStr ();
+    GS::UniString fileName = GS::UniString (libPart.file_UName).ToCStr ();
+    GS::UniString ownUnID = GS::UniString (libPart.ownUnID).ToCStr ();
+    GS::UniString parentUnID = GS::UniString (libPart.parentUnID).ToCStr ();
+    GS::UniString type;
+    switch (libPart.typeID) {
+        case API_LibTypeID::API_ZombieLibID:
+            type = "ZombieLib";
+            break;
+        case API_LibTypeID::APILib_SpecID:
+            type = "Lib_Spec";
+            break;
+        case API_LibTypeID::APILib_WindowID:
+            type = "Lib_WindowID";
+            break;
+        case API_LibTypeID::APILib_DoorID:
+            type = "Lib_DoorID";
+            break;
+        case API_LibTypeID::APILib_ObjectID:
+            type = "Lib_ObjectID";
+            break;
+        case API_LibTypeID::APILib_LampID:
+            type = "Lib_LampID";
+            break;
+        case API_LibTypeID::APILib_RoomID:
+            type = "Lib_RoomID";
+            break;
+        case API_LibTypeID::APILib_PropertyID:
+            type = "Lib_PropertyID";
+            break;
+        case API_LibTypeID::APILib_PlanSignID:
+            type = "Lib_PlanSignID";
+            break;
+        case API_LibTypeID::APILib_LabelID:
+            type = "Lib_LabelID";
+            break;
+        case API_LibTypeID::APILib_MacroID:
+            type = "Lib_MacroID";
+            break;
+        case API_LibTypeID::APILib_PictID:
+            type = "Lib_PictID";
+            break;
+        case API_LibTypeID::APILib_ListSchemeID:
+            type = "Lib_ListSchemeID";
+            break;
+        case API_LibTypeID::APILib_SkylightID:
+            type = "Lib_SkylightID";
+            break;
+    }
+    response.Add ("type", type);
+    response.Add ("docuName", docuName);
+    response.Add ("fileName", fileName);
+    response.Add ("isMissing", libPart.missingDef);
+    response.Add ("isTemplate", libPart.isTemplate);
+    response.Add ("isPlaceable", libPart.isPlaceable);
+    response.Add ("ownerID", libPart.ownerID);
+    response.Add ("version", libPart.version);
+    response.Add ("platformSign", libPart.platformSign);
+    response.Add ("location", libPart.location->ToDisplayText());
+    response.Add ("ownUnID", ownUnID);
+    response.Add ("parentUnID", parentUnID);
+
+    if (libPart.location != nullptr)
+        delete libPart.location;
+
+    return response;
 }
