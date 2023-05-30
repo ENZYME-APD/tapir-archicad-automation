@@ -42,10 +42,10 @@ GSErrCode __ACENV_CALL Initialize (void)
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetBuildingMaterialPhysicalPropertiesCommand> ());
 
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetLibrariesCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetLibPartsCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<ReloadLibrariesCommand> ());
+    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
 
     return err;
 }
