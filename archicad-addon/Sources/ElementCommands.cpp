@@ -80,6 +80,8 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
     return response;
 }
 
+#ifdef ServerMainVers_2600
+
 HighlightElementsCommand::HighlightElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -178,3 +180,5 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
 
     return {};
 }
+
+#endif
