@@ -147,9 +147,12 @@ class CommandResult(dotNETBase):
 class Parameter(dotNETBase):
 
     @staticmethod
-    def pack(self, parameters):
+    def pack(parameters):
         if all([isinstance(param, Parameter) for param in parameters]):
-            return {'parameters': parameters}
+            params = {}
+            for param in parameters:
+                params[param.key] = param.value
+            return params
     
     def __init__(self, key, value):
         self.key = key
@@ -227,6 +230,31 @@ class Command(dotNETBase):
         response = self.link.post(cmd)
         result = response.get_result()
         return result['version'], result['buildNumber'], result['languageCode']
+    
+    def HighlightElements(self, elements, highlightedColor = [0, 150, 0, 100], nonHighlightedColor = [150, 0, 0, 100]):
+        """Highlights specified elements in current ArchiCAD document.
+
+        Args:
+            elements (:obj:`list` of :obj:`Element`): A list of elements.
+            highlightedColor (:obj:`list` of :int:): RGBA Color for highlighted objects.
+            nonHighlightedColor (:obj:`list` of :int:): RGBA Color for non-highlighted objects.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+        param_selected_color = Parameter("highlightedColor", highlightedColor)
+        param_unselected_color = Parameter("nonHighlightedColor", nonHighlightedColor)
+        param_elements = Parameter("elements", [element.ToDictionary() for element in elements])
+        packed_params = Parameter.pack([param_elements, param_selected_color, param_unselected_color])
+        
+        cmd = Command.FormatAddOnCommand("HighlightElements", packed_params)
+
+        response = self.link.post(cmd)
+        if not response:
+            raise Exception("Script Error")
     #endregion Basic Commands
 
     #region Element Listing Commands
