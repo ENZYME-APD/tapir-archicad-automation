@@ -38,6 +38,9 @@ GSErrCode __ACENV_CALL Initialize (void)
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<PublishPublisherSetCommand> ());
 
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetSelectedElementsCommand> ());
+#ifdef ServerMainVers_2600
+    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<HighlightElementsCommand> ());
+#endif
 
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetBuildingMaterialPhysicalPropertiesCommand> ());
