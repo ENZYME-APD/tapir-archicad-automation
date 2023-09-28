@@ -8,56 +8,34 @@ on:
       - '*'
 
 jobs:
-  build_win_ac25:
+  build_win:
+    strategy:
+      matrix:
+        params: [
+            { acVersion: 25, devKitUrl: ${{ secrets.WIN_DEVKIT_AC25 }}, devKitDir: "archicad-addon/Build/API Development Kit 25.3002" }
+        ]  
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
     - name: Download Development Kit
-      run: python archicad-addon/Tools/download_and_unzip.py ${{ secrets.WIN_DEVKIT_AC25 }} archicad-addon/Build
+      run: python archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build
     - name: Generate Project
-      run: cmake -B archicad-addon/Build/AC25 -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="archicad-addon/Build/API Development Kit 25.3002" archicad-addon
+      run: cmake -B archicad-addon/Build/AC${{ matrix.params.acVersion }} -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="${{ matrix.params.devKitDir }}" archicad-addon
     - name: Build Debug
-      run: cmake --build archicad-addon/Build/AC25 --config Debug
+      run: cmake --build archicad-addon/Build/AC${{ matrix.params.acVersion }} --config Debug
     - name: Build RelWithDebInfo
-      run: cmake --build archicad-addon/Build/AC25 --config RelWithDebInfo
+      run: cmake --build archicad-addon/Build/AC${{ matrix.params.acVersion }} --config RelWithDebInfo
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: Tapir Add-On AC25 Win
-        path: archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Win.apx
+        name: Tapir Add-On AC${{ matrix.params.acVersion }} Win
+        path: archicad-addon/Build/AC${{ matrix.params.acVersion }}/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: ncipollo/release-action@v1
       with:
-        artifacts: archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Win.apx
-        draft: true
-        allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-  build_win_ac26:
-    runs-on: [ windows-2019 ]
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: Download Development Kit
-      run: python archicad-addon/Tools/download_and_unzip.py ${{ secrets.WIN_DEVKIT_AC26 }} archicad-addon/Build
-    - name: Generate Project
-      run: cmake -B archicad-addon/Build/AC26 -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="archicad-addon/Build/API Development Kit 26.3000" archicad-addon
-    - name: Build Debug
-      run: cmake --build archicad-addon/Build/AC26 --config Debug
-    - name: Build RelWithDebInfo
-      run: cmake --build archicad-addon/Build/AC26 --config RelWithDebInfo
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Tapir Add-On AC26 Win
-        path: archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Win.apx
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Win.apx
+        artifacts: archicad-addon/Build/AC${{ matrix.params.acVersion }}/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
         draft: true
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
