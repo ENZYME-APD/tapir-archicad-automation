@@ -13,14 +13,14 @@ jobs:
       matrix:
         params:
           - acVersion: 25
-            devKitUrl: ${{ secrets.WIN_DEVKIT_AC25 }}
+            devKitUrl: WIN_DEVKIT_AC25
             devKitDir: archicad-addon/Build/API Development Kit 25.3002
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
     - name: Download Development Kit
-      run: python archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build
+      run: python archicad-addon/Tools/download_and_unzip.py ${{ secrets[matrix.params.devKitUrl] }} archicad-addon/Build
     - name: Generate Project
       run: cmake -B archicad-addon/Build/AC${{ matrix.params.acVersion }} -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="${{ matrix.params.devKitDir }}" archicad-addon
     - name: Build Debug
