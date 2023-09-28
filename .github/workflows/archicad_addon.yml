@@ -13,7 +13,7 @@ jobs:
       matrix:
         params:
           - acVersion: 25
-            decKitUrl: ${{ secrets.WIN_DEVKIT_AC25 }}
+            devKitUrl: ${{ secrets.WIN_DEVKIT_AC25 }}
             devKitDir: archicad-addon/Build/API Development Kit 25.3002
     runs-on: [ windows-2019 ]
     steps:
