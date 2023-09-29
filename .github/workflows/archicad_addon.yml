@@ -74,6 +74,10 @@ jobs:
         security unlock-keychain -p KeyChainPass notarization.keychain
         security import certificate.p12 -k notarization.keychain -P ${{ secrets.CODE_SIGN_CERT_PWD }}  -T /usr/bin/codesign
         security find-identity
+        xcrun notarytool store-credentials "addon.notarization" --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_ID_PWD }} --team-id ${{ secrets.TEAM_ID }}
+        ditto -c -k --keepParent archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
+        xcrun notarytool submit archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip --wait --keychain-profile "addon.notarization"
+        xcrun stapler staple archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle
     - name: Create DMG file
       run: hdiutil create -format UDZO -srcfolder archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.dmg
     - name: Upload Artifact
