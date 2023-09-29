@@ -66,7 +66,7 @@ jobs:
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
       run: cmake --build archicad-addon/Build --config RelWithDebInfo
-    - name: Code Sign and Notarize
+    - name: Code sign and notarize
       run: |
         echo ${{ secrets.CODE_SIGN_CERT }} | base64 --decode > certificate.p12
         security create-keychain -p KeyChainPass notarization.keychain
