@@ -66,6 +66,14 @@ jobs:
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
       run: cmake --build archicad-addon/Build --config RelWithDebInfo
+    - name: Code signing
+      run: |
+        echo ${{ secrets.SIGNING_CERT }} | base64 --decode > certificate.p12
+        security create-keychain -p KeyChainPass notarization.keychain
+        security default-keychain -s notarization.keychain
+        security unlock-keychain -p KeyChainPass notarization.keychain
+        security import certificate.p12 -k notarization.keychain -P ${{ secrets.SIGNING_CERT_PWD }}  -T /usr/bin/codesign
+        security find-identity
     - name: Create DMG file
       run: hdiutil create -format UDZO -srcfolder archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.dmg
     - name: Upload Artifact
