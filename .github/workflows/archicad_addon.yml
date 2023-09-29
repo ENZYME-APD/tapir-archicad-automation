@@ -8,114 +8,76 @@ on:
       - '*'
 
 jobs:
-  build_win_ac25:
+  build_win:
+    strategy:
+      matrix:
+        params:
+          - acVersion: 25
+            devKitUrl: WIN_DEVKIT_AC25
+            devKitDir: API Development Kit 25.3002
+          - acVersion: 26
+            devKitUrl: WIN_DEVKIT_AC26
+            devKitDir: API Development Kit 26.3000
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
     - name: Download Development Kit
-      run: python archicad-addon/Tools/download_and_unzip.py ${{ secrets.WIN_DEVKIT_AC25 }} archicad-addon/Build
+      run: python archicad-addon/Tools/download_and_unzip.py ${{ secrets[matrix.params.devKitUrl] }} archicad-addon/Build
     - name: Generate Project
-      run: cmake -B archicad-addon/Build/AC25 -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="archicad-addon/Build/API Development Kit 25.3002" archicad-addon
+      run: cmake -B archicad-addon/Build -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="archicad-addon/Build/${{ matrix.params.devKitDir }}" archicad-addon
     - name: Build Debug
-      run: cmake --build archicad-addon/Build/AC25 --config Debug
+      run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
-      run: cmake --build archicad-addon/Build/AC25 --config RelWithDebInfo
+      run: cmake --build archicad-addon/Build --config RelWithDebInfo
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: Tapir Add-On AC25 Win
-        path: archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Win.apx
+        name: Tapir Add-On AC${{ matrix.params.acVersion }} Win
+        path: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: ncipollo/release-action@v1
       with:
-        artifacts: archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Win.apx
+        artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
         draft: true
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
-  build_win_ac26:
-    runs-on: [ windows-2019 ]
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: Download Development Kit
-      run: python archicad-addon/Tools/download_and_unzip.py ${{ secrets.WIN_DEVKIT_AC26 }} archicad-addon/Build
-    - name: Generate Project
-      run: cmake -B archicad-addon/Build/AC26 -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="archicad-addon/Build/API Development Kit 26.3000" archicad-addon
-    - name: Build Debug
-      run: cmake --build archicad-addon/Build/AC26 --config Debug
-    - name: Build RelWithDebInfo
-      run: cmake --build archicad-addon/Build/AC26 --config RelWithDebInfo
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Tapir Add-On AC26 Win
-        path: archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Win.apx
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Win.apx
-        draft: true
-        allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-  build_mac_ac25:
+  build_mac:
+    strategy:
+      matrix:
+        params:
+          - acVersion: 25
+            devKitUrl: MAC_DEVKIT_AC25
+            devKitDir: GRAPHISOFT ARCHICAD API DevKit 25.3006
+          - acVersion: 26
+            devKitUrl: MAC_DEVKIT_AC26
+            devKitDir: Graphisoft Archicad API DevKit 26.3000  
     runs-on: [ macos-12 ]
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
     - name: Download Development Kit
-      run: python3 archicad-addon/Tools/download_and_unzip.py ${{ secrets.MAC_DEVKIT_AC25 }} archicad-addon/Build
+      run: python3 archicad-addon/Tools/download_and_unzip.py ${{ secrets[matrix.params.devKitUrl] }} archicad-addon/Build
     - name: Generate Project
-      run: cmake -B archicad-addon/Build/AC25 -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DAC_API_DEVKIT_DIR="archicad-addon/Build/GRAPHISOFT ARCHICAD API DevKit 25.3006" archicad-addon
+      run: cmake -B archicad-addon/Build -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DAC_API_DEVKIT_DIR="archicad-addon/Build/${{ matrix.params.devKitDir }}" archicad-addon
     - name: Build Debug
-      run: cmake --build archicad-addon/Build/AC25 --config Debug
+      run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
-      run: cmake --build archicad-addon/Build/AC25 --config RelWithDebInfo
+      run: cmake --build archicad-addon/Build --config RelWithDebInfo
     - name: Create DMG file
-      run: hdiutil create -format UDZO -srcfolder archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Mac.bundle archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Mac.dmg
+      run: hdiutil create -format UDZO -srcfolder archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.dmg
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: Tapir Add-On AC25 Mac
-        path: archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Mac.dmg
+        name: Tapir Add-On AC${{ matrix.params.acVersion }} Mac
+        path: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.dmg
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: ncipollo/release-action@v1
       with:
-        artifacts: archicad-addon/Build/AC25/RelWithDebInfo/TapirAddOn_AC25_Mac.dmg
-        draft: true
-        allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-  build_mac_ac26:
-    runs-on: [ macos-12 ]
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: Download Development Kit
-      run: python3 archicad-addon/Tools/download_and_unzip.py ${{ secrets.MAC_DEVKIT_AC26 }} archicad-addon/Build
-    - name: Generate Project
-      run: cmake -B archicad-addon/Build/AC26 -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAC_API_DEVKIT_DIR="archicad-addon/Build/Graphisoft Archicad API DevKit 26.3000" archicad-addon
-    - name: Build Debug
-      run: cmake --build archicad-addon/Build/AC26 --config Debug
-    - name: Build RelWithDebInfo
-      run: cmake --build archicad-addon/Build/AC26 --config RelWithDebInfo
-    - name: Create DMG file
-      run: hdiutil create -format UDZO -srcfolder archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Mac.bundle archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Mac.dmg
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Tapir Add-On AC26 Mac
-        path: archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Mac.dmg
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: archicad-addon/Build/AC26/RelWithDebInfo/TapirAddOn_AC26_Mac.dmg
+        artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.dmg
         draft: true
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
