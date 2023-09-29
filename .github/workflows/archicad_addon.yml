@@ -74,6 +74,7 @@ jobs:
         security unlock-keychain -p KeyChainPass notarization.keychain
         security import certificate.p12 -k notarization.keychain -P ${{ secrets.CODE_SIGN_CERT_PWD }}  -T /usr/bin/codesign
         security find-identity
+        codesign -s "Developer ID Application: enzyme apd Limited (${{ secrets.TEAM_ID }})" -f -vvv --deep --timestamp --options runtime archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle
         xcrun notarytool store-credentials "addon.notarization" --apple-id ${{ secrets.APPLE_ID }} --password ${{ secrets.APPLE_ID_PWD }} --team-id ${{ secrets.TEAM_ID }}
         ditto -c -k --keepParent archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
         xcrun notarytool submit archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip --wait --keychain-profile "addon.notarization"
