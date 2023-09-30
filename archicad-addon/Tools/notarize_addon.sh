@@ -25,18 +25,23 @@ security import $P12FilePath -k notarization.keychain -P $P12FilePassword -T /us
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k TempKeyChainPass notarization.keychain
 
 # sign the bundle
+echo "codesign"
 codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --entitlements archicad-addon/Tools/addon.entitlements --options runtime $AddOnBundlePath
 
 # store credentials for notariozation
+echo "credentials"
 xcrun notarytool store-credentials "addon.notarization" --apple-id $AppleID --password $AppleIDPassword --team-id $TeamID
 
 # create a zip to upload to notarization service
+echo "compress"
 ditto -c -k --keepParent $AddOnBundlePath $TempZipFileName
 
 # submit the zip to the notarization service
+echo "submit"
 xcrun notarytool submit $TempZipFileName --wait --keychain-profile "addon.notarization"
 
 # staple the ticket to the bundle
+echo "staple"
 xcrun stapler staple $AddOnBundlePath
 
 # delete the temporary zip file
