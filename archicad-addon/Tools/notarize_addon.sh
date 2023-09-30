@@ -19,7 +19,7 @@ security default-keychain -s notarization.keychain
 security unlock-keychain -p TempKeyChainPass notarization.keychain
 
 # import the p12 file into the keychain
-security import $P12FilePath -k notarization.keychain -P $P12FilePassword  -T /usr/bin/codesign
+security import $P12FilePath -k notarization.keychain -P $P12FilePassword -T /usr/bin/codesign
 
 # make sure that no password prompt will appear
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k TempKeyChainPass notarization.keychain
