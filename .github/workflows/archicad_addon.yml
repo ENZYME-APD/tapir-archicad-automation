@@ -76,7 +76,7 @@ jobs:
           ${{ secrets.APPLE_ID }} \
           ${{ secrets.APPLE_ID_PWD }} \
           ${{ secrets.TEAM_ID }} \
-          ./archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle
+          archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle
     - name: Create zip file
       run: ditto -c -k --keepParent archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
     - name: Upload Artifact
