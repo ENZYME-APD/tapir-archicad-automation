@@ -27,6 +27,7 @@ security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k TempKeyCha
 # sign the bundle
 echo "codesign"
 echo $AddOnBundlePath
+mdls $AddOnBundlePath
 echo "codesign end"
 codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --options runtime $AddOnBundlePath
 
