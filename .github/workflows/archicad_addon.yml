@@ -69,7 +69,7 @@ jobs:
     - name: Code sign and notarize
       run: |
         echo ${{ secrets.CODE_SIGN_CERT }} | base64 --decode > certificate.p12
-        ./archicad-addon/Tools/notarize_addon.sh \
+        ./archicad-addon/Tools/code_sign_and_notarize.sh \
           certificate.p12 \
           ${{ secrets.CODE_SIGN_CERT_PWD }} \
           "Developer ID Application: enzyme apd Limited (${{ secrets.TEAM_ID }})" \
