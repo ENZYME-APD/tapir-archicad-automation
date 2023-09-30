@@ -29,7 +29,7 @@ echo "codesign"
 echo $AddOnBundlePath
 mdls $AddOnBundlePath
 echo "codesign end"
-/usr/bin/codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --options runtime $AddOnBundlePath
+/usr/bin/codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --options runtime "$AddOnBundlePath"
 
 # store credentials for notariozation
 echo "credentials"
