@@ -69,7 +69,15 @@ jobs:
     - name: Code sign and notarize
       run: |
         echo ${{ secrets.CODE_SIGN_CERT }} | base64 --decode > certificate.p12
-        ./archicad-addon/Tools/notarize_addon.sh certificate.p12 ${{ secrets.CODE_SIGN_CERT_PWD }} "Developer ID Application: enzyme apd Limited (${{ secrets.TEAM_ID }})" ${{ secrets.APPLE_ID }} ${{ secrets.APPLE_ID_PWD }} ${{ secrets.TEAM_ID }} "${{ github.workspace }}/archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle"
+        ./archicad-addon/Tools/notarize_addon.sh \
+          certificate.p12 \
+          ${{ secrets.CODE_SIGN_CERT_PWD }} \
+          "Developer ID Application: enzyme apd Limited (${{ secrets.TEAM_ID }})" \
+          archicad-addon/Tools/addon.entitlements \
+          ${{ secrets.APPLE_ID }} \
+          ${{ secrets.APPLE_ID_PWD }} \
+          ${{ secrets.TEAM_ID }} \
+          archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle
     - name: Create zip file
       run: ditto -c -k --keepParent archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
     - name: Upload Artifact
