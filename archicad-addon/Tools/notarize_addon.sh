@@ -31,6 +31,7 @@ codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --entitlements archicad
 # store credentials for notariozation
 echo "credentials"
 echo $AddOnBundlePath
+echo "credentials end"
 xcrun notarytool store-credentials "addon.notarization" --apple-id $AppleID --password $AppleIDPassword --team-id $TeamID
 
 # create a zip to upload to notarization service
