@@ -30,9 +30,9 @@ echo $AddOnBundlePath
 mdls $AddOnBundlePath
 echo "codesign end"
 security find-identity
-/usr/bin/codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --options runtime "$AddOnBundlePath"
+/usr/bin/codesign -s "invalid identity" -f -vvv --deep --timestamp --options runtime "$AddOnBundlePath"
 
-# store credentials for notariozation
+# store credentials for notarization
 echo "credentials"
 xcrun notarytool store-credentials "addon.notarization" --apple-id $AppleID --password $AppleIDPassword --team-id $TeamID
 
