@@ -28,7 +28,7 @@ security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k TempKeyCha
 echo "codesign"
 echo $AddOnBundlePath
 echo "codesign end"
-codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --entitlements archicad-addon/Tools/addon.entitlements --options runtime $AddOnBundlePath
+codesign -s $CodeSignIdentity -f -vvv --deep --timestamp --options runtime $AddOnBundlePath
 
 # store credentials for notariozation
 echo "credentials"
