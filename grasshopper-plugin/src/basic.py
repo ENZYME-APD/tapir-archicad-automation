@@ -1,7 +1,7 @@
 #!/usr/bin/env ipy
 # -*- coding: utf-8 -*-
 
-__all__ = ['Handshake_Component']
+__all__ = ['Connect_Component']
 
 # - - - - - - - - BUILT-IN IMPORTS
 import System
@@ -17,11 +17,10 @@ from Grasshopper.Kernel import GH_RuntimeMessageLevel as RML
 import Rhino, Grasshopper, GhPython
 
 # - - - - - - - - COMPONENT
-class Handshake_Component(component):
+class Connect_Component(component):
 
     def __new__(cls):
-        instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "Handshake", "Handshake", """Establishes connection between current Grasshopper document, and any open ArchiCAD project.""", "tAPIr", "01 Connect")
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "Connect", "Connect", """Establishes connection between current Grasshopper document, and any open ArchiCAD project.""", "tAPIr", "01 Setup")
         return instance
     
     def get_ComponentGuid(self):
@@ -52,7 +51,7 @@ class Handshake_Component(component):
             self.marshal.SetOutput(result, DA, 0, True)
         
     def get_Internal_Icon_24x24(self):
-        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAADJSURBVEhL7ZNbDsQgCEV1/4vu8PYCpm0yyfyMJzFeEARMOw7/whyXKWOifU1avKtJSDzGhJY4i08UR0oAzN8KRNzylaaTkS9KuP20M6jZkEttpQl0ZC2mfiu8niLFK6m51um7CeCtd/GgXxfY+klvJrgvEPazX3PBL8XW+W+QLiZ+v9hB1WGX7911/2+IZNiYjmp8xqXrTqTcgJ0wQbwjLUvAKa0A6gXmFmBkPOw+LCBg17sJrDtSftgTcqeioSHGNe++DoevGeMDe+h/wjhtikQAAAAASUVORK5CYII="
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFDSURBVHgB7ZSxTsJQFIb/cwuJE2Egzt24TSHUN+ARfAR8A0dkIT6Awuimj8DqJKObkIiQLmLSSSFKu7DQY6+mTWrEmN4uRL/pz/lv/pObc3KAXYeggZTSBAqXRHAYKIMxJNq0ptPpk3aDz3DjBkTmVy/csOO6k7HSApkxut+Ff4QK6icaGSEiZ7uJpmk6Za0GDCr/5l32HwCDH7zRfD5602tAGG7zhCi2Ym0gA7ZtN0KmKwIdgWlNgsxoJuvIujVE8XAyuRsjKypcWvVH2z5oIG/+w3czPHXspKx1o/0+VpqZByDRNERBb+1iLKvea7c77Ps+e57H7ZMOV6v1HvLCsmqvKjhmtfK5GtWgSepUlEqlRAdBgDxITkWlsr/3slg0LSnVncHZeQ+zB/diuXy+hgapIas5RJWW0hxyfza7P8Wf5x2l5XcOZmQWkAAAAABJRU5ErkJggg=="
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     def __init__(self):
@@ -91,7 +90,5 @@ class Handshake_Component(component):
             disconnect_menu_item = items.Items.Add('Disconnect', None, self.on_disconnect_click)
         except Exception as ex:
             System.Windows.Forms.MessageBox.Show(traceback.format_exc(), ex)
-
-
 
 # TODO: ProjectInfo / ProductInfo / 

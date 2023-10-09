@@ -1,10 +1,9 @@
 #!/usr/bin/env python27
 # -*- coding: utf-8 -*-
 
-__all__ = ['Plugin', 'RhinoWrapper']
+__all__ = ["Plugin", "RhinoWrapper", "Factory"]
 
 # - - - - - - - - BUILT-IN IMPORTS
-import traceback, time
 import System
 import base64
 
@@ -15,7 +14,7 @@ from tapir_py import parts, utility
 import Rhino, Grasshopper, GhPython
 
 # - - - - - - - - GLOBAL VARIABLES
-Plugin = utility.RuntimeObject({ "is_active" : False, "Archicad" : None }, "TapirPlugin")
+Plugin = utility.RuntimeObject( { "is_active" : False, "Archicad" : None }, "TapirPlugin")
 
 # - - - - - - - - DECORATORS
 def connect(function):
@@ -72,18 +71,19 @@ class Factory(object):
     @staticmethod
     def create_value_list(component, param_index, name, items, x_offset=27, y_offset=11):
         source_input = component.Params.Input[param_index]
+        component_width_delta = component.Attributes.Bounds.Width * 0.5
 
         # Create new Value List component
-        source_pivot = source_input.Attributes.Pivot
-
+        source_pivot = component.Attributes.Pivot
         new_value_list = Grasshopper.Kernel.Special.GH_ValueList()
+        
         # Add component to current Grasshopper Document
         doc = component.OnPingDocument()
         doc.AddObject(new_value_list, False, doc.ObjectCount + 1)
 
         new_value_list.Name = name
         new_value_list.NickName = name
-        new_value_list.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - x_offset, source_pivot.Y - y_offset)
+        new_value_list.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - component_width_delta - x_offset, source_pivot.Y - y_offset)
         new_value_list.ListItems.Clear()
 
         # Populate list
@@ -91,6 +91,8 @@ class Factory(object):
 
         # Connect Value List to component
         source_input.AddSource(new_value_list)
+
+        return new_value_list
 
     @staticmethod
     def update_value_list(component, items):
@@ -102,6 +104,7 @@ class Factory(object):
             return True
         else:
             return False
+
 # ----- UTILLITIES
 def ico2base64(ico_file):
     """

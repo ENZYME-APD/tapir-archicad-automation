@@ -1,11 +1,12 @@
 #!/usr/bin/env ipy
 # -*- coding: utf-8 -*-
 
-__all__ = ['GetElements_Component',
-           'GetAllClassificationSystems_Component',
-           'GetClassificationSystems_Component',
-           'GetElementsByClassification_Component',
-           'GetBoundingBox_Component']
+__all__ = ["GetElements_Component",
+           "GetAllClassificationSystems_Component",
+           "GetClassificationSystems_Component",
+           "GetElementsByClassification_Component",
+           "GetBoundingBox_Component",
+           "HighlightElements_Component"]
 
 # - - - - - - - - BUILT-IN IMPORTS
 import System
@@ -23,8 +24,7 @@ import Grasshopper
 class GetElements_Component(component):
     
     def __new__(cls):
-        instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "GetElements", "GetElements", """Retrieves Element information from connected ArchiCAD project.""", "tAPIr", "02 Get")
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "GetElements", "GetElements", """Retrieves Element information from connected ArchiCAD project.""", "tAPIr", "02 Get")
         return instance
     
     def get_ComponentGuid(self):
@@ -56,12 +56,25 @@ class GetElements_Component(component):
             self.marshal.SetOutput(result, DA, 0, True)
         
     def get_Internal_Icon_24x24(self):
-        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAARLSURBVEhLrVQPTJRlGP/gO+5Q5O+x1ZBWrhVujSINnEVmSg2DcKgTOFNCIRtKTJuEUXFJhLRIxmHE0PnniggLExo5ScM/6CAIHFdkiYhwnod4B9wdf07w1/e83Ad3OoUxn+2353mf93me3/M+7/t9nL3I5XI8DNjK3Su0mZSUhJaWFuTl5TG7vb19Qouw94sQ11MSREdHs+CmpiaoVCpmiz7SIu63npIgNDSUBUdERKCmpobZok+0xTXphoYGh/WUBAEBASyYdGBg4IQtahEajQYZGRnMT5rW5J+SwMfHhyWRtrdJi6B1WFgY6z41NZVpWpP/XgI+ONKZDzFyXBDbfBgI5DgsdOGMC3guknPig417is7g8rURNP8zhNN/DqL6ggVHas04XGNGcbUZ+ZVm5B61IPMHC9JLx5GmNmP7ARPe3FoPb29vjFwpw2CjEv3HY9F76Dn8Eu+ChRLOIBwhCGebLFiSeBWvp3Qhasd1rP1Ej/U5N5G4x4AtRX2sEBX9+MgQlBXDDGSTLzK5jhH0lXrAcHAOeovd0KOahfaPpOwkjKDq9ACWvtOJ8NRurPxAhxilHvG5vdhcYERqyQDrlgpmVY5g96+3Gcgm34qkWkbQXy6H8bA7bpUIBIWz8G+6bJJAXdWHV20E0Tt1iNvVg3VZWigyL2Od8hI27GpDwmd/YVN2KxI/v4h4ZSPW7jiPqORaLI7KxxP+cqvp58dhVAsE+9xwc+9s/P2+3QkKvrvlQLB6ZyeWKvbf8Z/rZ6XuHoR5j/laj+1+8o6pws+BoDXFjiCzqMdhROFbNJjr52c9VZ6J0Z5ajOoqMapVY6yrEGOd2RhrT8No22ZYm2MwXLcMluqn0F/m6TCi5nftCLbm6BwuednGRtadtaMMph89Yan0xtBxHwz/JsfIKV8GsslHexRz9yX/keAySRCX1oXQhKsIS76GiO1avKw4zwiG24qEzjxgqvBihQarfVhRAtmsuLBHMWw8+4XxFM2GPt8VFxR2BMsTO/Diho6Je1i0avxlDDZno+9b93ESoUvzUS+Yj9kg2OSjPYoxHJjs/sZXrji3RjJO4OQcbPR//hDmL/8dz7x2Es+G1yBoxQlGYD63jSVSdzQCKjZQ7gmD2gP6EndoVXPQkeuG/5TCq0lzxcUUGRo3SVn3pa/w9KEJfwjhV+Fk+1XYgwgGTsSzrujoNF+6ROpqOqDi7FdxPyEC409vsCPTXBmR8EKM3z8N08m3MNSqwm19PUgo1pY2faGk3oMhbJ50aUREz4/eeHGCDIrFPL55W4rW96QzJ7hRMA/Xc6TQfSGD7ksZIyPELeKxagGPuBAeZ1dLZk7QleWO7k9d0J3lAm22lJERvo6VIPYFZ+yNkaDqJeeZETzi62UsXy9F54c8rqRLcGmbBJpkHs0bedQreNSt4XFmpTMKl8jwqBBrS5u++Pp6RVIidfcgUAzF2tLuEo77Hw8FEIyao6BZAAAAAElFTkSuQmCC"
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIOSURBVHgB3VW/T9tAFH4X+cxCoswNg2mp1DBlqenY4mQm6V6ZuQW1WyEg8R/wQyHMiRgQDBB2AqwwZYIx+Q9AZMJn5fHOcHF+YZwwwSed/PTO/r6753ffAbx1sKBJRIwLIWxk7DtjLEUJ42mqhgANhljRdb0Mo8B13TlHiBsaGDTuHafuOI49FDl9uPEScZ+QEGuhyOWLw5J3jI1ePtZTFruFWJJxs9n0ctFoFIZBhLGspmnHAwUc162rH/ljNgPTyS+wuPiHRGKQSHyAkLjlmjZJTXHbJbC+vmWPR8dL1eopXF1ft3egIHcynUyCZc1CJmORYOJ5CcR/1F1bXQLGp6kjQJaFkPiZy3q7GyRELVwZ4zwn40g722JGEKHcgVy9wuFRxStjoVDse5fOR0rFvgCDVAA/fJsxYXVluS9f2C7C/6V8j4K/WL9EHz8jvALz9i/I5/0F6Jx73JEO2QaMANVdpfIuXFxcqnRNBR0latVgCJjmV9gpFuDs9AQWFn57uZNq1XtKn2rTqoBK9JcemxCwUtM0YYaI0+k0xGLdB/DurunnEOeVCfoChhGHCK9TGM9RC6YtC5J00CQmJgJ6vgfkwI0xXZ8cOGkYU3N7+wf4Ci/CF51VjOCkaoiwjipGcFQxwEkDIZ1Vml8I8ht5OT3Hw8II0Y+THmVQ+z2edsbkdVmj/DnnvKyc833iAbpECjpFWScMAAAAAElFTkSuQmCC"
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     def __init__(self):
         self.state = 0
     
+    def set_state(self, state):
+        self.state = state
+        self.update_icon()
+
+    def update_icon(self):
+        if self.state == 0:
+            o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAH8SURBVHgB3VUxT8JAFH7XdmCQhsG4sJyLtCmGuqhxVuOk3RXlH7iqizpo3IxRZ0Hc1c1EF38BGq3gRIdCojFR28RgYjzvGokVrgTphN/S3nvv3nv9Xu87gG4Hqr8oSnKVrtYCIwmslUq36/UlxjgWifQsAkIZ6sRAiEXTZWs1aceyrl6a9itqkjiOQ3h4fXUI8/uTJxJaYXNzi9h2xYu5uyuSpeUVklCTBYz1GLdAK/gLsK9lyXjYoEU9Nr4hQEcgmYX5NNezMD9HmSKZcAUQwoqicF3xeJwF4HAFAFmVSpXrKZbuPX+4AoRkDw/zXJdnp/76WvI7XdeFaDTatInZ/YhEpJ18/shwXFdnnDO6KtUq5HJ5OD45vXqnv2o9tuNzoOt6rFb7+DkHjBbaeeA56FqIPKOqDm739vaNPj09XkJIoEYDHRgGJJVlWX55fHjrD8sn5zcVVw1jGtLpWSpmdIhtgmnTwICWahnEumeaY9u2J3DDI2PPXOHiQNO0lKJo5cYiAq97dtxlOfqnrzBN81oUwRAEOPEXQf7uGfcX52ffegLgOC5MTE41zYJ1yvQouByySsWb/l8muumAJ8G7e/u/5LcVPJrUwbKmDaUakv9wz7ts2plFUHJPixCSZthtMj4xFbSfzkKYoc9cUMDnJ8qKgmSYZuEa/hW+AG0WQhBYhGOoAAAAAElFTkSuQmCC"
+        elif self.state == 1:
+            o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGYSURBVHgB3VRNTsJAFH5vOglNFMKCuB42UFIM3UnceQI5AjfAG4AnMNyAI3AD48ZEN0CkoTu6NiwIXVgT7DgVRqAMBcsKv1Xfz7zve/PmFeDUgfLDMMpNYbV2ZnJoOc7wXpqMsayunzcAsS6CDDh3RbmO79O26/an2wSlMn99eYZ0Or1Vezbz4Kp6Dc5oiLJ4KnX2iAStbR3Q//ygN5KErAdVxUNkMpv+ULmq+FKxpevzhrQJJAKvx4ZxFU9GgMj2JLDjCADdQ+PJCDjvHBrfIPA8T5kf9es6bYth9pW1hT98qtJOvAeWZWV9f77ag/BahPLoHpw+NJWzVLp8yOUuqpPJ+xMcCYw6DMNggHQshjUVK58/9j4Vz1RrLpmz6yu/D8Wi2SsUzEoswUJ9+CoW4Ah3jFlZOACUQp0Q6EZJiEq9xF+6sG17oGlQi5Lgpno6jh5UzcIwzHH8/whdZ/SWD7/oLvWKLn6XzHHsvCrXNM3KV0C6GqG1tfO71cd1EVfctnsD6f+ZASK9hRgsughic4IAO9Hi/wPfJCWfBKxXgIgAAAAASUVORK5CYII="
+        else:
+            o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIOSURBVHgB3VW/T9tAFH4X+cxCoswNg2mp1DBlqenY4mQm6V6ZuQW1WyEg8R/wQyHMiRgQDBB2AqwwZYIx+Q9AZMJn5fHOcHF+YZwwwSed/PTO/r6753ffAbx1sKBJRIwLIWxk7DtjLEUJ42mqhgANhljRdb0Mo8B13TlHiBsaGDTuHafuOI49FDl9uPEScZ+QEGuhyOWLw5J3jI1ePtZTFruFWJJxs9n0ctFoFIZBhLGspmnHAwUc162rH/ljNgPTyS+wuPiHRGKQSHyAkLjlmjZJTXHbJbC+vmWPR8dL1eopXF1ft3egIHcynUyCZc1CJmORYOJ5CcR/1F1bXQLGp6kjQJaFkPiZy3q7GyRELVwZ4zwn40g722JGEKHcgVy9wuFRxStjoVDse5fOR0rFvgCDVAA/fJsxYXVluS9f2C7C/6V8j4K/WL9EHz8jvALz9i/I5/0F6Jx73JEO2QaMANVdpfIuXFxcqnRNBR0latVgCJjmV9gpFuDs9AQWFn57uZNq1XtKn2rTqoBK9JcemxCwUtM0YYaI0+k0xGLdB/DurunnEOeVCfoChhGHCK9TGM9RC6YtC5J00CQmJgJ6vgfkwI0xXZ8cOGkYU3N7+wf4Ci/CF51VjOCkaoiwjipGcFQxwEkDIZ1Vml8I8ht5OT3Hw8II0Y+THmVQ+z2edsbkdVmj/DnnvKyc833iAbpECjpFWScMAAAAAElFTkSuQmCC"
+        self.SetIconOverride(System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o))))
+
     @tapir.connect
     def RunScript(self, refresh):
         if self.state == 0:
@@ -72,7 +85,7 @@ class GetElements_Component(component):
     def on_get_all_click(self, sender, args):
         try:
             # TODO: Remove Update input Parameter here.
-            self.state = 0
+            self.set_state(0)
             self.ExpireSolution(True)
         except Exception as ex:
             System.Windows.Forms.MessageBox.Show(traceback.format_exc(), ex)
@@ -80,7 +93,7 @@ class GetElements_Component(component):
     def on_get_selected_click(self, sender, args):
         try:
             # TODO: Add Update Input Parameter here.
-            self.state = 1
+            self.set_state(1)
             self.ExpireSolution(True)
         except Exception as ex:
             System.Windows.Forms.MessageBox.Show(traceback.format_exc(), ex)
@@ -135,7 +148,7 @@ class GetAllClassificationSystems_Component(component):
             self.marshal.SetOutput(result, DA, 0, True)
 
     def get_Internal_Icon_24x24(self):
-        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAARLSURBVEhLrVQPTJRlGP/gO+5Q5O+x1ZBWrhVujSINnEVmSg2DcKgTOFNCIRtKTJuEUXFJhLRIxmHE0PnniggLExo5ScM/6CAIHFdkiYhwnod4B9wdf07w1/e83Ad3OoUxn+2353mf93me3/M+7/t9nL3I5XI8DNjK3Su0mZSUhJaWFuTl5TG7vb19Qouw94sQ11MSREdHs+CmpiaoVCpmiz7SIu63npIgNDSUBUdERKCmpobZok+0xTXphoYGh/WUBAEBASyYdGBg4IQtahEajQYZGRnMT5rW5J+SwMfHhyWRtrdJi6B1WFgY6z41NZVpWpP/XgI+ONKZDzFyXBDbfBgI5DgsdOGMC3guknPig417is7g8rURNP8zhNN/DqL6ggVHas04XGNGcbUZ+ZVm5B61IPMHC9JLx5GmNmP7ARPe3FoPb29vjFwpw2CjEv3HY9F76Dn8Eu+ChRLOIBwhCGebLFiSeBWvp3Qhasd1rP1Ej/U5N5G4x4AtRX2sEBX9+MgQlBXDDGSTLzK5jhH0lXrAcHAOeovd0KOahfaPpOwkjKDq9ACWvtOJ8NRurPxAhxilHvG5vdhcYERqyQDrlgpmVY5g96+3Gcgm34qkWkbQXy6H8bA7bpUIBIWz8G+6bJJAXdWHV20E0Tt1iNvVg3VZWigyL2Od8hI27GpDwmd/YVN2KxI/v4h4ZSPW7jiPqORaLI7KxxP+cqvp58dhVAsE+9xwc+9s/P2+3QkKvrvlQLB6ZyeWKvbf8Z/rZ6XuHoR5j/laj+1+8o6pws+BoDXFjiCzqMdhROFbNJjr52c9VZ6J0Z5ajOoqMapVY6yrEGOd2RhrT8No22ZYm2MwXLcMluqn0F/m6TCi5nftCLbm6BwuednGRtadtaMMph89Yan0xtBxHwz/JsfIKV8GsslHexRz9yX/keAySRCX1oXQhKsIS76GiO1avKw4zwiG24qEzjxgqvBihQarfVhRAtmsuLBHMWw8+4XxFM2GPt8VFxR2BMsTO/Diho6Je1i0avxlDDZno+9b93ESoUvzUS+Yj9kg2OSjPYoxHJjs/sZXrji3RjJO4OQcbPR//hDmL/8dz7x2Es+G1yBoxQlGYD63jSVSdzQCKjZQ7gmD2gP6EndoVXPQkeuG/5TCq0lzxcUUGRo3SVn3pa/w9KEJfwjhV+Fk+1XYgwgGTsSzrujoNF+6ROpqOqDi7FdxPyEC409vsCPTXBmR8EKM3z8N08m3MNSqwm19PUgo1pY2faGk3oMhbJ50aUREz4/eeHGCDIrFPL55W4rW96QzJ7hRMA/Xc6TQfSGD7ksZIyPELeKxagGPuBAeZ1dLZk7QleWO7k9d0J3lAm22lJERvo6VIPYFZ+yNkaDqJeeZETzi62UsXy9F54c8rqRLcGmbBJpkHs0bedQreNSt4XFmpTMKl8jwqBBrS5u++Pp6RVIidfcgUAzF2tLuEo77Hw8FEIyao6BZAAAAAElFTkSuQmCC"
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJ4SURBVHgB1VXPaxNREJ7dLGQLbughPdh6aCvt7mYTU8EInoQmeM0WQb2o8Sa2mHizrdA/oS0qeJPUu4lHoUGv3QilmGaTXlIhPZlisvGQgtnxvU1/bEIa1xoRP1jeezPvzcz7Zt4swP8OppdSlv1xBCYBgKOAuIvIrBSLuVXoB2Q5sKzO3MSNDQ0p8nkd6VqWlWX4U0xM+KamwzfQMAy0o1YzMHT1GkpS4LpTW2yngB7mOHYpEpkGQRDadB6PAKoaJWxhYnJSCYIDuOwLSovgOffq9p1bkhqNwtCQF5Jrb+Di+Di43W5rj9frBX7ALVX29x/yPD9YqXx938vBcZJF0R+XfeLKWvJ1W+TzC4vgETwgeFqyudlH1mgYdbgfewB6vphwlHhJUkq6rh/z/fzFS1xfz2C5XEZJ9uPdezEr0Ue6t6m0VQCSrJTACaiRI5T39nB27rFlhMKuo8bDkZMCoLpedrmTKbOradnRFi3PoF6vW1TNkKTa6cpkPlhyTdNgeOSCdQ6cQBQvxWmd20vz6fwC+RatKOncrqcjXdPc9bLb9pJpFQ2PnE+Ew60SzWY/kUizrY0MUw2FrgySz7pdKvUOjNp38rI/P3HsgMLn802ZJnvIC/Ol0XCl+YEf3wp6jiEBqCT4IMOwVURzq1DIfYR+4FeJ7IVTm50k+ZcIL7HWijS7w2SiiV0bnigqm4gQ29nZ3rLLudMcNBrcKs83kp3ygwO+2m0/x0Gs2YQ0aSFqp5O+QVGUIH2w9j7FwRlAjRD6RjvlTRMs0lkXkyazsTM7KBS2x7rJ6Q2aJpt2sZwK/YZFjxwoKcplR238t0F+r5t/zfg/xU9Qkkw5GVlaDwAAAABJRU5ErkJggg=="
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     @tapir.connect
@@ -145,8 +158,7 @@ class GetAllClassificationSystems_Component(component):
 class GetClassificationSystems_Component(component):
 
     def __new__(cls):
-        instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "GetClassificationSystems", "GetClassificationSystems", """Gets ClassificationSystems from current ArchiCAD project.""", "tAPIr", "99 WIP")
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "GetClassificationSystems", "GetClassificationSystems", """Gets ClassificationSystems from current ArchiCAD project.""", "tAPIr", "99 WIP")
         return instance
     
     def get_ComponentGuid(self):
@@ -177,18 +189,25 @@ class GetClassificationSystems_Component(component):
             self.marshal.SetOutput(result, DA, 0, True)
         
     def get_Internal_Icon_24x24(self):
-        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAASDSURBVEhLnZQLUJRVFMcXvmUXRN47I4OQOk5NM2YSBGalmWYDueKEjizrg0DK5GXaSNhUoERINcLwEHeIQClCVEhwyEcSomBMJINoRKiIgMhrP2B3eazgv+/c3YJ1khjOzH/m7P3uOb9zzz17RU8ye5lM7ujkzDs4OGAqOcqcedprDJu+OTrN4ZNV53C9eQTV9UM496sWJ8s1yD0zgNTjPBJy+hCd1g15yCkGMYZN36i6kkoNlvhmwO05BTzlh7H+o068vc8g8v323seanc3sJMaw6RsFqYr78dRiBdwW+WOBuxIBcV0IPNDNRP6mz7rgG9E0c8D+b9V4yf8IFnoosVyhQlBSL4K/6mMif2tiD9ZG3Zw5IPxQL7Yk9LCEoclq7EjlsTPdIPJpbV3U9f8BcF5yc85buCR3YdOErKzmmfz+Rx9kDzLtyhpEeGa/ALiG+ZaWWCwSmcjTQsR7cCK5yIzz4pMzK3Hr3ijq/hzGpWtDKLuqw4kKLY5d0EJVpkVKiRZJxTrEHtchJt+g6Dwt9uRosC6ihp1g9E4BhmrjMHBWgd6jS3AmyAKeYpFaOII7Lv+uw4rQu3gzso1NBl0e9ZdaQFVSIkr66YlhxBWNMJFPa/KwKgboz7eFOnc2elXW6E6zwu1PJOwkDFB6aRAr32uFz652Nn40IXSJ1GdqBVVLCeNLRnHwp4dM5NOa77sVDDBQ6AT+mA36sgRAuhX+ipFOAPJK+/G6EUAzTmO4Ob4Dythb2BzXhG0HGhH8+U1sT2hA6Bf1CIqrxaa91fALq8AyvxTMd3XSa36cBz5PAHxjjZ6MWfjjw0knSP2+zwSwYV8rViqzH7nOddFTdVNpgZtMf/rgwkeaIhcTQEPkJEBsZrdJi3zCb2Cui4u+vDAWY90VGOsswVhHHsbb0jHemoDx29EYa9wBfV0ARqpWQVf2NAYK7ExaVPf+JEBEYqfJJa8KqWXV6VsKoDlpB12JA4bPOmLkZyeMlsuYyKc1+kZ7Hr/k34ItJgCB0W14Nfgu3gi7h7V7OrBcWc0AI42ZQmW20BTZs0RDZY4sKYl8llz4RntYe7KF9mTOQleKJa4qJwFWh7bg5W0t/97DUn/DZAzVJaD/OxsDRKhSW2wP7WmjBJ/W6BvtUedMVP/gkCWubBQbAGbmXrzrC0fx7OpfsGjNRTzvcwHuvucZQHtlNwuk6qgFlGyw0A7qPFt0ZdmgI202WpKs0RwnTE20JeojpajdLmHV57/G0R9NeCGEp8LsP54KAgyeD2JV0dGpv3SJVNV0RMnZU/EkIwB/6i12ZOorAwkTwv/wDDQXt2C4IQ0Pu2pARnuNYdM3CurN9Wb9pEsjEI0fzbgqWArlMg5H3pGgIUoyc8CD1AW4nyhB55dSdH4tZTBS4FIO/h4cAr05XN4gnjmgLd4G7fst0B5vgY4ECYORDivEULxojowAMUpfMZ8ZYI7Mni/cKkHrxxzuxIjRtFuMG2Ec6kI41Cg5VG3kULneHOkrpHAW9hrDpm8ymb2cAqm6qUR7aK8x7DETif4GWQPKTm78ggMAAAAASUVORK5CYII="
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIOSURBVHgB3VW/T9tAFH4X+cxCoswNg2mp1DBlqenY4mQm6V6ZuQW1WyEg8R/wQyHMiRgQDBB2AqwwZYIx+Q9AZMJn5fHOcHF+YZwwwSed/PTO/r6753ffAbx1sKBJRIwLIWxk7DtjLEUJ42mqhgANhljRdb0Mo8B13TlHiBsaGDTuHafuOI49FDl9uPEScZ+QEGuhyOWLw5J3jI1ePtZTFruFWJJxs9n0ctFoFIZBhLGspmnHAwUc162rH/ljNgPTyS+wuPiHRGKQSHyAkLjlmjZJTXHbJbC+vmWPR8dL1eopXF1ft3egIHcynUyCZc1CJmORYOJ5CcR/1F1bXQLGp6kjQJaFkPiZy3q7GyRELVwZ4zwn40g722JGEKHcgVy9wuFRxStjoVDse5fOR0rFvgCDVAA/fJsxYXVluS9f2C7C/6V8j4K/WL9EHz8jvALz9i/I5/0F6Jx73JEO2QaMANVdpfIuXFxcqnRNBR0latVgCJjmV9gpFuDs9AQWFn57uZNq1XtKn2rTqoBK9JcemxCwUtM0YYaI0+k0xGLdB/DurunnEOeVCfoChhGHCK9TGM9RC6YtC5J00CQmJgJ6vgfkwI0xXZ8cOGkYU3N7+wf4Ci/CF51VjOCkaoiwjipGcFQxwEkDIZ1Vml8I8ht5OT3Hw8II0Y+THmVQ+z2edsbkdVmj/DnnvKyc833iAbpECjpFWScMAAAAAElFTkSuQmCC"
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     def __init__(self):
         self.classification_systems = []
+        self.value_list = None
     
     def ensure_value_list(self):
+        value_list = None
         if self.Params.Input[0].Sources.Count == 0:
-            self.classification_systems = tapir.Plugin.Archicad.GetAllClassificationSystems()
-            items = [classification_system.name for classification_system in self.classification_systems]
-            tapir.Factory.create_value_list(self, 0, "ClassificationSystem", items, 250)
-            self.ExpireSolution(True)
+            archicad = tapir.Plugin.Archicad
+            if archicad:
+                self.classification_systems = archicad.GetAllClassificationSystems()
+                items = [classification_system.name for classification_system in self.classification_systems]
+                self.value_list = tapir.Factory.create_value_list(self, 0, "ClassificationSystem", items, 250)
+                self.ExpireSolution(True)
+        
+        if self.value_list:
+            self.value_list.ExpireSolution(True)
 
     def RunScript(self, classificationSystems):
         self.ensure_value_list()
@@ -199,8 +218,7 @@ class GetClassificationSystems_Component(component):
 class GetElementsByClassification_Component(component):
     
     def __new__(cls):
-        instance = Grasshopper.Kernel.GH_Component.__new__(cls,
-            "GetElementsByClassification", "GetElementsByClassification", """Gets Element by Classification Systems""", "tAPIr", "99 WIP")
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "GetElementsByClassification", "GetElementsByClassification", """Gets Element by Classification Systems""", "tAPIr", "99 WIP")
         return instance
     
     def get_ComponentGuid(self):
@@ -236,7 +254,7 @@ class GetElementsByClassification_Component(component):
                 self.marshal.SetOutput(result[1], DA, 1, True)
         
     def get_Internal_Icon_24x24(self):
-        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAASDSURBVEhLnZQLUJRVFMcXvmUXRN47I4OQOk5NM2YSBGalmWYDueKEjizrg0DK5GXaSNhUoERINcLwEHeIQClCVEhwyEcSomBMJINoRKiIgMhrP2B3eazgv+/c3YJ1khjOzH/m7P3uOb9zzz17RU8ye5lM7ujkzDs4OGAqOcqcedprDJu+OTrN4ZNV53C9eQTV9UM496sWJ8s1yD0zgNTjPBJy+hCd1g15yCkGMYZN36i6kkoNlvhmwO05BTzlh7H+o068vc8g8v323seanc3sJMaw6RsFqYr78dRiBdwW+WOBuxIBcV0IPNDNRP6mz7rgG9E0c8D+b9V4yf8IFnoosVyhQlBSL4K/6mMif2tiD9ZG3Zw5IPxQL7Yk9LCEoclq7EjlsTPdIPJpbV3U9f8BcF5yc85buCR3YdOErKzmmfz+Rx9kDzLtyhpEeGa/ALiG+ZaWWCwSmcjTQsR7cCK5yIzz4pMzK3Hr3ijq/hzGpWtDKLuqw4kKLY5d0EJVpkVKiRZJxTrEHtchJt+g6Dwt9uRosC6ihp1g9E4BhmrjMHBWgd6jS3AmyAKeYpFaOII7Lv+uw4rQu3gzso1NBl0e9ZdaQFVSIkr66YlhxBWNMJFPa/KwKgboz7eFOnc2elXW6E6zwu1PJOwkDFB6aRAr32uFz652Nn40IXSJ1GdqBVVLCeNLRnHwp4dM5NOa77sVDDBQ6AT+mA36sgRAuhX+ipFOAPJK+/G6EUAzTmO4Ob4Dythb2BzXhG0HGhH8+U1sT2hA6Bf1CIqrxaa91fALq8AyvxTMd3XSa36cBz5PAHxjjZ6MWfjjw0knSP2+zwSwYV8rViqzH7nOddFTdVNpgZtMf/rgwkeaIhcTQEPkJEBsZrdJi3zCb2Cui4u+vDAWY90VGOsswVhHHsbb0jHemoDx29EYa9wBfV0ARqpWQVf2NAYK7ExaVPf+JEBEYqfJJa8KqWXV6VsKoDlpB12JA4bPOmLkZyeMlsuYyKc1+kZ7Hr/k34ItJgCB0W14Nfgu3gi7h7V7OrBcWc0AI42ZQmW20BTZs0RDZY4sKYl8llz4RntYe7KF9mTOQleKJa4qJwFWh7bg5W0t/97DUn/DZAzVJaD/OxsDRKhSW2wP7WmjBJ/W6BvtUedMVP/gkCWubBQbAGbmXrzrC0fx7OpfsGjNRTzvcwHuvucZQHtlNwuk6qgFlGyw0A7qPFt0ZdmgI202WpKs0RwnTE20JeojpajdLmHV57/G0R9NeCGEp8LsP54KAgyeD2JV0dGpv3SJVNV0RMnZU/EkIwB/6i12ZOorAwkTwv/wDDQXt2C4IQ0Pu2pARnuNYdM3CurN9Wb9pEsjEI0fzbgqWArlMg5H3pGgIUoyc8CD1AW4nyhB55dSdH4tZTBS4FIO/h4cAr05XN4gnjmgLd4G7fst0B5vgY4ECYORDivEULxojowAMUpfMZ8ZYI7Mni/cKkHrxxzuxIjRtFuMG2Ec6kI41Cg5VG3kULneHOkrpHAW9hrDpm8ymb2cAqm6qUR7aK8x7DETif4GWQPKTm78ggMAAAAASUVORK5CYII="
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAKtSURBVHgB3VU/bBJRGP/e3TUlsTQXczUNMhxLOUKVGztWJjfRaOpggbg5oZPaGtENYxpLbB0NHbthjDLWbkpNWmxJj6GBpQYrTS5h8Ejond/jTz2441J10f7CheN7v/d9v+/PewD87yB2RkmaTBICd+m7YcCiouw87eeIosi7XCMJICSOLBGJFXSX0TQuXalsqV0ea3UejEkBafH9u7eumZkbrvzGxrRhsOrh4cEns/Ph4TNrhCE38Sfflkp4lDvNDumX3SOeVVWtapYAgcBkAr8eLCw858fGBBCE9pPL5SRBOKfWat8LlDc+7r3fcW5XknGO07Va7WC9JwAtixTwp5JPHvOyHIKr166D0RJGIBqd5ZVSKULpdKMgjGVaigeBGCKKSdNX5tiGNV96mYbRUTc8nJuHcDgM2ewbcLvdMDf/CKKzt8Do9AXJIjji1zpjNu8qJYjFbkM+/xnq9TpmJUEq9Qz2979i4FGzgwo4B6hYAtBpWV5+BSsrr9Gxv6WePh7PeaCZLeEaQU6HnHH0b1rvGVNJuhgDosfRqNIlwzDoZNCPquvwoVTaadVVlmW+0WiuYY9ki2+ArcYP7lJ3VHumqFb7VhCEs9h9MoXOJTS5cMdHTRu6t7f3Zb3Lq1armtfrWW02da3TD75VFsywoXF3zOfActCoOk07iphtirKdgX8VrJ0xELjwAg/WVPew/A0sJcLRFIFwZWyWis3ymev5J2CsJjbZiYyXWTMBJ4TfH9ycmAiGHAO01dPbsQ16ckVR5uEE4DiIMwxk+4Mwduq7+J0sisVigWUh0h+E9Krnyv0b7XqBV3rZ+T4iFWV320ffuEHqbbI4/tNRlKLPjhsMBkNHOpNlGS5i2j9YvVMWTs6Lxc1C197qASHcFXBAOwvdkaPrJNPv/HTgJ1uWDACYoLhMAAAAAElFTkSuQmCC"
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     def __init__(self):
@@ -244,10 +262,12 @@ class GetElementsByClassification_Component(component):
     
     def ensure_value_list(self):
         if self.Params.Input[0].Sources.Count == 0:
-            self.classification_systems = tapir.Plugin.Archicad.GetAllClassificationSystems()
-            items = [classification_system.name for classification_system in self.classification_systems]
-            tapir.Factory.create_value_list(self, 0, "ClassificationSystem", items, 250)
-            self.ExpireSolution(True)
+            archicad = tapir.Plugin.Archicad
+            if archicad:
+                self.classification_systems = archicad.GetAllClassificationSystems()
+                items = [classification_system.name for classification_system in self.classification_systems]
+                tapir.Factory.create_value_list(self, 0, "ClassificationSystem", items, 250)
+                self.ExpireSolution(True)
 
     def RunScript(self, classificationSystems):
         self.ensure_value_list()
@@ -296,7 +316,7 @@ class GetBoundingBox_Component(component):
             self.marshal.SetOutput(result, DA, 0, True)
         
     def get_Internal_Icon_24x24(self):
-        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAASlJREFUSEuVlAGSwyAMA5P/PzoFWQQZ25DuzQVjS4J0Or2Um+tbYdH6QNC4xl1mzD4rLF6tu6AfLNsUNaMOJjby4aQa5XmbIEVls64/OsDhhyMOyqSP1sFWDNRVWgXVLPrKvrHUBFPmrNIOp4TswH09bfC0qv1T0nrtMfov2GNGzGto33M7A5ax9gcPbn/Use5DHzoP8/CmEL+StkegBQGG9gqHDsabZl/r3mnBMrB6udmydngY3wo54w1X7OaPfixW95sNE6/Q+y7IhVpNacRuhNIolcZ75oJrbDP8UHeo58Pj+lxzrW/MnZo2bOcns6DSP2x7EDQfCaN/OHKO9TvOCsshwKhESdCXvC8ag7fW7IO5GGuCF83aW7ELeq8pyH5PInoACKbr+gEavy6K5E85VAAAAABJRU5ErkJggg=="
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJcSURBVHgBzZVNTBNBFMff1F5LPHCxNXG9zcaSeHCb6MVKi3iC9uiB7uJNuglXqRrqwY8rKdWDH7CLZ6CeNGJSj8DBFEl2ORBi0jYxIaFpTfRgHedtS6ltaXdVCL9kksnMm///7ex7GYCTBKUXdnA4OUPsBFE6cBWAJXl00FpgkCWkqhiG8QX+BUqpwDOekwKXmabpbJ/FxSU2GLrOcE8UxXPgFEEQTlPqn5YCV/ZSqTQrl8uslXw+z3CPin6GsbaNRNE/ycfenamEJdILjMHY+v+R4fDr4AE8m7GYwlZX15hT0AjP1r7ooBBcDQdSmxJCwOfzgVMKxaJ1tlnrTwPG5uPx2xAZHYGYPA5TiXtQKBR7C/MYjFXVSQgNXgPUQK12gzrRaAR07RX4vF4IDw3DbPppR6NKpWLtYTIY+2HlHcRiY21xrk5Z4RWp6gSsvH/LxQsgK+OwtJxp7Gv6AoTCw9YeJoOxHo+nkxS4oQto9PjRQ0sIryHBByJJl2A2NQOBgAS9cIMN0EjX5qysEZzbxZbBPtHoKDjFBUfMcRowZbmpUv6WmgZT2g1492G9y8otWw3Wytr6+sHZpk5u/GTT+HzemjCXHB66kYxERgQ1PsEryNtVGAWx4TKZN6VfVZbc2tqcad4/1Xpgd/drrr/fmzFNo6QvvA7iGpZpX5/HyhLB+sdOfv7iJdxN3C/lchtPfnx339ze3vjYqtf1RaP0ogBQnfadPaPE+ddgwyHYten0M6iUv80T4k4axqdDXzabTyY3Ij+xu4L1pSx/Nh+Y5mYW/idUHNjBASeJ36MgYcqj2cC/AAAAAElFTkSuQmCC"
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
 
     @tapir.connect
@@ -309,4 +329,43 @@ class GetBoundingBox_Component(component):
             
             if not success:
                 self.AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, message)
-        return bBox   
+        return bBox
+
+class HighlightElements_Component(component):
+    def __new__(cls):
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "HighlightElements", "Highlight", """Highlights elements on Archicad window.""", "tAPIr", "02 Get")
+        return instance
+    
+    def get_ComponentGuid(self):
+        return System.Guid("95091882-2129-4f1c-acdf-da7a325cc2bf")
+    
+    def SetUpParam(self, p, name, nickname, description):
+        p.Name = name
+        p.NickName = nickname
+        p.Description = description
+        p.Optional = True
+    
+    def RegisterInputParams(self, pManager):
+        p = Grasshopper.Kernel.Parameters.Param_GenericObject()
+        self.SetUpParam(p, "Elements", "E", "Elements to highlight")
+        p.Access = Grasshopper.Kernel.GH_ParamAccess.list
+        self.Params.Input.Add(p)
+    
+    def RegisterOutputParams(self, pManager):
+        pass
+
+    def SolveInstance(self, DA):
+        p0 = self.marshal.GetInput(DA, 0)
+        result = self.RunScript(p0)
+
+        if result is not None:
+            self.marshal.SetOutput(result, DA, 0, True)
+        
+    def get_Internal_Icon_24x24(self):
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIBSURBVHgBxVXPLztBFH8zre9tm2+jxNGJ3WyFgzZxUiTOji7ackf8BXohjqTcyx+gjSsSjtoD4kfrpAeVUBLZ5UCy+8xsrSq1O62IT7K78+PN570389l5AL8MTyPGqqr2+v3tHff35RvRNV5oAIZBxii1mseiaxpy4PFgBuAf/BiKEkx3dam9ovZ867q7g+l6c3UzoBQTJtA4a87ZY7LcMwiAkUqP7BUKJ/v2nGnSuNfrTdTjIuCCCrGZCoVDnYoigyRJkM3mIJfNFVko8Y+OGgYnD4UH8OAgi5+xvbOLfK4SQNMO1MsdRvQduGNuA82ARzYRnUQ3TETjjllQu8GVIMvB+ap6MBIO9wsEIoN9+F85Pjiw0dJS1bmu6+AGn08CJw6HyGq3KLW+gVdXJdQ0DTfTmffxaIxvUTACzUBWei5tBS0sLuHwyKilnGRy7V1J3AaahS3TfD5vESZX16yH4/w8/yZT5+ip0yT/iZ4eH8eisama8yiVrmF6ZhZ0TR8qFE73nDhcr+ty+fZC8vn72gKt8vPLizXGnWXSWylGvuK2noIACOKRVpNBib2xKLRWxIjru3JN8wyq37OzQ9e6IFQPDAP6GGkCETKcnBDC+kYKBAqPUAYcb2oZJIQ+IJrHbodrQ6gmswstxj7LLIMiU+h/lsF4INABd3c3f5/Br+MVbi1GePxGuTMAAAAASUVORK5CYII="
+        return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
+    
+    def RunScript(self, elements):        
+        archicad = tapir.Plugin.Archicad
+        if archicad:
+            archicad.HighlightElements(elements)
