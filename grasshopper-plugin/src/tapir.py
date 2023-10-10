@@ -4,7 +4,7 @@
 __all__ = ["Plugin", "RhinoWrapper", "Factory"]
 
 # - - - - - - - - BUILT-IN IMPORTS
-import System
+import System, traceback
 import base64
 
 # - - - - - - - - LOCAL IMPORTS
@@ -24,6 +24,15 @@ def connect(function):
         else:
             args[0].AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, "Plugin Disconnected!")
     return wrapper
+
+def debug(function):    
+    def wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except Exception as ex:
+            System.Windows.Forms.MessageBox.Show(traceback.format_exc(), str(ex))
+            args[0].AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Error, str(ex))
+        return wrapper
 
 # - - - - - - - - CLASS LIBRARY
 class AssemblyInfo(GhPython.Assemblies.PythonAssemblyInfo):
@@ -69,6 +78,29 @@ class RhinoWrapper(object):
 class Factory(object):
 
     @staticmethod
+    def create_button(component, param_index, name, x_offset=27, y_offset=11):
+        source_input = component.Params.Input[param_index]
+        component_width_delta = component.Attributes.Bounds.Width * 0.5
+
+        # Create new Button component
+        source_pivot = component.Attributes.Pivot
+        new_button = Grasshopper.Kernel.Special.GH_ButtonObject()
+
+        # Add component to current Grasshopper Document
+        doc = component.OnPingDocument()
+        doc.AddObject(new_button, False, doc.ObjectCount + 1)
+
+        new_button.Name = name
+        new_button.NickName = name
+        new_button.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - component_width_delta - x_offset, source_pivot.Y - y_offset)
+
+        # Connect Value List to component
+        source_input.AddSource(new_button)
+        new_button.ExpireSolution(True)
+
+        return new_button
+
+    @staticmethod
     def create_value_list(component, param_index, name, items, x_offset=27, y_offset=11):
         source_input = component.Params.Input[param_index]
         component_width_delta = component.Attributes.Bounds.Width * 0.5
@@ -91,6 +123,7 @@ class Factory(object):
 
         # Connect Value List to component
         source_input.AddSource(new_value_list)
+        new_value_list.ExpireSolution(True)
 
         return new_value_list
 

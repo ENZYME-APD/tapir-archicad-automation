@@ -2,25 +2,27 @@
 # -*- coding: utf-8 -*-
 
 __all__ = ["ExportCode_Component",
-           "StealIcon_Component"]
+           "StealIcon_Component",
+           "ClassificationItem_Component"]
 
 # - - - - - - - - BUILT-IN IMPORTS
 import System
 import os, traceback
 
 # - - - - - - - - LOCAL IMPORTS
-import tapir
+import tapir, tapir_py
 
 # - - - - - - - - RH/GH IMPORTS
 from  ghpythonlib.componentbase import dotnetcompiledcomponent as component
+from ghpythonlib.treehelpers import list_to_tree
 from Grasshopper.Kernel import GH_RuntimeMessageLevel as RML
-import Rhino, Grasshopper, GhPython
-
+import Rhino, Grasshopper
+        
 # - - - - - - - - COMPONENT
 class ExportCode_Component(component):
     
     def __new__(cls):
-        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "ExportCode", "ExportCode", """Extracts code from a GhPython Script component, and provides option to export to .py file.""", "tAPIr", "99 WIP")
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "ExportCode", "ExportCode", """Extracts code from a GhPython Script component, and provides option to export to .py file.""", "tAPIr", "00 WIP")
         return instance
     
     def get_ComponentGuid(self):
@@ -100,7 +102,7 @@ class ExportCode_Component(component):
 
 class StealIcon_Component(component):
     def __new__(cls):
-        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "StealIcon", "StealIcon", """Extracts 24x24 icon from input component.""", "tAPIr", "99 WIP")
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "StealIcon", "StealIcon", """Extracts 24x24 icon from input component.""", "tAPIr", "00 WIP")
         return instance
     
     def get_ComponentGuid(self):
@@ -159,3 +161,70 @@ class StealIcon_Component(component):
             self.set_icon(self.get_Internal_Icon_24x24())
             self.AddRuntimeMessage(RML.Warning, "No Input")
             return 
+
+class ClassificationItem_Component(component):
+    def __new__(cls):
+        instance = Grasshopper.Kernel.GH_Component.__new__(cls, "ClassificationItem", "ClassificationItem", """ClassificationItem""", "tAPIr", "00 WIP")
+        return instance
+    
+    def get_ComponentGuid(self):
+        return System.Guid("608cd6d6-01be-4ef2-87cb-8760dcf4c859")
+    
+    def SetUpParam(self, p, name, nickname, description):
+        p.Name = name
+        p.NickName = nickname
+        p.Description = description
+        p.Optional = True
+    
+    def RegisterInputParams(self, pManager):
+        p = Grasshopper.Kernel.Parameters.Param_GenericObject()
+        self.SetUpParam(p, "classification", "classification", "Script variable Python")
+        p.Access = Grasshopper.Kernel.GH_ParamAccess.tree
+        self.Params.Input.Add(p)
+        
+    def RegisterOutputParams(self, pManager):
+        p = Grasshopper.Kernel.Parameters.Param_GenericObject()
+        self.SetUpParam(p, "children", "children", "Script output children.")
+        self.Params.Output.Add(p)
+        
+    def SolveInstance(self, DA):
+        p0 = self.marshal.GetInput(DA, 0)
+        result = self.RunScript(p0)
+
+        if result is not None:
+            self.marshal.SetOutput(result, DA, 0, True)
+        
+    def get_Internal_Icon_24x24(self):
+        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAZ1JREFUSEvdlT1PwlAUhvkJ/IQrgpsxcSVE/wGbEh0YDOpG1Dijzlp01Tj7sTCJ7OrcRHZbdqEzt02u5zSn3NIe+uHIm7xJc3rPc+5XTwvLLaVUUUrZnrpuT3qeJV1XkU0/JmWThuaX53l1ADkhKOuplFbuQpDYjYLSDCvqUHqycCAHyOguYXjBtjSDwePJxHcoOZNxawkXV/ggq7Vt1To8Vt/DobLsUQyUYAcvByG1DOOuef/wqHYb+2p9Y1OJUmXOGMN3OMaybQ6sDTePsFpitdyLQpN8ena+sBBeYcJqiZWKyYEC4woOWkex+I1xGy8CV5ewWtHEqPE8cMbcuxNYTbQIYbW4xDy+uLxKK7BmcYlprta2Zs8fn19BAZOwWnkPeaexp/rvAx94bXT9WIdWwR9yqdIOA6LGmeJeP7+8qt9x/AOci3G9SQhRBJCDMAS99Qfqx7J9h0FpxuZHyLiEKNefYIZcYmandVb3H500MORm66g4kAMkGSdG6dnkd9b5v9giO4kdNE1YCGbXA5szKBTGGDY1tnMukQqFP73q7HDtm/LxAAAAAElFTkSuQmCC"
+        return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
+
+    
+    def RunScript(self, classification):    
+        items = []
+        tree = classification
+        archicad = tapir.Plugin.Archicad
+        
+        for branch_index in range(tree.BranchCount):
+            branch = tree.Branch(branch_index)
+            branch_item = []
+            for leaf in branch:
+                
+                if isinstance(leaf, tapir_py.core.Command):
+                    objects = leaf.GetAllClassificationSystems()
+                    branch_item.append(objects)
+                
+                elif isinstance(leaf, tapir_py.parts.ClassificationSystem):
+                    objects = archicad.GetAllClassificationsInSystem(leaf)
+                    branch_item.append(objects)
+            
+                elif isinstance(leaf, tapir_py.parts.ClassificationItem):
+                    objects = leaf.children
+                    branch_item.append(objects)
+            
+            items.append(branch_item)
+        
+        items = list_to_tree(items)
+        children = items
+        
+        # return outputs if you have them; here I try it for you:
+        return children

@@ -72,7 +72,7 @@ class ClassificationSystem(dotNETBase):
         return [ClassificationSystem.FromDictionary(data) for data in result.get('classificationSystems', [])]
 
     def __str__(self):
-        return '<{} : {}>'.format(self.GetType(), self.name)
+        return '<{} : {} {}>'.format(self.GetType(), self.name, self.version)
 
 class ClassificationItem(dotNETBase):
 
@@ -84,6 +84,10 @@ class ClassificationItem(dotNETBase):
         description (str) : A description of classification item
         children (list) : A list of ClassificationItem
     """
+    @property
+    def HasChildren(self):
+        return not self.children is None
+
     def __init__(self, guid, id, name, description, children=None):
         self.guid = guid
         self.id = id
@@ -112,7 +116,7 @@ class ClassificationItem(dotNETBase):
                 for data in itemData.get('children'):
                     childItem = ClassificationItem.FromDictionary(data)
                     children.append(childItem)
-            return cls(guid,id,name,description,children)
+            return cls(guid, id, name, description, children)
         else:
             raise ValueError('json_data must be a dictionary')
 
@@ -121,7 +125,7 @@ class ClassificationItem(dotNETBase):
         return [ClassificationItem.FromDictionary(classItemData) for classItemData in result.get('classificationItems',[])]
 
     def __str__(self):
-        return '<{} : {}>'.format(self.GetType(), self.name)
+        return '<{} : {}>'.format(self.GetType(), self.id)
 
 class BoundingBox(dotNETBase):
 

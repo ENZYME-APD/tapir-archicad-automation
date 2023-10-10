@@ -59,7 +59,8 @@ class Connect_Component(component):
         self.archicad = None
 
     def RunScript(self, refresh):
-        
+        self.ensure_button()
+
         if refresh:
             self.archicad = core.Command.create()
             self.is_valid = self.archicad.IsAlive()
@@ -77,6 +78,11 @@ class Connect_Component(component):
             self.AddRuntimeMessage(RML.Warning, "Connection Failed: Unable to connect to ArchiCAD.")
             return None
     
+    def ensure_button(self):
+        if self.Params.Input[0].Sources.Count == 0:
+            tapir.Factory.create_button(self, 0, "Update", 150)
+            self.ExpireSolution(True)
+
     def on_disconnect_click(self, sender, args):
         try:
             self.__init__()
