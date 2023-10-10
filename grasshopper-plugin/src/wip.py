@@ -16,7 +16,7 @@ import tapir, tapir_py
 from  ghpythonlib.componentbase import dotnetcompiledcomponent as component
 from ghpythonlib.treehelpers import list_to_tree
 from Grasshopper.Kernel import GH_RuntimeMessageLevel as RML
-import Rhino, Grasshopper
+import Rhino, Grasshopper, GhPython
         
 # - - - - - - - - COMPONENT
 class ExportCode_Component(component):
