@@ -72,7 +72,11 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
 {
     GS::Array<API_LibraryInfo> libs;
 
+#ifdef ServerMainVers_2700
+    GSErrCode err = ACAPI_LibraryManagement_GetLibraries (&libs);
+#else
     GSErrCode err = ACAPI_Environment (APIEnv_GetLibrariesID, &libs);
+#endif
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive libraries.");
     }
@@ -117,7 +121,7 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
         }
 
         libraryData.Add ("name", libs[i].name);
-        libraryData.Add ("path", libs[i].location.ToDisplayText());
+        libraryData.Add ("path", libs[i].location.ToDisplayText ());
         libraryData.Add ("type", type);
         libraryData.Add ("available", libs[i].available);
         libraryData.Add ("readOnly", libs[i].readOnly);
@@ -141,7 +145,11 @@ GS::String ReloadLibrariesCommand::GetName () const
 
 GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
+#ifdef ServerMainVers_2700
+    GSErrCode err = ACAPI_ProjectOperation_ReloadLibraries ();
+#else
     GSErrCode err = ACAPI_Automate (APIDo_ReloadLibrariesID);
+#endif
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to reload libraries.");

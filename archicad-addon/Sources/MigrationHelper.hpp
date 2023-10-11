@@ -1,0 +1,15 @@
+#pragma once
+
+#ifndef ServerMainVers_2700
+
+#define ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler ACAPI_Install_AddOnCommandHandler
+
+#define ACAPI_Element_NeigIDToElemType ACAPI_Goodies_NeigIDToElemType
+
+#define ACAPI_Teamwork_ReceiveChanges ACAPI_TeamworkControl_ReceiveChanges
+#define ACAPI_Teamwork_SendChanges ACAPI_TeamworkControl_SendChanges
+
+#define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
+#define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
+
+#endif

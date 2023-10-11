@@ -51,6 +51,12 @@ else ()
 endif ()
 add_definitions (-DACExtension)
 
+if (${ARCHICAD_VERSION} LESS 27)
+	set (CMAKE_CXX_STANDARD 14)
+else ()
+	set (CMAKE_CXX_STANDARD 17)
+endif ()
+
 if (WIN32)
 	set (OutputPostfix Win)
 else ()
@@ -148,17 +154,32 @@ target_include_directories (AddOn PUBLIC
 )
 
 if (WIN32)
-	target_link_libraries (AddOn
-		"$<$<CONFIG:Debug>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STATD.lib>"
-		"$<$<CONFIG:Release>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
-		"$<$<CONFIG:RelWithDebInfo>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
-	)
+	if (${ARCHICAD_VERSION} LESS 27)
+		target_link_libraries (AddOn
+			"$<$<CONFIG:Debug>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STATD.lib>"
+			"$<$<CONFIG:Release>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
+			"$<$<CONFIG:RelWithDebInfo>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
+		)
+	else ()
+		target_link_libraries (AddOn
+			"$<$<CONFIG:Debug>:${AC_API_DEVKIT_DIR}/Support/Lib/ACAP_STATD.lib>"
+			"$<$<CONFIG:Release>:${AC_API_DEVKIT_DIR}/Support/Lib/ACAP_STAT.lib>"
+			"$<$<CONFIG:RelWithDebInfo>:${AC_API_DEVKIT_DIR}/Support/Lib/ACAP_STAT.lib>"
+		)
+	endif ()
 else ()
 	find_library (CocoaFramework Cocoa)
-	target_link_libraries (AddOn
-		"${AC_API_DEVKIT_DIR}/Support/Lib/Mactel/libACAP_STAT.a"
-		${CocoaFramework}
-	)
+	if (${ARCHICAD_VERSION} LESS 27)
+		target_link_libraries (AddOn
+			"${AC_API_DEVKIT_DIR}/Support/Lib/Mactel/libACAP_STAT.a"
+			${CocoaFramework}
+		)
+	else ()
+		target_link_libraries (AddOn
+			"${AC_API_DEVKIT_DIR}/Support/Lib/libACAP_STAT.a"
+			${CocoaFramework}
+		)
+	endif ()
 endif ()
 
 SetCompilerOptions (AddOn)
