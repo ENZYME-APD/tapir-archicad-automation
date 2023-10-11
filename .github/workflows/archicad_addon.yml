@@ -18,6 +18,9 @@ jobs:
           - acVersion: 26
             devKitUrl: WIN_DEVKIT_AC26
             devKitDir: API Development Kit 26.3000
+          - acVersion: 27
+            devKitUrl: WIN_DEVKIT_AC27
+            devKitDir: API Development Kit 27.3001
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
@@ -53,7 +56,10 @@ jobs:
             devKitDir: GRAPHISOFT ARCHICAD API DevKit 25.3006
           - acVersion: 26
             devKitUrl: MAC_DEVKIT_AC26
-            devKitDir: Graphisoft Archicad API DevKit 26.3000  
+            devKitDir: Graphisoft Archicad API DevKit 26.3000
+          - acVersion: 27
+            devKitUrl: MAC_DEVKIT_AC27
+            devKitDir: Graphisoft Archicad API DevKit 27.3001
     runs-on: [ macos-12 ]
     steps:
     - name: Checkout repo
