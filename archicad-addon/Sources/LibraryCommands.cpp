@@ -1,5 +1,6 @@
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
+#include "MigrationHelper.hpp"
 
 GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
 {
@@ -72,11 +73,7 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
 {
     GS::Array<API_LibraryInfo> libs;
 
-#ifdef ServerMainVers_2700
     GSErrCode err = ACAPI_LibraryManagement_GetLibraries (&libs);
-#else
-    GSErrCode err = ACAPI_Environment (APIEnv_GetLibrariesID, &libs);
-#endif
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive libraries.");
     }
@@ -145,12 +142,7 @@ GS::String ReloadLibrariesCommand::GetName () const
 
 GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-#ifdef ServerMainVers_2700
     GSErrCode err = ACAPI_ProjectOperation_ReloadLibraries ();
-#else
-    GSErrCode err = ACAPI_Automate (APIDo_ReloadLibrariesID);
-#endif
-
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to reload libraries.");
     }

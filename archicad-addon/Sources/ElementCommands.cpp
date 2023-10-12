@@ -177,11 +177,7 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
     }
 
     // need to call redraw for changes to take effect
-#ifdef ServerMainVers_2700
     ACAPI_View_Redraw ();
-#else
-    ACAPI_Automate (APIDo_RedrawID);
-#endif
 
     return {};
 }
