@@ -2,6 +2,7 @@
 #include "ObjectState.hpp"
 #include "FileSystem.hpp"
 #include "AddOnVersion.hpp"
+#include "MigrationHelper.hpp"
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -87,9 +88,8 @@ GS::String QuitArchicadCommand::GetName () const
 
 GS::ObjectState QuitArchicadCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    Int64 magicCode = 1234;
-    GSErrCode err = ACAPI_Automate (APIDo_QuitID, reinterpret_cast<void*> (magicCode));
-
+    Int32 magicCode = 1234;
+    GSErrCode err = ACAPI_ProjectOperation_Quit (magicCode);
     if (err != NoError) {
         return CreateErrorResponse (APIERR_COMMANDFAILED, "Failed to quit Archicad!");
     }

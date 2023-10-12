@@ -1,4 +1,5 @@
 #include "ElementCommands.hpp"
+#include "MigrationHelper.hpp"
 
 #include <array>
 
@@ -48,7 +49,7 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
         API_ElemTypeID elemTypeID = API_ZombieElemID;
 #ifdef ServerMainVers_2600
         API_ElemType apiElemType;
-        if (ACAPI_Goodies_NeigIDToElemType (selectedNeig.neigID, apiElemType) != NoError) {
+        if (ACAPI_Element_NeigIDToElemType (selectedNeig.neigID, apiElemType) != NoError) {
             continue;
         }
         elemTypeID = apiElemType.typeID;
@@ -170,13 +171,13 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
     }
 
     if (!elements.IsEmpty ()) {
-        ACAPI_Interface_SetElementHighlight (elements, GS::NoValue, nonHighlightedColor);
+        ACAPI_UserInput_SetElementHighlight (elements, GS::NoValue, nonHighlightedColor);
     } else {
-        ACAPI_Interface_ClearElementHighlight ();
+        ACAPI_UserInput_ClearElementHighlight ();
     }
 
     // need to call redraw for changes to take effect
-    ACAPI_Automate (APIDo_RedrawID);
+    ACAPI_View_Redraw ();
 
     return {};
 }
