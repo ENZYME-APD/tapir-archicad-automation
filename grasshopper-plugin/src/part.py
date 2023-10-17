@@ -380,12 +380,26 @@ class HighlightElements_Component(component):
         p.Access = Grasshopper.Kernel.GH_ParamAccess.list
         self.Params.Input.Add(p)
     
+        p = Grasshopper.Kernel.Parameters.Param_GenericObject()
+        self.SetUpParam(p, "sColor", "sC", "Color for selected elements.")
+        p.Access = Grasshopper.Kernel.GH_ParamAccess.item
+        p.Optional = True
+        self.Params.Input.Add(p)
+
+        p = Grasshopper.Kernel.Parameters.Param_GenericObject()
+        self.SetUpParam(p, "uColor", "uC", "Color for unselected Elements.")
+        p.Access = Grasshopper.Kernel.GH_ParamAccess.item
+        p.Optional = True
+        self.Params.Input.Add(p)
+
     def RegisterOutputParams(self, pManager):
         pass
 
     def SolveInstance(self, DA):
         p0 = self.marshal.GetInput(DA, 0)
-        result = self.RunScript(p0)
+        p1 = self.marshal.GetInput(DA, 1)
+        p2 = self.marshal.GetInput(DA, 2)
+        result = self.RunScript(p0, p1, p2)
 
         if result is not None:
             self.marshal.SetOutput(result, DA, 0, True)
@@ -395,9 +409,17 @@ class HighlightElements_Component(component):
         return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
     
     @tapir.connect
-    def RunScript(self, elements):        
+    def RunScript(self, elements, fg_color=None, bg_color=None):
         archicad = tapir.Plugin.Archicad
         if archicad:
-            selected = []
-            unselected = [237, 237, 237, 255]
-            archicad.HighlightElements(elements)#, nonHighlightedColor=unselected)
+
+            if fg_color:
+                fg_color = [int(val) for val in [fg_color.R, fg_color.G, fg_color.B, fg_color.A]]
+            else:
+                fg_color = [0, 150, 0, 100]
+            if bg_color:
+                bg_color = [int(val) for val in [bg_color.R, bg_color.G, bg_color.B, bg_color.A]]
+            else:
+                bg_color = [150, 0, 0, 100]
+
+            archicad.HighlightElements(elements, fg_color, bg_color)
