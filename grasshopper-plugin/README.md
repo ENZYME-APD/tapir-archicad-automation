@@ -1,5 +1,7 @@
 # Tapir [Grasshopper](https://www.grasshopper3d.com/) plugin.
 
+[![Grasshopper Plugin Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml)
+
 Contains the source code for Grasshopper® components that use the [Archicad JSON API](https://archicadapi.graphisoft.com/JSONInterfaceDocumentation/#Introduction).
 
 ## View plugin changelogs [here](CHANGELOG.md)
