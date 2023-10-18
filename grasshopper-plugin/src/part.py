@@ -38,7 +38,7 @@ class GetElements_Component(component):
     
     def RegisterInputParams(self, pManager):
         p = Grasshopper.Kernel.Parameters.Param_Boolean()
-        self.SetUpParam(p, "Update", "U", "Updates output Elements list.")
+        self.SetUpParam(p, "Refresh", "R", "Refresh output Elements list.")
         p.Access = Grasshopper.Kernel.GH_ParamAccess.item
         p.SetPersistentData(Grasshopper.Kernel.Types.GH_Boolean(True))
         self.Params.Input.Add(p)
@@ -56,11 +56,11 @@ class GetElements_Component(component):
             self.marshal.SetOutput(result, DA, 0, True)
         
     def get_Internal_Icon_24x24(self):
-        o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAH8SURBVHgB3VUxT8JAFH7XdmCQhsG4sJyLtCmGuqhxVuOk3RXlH7iqizpo3IxRZ0Hc1c1EF38BGq3gRIdCojFR28RgYjzvGokVrgTphN/S3nvv3nv9Xu87gG4Hqr8oSnKVrtYCIwmslUq36/UlxjgWifQsAkIZ6sRAiEXTZWs1aceyrl6a9itqkjiOQ3h4fXUI8/uTJxJaYXNzi9h2xYu5uyuSpeUVklCTBYz1GLdAK/gLsK9lyXjYoEU9Nr4hQEcgmYX5NNezMD9HmSKZcAUQwoqicF3xeJwF4HAFAFmVSpXrKZbuPX+4AoRkDw/zXJdnp/76WvI7XdeFaDTatInZ/YhEpJ18/shwXFdnnDO6KtUq5HJ5OD45vXqnv2o9tuNzoOt6rFb7+DkHjBbaeeA56FqIPKOqDm739vaNPj09XkJIoEYDHRgGJJVlWX55fHjrD8sn5zcVVw1jGtLpWSpmdIhtgmnTwICWahnEumeaY9u2J3DDI2PPXOHiQNO0lKJo5cYiAq97dtxlOfqnrzBN81oUwRAEOPEXQf7uGfcX52ffegLgOC5MTE41zYJ1yvQouByySsWb/l8muumAJ8G7e/u/5LcVPJrUwbKmDaUakv9wz7ts2plFUHJPixCSZthtMj4xFbSfzkKYoc9cUMDnJ8qKgmSYZuEa/hW+AG0WQhBYhGOoAAAAAElFTkSuQmCC"
-        return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o)))
+        icon = self.get_state_icon()
+        return System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(icon)))
 
     def __init__(self):
-        self.state = 0
+        self.set_state(0)
     
     def set_state(self, state):
         self.state = state
@@ -77,25 +77,36 @@ class GetElements_Component(component):
         else:
             self.Message = ""
 
-    def update_icon(self):
+    def get_state_icon(self):
         if self.state == 0:
-            o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGYSURBVHgB3VRNTsJAFH5vOglNFMKCuB42UFIM3UnceQI5AjfAG4AnMNyAI3AD48ZEN0CkoTu6NiwIXVgT7DgVRqAMBcsKv1Xfz7zve/PmFeDUgfLDMMpNYbV2ZnJoOc7wXpqMsayunzcAsS6CDDh3RbmO79O26/an2wSlMn99eYZ0Or1Vezbz4Kp6Dc5oiLJ4KnX2iAStbR3Q//ygN5KErAdVxUNkMpv+ULmq+FKxpevzhrQJJAKvx4ZxFU9GgMj2JLDjCADdQ+PJCDjvHBrfIPA8T5kf9es6bYth9pW1hT98qtJOvAeWZWV9f77ag/BahPLoHpw+NJWzVLp8yOUuqpPJ+xMcCYw6DMNggHQshjUVK58/9j4Vz1RrLpmz6yu/D8Wi2SsUzEoswUJ9+CoW4Ah3jFlZOACUQp0Q6EZJiEq9xF+6sG17oGlQi5Lgpno6jh5UzcIwzHH8/whdZ/SWD7/oLvWKLn6XzHHsvCrXNM3KV0C6GqG1tfO71cd1EVfctnsD6f+ZASK9hRgsughic4IAO9Hi/wPfJCWfBKxXgIgAAAAASUVORK5CYII="
+            icon = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGYSURBVHgB3VRNTsJAFH5vOglNFMKCuB42UFIM3UnceQI5AjfAG4AnMNyAI3AD48ZEN0CkoTu6NiwIXVgT7DgVRqAMBcsKv1Xfz7zve/PmFeDUgfLDMMpNYbV2ZnJoOc7wXpqMsayunzcAsS6CDDh3RbmO79O26/an2wSlMn99eYZ0Or1Vezbz4Kp6Dc5oiLJ4KnX2iAStbR3Q//ygN5KErAdVxUNkMpv+ULmq+FKxpevzhrQJJAKvx4ZxFU9GgMj2JLDjCADdQ+PJCDjvHBrfIPA8T5kf9es6bYth9pW1hT98qtJOvAeWZWV9f77ag/BahPLoHpw+NJWzVLp8yOUuqpPJ+xMcCYw6DMNggHQshjUVK58/9j4Vz1RrLpmz6yu/D8Wi2SsUzEoswUJ9+CoW4Ah3jFlZOACUQp0Q6EZJiEq9xF+6sG17oGlQi5Lgpno6jh5UzcIwzHH8/whdZ/SWD7/oLvWKLn6XzHHsvCrXNM3KV0C6GqG1tfO71cd1EVfctnsD6f+ZASK9hRgsughic4IAO9Hi/wPfJCWfBKxXgIgAAAAASUVORK5CYII="
         elif self.state == 1:
-            o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAH8SURBVHgB3VUxT8JAFH7XdmCQhsG4sJyLtCmGuqhxVuOk3RXlH7iqizpo3IxRZ0Hc1c1EF38BGq3gRIdCojFR28RgYjzvGokVrgTphN/S3nvv3nv9Xu87gG4Hqr8oSnKVrtYCIwmslUq36/UlxjgWifQsAkIZ6sRAiEXTZWs1aceyrl6a9itqkjiOQ3h4fXUI8/uTJxJaYXNzi9h2xYu5uyuSpeUVklCTBYz1GLdAK/gLsK9lyXjYoEU9Nr4hQEcgmYX5NNezMD9HmSKZcAUQwoqicF3xeJwF4HAFAFmVSpXrKZbuPX+4AoRkDw/zXJdnp/76WvI7XdeFaDTatInZ/YhEpJ18/shwXFdnnDO6KtUq5HJ5OD45vXqnv2o9tuNzoOt6rFb7+DkHjBbaeeA56FqIPKOqDm739vaNPj09XkJIoEYDHRgGJJVlWX55fHjrD8sn5zcVVw1jGtLpWSpmdIhtgmnTwICWahnEumeaY9u2J3DDI2PPXOHiQNO0lKJo5cYiAq97dtxlOfqnrzBN81oUwRAEOPEXQf7uGfcX52ffegLgOC5MTE41zYJ1yvQouByySsWb/l8muumAJ8G7e/u/5LcVPJrUwbKmDaUakv9wz7ts2plFUHJPixCSZthtMj4xFbSfzkKYoc9cUMDnJ8qKgmSYZuEa/hW+AG0WQhBYhGOoAAAAAElFTkSuQmCC"
+            icon = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAH8SURBVHgB3VUxT8JAFH7XdmCQhsG4sJyLtCmGuqhxVuOk3RXlH7iqizpo3IxRZ0Hc1c1EF38BGq3gRIdCojFR28RgYjzvGokVrgTphN/S3nvv3nv9Xu87gG4Hqr8oSnKVrtYCIwmslUq36/UlxjgWifQsAkIZ6sRAiEXTZWs1aceyrl6a9itqkjiOQ3h4fXUI8/uTJxJaYXNzi9h2xYu5uyuSpeUVklCTBYz1GLdAK/gLsK9lyXjYoEU9Nr4hQEcgmYX5NNezMD9HmSKZcAUQwoqicF3xeJwF4HAFAFmVSpXrKZbuPX+4AoRkDw/zXJdnp/76WvI7XdeFaDTatInZ/YhEpJ18/shwXFdnnDO6KtUq5HJ5OD45vXqnv2o9tuNzoOt6rFb7+DkHjBbaeeA56FqIPKOqDm739vaNPj09XkJIoEYDHRgGJJVlWX55fHjrD8sn5zcVVw1jGtLpWSpmdIhtgmnTwICWahnEumeaY9u2J3DDI2PPXOHiQNO0lKJo5cYiAq97dtxlOfqnrzBN81oUwRAEOPEXQf7uGfcX52ffegLgOC5MTE41zYJ1yvQouByySsWb/l8muumAJ8G7e/u/5LcVPJrUwbKmDaUakv9wz7ts2plFUHJPixCSZthtMj4xFbSfzkKYoc9cUMDnJ8qKgmSYZuEa/hW+AG0WQhBYhGOoAAAAAElFTkSuQmCC"
         elif self.state == 2:
-            o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAa5JREFUSEvdVDtOw0AQzRFyBFfxrtYmpgCJGkQNos6HGpDbIAoqEF2OwOcAMT1BqZMmR0iTPlIusMzb7Dp2GCdxqMKTnuL1jt/Mm9ls5X9CiOBRymAG4tm+zsHzvCr2hAwnQgZaCDXB2vOiqg3hQYGti8srPZ/P9XQ61Xj2/SC22wYQ9301NsIr9GUwLkxCFceoZDgcmQTAV//bVqdaNsw45MRTcq7xEtVCEOKnZ+f67f1D95JPjYTYcx+ahJxwSjUxolmg32jJcDTSN7d3+un5xYgiIZL1egnszxDLi+ZpRLNAAtMO2jw6PtGd+wdDiONdn/aWCexgCxn+duBaBAeNZjsNbjSvjXi+RTvMABDioEUBA3KTSBkmFDhw6+xJiqKoSu/KnyJACOHREF9xDC273AdIsnDi2kW/tN74P1h8GLaztFt7BOp/t3BQf4WZwWJYs4393AUYcHoqSrjAgajVVN0uebjqHcu4UErVcYWsTZKr3rGEi7VJVqt35FxAhItdkr0qmOodt3RhHJC4Uod5B0XVO24zi0JxgO6VmBPOke4pG84CdxMrvueoVH4AzCJavwTgX24AAAAASUVORK5CYII="
+            icon = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAa5JREFUSEvdVDtOw0AQzRFyBFfxrtYmpgCJGkQNos6HGpDbIAoqEF2OwOcAMT1BqZMmR0iTPlIusMzb7Dp2GCdxqMKTnuL1jt/Mm9ls5X9CiOBRymAG4tm+zsHzvCr2hAwnQgZaCDXB2vOiqg3hQYGti8srPZ/P9XQ61Xj2/SC22wYQ9301NsIr9GUwLkxCFceoZDgcmQTAV//bVqdaNsw45MRTcq7xEtVCEOKnZ+f67f1D95JPjYTYcx+ahJxwSjUxolmg32jJcDTSN7d3+un5xYgiIZL1egnszxDLi+ZpRLNAAtMO2jw6PtGd+wdDiONdn/aWCexgCxn+duBaBAeNZjsNbjSvjXi+RTvMABDioEUBA3KTSBkmFDhw6+xJiqKoSu/KnyJACOHREF9xDC273AdIsnDi2kW/tN74P1h8GLaztFt7BOp/t3BQf4WZwWJYs4393AUYcHoqSrjAgajVVN0uebjqHcu4UErVcYWsTZKr3rGEi7VJVqt35FxAhItdkr0qmOodt3RhHJC4Uod5B0XVO24zi0JxgO6VmBPOke4pG84CdxMrvueoVH4AzCJavwTgX24AAAAASUVORK5CYII="
         else:
-            o = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIOSURBVHgB3VW/T9tAFH4X+cxCoswNg2mp1DBlqenY4mQm6V6ZuQW1WyEg8R/wQyHMiRgQDBB2AqwwZYIx+Q9AZMJn5fHOcHF+YZwwwSed/PTO/r6753ffAbx1sKBJRIwLIWxk7DtjLEUJ42mqhgANhljRdb0Mo8B13TlHiBsaGDTuHafuOI49FDl9uPEScZ+QEGuhyOWLw5J3jI1ePtZTFruFWJJxs9n0ctFoFIZBhLGspmnHAwUc162rH/ljNgPTyS+wuPiHRGKQSHyAkLjlmjZJTXHbJbC+vmWPR8dL1eopXF1ft3egIHcynUyCZc1CJmORYOJ5CcR/1F1bXQLGp6kjQJaFkPiZy3q7GyRELVwZ4zwn40g722JGEKHcgVy9wuFRxStjoVDse5fOR0rFvgCDVAA/fJsxYXVluS9f2C7C/6V8j4K/WL9EHz8jvALz9i/I5/0F6Jx73JEO2QaMANVdpfIuXFxcqnRNBR0latVgCJjmV9gpFuDs9AQWFn57uZNq1XtKn2rTqoBK9JcemxCwUtM0YYaI0+k0xGLdB/DurunnEOeVCfoChhGHCK9TGM9RC6YtC5J00CQmJgJ6vgfkwI0xXZ8cOGkYU3N7+wf4Ci/CF51VjOCkaoiwjipGcFQxwEkDIZ1Vml8I8ht5OT3Hw8II0Y+THmVQ+z2edsbkdVmj/DnnvKyc833iAbpECjpFWScMAAAAAElFTkSuQmCC"
-        self.SetIconOverride(System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(o))))
+            icon = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIOSURBVHgB3VW/T9tAFH4X+cxCoswNg2mp1DBlqenY4mQm6V6ZuQW1WyEg8R/wQyHMiRgQDBB2AqwwZYIx+Q9AZMJn5fHOcHF+YZwwwSed/PTO/r6753ffAbx1sKBJRIwLIWxk7DtjLEUJ42mqhgANhljRdb0Mo8B13TlHiBsaGDTuHafuOI49FDl9uPEScZ+QEGuhyOWLw5J3jI1ePtZTFruFWJJxs9n0ctFoFIZBhLGspmnHAwUc162rH/ljNgPTyS+wuPiHRGKQSHyAkLjlmjZJTXHbJbC+vmWPR8dL1eopXF1ft3egIHcynUyCZc1CJmORYOJ5CcR/1F1bXQLGp6kjQJaFkPiZy3q7GyRELVwZ4zwn40g722JGEKHcgVy9wuFRxStjoVDse5fOR0rFvgCDVAA/fJsxYXVluS9f2C7C/6V8j4K/WL9EHz8jvALz9i/I5/0F6Jx73JEO2QaMANVdpfIuXFxcqnRNBR0latVgCJjmV9gpFuDs9AQWFn57uZNq1XtKn2rTqoBK9JcemxCwUtM0YYaI0+k0xGLdB/DurunnEOeVCfoChhGHCK9TGM9RC6YtC5J00CQmJgJ6vgfkwI0xXZ8cOGkYU3N7+wf4Ci/CF51VjOCkaoiwjipGcFQxwEkDIZ1Vml8I8ht5OT3Hw8II0Y+THmVQ+z2edsbkdVmj/DnnvKyc833iAbpECjpFWScMAAAAAElFTkSuQmCC"
+        return icon
+
+    def update_icon(self):
+        icon = self.get_state_icon()
+        self.SetIconOverride(System.Drawing.Bitmap(System.IO.MemoryStream(System.Convert.FromBase64String(icon))))
 
     @tapir.connect
     def RunScript(self, refresh):
         if self.state == 0:
+            self.ensure_button()
             return tapir.Plugin.Archicad.GetSelectedElements()
         elif self.state == 1:
+            self.ensure_button()
             return tapir.Plugin.Archicad.GetAllElements()
         elif self.state == 2:
             return tapir.Plugin.Archicad
+    
+    def ensure_button(self):
+        if self.Params.Input[0].Sources.Count == 0:
+            tapir.Factory.create_button(self, 0, "Refresh", 150)
+            self.ExpireSolution(True)
 
     def on_get_selected_click(self, sender, args):
         try:

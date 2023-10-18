@@ -201,8 +201,11 @@ class Command(dotNETBase):
         return cls(Link(port))
     
     def __init__(self, link):
-        self.link = link
-        self.description = self.GetProjectInfo().projectName if self.IsAlive() else 'ArchiCAD Command Object'
+        if isinstance(link, Link):
+            self.link = link
+            self.description = self.GetProjectInfo().projectName if self.IsAlive() else 'ArchiCAD Command Object'
+        else:
+            raise TypeError("Input is not of type 'Link'")
 
     #region Basic Commands
     def IsAlive(self):
@@ -283,11 +286,11 @@ class Command(dotNETBase):
         response = self.link.post(cmd)
         return Element.list_from_command_result(response.get_result())
 
-    def GetElementsByType(self, element_type_id):
+    def GetElementsByType(self, element_type):
         """Returns all elements in the current document that match the specified element type.
         
         Args:
-            element_type_id (str): The element type to match.
+            element_type (str): The element type to match.
             
         Returns:
             :obj:`list` of :obj:`Element`: A list of elements in the current document of specified type.
@@ -298,17 +301,38 @@ class Command(dotNETBase):
         
         """
         for item in Element._TYPES:
-            if item.lower() == element_type_id.lower():
-                element_type_id = item
+            if item.lower() == element_type.lower():
+                element_type = item
                 break
         else:
-            raise TypeError("Couldn't find element type: {}".format(element_type_id))
+            raise TypeError("Couldn't find element type: {}".format(element_type))
         
         cmd = { 'command' : 'API.GetElementsByType',
-                'parameters' : {'elementType': element_type_id}
+                'parameters' : {'elementType': element_type}
                 }
         response = self.link.post(cmd)
         return Element.list_from_command_result(response.get_result())
+
+    def GetTypesOfElements(self, elements):
+        """Returns the elementType of provided elements.
+
+        Args:
+            elements (:obj:`list` of :obj:`Element`): A list of string(s) that represent the element-type of element(s).
+        
+        Returns:
+            :obj:'list' of str representing the elementType(s).
+        """
+        #if all([isinstance(element, Element) for element in elements]):
+        param_elements = Parameter("elements", [element.ToDictionary() for element in elements])
+        packed_params = Parameter.pack([param_elements])
+        
+        cmd = { 'command' : 'API.GetTypesOfElements',
+                'parameters' : packed_params }
+        
+        response = self.link.post(cmd)
+        return Element._get_element_types_from_command_result(response.get_result())
+        #else:
+        #    raise TypeError("Input is not of type 'Element'")
 
     def GetElementsByClassification(self, classification_system_id):
         """Returns all elements in the current document that match the specified classification system.

@@ -80,7 +80,7 @@ class Connect_Component(component):
     
     def ensure_button(self):
         if self.Params.Input[0].Sources.Count == 0:
-            tapir.Factory.create_button(self, 0, "Update", 150)
+            tapir.Factory.create_button(self, 0, "Refresh", 150)
             self.ExpireSolution(True)
 
     def on_disconnect_click(self, sender, args):
