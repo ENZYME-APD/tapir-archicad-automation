@@ -1,0 +1,3 @@
+[submodule "archicad-addon/Tools"]
+	path = archicad-addon/Tools
+	url = https://github.com/GRAPHISOFT/archicad-addon-cmake-tools.git
