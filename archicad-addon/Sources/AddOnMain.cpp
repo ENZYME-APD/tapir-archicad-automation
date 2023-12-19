@@ -36,6 +36,7 @@ GSErrCode __ACENV_CALL Initialize (void)
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<SetProjectInfoFieldCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetHotlinksCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<PublishPublisherSetCommand> ());
+    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetStoryInfoCommand> ());
 
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetSelectedElementsCommand> ());
 

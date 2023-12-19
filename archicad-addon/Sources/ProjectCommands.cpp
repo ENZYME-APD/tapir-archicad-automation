@@ -371,3 +371,64 @@ GS::ObjectState PublishPublisherSetCommand::Execute (const GS::ObjectState& para
 
     return {};
 }
+
+GetStoryInfoCommand::GetStoryInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetStoryInfoCommand::GetName () const
+{
+    return "GetStoryInfo";
+}
+
+GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "firstStory": {
+                "type": "integer",
+                "description": "First story index."
+            },
+            "lastStory": {
+                "type": "integer",
+                "description": "Last story index."
+            },
+            "actStory": {
+                "type": "integer",
+                "description": "Actual (currently visible in 2D) story index."
+            },
+            "skipNullFloor": {
+                "type": "boolean",
+                "description": "Floor indices above ground-floor level may start with 1 instead of 0."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "firstStory",
+            "lastStory",
+            "actStory",
+            "skipNullFloor"
+        ]
+    })";
+}
+
+
+GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{  
+    API_StoryInfo storyInfo;
+    BNZeroMemory (&storyInfo, sizeof (API_StoryInfo));
+    GSErrCode err = ACAPI_Environment (APIEnv_GetStorySettingsID, &storyInfo, nullptr);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("firstStory", storyInfo.firstStory);
+    response.Add ("lastStory", storyInfo.lastStory);
+    response.Add ("actStory", storyInfo.actStory);
+    response.Add ("skipNullFloor", storyInfo.skipNullFloor);
+
+    return response;
+}
