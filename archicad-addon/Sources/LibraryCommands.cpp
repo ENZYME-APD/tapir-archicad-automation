@@ -1,5 +1,6 @@
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
+#include "MigrationHelper.hpp"
 
 GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
 {
@@ -72,7 +73,7 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
 {
     GS::Array<API_LibraryInfo> libs;
 
-    GSErrCode err = ACAPI_Environment (APIEnv_GetLibrariesID, &libs);
+    GSErrCode err = ACAPI_LibraryManagement_GetLibraries (&libs);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive libraries.");
     }
@@ -117,7 +118,7 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
         }
 
         libraryData.Add ("name", libs[i].name);
-        libraryData.Add ("path", libs[i].location.ToDisplayText());
+        libraryData.Add ("path", libs[i].location.ToDisplayText ());
         libraryData.Add ("type", type);
         libraryData.Add ("available", libs[i].available);
         libraryData.Add ("readOnly", libs[i].readOnly);
@@ -141,8 +142,7 @@ GS::String ReloadLibrariesCommand::GetName () const
 
 GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_Automate (APIDo_ReloadLibrariesID);
-
+    GSErrCode err = ACAPI_ProjectOperation_ReloadLibraries ();
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to reload libraries.");
     }

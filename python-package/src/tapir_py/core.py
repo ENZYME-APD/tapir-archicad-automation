@@ -77,6 +77,16 @@ class Link(dotNETBase):
         """
         return port in Link._PORT
 
+    @staticmethod
+    def get_active_ports():
+        active = []
+        for port in Link._PORT:
+            
+            if Link(port).is_active():
+                active.append(port)
+            else:
+                return active
+
     def is_alive(self):
         """Checks if a connection can be established with ArchiCAD.
     
@@ -147,9 +157,12 @@ class CommandResult(dotNETBase):
 class Parameter(dotNETBase):
 
     @staticmethod
-    def pack(self, parameters):
+    def pack(parameters):
         if all([isinstance(param, Parameter) for param in parameters]):
-            return {'parameters': parameters}
+            params = {}
+            for param in parameters:
+                params[param.key] = param.value
+            return params
     
     def __init__(self, key, value):
         self.key = key
@@ -189,6 +202,7 @@ class Command(dotNETBase):
     
     def __init__(self, link):
         self.link = link
+        self.description = self.GetProjectInfo().projectName if self.IsAlive() else 'ArchiCAD Command Object'
 
     #region Basic Commands
     def IsAlive(self):
@@ -227,6 +241,31 @@ class Command(dotNETBase):
         response = self.link.post(cmd)
         result = response.get_result()
         return result['version'], result['buildNumber'], result['languageCode']
+    
+    def HighlightElements(self, elements, highlightedColor = [0, 150, 0, 100], nonHighlightedColor = [150, 0, 0, 100]):
+        """Highlights specified elements in current ArchiCAD document.
+
+        Args:
+            elements (:obj:`list` of :obj:`Element`): A list of elements.
+            highlightedColor (:obj:`list` of :int:): RGBA Color for highlighted objects.
+            nonHighlightedColor (:obj:`list` of :int:): RGBA Color for non-highlighted objects.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+        param_selected_color = Parameter("highlightedColor", highlightedColor)
+        param_unselected_color = Parameter("nonHighlightedColor", nonHighlightedColor)
+        param_elements = Parameter("elements", [element.ToDictionary() for element in elements])
+        packed_params = Parameter.pack([param_elements, param_selected_color, param_unselected_color])
+        
+        cmd = Command.FormatAddOnCommand("HighlightElements", packed_params)
+
+        response = self.link.post(cmd)
+        if not response:
+            raise Exception("Script Error")
     #endregion Basic Commands
 
     #region Element Listing Commands
@@ -320,7 +359,7 @@ class Command(dotNETBase):
         response = self.link.post(cmd)
         return ClassificationSystem.list_from_command_result(response.get_result())
     
-    def GetAllClassificationsInSystem(self, Classification_System_id):
+    def GetAllClassificationsInSystem(self, classification_system):
         """ Return the tree of classifications in the given classification system
 
         Args:
@@ -330,7 +369,7 @@ class Command(dotNETBase):
             :obj:`list` of :obj:`ClassificationItem`: A Tree of classificationItems in the given classification system.
         """
         cmd = {'command':'API.GetAllClassificationsInSystem',
-            'parameters':{'classificationSystemId':{'guid':Classification_System_id}}}
+            'parameters':{'classificationSystemId':{'guid':classification_system.guid}}}
         
         response = self.link.post(cmd)
         return ClassificationItem.list_from_command_result(response.get_result())
@@ -492,4 +531,4 @@ class Command(dotNETBase):
     #endregion Teamwork Commands
 
     def __str__(self):
-        return 'ArchiCAD Command Object'
+        return self.description

@@ -1,16 +1,18 @@
 #include "ProjectCommands.hpp"
+#include "MigrationHelper.hpp"
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable ()
 {
     GS::HashTable<GS::UniString, API_Guid> table;
 
     Int32 numberOfPublisherSets = 0;
-    ACAPI_Navigator (APINavigator_GetNavigatorSetNumID, &numberOfPublisherSets);
+    ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets);
 
     API_NavigatorSet set = {};
     for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
         set.mapId = API_PublisherSets;
-        if (ACAPI_Navigator (APINavigator_GetNavigatorSetID, &set, &ii) == NoError) {
+        GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&set, &ii);
+        if (err == NoError) {
             table.Add (set.name, set.rootGuid);
         }
     }
@@ -68,8 +70,7 @@ GS::Optional<GS::UniString> GetProjectInfoCommand::GetResponseSchema () const
 GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_ProjectInfo projectInfo = {};
-    GSErrCode err = ACAPI_Environment (APIEnv_ProjectID, &projectInfo);
-
+    GSErrCode err = ACAPI_ProjectOperation_Project (&projectInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrieve project information. Check the opened project!");
     }
@@ -141,7 +142,7 @@ GS::ObjectState GetProjectInfoFieldsCommand::Execute (const GS::ObjectState& /*p
     GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
     API_AutotextType type = APIAutoText_All;
 
-    GSErrCode err = ACAPI_Goodies (APIAny_GetAutoTextsID, &autoTexts, (void*) (GS::IntPtr) type);
+    GSErrCode err = ACAPI_AutoText_GetAutoTexts (&autoTexts, type);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrieve project information fields.");
     }
@@ -221,7 +222,7 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
 
-    GSErrCode err = ACAPI_Goodies (APIAny_SetAnAutoTextID, &projectInfoId, &projectInfoValue);
+    GSErrCode err = ACAPI_AutoText_SetAnAutoText (&projectInfoId, &projectInfoValue);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to set project information field.");
     }
@@ -260,8 +261,7 @@ static GS::Optional<GS::UniString> GetLocationOfHotlink (const API_Guid& hotlink
     API_HotlinkNode hotlinkNode = {};
     hotlinkNode.guid = hotlinkGuid;
 
-    ACAPI_Database (APIDb_GetHotlinkNodeID, &hotlinkNode);
-
+    ACAPI_Hotlink_GetHotlinkNode (&hotlinkNode);
     if (hotlinkNode.sourceLocation == nullptr) {
         return GS::NoValue;
     }
@@ -297,9 +297,9 @@ GS::ObjectState GetHotlinksCommand::Execute (const GS::ObjectState& /*parameters
 
     for (API_HotlinkTypeID type : {APIHotlink_Module, APIHotlink_XRef}) {
         API_Guid hotlinkRootNodeGuid = APINULLGuid;
-        if (ACAPI_Database (APIDb_GetHotlinkRootNodeGuidID, &type, &hotlinkRootNodeGuid) == NoError) {
+        if (ACAPI_Hotlink_GetHotlinkRootNodeGuid (&type, &hotlinkRootNodeGuid) == NoError) {
             GS::HashTable<API_Guid, GS::Array<API_Guid>> hotlinkTree;
-            if (ACAPI_Database (APIDb_GetHotlinkNodeTreeID, &hotlinkRootNodeGuid, &hotlinkTree) == NoError) {
+            if (ACAPI_Hotlink_GetHotlinkNodeTree (&hotlinkRootNodeGuid, &hotlinkTree) == NoError) {
                 for (const API_Guid& childNodeGuid : hotlinkTree.Retrieve (hotlinkRootNodeGuid)) {
                     listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree));
                 }
@@ -362,7 +362,7 @@ GS::ObjectState PublishPublisherSetCommand::Execute (const GS::ObjectState& para
         publishPars.path = new IO::Location (outputPath);
     }
 
-    GSErrCode err = ACAPI_Automate (APIDo_PublishID, &publishPars);
+    GSErrCode err = ACAPI_ProjectOperation_Publish (&publishPars);
     delete publishPars.path;
 
     if (err != NoError) {

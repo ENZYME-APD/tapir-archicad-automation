@@ -1,4 +1,5 @@
 #include "TeamworkCommands.hpp"
+#include "MigrationHelper.hpp"
 
 TeamworkSendCommand::TeamworkSendCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -12,7 +13,7 @@ GS::String TeamworkSendCommand::GetName () const
 
 GS::ObjectState TeamworkSendCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_TeamworkControl_SendChanges ();
+    GSErrCode err = ACAPI_Teamwork_SendChanges ();
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to send changes.");
@@ -33,7 +34,7 @@ GS::String TeamworkReceiveCommand::GetName () const
 
 GS::ObjectState TeamworkReceiveCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_TeamworkControl_ReceiveChanges ();
+    GSErrCode err = ACAPI_Teamwork_ReceiveChanges ();
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to receive changes.");

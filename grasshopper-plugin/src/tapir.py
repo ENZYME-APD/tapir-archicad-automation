@@ -1,11 +1,10 @@
 #!/usr/bin/env python27
 # -*- coding: utf-8 -*-
 
-__all__ = ['Plugin', 'RhinoWrapper']
+__all__ = ["Plugin", "RhinoWrapper", "Factory"]
 
 # - - - - - - - - BUILT-IN IMPORTS
-import traceback, time
-import System
+import System, traceback
 import base64
 
 # - - - - - - - - LOCAL IMPORTS
@@ -15,7 +14,7 @@ from tapir_py import parts, utility
 import Rhino, Grasshopper, GhPython
 
 # - - - - - - - - GLOBAL VARIABLES
-Plugin = utility.RuntimeObject({ "is_active" : False, "Archicad" : None }, "TapirPlugin")
+Plugin = utility.RuntimeObject( { "is_active" : False, "Archicad" : None }, "TapirPlugin")
 
 # - - - - - - - - DECORATORS
 def connect(function):
@@ -25,6 +24,15 @@ def connect(function):
         else:
             args[0].AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Warning, "Plugin Disconnected!")
     return wrapper
+
+def debug(function):    
+    def wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except Exception as ex:
+            System.Windows.Forms.MessageBox.Show(traceback.format_exc(), str(ex))
+            args[0].AddRuntimeMessage(Grasshopper.Kernel.GH_RuntimeMessageLevel.Error, str(ex))
+        return wrapper
 
 # - - - - - - - - CLASS LIBRARY
 class AssemblyInfo(GhPython.Assemblies.PythonAssemblyInfo):
@@ -70,20 +78,44 @@ class RhinoWrapper(object):
 class Factory(object):
 
     @staticmethod
+    def create_button(component, param_index, name, x_offset=27, y_offset=11):
+        source_input = component.Params.Input[param_index]
+        component_width_delta = component.Attributes.Bounds.Width * 0.5
+
+        # Create new Button component
+        source_pivot = component.Attributes.Pivot
+        new_button = Grasshopper.Kernel.Special.GH_ButtonObject()
+
+        # Add component to current Grasshopper Document
+        doc = component.OnPingDocument()
+        doc.AddObject(new_button, False, doc.ObjectCount + 1)
+
+        new_button.Name = name
+        new_button.NickName = name
+        new_button.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - component_width_delta - x_offset, source_pivot.Y - y_offset)
+
+        # Connect Value List to component
+        source_input.AddSource(new_button)
+        new_button.ExpireSolution(True)
+
+        return new_button
+
+    @staticmethod
     def create_value_list(component, param_index, name, items, x_offset=27, y_offset=11):
         source_input = component.Params.Input[param_index]
+        component_width_delta = component.Attributes.Bounds.Width * 0.5
 
         # Create new Value List component
-        source_pivot = source_input.Attributes.Pivot
-
+        source_pivot = component.Attributes.Pivot
         new_value_list = Grasshopper.Kernel.Special.GH_ValueList()
+        
         # Add component to current Grasshopper Document
         doc = component.OnPingDocument()
         doc.AddObject(new_value_list, False, doc.ObjectCount + 1)
 
         new_value_list.Name = name
         new_value_list.NickName = name
-        new_value_list.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - x_offset, source_pivot.Y - y_offset)
+        new_value_list.Attributes.Pivot = System.Drawing.PointF(source_pivot.X - component_width_delta - x_offset, source_pivot.Y - y_offset)
         new_value_list.ListItems.Clear()
 
         # Populate list
@@ -91,6 +123,9 @@ class Factory(object):
 
         # Connect Value List to component
         source_input.AddSource(new_value_list)
+        new_value_list.ExpireSolution(True)
+
+        return new_value_list
 
     @staticmethod
     def update_value_list(component, items):
@@ -102,6 +137,7 @@ class Factory(object):
             return True
         else:
             return False
+
 # ----- UTILLITIES
 def ico2base64(ico_file):
     """

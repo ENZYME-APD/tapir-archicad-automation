@@ -291,6 +291,44 @@
                         "elements"
                     ]  
                 }              
+            },
+            {
+                name : "HighlightElements",
+                version : "1.1.0",
+                description : "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights.",
+                inputScheme : {
+					"type": "object",
+					"properties": {
+						"elements": {
+							"$ref": "#/Elements"
+						},
+						"highlightedColor": {
+							"type": "array",
+							"description": "Color of the highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+							"items": {
+								"type": "integer"
+							},
+							"minItems": 4,
+							"maxItems": 4
+						},
+						"nonHighlightedColor": {
+							"type": "array",
+							"description": "Color of the non highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+							"items": {
+								"type": "integer"
+							},
+							"minItems": 4,
+							"maxItems": 4
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"elements",
+						"highlightedColor",
+						"nonHighlightedColor"
+					]
+				},
+                outputScheme : null           
             }
         ]
     },

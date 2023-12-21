@@ -1,4 +1,5 @@
 #include "AttributeCommands.hpp"
+#include "MigrationHelper.hpp"
 
 GetBuildingMaterialPhysicalPropertiesCommand::GetBuildingMaterialPhysicalPropertiesCommand () :
     CommandBase (CommonSchema::Used)
@@ -266,14 +267,14 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
             buildMat.buildingMaterial.description = &description;
         }
 
-        API_AttributeIndex cutFillIndex;
+        Int32 cutFillIndex;
         if (buildingMaterialData.Get ("cutFillIndex", cutFillIndex)) {
-            buildMat.buildingMaterial.cutFill = cutFillIndex;
+            buildMat.buildingMaterial.cutFill = ACAPI_CreateAttributeIndex (cutFillIndex);
         }
 
         Int32 connPriority;
         if (buildingMaterialData.Get ("connPriority", connPriority)) {
-            ACAPI_Goodies (APIAny_UI2ElemPriorityID, (void*) &connPriority, &buildMat.buildingMaterial.connPriority);
+            ACAPI_Element_UI2ElemPriority (&connPriority, &buildMat.buildingMaterial.connPriority);
         }
 
         short cutFillPen;
@@ -286,9 +287,9 @@ GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& 
             buildMat.buildingMaterial.cutFillBackgroundPen = cutFillBackgroundPen;
         }
 
-        API_AttributeIndex cutSurfaceIndex;
+        Int32 cutSurfaceIndex;
         if (buildingMaterialData.Get ("cutSurfaceIndex", cutSurfaceIndex)) {
-            buildMat.buildingMaterial.cutMaterial = cutSurfaceIndex;
+            buildMat.buildingMaterial.cutMaterial = ACAPI_CreateAttributeIndex (cutFillIndex);
         }
 
         double thermalConductivity;

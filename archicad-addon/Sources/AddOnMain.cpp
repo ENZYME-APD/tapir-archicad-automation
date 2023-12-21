@@ -9,6 +9,7 @@
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
 #include "LibraryCommands.hpp"
+#include "MigrationHelper.hpp"
 
 API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
 {
@@ -27,9 +28,9 @@ GSErrCode __ACENV_CALL Initialize (void)
 {
     GSErrCode err = NoError;
 
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetAddOnVersionCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetArchicadLocationCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<QuitArchicadCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetAddOnVersionCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetArchicadLocationCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<QuitArchicadCommand> ());
 
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetProjectInfoCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetProjectInfoFieldsCommand> ());
@@ -38,14 +39,23 @@ GSErrCode __ACENV_CALL Initialize (void)
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<PublishPublisherSetCommand> ());
     err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetStoryInfoCommand> ());
 
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetSelectedElementsCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetProjectInfoCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetProjectInfoFieldsCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetProjectInfoFieldCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetHotlinksCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<PublishPublisherSetCommand> ());
 
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetBuildingMaterialPhysicalPropertiesCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetSelectedElementsCommand> ());
+#ifdef ServerMainVers_2600
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<HighlightElementsCommand> ());
+#endif
 
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetLibrariesCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<ReloadLibrariesCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetBuildingMaterialPhysicalPropertiesCommand> ());
+
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetLibrariesCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ReloadLibrariesCommand> ());
 
     return err;
 }
