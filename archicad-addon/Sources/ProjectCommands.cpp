@@ -402,6 +402,43 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
             "skipNullFloor": {
                 "type": "boolean",
                 "description": "Floor indices above ground-floor level may start with 1 instead of 0."
+            },
+            "stories": {
+                "type": "array",
+                "description": "A list of project stories.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The story index."
+                        },
+                        "floorId": {
+                            "type": "integer",
+                            "description": "Unique ID of the story."
+                        },
+                        "dispOnSections": {
+                            "type": "boolean",
+                            "description": "Story level lines should appear on sections and elevations."
+                        },
+                        "level": {
+                            "type": "number",
+                            "description": "The story level."
+                        },
+                        "uName": {
+                            "type": "string",
+                            "description": "The name of the story as a Unicode string (UTF-16)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "floorId",
+                        "dispOnSections",
+                        "level",
+                        "uName"
+                    ]
+                }
             }
         },
         "additionalProperties": false,
@@ -409,7 +446,8 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
             "firstStory",
             "lastStory",
             "actStory",
-            "skipNullFloor"
+            "skipNullFloor",
+            "stories"
         ]
     })";
 }
@@ -429,6 +467,23 @@ GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameter
     response.Add ("lastStory", storyInfo.lastStory);
     response.Add ("actStory", storyInfo.actStory);
     response.Add ("skipNullFloor", storyInfo.skipNullFloor);
+
+    const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
+
+    API_StoryType** storyType = storyInfo.data;
+    API_StoryType* temAdress = (*storyType);
+
+    for (int i = storyInfo.firstStory; i <= storyInfo.lastStory; i++) {
+        GS::ObjectState storyData;
+        GS::UniString uName = temAdress->uName;
+        storyData.Add ("index", temAdress->index);
+        storyData.Add ("floorId", temAdress->floorId);
+        storyData.Add ("dispOnSections", temAdress->dispOnSections);
+        storyData.Add ("level", temAdress->level);
+        storyData.Add ("uName", uName);
+        listAdder (storyData);
+        temAdress++;
+    }
 
     return response;
 }
