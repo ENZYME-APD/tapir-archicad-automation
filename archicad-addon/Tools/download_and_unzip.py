@@ -9,8 +9,10 @@ import urllib.parse
 url = sys.argv[1]
 dest = sys.argv[2]
 
-if not os.path.exists (dest):
-    os.makedirs (dest)
+if os.path.exists (dest):
+    sys.exit (0)
+    
+os.makedirs (dest)
 
 fileName = os.path.split (urllib.parse.unquote (url).split ('?')[0])[1]
 filePath = os.path.join (dest, fileName)
