@@ -67,6 +67,7 @@ jobs:
     - name: Build RelWithDebInfo
       run: cmake --build archicad-addon/Build --config RelWithDebInfo
     - name: Code sign and notarize
+      if: ${{ false }}
       run: |
         echo ${{ secrets.CODE_SIGN_CERT }} | base64 --decode > certificate.p12
         ./archicad-addon/Tools/code_sign_and_notarize.sh \
