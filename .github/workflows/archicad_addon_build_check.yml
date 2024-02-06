@@ -1,0 +1,50 @@
+name: Archicad Add-On Build Check
+
+on: [push, pull_request]
+
+jobs:
+  build_win:
+    strategy:
+      matrix:
+        params:
+          - acVersion: 25
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.WIN.25.3002.zip
+          - acVersion: 26
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.WIN.26.3000.zip
+          - acVersion: 27
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip
+    runs-on: [ windows-2019 ]
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+    - name: Download Development Kit
+      run: python archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}
+    - name: Generate Project
+      run: cmake -B archicad-addon/Build -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}" archicad-addon
+    - name: Build Debug
+      run: cmake --build archicad-addon/Build --config Debug
+    - name: Build RelWithDebInfo
+      run: cmake --build archicad-addon/Build --config RelWithDebInfo
+
+  build_mac:
+    strategy:
+      matrix:
+        params:
+          - acVersion: 25
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.MAC.25.3002.zip
+          - acVersion: 26
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.MAC.26.3000.zip
+          - acVersion: 27
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.MAC.27.3001.zip
+    runs-on: [ macos-12 ]
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+    - name: Download Development Kit
+      run: python3 archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}
+    - name: Generate Project
+      run: cmake -B archicad-addon/Build -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}" archicad-addon
+    - name: Build Debug
+      run: cmake --build archicad-addon/Build --config Debug
+    - name: Build RelWithDebInfo
+      run: cmake --build archicad-addon/Build --config RelWithDebInfo
