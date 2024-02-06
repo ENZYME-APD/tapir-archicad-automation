@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   build_win:
     strategy:
+      fail-fast: false
       matrix:
         params:
           - acVersion: 25
@@ -28,6 +29,7 @@ jobs:
 
   build_mac:
     strategy:
+      fail-fast: false
       matrix:
         params:
           - acVersion: 25
