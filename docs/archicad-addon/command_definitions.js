@@ -212,7 +212,7 @@
             },
             {
                 name : "GetLibraries",
-                version : "1.1.0",
+                version : "1.0.1",
                 description : "Gets the list of loaded libraries.",
                 inputScheme : null,
                 outputScheme : {
@@ -294,7 +294,7 @@
             },
             {
                 name : "HighlightElements",
-                version : "1.1.0",
+                version : "1.0.1",
                 description : "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights.",
                 inputScheme : {
 					"type": "object",
@@ -337,7 +337,7 @@
         commands : [
             {
                 name : "CreateBuildingMaterials",
-                version : "1.1.0",
+                version : "1.0.1",
                 description : "Creates Building Material attributes based on the given parameters.",
                 inputScheme : {
 					"type": "object",
