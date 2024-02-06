@@ -1,11 +1,6 @@
-name: Archicad Add-On Build
+name: Archicad Add-On Build Check
 
-on:
-  push:
-    branches:
-      - '*'
-    tags:
-      - '*'
+on: [push, pull_request]
 
 jobs:
   build_win:
@@ -30,19 +25,6 @@ jobs:
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
       run: cmake --build archicad-addon/Build --config RelWithDebInfo
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Tapir Add-On AC${{ matrix.params.acVersion }} Win
-        path: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
-        draft: true
-        allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}
 
   build_mac:
     strategy:
@@ -66,30 +48,3 @@ jobs:
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
       run: cmake --build archicad-addon/Build --config RelWithDebInfo
-    - name: Code sign and notarize
-      run: |
-        echo ${{ secrets.CODE_SIGN_CERT }} | base64 --decode > certificate.p12
-        ./archicad-addon/Tools/code_sign_and_notarize.sh \
-          certificate.p12 \
-          ${{ secrets.CODE_SIGN_CERT_PWD }} \
-          "Developer ID Application: enzyme apd Limited (${{ secrets.TEAM_ID }})" \
-          archicad-addon/Tools/addon.entitlements \
-          ${{ secrets.APPLE_ID }} \
-          ${{ secrets.APPLE_ID_PWD }} \
-          ${{ secrets.TEAM_ID }} \
-          archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle
-    - name: Create zip file
-      run: ditto -c -k --keepParent archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Tapir Add-On AC${{ matrix.params.acVersion }} Mac
-        path: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
-        draft: true
-        allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}

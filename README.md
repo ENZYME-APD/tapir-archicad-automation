@@ -33,8 +33,10 @@ For some functions one must install an Addon developed by [kovacsv](https://gith
 Download the latest version here:
 - [Archicad 25 (Windows)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC25_Win.apx)
 - [Archicad 26 (Windows)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC26_Win.apx)
-- [Archicad 25 (Mac)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC25_Mac.dmg)
-- [Archicad 26 (Mac)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC26_Mac.dmg)
+- [Archicad 27 (Windows)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC27_Win.apx)
+- [Archicad 25 (Mac)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC25_Mac.zip)
+- [Archicad 26 (Mac)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC26_Mac.zip)
+- [Archicad 27 (Mac)](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirAddOn_AC27_Mac.zip)
 
 Once you downloaded the Add-On files you have to install it in Archicad. Follow these steps to install the Add-On.
 
@@ -43,8 +45,6 @@ Once you downloaded the Add-On files you have to install it in Archicad. Follow 
 3. Open the "Edit List of Available Add-Ons" tabpage, and click on the "Add" button.
 4. Browse the downloaded Add-On file.
 5. Click "OK" in the Add-On Manager.
-
-**Important note for Mac users:** The Add-On is not properly signed at the moment, so once you try to load the Add-On a warning will appear on the screen. You can ignore this warning, but after doing the process above go to Security Settings, allow the Add-On file to run and restart Archicad.
 
 Currently three experimental  nodes use this Addon:
  * Pick Connection Port
