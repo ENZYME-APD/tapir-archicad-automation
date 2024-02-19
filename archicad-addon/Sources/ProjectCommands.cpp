@@ -457,7 +457,7 @@ GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameter
 {  
     API_StoryInfo storyInfo;
     BNZeroMemory (&storyInfo, sizeof (API_StoryInfo));
-    GSErrCode err = ACAPI_Environment (APIEnv_GetStorySettingsID, &storyInfo, nullptr);
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive stories info.");
     }
