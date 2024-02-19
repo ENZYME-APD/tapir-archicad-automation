@@ -460,7 +460,28 @@ class Command(dotNETBase):
         cmd = Command.FormatAddOnCommand("GetProjectInfo")
         response = self.link.post(cmd)
         return RuntimeObject(response.get_result(), 'ProjectInfo')
-    
+
+    def GetStoryInfo(self):
+        """Retrieves details of the file's story structure.
+
+        Attributes:
+            int: index
+            float: floorId
+            bool: dispOnSections
+            str: level
+            str: uName
+            list: stories
+
+        Returns:
+            obj: StoryInfo
+        """
+        cmd = Command.FormatAddOnCommand("GetStoryInfo")
+        response = self.link.post(cmd)
+        if response.success:
+            return response.object(response._data["result"], "StoryInfo")
+        else:
+            return response.exception()
+
     def GetHotlinks(self): # TODO: Create Hotlink Class
         """Performs a publish operation on the currently opened project. Only the given publisher set will be published.
 

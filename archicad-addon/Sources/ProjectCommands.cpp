@@ -470,19 +470,19 @@ GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameter
 
     const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
 
-    API_StoryType** storyType = storyInfo.data;
-    API_StoryType* temAdress = (*storyType);
-
-    for (int i = storyInfo.firstStory; i <= storyInfo.lastStory; i++) {
+    short storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    for (short i = storyCount - 1; i >= 0; i--) {
+        const API_StoryType& story = (*storyInfo.data)[i];
         GS::ObjectState storyData;
-        GS::UniString uName = temAdress->uName;
-        storyData.Add ("index", temAdress->index);
-        storyData.Add ("floorId", temAdress->floorId);
-        storyData.Add ("dispOnSections", temAdress->dispOnSections);
-        storyData.Add ("level", temAdress->level);
+        GS::UniString uName = story.uName;
+
+        storyData.Add ("index", story.index);
+        storyData.Add ("floorId", story.floorId);
+        storyData.Add ("dispOnSections", story.dispOnSections);
+        storyData.Add ("level", story.level);
         storyData.Add ("uName", uName);
+
         listAdder (storyData);
-        temAdress++;
     }
 
     return response;

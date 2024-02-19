@@ -32,16 +32,10 @@ GSErrCode __ACENV_CALL Initialize (void)
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetArchicadLocationCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<QuitArchicadCommand> ());
 
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetProjectInfoCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetProjectInfoFieldsCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<SetProjectInfoFieldCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetHotlinksCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<PublishPublisherSetCommand> ());
-    err |= ACAPI_Install_AddOnCommandHandler (GS::NewOwned<GetStoryInfoCommand> ());
-
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetProjectInfoCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetProjectInfoFieldsCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetProjectInfoFieldCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetStoryInfoCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetHotlinksCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<PublishPublisherSetCommand> ());
 
