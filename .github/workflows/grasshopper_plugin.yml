@@ -3,9 +3,9 @@ name: Grasshopper Plugin Build
 on:
   push:
     branches:
-      - '*'
+      - main
     tags:
-      - '*'
+      - main
 
 jobs:
   build:

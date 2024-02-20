@@ -3,9 +3,9 @@ name: Archicad Add-On Build
 on:
   push:
     branches:
-      - '*'
+      - main
     tags:
-      - '*'
+      - main
 
 jobs:
   build_win:
