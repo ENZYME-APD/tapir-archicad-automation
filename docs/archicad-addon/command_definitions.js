@@ -198,6 +198,78 @@
                 },
                 outputScheme : null
             },
+			{
+                name : "GetStoryInfo",
+                version : "1.0.2",
+                description : "Retrieves information about the story sructure of the currently loaded project.",
+                inputScheme : null,
+                outputScheme : {
+					"type": "object",
+					"properties": {
+						"firstStory": {
+							"type": "integer",
+							"description": "First story index."
+						},
+						"lastStory": {
+							"type": "integer",
+							"description": "Last story index."
+						},
+						"actStory": {
+							"type": "integer",
+							"description": "Actual (currently visible in 2D) story index."
+						},
+						"skipNullFloor": {
+							"type": "boolean",
+							"description": "Floor indices above ground-floor level may start with 1 instead of 0."
+						},
+						"stories": {
+							"type": "array",
+							"description": "A list of project stories.",
+							"items": {
+								"type": "object",
+								"properties": {
+									"index": {
+										"type": "integer",
+										"description": "The story index."
+									},
+									"floorId": {
+										"type": "integer",
+										"description": "Unique ID of the story."
+									},
+									"dispOnSections": {
+										"type": "boolean",
+										"description": "Story level lines should appear on sections and elevations."
+									},
+									"level": {
+										"type": "number",
+										"description": "The story level."
+									},
+									"uName": {
+										"type": "string",
+										"description": "The name of the story."
+									}
+								},
+								"additionalProperties": false,
+								"required": [
+									"index",
+									"floorId",
+									"dispOnSections",
+									"level",
+									"uName"
+								]
+							}
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"firstStory",
+						"lastStory",
+						"actStory",
+						"skipNullFloor",
+						"stories"
+					]
+				}
+            }			
         ]
     },
     {

@@ -427,7 +427,7 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
                         },
                         "uName": {
                             "type": "string",
-                            "description": "The name of the story as a Unicode string (UTF-16)."
+                            "description": "The name of the story."
                         }
                     },
                     "additionalProperties": false,
@@ -454,7 +454,7 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
 
 
 GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
-{  
+{
     API_StoryInfo storyInfo;
     BNZeroMemory (&storyInfo, sizeof (API_StoryInfo));
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
