@@ -23,6 +23,16 @@ if not projectInfo.isUntitled:
     print('\tprojectPath: {0}'.format(projectInfo.projectPath))
     print('\tprojectLocation: {0}'.format(projectInfo.projectLocation))
 
+print('GetStoryInfo')
+storyInfo = ac.GetStoryInfo()
+print('\tfirstStory: {0}'.format(storyInfo.firstStory))
+print('\tlastStory: {0}'.format(storyInfo.lastStory))
+print('\tactStory: {0}'.format(storyInfo.actStory))
+print('\tskipNullFloor: {0}'.format(storyInfo.skipNullFloor))
+print('\tstories:')
+for story in storyInfo.stories:
+    print('\t\tindex: {0}, uName: {1}'.format(story['index'], story['uName']))
+
 print('GetAllElements')
 allElements = ac.GetAllElements()
 for element in allElements:

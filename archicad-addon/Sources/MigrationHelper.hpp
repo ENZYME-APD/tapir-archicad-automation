@@ -90,4 +90,10 @@ inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo
     return ACAPI_Environment (APIEnv_GetLibrariesID, activeLibs, embeddedLibraryIndex);
 }
 
+/**/
+inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
+{
+    return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
+}
+
 #endif

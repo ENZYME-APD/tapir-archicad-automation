@@ -371,3 +371,119 @@ GS::ObjectState PublishPublisherSetCommand::Execute (const GS::ObjectState& para
 
     return {};
 }
+
+GetStoryInfoCommand::GetStoryInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetStoryInfoCommand::GetName () const
+{
+    return "GetStoryInfo";
+}
+
+GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "firstStory": {
+                "type": "integer",
+                "description": "First story index."
+            },
+            "lastStory": {
+                "type": "integer",
+                "description": "Last story index."
+            },
+            "actStory": {
+                "type": "integer",
+                "description": "Actual (currently visible in 2D) story index."
+            },
+            "skipNullFloor": {
+                "type": "boolean",
+                "description": "Floor indices above ground-floor level may start with 1 instead of 0."
+            },
+            "stories": {
+                "type": "array",
+                "description": "A list of project stories.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The story index."
+                        },
+                        "floorId": {
+                            "type": "integer",
+                            "description": "Unique ID of the story."
+                        },
+                        "dispOnSections": {
+                            "type": "boolean",
+                            "description": "Story level lines should appear on sections and elevations."
+                        },
+                        "level": {
+                            "type": "number",
+                            "description": "The story level."
+                        },
+                        "uName": {
+                            "type": "string",
+                            "description": "The name of the story."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "floorId",
+                        "dispOnSections",
+                        "level",
+                        "uName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "firstStory",
+            "lastStory",
+            "actStory",
+            "skipNullFloor",
+            "stories"
+        ]
+    })";
+}
+
+
+GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_StoryInfo storyInfo;
+    BNZeroMemory (&storyInfo, sizeof (API_StoryInfo));
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("firstStory", storyInfo.firstStory);
+    response.Add ("lastStory", storyInfo.lastStory);
+    response.Add ("actStory", storyInfo.actStory);
+    response.Add ("skipNullFloor", storyInfo.skipNullFloor);
+
+    const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
+
+    short storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    for (short i = storyCount - 1; i >= 0; i--) {
+        const API_StoryType& story = (*storyInfo.data)[i];
+        GS::ObjectState storyData;
+        GS::UniString uName = story.uName;
+
+        storyData.Add ("index", story.index);
+        storyData.Add ("floorId", story.floorId);
+        storyData.Add ("dispOnSections", story.dispOnSections);
+        storyData.Add ("level", story.level);
+        storyData.Add ("uName", uName);
+
+        listAdder (storyData);
+    }
+
+    return response;
+}
