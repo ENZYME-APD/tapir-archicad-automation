@@ -8,6 +8,7 @@
 #include "ElementCommands.hpp"
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
+#include "IssueCommands.hpp"
 #include "LibraryCommands.hpp"
 #include "MigrationHelper.hpp"
 
@@ -50,6 +51,8 @@ GSErrCode __ACENV_CALL Initialize (void)
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetLibrariesCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ReloadLibrariesCommand> ());
+
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetIssueCommand> ());
 
     return err;
 }
