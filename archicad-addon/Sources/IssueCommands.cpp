@@ -103,3 +103,37 @@ GS::ObjectState GetIssueCommand::Execute (const GS::ObjectState& /*parameters*/,
 
     return response;
 }
+
+ExportToBCFCommand::ExportToBCFCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String ExportToBCFCommand::GetName () const
+{
+    return "ExportToBCF";
+}
+
+GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    IO::Location bcfFilePath("C:\\Users\\i.yurasov\\Desktop\\dev\\issues.bcf");
+
+    GS::Array<API_Guid> issueEntryIds;
+	GS::Array<API_MarkUpType> issues;
+
+	GSErrCode err = ACAPI_MarkUp_GetList (APINULLGuid, &issues);
+
+	if (err == NoError) {
+		for (const auto& issues : issues) {
+			issueEntryIds.Push (issues.guid);
+		}
+	}
+
+    if (err == NoError)
+        err = ACAPI_MarkUp_ExportToBCF (bcfFilePath, issueEntryIds, false, true);
+
+    if (err != NoError)
+        return CreateErrorResponse (err, "Failed to export issues.");
+
+    return {};
+}
