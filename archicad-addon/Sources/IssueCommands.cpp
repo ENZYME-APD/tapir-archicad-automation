@@ -1,6 +1,52 @@
 #include "IssueCommands.hpp"
 #include "MigrationHelper.hpp"
 
+static API_IFCTranslatorIdentifier GetExportTranslator ()
+{
+    GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators;
+    ACAPI_IFC_GetIFCExportTranslatorsList (ifcExportTranslators);
+
+    if (ifcExportTranslators.GetSize () > 0)
+        return ifcExportTranslators[0];
+
+    API_IFCTranslatorIdentifier ifcTranslator;
+    ifcTranslator.innerReference = nullptr;
+
+    return ifcTranslator;
+}
+
+
+static API_IFCRelationshipData GetCurrentProjectIFCRelationshipData ()
+{
+    API_IFCRelationshipData ifcRelationshipData;
+    API_IFCTranslatorIdentifier ifcTranslator = GetExportTranslator ();
+
+    if (ifcTranslator.innerReference != nullptr)
+        ACAPI_IFC_GetIFCRelationshipData (ifcTranslator, ifcRelationshipData);
+
+    return ifcRelationshipData;
+}
+
+
+static GSErrCode GetIFCRelationshipData (GS::HashTable<API_Guid, API_IFCRelationshipData>* apiIfcRelationshipDataTable, const void* par1)
+{
+    const API_IFCRelationshipData* ifcRelationshipDataTable = reinterpret_cast<const API_IFCRelationshipData*> (par1);
+
+    API_Guid ifcProjectId = APINULLGuid;
+    ifcRelationshipDataTable->containmentTable.EnumerateValues ([&](const API_Guid& value) {
+        if (!ifcRelationshipDataTable->containmentTable.ContainsKey (value)) {
+            DBASSERT (ifcProjectId == APINULLGuid);
+            ifcProjectId = value;
+        }
+    });
+    if (ifcProjectId == APINULLGuid && ifcRelationshipDataTable->containmentTable.GetSize () != 0) {
+        DBASSERT (ifcProjectId != APINULLGuid);
+    }
+    apiIfcRelationshipDataTable->Put (ifcProjectId, *ifcRelationshipDataTable);
+
+    return NoError;
+}
+
 GetIssueCommand::GetIssueCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -53,58 +99,6 @@ GS::Optional<GS::UniString> GetIssueCommand::GetResponseSchema () const
                         "isTagTextElemVisible": {
                             "type": "boolean",
                             "description": "The visibility of the attached tag text element"
-                        },
-                        "highlightedElems": {
-                            "type": "array",
-                            "description": "A list of highlighted elements.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "guid": {
-                                        "type": "string",
-                                        "description": "Identifier of highlighted element"
-                                    }
-                                }
-                            }
-                        },
-                        "modifiedElems": {
-                            "type": "array",
-                            "description": "A list of modified elements.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "guid": {
-                                        "type": "string",
-                                        "description": "Identifier of modified element"
-                                    }
-                                }
-                            }
-                        },
-                        "createdElems": {
-                            "type": "array",
-                            "description": "A list of created elements.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "guid": {
-                                        "type": "string",
-                                        "description": "Identifier of created element"
-                                    }
-                                }
-                            }
-                        },
-                        "deletedElems": {
-                            "type": "array",
-                            "description": "A list of deleted elements.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "guid": {
-                                        "type": "string",
-                                        "description": "Identifier of deleted element"
-                                    }
-                                }
-                            }
                         }
                     },
                     "additionalProperties": false,
@@ -141,7 +135,6 @@ GS::ObjectState GetIssueCommand::Execute (const GS::ObjectState& /*parameters*/,
 
     for (auto i = issueList.Enumerate (); i != nullptr; ++i) {
         GS::ObjectState issueData;
-
         issueData.Add ("guid", APIGuidToString(i->guid));
         issueData.Add ("name", i->name);
         issueData.Add ("parentGuid", APIGuidToString (i->parentGuid));
@@ -150,47 +143,6 @@ GS::ObjectState GetIssueCommand::Execute (const GS::ObjectState& /*parameters*/,
         issueData.Add ("tagText", i->tagText);
         issueData.Add ("tagTextElemGuid", APIGuidToString (i->tagTextElemGuid));
         issueData.Add ("isTagTextElemVisible", i->isTagTextElemVisible);
-
-        GS::Array<API_Guid> highlightedElems;
-        ACAPI_MarkUp_GetAttachedElements (i->guid, APIMarkUpComponent_Highlight, highlightedElems);
-        const auto& highlightedObj = issueData.AddList<GS::ObjectState> ("highlightedElems");
-
-        highlightedElems.Enumerate ([&highlightedObj](const API_Guid& guid) {
-            GS::ObjectState highlightedData;
-            highlightedData.Add ("guid", APIGuidToString (guid));
-            highlightedObj (highlightedData);
-        });
-
-        GS::Array<API_Guid> modifiedElems;
-        ACAPI_MarkUp_GetAttachedElements (i->guid, APIMarkUpComponent_Modification, modifiedElems);
-        const auto& modifiedObj = issueData.AddList<GS::ObjectState> ("modifiedElems");
-
-        modifiedElems.Enumerate ([&modifiedObj](const API_Guid& guid) {
-            GS::ObjectState modifiedData;
-            modifiedData.Add ("guid", APIGuidToString (guid));
-            modifiedObj (modifiedData);
-        });
-
-        GS::Array<API_Guid> createdElems;
-        ACAPI_MarkUp_GetAttachedElements (i->guid, APIMarkUpComponent_Creation, createdElems);
-        const auto& createdObj = issueData.AddList<GS::ObjectState> ("createdElems");
-
-        createdElems.Enumerate ([&createdObj](const API_Guid& guid) {
-            GS::ObjectState createdData;
-            createdData.Add ("guid", APIGuidToString (guid));
-            createdObj (createdData);
-        });
-
-        GS::Array<API_Guid> deletedElems;
-        ACAPI_MarkUp_GetAttachedElements (i->guid, APIMarkUpComponent_Deletion, deletedElems);
-        const auto& deletedObj = issueData.AddList<GS::ObjectState> ("deletedElems");
-
-        deletedElems.Enumerate ([&deletedObj](const API_Guid& guid) {
-            GS::ObjectState deletedData;
-            deletedData.Add ("guid", APIGuidToString (guid));
-            deletedObj (deletedData);
-        });
-
         listAdder (issueData);
     }
 
@@ -356,26 +308,73 @@ GS::String ExportToBCFCommand::GetName () const
     return "ExportToBCF";
 }
 
-GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    IO::Location bcfFilePath("C:\\Users\\i.yurasov\\Desktop\\dev\\issues.bcf");
+    GS::UniString exportPath;
+    GS::Array<GS::UniString> issueIdsStr;
+    GS::Array<API_Guid> issueIds;
+    GS::Array<API_MarkUpType> issues;
+    bool useExternalId;
+    bool alignBySurveyPoint;
 
-    GS::Array<API_Guid> issueEntryIds;
-	GS::Array<API_MarkUpType> issues;
+    if (!parameters.Get ("exportPath", exportPath) || !parameters.Get ("useExternalId", useExternalId) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
 
-	GSErrCode err = ACAPI_MarkUp_GetList (APINULLGuid, &issues);
+    parameters.Get ("issueIds", issueIdsStr);
+    if (issueIdsStr.IsEmpty ()) {
+        GSErrCode err = ACAPI_MarkUp_GetList (APINULLGuid, &issues);
+        if (err == NoError) {
+        	for (const auto& issues : issues) {
+                issueIds.Push (issues.guid);
+        	}
+        }
+    }
+    else {
+        for (ULong i = 0; i < issueIdsStr.GetSize (); ++i) {
+            issueIds.Push (APIGuidFromString (issueIdsStr[i].ToCStr ()));
+        }
+    }
 
-	if (err == NoError) {
-		for (const auto& issues : issues) {
-			issueEntryIds.Push (issues.guid);
-		}
-	}
+    IO::Location bcfFilePath(exportPath);
+    GSErrCode err = ACAPI_MarkUp_ExportToBCF (bcfFilePath, issueIds, useExternalId, alignBySurveyPoint);
 
-    if (err == NoError)
-        err = ACAPI_MarkUp_ExportToBCF (bcfFilePath, issueEntryIds, false, true);
-
-    if (err != NoError)
+    if (err != NoError) {
         return CreateErrorResponse (err, "Failed to export issues.");
+    }
+
+    return {};
+}
+
+ImportFromBCFCommand::ImportFromBCFCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String ImportFromBCFCommand::GetName () const
+{
+    return "ImportFromBCF";
+}
+
+GS::ObjectState ImportFromBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool alignBySurveyPoint;
+    GS::UniString importPath;
+
+    if (!parameters.Get ("importPath", importPath) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
+
+    IO::Location bcfFilePath (importPath);
+    GSErrCode err = ACAPI_CallUndoableCommand ("Import BCF Issues", [&] () -> GSErrCode {
+        API_IFCRelationshipData ifcRelationshipData = GetCurrentProjectIFCRelationshipData ();
+        err = ACAPI_MarkUp_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false, alignBySurveyPoint);
+        return err;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to import issues.");
+    }
 
     return {};
 }
