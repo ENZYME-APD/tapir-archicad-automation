@@ -2,10 +2,10 @@
 
 #include "CommandBase.hpp"
 
-class GetIssueCommand : public CommandBase
+class GetIssueListCommand : public CommandBase
 {
 public:
-    GetIssueCommand ();
+    GetIssueListCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;

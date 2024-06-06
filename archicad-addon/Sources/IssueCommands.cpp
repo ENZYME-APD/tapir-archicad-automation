@@ -47,17 +47,18 @@ static GSErrCode GetIFCRelationshipData (GS::HashTable<API_Guid, API_IFCRelation
     return NoError;
 }
 
-GetIssueCommand::GetIssueCommand () :
+
+GetIssueListCommand::GetIssueListCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String GetIssueCommand::GetName () const
+GS::String GetIssueListCommand::GetName () const
 {
-    return "GetIssue";
+    return "GetIssueList";
 }
 
-GS::Optional<GS::UniString> GetIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetIssueListCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -122,7 +123,7 @@ GS::Optional<GS::UniString> GetIssueCommand::GetResponseSchema () const
     })";
 }
 
-GS::ObjectState GetIssueCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetIssueListCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_MarkUpType> issueList;
     GSErrCode err = ACAPI_MarkUp_GetList (APINULLGuid, &issueList);
@@ -314,8 +315,8 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
     GS::Array<GS::UniString> issueIdsStr;
     GS::Array<API_Guid> issueIds;
     GS::Array<API_MarkUpType> issues;
-    bool useExternalId;
-    bool alignBySurveyPoint;
+    bool useExternalId = false;
+    bool alignBySurveyPoint = true;
 
     if (!parameters.Get ("exportPath", exportPath) || !parameters.Get ("useExternalId", useExternalId) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
@@ -358,7 +359,7 @@ GS::String ImportFromBCFCommand::GetName () const
 
 GS::ObjectState ImportFromBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    bool alignBySurveyPoint;
+    bool alignBySurveyPoint = true;
     GS::UniString importPath;
 
     if (!parameters.Get ("importPath", importPath) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
