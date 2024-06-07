@@ -10,6 +10,14 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class DeleteIssueCommand : public CommandBase
+{
+public:
+    DeleteIssueCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetIssueListCommand : public CommandBase
 {
 public:

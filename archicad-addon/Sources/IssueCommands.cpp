@@ -91,6 +91,43 @@ GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, 
     return {};
 }
 
+DeleteIssueCommand::DeleteIssueCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String DeleteIssueCommand::GetName () const
+{
+    return "DeleteIssue";
+}
+
+GS::ObjectState DeleteIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString guidStr;
+    bool acceptAllElements = false;
+    if (!parameters.Get ("guid", guidStr)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
+
+    bool hasRight = false;
+    ACAPI_Environment (APIEnv_GetTWAccessRightID, (void*) APIMarkupEntryDeleteModify, &hasRight);
+    if (!hasRight)
+        return CreateErrorResponse (APIERR_NOACCESSRIGHT, "You don't have permission to perform this command.");
+
+    parameters.Get ("acceptAllElements", acceptAllElements);
+    API_Guid guid = APIGuidFromString (guidStr.ToCStr());
+    GSErrCode err = ACAPI_CallUndoableCommand ("Delete issue", [&]() -> GSErrCode {
+        err = ACAPI_MarkUp_Delete (guid, acceptAllElements);
+        return err;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to delete issue.");
+    }
+
+    return {};
+}
+
 GetIssueListCommand::GetIssueListCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
