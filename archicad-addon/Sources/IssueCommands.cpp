@@ -48,6 +48,49 @@ static GSErrCode GetIFCRelationshipData (GS::HashTable<API_Guid, API_IFCRelation
 }
 
 
+CreateIssueCommand::CreateIssueCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String CreateIssueCommand::GetName () const
+{
+    return "CreateIssue";
+}
+
+GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString name;
+    GS::UniString parentGuidStr = "";
+    GS::UniString tagText = "";
+    parameters.Get ("parentGuid", parentGuidStr);
+    parameters.Get ("tagText", tagText);
+    if (!parameters.Get ("name", name)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
+    
+    bool hasRight = false;
+    ACAPI_Environment (APIEnv_GetTWAccessRightID, (void*) APIMarkupEntryCreate, &hasRight);
+    if (!hasRight)
+        return CreateErrorResponse (APIERR_NOACCESSRIGHT, "You don't have permission to perform this command.");
+
+    API_MarkUpType issue (name);
+    issue.tagText = tagText;
+    if (parentGuidStr != "")
+        issue.parentGuid = APIGuidFromString (parentGuidStr.ToCStr ());
+
+    GSErrCode err = ACAPI_CallUndoableCommand ("Create issue", [&]() -> GSErrCode {
+        err = ACAPI_MarkUp_Create (issue);
+        return err;
+    });
+   
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create issue.");
+    }
+
+    return {};
+}
+
 GetIssueListCommand::GetIssueListCommand () :
     CommandBase (CommonSchema::NotUsed)
 {

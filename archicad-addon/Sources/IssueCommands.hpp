@@ -2,6 +2,14 @@
 
 #include "CommandBase.hpp"
 
+class CreateIssueCommand : public CommandBase
+{
+public:
+    CreateIssueCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetIssueListCommand : public CommandBase
 {
 public:
