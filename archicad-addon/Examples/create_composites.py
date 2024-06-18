@@ -1,5 +1,10 @@
-import json
 import aclib
+
+buildMats = aclib.RunCommand ('API.GetAttributesByType', { 'attributeType' : 'BuildingMaterial' })
+buildMatIds = buildMats['attributeIds']
+
+lineTypes = aclib.RunCommand ('API.GetAttributesByType', { 'attributeType' : 'Line' })
+lineTypeIds = lineTypes['attributeIds']
 
 composites = []
 composites.append ({
@@ -8,38 +13,38 @@ composites.append ({
     'skins' : [
         {
             'type' : 'Core',
-            'buildingMaterialIndex' : 1,
+            'buildingMaterialId' : buildMatIds[0],
             'framePen' : 1,
             'thickness' : 0.1
         },
         {
             'type' : 'Other',
-            'buildingMaterialIndex' : 2,
+            'buildingMaterialId' : buildMatIds[1],
             'framePen' : 1,
             'thickness' : 0.2
         },
         {
             'type' : 'Finish',
-            'buildingMaterialIndex' : 3,
+            'buildingMaterialId' : buildMatIds[2],
             'framePen' : 1,
             'thickness' : 0.3
         }
     ],
     'separators' : [
         {
-            'lineTypeIndex' : 1,
+            'lineTypeId' : lineTypeIds[0],
             'linePen' : 1
         },
         {
-            'lineTypeIndex' : 1,
+            'lineTypeId' : lineTypeIds[1],
             'linePen' : 2
         },
         {
-            'lineTypeIndex' : 1,
+            'lineTypeId' : lineTypeIds[2],
             'linePen' : 3
         },
         {
-            'lineTypeIndex' : 1,
+            'lineTypeId' : lineTypeIds[3],
             'linePen' : 4
         }
     ]

@@ -544,9 +544,8 @@
                                                     "type": "string",
                                                     "description" : "Skin type (Core, Finish, or Other)"
                                                 },
-                                                "buildingMaterialIndex" : {
-                                                    "type": "integer",
-                                                    "description" : "Skin building material index."
+                                                "buildingMaterialId" : {
+                                                    "$ref": "#/AttributeIdArrayItem"
                                                 },
                                                 "framePen" : {
                                                     "type": "integer",
@@ -560,7 +559,7 @@
                                             "additionalProperties": false,
                                             "required" : [
                                                 "type",
-                                                "buildingMaterialIndex",
+                                                "buildingMaterialId",
                                                 "framePen",
                                                 "thickness"
                                             ]
@@ -573,9 +572,8 @@
                                             "type": "object",
                                             "description" : "Data to represent a skin separator.",
                                             "properties" : {
-                                                "lineTypeIndex": {
-                                                    "type": "integer",
-                                                        "description" : "Separator line type index."
+                                                "lineTypeId": {
+                                                    "$ref": "#/AttributeIdArrayItem"
                                                 },
                                                 "linePen" : {
                                                     "type": "integer",
@@ -584,7 +582,7 @@
                                             },
                                             "additionalProperties": false,
                                             "required" : [
-                                                "lineTypeIndex",
+                                                "lineTypeId",
                                                 "linePen"
                                             ]
                                         }
