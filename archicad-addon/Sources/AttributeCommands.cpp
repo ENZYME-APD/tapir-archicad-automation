@@ -1,6 +1,29 @@
 #include "AttributeCommands.hpp"
 #include "MigrationHelper.hpp"
 
+static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId, API_AttrTypeID attributeType, API_AttributeIndex& attributeIndex)
+{
+    GS::ObjectState attributeIdInner;
+    if (!attributeId.Get ("attributeId", attributeIdInner)) {
+        return false;
+    }
+
+    GS::String attributeGuidString;
+    if (!attributeIdInner.Get ("guid", attributeGuidString)) {
+        return false;
+    }
+
+    API_Attribute attribute = {};
+    attribute.header.guid = APIGuidFromString (attributeGuidString.ToCStr ());
+    attribute.header.typeID = attributeType;
+    if (ACAPI_Attribute_Get (&attribute) != NoError) {
+        return false;
+    }
+
+    attributeIndex = attribute.header.index;
+    return true;
+}
+
 GetBuildingMaterialPhysicalPropertiesCommand::GetBuildingMaterialPhysicalPropertiesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -388,9 +411,8 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                                         "type": "string",
                                         "description" : "Skin type (Core, Finish, or Other)"
                                     },
-                                    "buildingMaterialIndex" : {
-                                        "type": "integer",
-                                        "description" : "Skin building material index."
+                                    "buildingMaterialId" : {
+                                        "$ref": "#/AttributeIdArrayItem"
                                     },
                                     "framePen" : {
                                         "type": "integer",
@@ -404,7 +426,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                                 "additionalProperties": false,
                                 "required" : [
                                     "type",
-                                    "buildingMaterialIndex",
+                                    "buildingMaterialId",
                                     "framePen",
                                     "thickness"
                                 ]
@@ -417,9 +439,8 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                                 "type": "object",
                                 "description" : "Data to represent a skin separator.",
                                 "properties" : {
-                                    "lineTypeIndex": {
-                                        "type": "integer",
-                                            "description" : "Separator line type index."
+                                    "lineTypeId": {
+                                        "$ref": "#/AttributeIdArrayItem"
                                     },
                                     "linePen" : {
                                         "type": "integer",
@@ -428,7 +449,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
                                 },
                                 "additionalProperties": false,
                                 "required" : [
-                                    "lineTypeIndex",
+                                    "lineTypeId",
                                     "linePen"
                                 ]
                             }
@@ -544,9 +565,12 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
                 compData.flagBits |= APICWallComp_Finish;
             }
 
-            Int32 buildingMaterialIndex = 0;
-            skinData.Get ("buildingMaterialIndex", buildingMaterialIndex);
-            compData.buildingMaterial = ACAPI_CreateAttributeIndex (buildingMaterialIndex);
+            GS::ObjectState buildingMaterialId;
+            skinData.Get ("buildingMaterialId", buildingMaterialId);
+            API_AttributeIndex buildingMaterialIndex;
+            if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, buildingMaterialIndex)) {
+                compData.buildingMaterial = buildingMaterialIndex;
+            }
 
             skinData.Get ("framePen", compData.framePen);
             skinData.Get ("thickness", compData.fillThick);
@@ -561,9 +585,12 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             const GS::ObjectState& separatorData = separators[i];
             API_CWallLineComponent& lineData = (*compositeDefs.cwall_compLItems)[i];
 
-            Int32 lineTypeIndex = 0;
-            separatorData.Get ("lineTypeIndex", lineTypeIndex);
-            lineData.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+            GS::ObjectState lineTypeId;
+            separatorData.Get ("lineTypeId", lineTypeId);
+            API_AttributeIndex lineTypeIndex;
+            if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, lineTypeIndex)) {
+                lineData.ltypeInd = lineTypeIndex;
+            }
 
             separatorData.Get ("linePen", lineData.linePen);
         }
