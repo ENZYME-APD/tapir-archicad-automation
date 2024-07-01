@@ -326,6 +326,49 @@ GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, 
     return response;
 }
 
+AddCommentCommand::AddCommentCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String AddCommentCommand::GetName () const
+{
+    return "AddComment";
+}
+
+GS::ObjectState AddCommentCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString guidStr;
+    GS::UniString text;
+    GS::UniString author = "api";
+    int status;
+
+    parameters.Get ("author", author);
+    parameters.Get ("status", status);
+    if (!parameters.Get ("issueGuid", guidStr) || !parameters.Get ("text", text)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
+    auto GetCommentStatus = [](int status) -> API_MarkUpCommentStatusID {
+        if (status >= 0 && status <= 3) {
+            return static_cast<API_MarkUpCommentStatusID>(status);
+        } else {
+            return APIComment_Unknown;
+        }
+    };
+
+    API_Guid guid = APIGuidFromString (guidStr.ToCStr ());
+    GSErrCode err = ACAPI_CallUndoableCommand ("Add comment", [&]() -> GSErrCode {
+        API_MarkUpCommentType comment (author, text, GetCommentStatus(status));
+        GSErrCode err = ACAPI_MarkUp_AddComment (guid, comment);
+        return err;
+    });
+
+    if (err != NoError)
+        return CreateErrorResponse (err, "Failed to create a comment.");
+
+    return {};
+}
+
 GetAttachedElementsCommand::GetAttachedElementsCommand () :
     CommandBase (CommonSchema::NotUsed)
 {

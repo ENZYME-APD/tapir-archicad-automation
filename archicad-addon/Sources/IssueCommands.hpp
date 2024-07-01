@@ -45,6 +45,14 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class AddCommentCommand : public CommandBase
+{
+public:
+    AddCommentCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ExportToBCFCommand : public CommandBase
 {
 public:
