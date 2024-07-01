@@ -508,6 +508,118 @@
                 }
             },
             {
+                name : "CreateComposites",
+                version : "1.0.2",
+                description : "Creates Composite attributes based on the given parameters.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "compositeDataArray": {
+                            "type": "array",
+                            "description" : "Array of data to create Composites.",
+                            "items": {
+                                "type": "object",
+                                "description": "Data to create a Building Material.",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Name."
+                                    },
+                                    "useWith": {
+                                        "type": "array",
+                                        "description" : "Array of types the composite can used with.",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Element type (Wall, Slab, Roof, or Shell)"
+                                        }
+                                    },
+                                    "skins": {
+                                        "type": "array",
+                                        "description" : "Array of skin data.",
+                                        "items" : {
+                                            "type": "object",
+                                            "description" : "Data to represent a skin.",
+                                            "properties" : {
+                                                "type": {
+                                                    "type": "string",
+                                                    "description" : "Skin type (Core, Finish, or Other)"
+                                                },
+                                                "buildingMaterialId" : {
+                                                    "$ref": "#/AttributeIdArrayItem"
+                                                },
+                                                "framePen" : {
+                                                    "type": "integer",
+                                                    "description" : "Skin frame pen index."
+                                                },
+                                                "thickness" : {
+                                                    "type": "number",
+                                                    "description" : "Skin thickness (in meters)."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required" : [
+                                                "type",
+                                                "buildingMaterialId",
+                                                "framePen",
+                                                "thickness"
+                                            ]
+                                        }
+                                    },
+                                    "separators": {
+                                        "type": "array",
+                                        "description" : "Array of skin separator data. The number of items must be the number of skins plus one.",
+                                        "items" : {
+                                            "type": "object",
+                                            "description" : "Data to represent a skin separator.",
+                                            "properties" : {
+                                                "lineTypeId": {
+                                                    "$ref": "#/AttributeIdArrayItem"
+                                                },
+                                                "linePen" : {
+                                                    "type": "integer",
+                                                        "description" : "Separator line pen index."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required" : [
+                                                "lineTypeId",
+                                                "linePen"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required" : [
+                                    "name",
+                                    "skins",
+                                    "separators"
+                                ]
+                            }
+                        },
+                        "overwriteExisting": {
+                            "type": "boolean",
+                            "description" : "Overwrite the Composite if exists with the same name. The default is false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "compositeDataArray"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "attributeIds": {
+                            "$ref": "#/AttributeIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeIds"
+                    ]
+                }
+            },            
+            {
                 name : "GetBuildingMaterialPhysicalProperties",
                 version : "0.1.3",
                 description : "Retrieves the physical properties of the given Building Materials.",

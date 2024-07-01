@@ -46,6 +46,7 @@ GSErrCode __ACENV_CALL Initialize (void)
 #endif
 
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateCompositesCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetBuildingMaterialPhysicalPropertiesCommand> ());
 
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
