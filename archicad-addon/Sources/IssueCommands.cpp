@@ -230,6 +230,102 @@ GS::ObjectState GetIssueListCommand::Execute (const GS::ObjectState& /*parameter
     return response;
 }
 
+GetCommentsCommand::GetCommentsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetCommentsCommand::GetName () const
+{
+    return "GetComments";
+}
+
+GS::Optional<GS::UniString> GetCommentsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "comments": {
+                "type": "array",
+                "description": "A list of existing comments.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": {
+                            "type": "string",
+                            "description": "Comment identifier"
+                        },
+                        "author": {
+                            "type": "string",
+                            "description": "Comment author"
+                        },
+                        "text": {
+                            "type": "string",
+                            "description": "Comment text"
+                        },
+                        "status": {
+                            "type": "string",
+                            "description": "Comment status"
+                        },
+                        "creaTime": {
+                            "type": "integer",
+                            "description": "Comment creation time"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid",
+                        "author",
+                        "text",
+                        "status",
+                        "creaTime"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "comments"
+        ]
+    })";
+}
+
+GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString guidStr;
+    if (!parameters.Get ("issueGuid", guidStr)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
+
+    API_Guid guid = APIGuidFromString (guidStr.ToCStr ());
+    GS::Array<API_MarkUpCommentType> comments;
+    ACAPI_MarkUp_GetComments (guid, &comments);
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("comments");
+
+    comments.Enumerate ([&listAdder](const API_MarkUpCommentType& comment) {
+        auto GetCommentStatusStr = [](API_MarkUpCommentStatusID commentStatusID) -> const char* {
+            switch (commentStatusID) {
+                case APIComment_Error:		return "Error";
+                case APIComment_Warning:	return "Warning";
+                case APIComment_Info:		return "Info";
+                case APIComment_Unknown:
+                default:					return "Unknown";
+            }
+        };
+        GS::ObjectState commentData;
+        commentData.Add ("guid", APIGuidToString (comment.guid));
+        commentData.Add ("author", comment.author);
+        commentData.Add ("text", comment.text);
+        commentData.Add ("status", GetCommentStatusStr (comment.status));
+        commentData.Add ("creaTime", comment.creaTime);
+        listAdder (commentData);
+    });
+
+    return response;
+}
+
 GetAttachedElementsCommand::GetAttachedElementsCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
