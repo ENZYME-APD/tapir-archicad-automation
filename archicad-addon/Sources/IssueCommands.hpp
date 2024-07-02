@@ -27,15 +27,6 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class GetAttachedElementsCommand : public CommandBase
-{
-public:
-    GetAttachedElementsCommand ();
-    virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
-    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-};
-
 class GetCommentsCommand : public CommandBase
 {
 public:
@@ -50,6 +41,23 @@ class AddCommentCommand : public CommandBase
 public:
     AddCommentCommand ();
     virtual GS::String GetName () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class AttachElementsCommand : public CommandBase
+{
+public:
+    AttachElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetAttachedElementsCommand : public CommandBase
+{
+public:
+    GetAttachedElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 

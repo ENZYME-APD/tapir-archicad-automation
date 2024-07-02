@@ -463,6 +463,49 @@ GS::Optional<GS::UniString> GetAttachedElementsCommand::GetResponseSchema () con
     })";
 }
 
+AttachElementsCommand::AttachElementsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String AttachElementsCommand::GetName () const
+{
+    return "AttachElements";
+}
+
+GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString issueIdStr;
+    API_Guid issueId;
+    GS::Array<GS::UniString> guidsStr;
+    GS::Array<API_Guid> guidsList;
+    int type = 0;
+
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", guidsStr) || !parameters.Get ("type", type)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    } else {
+        issueId = APIGuidFromString (issueIdStr.ToCStr ());
+        for (ULong i = 0; i < guidsStr.GetSize (); ++i) {
+            guidsList.Push (APIGuidFromString (guidsStr[i].ToCStr ()));
+        }
+    }
+
+    auto GetType = [](int type) -> API_MarkUpComponentTypeID {
+        return static_cast<API_MarkUpComponentTypeID>(type);
+    };
+
+    GSErrCode err = ACAPI_CallUndoableCommand ("Attach elements", [&]() -> GSErrCode {
+        err = ACAPI_MarkUp_AttachElements (issueId, guidsList, GetType (type));
+        return err;
+    });
+
+    if (err != NoError) {
+        return CreateErrorResponse (Error, "Failed to attach elements.");
+    }
+
+    return {};
+}
+
 GS::ObjectState GetAttachedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString guidStr;
