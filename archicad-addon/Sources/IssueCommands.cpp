@@ -61,23 +61,19 @@ GS::String CreateIssueCommand::GetName () const
 GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString name;
-    GS::UniString parentGuidStr = "";
+    GS::UniString parentIdStr = "";
     GS::UniString tagText = "";
-    parameters.Get ("parentGuid", parentGuidStr);
+
+    parameters.Get ("parentId", parentIdStr);
     parameters.Get ("tagText", tagText);
     if (!parameters.Get ("name", name)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
-    
-    bool hasRight = false;
-    ACAPI_Environment (APIEnv_GetTWAccessRightID, (void*) APIMarkupEntryCreate, &hasRight);
-    if (!hasRight)
-        return CreateErrorResponse (APIERR_NOACCESSRIGHT, "You don't have permission to perform this command.");
 
     API_MarkUpType issue (name);
     issue.tagText = tagText;
-    if (parentGuidStr != "")
-        issue.parentGuid = APIGuidFromString (parentGuidStr.ToCStr ());
+    if (parentIdStr != "")
+        issue.parentGuid = APIGuidFromString (parentIdStr.ToCStr ());
 
     GSErrCode err = ACAPI_CallUndoableCommand ("Create issue", [&]() -> GSErrCode {
         err = ACAPI_MarkUp_Create (issue);
@@ -103,19 +99,15 @@ GS::String DeleteIssueCommand::GetName () const
 
 GS::ObjectState DeleteIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString guidStr;
+    GS::UniString issueIdStr;
     bool acceptAllElements = false;
-    if (!parameters.Get ("guid", guidStr)) {
+
+    if (!parameters.Get ("issueId", issueIdStr)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
 
-    bool hasRight = false;
-    ACAPI_Environment (APIEnv_GetTWAccessRightID, (void*) APIMarkupEntryDeleteModify, &hasRight);
-    if (!hasRight)
-        return CreateErrorResponse (APIERR_NOACCESSRIGHT, "You don't have permission to perform this command.");
-
     parameters.Get ("acceptAllElements", acceptAllElements);
-    API_Guid guid = APIGuidFromString (guidStr.ToCStr());
+    API_Guid guid = APIGuidFromString (issueIdStr.ToCStr());
     GSErrCode err = ACAPI_CallUndoableCommand ("Delete issue", [&]() -> GSErrCode {
         err = ACAPI_MarkUp_Delete (guid, acceptAllElements);
         return err;
@@ -128,17 +120,17 @@ GS::ObjectState DeleteIssueCommand::Execute (const GS::ObjectState& parameters, 
     return {};
 }
 
-GetIssueListCommand::GetIssueListCommand () :
+GetIssuesCommand::GetIssuesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String GetIssueListCommand::GetName () const
+GS::String GetIssuesCommand::GetName () const
 {
-    return "GetIssueList";
+    return "GetIssues";
 }
 
-GS::Optional<GS::UniString> GetIssueListCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetIssuesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -203,7 +195,7 @@ GS::Optional<GS::UniString> GetIssueListCommand::GetResponseSchema () const
     })";
 }
 
-GS::ObjectState GetIssueListCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetIssuesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_MarkUpType> issueList;
     GSErrCode err = ACAPI_MarkUp_GetList (APINULLGuid, &issueList);
@@ -228,6 +220,49 @@ GS::ObjectState GetIssueListCommand::Execute (const GS::ObjectState& /*parameter
     }
 
     return response;
+}
+
+AddCommentCommand::AddCommentCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String AddCommentCommand::GetName () const
+{
+    return "AddComment";
+}
+
+GS::ObjectState AddCommentCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString issueIdStr;
+    GS::UniString text;
+    GS::UniString author = "API";
+    int status;
+
+    parameters.Get ("author", author);
+    parameters.Get ("status", status);
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("text", text)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    }
+    auto GetCommentStatus = [](int status) -> API_MarkUpCommentStatusID {
+        if (status >= 0 && status <= 3) {
+            return static_cast<API_MarkUpCommentStatusID>(status);
+        } else {
+            return APIComment_Unknown;
+        }
+    };
+
+    API_Guid guid = APIGuidFromString (issueIdStr.ToCStr ());
+    GSErrCode err = ACAPI_CallUndoableCommand ("Add comment", [&]() -> GSErrCode {
+        API_MarkUpCommentType comment (author, text, GetCommentStatus (status));
+        GSErrCode err = ACAPI_MarkUp_AddComment (guid, comment);
+        return err;
+    });
+
+    if (err != NoError)
+        return CreateErrorResponse (err, "Failed to create a comment.");
+
+    return {};
 }
 
 GetCommentsCommand::GetCommentsCommand () :
@@ -292,14 +327,14 @@ GS::Optional<GS::UniString> GetCommentsCommand::GetResponseSchema () const
 
 GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString guidStr;
-    if (!parameters.Get ("issueGuid", guidStr)) {
+    GS::UniString issueIdStr;
+    if (!parameters.Get ("issueId", issueIdStr)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
 
-    API_Guid guid = APIGuidFromString (guidStr.ToCStr ());
+    API_Guid issueId = APIGuidFromString (issueIdStr.ToCStr ());
     GS::Array<API_MarkUpCommentType> comments;
-    ACAPI_MarkUp_GetComments (guid, &comments);
+    ACAPI_MarkUp_GetComments (issueId, &comments);
 
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("comments");
@@ -326,45 +361,81 @@ GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, 
     return response;
 }
 
-AddCommentCommand::AddCommentCommand () :
+AttachElementsCommand::AttachElementsCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String AddCommentCommand::GetName () const
+GS::String AttachElementsCommand::GetName () const
 {
-    return "AddComment";
+    return "AttachElements";
 }
 
-GS::ObjectState AddCommentCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString guidStr;
-    GS::UniString text;
-    GS::UniString author = "api";
-    int status;
+    GS::UniString issueIdStr;
+    API_Guid issueId;
+    GS::Array<GS::UniString> elemIdsStr;
+    GS::Array<API_Guid> elemIds;
+    int type = 0;
 
-    parameters.Get ("author", author);
-    parameters.Get ("status", status);
-    if (!parameters.Get ("issueGuid", guidStr) || !parameters.Get ("text", text)) {
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", elemIdsStr) || !parameters.Get ("type", type)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
-    auto GetCommentStatus = [](int status) -> API_MarkUpCommentStatusID {
-        if (status >= 0 && status <= 3) {
-            return static_cast<API_MarkUpCommentStatusID>(status);
-        } else {
-            return APIComment_Unknown;
+    else {
+        issueId = APIGuidFromString (issueIdStr.ToCStr ());
+        for (ULong i = 0; i < elemIdsStr.GetSize (); ++i) {
+            elemIds.Push (APIGuidFromString (elemIdsStr[i].ToCStr ()));
         }
+    }
+
+    auto GetType = [](int type) -> API_MarkUpComponentTypeID {
+        return static_cast<API_MarkUpComponentTypeID>(type);
     };
 
-    API_Guid guid = APIGuidFromString (guidStr.ToCStr ());
-    GSErrCode err = ACAPI_CallUndoableCommand ("Add comment", [&]() -> GSErrCode {
-        API_MarkUpCommentType comment (author, text, GetCommentStatus(status));
-        GSErrCode err = ACAPI_MarkUp_AddComment (guid, comment);
+    GSErrCode err = ACAPI_CallUndoableCommand ("Attach elements", [&]() -> GSErrCode {
+        err = ACAPI_MarkUp_AttachElements (issueId, elemIds, GetType (type));
         return err;
     });
 
-    if (err != NoError)
-        return CreateErrorResponse (err, "Failed to create a comment.");
+    if (err != NoError) {
+        return CreateErrorResponse (Error, "Failed to attach elements.");
+    }
+
+    return {};
+}
+
+DetachElementsCommand::DetachElementsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String DetachElementsCommand::GetName () const
+{
+    return "DetachElements";
+}
+
+GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString issueIdStr;
+    API_Guid issueId;
+    GS::Array<GS::UniString> elemIdsStr;
+    GS::Array<API_Guid> elemIds;
+
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", elemIdsStr)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    } 
+    else {
+        issueId = APIGuidFromString (issueIdStr.ToCStr ());
+        for (ULong i = 0; i < elemIdsStr.GetSize (); ++i) {
+            elemIds.Push (APIGuidFromString (elemIdsStr[i].ToCStr ()));
+        }
+    }
+
+    GSErrCode err = ACAPI_CallUndoableCommand ("Detach elements", [&]() -> GSErrCode {
+        err = ACAPI_MarkUp_DetachElements (issueId, elemIds);
+        return err;
+    });
 
     return {};
 }
@@ -463,110 +534,31 @@ GS::Optional<GS::UniString> GetAttachedElementsCommand::GetResponseSchema () con
     })";
 }
 
-AttachElementsCommand::AttachElementsCommand () :
-    CommandBase (CommonSchema::NotUsed)
-{
-}
-
-GS::String AttachElementsCommand::GetName () const
-{
-    return "AttachElements";
-}
-
-GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    GS::UniString issueIdStr;
-    API_Guid issueId;
-    GS::Array<GS::UniString> guidsStr;
-    GS::Array<API_Guid> guidsList;
-    int type = 0;
-
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", guidsStr) || !parameters.Get ("type", type)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
-    }
-    else {
-        issueId = APIGuidFromString (issueIdStr.ToCStr ());
-        for (ULong i = 0; i < guidsStr.GetSize (); ++i) {
-            guidsList.Push (APIGuidFromString (guidsStr[i].ToCStr ()));
-        }
-    }
-
-    auto GetType = [](int type) -> API_MarkUpComponentTypeID {
-        return static_cast<API_MarkUpComponentTypeID>(type);
-    };
-
-    GSErrCode err = ACAPI_CallUndoableCommand ("Attach elements", [&]() -> GSErrCode {
-        err = ACAPI_MarkUp_AttachElements (issueId, guidsList, GetType (type));
-        return err;
-    });
-
-    if (err != NoError) {
-        return CreateErrorResponse (Error, "Failed to attach elements.");
-    }
-
-    return {};
-}
-
-DetachElementsCommand::DetachElementsCommand () :
-    CommandBase (CommonSchema::NotUsed)
-{
-}
-
-GS::String DetachElementsCommand::GetName () const
-{
-    return "DetachElements";
-}
-
-GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    GS::UniString issueIdStr;
-    API_Guid issueId;
-    GS::Array<GS::UniString> guidsStr;
-    GS::Array<API_Guid> guidsList;
-
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", guidsStr)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
-    } 
-    else {
-        issueId = APIGuidFromString (issueIdStr.ToCStr ());
-        for (ULong i = 0; i < guidsStr.GetSize (); ++i) {
-            guidsList.Push (APIGuidFromString (guidsStr[i].ToCStr ()));
-        }
-    }
-
-    GSErrCode err = ACAPI_CallUndoableCommand ("Detach elements", [&]() -> GSErrCode {
-        err = ACAPI_MarkUp_DetachElements (issueId, guidsList);
-        return err;
-    });
-
-    return {};
-}
-
 GS::ObjectState GetAttachedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString guidStr;
-    if (!parameters.Get ("issueGuid", guidStr)) {
+    GS::UniString issueIdStr;
+    if (!parameters.Get ("issueId", issueIdStr)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
-    API_Guid guid = APIGuidFromString (guidStr.ToCStr ());
+    API_Guid issueId = APIGuidFromString (issueIdStr.ToCStr ());
     GS::ObjectState response;
     GSErrCode err;
 
     const auto& highlightedObj = response.AddList<GS::ObjectState> ("highlighted");
     GS::Array<API_Guid> highlightedElems;
-    err = ACAPI_MarkUp_GetAttachedElements (guid, APIMarkUpComponent_Highlight, highlightedElems);
+    err = ACAPI_MarkUp_GetAttachedElements (issueId, APIMarkUpComponent_Highlight, highlightedElems);
 
     const auto& modifiedObj = response.AddList<GS::ObjectState> ("modified");
     GS::Array<API_Guid> modifiedElems;
-    err = ACAPI_MarkUp_GetAttachedElements (guid, APIMarkUpComponent_Modification, modifiedElems);
+    err = ACAPI_MarkUp_GetAttachedElements (issueId, APIMarkUpComponent_Modification, modifiedElems);
 
     const auto& createdObj = response.AddList<GS::ObjectState> ("created");
     GS::Array<API_Guid> createdElems;
-    err = ACAPI_MarkUp_GetAttachedElements (guid, APIMarkUpComponent_Creation, createdElems);
+    err = ACAPI_MarkUp_GetAttachedElements (issueId, APIMarkUpComponent_Creation, createdElems);
 
     const auto& deletedObj = response.AddList<GS::ObjectState> ("deleted");
     GS::Array<API_Guid> deletedElems;
-    err = ACAPI_MarkUp_GetAttachedElements (guid, APIMarkUpComponent_Deletion, deletedElems);
+    err = ACAPI_MarkUp_GetAttachedElements (issueId, APIMarkUpComponent_Deletion, deletedElems);
 
     if (err == NoError) {
         highlightedElems.Enumerate ([&highlightedObj](const API_Guid& guid) {

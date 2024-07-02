@@ -18,10 +18,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class GetIssueListCommand : public CommandBase
+class GetIssuesCommand : public CommandBase
 {
 public:
-    GetIssueListCommand ();
+    GetIssuesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
