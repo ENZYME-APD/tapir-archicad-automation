@@ -483,7 +483,8 @@ GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameter
 
     if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", guidsStr) || !parameters.Get ("type", type)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
-    } else {
+    }
+    else {
         issueId = APIGuidFromString (issueIdStr.ToCStr ());
         for (ULong i = 0; i < guidsStr.GetSize (); ++i) {
             guidsList.Push (APIGuidFromString (guidsStr[i].ToCStr ()));
@@ -502,6 +503,41 @@ GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameter
     if (err != NoError) {
         return CreateErrorResponse (Error, "Failed to attach elements.");
     }
+
+    return {};
+}
+
+DetachElementsCommand::DetachElementsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String DetachElementsCommand::GetName () const
+{
+    return "DetachElements";
+}
+
+GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString issueIdStr;
+    API_Guid issueId;
+    GS::Array<GS::UniString> guidsStr;
+    GS::Array<API_Guid> guidsList;
+
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", guidsStr)) {
+        return CreateErrorResponse (Error, "Invalid input parameters.");
+    } 
+    else {
+        issueId = APIGuidFromString (issueIdStr.ToCStr ());
+        for (ULong i = 0; i < guidsStr.GetSize (); ++i) {
+            guidsList.Push (APIGuidFromString (guidsStr[i].ToCStr ()));
+        }
+    }
+
+    GSErrCode err = ACAPI_CallUndoableCommand ("Detach elements", [&]() -> GSErrCode {
+        err = ACAPI_MarkUp_DetachElements (issueId, guidsList);
+        return err;
+    });
 
     return {};
 }

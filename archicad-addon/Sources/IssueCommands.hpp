@@ -52,6 +52,14 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class DetachElementsCommand : public CommandBase
+{
+public:
+    DetachElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetAttachedElementsCommand : public CommandBase
 {
 public:
