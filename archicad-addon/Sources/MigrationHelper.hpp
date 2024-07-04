@@ -109,6 +109,18 @@ inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTransla
     return ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &ifcExportTranslators);
 }
 
+inline GSErrCode ACAPI_MarkUp_ExportToBCF (const IO::Location& bcfFileLoc, const GS::Array<API_Guid>& issueIds, const bool useExternalId, const bool alignBySurveyPoint)
+{
+    (void) alignBySurveyPoint;
+    return ACAPI_MarkUp_ExportToBCF (bcfFileLoc, issueIds, useExternalId);
+}
+
+inline GSErrCode ACAPI_MarkUp_ImportFromBCF (const IO::Location& bcfFileLoc, const bool silentMode, APIIFCRelationshipDataProc* ifcRelationshipDataProc, const void* par1, const bool openMarkUpPalette, const bool alignBySurveyPoint)
+{
+    (void) alignBySurveyPoint;
+    return ACAPI_MarkUp_ImportFromBCF (bcfFileLoc, silentMode, ifcRelationshipDataProc, par1, openMarkUpPalette);
+}
+
 #endif
 
 /*
@@ -117,13 +129,24 @@ inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTransla
     TAPIR_ index should distinguish the overriden ones from GS vanilla's API.
 */
 
+inline GSErrCode TAPIR_MarkUp_AttachElements (const API_Guid& issueId, const GS::Array<API_Guid>& elemIds, int type)
+{
+#ifdef ServerMainVers_2600
+    API_MarkUpComponentTypeID cType = static_cast<API_MarkUpComponentTypeID>(type);
+    return ACAPI_MarkUp_AttachElements (issueId, elemIds, cType);
+#else
+    int cType[] = { 0, 0, 0, 1 }; // AC25: corrected / highlighted
+    return ACAPI_MarkUp_AttachElements (issueId, elemIds, cType[type]);
+#endif
+}
+
 inline GSErrCode TAPIR_MarkUp_GetAttachedElements (API_Guid issueId, int attachType, GS::Array<API_Guid>& elemIds)
 {
     GSErrCode err;
-#if defined(ServerMainVers_2600) || defined(ServerMainVers_2700)
+#ifdef ServerMainVers_2600
     API_MarkUpComponentTypeID elemType = static_cast<API_MarkUpComponentTypeID>(attachType);
     err = ACAPI_MarkUp_GetAttachedElements (issueId, elemType, elemIds);
-#elif defined(ServerMainVers_2500)
+#else
     GS::Array<GS::Array<API_Guid>> elemTypes;
     elemTypes.SetSize (4);
     err = ACAPI_MarkUp_GetAttachedElements (issueId, &elemTypes[3], &elemTypes[1]);

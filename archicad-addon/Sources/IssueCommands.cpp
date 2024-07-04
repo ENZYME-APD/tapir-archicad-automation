@@ -360,7 +360,7 @@ GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, 
 
     return response;
 }
-/*
+
 AttachElementsCommand::AttachElementsCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -373,28 +373,24 @@ GS::String AttachElementsCommand::GetName () const
 
 GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& ) const
 {
+    int type;
     GS::UniString issueIdStr;
     API_Guid issueId;
     GS::Array<GS::UniString> elemIdsStr;
     GS::Array<API_Guid> elemIds;
-    int type = 0;
 
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", elemIdsStr) || !parameters.Get ("type", type)) {
+    parameters.Get ("type", type);
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", elemIdsStr) || !(type >= 0 && type <= 3)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
-    }
-    else {
+    } else {
         issueId = APIGuidFromString (issueIdStr.ToCStr ());
         for (ULong i = 0; i < elemIdsStr.GetSize (); ++i) {
             elemIds.Push (APIGuidFromString (elemIdsStr[i].ToCStr ()));
         }
     }
 
-    auto GetType = [](int type) -> API_MarkUpComponentTypeID {
-        return static_cast<API_MarkUpComponentTypeID>(type);
-    };
-
     GSErrCode err = ACAPI_CallUndoableCommand ("Attach elements", [&]() -> GSErrCode {
-        err = ACAPI_MarkUp_AttachElements (issueId, elemIds, GetType (type));
+        err = TAPIR_MarkUp_AttachElements (issueId, elemIds, type);
         return err;
     });
 
@@ -404,7 +400,7 @@ GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameter
 
     return {};
 }
-*/
+
 DetachElementsCommand::DetachElementsCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -456,21 +452,7 @@ GS::Optional<GS::UniString> GetAttachedElementsCommand::GetResponseSchema () con
         "type": "object",
         "properties": {
             "elements": {
-                "type": "array",
-                "description": "A list of elements in the current issue.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": {
-                            "type": "string",
-                            "description": "Element identifier"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "guid"
-                    ]
-                }
+                "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
@@ -486,18 +468,17 @@ GS::ObjectState GetAttachedElementsCommand::Execute (const GS::ObjectState& para
     GS::ObjectState response;
     GS::Array<API_Guid> elemIds;
     GS::UniString issueIdStr;
-    GSErrCode err;
 
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("type", type)) {
+    parameters.Get ("type", type);
+    if (!parameters.Get ("issueId", issueIdStr) || !(type >= 0 && type <= 3)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
-    } else {
-        parameters.Get ("type", type);
-        API_Guid issueId = APIGuidFromString (issueIdStr.ToCStr ());
-        err = TAPIR_MarkUp_GetAttachedElements (issueId, type, elemIds);
-    };
+    }
+
+    API_Guid issueId = APIGuidFromString (issueIdStr.ToCStr ());
+    GSErrCode err = TAPIR_MarkUp_GetAttachedElements (issueId, type, elemIds);
+    const auto& elemObj = response.AddList<GS::ObjectState> ("elements");
 
     if (err == NoError) {
-        const auto& elemObj = response.AddList<GS::ObjectState> ("elements");
         elemIds.Enumerate ([&elemObj](const API_Guid& guid) {
             GS::ObjectState elements;
             elements.Add ("guid", APIGuidToString (guid));
@@ -505,9 +486,9 @@ GS::ObjectState GetAttachedElementsCommand::Execute (const GS::ObjectState& para
         });
     } else {
         return CreateErrorResponse (err, "Failed to retrieve attached elements.");
-    } 
+    }
 
-    return response;
+   return response;
 }
 
 ExportToBCFCommand::ExportToBCFCommand () :
@@ -527,9 +508,9 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
     GS::Array<API_Guid> issueIds;
     GS::Array<API_MarkUpType> issues;
     bool useExternalId = false;
-    //bool alignBySurveyPoint = true;
+    bool alignBySurveyPoint = true;
 
-    if (!parameters.Get ("exportPath", exportPath) || !parameters.Get ("useExternalId", useExternalId) /* || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)*/) {
+    if (!parameters.Get ("exportPath", exportPath) || !parameters.Get ("useExternalId", useExternalId) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
 
@@ -541,15 +522,14 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
                 issueIds.Push (issues.guid);
         	}
         }
-    }
-    else {
+    } else {
         for (ULong i = 0; i < issueIdsStr.GetSize (); ++i) {
             issueIds.Push (APIGuidFromString (issueIdsStr[i].ToCStr ()));
         }
     }
 
     IO::Location bcfFilePath(exportPath);
-    GSErrCode err = ACAPI_MarkUp_ExportToBCF (bcfFilePath, issueIds, useExternalId /*, alignBySurveyPoint*/);
+    GSErrCode err = ACAPI_MarkUp_ExportToBCF (bcfFilePath, issueIds, useExternalId, alignBySurveyPoint);
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to export issues.");
@@ -570,17 +550,17 @@ GS::String ImportFromBCFCommand::GetName () const
 
 GS::ObjectState ImportFromBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    //bool alignBySurveyPoint = true;
+    bool alignBySurveyPoint = true;
     GS::UniString importPath;
 
-    if (!parameters.Get ("importPath", importPath) /* || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)*/) {
+    if (!parameters.Get ("importPath", importPath) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
 
     IO::Location bcfFilePath (importPath);
     GSErrCode err = ACAPI_CallUndoableCommand ("Import BCF Issues", [&] () -> GSErrCode {
         API_IFCRelationshipData ifcRelationshipData = GetCurrentProjectIFCRelationshipData ();
-        err = ACAPI_MarkUp_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false /*, alignBySurveyPoint*/);
+        err = ACAPI_MarkUp_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false, alignBySurveyPoint);
         return err;
     });
 
