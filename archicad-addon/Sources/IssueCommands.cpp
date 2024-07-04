@@ -76,7 +76,7 @@ GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, 
         issue.parentGuid = APIGuidFromString (parentIdStr.ToCStr ());
 
     GSErrCode err = ACAPI_CallUndoableCommand ("Create issue", [&]() -> GSErrCode {
-        err = ACAPI_MarkUp_Create (issue);
+        err = ACAPI_Markup_Create (issue);
         return err;
     });
    
@@ -109,7 +109,7 @@ GS::ObjectState DeleteIssueCommand::Execute (const GS::ObjectState& parameters, 
     parameters.Get ("acceptAllElements", acceptAllElements);
     API_Guid guid = APIGuidFromString (issueIdStr.ToCStr());
     GSErrCode err = ACAPI_CallUndoableCommand ("Delete issue", [&]() -> GSErrCode {
-        err = ACAPI_MarkUp_Delete (guid, acceptAllElements);
+        err = ACAPI_Markup_Delete (guid, acceptAllElements);
         return err;
     });
 
@@ -198,7 +198,7 @@ GS::Optional<GS::UniString> GetIssuesCommand::GetResponseSchema () const
 GS::ObjectState GetIssuesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_MarkUpType> issueList;
-    GSErrCode err = ACAPI_MarkUp_GetList (APINULLGuid, &issueList);
+    GSErrCode err = ACAPI_Markup_GetList (APINULLGuid, &issueList);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive issues.");
     }
@@ -255,7 +255,7 @@ GS::ObjectState AddCommentCommand::Execute (const GS::ObjectState& parameters, G
     API_Guid guid = APIGuidFromString (issueIdStr.ToCStr ());
     GSErrCode err = ACAPI_CallUndoableCommand ("Add comment", [&]() -> GSErrCode {
         API_MarkUpCommentType comment (author, text, GetCommentStatus (status));
-        GSErrCode err = ACAPI_MarkUp_AddComment (guid, comment);
+        GSErrCode err = ACAPI_Markup_AddComment (guid, comment);
         return err;
     });
 
@@ -334,7 +334,7 @@ GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, 
 
     API_Guid issueId = APIGuidFromString (issueIdStr.ToCStr ());
     GS::Array<API_MarkUpCommentType> comments;
-    ACAPI_MarkUp_GetComments (issueId, &comments);
+    ACAPI_Markup_GetComments (issueId, &comments);
 
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("comments");
@@ -429,7 +429,7 @@ GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("Detach elements", [&]() -> GSErrCode {
-        err = ACAPI_MarkUp_DetachElements (issueId, elemIds);
+        err = ACAPI_Markup_DetachElements (issueId, elemIds);
         return err;
     });
 
@@ -516,7 +516,7 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
 
     parameters.Get ("issueIds", issueIdsStr);
     if (issueIdsStr.IsEmpty ()) {
-        GSErrCode err = ACAPI_MarkUp_GetList (APINULLGuid, &issues);
+        GSErrCode err = ACAPI_Markup_GetList (APINULLGuid, &issues);
         if (err == NoError) {
         	for (const auto& issues : issues) {
                 issueIds.Push (issues.guid);
@@ -529,7 +529,7 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
     }
 
     IO::Location bcfFilePath(exportPath);
-    GSErrCode err = ACAPI_MarkUp_ExportToBCF (bcfFilePath, issueIds, useExternalId, alignBySurveyPoint);
+    GSErrCode err = ACAPI_Markup_ExportToBCF (bcfFilePath, issueIds, useExternalId, alignBySurveyPoint);
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to export issues.");
@@ -560,7 +560,7 @@ GS::ObjectState ImportFromBCFCommand::Execute (const GS::ObjectState& parameters
     IO::Location bcfFilePath (importPath);
     GSErrCode err = ACAPI_CallUndoableCommand ("Import BCF Issues", [&] () -> GSErrCode {
         API_IFCRelationshipData ifcRelationshipData = GetCurrentProjectIFCRelationshipData ();
-        err = ACAPI_MarkUp_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false, alignBySurveyPoint);
+        err = ACAPI_Markup_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false, alignBySurveyPoint);
         return err;
     });
 

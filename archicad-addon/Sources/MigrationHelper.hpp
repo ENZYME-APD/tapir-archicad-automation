@@ -4,6 +4,17 @@
 
 #ifndef ServerMainVers_2700
 
+#define ACAPI_Markup_Create ACAPI_MarkUp_Create
+#define ACAPI_Markup_Delete ACAPI_MarkUp_Delete
+#define ACAPI_Markup_GetList ACAPI_MarkUp_GetList
+#define ACAPI_Markup_AttachElements ACAPI_MarkUp_AttachElements
+#define ACAPI_Markup_DetachElements ACAPI_MarkUp_DetachElements
+#define ACAPI_Markup_GetAttachedElements ACAPI_MarkUp_GetAttachedElements
+#define ACAPI_Markup_AddComment ACAPI_MarkUp_AddComment
+#define ACAPI_Markup_GetComments ACAPI_MarkUp_GetComments
+#define ACAPI_Markup_ExportToBCF ACAPI_MarkUp_ExportToBCF
+#define ACAPI_Markup_ImportFromBCF ACAPI_MarkUp_ImportFromBCF
+
 #define ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler ACAPI_Install_AddOnCommandHandler
 
 #define ACAPI_Element_NeigIDToElemType ACAPI_Goodies_NeigIDToElemType
@@ -133,10 +144,10 @@ inline GSErrCode TAPIR_MarkUp_AttachElements (const API_Guid& issueId, const GS:
 {
 #ifdef ServerMainVers_2600
     API_MarkUpComponentTypeID cType = static_cast<API_MarkUpComponentTypeID>(type);
-    return ACAPI_MarkUp_AttachElements (issueId, elemIds, cType);
+    return ACAPI_Markup_AttachElements (issueId, elemIds, cType);
 #else
     int cType[] = { 0, 0, 0, 1 }; // AC25: corrected / highlighted
-    return ACAPI_MarkUp_AttachElements (issueId, elemIds, cType[type]);
+    return ACAPI_Markup_AttachElements (issueId, elemIds, cType[type]);
 #endif
 }
 
@@ -145,11 +156,11 @@ inline GSErrCode TAPIR_MarkUp_GetAttachedElements (API_Guid issueId, int attachT
     GSErrCode err;
 #ifdef ServerMainVers_2600
     API_MarkUpComponentTypeID elemType = static_cast<API_MarkUpComponentTypeID>(attachType);
-    err = ACAPI_MarkUp_GetAttachedElements (issueId, elemType, elemIds);
+    err = ACAPI_Markup_GetAttachedElements (issueId, elemType, elemIds);
 #else
     GS::Array<GS::Array<API_Guid>> elemTypes;
     elemTypes.SetSize (4);
-    err = ACAPI_MarkUp_GetAttachedElements (issueId, &elemTypes[3], &elemTypes[1]);
+    err = ACAPI_Markup_GetAttachedElements (issueId, &elemTypes[3], &elemTypes[1]);
     elemIds = elemTypes[attachType];
 #endif
     return err;
