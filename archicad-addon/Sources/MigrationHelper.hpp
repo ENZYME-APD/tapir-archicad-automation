@@ -90,10 +90,45 @@ inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo
     return ACAPI_Environment (APIEnv_GetLibrariesID, activeLibs, embeddedLibraryIndex);
 }
 
-/**/
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
 {
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
 }
 
 #endif
+
+#ifndef ServerMainVers_2600
+
+inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier ifcTranslator, API_IFCRelationshipData ifcRelationshipData)
+{
+    return ACAPI_Goodies (APIAny_GetIFCRelationshipDataID, &ifcTranslator, &ifcRelationshipData);
+}
+
+inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators)
+{
+    return ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &ifcExportTranslators);
+}
+
+#endif
+
+/*
+    Proposed workaround for functions that aren't normally compatible between versions,
+    it'provides an unified approach and function output for different versions.
+    TAPIR_ index should distinguish the overriden ones from GS vanilla's API.
+*/
+
+inline GSErrCode TAPIR_MarkUp_GetAttachedElements (API_Guid issueId, int attachType, GS::Array<API_Guid>& elemIds)
+{
+    GSErrCode err;
+#if defined(ServerMainVers_2600) || defined(ServerMainVers_2700)
+    API_MarkUpComponentTypeID elemType = static_cast<API_MarkUpComponentTypeID>(attachType);
+    err = ACAPI_MarkUp_GetAttachedElements (issueId, elemType, elemIds);
+#elif defined(ServerMainVers_2500)
+    GS::Array<GS::Array<API_Guid>> elemTypes;
+    elemTypes.SetSize (4);
+    err = ACAPI_MarkUp_GetAttachedElements (issueId, &elemTypes[3], &elemTypes[1]);
+    elemIds = elemTypes[attachType];
+#endif
+    return err;
+
+}
