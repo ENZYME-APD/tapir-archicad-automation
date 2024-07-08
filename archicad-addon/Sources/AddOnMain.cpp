@@ -43,6 +43,7 @@ GSErrCode __ACENV_CALL Initialize (void)
 #ifdef ServerMainVers_2600
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<HighlightElementsCommand> ());
 #endif
+	err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<MoveElementsCommand> ());
 
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateCompositesCommand> ());

@@ -81,6 +81,124 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
     return response;
 }
 
+MoveElementsCommand::MoveElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveElementsCommand::GetName () const
+{
+    return "MoveElements";
+}
+
+GS::Optional<GS::UniString> MoveElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithMoveVectors": {
+                "type": "array",
+                "description": "The elements with move vector pairs.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "moveVector": {
+                            "type": "object",
+                            "description" : "Move vector of a 3D point.",
+                            "properties" : {
+                                "x": {
+                                    "type": "number",
+                                    "description" : "X value of the vector."
+                                },
+                                "y" : {
+                                    "type": "number",
+                                    "description" : "Y value of the vector."
+                                },
+                                "z" : {
+                                    "type": "number",
+                                    "description" : "Z value of the vector."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required" : [
+                                "x",
+                                "y",
+                                "z"
+                            ]
+                        },
+                        "copy": {
+                            "type": "boolean",
+                            "description" : "Optional parameter. If true, then a copy of the element will be moved. By default it's false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "moveVector"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithMoveVectors"
+        ]
+    })";
+}
+
+static GSErrCode MoveElement (const API_Guid& elemGuid, const API_Vector3D& moveVector, bool withCopy)
+{
+    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Drag;
+    editPars.endC = moveVector;
+    editPars.withDelete = !withCopy;
+
+    return ACAPI_Element_Edit (&elementsToEdit, editPars);
+}
+
+GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithMoveVectors;
+    parameters.Get ("elementsWithMoveVectors", elementsWithMoveVectors);
+
+    API_Guid elemGuid;
+    const APIErrCodes err = (APIErrCodes) ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
+            const GS::ObjectState* elementId = elementWithMoveVector.Get ("elementId");
+            const GS::ObjectState* moveVector = elementWithMoveVector.Get ("moveVector");
+            if (elementId == nullptr || moveVector == nullptr) {
+                continue;
+            }
+
+            elemGuid = GetGuidFromObjectState (*elementId);
+
+            bool copy = false;
+            elementWithMoveVector.Get ("copy", copy);
+
+            const GSErrCode err = MoveElement (elemGuid,
+                                               Get3DCoordinateFromObjectState (*moveVector),
+                                               copy);
+            if (err != NoError) {
+                return err;
+            }
+        }
+
+        return NoError;
+    });
+
+    if (err != NoError) {
+        const GS::UniString errorMsg = GS::UniString::Printf ("Failed to move element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+        return CreateErrorResponse (err, errorMsg);
+    }
+
+    return {};
+}
+
 #ifdef ServerMainVers_2600
 
 HighlightElementsCommand::HighlightElementsCommand () :
