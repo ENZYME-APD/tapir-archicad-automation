@@ -58,6 +58,31 @@ GS::String CreateIssueCommand::GetName () const
     return "CreateIssue";
 }
 
+GS::Optional<GS::UniString> CreateIssueCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the issue."
+            },
+            "parentId": {
+                "type": "string",
+                "description": "The id of the parent issue, optional."
+            },
+            "tagText": {
+                "type": "string",
+                "description": "Tag text of the issue, optional."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    })";
+}
+
 GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString name;
@@ -95,6 +120,23 @@ DeleteIssueCommand::DeleteIssueCommand () :
 GS::String DeleteIssueCommand::GetName () const
 {
     return "DeleteIssue";
+}
+
+GS::Optional<GS::UniString> DeleteIssueCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "type": "string",
+                "description": "The id of the issue to delete."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId"
+        ]
+    })";
 }
 
 GS::ObjectState DeleteIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -232,6 +274,36 @@ GS::String AddCommentCommand::GetName () const
     return "AddComment";
 }
 
+GS::Optional<GS::UniString> AddCommentCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "type": "string",
+                "description": "The id of the issue to add the comment."
+            },
+            "author": {
+                "type": "string",
+                "description": "The author of the new comment."
+            },
+            "status": {
+                "type": "integer",
+                "description": "Comment status type."
+            },
+            "text": {
+                "type": "string",
+                "description": "Comment text to add."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId",
+            "text"
+        ]
+    })";
+}
+
 GS::ObjectState AddCommentCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString issueIdStr;
@@ -273,6 +345,23 @@ GetCommentsCommand::GetCommentsCommand () :
 GS::String GetCommentsCommand::GetName () const
 {
     return "GetComments";
+}
+
+GS::Optional<GS::UniString> GetCommentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "type": "string",
+                "description": "The id of the issue to get the comments."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> GetCommentsCommand::GetResponseSchema () const
@@ -371,6 +460,32 @@ GS::String AttachElementsCommand::GetName () const
     return "AttachElements";
 }
 
+GS::Optional<GS::UniString> AttachElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "type": "string",
+                "description": "The id of the issue to attach elements."
+            },
+            "elementsIds": {
+                "$ref": "#/Elements"
+            },
+            "type": {
+                "type": "integer",
+                "description": "Attachment type status."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId",
+            "elementsIds",
+            "type"
+        ]
+    })";
+}
+
 GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& ) const
 {
     int type;
@@ -380,7 +495,7 @@ GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameter
     GS::Array<API_Guid> elemIds;
 
     parameters.Get ("type", type);
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", elemIdsStr) || !(type >= 0 && type <= 3)) {
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("elementsIds", elemIdsStr) || !(type >= 0 && type <= 3)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     } else {
         issueId = APIGuidFromString (issueIdStr.ToCStr ());
@@ -411,6 +526,27 @@ GS::String DetachElementsCommand::GetName () const
     return "DetachElements";
 }
 
+GS::Optional<GS::UniString> DetachElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "type": "string",
+                "description": "The id of the issue to deattach elements."
+            },
+            "elementsIds": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId",
+            "elementsIds"
+        ]
+    })";
+}
+
 GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString issueIdStr;
@@ -418,7 +554,7 @@ GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameter
     GS::Array<GS::UniString> elemIdsStr;
     GS::Array<API_Guid> elemIds;
 
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("guids", elemIdsStr)) {
+    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("elementsIds", elemIdsStr)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
     } 
     else {
@@ -444,6 +580,28 @@ GetAttachedElementsCommand::GetAttachedElementsCommand () :
 GS::String GetAttachedElementsCommand::GetName () const
 {
     return "GetAttachedElements";
+}
+
+GS::Optional<GS::UniString> GetAttachedElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "type": "string",
+                "description": "The id of the issue to get elements."
+            },
+            "type": {
+                "type": "integer",
+                "description": "The attachment type to filter elements."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId",
+            "type"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> GetAttachedElementsCommand::GetResponseSchema () const
@@ -501,6 +659,41 @@ GS::String ExportToBCFCommand::GetName () const
     return "ExportToBCF";
 }
 
+GS::Optional<GS::UniString> ExportToBCFCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issuesIds": {
+                "type": "array",
+                "description": "Issue Ids to export.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            },
+            "exportPath": {
+                "type": "string",
+                "description": "The os path to the bcf file, including it's name."
+            },
+            "useExternalId": {
+                "type": "boolean",
+                "description": "Use external IFC ID or Archicad IFC ID as referenced in BCF topics."
+            },
+            "alignBySurveyPoint": {
+                "type": "boolean",
+                "description": "Align BCF views by Archicad Survey Point or Archicad Project Origin."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "exportPath",
+            "useExternalId",
+            "alignBySurveyPoint"
+        ]
+    })";
+}
+
 GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString exportPath;
@@ -514,7 +707,7 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
 
-    parameters.Get ("issueIds", issueIdsStr);
+    parameters.Get ("issuesIds", issueIdsStr);
     if (issueIdsStr.IsEmpty ()) {
         GSErrCode err = ACAPI_Markup_GetList (APINULLGuid, &issues);
         if (err == NoError) {
@@ -546,6 +739,28 @@ ImportFromBCFCommand::ImportFromBCFCommand () :
 GS::String ImportFromBCFCommand::GetName () const
 {
     return "ImportFromBCF";
+}
+
+GS::Optional<GS::UniString> ImportFromBCFCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "importPath": {
+                "type": "string",
+                "description": "The os path to the bcf file, including it's name."
+            },
+            "alignBySurveyPoint": {
+                "type": "boolean",
+                "description": "Align BCF views by Archicad Survey Point or Archicad Project Origin."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "importPath",
+            "alignBySurveyPoint"
+        ]
+    })";
 }
 
 GS::ObjectState ImportFromBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
