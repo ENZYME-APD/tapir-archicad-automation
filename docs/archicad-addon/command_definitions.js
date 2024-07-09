@@ -690,14 +690,374 @@
                 version : "0.1.0",
                 description : "Performs a send operation on the currently opened Teamwork project.",
                 inputScheme : null,
-                outputScheme : null             
+                outputScheme : null
             },        
             {
                 name : "TeamworkReceive",
                 version : "0.1.0",
                 description : "Performs a receive operation on the currently opened Teamwork project.",
                 inputScheme : null,
-                outputScheme : null             
+                outputScheme : null
+            },
+        ]
+    },
+    {
+        name : 'Issue Management Commands',
+        commands : [
+            {
+                name : "CreateIssue",
+                version : "1.0.2",
+                description : "Creates a new issue.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "name": {
+			                "type": "string",
+			                "description": "The name of the issue."
+			            },
+			            "parentId": {
+			                "type": "string",
+			                "description": "The id of the parent issue, optional."
+			            },
+			            "tagText": {
+			                "type": "string",
+			                "description": "Tag text of the issue, optional."
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "name"
+			        ]
+                },
+                outputScheme : null
+            },
+            {
+                name : "DeleteIssue",
+                version : "1.0.2",
+                description : "Deletes a chosen issue.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issueId": {
+			                "type": "string",
+			                "description": "The id of the issue to delete."
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "issueId"
+			        ]
+                },
+                outputScheme : null
+            },
+            {
+                name : "GetIssues",
+                version : "1.0.2",
+                description : "Retrieves information about existing issues.",
+                inputScheme : null,
+                outputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issues": {
+			                "type": "array",
+			                "description": "A list of existing issues.",
+			                "items": {
+			                    "type": "object",
+			                    "properties": {
+			                        "guid": {
+			                            "type": "string",
+			                            "description": "Issue identifier"
+			                        },
+			                        "name": {
+			                            "type": "string",
+			                            "description": "Issue name"
+			                        },
+			                        "parentGuid": {
+			                            "type": "string",
+			                            "description": "The identifier of the parent issue"
+			                        },
+			                        "creaTime": {
+			                            "type": "integer",
+			                            "description": "Issue creation time"
+			                        },
+			                        "modiTime": {
+			                            "type": "integer",
+			                            "description": "Issue modification time"
+			                        },
+			                        "tagText": {
+			                            "type": "string",
+			                            "description": "Issue tag text - labels"
+			                        },
+			                        "tagTextElemGuid": {
+			                            "type": "string",
+			                            "description": "The identifier of the attached tag text element"
+			                        },
+			                        "isTagTextElemVisible": {
+			                            "type": "boolean",
+			                            "description": "The visibility of the attached tag text element"
+			                        }
+			                    },
+			                    "additionalProperties": false,
+			                    "required": [
+			                        "guid",
+			                        "name",
+			                        "parentGuid",
+			                        "creaTime",
+			                        "modiTime",
+			                        "tagText",
+			                        "tagTextElemGuid",
+			                        "isTagTextElemVisible"
+			                    ]
+			                }
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "issues"
+			        ]
+                }           
+            },
+            {
+                name : "AddComment",
+                version : "1.0.2",
+                description : "Adds a new comment to the chosen issue.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issueId": {
+			                "type": "string",
+			                "description": "The id of the issue to add the comment."
+			            },
+			            "author": {
+			                "type": "string",
+			                "description": "The author of the new comment."
+			            },
+			            "status": {
+			                "type": "integer",
+			                "description": "Comment status type."
+			            },
+			            "text": {
+			                "type": "string",
+			                "description": "Comment text to add."
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "issueId",
+			            "text"
+			        ]
+                },
+                outputScheme : null
+            },
+            {
+                name : "GetComments",
+                version : "1.0.2",
+                description : "Retrieves comments information of the chosen issue.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issueId": {
+			                "type": "string",
+			                "description": "The id of the issue to get the comments."
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "issueId"
+			        ]
+                },
+                outputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "comments": {
+			                "type": "array",
+			                "description": "A list of existing comments.",
+			                "items": {
+			                    "type": "object",
+			                    "properties": {
+			                        "guid": {
+			                            "type": "string",
+			                            "description": "Comment identifier"
+			                        },
+			                        "author": {
+			                            "type": "string",
+			                            "description": "Comment author"
+			                        },
+			                        "text": {
+			                            "type": "string",
+			                            "description": "Comment text"
+			                        },
+			                        "status": {
+			                            "type": "string",
+			                            "description": "Comment status"
+			                        },
+			                        "creaTime": {
+			                            "type": "integer",
+			                            "description": "Comment creation time"
+			                        }
+			                    },
+			                    "additionalProperties": false,
+			                    "required": [
+			                        "guid",
+			                        "author",
+			                        "text",
+			                        "status",
+			                        "creaTime"
+			                    ]
+			                }
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "comments"
+			        ]
+                }
+            },
+            {
+                name : "AttachElements",
+                version : "1.0.2",
+                description : "Attaches elements to the chosen issue.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issueId": {
+			                "type": "string",
+			                "description": "The id of the issue to attach elements."
+			            },
+			            "elementsIds": {
+			                "$ref": "#/Elements"
+			            },
+			            "type": {
+			                "type": "integer",
+			                "description": "Attachment type status. (0: New, 1: Highlighted, 2: Deleted, 3: Modified"
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "issueId",
+			            "elementsIds",
+			            "type"
+			        ]
+                },
+                outputScheme : null
+            },
+            {
+                name : "DetachElements",
+                version : "1.0.2",
+                description : "Detaches elements from the chosen issue.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issueId": {
+			                "type": "string",
+			                "description": "The id of the issue to deattach elements."
+			            },
+			            "elementsIds": {
+			                "$ref": "#/Elements"
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "issueId",
+			            "elementsIds"
+			        ]
+                },
+                outputScheme : null
+            },
+            {
+                name : "GetAttachedElements",
+                version : "1.0.2",
+                description : "Retrieves attached elements of the chosen issue, filtered by attachment type.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issueId": {
+			                "type": "string",
+			                "description": "The id of the issue to get elements."
+			            },
+			            "type": {
+			                "type": "integer",
+			                "description": "The attachment type to filter elements. (0: New, 1: Highlighted, 2: Deleted, 3: Modified)"
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "issueId",
+			            "type"
+			        ]
+                },
+                outputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "elements": {
+			                "$ref": "#/Elements"
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "elements"
+			        ]
+                }
+            },
+            {
+                name : "ExportToBCF",
+                version : "1.0.2",
+                description : "Exports chosen issues to the bcf file.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "issuesIds": {
+			                "type": "array",
+			                "description": "Issue Ids to export. Empty parameter will fetch all existing issues.",
+			                "items": {
+			                    "type": "string"
+			                }
+			            },
+			            "exportPath": {
+			                "type": "string",
+			                "description": "The os path to the bcf file, including it's name."
+			            },
+			            "useExternalId": {
+			                "type": "boolean",
+			                "description": "Use external IFC ID or Archicad IFC ID as referenced in BCF topics."
+			            },
+			            "alignBySurveyPoint": {
+			                "type": "boolean",
+			                "description": "Align BCF views by Archicad Survey Point or Archicad Project Origin."
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "exportPath",
+			            "useExternalId",
+			            "alignBySurveyPoint"
+			        ]
+                },
+                outputScheme : null
+            },
+            {
+                name : "ImportFromBCF",
+                version : "1.0.2",
+                description : "Imports issues from the chosen bcf file.",
+                inputScheme : {
+			        "type": "object",
+			        "properties": {
+			            "importPath": {
+			                "type": "string",
+			                "description": "The os path to the bcf file, including it's name."
+			            },
+			            "alignBySurveyPoint": {
+			                "type": "boolean",
+			                "description": "Align BCF views by Archicad Survey Point or Archicad Project Origin."
+			            }
+			        },
+			        "additionalProperties": false,
+			        "required": [
+			            "importPath",
+			            "alignBySurveyPoint"
+			        ]
+                },
+                outputScheme : null
             },
         ]
     }
