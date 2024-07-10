@@ -404,7 +404,7 @@
             },
             {
                 name : "MoveElements",
-                version : "1.0.0",
+                version : "1.0.2",
                 description : "Moves elements with a given vector.",
                 inputScheme : {
                     "type": "object",
