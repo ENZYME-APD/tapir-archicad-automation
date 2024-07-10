@@ -18,6 +18,8 @@ jobs:
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.WIN.26.3000.zip
           - acVersion: 27
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip
+          - acVersion: 28
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.2000/API.Development.Kit.WIN.28.2000.zip
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
@@ -54,6 +56,8 @@ jobs:
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.MAC.26.3000.zip
           - acVersion: 27
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.MAC.27.3001.zip
+          - acVersion: 28
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.2000/API.Development.Kit.MAC.28.2000.zip
     runs-on: [ macos-12 ]
     steps:
     - name: Checkout repo

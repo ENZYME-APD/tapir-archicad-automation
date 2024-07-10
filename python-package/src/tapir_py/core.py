@@ -553,3 +553,227 @@ class Command(dotNETBase):
 
     def __str__(self):
         return self.description
+
+    # ISSUE MANAGEMENT
+
+    #region Issue Commands
+    def CreateIssue(self, name, parentId="", tagText=""):
+        """Creates new issue.
+
+        Args:
+            name (string):      The name of the issue.
+            parentId (string):  UUID of parent issue, optional.
+            tagText (string):   Issue text tag, optional.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_name = Parameter("name", name)
+        param_parentId = Parameter("parentId", parentId)
+        param_tagText = Parameter("tagText", tagText)
+        packed_params = Parameter.pack([param_name, param_parentId, param_tagText])
+
+        cmd = Command.FormatAddOnCommand("CreateIssue", packed_params)
+        response = self.link.post(cmd)
+        return response
+
+    def DeleteIssue(self, issueId):
+        """Creates new issue.
+
+        Args:
+            issueId (string):  UUID of parent issue, optional.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_issueId = Parameter("issueId", issueId)
+        packed_params = Parameter.pack([param_issueId,])
+
+        cmd = Command.FormatAddOnCommand("DeleteIssue", packed_params)
+        response = self.link.post(cmd)
+        return response
+
+    def GetIssues(self):
+        """Retrieves issues from the open project.
+
+        Returns:
+           `list` of :obj:`Issue`: A list of issue instances
+
+        """
+        cmd = Command.FormatAddOnCommand("GetIssues")
+        response = self.link.post(cmd)
+        if response.success:
+            return response.get_result()['issues']
+        else:
+            return response.exception()
+
+    def AddComment(self, issueId, text, author=None, status=3):
+        """Creates new comment for the chosen issue.
+
+        Args:
+            issueId (string):  Issue Id.
+            author (string):  Issue author, optional.
+            status (int):  Comment status type.
+            text (string):  Comment text to add.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_issueId = Parameter("issueId", issueId)
+        param_author = Parameter("author", author)
+        param_status = Parameter("status", status)
+        param_text = Parameter("text", text)
+        packed_params = Parameter.pack([param_issueId, param_author, param_status, param_text])
+
+        cmd = Command.FormatAddOnCommand("AddComment", packed_params)
+        response = self.link.post(cmd)
+        return response
+
+    def GetComments(self, issueId):
+        """Retrieves comments from the chosen issue.
+
+        Returns:
+           `list` of :obj:`Comment`: A list of issue comments
+
+        """
+        param_issueId = Parameter("issueId", issueId)
+        packed_params = Parameter.pack([param_issueId,])
+        cmd = Command.FormatAddOnCommand("GetComments", packed_params)
+        response = self.link.post(cmd)
+        if response.success:
+            return response.get_result()['comments']
+        else:
+            return response.exception()
+
+    def AttachElements(self, issueId, elementsIds, type):
+        """Attaches chosen elements to the issue.
+
+        Args:
+            issueId (string):               Issue Id.
+            elementsIds (list of string):   Ids of elements.
+            type (integer):                 Attachment type.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_issueId = Parameter("issueId", issueId)
+        param_elementsIds = Parameter("elementsIds", elementsIds)
+        param_type = Parameter("type", type)
+        packed_params = Parameter.pack([param_issueId, param_elementsIds, param_type])
+
+        cmd = Command.FormatAddOnCommand("AttachElements", packed_params)
+        response = self.link.post(cmd)
+        return response
+
+    def DetachElements(self, issueId, elementsIds):
+        """Detaches chosen elements to the issue.
+
+        Args:
+            issueId (string):               Issue Id.
+            elementsIds (list of string):   Ids of elements.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_issueId = Parameter("issueId", issueId)
+        param_elementsIds = Parameter("elementsIds", elementsIds)
+        packed_params = Parameter.pack([param_issueId, param_elementsIds])
+
+        cmd = Command.FormatAddOnCommand("DetachElements", packed_params)
+        response = self.link.post(cmd)
+        return response
+
+    def GetAttachedElements(self, issueId, type):
+        """Retrieves elements attached the chosen issue, filtered by attachment type.
+
+        Args:
+            issueId (string):               Issue Id.
+            type (integer):                 Attachment type.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_issueId = Parameter("issueId", issueId)
+        param_type = Parameter("type", type)
+        packed_params = Parameter.pack([param_issueId, param_type])
+
+        cmd = Command.FormatAddOnCommand("GetAttachedElements", packed_params)
+        response = self.link.post(cmd)
+        if response.success:
+            return response.get_result()['elements']
+        else:
+            return response.exception()
+
+    def ExportToBCF(self, issuesIds, exportPath, useExternalId=False, alignBySurveyPoint=True):
+        """Detaches chosen elements to the issue.
+
+        Args:
+            issuesIds (list of strings):    List of issue's Ids to export.
+            exportPath (string):            System path to the export file, including name.
+            useExternalId (bool):           Use external IFC ID or Archicad IFC ID as referenced in BCF topics.
+            alignBySurveyPoint (bool):      Align BCF views by Archicad Survey Point or Archicad Project Origin.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_issuesIds = Parameter("issuesIds", issuesIds)
+        param_exportPath = Parameter("exportPath", exportPath)
+        param_useExternalId = Parameter("useExternalId", useExternalId)
+        param_alignBySurveyPoint = Parameter("alignBySurveyPoint", alignBySurveyPoint)
+        packed_params = Parameter.pack([param_issuesIds, param_exportPath, param_useExternalId, param_alignBySurveyPoint])
+
+        cmd = Command.FormatAddOnCommand("ExportToBCF", packed_params)
+        response = self.link.post(cmd)
+        return response
+
+    def ImportFromBCF(self, importPath, alignBySurveyPoint=True):
+        """Detaches chosen elements to the issue.
+
+        Args:
+            importPath (string):            System path to the import file, including name.
+            alignBySurveyPoint (bool):      Align BCF views by Archicad Survey Point or Archicad Project Origin.
+
+        Returns:
+            None
+            
+        Raises:
+            Exception: If command was unsuccessful.
+        """
+
+        param_importPath = Parameter("importPath", importPath)
+        param_alignBySurveyPoint = Parameter("alignBySurveyPoint", alignBySurveyPoint)
+        packed_params = Parameter.pack([param_importPath, param_alignBySurveyPoint])
+
+        cmd = Command.FormatAddOnCommand("ImportFromBCF", packed_params)
+        response = self.link.post(cmd)
+        return response
+
+    #endregion Issue Commands

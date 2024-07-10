@@ -88,8 +88,12 @@ GS::String QuitArchicadCommand::GetName () const
 
 GS::ObjectState QuitArchicadCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
+#if defined (ServerMainVers_2800)
+    GSErrCode err = ACAPI_ProjectOperation_Quit ();
+#else
     Int32 magicCode = 1234;
     GSErrCode err = ACAPI_ProjectOperation_Quit (magicCode);
+#endif
     if (err != NoError) {
         return CreateErrorResponse (APIERR_COMMANDFAILED, "Failed to quit Archicad!");
     }
