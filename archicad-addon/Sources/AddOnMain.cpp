@@ -12,7 +12,7 @@
 #include "LibraryCommands.hpp"
 #include "MigrationHelper.hpp"
 
-API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
+API_AddonType CheckEnvironment (API_EnvirParams* envir)
 {
     RSGetIndString (&envir->addOnInfo.name, ID_ADDON_INFO, ID_ADDON_INFO_NAME, ACAPI_GetOwnResModule ());
     RSGetIndString (&envir->addOnInfo.description, ID_ADDON_INFO, ID_ADDON_INFO_DESC, ACAPI_GetOwnResModule ());
@@ -20,12 +20,12 @@ API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
     return APIAddon_Preload;
 }
 
-GSErrCode __ACDLL_CALL RegisterInterface (void)
+GSErrCode RegisterInterface (void)
 {
     return NoError;
 }
 
-GSErrCode __ACENV_CALL Initialize (void)
+GSErrCode Initialize (void)
 {
     GSErrCode err = NoError;
 
@@ -68,7 +68,7 @@ GSErrCode __ACENV_CALL Initialize (void)
     return err;
 }
 
-GSErrCode __ACENV_CALL FreeData (void)
+GSErrCode FreeData (void)
 {
     return NoError;
 }

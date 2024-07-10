@@ -28,6 +28,26 @@ static API_IFCRelationshipData GetCurrentProjectIFCRelationshipData ()
 }
 
 
+#ifdef ServerMainVers_2800
+static GSErrCode GetIFCRelationshipData (GS::HashTable<GS::UniString, API_IFCRelationshipData>* apiIfcRelationshipDataTable, const void* par1)
+{
+    const API_IFCRelationshipData* ifcRelationshipDataTable = reinterpret_cast<const API_IFCRelationshipData*> (par1);
+
+    GS::UniString ifcProjectId;
+    ifcRelationshipDataTable->containmentTable.EnumerateValues ([&](const GS::UniString& value) {
+        if (!ifcRelationshipDataTable->containmentTable.ContainsKey (value)) {
+            DBASSERT (ifcProjectId.IsEmpty ());
+            ifcProjectId = value;
+        }
+    });
+    if (ifcProjectId.IsEmpty () && ifcRelationshipDataTable->containmentTable.GetSize () != 0) {
+        DBASSERT (ifcProjectId != APINULLGuid);
+    }
+    apiIfcRelationshipDataTable->Put (ifcProjectId, *ifcRelationshipDataTable);
+
+    return NoError;
+}
+#else
 static GSErrCode GetIFCRelationshipData (GS::HashTable<API_Guid, API_IFCRelationshipData>* apiIfcRelationshipDataTable, const void* par1)
 {
     const API_IFCRelationshipData* ifcRelationshipDataTable = reinterpret_cast<const API_IFCRelationshipData*> (par1);
@@ -46,6 +66,7 @@ static GSErrCode GetIFCRelationshipData (GS::HashTable<API_Guid, API_IFCRelation
 
     return NoError;
 }
+#endif
 
 
 CreateIssueCommand::CreateIssueCommand () :
@@ -104,7 +125,7 @@ GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, 
         err = ACAPI_Markup_Create (issue);
         return err;
     });
-   
+
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to create issue.");
     }
@@ -149,7 +170,7 @@ GS::ObjectState DeleteIssueCommand::Execute (const GS::ObjectState& parameters, 
     }
 
     parameters.Get ("acceptAllElements", acceptAllElements);
-    API_Guid guid = APIGuidFromString (issueIdStr.ToCStr());
+    API_Guid guid = APIGuidFromString (issueIdStr.ToCStr ());
     GSErrCode err = ACAPI_CallUndoableCommand ("Delete issue", [&]() -> GSErrCode {
         err = ACAPI_Markup_Delete (guid, acceptAllElements);
         return err;
@@ -250,7 +271,7 @@ GS::ObjectState GetIssuesCommand::Execute (const GS::ObjectState& /*parameters*/
 
     for (auto i = issueList.Enumerate (); i != nullptr; ++i) {
         GS::ObjectState issueData;
-        issueData.Add ("guid", APIGuidToString(i->guid));
+        issueData.Add ("guid", APIGuidToString (i->guid));
         issueData.Add ("name", i->name);
         issueData.Add ("parentGuid", APIGuidToString (i->parentGuid));
         issueData.Add ("creaTime", i->creaTime);
@@ -486,7 +507,7 @@ GS::Optional<GS::UniString> AttachElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& ) const
+GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     int type;
     GS::UniString issueIdStr;
@@ -556,8 +577,7 @@ GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameter
 
     if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("elementsIds", elemIdsStr)) {
         return CreateErrorResponse (Error, "Invalid input parameters.");
-    } 
-    else {
+    } else {
         issueId = APIGuidFromString (issueIdStr.ToCStr ());
         for (ULong i = 0; i < elemIdsStr.GetSize (); ++i) {
             elemIds.Push (APIGuidFromString (elemIdsStr[i].ToCStr ()));
@@ -646,7 +666,7 @@ GS::ObjectState GetAttachedElementsCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (err, "Failed to retrieve attached elements.");
     }
 
-   return response;
+    return response;
 }
 
 ExportToBCFCommand::ExportToBCFCommand () :
@@ -711,9 +731,9 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
     if (issueIdsStr.IsEmpty ()) {
         GSErrCode err = ACAPI_Markup_GetList (APINULLGuid, &issues);
         if (err == NoError) {
-        	for (const auto& issues : issues) {
+            for (const auto& issues : issues) {
                 issueIds.Push (issues.guid);
-        	}
+            }
         }
     } else {
         for (ULong i = 0; i < issueIdsStr.GetSize (); ++i) {
@@ -721,7 +741,7 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
         }
     }
 
-    IO::Location bcfFilePath(exportPath);
+    IO::Location bcfFilePath (exportPath);
     GSErrCode err = ACAPI_Markup_ExportToBCF (bcfFilePath, issueIds, useExternalId, alignBySurveyPoint);
 
     if (err != NoError) {
@@ -773,7 +793,7 @@ GS::ObjectState ImportFromBCFCommand::Execute (const GS::ObjectState& parameters
     }
 
     IO::Location bcfFilePath (importPath);
-    GSErrCode err = ACAPI_CallUndoableCommand ("Import BCF Issues", [&] () -> GSErrCode {
+    GSErrCode err = ACAPI_CallUndoableCommand ("Import BCF Issues", [&]() -> GSErrCode {
         API_IFCRelationshipData ifcRelationshipData = GetCurrentProjectIFCRelationshipData ();
         err = ACAPI_Markup_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false, alignBySurveyPoint);
         return err;
