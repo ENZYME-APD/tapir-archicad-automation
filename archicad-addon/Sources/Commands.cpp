@@ -102,7 +102,7 @@ GS::ObjectState    MoveElementsCommand::Execute (const GS::ObjectState& paramete
     parameters.Get (ElementsWithMoveVectorsParameterField, elementsWithMoveVectors);
 
     API_Guid elemGuid;
-    const APIErrCodes err = (APIErrCodes) ACAPI_CallUndoableCommand ("Move Elements", [&]() -> GSErrCode {
+    GSErrCode err = ACAPI_CallUndoableCommand ("Move Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
             const GS::ObjectState* elementId = elementWithMoveVector.Get (ElementIdField);
             const GS::ObjectState* moveVector = elementWithMoveVector.Get (MoveVectorField);
@@ -193,7 +193,7 @@ GS::ObjectState CreateColumnsCommand::Execute (const GS::ObjectState& parameters
     parameters.Get (CoordinatesParameterField, coordinates);
 
     API_Coord apiCoordinate = {};
-    const APIErrCodes err = (APIErrCodes) ACAPI_CallUndoableCommand ("Create Columns", [&]() -> GSErrCode {
+    GSErrCode err = ACAPI_CallUndoableCommand ("Create Columns", [&]() -> GSErrCode {
         API_Element element = {};
         API_ElementMemo memo = {};
         const GS::OnExit guard ([&memo]() { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -202,14 +202,13 @@ GS::ObjectState CreateColumnsCommand::Execute (const GS::ObjectState& parameters
 #else
         element.header.typeID = API_ColumnID;
 #endif
-        APIErrCodes err = (APIErrCodes) ACAPI_Element_GetDefaults (&element, &memo);
+        GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
 
         for (const GS::ObjectState& coordinate : coordinates) {
             apiCoordinate = GetCoordinateFromObjectState (coordinate);
 
             element.column.origoPos = apiCoordinate;
-            err = (APIErrCodes) ACAPI_Element_Create (&element, &memo);
-
+            err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 return err;
             }
