@@ -18,9 +18,7 @@ cmake --build ../Build/AC27 --config Release || goto :error
 
 cmake -B ../Build/AC28 -G "Visual Studio 17 2022" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC28" .. || goto :error
 cmake --build ../Build/AC28 --config Debug || goto :error
-
-cmake -B ../Build/AC28 -G "Visual Studio 17 2022" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC28" .. || goto :error
-cmake --build ../Build/AC28 --config Debug || goto :error
+cmake --build ../Build/AC28 --config Release || goto :error
 
 popd
 exit /b 0
