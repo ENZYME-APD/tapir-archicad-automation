@@ -137,32 +137,135 @@ GS::ObjectState GetBuildingMaterialPhysicalPropertiesCommand::Execute (const GS:
     return response;
 }
 
-CreateBuildingMaterialsCommand::CreateBuildingMaterialsCommand () :
-    CommandBase (CommonSchema::Used)
+CreateSimpleAttributesCommandBase::CreateSimpleAttributesCommandBase (const GS::String& commandNameIn, API_AttrTypeID attrTypeIDIn, const GS::String& arrayFieldNameIn)
+    : CommandBase (CommonSchema::Used)
+    , commandName (commandNameIn)
+    , attrTypeID (attrTypeIDIn)
+    , arrayFieldName (arrayFieldNameIn)
 {
 }
 
-GS::String CreateBuildingMaterialsCommand::GetName () const
+GS::String CreateSimpleAttributesCommandBase::GetName () const
 {
-    return "CreateBuildingMaterials";
+    return commandName;
 }
 
-GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> CreateSimpleAttributesCommandBase::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString::Printf (R"({
         "type": "object",
         "properties": {
-            "buildingMaterialDataArray": {
+            "%s": {
                 "type": "array",
-                "description" : "Array of data to create Building Materials.",
+                "description" : "Array of data to create new attributes.",
                 "items": {
                     "type": "object",
-                    "description": "Data to create a Building Material.",
+                    "description": "Data to create an attribute.",
                     "properties": {
                         "name": {
                             "type": "string",
                             "description": "Name."
                         },
+                        %T
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "name"
+                    ]
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Overwrite the attribute if exists with the same name. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "%s"
+        ]
+    })",
+    arrayFieldName.ToCStr (),
+    GetTypeSpecificParametersSchema ().ToPrintf (),
+    arrayFieldName.ToCStr ());
+}
+
+GS::Optional<GS::UniString> CreateSimpleAttributesCommandBase::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+GS::ObjectState CreateSimpleAttributesCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> dataArray;
+    parameters.Get (arrayFieldName, dataArray);
+
+    bool overwriteExisting = false;
+    parameters.Get ("overwriteExisting", overwriteExisting);
+
+    GS::ObjectState response;
+    const auto& attributeIds = response.AddList<GS::ObjectState> ("attributeIds");
+
+    for (const GS::ObjectState& data : dataArray) {
+        API_Attribute attr = {};
+        attr.header.typeID = attrTypeID;
+
+        GS::UniString name;
+        data.Get ("name", name);
+        attr.header.uniStringNamePtr = &name;
+
+        bool doesExist = (ACAPI_Attribute_Get (&attr) == NoError);
+        if (doesExist && !overwriteExisting) {
+            attributeIds (CreateErrorResponse (APIERR_ATTREXIST, "Already exists."));
+            continue;
+        }
+
+        SetTypeSpecificParameters (attr, data);
+
+        if (doesExist) {
+            GSErrCode err = ACAPI_Attribute_Modify (&attr, nullptr);
+            if (err != NoError) {
+                attributeIds (CreateErrorResponse (err, "Failed to modify."));
+                continue;
+            }
+        } else {
+            GSErrCode err = ACAPI_Attribute_Create (&attr, nullptr);
+            if (err != NoError) {
+                attributeIds (CreateErrorResponse (err, "Failed to create."));
+                continue;
+            }
+        }
+
+        GS::ObjectState attributeId;
+        attributeId.Add ("guid", APIGuidToString (attr.header.guid));
+
+        GS::ObjectState attributeIdArrayItem;
+        attributeIdArrayItem.Add ("attributeId", attributeId);
+
+        attributeIds (attributeIdArrayItem);
+    }
+
+    return response;
+}
+
+CreateBuildingMaterialsCommand::CreateBuildingMaterialsCommand () :
+    CreateSimpleAttributesCommandBase ("CreateBuildingMaterials", API_BuildingMaterialID, "buildingMaterialDataArray")
+{
+}
+
+GS::UniString CreateBuildingMaterialsCommand::GetTypeSpecificParametersSchema () const
+{
+    return R"({
                         "id": {
                             "type": "string",
                             "description": "Identifier."
@@ -214,156 +317,112 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
                         "embodiedCarbon": {
                             "type": "number",
                             "description": "Embodied Carbon."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required" : [
-                        "name"
-                    ]
-                }
-            },
-            "overwriteExisting": {
-                "type": "boolean",
-                "description": "Overwrite the Building Material if exists with the same name. The default is false."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "buildingMaterialDataArray"
-        ]
-    })";
+                        })";
 }
 
-GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetResponseSchema () const
+void CreateBuildingMaterialsCommand::SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "attributeIds": {
-                "$ref": "#/AttributeIds"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "attributeIds"
-        ]
-    })";
-}
-
-GS::ObjectState CreateBuildingMaterialsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    GS::Array<GS::ObjectState> buildingMaterialDataArray;
-    parameters.Get ("buildingMaterialDataArray", buildingMaterialDataArray);
-
-    bool overwriteExisting = false;
-    parameters.Get ("overwriteExisting", overwriteExisting);
-
-    GS::ObjectState response;
-    const auto& attributeIds = response.AddList<GS::ObjectState> ("attributeIds");
-
-    for (const GS::ObjectState& buildingMaterialData : buildingMaterialDataArray) {
-        API_Attribute buildMat = {};
-        buildMat.header.typeID = API_BuildingMaterialID;
-
-        GS::UniString name;
-        buildingMaterialData.Get ("name", name);
-        buildMat.header.uniStringNamePtr = &name;
-
-        bool doesExist = (ACAPI_Attribute_Get (&buildMat) == NoError);
-        if (doesExist && !overwriteExisting) {
-            attributeIds (CreateErrorResponse (Error, "Building Material already exists."));
-            continue;
-        }
-
-        GS::UniString id;
-        if (buildingMaterialData.Get ("id", id)) {
-            buildMat.buildingMaterial.id = &id;
-        }
-
-        GS::UniString manufacturer;
-        if (buildingMaterialData.Get ("manufacturer", manufacturer)) {
-            buildMat.buildingMaterial.manufacturer = &manufacturer;
-        }
-
-        GS::UniString description;
-        if (buildingMaterialData.Get ("description", description)) {
-            buildMat.buildingMaterial.description = &description;
-        }
-
-        Int32 cutFillIndex;
-        if (buildingMaterialData.Get ("cutFillIndex", cutFillIndex)) {
-            buildMat.buildingMaterial.cutFill = ACAPI_CreateAttributeIndex (cutFillIndex);
-        }
-
-        Int32 connPriority;
-        if (buildingMaterialData.Get ("connPriority", connPriority)) {
-            ACAPI_Element_UI2ElemPriority (&connPriority, &buildMat.buildingMaterial.connPriority);
-        }
-
-        short cutFillPen;
-        if (buildingMaterialData.Get ("cutFillPen", cutFillPen)) {
-            buildMat.buildingMaterial.cutFillPen = cutFillPen;
-        }
-
-        short cutFillBackgroundPen;
-        if (buildingMaterialData.Get ("cutFill", cutFillBackgroundPen)) {
-            buildMat.buildingMaterial.cutFillBackgroundPen = cutFillBackgroundPen;
-        }
-
-        Int32 cutSurfaceIndex;
-        if (buildingMaterialData.Get ("cutSurfaceIndex", cutSurfaceIndex)) {
-            buildMat.buildingMaterial.cutMaterial = ACAPI_CreateAttributeIndex (cutFillIndex);
-        }
-
-        double thermalConductivity;
-        if (buildingMaterialData.Get ("thermalConductivity", thermalConductivity)) {
-            buildMat.buildingMaterial.thermalConductivity = thermalConductivity;
-        }
-
-        double density;
-        if (buildingMaterialData.Get ("density", density)) {
-            buildMat.buildingMaterial.density = density;
-        }
-
-        double heatCapacity;
-        if (buildingMaterialData.Get ("heatCapacity", heatCapacity)) {
-            buildMat.buildingMaterial.heatCapacity = heatCapacity;
-        }
-
-        double embodiedEnergy;
-        if (buildingMaterialData.Get ("embodiedEnergy", embodiedEnergy)) {
-            buildMat.buildingMaterial.embodiedEnergy = embodiedEnergy;
-        }
-
-        double embodiedCarbon;
-        if (buildingMaterialData.Get ("embodiedCarbon", embodiedCarbon)) {
-            buildMat.buildingMaterial.embodiedCarbon = embodiedCarbon;
-        }
-
-        if (doesExist) {
-            GSErrCode err = ACAPI_Attribute_Modify (&buildMat, nullptr);
-            if (err != NoError) {
-                attributeIds (CreateErrorResponse (err, "Failed to modify attribute."));
-                continue;
-            }
-        } else {
-            GSErrCode err = ACAPI_Attribute_Create (&buildMat, nullptr);
-            if (err != NoError) {
-                attributeIds (CreateErrorResponse (err, "Failed to create attribute."));
-                continue;
-            }
-        }
-
-        GS::ObjectState attributeId;
-        attributeId.Add ("guid", APIGuidToString (buildMat.header.guid));
-
-        GS::ObjectState attributeIdArrayItem;
-        attributeIdArrayItem.Add ("attributeId", attributeId);
-
-        attributeIds (attributeIdArrayItem);
+    GS::UniString id;
+    if (parameters.Get ("id", id)) {
+        attribute.buildingMaterial.id = &id;
     }
 
-    return response;
+    GS::UniString manufacturer;
+    if (parameters.Get ("manufacturer", manufacturer)) {
+        attribute.buildingMaterial.manufacturer = &manufacturer;
+    }
+
+    GS::UniString description;
+    if (parameters.Get ("description", description)) {
+        attribute.buildingMaterial.description = &description;
+    }
+
+    Int32 cutFillIndex;
+    if (parameters.Get ("cutFillIndex", cutFillIndex)) {
+        attribute.buildingMaterial.cutFill = ACAPI_CreateAttributeIndex (cutFillIndex);
+    }
+
+    Int32 connPriority;
+    if (parameters.Get ("connPriority", connPriority)) {
+        ACAPI_Element_UI2ElemPriority (&connPriority, &attribute.buildingMaterial.connPriority);
+    }
+
+    short cutFillPen;
+    if (parameters.Get ("cutFillPen", cutFillPen)) {
+        attribute.buildingMaterial.cutFillPen = cutFillPen;
+    }
+
+    short cutFillBackgroundPen;
+    if (parameters.Get ("cutFill", cutFillBackgroundPen)) {
+        attribute.buildingMaterial.cutFillBackgroundPen = cutFillBackgroundPen;
+    }
+
+    Int32 cutSurfaceIndex;
+    if (parameters.Get ("cutSurfaceIndex", cutSurfaceIndex)) {
+        attribute.buildingMaterial.cutMaterial = ACAPI_CreateAttributeIndex (cutFillIndex);
+    }
+
+    double thermalConductivity;
+    if (parameters.Get ("thermalConductivity", thermalConductivity)) {
+        attribute.buildingMaterial.thermalConductivity = thermalConductivity;
+    }
+
+    double density;
+    if (parameters.Get ("density", density)) {
+        attribute.buildingMaterial.density = density;
+    }
+
+    double heatCapacity;
+    if (parameters.Get ("heatCapacity", heatCapacity)) {
+        attribute.buildingMaterial.heatCapacity = heatCapacity;
+    }
+
+    double embodiedEnergy;
+    if (parameters.Get ("embodiedEnergy", embodiedEnergy)) {
+        attribute.buildingMaterial.embodiedEnergy = embodiedEnergy;
+    }
+
+    double embodiedCarbon;
+    if (parameters.Get ("embodiedCarbon", embodiedCarbon)) {
+        attribute.buildingMaterial.embodiedCarbon = embodiedCarbon;
+    }
+}
+
+CreateLayersCommand::CreateLayersCommand () :
+    CreateSimpleAttributesCommandBase ("CreateLayers", API_LayerID, "layerDataArray")
+{
+}
+
+GS::UniString CreateLayersCommand::GetTypeSpecificParametersSchema () const
+{
+    return R"({
+                        "hidden": {
+                            "type": "boolean",
+                            "description": "Show/Hide."
+                        },
+                        "locked": {
+                            "type": "boolean",
+                            "description": "Lock/Unlock."
+                        })";
+}
+
+void CreateLayersCommand::SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const
+{
+    bool hidden;
+    if (parameters.Get ("hidden", hidden)) {
+        if (hidden)
+            attribute.header.flags |= APILay_Hidden;
+        else
+            attribute.header.flags &= ~APILay_Hidden;
+    }
+
+    bool locked;
+    if (parameters.Get ("locked", locked)) {
+        if (locked)
+            attribute.header.flags |= APILay_Locked;
+        else
+            attribute.header.flags &= ~APILay_Locked;
+    }
 }
 
 CreateCompositesCommand::CreateCompositesCommand () :
