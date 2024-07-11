@@ -818,14 +818,14 @@
                 version : "0.1.0",
                 description : "Performs a send operation on the currently opened Teamwork project.",
                 inputScheme : null,
-                outputScheme : null             
+                outputScheme : null
             },        
             {
                 name : "TeamworkReceive",
                 version : "0.1.0",
                 description : "Performs a receive operation on the currently opened Teamwork project.",
                 inputScheme : null,
-                outputScheme : null             
+                outputScheme : null
             },
         ]
     },

@@ -101,11 +101,14 @@ const GS::UniString& GetCommonSchemaDefinitions ()
         },
         "GDLParametersDictionary": {
             "type": "object",
-            "description": "The dictionary of GDL parameters. The name of the parameter is the key and the details of the parameter are in the value."
+            "description": "The dictionary of GDL parameters. The name of the parameter is the key and the details of the parameter are in the value.",
+            "additionalProperties": {
+                "type": "#/GDLParameterDetails"
+            }
         },
         "GDLParameterDetails": {
             "type": "object",
-            "description": "Details of GDL parameter with value.",
+            "description": "Details of a GDL parameter.",
             "properties": {
                 "index": {
                     "type": "string",
@@ -122,12 +125,16 @@ const GS::UniString& GetCommonSchemaDefinitions ()
                 "dimension2": {
                     "type": "string",
                     "description": "The 2nd dimension of array (in case of array value)."
+                },
+                "value": {
+                    "description": "The value of the parameter."
                 }
             },
             "additionalProperties": true,
             "required": [
                 "index",
-                "type"
+                "type",
+                "value"
             ]
         }
     })";
