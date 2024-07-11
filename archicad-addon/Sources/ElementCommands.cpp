@@ -167,7 +167,7 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     parameters.Get ("elementsWithMoveVectors", elementsWithMoveVectors);
 
     API_Guid elemGuid;
-    const APIErrCodes err = (APIErrCodes) ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
+    const GSErrCode err = ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
         for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
             const GS::ObjectState* elementId = elementWithMoveVector.Get ("elementId");
             const GS::ObjectState* moveVector = elementWithMoveVector.Get ("moveVector");
