@@ -396,20 +396,24 @@ CreateLayersCommand::CreateLayersCommand () :
 GS::UniString CreateLayersCommand::GetTypeSpecificParametersSchema () const
 {
     return R"({
-                        "hidden": {
+                        "isHidden": {
                             "type": "boolean",
-                            "description": "Show/Hide."
+                            "description": "Hide/Show."
                         },
-                        "locked": {
+                        "isLocked": {
                             "type": "boolean",
                             "description": "Lock/Unlock."
+                        },
+                        "isWireframe": {
+                            "type": "boolean",
+                            "description": "Force the model to wireframe."
                         })";
 }
 
 void CreateLayersCommand::SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const
 {
     bool hidden;
-    if (parameters.Get ("hidden", hidden)) {
+    if (parameters.Get ("isHidden", hidden)) {
         if (hidden)
             attribute.header.flags |= APILay_Hidden;
         else
@@ -417,11 +421,19 @@ void CreateLayersCommand::SetTypeSpecificParameters (API_Attribute& attribute, c
     }
 
     bool locked;
-    if (parameters.Get ("locked", locked)) {
+    if (parameters.Get ("isLocked", locked)) {
         if (locked)
             attribute.header.flags |= APILay_Locked;
         else
             attribute.header.flags &= ~APILay_Locked;
+    }
+
+    bool wireframe;
+    if (parameters.Get ("isWireframe", wireframe)) {
+        if (wireframe)
+            attribute.header.flags |= APILay_ForceToWire;
+        else
+            attribute.header.flags &= ~APILay_ForceToWire;
     }
 }
 
