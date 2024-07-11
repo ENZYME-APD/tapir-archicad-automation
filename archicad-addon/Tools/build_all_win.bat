@@ -6,15 +6,19 @@ python download_and_unzip.py https://github.com/GRAPHISOFT/archicad-api-devkit/r
 
 cmake -B ../Build/AC25 -G "Visual Studio 17 2022" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC25" .. || goto :error
 cmake --build ../Build/AC25 --config Debug || goto :error
+cmake --build ../Build/AC25 --config Release || goto :error
 
 cmake -B ../Build/AC26 -G "Visual Studio 17 2022" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC26" .. || goto :error
 cmake --build ../Build/AC26 --config Debug || goto :error
+cmake --build ../Build/AC26 --config Release || goto :error
 
 cmake -B ../Build/AC27 -G "Visual Studio 17 2022" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC27" .. || goto :error
 cmake --build ../Build/AC27 --config Debug || goto :error
+cmake --build ../Build/AC27 --config Release || goto :error
 
 cmake -B ../Build/AC28 -G "Visual Studio 17 2022" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="..\Build\DevKits\AC28" .. || goto :error
 cmake --build ../Build/AC28 --config Debug || goto :error
+cmake --build ../Build/AC28 --config Release || goto :error
 
 popd
 exit /b 0

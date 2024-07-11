@@ -30,4 +30,7 @@ private:
     CommonSchema mCommonSchema;
 };
 
-GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const char* errorMessage);
+GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
+
+API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
+API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);

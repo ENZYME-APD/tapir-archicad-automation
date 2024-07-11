@@ -401,6 +401,66 @@
 					]
 				},
                 outputScheme : null           
+            },
+            {
+                name : "MoveElements",
+                version : "1.0.2",
+                description : "Moves elements with a given vector.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elementsWithMoveVectors": {
+                            "type": "array",
+                            "description": "The elements with move vector pairs.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "elementId": {
+                                        "$ref": "#/ElementId"
+                                    },
+                                    "moveVector": {
+                                        "type": "object",
+                                        "description" : "3D vector.",
+                                        "properties" : {
+                                            "x": {
+                                                "type": "number",
+                                                "description" : "X value of the vector."
+                                            },
+                                            "y" : {
+                                                "type": "number",
+                                                "description" : "Y value of the vector."
+                                            },
+                                            "z" : {
+                                                "type": "number",
+                                                "description" : "Z value of the vector."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required" : [
+                                            "x",
+                                            "y",
+                                            "z"
+                                        ]
+                                    },
+                                    "copy": {
+                                        "type": "boolean",
+                                        "description" : "Optional parameter. If true, then a copy of the element will be moved. By default it's false."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "elementId",
+                                    "moveVector"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementsWithMoveVectors"
+                    ]
+                },
+                outputScheme : null             
             }
         ]
     },

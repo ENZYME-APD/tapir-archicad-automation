@@ -50,10 +50,26 @@ GS::Optional<GS::UniString> CommandBase::GetResponseSchema () const
     return {};
 }
 
-GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const char* errorMessage)
+GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage)
 {
     GS::ObjectState error;
     error.Add ("code", errorCode);
-    error.Add ("message", errorMessage);
+    error.Add ("message", errorMessage.ToCStr ().Get ());
     return GS::ObjectState ("error", error);
+}
+
+API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
+{
+	GS::String guid;
+	os.Get ("guid", guid);
+	return APIGuidFromString (guid.ToCStr ());
+}
+
+API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)
+{
+    API_Coord3D coordinate = {};
+    objectState.Get ("x", coordinate.x);
+    objectState.Get ("y", coordinate.y);
+    objectState.Get ("z", coordinate.z);
+    return coordinate;
 }
