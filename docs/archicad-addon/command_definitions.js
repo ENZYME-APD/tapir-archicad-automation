@@ -579,7 +579,7 @@
                             "description" : "Array of data to create Composites.",
                             "items": {
                                 "type": "object",
-                                "description": "Data to create a Building Material.",
+                                "description": "Data to create a Composite.",
                                 "properties": {
                                     "name": {
                                         "type": "string",
