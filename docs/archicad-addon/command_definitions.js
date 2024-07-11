@@ -461,6 +461,74 @@
                     ]
                 },
                 outputScheme : null             
+            },
+            {
+                name : "GetGDLParametersOfElements",
+                version : "1.0.0",
+                description : "Get all the GDL parameters (name, type, value) of the given elements.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "gdlParametersOfElements": {
+                            "type": "array",
+                            "description": "The GDL parameters of elements.",
+                            "items": {
+                                "$ref": "#/GDLParametersDictionary"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "gdlParametersOfElements"
+                    ]
+                }           
+            },
+            {
+                name : "SetGDLParametersOfElements",
+                version : "1.0.0",
+                description : "Sets the given GDL parameters of the given elements.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elementsWithGDLParameters": {
+                            "type": "array",
+                            "description": "The elements with GDL parameters dictionary pairs.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "elementId": {
+                                        "$ref": "#/ElementId"
+                                    },
+                                    "gdlParameters": {
+                                        "$ref": "#/GDLParametersDictionary"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "elementId",
+                                    "gdlParameters"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementsWithGDLParameters"
+                    ]
+                },
+                outputScheme : null          
             }
         ]
     },
@@ -750,14 +818,14 @@
                 version : "0.1.0",
                 description : "Performs a send operation on the currently opened Teamwork project.",
                 inputScheme : null,
-                outputScheme : null
+                outputScheme : null             
             },        
             {
                 name : "TeamworkReceive",
                 version : "0.1.0",
                 description : "Performs a receive operation on the currently opened Teamwork project.",
                 inputScheme : null,
-                outputScheme : null
+                outputScheme : null             
             },
         ]
     },
