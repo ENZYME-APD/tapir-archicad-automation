@@ -464,7 +464,7 @@
             },
             {
                 name : "GetGDLParametersOfElements",
-                version : "1.0.0",
+                version : "1.0.2",
                 description : "Get all the GDL parameters (name, type, value) of the given elements.",
                 inputScheme : {
                     "type": "object",
@@ -497,7 +497,7 @@
             },
             {
                 name : "SetGDLParametersOfElements",
-                version : "1.0.0",
+                version : "1.0.2",
                 description : "Sets the given GDL parameters of the given elements.",
                 inputScheme : {
                     "type": "object",
