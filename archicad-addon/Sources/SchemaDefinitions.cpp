@@ -119,11 +119,11 @@ const GS::UniString& GetCommonSchemaDefinitions ()
                     "description": "The type of the parameter."
                 },
                 "dimension1": {
-                    "type": "string",
+                    "type": "number",
                     "description": "The 1st dimension of array (in case of array value)."
                 },
                 "dimension2": {
-                    "type": "string",
+                    "type": "number",
                     "description": "The 2nd dimension of array (in case of array value)."
                 },
                 "value": {

@@ -249,14 +249,14 @@ static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
         case APIParT_Integer:			return "Integer";
         case APIParT_Length:			return "Length";
         case APIParT_Angle:				return "Angle";
-        case APIParT_RealNum:			return "RealNum";
+        case APIParT_RealNum:			return "RealNumber";
         case APIParT_LightSw:			return "LightSwitch";
-        case APIParT_ColRGB:			return "ColorRGB";
-        case APIParT_Intens:			return "Intens";
+        case APIParT_ColRGB:			return "RGBColor";
+        case APIParT_Intens:			return "Intensity";
         case APIParT_LineTyp:			return "LineType";
         case APIParT_Mater:				return "Material";
         case APIParT_FillPat:			return "FillPattern";
-        case APIParT_PenCol:			return "PenCol";
+        case APIParT_PenCol:			return "PenColor";
         case APIParT_CString:			return "String";
         case APIParT_Boolean:			return "Boolean";
         case APIParT_Separator:			return "Separator";
@@ -268,7 +268,6 @@ static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
     }
 }
 
-#ifndef ServerMainVers_2700
 static API_AttrTypeID ConvertAddParIDToAttrTypeID (API_AddParID addParID)
 {
     switch (addParID) {
@@ -280,17 +279,15 @@ static API_AttrTypeID ConvertAddParIDToAttrTypeID (API_AddParID addParID)
         default:						return API_ZombieAttrID;
     }
 }
-#endif
 
-#ifndef ServerMainVers_2700
-static GS::UniString GetAttributeName (API_AttrTypeID	  typeID,
-                                        API_AttributeIndex index)
+static GS::UniString GetAttributeName (API_AttrTypeID typeID,
+                                       Int32          index)
 {
     API_Attribute	attrib = {};
 
     GS::UniString name;
     attrib.header.typeID = typeID;
-    attrib.header.index = index;
+    attrib.header.index = ACAPI_CreateAttributeIndex (index);
     attrib.header.uniStringNamePtr = &name;
 
     ACAPI_Attribute_Get (&attrib);
@@ -302,18 +299,15 @@ static GS::UniString GetAttributeName (API_AttrTypeID	  typeID,
 
     return name;
 }
-#endif
 
-#ifndef ServerMainVers_2700
-static GS::ObjectState GetAttributeObjectState (API_AttrTypeID	   typeID,
-                                                    API_AttributeIndex index)
+static GS::ObjectState GetAttributeObjectState (API_AttrTypeID typeID,
+                                                Int32          index)
 {
     GS::ObjectState attribute;
     attribute.Add ("index", index);
     attribute.Add ("name", GetAttributeName (typeID, index));
     return attribute;
 }
-#endif
 
 static void AddValueInteger (GS::ObjectState& 	   gdlParameterDetails,
                              const API_AddParType& actParam)
@@ -347,26 +341,24 @@ static void AddValueDouble (GS::ObjectState& 	  gdlParameterDetails,
     }
 }
 
-#ifndef ServerMainVers_2700
 static void AddValueAttribute (GS::ObjectState& 	 gdlParameterDetails,
                                const API_AddParType& actParam)
 {
     if (actParam.typeMod == API_ParSimple) {
         gdlParameterDetails.Add ("value",
                                  GetAttributeObjectState (ConvertAddParIDToAttrTypeID (actParam.typeID),
-                                                          static_cast<API_AttributeIndex> (actParam.value.real)));
+                                                          static_cast<Int32> (actParam.value.real)));
     } else {
         const auto& arrayValueItemAdder = gdlParameterDetails.AddList<GS::ObjectState> ("value");
         Int32 arrayIndex = 0;
         for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
             for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
                 arrayValueItemAdder (GetAttributeObjectState (ConvertAddParIDToAttrTypeID (actParam.typeID),
-                                                              static_cast<API_AttributeIndex> (((double*)*actParam.value.array) [arrayIndex++])));
+                                                              static_cast<Int32> (((double*)*actParam.value.array) [arrayIndex++])));
             }
         }
     }
 }
-#endif
 
 template<typename T>
 static void AddValueTrueFalseOptions (GS::ObjectState& 	    gdlParameterDetails,
@@ -525,9 +517,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     case APIParT_Mater:
                     case APIParT_FillPat:
                     case APIParT_BuildingMaterial:
-#ifndef ServerMainVers_2700
                     case APIParT_Profile: 			AddValueAttribute (gdlParameterDetails, actParam);	break;
-#endif
                     case APIParT_CString:
                     case APIParT_Title: 			AddValueString (gdlParameterDetails, actParam);		break;
                     default:
