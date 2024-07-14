@@ -106,6 +106,31 @@ inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
 }
 
+inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart *ancestor, bool createIfMissing, bool onlyPlaceable = false)
+{
+    return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);
+}
+
+inline GSErrCode ACAPI_LibraryPart_OpenParameters (API_ParamOwnerType* paramOwner)
+{
+    return ACAPI_Goodies (APIAny_OpenParametersID, paramOwner);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetActParameters (API_GetParamsType* theParams)
+{
+    return ACAPI_Goodies (APIAny_GetActParametersID, theParams);
+}
+
+inline GSErrCode ACAPI_LibraryPart_ChangeAParameter (API_ChangeParamType* changeParamType)
+{
+    return ACAPI_Goodies (APIAny_ChangeAParameterID, changeParamType);
+}
+
+inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
+{
+    return ACAPI_Goodies (APIAny_CloseParametersID);
+}
+
 #endif
 
 #ifndef ServerMainVers_2600
