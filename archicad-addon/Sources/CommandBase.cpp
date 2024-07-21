@@ -1,7 +1,7 @@
 #include "CommandBase.hpp"
 
 #include "SchemaDefinitions.hpp"
-#include "MigrationHeader.hpp"
+#include "MigrationHelper.hpp"
 
 constexpr const char* CommandNamespace = "TapirCommand";
 
@@ -83,9 +83,9 @@ API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)
     return coordinate;
 }
 
-GS::Array<GS::Pair<short, double>> GetStoryLevels ()
+Stories GetStories ()
 {
-    GS::Array<GS::Pair<short, double>> storyLevels;
+    Stories stories;
     API_StoryInfo storyInfo = {};
 
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
@@ -93,29 +93,27 @@ GS::Array<GS::Pair<short, double>> GetStoryLevels ()
     if (err == NoError) {
         const short numberOfStories = storyInfo.lastStory - storyInfo.firstStory + 1;
         for (short i = 0; i < numberOfStories; ++i) {
-            storyLevels.PushNew ((*storyInfo.data)[i].index, (*storyInfo.data)[i].level);
+            stories.PushNew ((*storyInfo.data)[i].index, (*storyInfo.data)[i].level);
         }
         BMKillHandle ((GSHandle*) &storyInfo.data);
     }
 
-    return storyLevels;
+    return stories;
 }
 
-short GetFloorIndexAndOffset (double zPos, const GS::Array<GS::Pair<short, double>>& storyLevels, double& zOffset)
+GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories)
 {
-    if (storyLevels.IsEmpty ()) {
-        zOffset = zPos;
-        return 0;
+    if (stories.IsEmpty ()) {
+        return { 0, zPos };
     }
 
-    auto* lastStoryIndexAndLevel = &storyLevels[0];
-    for (const auto& storyIndexAndLevel : storyLevels) {
-        if (storyIndexAndLevel.second > zPos) {
+    const Story* storyPtr = &stories[0];
+    for (const auto& story : stories) {
+        if (story.level > zPos) {
             break;
         }
-        lastStoryIndexAndLevel = &storyIndexAndLevel;
+        storyPtr = &story;
     }
 
-    zOffset = zPos - lastStoryIndexAndLevel->second;
-    return lastStoryIndexAndLevel->first;
+    return { storyPtr->index, zPos - storyPtr->level };
 }

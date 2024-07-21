@@ -113,6 +113,23 @@ inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart *ancestor, bool createIfM
 
 #endif
 
+inline const GS::UniString ElemID_To_Name (const API_ElemTypeID& typeID)
+{
+    GS::UniString elemNameStr;
+
+#ifndef ServerMainVers_2600
+	ACAPI_Goodies (APIAny_GetElemTypeNameID, (void*) typeID, &elemNameStr);
+#else
+    #ifndef ServerMainVers_2700
+        ACAPI_Goodies_GetElemTypeName (typeID, elemNameStr);
+    #else
+        ACAPI_Element_GetElemTypeName (typeID, elemNameStr);
+    #endif
+#endif
+
+    return elemNameStr;
+}
+
 #ifndef ServerMainVers_2600
 
 inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier ifcTranslator, API_IFCRelationshipData ifcRelationshipData)

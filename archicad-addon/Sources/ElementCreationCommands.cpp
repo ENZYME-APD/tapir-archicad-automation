@@ -1,11 +1,13 @@
 #include "ElementCreationCommands.hpp"
 #include "ObjectState.hpp"
 #include "OnExit.hpp"
-#include "MigrationHeader.hpp"
+#include "MigrationHelper.hpp"
 
-CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn)
+CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
     , commandName (commandNameIn)
+    , elemTypeID (elemTypeIDIn)
+    , arrayFieldName (arrayFieldNameIn)
 {
 }
 
@@ -30,98 +32,120 @@ GS::Optional<GS::UniString> CreateElementsCommandBase::GetResponseSchema () cons
     })";
 }
 
+GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> dataArray;
+    parameters.Get (arrayFieldName, dataArray);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    const GS::UniString elemTypeName = ElemID_To_Name (elemTypeID);
+    const Stories stories = GetStories ();
+
+    const GSErrCode err = ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+
+#ifdef ServerMainVers_2600
+        element.header.type   = elemTypeID;
+#else
+        element.header.typeID = elemTypeID;
+#endif
+        GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+
+        for (const GS::ObjectState& data : dataArray) {
+            SetTypeSpecificParameters (element, memo, stories, data);
+
+            err = ACAPI_Element_Create (&element, &memo);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to create new " + elemTypeName));
+                continue;
+            }
+
+            elements (GS::ObjectState ("elementId", GS::ObjectState ("guid", APIGuidToString (element.header.guid))));
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 CreateColumnsCommand::CreateColumnsCommand () :
-    CreateElementsCommandBase ("CreateColumns")
+    CreateElementsCommandBase ("CreateColumns", API_ColumnID, "columnsData")
 {
 }
 
 GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () const
 {
     return R"({
-    "type": "object",
-    "properties": {
-        "coordinates": {
-            "type": "array",
-            "description": "The 3D coordinates of the new columns' origos.",
-            "items": {
-                "type": "object",
-                "description" : "3D coordinate.",
-                "properties" : {
-                    "x": {
-                        "type": "number",
-                        "description" : "X value of the coordinate."
+        "type": "object",
+        "properties": {
+            "columnsData": {
+                "type": "array",
+                "description": "Array of data to create Columns.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Column.",
+                    "properties": {
+                        "coordinates": {
+                            "type": "object",
+                            "description" : "3D coordinate.",
+                            "properties" : {
+                                "x": {
+                                    "type": "number",
+                                    "description" : "X value of the coordinate."
+                                },
+                                "y" : {
+                                    "type": "number",
+                                    "description" : "Y value of the coordinate."
+                                },
+                                "z" : {
+                                    "type": "number",
+                                    "description" : "Z value of the coordinate."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required" : [
+                                "x",
+                                "y",
+                                "z"
+                            ]
+                        }
                     },
-                    "y" : {
-                        "type": "number",
-                        "description" : "Y value of the coordinate."
-                    },
-                    "z" : {
-                        "type": "number",
-                        "description" : "Z value of the coordinate."
-                    }
-                },
-                "additionalProperties": false,
-                "required" : [
-                    "x",
-                    "y",
-                    "z"
-                ]
+                    "additionalProperties": false,
+                    "required" : [
+                        "coordinates"
+                    ]
+                }
             }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "coordinates"
-    ]
-})";
+        },
+        "additionalProperties": false,
+        "required": [
+            "columnsData"
+        ]
+    })";
 }
 
-GS::ObjectState	CreateColumnsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    GS::Array<GS::ObjectState> coordinates;
+    GS::ObjectState coordinates;
     parameters.Get ("coordinates", coordinates);
+    API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
 
-    API_Coord3D apiCoordinate = {};
-    const GSErrCode err = ACAPI_CallUndoableCommand ("Create Columns", [&] () -> GSErrCode {
-        API_Element element = {};
-        API_ElementMemo memo = {};
-        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-
-#ifdef ServerMainVers_2600
-        element.header.type   = API_ColumnID;
-#else
-        element.header.typeID = API_ColumnID;
-#endif
-        GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
-
-        const GS::Array<GS::Pair<short, double>> storyLevels = GetStoryLevels ();
-
-        for (const GS::ObjectState& coordinate : coordinates) {
-            apiCoordinate = Get3DCoordinateFromObjectState (coordinate);
-
-            element.header.floorInd = GetFloorIndexAndOffset (apiCoordinate.z, storyLevels, element.column.bottomOffset);
-            element.column.origoPos.x = apiCoordinate.x;
-            element.column.origoPos.y = apiCoordinate.y;
-            err = ACAPI_Element_Create (&element, &memo);
-
-            if (err != NoError) {
-                return err;
-            }
-        }
-
-        return NoError;
-    });
-
-    if (err != NoError) {
-        const GS::UniString errorMsg = GS::UniString::Printf ("Failed to create column to coordinate: {%.2f, %.2f, %.2f}!", apiCoordinate.x, apiCoordinate.y, apiCoordinate.z);
-        return CreateErrorResponse (err, errorMsg);
-    }
+    const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+    element.header.floorInd = floorIndexAndOffset.first;
+    element.column.bottomOffset = floorIndexAndOffset.second;
+    element.column.origoPos.x = apiCoordinate.x;
+    element.column.origoPos.y = apiCoordinate.y;
 
     return {};
 }
 
 CreateSlabsCommand::CreateSlabsCommand () :
-    CreateElementsCommandBase ("CreateSlabs")
+    CreateElementsCommandBase ("CreateSlabs", API_SlabID, "slabsData")
 {
 }
 
@@ -130,9 +154,9 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
     return R"({
     "type": "object",
     "properties": {
-        "slabs": {
+        "slabsData": {
             "type": "array",
-            "description": "The parameters of the new Slabs.",
+            "description": "Array of data to create Slabs.",
             "items": {
                 "type": "object",
                 "description" : "The parameters of the new Slab.",
@@ -163,9 +187,46 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                                 "y"
                             ]
                         }
+                    },
+                    "holes" : {
+                        "type": "array",
+                        "description": "Array of parameters of holes.",
+                        "items": {
+                            "type": "object",
+                            "description" : "The parameters of the hole.",
+                            "properties" : {
+                                "polygonCoordinates": { 
+                                    "type": "array",
+                                    "description": "The 2D coordinates of the edge of the slab.",
+                                    "items": {
+                                        "type": "object",
+                                        "description" : "Position of a 2D point.",
+                                        "properties" : {
+                                            "x": {
+                                                "type": "number",
+                                                "description" : "X value of the point."
+                                            },
+                                            "y" : {
+                                                "type": "number",
+                                                "description" : "Y value of the point."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required" : [
+                                            "x",
+                                            "y"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required" : [
+                                "polygonCoordinates"
+                            ]
+                        }
                     }
                 },
-                "additionalProperties": true,
+                "additionalProperties": false,
                 "required" : [
                     "level",
                     "polygonCoordinates"
@@ -175,7 +236,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
     },
     "additionalProperties": false,
     "required": [
-        "slabs"
+        "slabsData"
     ]
 })";
 }
@@ -201,226 +262,142 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& polygonCoordinates,
     ++iCoord;
 }
 
-GS::ObjectState	CreateSlabsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    GS::Array<GS::ObjectState> slabs;
-    parameters.Get ("slabs", slabs);
+    parameters.Get ("level", element.slab.level);
+    const auto floorIndexAndOffset = GetFloorIndexAndOffset (element.slab.level, stories);
+    element.header.floorInd = floorIndexAndOffset.first;
 
-    GS::ObjectState response;
-    const auto& responseElementsArray = response.AddList<GS::ObjectState> ("elements");
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    GS::Array<GS::ObjectState> holes;
+    parameters.Get ("polygonCoordinates", polygonCoordinates);
+    parameters.Get ("holes", holes);
+    element.slab.poly.nCoords	= polygonCoordinates.GetSize() + 1;
+    element.slab.poly.nSubPolys	= 1;
+    element.slab.poly.nArcs		= 0; // Curved edges are not supported yet by my code
 
-    GSIndex iSlab = 0;
-    const GSErrCode err = ACAPI_CallUndoableCommand ("Create Slabs", [&] () -> GSErrCode {
-        GSErrCode err = NoError;
-        const GS::Array<GS::Pair<short, double>> storyLevels = GetStoryLevels ();
-        for (const GS::ObjectState& slab : slabs) {
-            if (!slab.Contains ("level") ||
-                !slab.Contains ("polygonCoordinates")) {
-                continue;
-            }
-
-            API_Element element = {};
-            API_ElementMemo memo = {};
-            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-
-#ifdef ServerMainVers_2600
-            element.header.type   = API_SlabID;
-#else
-            element.header.typeID = API_SlabID;
-#endif
-            err = ACAPI_Element_GetDefaults (&element, &memo);
-
-            if (!slab.Get ("level", element.slab.level)) {
-                responseElementsArray (CreateErrorResponse (err, "Missing 'level' input field"));
-                continue;
-            }
-            element.header.floorInd = GetFloorIndexAndOffset (element.slab.level, storyLevels, element.slab.level);
-
-            GS::Array<GS::ObjectState> polygonCoordinates;
-            GS::Array<GS::ObjectState> holes;
-            if (!slab.Get ("polygonCoordinates", polygonCoordinates)) {
-                responseElementsArray (CreateErrorResponse (err, "Missing 'polygonCoordinates' input field"));
-                continue;
-            }
-            slab.Get ("holes", holes);
-            element.slab.poly.nCoords	= polygonCoordinates.GetSize() + 1;
-            element.slab.poly.nSubPolys	= 1;
-            element.slab.poly.nArcs		= 0; // Curved edges are not supported yet by my code
-
-            for (const GS::ObjectState& hole : holes) {
-                if (!hole.Contains ("polygonCoordinates")) {
-                    continue;
-                }
-                GS::Array<GS::ObjectState> holePolygonCoordinates;
-                hole.Get ("polygonCoordinates", holePolygonCoordinates);
-                element.slab.poly.nCoords += holePolygonCoordinates.GetSize() + 1;
-                ++element.slab.poly.nSubPolys;
-            }
-
-            memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-            memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
-            memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
-            memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.slab.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-
-            Int32 iCoord = 1;
-            Int32 iPends = 1;
-            AddPolyToMemo(polygonCoordinates,
-                          element.slab.sideMat,
-                          iCoord,
-                          iPends,
-                          memo);
-
-            for (const GS::ObjectState& hole : holes) {
-                if (!hole.Contains ("polygonCoordinates")) {
-                    continue;
-                }
-                GS::Array<GS::ObjectState> holePolygonCoordinates;
-                hole.Get ("polygonCoordinates", holePolygonCoordinates);
-
-                AddPolyToMemo(holePolygonCoordinates,
-                            element.slab.sideMat,
-                            iCoord,
-                            iPends,
-                            memo);
-            }
-
-            err = ACAPI_Element_Create (&element, &memo);
-
-            if (err != NoError) {
-                responseElementsArray (CreateErrorResponse (err, "Failed to create object"));
-                return err;
-            }
-
-            responseElementsArray (GS::ObjectState ("elementId", GS::ObjectState ("guid", APIGuidToString (element.header.guid))));
+    for (const GS::ObjectState& hole : holes) {
+        if (!hole.Contains ("polygonCoordinates")) {
+            continue;
         }
+        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        hole.Get ("polygonCoordinates", holePolygonCoordinates);
 
-        return NoError;
-    });
-
-    if (err != NoError) {
-        const GS::UniString errorMsg = GS::UniString::Printf ("Failed to create slab #%d!", iSlab);
-        return CreateErrorResponse (err, errorMsg);
+        element.slab.poly.nCoords += holePolygonCoordinates.GetSize() + 1;
+        ++element.slab.poly.nSubPolys;
     }
 
-    return responseElementsArray;
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
+    memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.slab.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+
+    Int32 iCoord = 1;
+    Int32 iPends = 1;
+    AddPolyToMemo(polygonCoordinates,
+                  element.slab.sideMat,
+                  iCoord,
+                  iPends,
+                  memo);
+
+    for (const GS::ObjectState& hole : holes) {
+        if (!hole.Contains ("polygonCoordinates")) {
+            continue;
+        }
+        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        hole.Get ("polygonCoordinates", holePolygonCoordinates);
+
+        AddPolyToMemo(holePolygonCoordinates,
+                      element.slab.sideMat,
+                      iCoord,
+                      iPends,
+                      memo);
+    }
+
+    return {};
 }
 
 CreateObjectsCommand::CreateObjectsCommand () :
-    CreateElementsCommandBase ("CreateObjects")
+    CreateElementsCommandBase ("CreateObjects", API_ObjectID, "objectsData")
 {
 }
 
 GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () const
 {
     return R"({
-    "type": "object",
-    "properties": {
-        "objects": {
-            "type": "array",
-            "description": "The parameters of the new Objects.",
-            "items": {
-                "type": "object",
-                "description" : "The parameters of the new Object.",
-                "properties" : {
-                    "libraryPartName": {
-                        "type": "string",
-                        "description" : "The name of the library part to use."	
+        "type": "object",
+        "properties": {
+            "objectsData": {
+                "type": "array",
+                "description": "Array of data to create Objects.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Object.",
+                    "properties": {
+                        "libraryPartName": {
+                            "type": "string",
+                            "description" : "The name of the library part to use."	
+                        },
+                        "coordinates": {
+                            "$ref": "#/3DCoordinate"
+                        },
+                        "dimensions": {
+                            "$ref": "#/3DDimensions"
+                        }
                     },
-                    "coordinate": {
-                        "$ref": "#/3DCoordinate"
-                    },
-                    "dimensions": {
-                        "$ref": "#/3DDimensions"
-                    }
-                },
-                "additionalProperties": true,
-                "required" : [
-                    "name"
-                ]
+                    "additionalProperties": false,
+                    "required" : [
+                        "libraryPartName",
+                        "coordinates",
+                        "dimensions"
+                    ]
+                }
             }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "objects"
-    ]
-})";
+        },
+        "additionalProperties": false,
+        "required": [
+            "objectsData"
+        ]
+    })";
 }
 
-GS::ObjectState	CreateObjectsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    GS::Array<GS::ObjectState> objects;
-    parameters.Get ("objects", objects);
+    GS::UniString uName;
+    parameters.Get ("libraryPartName", uName);
 
-    GS::ObjectState response;
-    const auto& responseElementsArray = response.AddList<GS::ObjectState> ("elements");
+    API_LibPart libPart = {};
+    GS::ucscpy (libPart.docu_UName, uName.ToUStr ());
 
-    API_Coord3D   apiCoordinate;
-    const GSErrCode err = ACAPI_CallUndoableCommand ("Create Objects", [&] () -> GSErrCode {
-        API_Element element = {};
-        API_ElementMemo memo = {};
-        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+    delete libPart.location;
 
-#ifdef ServerMainVers_2600
-        element.header.type   = API_ObjectID;
-#else
-        element.header.typeID = API_ObjectID;
-#endif
-        GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Not found library part with name '%T'", uName.ToPrintf()));
+    }
 
-        const GS::Array<GS::Pair<short, double>> storyLevels = GetStoryLevels ();
+    element.object.libInd = libPart.index;
 
-        for (const GS::ObjectState& object : objects) {
-            GS::UniString uName;
-            if (!object.Get ("libraryPartName", uName)) {
-                responseElementsArray (CreateErrorResponse (err, "Missing 'libraryPartName' input field"));
-                continue;
-            }
+    GS::ObjectState coordinates;
+    if (parameters.Get ("coordinates", coordinates)) {
+        const API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
 
-            API_LibPart libPart = {};
-            GS::ucscpy (libPart.docu_UName, uName.ToUStr ());
+        element.object.pos.x = apiCoordinate.x;
+        element.object.pos.y = apiCoordinate.y;
 
-            err = ACAPI_LibraryPart_Search (&libPart, false, true);
-            delete libPart.location;
+        const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+        element.header.floorInd = floorIndexAndOffset.first;
+        element.object.level = floorIndexAndOffset.second;
+    }
 
-            if (err != NoError) {
-                const GS::UniString errorMsg = GS::UniString::Printf ("Not found library part with name '%T'", uName.ToPrintf());
-                responseElementsArray (CreateErrorResponse (err, errorMsg));
-                continue;
-            }
+    if (parameters.Get ("dimensions", coordinates)) {
+        const API_Coord3D dimensions = Get3DCoordinateFromObjectState (coordinates);
 
-            element.object.libInd = libPart.index;
+        element.object.xRatio = dimensions.x;
+        element.object.yRatio = dimensions.y;
+        GS::ObjectState os ("value", dimensions.z);
+        //ChangeParams(memo.params, {{"ZZYZX", os}});
+    }
 
-            GS::ObjectState coordinate;
-            if (object.Get ("coordinate", coordinate)) {
-                const API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinate);
-
-                element.object.pos.x = apiCoordinate.x;
-                element.object.pos.y = apiCoordinate.y;
-                element.header.floorInd = GetFloorIndexAndOffset (apiCoordinate.z, storyLevels, element.object.level);
-            }
-
-            if (object.Get ("dimensions", coordinate)) {
-                const API_Coord3D dimensions = Get3DCoordinateFromObjectState (coordinate);
-
-                element.object.xRatio = dimensions.x;
-                element.object.yRatio = dimensions.y;
-                GS::ObjectState os ("value", dimensions.z);
-                ChangeParams(memo.params, {{"ZZYZX", os}});
-            }
-
-            err = ACAPI_Element_Create (&element, &memo);
-
-            if (err != NoError) {
-                responseElementsArray (CreateErrorResponse (err, "Failed to create object"));
-                continue;
-            }
-
-            responseElementsArray (GS::ObjectState ("elementId", GS::ObjectState ("guid", APIGuidToString (element.header.guid))));
-        }
-
-        return NoError;
-    });
-
-    return responseElementsArray;
+    return {};
 }

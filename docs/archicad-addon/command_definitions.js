@@ -465,6 +465,232 @@
         ]
     },
     {
+        name : 'Element Commands',
+        commands : [
+            {
+                name : "CreateColumns",
+                version : "1.0.2",
+                description : "Creates Column elements based on the given parameters.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "columnsData": {
+                            "type": "array",
+                            "description": "Array of data to create Columns.",
+                            "items": {
+                                "type": "object",
+                                "description": "The parameters of the new Column.",
+                                "properties": {
+                                    "coordinates": {
+                                        "type": "object",
+                                        "description" : "3D coordinate.",
+                                        "properties" : {
+                                            "x": {
+                                                "type": "number",
+                                                "description" : "X value of the coordinate."
+                                            },
+                                            "y" : {
+                                                "type": "number",
+                                                "description" : "Y value of the coordinate."
+                                            },
+                                            "z" : {
+                                                "type": "number",
+                                                "description" : "Z value of the coordinate."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required" : [
+                                            "x",
+                                            "y",
+                                            "z"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required" : [
+                                    "coordinates"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "columnsData"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            },
+            {
+                name : "CreateSlabs",
+                version : "1.0.2",
+                description : "Creates Slab elements based on the given parameters.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "slabsData": {
+                            "type": "array",
+                            "description": "Array of data to create Slabs.",
+                            "items": {
+                                "type": "object",
+                                "description" : "The parameters of the new Slab.",
+                                "properties" : {
+                                    "level": {
+                                        "type": "number",
+                                        "description" : "The Z coordinate value of the reference line of the slab."	
+                                    },
+                                    "polygonCoordinates": { 
+                                        "type": "array",
+                                        "description": "The 2D coordinates of the edge of the slab.",
+                                        "items": {
+                                            "type": "object",
+                                            "description" : "Position of a 2D point.",
+                                            "properties" : {
+                                                "x": {
+                                                    "type": "number",
+                                                    "description" : "X value of the point."
+                                                },
+                                                "y" : {
+                                                    "type": "number",
+                                                    "description" : "Y value of the point."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required" : [
+                                                "x",
+                                                "y"
+                                            ]
+                                        }
+                                    },
+                                    "holes" : {
+                                        "type": "array",
+                                        "description": "Array of parameters of holes.",
+                                        "items": {
+                                            "type": "object",
+                                            "description" : "The parameters of the hole.",
+                                            "properties" : {
+                                                "polygonCoordinates": { 
+                                                    "type": "array",
+                                                    "description": "The 2D coordinates of the edge of the slab.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "description" : "Position of a 2D point.",
+                                                        "properties" : {
+                                                            "x": {
+                                                                "type": "number",
+                                                                "description" : "X value of the point."
+                                                            },
+                                                            "y" : {
+                                                                "type": "number",
+                                                                "description" : "Y value of the point."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "required" : [
+                                                            "x",
+                                                            "y"
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required" : [
+                                                "polygonCoordinates"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required" : [
+                                    "level",
+                                    "polygonCoordinates"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "slabsData"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            },
+            {
+                name : "CreateObjects",
+                version : "1.0.2",
+                description : "Creates Object elements based on the given parameters.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "objectsData": {
+                            "type": "array",
+                            "description": "Array of data to create Objects.",
+                            "items": {
+                                "type": "object",
+                                "description": "The parameters of the new Object.",
+                                "properties": {
+                                    "libraryPartName": {
+                                        "type": "string",
+                                        "description" : "The name of the library part to use."	
+                                    },
+                                    "coordinates": {
+                                        "$ref": "#/3DCoordinate"
+                                    },
+                                    "dimensions": {
+                                        "$ref": "#/3DDimensions"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required" : [
+                                    "libraryPartName",
+                                    "coordinates",
+                                    "dimensions"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "objectsData"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        ]
+    },
+    {
         name : 'Attribute Commands',
         commands : [
             {
