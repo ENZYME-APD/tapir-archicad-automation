@@ -137,7 +137,7 @@ GS::ObjectState GetBuildingMaterialPhysicalPropertiesCommand::Execute (const GS:
     return response;
 }
 
-CreateSimpleAttributesCommandBase::CreateSimpleAttributesCommandBase (const GS::String& commandNameIn, API_AttrTypeID attrTypeIDIn, const GS::String& arrayFieldNameIn)
+CreateAttributesCommandBase::CreateAttributesCommandBase (const GS::String& commandNameIn, API_AttrTypeID attrTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
     , commandName (commandNameIn)
     , attrTypeID (attrTypeIDIn)
@@ -145,51 +145,12 @@ CreateSimpleAttributesCommandBase::CreateSimpleAttributesCommandBase (const GS::
 {
 }
 
-GS::String CreateSimpleAttributesCommandBase::GetName () const
+GS::String CreateAttributesCommandBase::GetName () const
 {
     return commandName;
 }
 
-GS::Optional<GS::UniString> CreateSimpleAttributesCommandBase::GetInputParametersSchema () const
-{
-    return GS::UniString::Printf (R"({
-        "type": "object",
-        "properties": {
-            "%s": {
-                "type": "array",
-                "description" : "Array of data to create new attributes.",
-                "items": {
-                    "type": "object",
-                    "description": "Data to create an attribute.",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "Name."
-                        },
-                        %T
-                    },
-                    "additionalProperties": false,
-                    "required" : [
-                        "name"
-                    ]
-                }
-            },
-            "overwriteExisting": {
-                "type": "boolean",
-                "description": "Overwrite the attribute if exists with the same name. The default is false."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "%s"
-        ]
-    })",
-    arrayFieldName.ToCStr (),
-    GetTypeSpecificParametersSchema ().ToPrintf (),
-    arrayFieldName.ToCStr ());
-}
-
-GS::Optional<GS::UniString> CreateSimpleAttributesCommandBase::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateAttributesCommandBase::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -205,7 +166,7 @@ GS::Optional<GS::UniString> CreateSimpleAttributesCommandBase::GetResponseSchema
     })";
 }
 
-GS::ObjectState CreateSimpleAttributesCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> dataArray;
     parameters.Get (arrayFieldName, dataArray);
@@ -259,13 +220,26 @@ GS::ObjectState CreateSimpleAttributesCommandBase::Execute (const GS::ObjectStat
 }
 
 CreateBuildingMaterialsCommand::CreateBuildingMaterialsCommand () :
-    CreateSimpleAttributesCommandBase ("CreateBuildingMaterials", API_BuildingMaterialID, "buildingMaterialDataArray")
+    CreateAttributesCommandBase ("CreateBuildingMaterials", API_BuildingMaterialID, "buildingMaterialDataArray")
 {
 }
 
-GS::UniString CreateBuildingMaterialsCommand::GetTypeSpecificParametersSchema () const
+GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSchema () const
 {
     return R"({
+        "type": "object",
+        "properties": {
+            "buildingMaterialDataArray": {
+                "type": "array",
+                "description" : "Array of data to create new attributes.",
+                "items": {
+                    "type": "object",
+                    "description": "Data to create an attribute.",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name."
+                        },
                         "id": {
                             "type": "string",
                             "description": "Identifier."
@@ -317,7 +291,24 @@ GS::UniString CreateBuildingMaterialsCommand::GetTypeSpecificParametersSchema ()
                         "embodiedCarbon": {
                             "type": "number",
                             "description": "Embodied Carbon."
-                        })";
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "name"
+                    ]
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Overwrite the attribute if exists with the same name. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "buildingMaterialDataArray"
+        ]
+    })";
 }
 
 void CreateBuildingMaterialsCommand::SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const
@@ -389,13 +380,26 @@ void CreateBuildingMaterialsCommand::SetTypeSpecificParameters (API_Attribute& a
 }
 
 CreateLayersCommand::CreateLayersCommand () :
-    CreateSimpleAttributesCommandBase ("CreateLayers", API_LayerID, "layerDataArray")
+    CreateAttributesCommandBase ("CreateLayers", API_LayerID, "layerDataArray")
 {
 }
 
-GS::UniString CreateLayersCommand::GetTypeSpecificParametersSchema () const
+GS::Optional<GS::UniString> CreateLayersCommand::GetInputParametersSchema () const
 {
     return R"({
+        "type": "object",
+        "properties": {
+            "layerDataArray": {
+                "type": "array",
+                "description" : "Array of data to create new attributes.",
+                "items": {
+                    "type": "object",
+                    "description": "Data to create an attribute.",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name."
+                        },
                         "isHidden": {
                             "type": "boolean",
                             "description": "Hide/Show."
@@ -407,7 +411,24 @@ GS::UniString CreateLayersCommand::GetTypeSpecificParametersSchema () const
                         "isWireframe": {
                             "type": "boolean",
                             "description": "Force the model to wireframe."
-                        })";
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "name"
+                    ]
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Overwrite the attribute if exists with the same name. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layerDataArray"
+        ]
+    })";
 }
 
 void CreateLayersCommand::SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const
