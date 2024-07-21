@@ -106,6 +106,11 @@ inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
 }
 
+inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart *ancestor, bool createIfMissing, bool onlyPlaceable = false)
+{
+    return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);
+}
+
 #endif
 
 #ifndef ServerMainVers_2600

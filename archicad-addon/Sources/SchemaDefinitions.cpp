@@ -98,6 +98,54 @@ const GS::UniString& GetCommonSchemaDefinitions ()
             "required": [
                 "location"
             ]
+        },
+        "3DCoordinate": {
+            "type": "object",
+            "description" : "3D coordinate.",
+            "properties" : {
+                "x": {
+                    "type": "number",
+                    "description" : "X value of the coordinate."
+                },
+                "y" : {
+                    "type": "number",
+                    "description" : "Y value of the coordinate."
+                },
+                "z" : {
+                    "type": "number",
+                    "description" : "Z value of the coordinate."
+                }
+            },
+            "additionalProperties": false,
+            "required" : [
+                "x",
+                "y",
+                "z"
+            ]
+        },
+        "3DDimensions": {
+            "type": "object",
+            "description" : "Dimensions in 3D.",
+            "properties" : {
+                "x": {
+                    "type": "number",
+                    "description" : "X dimension."
+                },
+                "y" : {
+                    "type": "number",
+                    "description" : "Y dimension."
+                },
+                "z" : {
+                    "type": "number",
+                    "description" : "Z dimension."
+                }
+            },
+            "additionalProperties": false,
+            "required" : [
+                "x",
+                "y",
+                "z"
+            ]
         }
     })";
     return commonSchemaDefinitions;

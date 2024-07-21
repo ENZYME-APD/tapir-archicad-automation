@@ -33,4 +33,8 @@ private:
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
+API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
+
+GS::Array<GS::Pair<short, double>> GetStoryLevels ();
+short GetFloorIndexAndOffset (double zPos, const GS::Array<GS::Pair<short, double>>& storyLevels, double& zOffset);
