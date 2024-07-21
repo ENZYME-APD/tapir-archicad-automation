@@ -12,14 +12,37 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class CreateBuildingMaterialsCommand : public CommandBase
+class CreateAttributesCommandBase : public CommandBase
+{
+public:
+    CreateAttributesCommandBase (const GS::String& commandName, API_AttrTypeID attrTypeID, const GS::String& arrayFieldName);
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+protected:
+    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const = 0;
+protected:
+    GS::String     commandName;
+    API_AttrTypeID attrTypeID;
+    GS::String     arrayFieldName;
+};
+
+class CreateBuildingMaterialsCommand : public CreateAttributesCommandBase
 {
 public:
     CreateBuildingMaterialsCommand ();
-    virtual GS::String GetName () const override;
+protected:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
-    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
+};
+
+class CreateLayersCommand : public CreateAttributesCommandBase
+{
+public:
+    CreateLayersCommand ();
+protected:
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
 };
 
 class CreateCompositesCommand : public CommandBase
