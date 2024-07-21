@@ -231,10 +231,10 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
         "properties": {
             "buildingMaterialDataArray": {
                 "type": "array",
-                "description" : "Array of data to create new attributes.",
+                "description" : "Array of data to create new Building Materials.",
                 "items": {
                     "type": "object",
-                    "description": "Data to create an attribute.",
+                    "description": "Data to create a Building Material.",
                     "properties": {
                         "name": {
                             "type": "string",
@@ -301,7 +301,7 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description": "Overwrite the attribute if exists with the same name. The default is false."
+                "description": "Overwrite the Building Material if exists with the same name. The default is false."
             }
         },
         "additionalProperties": false,
@@ -391,10 +391,10 @@ GS::Optional<GS::UniString> CreateLayersCommand::GetInputParametersSchema () con
         "properties": {
             "layerDataArray": {
                 "type": "array",
-                "description" : "Array of data to create new attributes.",
+                "description" : "Array of data to create new Layers.",
                 "items": {
                     "type": "object",
-                    "description": "Data to create an attribute.",
+                    "description": "Data to create a Layer.",
                     "properties": {
                         "name": {
                             "type": "string",
@@ -421,7 +421,7 @@ GS::Optional<GS::UniString> CreateLayersCommand::GetInputParametersSchema () con
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description": "Overwrite the attribute if exists with the same name. The default is false."
+                "description": "Overwrite the Layer if exists with the same name. The default is false."
             }
         },
         "additionalProperties": false,
