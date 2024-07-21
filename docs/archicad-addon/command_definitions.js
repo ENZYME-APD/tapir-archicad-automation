@@ -537,7 +537,7 @@
         commands : [
             {
                 name : "CreateColumns",
-                version : "1.0.2",
+                version : "1.0.3",
                 description : "Creates Column elements based on the given parameters.",
                 inputScheme : {
                     "type": "object",
@@ -601,7 +601,7 @@
             },
             {
                 name : "CreateSlabs",
-                version : "1.0.2",
+                version : "1.0.3",
                 description : "Creates Slab elements based on the given parameters.",
                 inputScheme : {
                     "type": "object",
@@ -706,7 +706,7 @@
             },
             {
                 name : "CreateObjects",
-                version : "1.0.2",
+                version : "1.0.3",
                 description : "Creates Object elements based on the given parameters.",
                 inputScheme : {
                     "type": "object",
