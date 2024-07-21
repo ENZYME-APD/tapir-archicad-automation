@@ -26,7 +26,7 @@ def Main ():
         packageInfoJson = json.load (packageInfoJsonFile)
     
     version = packageInfoJson['version']
-    versionPattern = '[0-9]+\.[0-9]+\.[0-9]+'
+    versionPattern = r'[0-9]+\.[0-9]+\.[0-9]+'
     
     replaceRules = [
         {

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2024-07-19T10:46:39.249Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" etag="PbwqgZ8U7HOpSsf1KIhR" version="24.7.1" type="google">
+  <diagram name="Page-1" id="2INLhkoywbJEpEnHgW29">
+    <mxGraphModel dx="1434" dy="738" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-79" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;" parent="1" vertex="1">
+          <mxGeometry width="840" height="470" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-10" value="Ar" style="group;fillColor=none;strokeColor=none;" parent="1" connectable="0" vertex="1">
+          <mxGeometry x="440" y="260" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-11" value="Official Archicad&lt;div&gt;JSON Interface&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;linecap=round;linejoin=round;fillColor=#43A047;fontColor=#ffffff;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-10" vertex="1">
+          <mxGeometry y="10" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-12" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;rounded=0;perimeterSpacing=0;linecap=round;linejoin=round;fillColor=#66BB6A;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-10" vertex="1">
+          <mxGeometry width="130" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-13" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=-90;size=10;flipH=1;linecap=round;linejoin=round;fillColor=#2E7D32;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-10" vertex="1">
+          <mxGeometry x="90" y="30" width="70" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-14" value="" style="group;fillColor=none;strokeColor=none;" parent="1" connectable="0" vertex="1">
+          <mxGeometry x="260" y="260" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-15" value="Tapir&lt;div&gt;JSON&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;Interface&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;linecap=round;linejoin=round;fillColor=#1E88E5;fontColor=#ffffff;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-14" vertex="1">
+          <mxGeometry y="10" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-16" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;rounded=0;perimeterSpacing=0;linecap=round;linejoin=round;fillColor=#42A5F5;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-14" vertex="1">
+          <mxGeometry width="130" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-17" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=-90;size=10;flipH=1;linecap=round;linejoin=round;fillColor=#1565C0;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-14" vertex="1">
+          <mxGeometry x="90" y="30" width="70" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-19" value="Ar" style="group;fillColor=none;strokeColor=none;" parent="1" connectable="0" vertex="1">
+          <mxGeometry x="440" y="140" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-20" value="Official Archicad&lt;div&gt;Python Interface&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;linecap=round;linejoin=round;fillColor=#43A047;fontColor=#ffffff;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-19" vertex="1">
+          <mxGeometry y="10" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-21" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;rounded=0;perimeterSpacing=0;linecap=round;linejoin=round;fillColor=#66BB6A;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-19" vertex="1">
+          <mxGeometry width="130" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-22" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=-90;size=10;flipH=1;linecap=round;linejoin=round;fillColor=#2E7D32;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-19" vertex="1">
+          <mxGeometry x="90" y="30" width="70" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-30" value="" style="group;fillColor=none;strokeColor=none;" parent="1" connectable="0" vertex="1">
+          <mxGeometry x="260" y="140" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-31" value="Tapir&lt;div&gt;Python&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;Interface&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;linecap=round;linejoin=round;fillColor=#1E88E5;fontColor=#ffffff;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-30" vertex="1">
+          <mxGeometry y="10" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-32" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;rounded=0;perimeterSpacing=0;linecap=round;linejoin=round;fillColor=#42A5F5;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-30" vertex="1">
+          <mxGeometry width="130" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-33" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=-90;size=10;flipH=1;linecap=round;linejoin=round;fillColor=#1565C0;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-30" vertex="1">
+          <mxGeometry x="90" y="30" width="70" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-34" value="" style="group;fillColor=none;strokeColor=none;" parent="1" connectable="0" vertex="1">
+          <mxGeometry x="260" y="20" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-35" value="Tapir&lt;div&gt;Grasshopper Plugin&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;linecap=round;linejoin=round;fillColor=#1E88E5;fontColor=#ffffff;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-34" vertex="1">
+          <mxGeometry y="10" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-36" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;rounded=0;perimeterSpacing=0;linecap=round;linejoin=round;fillColor=#42A5F5;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-34" vertex="1">
+          <mxGeometry width="130" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-37" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=-90;size=10;flipH=1;linecap=round;linejoin=round;fillColor=#1565C0;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-34" vertex="1">
+          <mxGeometry x="90" y="30" width="70" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-54" value="🚀 Officially provided by Graphisoft&lt;div&gt;🚀 Can call official and Tapir commands&lt;/div&gt;&lt;div&gt;😢 Not usable from Grasshopper nodes&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="580" y="140" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-55" value="🚀 Officially provided by Graphisoft&lt;div&gt;🚀 Offers several automation commands&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="580" y="260" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-56" value="🚀 Provided by the Tapir Add-On&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;🚀 Offers several new commands&lt;/span&gt;&lt;div&gt;🚀 Ready to use today&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="20" y="260" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-57" value="🚀 Can call official and Tapir commands&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;🚀 Usable in Grasshopper nodes&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;⚠️ Heavily work in progress&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="20" y="140" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-58" value="🚀 Offers additional Grasshopper nodes&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;⚠️ Heavily work in progress&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="20" y="20" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-59" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCAxMjIgNDAiIHk9IjBweCIgeD0iMHB4IiBpZD0iTGF5ZXJfMiIgdmVyc2lvbj0iMS4xIj48ZGVmcyBpZD0iZGVmczI1Ii8+JiN4YTs8ZyBpZD0iZzIwIj4mI3hhOwk8ZyBpZD0iZzYiPiYjeGE7CQk8Y2lyY2xlIGlkPSJjaXJjbGUyIiByPSIxIiBjeT0iMTUuOCIgY3g9IjEyLjciIGZpbGw9IiMyMDIyMjUiLz4mI3hhOwkJPHBhdGggaWQ9InBhdGg0IiBkPSJNMTMuNywyLjJDNy40LDIuMiwyLDYuMywwLDEyYzAuNiwwLDEuMS0wLjEsMS40LTAuMmMxLjEtMC40LDIuMy0wLjcsMy42LTAuOUM1LjIsMTAsNS43LDkuMiw2LjUsOS4zICAgIGMwLjksMC4xLDAuOSwwLjYsMC43LDEuNGM2LjctMC4xLDE0LjgsMi45LDE3LjgsOS42YzAuMiwwLjUtMC44LDAuNy0xLjMsMS4xYy0wLjQsMC40LTMuMi0yLjItMy40LTJjLTAuMiwwLjItNi41LDMuMS0xMi40LDMuMyAgICBjLTMsMC4xLTQuNiwxLjMtNS45LDIuNmMyLjYsMy42LDYuOSw1LjksMTEuNyw1LjljOCwwLDE0LjUtNi41LDE0LjUtMTQuNUMyOC4zLDguNywyMS44LDIuMiwxMy43LDIuMnoiIGZpbGw9IiMyMDIyMjUiLz4mI3hhOwk8L2c+JiN4YTsJPGcgaWQ9ImcxOCI+JiN4YTsJCTxwYXRoIGlkPSJwYXRoOCIgZD0iTTM5LjEsMTIuMXYxMS44YzAsMC44LDAuMiwxLjQsMC42LDEuN2MwLjQsMC4zLDEsMC41LDEuOSwwLjVoMi43djMuN2gtMy41Yy0yLDAtMy41LTAuNS00LjYtMS40ICAgIGMtMS4xLTAuOS0xLjYtMi40LTEuNi00LjVWMTIuMWgtMi41VjguNWgyLjVWMy4yaDQuNXY1LjNoNS4ydjMuNkgzOS4xeiIgZmlsbD0iIzIwMjIyNSIvPiYjeGE7CQk8cGF0aCBpZD0icGF0aDEwIiBkPSJNNDguMiwxMy40YzAuOS0xLjcsMi4xLTIuOSwzLjYtMy45YzEuNS0wLjksMy4yLTEuNCw1LjEtMS40YzEuNywwLDMuMSwwLjMsNC40LDFjMS4zLDAuNywyLjMsMS41LDMsMi41ICAgIFY4LjVoNC41djIxLjRoLTQuNXYtMy4yYy0wLjcsMS0xLjgsMS44LTMuMSwyLjVjLTEuMywwLjctMi44LDEtNC40LDFjLTEuOCwwLTMuNS0wLjUtNS0xLjRjLTEuNS0wLjktMi43LTIuMy0zLjYtNCAgICBjLTAuOS0xLjctMS4zLTMuNi0xLjMtNS44QzQ2LjksMTYuOSw0Ny4zLDE1LDQ4LjIsMTMuNHogTTYzLjUsMTUuM2MtMC42LTEuMS0xLjQtMS45LTIuNC0yLjVjLTEtMC42LTItMC45LTMuMi0wLjkgICAgYy0xLjEsMC0yLjIsMC4zLTMuMiwwLjhjLTEsMC42LTEuOCwxLjQtMi40LDIuNGMtMC42LDEuMS0wLjksMi4zLTAuOSwzLjhjMCwxLjUsMC4zLDIuOCwwLjksMy45YzAuNiwxLjEsMS40LDIsMi40LDIuNSAgICBjMSwwLjYsMiwwLjksMy4yLDAuOWMxLjEsMCwyLjItMC4zLDMuMi0wLjljMS0wLjYsMS44LTEuNCwyLjQtMi41YzAuNi0xLjEsMC45LTIuNCwwLjktMy45QzY0LjQsMTcuNyw2NC4xLDE2LjQsNjMuNSwxNS4zeiIgZmlsbD0iIzIwMjIyNSIvPiYjeGE7CQk8cGF0aCBpZD0icGF0aDEyIiBkPSJNODIuMSw5LjFjMS4zLTAuNywyLjgtMSw0LjQtMWMxLjksMCwzLjYsMC41LDUuMSwxLjRjMS41LDAuOSwyLjcsMi4yLDMuNiwzLjljMC45LDEuNywxLjMsMy42LDEuMyw1LjcgICAgYzAsMi4xLTAuNCw0LjEtMS4zLDUuOGMtMC45LDEuNy0yLjEsMy0zLjYsNGMtMS41LDAuOS0zLjIsMS40LTUuMSwxLjRjLTEuNiwwLTMuMS0wLjMtNC4zLTFjLTEuMy0wLjctMi4zLTEuNS0zLjEtMi41VjQwaC00LjQgICAgVjguNWg0LjR2My4xQzc5LjgsMTAuNiw4MC44LDkuOCw4Mi4xLDkuMXogTTkxLjEsMTUuM2MtMC42LTEuMS0xLjQtMS45LTIuNC0yLjRjLTEtMC42LTIuMS0wLjgtMy4yLTAuOGMtMS4xLDAtMi4yLDAuMy0zLjIsMC45ICAgIGMtMSwwLjYtMS44LDEuNC0yLjQsMi41Yy0wLjYsMS4xLTAuOSwyLjQtMC45LDMuOGMwLDEuNSwwLjMsMi44LDAuOSwzLjljMC42LDEuMSwxLjQsMS45LDIuNCwyLjVjMSwwLjYsMiwwLjksMy4yLDAuOSAgICBjMS4xLDAsMi4yLTAuMywzLjItMC45YzEtMC42LDEuOC0xLjQsMi40LTIuNWMwLjYtMS4xLDAuOS0yLjQsMC45LTMuOUM5MiwxNy42LDkxLjcsMTYuMyw5MS4xLDE1LjN6IiBmaWxsPSIjMjAyMjI1Ii8+JiN4YTsJCTxwYXRoIGlkPSJwYXRoMTQiIGQ9Ik0xMDEuMiw0LjhjLTAuNS0wLjUtMC44LTEuMi0wLjgtMmMwLTAuOCwwLjMtMS41LDAuOC0yczEuMi0wLjgsMi0wLjhjMC44LDAsMS40LDAuMywyLDAuOHMwLjgsMS4yLDAuOCwyICAgIGMwLDAuOC0wLjMsMS41LTAuOCwycy0xLjIsMC44LTIsMC44QzEwMi40LDUuNywxMDEuNyw1LjQsMTAxLjIsNC44eiBNMTA1LjMsOC41djIxLjRoLTQuNFY4LjVIMTA1LjN6IiBmaWxsPSIjMjAyMjI1Ii8+JiN4YTsJCTxwYXRoIGlkPSJwYXRoMTYiIGQ9Ik0xMTguMiw5LjFjMS4xLTAuNiwyLjMtMC45LDMuOC0wLjl2NC42aC0xLjFjLTEuNywwLTMsMC40LTMuOSwxLjNjLTAuOSwwLjktMS4zLDIuNC0xLjMsNC42djExLjJoLTQuNCAgICBWOC41aDQuNHYzLjFDMTE2LjIsMTAuNSwxMTcuMSw5LjcsMTE4LjIsOS4xeiIgZmlsbD0iIzIwMjIyNSIvPiYjeGE7CTwvZz4mI3hhOzwvZz4mI3hhOzwvc3ZnPg==;" parent="1" vertex="1">
+          <mxGeometry x="708" y="10" width="122" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-60" value="0" style="group;fillColor=none;strokeColor=none;" parent="1" connectable="0" vertex="1">
+          <mxGeometry x="440" y="380" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-61" value="Archicad" style="rounded=0;whiteSpace=wrap;html=1;linecap=round;linejoin=round;fillColor=#43A047;fontColor=#ffffff;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-60" vertex="1">
+          <mxGeometry x="-180" y="10" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-62" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;rounded=0;perimeterSpacing=0;linecap=round;linejoin=round;fillColor=#66BB6A;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-60" vertex="1">
+          <mxGeometry x="-180" width="310" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-63" value="" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=-90;size=10;flipH=1;linecap=round;linejoin=round;fillColor=#2E7D32;strokeColor=none;" parent="GMhCGqc0LhcC-jLnU_5b-60" vertex="1">
+          <mxGeometry x="90" y="30" width="70" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-67" value="" style="endArrow=block;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;endFill=1;strokeColor=#2E7D32;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500" y="330" as="sourcePoint" />
+            <mxPoint x="500" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-68" value="" style="endArrow=block;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;endFill=1;strokeColor=#0277BD;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="320" y="330" as="sourcePoint" />
+            <mxPoint x="320" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-70" value="" style="endArrow=block;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;endFill=1;strokeColor=#0277BD;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="320" y="210" as="sourcePoint" />
+            <mxPoint x="320" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-71" value="" style="endArrow=block;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;endFill=1;strokeColor=#2E7D32;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500" y="210" as="sourcePoint" />
+            <mxPoint x="500" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-72" value="" style="endArrow=block;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;endFill=1;strokeColor=#2E7D32;" parent="1" source="GMhCGqc0LhcC-jLnU_5b-20" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500" y="240" as="sourcePoint" />
+            <mxPoint x="360" y="260" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="500" y="240" />
+              <mxPoint x="360" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-74" value="" style="endArrow=block;html=1;rounded=0;endFill=1;strokeColor=#0277BD;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="320" y="210" as="sourcePoint" />
+            <mxPoint x="470" y="260" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="320" y="230" />
+              <mxPoint x="470" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GMhCGqc0LhcC-jLnU_5b-77" value="" style="endArrow=block;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;endFill=1;strokeColor=#0277BD;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="320" y="90" as="sourcePoint" />
+            <mxPoint x="320" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
