@@ -637,7 +637,7 @@
             },
             {
                 name : "CreateLayers",
-                version : "1.0.2",
+                version : "1.0.3",
                 description : "Creates Layer attributes based on the given parameters.",
                 inputScheme : {
 					"type": "object",
