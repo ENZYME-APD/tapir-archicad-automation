@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - main
+      - '*'
 
 jobs:
   build_win:
