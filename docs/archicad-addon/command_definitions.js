@@ -862,6 +862,66 @@
                 }
             },
             {
+                name : "CreateLayers",
+                version : "1.0.3",
+                description : "Creates Layer attributes based on the given parameters.",
+                inputScheme : {
+					"type": "object",
+					"properties": {
+						"layerDataArray": {
+							"type": "array",
+							"description" : "Array of data to create Layers.",
+							"items": {
+								"type": "object",
+								"description": "Data to create a Layer.",
+								"properties": {
+									"name": {
+										"type": "string",
+										"description": "Name."
+									},
+                                    "isHidden": {
+                                        "type": "boolean",
+                                        "description": "Hide/Show."
+                                    },
+                                    "isLocked": {
+                                        "type": "boolean",
+                                        "description": "Lock/Unlock."
+                                    },
+                                    "isWireframe": {
+                                        "type": "boolean",
+                                        "description": "Force the model to wireframe."
+                                    }
+								},
+								"additionalProperties": false,
+								"required" : [
+									"name"
+								]
+							}
+						},
+						"overwriteExisting": {
+							"type": "boolean",
+							"description": "Overwrite the Layer if exists with the same name. The default is false."
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"layerDataArray"
+					]
+				},
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "attributeIds": {
+                            "$ref": "#/AttributeIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeIds"
+                    ]
+                }
+            },
+            {
                 name : "CreateComposites",
                 version : "1.0.2",
                 description : "Creates Composite attributes based on the given parameters.",
@@ -873,7 +933,7 @@
                             "description" : "Array of data to create Composites.",
                             "items": {
                                 "type": "object",
-                                "description": "Data to create a Building Material.",
+                                "description": "Data to create a Composite.",
                                 "properties": {
                                     "name": {
                                         "type": "string",
