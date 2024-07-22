@@ -43,7 +43,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     const GS::UniString elemTypeName = ElemID_To_Name (elemTypeID);
     const Stories stories = GetStories ();
 
-    const GSErrCode err = ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
         API_Element element = {};
         API_ElementMemo memo = {};
         const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -361,7 +361,86 @@ GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
+constexpr const char* ParameterValueFieldName = "value";
+
+static void SetParamValueInteger (API_AddParType&        addPar,
+					              const GS::ObjectState& parameterDetails)
+{
+	Int32 value;
+	parameterDetails.Get (ParameterValueFieldName, value);
+	addPar.value.real = value;
+}
+
+static void SetParamValueDouble (API_AddParType&        addPar,
+					             const GS::ObjectState&	parameterDetails)
+{
+	double value;
+	parameterDetails.Get (ParameterValueFieldName, value);
+	addPar.value.real = value;
+}
+
+static void SetParamValueOnOff (API_AddParType&         addPar,
+				                const GS::ObjectState&	parameterDetails)
+{
+	GS::String value;
+	parameterDetails.Get (ParameterValueFieldName, value);
+	addPar.value.real = (value == "Off" ? 0 : 1);
+}
+
+static void SetParamValueBool (API_AddParType&        addPar,
+				               const GS::ObjectState& parameterDetails)
+{
+	bool value;
+	parameterDetails.Get (ParameterValueFieldName, value);
+	addPar.value.real = (value ? 0 : 1);
+}
+
+static void SetParamValueString (API_AddParType&        addPar,
+					             const GS::ObjectState&	parameterDetails)
+{
+	GS::UniString value;
+	parameterDetails.Get (ParameterValueFieldName, value);
+
+	GS::ucscpy (addPar.value.uStr, value.ToUStr (0, GS::Min(value.GetLength (), (USize)API_UAddParStrLen)).Get ());
+}
+
+static void ChangeParams (API_AddParType**& params, const GS::HashTable<GS::String, GS::ObjectState>& changeParamsDictionary)
+{
+	const GSSize nParams = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
+	for (GSIndex ii = 0; ii < nParams; ++ii) {
+		API_AddParType& actParam = (*params)[ii];
+
+		const GS::String name(actParam.name);
+		const auto* value = changeParamsDictionary.GetPtr (name);
+		if (value == nullptr)
+			continue;
+
+		switch (actParam.typeID) {
+			case APIParT_Integer:
+			case APIParT_PenCol:			SetParamValueInteger (actParam, *value); break;
+			case APIParT_ColRGB:
+			case APIParT_Intens:
+			case APIParT_Length:
+			case APIParT_RealNum:
+			case APIParT_Angle:				SetParamValueDouble (actParam, *value);	 break;
+			case APIParT_LightSw:			SetParamValueOnOff (actParam, *value); 	 break;
+			case APIParT_Boolean: 			SetParamValueBool (actParam, *value);	 break;
+			case APIParT_LineTyp:
+			case APIParT_Mater:
+			case APIParT_FillPat:
+			case APIParT_BuildingMaterial:
+			case APIParT_Profile: 			SetParamValueInteger (actParam, *value); break;
+			case APIParT_CString:
+			case APIParT_Title: 			SetParamValueString (actParam, *value);	 break;
+			default:
+			case APIParT_Dictionary:
+				// Not supported by the Archicad API yet
+				break;
+		}
+	}
+}
+
+GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
     GS::UniString uName;
     parameters.Get ("libraryPartName", uName);
@@ -395,8 +474,8 @@ GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (A
 
         element.object.xRatio = dimensions.x;
         element.object.yRatio = dimensions.y;
-        GS::ObjectState os ("value", dimensions.z);
-        //ChangeParams(memo.params, {{"ZZYZX", os}});
+        GS::ObjectState os (ParameterValueFieldName, dimensions.z);
+        ChangeParams(memo.params, {{"ZZYZX", os}});
     }
 
     return {};
