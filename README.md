@@ -18,8 +18,7 @@ The diagram below explains the components and their dependencies.
 
 [The roadmap is publicly available here.](https://github.com/orgs/ENZYME-APD/projects/4)
 
-## ARCHICAD Addon
-For some functions one must install an Addon developed by [kovacsv](https://github.com/kovacsv) which is based on [tlorantfy](https://github.com/tlorantfy/archicad-additional-json-commands)'s work. (Thank You guys!)
+## ARCHICAD Add-On
 
 ### Installation
 
