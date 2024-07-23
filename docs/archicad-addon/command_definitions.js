@@ -366,41 +366,48 @@
             },
             {
                 name : "HighlightElements",
-                version : "1.0.1",
+                version : "1.0.3",
                 description : "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights.",
                 inputScheme : {
-					"type": "object",
-					"properties": {
-						"elements": {
-							"$ref": "#/Elements"
-						},
-						"highlightedColor": {
-							"type": "array",
-							"description": "Color of the highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
-							"items": {
-								"type": "integer"
-							},
-							"minItems": 4,
-							"maxItems": 4
-						},
-						"nonHighlightedColor": {
-							"type": "array",
-							"description": "Color of the non highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
-							"items": {
-								"type": "integer"
-							},
-							"minItems": 4,
-							"maxItems": 4
-						}
-					},
-					"additionalProperties": false,
-					"required": [
-						"elements",
-						"highlightedColor",
-						"nonHighlightedColor"
-					]
-				},
-                outputScheme : null           
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        },
+                        "highlightedColors": {
+                            "type": "array",
+                            "description": "A list of colors to highlight elements.",
+                            "items": {
+                                "type": "array",
+                                "description": "Color of the highlighted element as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+                                "items": {
+                                    "type": "integer"
+                                },
+                                "minItems": 4,
+                                "maxItems": 4
+                            }
+                        },
+                        "wireframe3D": {
+                            "type": "boolean",
+                            "description" : "Optional parameter. Switch non highlighted elements in the 3D window to wireframe."
+                        },
+                        "nonHighlightedColor": {
+                            "type": "array",
+                            "description": "Optional parameter. Color of the non highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 4,
+                            "maxItems": 4
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements",
+                        "highlightedColors"
+                    ]
+                },
+                outputScheme : null
             },
             {
                 name : "MoveElements",
