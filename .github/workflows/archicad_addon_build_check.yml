@@ -1,4 +1,4 @@
-name: Archicad Add-On Build
+name: Archicad Add-On Build Check
 
 on: [push, pull_request]
 
