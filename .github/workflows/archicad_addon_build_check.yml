@@ -23,7 +23,7 @@ jobs:
     - name: Download Development Kit
       run: python archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}
     - name: Generate Project
-      run: cmake -B archicad-addon/Build -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}" archicad-addon
+      run: cmake -B archicad-addon/Build -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_VERSION=${{ matrix.params.acVersion }} -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}/Support" archicad-addon
     - name: Build Debug
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
@@ -49,7 +49,7 @@ jobs:
     - name: Download Development Kit
       run: python3 archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}
     - name: Generate Project
-      run: cmake -B archicad-addon/Build -G "Xcode" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}" archicad-addon
+      run: cmake -B archicad-addon/Build -G "Xcode" -DAC_VERSION=${{ matrix.params.acVersion }} -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}/Support" archicad-addon
     - name: Build Debug
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
