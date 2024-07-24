@@ -15,7 +15,7 @@ if (WIN32)
 else ()
 	set (NamePostFix Mac)
 endif ()
-set (AddOnName "Tapir_AC${AC_VERSION}_${NamePostFix}")
+set (AddOnName "TapirAddOn_AC${AC_VERSION}_${NamePostFix}")
 
 project (${AddOnName})
 
