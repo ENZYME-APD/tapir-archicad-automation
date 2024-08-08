@@ -6,6 +6,7 @@
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
+#include "ElementCreationCommands.hpp"
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
 #include "IssueCommands.hpp"
@@ -47,6 +48,10 @@ GSErrCode Initialize (void)
 	err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<MoveElementsCommand> ());
 	err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetGDLParametersOfElementsCommand> ());
 	err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetGDLParametersOfElementsCommand> ());
+
+	err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateColumnsCommand> ());
+	err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateSlabsCommand> ());
+	err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateObjectsCommand> ());
 
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateLayersCommand> ());

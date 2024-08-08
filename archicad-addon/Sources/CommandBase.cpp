@@ -1,6 +1,7 @@
 #include "CommandBase.hpp"
 
 #include "SchemaDefinitions.hpp"
+#include "MigrationHelper.hpp"
 
 constexpr const char* CommandNamespace = "TapirCommand";
 
@@ -65,6 +66,14 @@ API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
 	return APIGuidFromString (guid.ToCStr ());
 }
 
+API_Coord Get2DCoordinateFromObjectState (const GS::ObjectState& objectState)
+{
+    API_Coord coordinate = {};
+    objectState.Get ("x", coordinate.x);
+    objectState.Get ("y", coordinate.y);
+    return coordinate;
+}
+
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)
 {
     API_Coord3D coordinate = {};
@@ -72,4 +81,39 @@ API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)
     objectState.Get ("y", coordinate.y);
     objectState.Get ("z", coordinate.z);
     return coordinate;
+}
+
+Stories GetStories ()
+{
+    Stories stories;
+    API_StoryInfo storyInfo = {};
+
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+
+    if (err == NoError) {
+        const short numberOfStories = storyInfo.lastStory - storyInfo.firstStory + 1;
+        for (short i = 0; i < numberOfStories; ++i) {
+            stories.PushNew ((*storyInfo.data)[i].index, (*storyInfo.data)[i].level);
+        }
+        BMKillHandle ((GSHandle*) &storyInfo.data);
+    }
+
+    return stories;
+}
+
+GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories)
+{
+    if (stories.IsEmpty ()) {
+        return { 0, zPos };
+    }
+
+    const Story* storyPtr = &stories[0];
+    for (const auto& story : stories) {
+        if (story.level > zPos) {
+            break;
+        }
+        storyPtr = &story;
+    }
+
+    return { storyPtr->index, zPos - storyPtr->level };
 }
