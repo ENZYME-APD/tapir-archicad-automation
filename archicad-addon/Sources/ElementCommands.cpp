@@ -781,18 +781,26 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetInputParametersSchema (
             "elements": {
                 "$ref": "#/Elements"
             },
-            "highlightedColor": {
+            "highlightedColors": {
                 "type": "array",
-                "description": "Color of the highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+                "description": "A list of colors to highlight elements.",
                 "items": {
-                    "type": "integer"
-                },
-                "minItems": 4,
-                "maxItems": 4
+                    "type": "array",
+                    "description": "Color of the highlighted element as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                }
+            },
+            "wireframe3D": {
+                "type": "boolean",
+                "description" : "Optional parameter. Switch non highlighted elements in the 3D window to wireframe."
             },
             "nonHighlightedColor": {
                 "type": "array",
-                "description": "Color of the non highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
+                "description": "Optional parameter. Color of the non highlighted elements as an [r, g, b, a] array. Each component must be in the 0-255 range.",
                 "items": {
                     "type": "integer"
                 },
@@ -803,8 +811,7 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetInputParametersSchema (
         "additionalProperties": false,
         "required": [
             "elements",
-            "highlightedColor",
-            "nonHighlightedColor"
+            "highlightedColors"
         ]
     })";
 }
@@ -814,47 +821,61 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetResponseSchema () const
     return {};
 }
 
+static GS::Optional<API_RGBAColor> GetRGBAColorFromObjectState (const GS::ObjectState& os, const GS::String& name)
+{
+    GS::Array<GS::Int32> color;
+    if (os.Get (name, color)) {
+        return API_RGBAColor {
+            color[0] / 255.0,
+            color[1] / 255.0,
+            color[2] / 255.0,
+            color[3] / 255.0
+        };
+    } else {
+        return {};
+    }
+}
+
 GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elementIdArray;
-    parameters.Get ("elements", elementIdArray);
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
 
-    GS::Array<GS::Int32> highlightedColorArray;
-    parameters.Get ("highlightedColor", highlightedColorArray);
-    API_RGBAColor highlightedColor {
-        highlightedColorArray[0] / 255.0,
-        highlightedColorArray[1] / 255.0,
-        highlightedColorArray[2] / 255.0,
-        highlightedColorArray[3] / 255.0
-    };
-
-    GS::Array<GS::Int32> nonHighlightedColorArray;
-    parameters.Get ("nonHighlightedColor", nonHighlightedColorArray);
-    API_RGBAColor nonHighlightedColor {
-        nonHighlightedColorArray[0] / 255.0,
-        nonHighlightedColorArray[1] / 255.0,
-        nonHighlightedColorArray[2] / 255.0,
-        nonHighlightedColorArray[3] / 255.0
-    };
-
-    GS::HashTable<API_Guid, API_RGBAColor> elements;
-    for (const GS::ObjectState& elementIdArrayItem : elementIdArray) {
-        GS::ObjectState elementId;
-        elementIdArrayItem.Get ("elementId", elementId);
-
-        GS::UniString guidStr;
-        elementId.Get ("guid", guidStr);
-
-        GS::Guid guid (guidStr);
-        API_Guid apiGuid = GSGuid2APIGuid (guid);
-        elements.Add (apiGuid, highlightedColor);
-    }
-
-    if (!elements.IsEmpty ()) {
-        ACAPI_UserInput_SetElementHighlight (elements, GS::NoValue, nonHighlightedColor);
-    } else {
+    if (elements.IsEmpty ()) {
         ACAPI_UserInput_ClearElementHighlight ();
+        // need to call redraw for changes to take effect
+        ACAPI_View_Redraw ();
+        return {};
     }
+
+    GS::Array<GS::ObjectState> highlightedColors;
+    parameters.Get ("highlightedColors", highlightedColors);
+
+    if (highlightedColors.GetSize () != elements.GetSize ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "The size of 'elements' array and 'highlightedColors' array does not match.");
+    }
+
+    GS::HashTable<API_Guid, API_RGBAColor> elementsWithColors;
+    for (USize i = 0; i < elements.GetSize (); ++i) {
+        GS::ObjectState elementId;
+        if (elements[i].Get ("elementId", elementId)) {
+            const API_Guid elemGuid = GetGuidFromObjectState (elementId);
+            const GS::Optional<API_RGBAColor> color = GetRGBAColorFromObjectState (highlightedColors[i], "nonHighlightedColor");
+            if (color.HasValue ()) {
+                elementsWithColors.Add (elemGuid, *color);
+            }
+        }
+    }
+
+    GS::Optional<bool> wireframe3D;
+    bool tmp;
+    if (parameters.Get ("wireframe3D", tmp)) {
+        wireframe3D = tmp;
+    }
+
+    const GS::Optional<API_RGBAColor> nonHighlightedColor = GetRGBAColorFromObjectState (parameters, "nonHighlightedColor");
+
+    ACAPI_UserInput_SetElementHighlight (elementsWithColors, wireframe3D, nonHighlightedColor);
 
     // need to call redraw for changes to take effect
     ACAPI_View_Redraw ();

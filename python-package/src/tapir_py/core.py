@@ -242,13 +242,14 @@ class Command(dotNETBase):
         result = response.get_result()
         return result['version'], result['buildNumber'], result['languageCode']
     
-    def HighlightElements(self, elements, highlightedColor = [0, 150, 0, 100], nonHighlightedColor = [150, 0, 0, 100]):
+    def HighlightElements(self, elements, highlightedColors, wireframe3D = False, nonHighlightedColor = [150, 0, 0, 100]):
         """Highlights specified elements in current ArchiCAD document.
 
         Args:
             elements (:obj:`list` of :obj:`Element`): A list of elements.
-            highlightedColor (:obj:`list` of :int:): RGBA Color for highlighted objects.
-            nonHighlightedColor (:obj:`list` of :int:): RGBA Color for non-highlighted objects.
+            highlightedColors (:obj:`list` of :int:): RGBA Colors for highlighted elements.
+            wireframe3D (:bool:): Optional parameter. Switch non-highlighted elements in the 3D window to wireframe
+            nonHighlightedColor (:obj:`list` of :int:): Optional parameter. RGBA Color for non-highlighted elements.
 
         Returns:
             None
@@ -256,10 +257,11 @@ class Command(dotNETBase):
         Raises:
             Exception: If command was unsuccessful.
         """
-        param_selected_color = Parameter("highlightedColor", highlightedColor)
+        param_selected_color = Parameter("highlightedColors", highlightedColors)
+        param_wireframe3D = Parameter("wireframe3D", wireframe3D)
         param_unselected_color = Parameter("nonHighlightedColor", nonHighlightedColor)
         param_elements = Parameter("elements", [element.ToDictionary() for element in elements])
-        packed_params = Parameter.pack([param_elements, param_selected_color, param_unselected_color])
+        packed_params = Parameter.pack([param_elements, param_selected_color, param_wireframe3D, param_unselected_color])
         
         cmd = Command.FormatAddOnCommand("HighlightElements", packed_params)
 
