@@ -821,16 +821,21 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetResponseSchema () const
     return {};
 }
 
+static API_RGBAColor GetRGBAColorFromArray (const GS::Array<GS::Int32>& color)
+{
+    return API_RGBAColor {
+        color[0] / 255.0,
+        color[1] / 255.0,
+        color[2] / 255.0,
+        color[3] / 255.0
+    };
+}
+
 static GS::Optional<API_RGBAColor> GetRGBAColorFromObjectState (const GS::ObjectState& os, const GS::String& name)
 {
     GS::Array<GS::Int32> color;
     if (os.Get (name, color)) {
-        return API_RGBAColor {
-            color[0] / 255.0,
-            color[1] / 255.0,
-            color[2] / 255.0,
-            color[3] / 255.0
-        };
+        return GetRGBAColorFromArray (color);
     } else {
         return {};
     }
@@ -848,7 +853,7 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
         return {};
     }
 
-    GS::Array<GS::ObjectState> highlightedColors;
+    GS::Array<GS::Array<GS::Int32>> highlightedColors;
     parameters.Get ("highlightedColors", highlightedColors);
 
     if (highlightedColors.GetSize () != elements.GetSize ()) {
@@ -860,10 +865,8 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
         GS::ObjectState elementId;
         if (elements[i].Get ("elementId", elementId)) {
             const API_Guid elemGuid = GetGuidFromObjectState (elementId);
-            const GS::Optional<API_RGBAColor> color = GetRGBAColorFromObjectState (highlightedColors[i], "nonHighlightedColor");
-            if (color.HasValue ()) {
-                elementsWithColors.Add (elemGuid, *color);
-            }
+            const API_RGBAColor color = GetRGBAColorFromArray (highlightedColors[i]);
+            elementsWithColors.Add (elemGuid, color);
         }
     }
 
