@@ -15,7 +15,7 @@ print (json.dumps (response, indent = 4))
 commandName = 'HighlightElements'
 commandParameters = {
     'elements' : response['elements'],
-    'highlightedColors' : [[(i*10) % 255, 0, 0, 255] for i in len(response['elements'])],
+    'highlightedColors' : [[(i*30) % 255, 50, 50, 255] for i in range(len(response['elements']))],
     'wireframe3D' : True,
     'nonHighlightedColor' : [0, 0, 255, 128]
 }
