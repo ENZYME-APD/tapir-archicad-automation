@@ -1037,12 +1037,12 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetResponseSchema () const
 
 static API_RGBAColor GetRGBAColorFromArray (const GS::Array<GS::Int32>& color)
 {
-        return API_RGBAColor {
-            color[0] / 255.0,
-            color[1] / 255.0,
-            color[2] / 255.0,
-            color[3] / 255.0
-        };
+    return API_RGBAColor {
+        color[0] / 255.0,
+        color[1] / 255.0,
+        color[2] / 255.0,
+        color[3] / 255.0
+    };
 }
 
 static GS::Optional<API_RGBAColor> GetRGBAColorFromObjectState (const GS::ObjectState& os, const GS::String& name)
