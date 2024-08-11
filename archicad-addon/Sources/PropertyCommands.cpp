@@ -80,28 +80,28 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
             const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
-            API_Property property;
-            GSErrCode err = ACAPI_Element_GetPropertyValue (elemGuid, propertyGuid, property);
+            API_Property propertyValue;
+            GSErrCode err = ACAPI_Element_GetPropertyValue (elemGuid, propertyGuid, propertyValue);
 
             if (err != NoError) {
                 propertyValues (CreateErrorResponse (err, "Failed to get property value"));
                 continue;
             }
 
-            if (property.status == API_Property_NotAvailable || property.status == API_Property_NotEvaluated) {
+            if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
                 propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
                 continue;
             }
 
-            GS::UniString propertyValue;
-            err = ACAPI_Property_GetPropertyValueString (property, &propertyValue);
+            GS::UniString propertyValueString;
+            err = ACAPI_Property_GetPropertyValueString (propertyValue, &propertyValueString);
 
             if (err != NoError) {
                 propertyValues (CreateErrorResponse (err, "Failed to get property value as string"));
                 continue;
             }
 
-            propertyValues (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValue)));
+            propertyValues (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValueString)));
         }
 
         propertyValuesForElements (propertyValuesForElement);
@@ -212,33 +212,25 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     for (const GS::ObjectState& elementPropertyValue : elementPropertyValues) {
         const GS::ObjectState* elementId = elementPropertyValue.Get ("elementId");
         if (elementId == nullptr) {
-            results.PushNew (
-                "success", false,
-                "error", CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
             continue;
         }
 
         const GS::ObjectState* propertyId = elementPropertyValue.Get ("propertyId");
         if (propertyId == nullptr) {
-            results.PushNew (
-                "success", false,
-                "error", CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
             continue;
         }
 
         const GS::ObjectState* propertyValue = elementPropertyValue.Get ("propertyValue");
         if (propertyValue == nullptr) {
-            results.PushNew (
-                "success", false,
-                "error", CreateErrorResponse (APIERR_BADPARS, "propertyValue is missing"));
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyValue is missing"));
             continue;
         }
 
         GS::UniString propertyValueDisplayString;
         if (!propertyValue->Get ("value", propertyValueDisplayString)) {
-            results.PushNew (GS::ObjectState (
-                "success", false,
-                "error", CreateErrorResponse (APIERR_BADPARS, "value is missing from propertyValue")));
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue"));
             continue;
         }
 
@@ -273,28 +265,25 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 auto& result = results[resultIndices[guidPair]];
 
                 if (err != NoError) {
-                    result.Add ("success", false);
-                    result.Add ("error", CreateErrorResponse (err, "Failed to get property values for element"));
+                    result = CreateFailedExecutionResult (err, "Failed to get property values for element");
                     continue;
                 }
 
                 err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
 
                 if (err != NoError) {
-                    result.Add ("success", false);
-                    result.Add ("error", CreateErrorResponse (err, "Failed to set property value for element"));
+                    result = CreateFailedExecutionResult (err, "Failed to set property value for element");
                     continue;
                 }
 
                 err = ACAPI_Element_SetProperty (elemGuid, propertyValue);
 
                 if (err != NoError) {
-                    result.Add ("success", false);
-                    result.Add ("error", CreateErrorResponse (err, "Failed to set property value for element"));
+                    result = CreateFailedExecutionResult (err, "Failed to set property value for element");
                     continue;
                 }
 
-                result.Add ("success", true);
+                result = CreateSuccessfulExecutionResult ();
             }
         }
 
