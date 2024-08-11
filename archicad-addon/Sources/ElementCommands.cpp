@@ -79,6 +79,220 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
     return response;
 }
 
+
+
+GetSubelementsOfHierarchicalElementsCommand::GetSubelementsOfHierarchicalElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSubelementsOfHierarchicalElementsCommand::GetName () const
+{
+    return "GetSubelementsOfHierarchicalElements";
+}
+
+GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hierarchicalElements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hierarchicalElements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "subelementsOfHierarchicalElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "Subelements grouped by type.",
+                    "properties": {
+                        "cWallSegments": {
+                            "$ref": "#/Elements"
+                        },
+                        "cWallFrames": {
+                            "$ref": "#/Elements"
+                        },
+                        "cWallPanels": {
+                            "$ref": "#/Elements"
+                        },
+                        "cWallJunctions": {
+                            "$ref": "#/Elements"
+                        },
+                        "cWallAccessories": {
+                            "$ref": "#/Elements"
+                        },
+                        "stairRisers": {
+                            "$ref": "#/Elements"
+                        },
+                        "stairTreads": {
+                            "$ref": "#/Elements"
+                        },
+                        "stairStructures": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingNodes": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingSegments": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingPosts": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingRailEnds": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingRailConnections": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingHandrailEnds": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingHandrailConnections": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingToprailEnds": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingToprailConnections": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingRails": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingToprails": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingHandrails": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingPatterns": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingInnerPosts": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingPanels": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingBalusterSets": {
+                            "$ref": "#/Elements"
+                        },
+                        "railingBalusters": {
+                            "$ref": "#/Elements"
+                        },
+                        "beamSegments": {
+                            "$ref": "#/Elements"
+                        },
+                        "columnSegments": {
+                            "$ref": "#/Elements"
+                        }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "subelementsOfHierarchicalElements"
+        ]
+    })";
+}
+
+template<typename APIElemType>
+static void AddSubelementsToObjectState (GS::ObjectState& subelements, APIElemType* subelemArray, const char* subelementType)
+{
+    const GSSize nSubelementsWithThisType = BMGetPtrSize (reinterpret_cast<GSPtr>(subelemArray)) / sizeof (APIElemType);
+    if (nSubelementsWithThisType == 0) {
+        return;
+    }
+
+    const auto& subelementsWithThisType = subelements.AddList<GS::ObjectState> (subelementType);
+    for (GSIndex i = 0; i < nSubelementsWithThisType; ++i) {
+        subelementsWithThisType (GS::ObjectState ("elementId", GS::ObjectState ("guid", APIGuidToString (subelemArray[i].head.guid))));
+    }
+}
+
+GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hierarchicalElements;
+    parameters.Get ("hierarchicalElements", hierarchicalElements);
+
+    GS::ObjectState response;
+    const auto& subelementsOfHierarchicalElements = response.AddList<GS::ObjectState> ("subelementsOfHierarchicalElements");
+
+    for (const GS::ObjectState& hierarchicalElement : hierarchicalElements) {
+        const GS::ObjectState* elementId = hierarchicalElement.Get ("elementId");
+        if (elementId == nullptr) {
+            subelementsOfHierarchicalElements (CreateErrorResponse (APIERR_BADPARS, "elementId of hierarchicalElement is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+        API_ElementMemo memo = {};
+        GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_All);
+
+        if (err != NoError) {
+            subelementsOfHierarchicalElements (CreateErrorResponse (err, "Failed to get the subelements"));
+            continue;
+        }
+
+        GS::ObjectState subelements;
+
+#define AddSubelements(memoArrayFieldName) AddSubelementsToObjectState(subelements, memo.memoArrayFieldName, #memoArrayFieldName)
+
+        AddSubelements (cWallSegments);
+        AddSubelements (cWallFrames);
+        AddSubelements (cWallPanels);
+        AddSubelements (cWallJunctions);
+        AddSubelements (cWallAccessories);
+
+        AddSubelements (stairRisers);
+        AddSubelements (stairTreads);
+        AddSubelements (stairStructures);
+
+        AddSubelements (railingNodes);
+        AddSubelements (railingSegments);
+        AddSubelements (railingPosts);
+        AddSubelements (railingRailEnds);
+        AddSubelements (railingRailConnections);
+        AddSubelements (railingHandrailEnds);
+        AddSubelements (railingHandrailConnections);
+        AddSubelements (railingToprailEnds);
+        AddSubelements (railingToprailConnections);
+        AddSubelements (railingRails);
+        AddSubelements (railingToprails);
+        AddSubelements (railingHandrails);
+        AddSubelements (railingPatterns);
+        AddSubelements (railingInnerPosts);
+        AddSubelements (railingPanels);
+        AddSubelements (railingBalusterSets);
+        AddSubelements (railingBalusters);
+
+        AddSubelements (beamSegments);
+
+        AddSubelements (columnSegments);
+
+#undef AddSubelementsToObjectState
+
+        subelementsOfHierarchicalElements (subelements);
+    }
+
+    return response;
+}
+
 MoveElementsCommand::MoveElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -823,12 +1037,12 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetResponseSchema () const
 
 static API_RGBAColor GetRGBAColorFromArray (const GS::Array<GS::Int32>& color)
 {
-    return API_RGBAColor {
-        color[0] / 255.0,
-        color[1] / 255.0,
-        color[2] / 255.0,
-        color[3] / 255.0
-    };
+        return API_RGBAColor {
+            color[0] / 255.0,
+            color[1] / 255.0,
+            color[2] / 255.0,
+            color[3] / 255.0
+        };
 }
 
 static GS::Optional<API_RGBAColor> GetRGBAColorFromObjectState (const GS::ObjectState& os, const GS::String& name)

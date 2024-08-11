@@ -362,7 +362,123 @@
                     "required": [
                         "elements"
                     ]  
-                }              
+                }
+            },
+            {
+                name : "GetSubelementsOfHierarchicalElements",
+                version : "1.0.6",
+                description : "Gets the subelements of the given hierarchical elements.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "hierarchicalElements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hierarchicalElements"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "subelementsOfHierarchicalElements": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "description": "Subelements grouped by type.",
+                                "properties": {
+                                    "cWallSegments": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallFrames": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallPanels": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallJunctions": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallAccessories": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "stairRisers": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "stairTreads": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "stairStructures": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingNodes": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingSegments": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingPosts": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingRailEnds": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingRailConnections": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingHandrailEnds": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingHandrailConnections": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingToprailEnds": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingToprailConnections": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingRails": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingToprails": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingHandrails": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingPatterns": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingInnerPosts": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingPanels": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingBalusterSets": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingBalusters": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "beamSegments": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "columnSegments": {
+                                        "$ref": "#/Elements"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "subelementsOfHierarchicalElements"
+                    ]
+                }
             },
             {
                 name : "HighlightElements",
