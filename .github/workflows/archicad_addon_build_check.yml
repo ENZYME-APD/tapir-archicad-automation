@@ -19,7 +19,7 @@ jobs:
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Download Development Kit
       run: python archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}
     - name: Generate Project
@@ -45,7 +45,7 @@ jobs:
     runs-on: [ macos-12 ]
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Download Development Kit
       run: python3 archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}
     - name: Generate Project
