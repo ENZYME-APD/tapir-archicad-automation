@@ -12,13 +12,13 @@ jobs:
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Install IronPython
       run: choco install ironpython --version=2.7.12
     - name: Build Grasshopper Plugin
       run: ipy grasshopper-plugin/build_module.py
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Tapir Grasshopper Plugin
         path: grasshopper-plugin/bin/tapir_gh.ghpy  
@@ -39,7 +39,7 @@ jobs:
    
     steps:
       - name: checkout
-        uses: actions/checkout@v3.2.0
+        uses: actions/checkout@v4
         
       - name: setup yak
         uses: paramdigma/setup-yak@1.0.0
@@ -47,7 +47,7 @@ jobs:
           token: ${{secrets.YAK_TOKEN}}
           
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Tapir Grasshopper Plugin
           path: grasshopper-plugin/bin
