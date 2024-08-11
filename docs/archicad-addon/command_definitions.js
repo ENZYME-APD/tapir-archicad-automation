@@ -1218,7 +1218,75 @@
                 }              
             },
         ]
-    },    
+    },
+    {
+        name : 'Property Commands',
+        commands : [
+            {
+                name : "GetPropertyValuesOfElements",
+                version : "1.0.6",
+                description : "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        },
+                        "properties": {
+                            "$ref": "#/PropertyIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements",
+                        "properties"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "propertyValuesForElements": {
+                            "$ref": "#/PropertyValuesOrErrorArray",
+                            "description": "List of property value lists. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyValuesForElements"
+                    ]
+                }
+            },        
+            {
+                name : "SetPropertyValuesOfElements",
+                version : "1.0.6",
+                description : "Sets the property values of elements. It works for subelements of hierarchal elements also.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elementPropertyValues": {
+                            "$ref": "#/ElementPropertyValues"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementPropertyValues"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "executionResults": {
+                            "$ref": "#/ExecutionResults"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "executionResults"
+                    ]
+                }
+            },
+        ]
+    },
     {
         name : 'Teamwork Commands',
         commands : [

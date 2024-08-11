@@ -179,5 +179,213 @@
             "y",
             "z"
         ]
+    },
+    "PropertyId": {
+        "type": "object",
+        "description": "The identifier of a property.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "PropertyIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId"
+        ]
+    },
+    "PropertyIds": {
+        "type": "array",
+        "description": "A list of property identifiers.",
+        "items": {
+            "$ref": "#/PropertyIdArrayItem"
+        }
+    },
+    "PropertyValue": {
+        "type": "object",
+        "description": "The display string value of a property.",
+        "properties": {
+            "value": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": true,
+        "required": [
+            "value"
+        ]
+    },
+    "Error": {
+        "type": "object",
+        "description": "The details of an error.",
+        "properties": {
+            "code": {
+                "type": "integer",
+                "description": "The code of the error."
+            },
+            "message": {
+                "type": "string",
+                "description": "The error message."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "code",
+            "message"
+        ]
+    },
+    "ErrorItem": {
+        "type": "object",
+        "properties": {
+            "error": {
+                "$ref": "#/Error"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "error" ]
+    },
+    "SuccessfulExecutionResult": {
+        "type": "object",
+        "description": "The result of a successful execution.",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [ true ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
+    },
+    "FailedExecutionResult": {
+        "type": "object",
+        "description": "The result of a failed execution.",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [ false ]
+            },
+            "error": {
+                "$ref": "#/Error",
+                "description": "The details of an execution failure."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success",
+            "error"
+        ]
+    },
+    "ExecutionResult": {
+        "type": "object",
+        "description": "The result of the execution.",
+        "oneOf": [
+            {
+                "$ref": "#/SuccessfulExecutionResult"
+            },
+            {
+                "$ref": "#/FailedExecutionResult"
+            }
+        ]
+    },
+    "ExecutionResults": {
+        "type": "array",
+        "description": "A list of execution results.",
+        "items": {
+            "$ref": "#/ExecutionResult"
+        }
+    },
+    "PropertyValueOrErrorItem": {
+        "type": "object",
+        "description": "A property value or an error",
+        "oneOf": [
+            {
+                "title": "propertyValue",
+                "properties": {
+                    "propertyValue": {
+                        "$ref": "#/PropertyValue"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "propertyValue" ]
+            },
+            {
+                "title": "error",
+                    "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "PropertyValues": {
+        "type": "array",
+        "description": "A list of property values.",
+        "items": {
+            "$ref": "#/PropertyValueOrErrorItem"
+        }
+    },
+    "PropertyValuesOrError": {
+        "type": "object",
+        "description": "A list of property values or an error.",
+        "oneOf": [
+            {
+                "title": "propertyValues",
+                "properties": {
+                    "propertyValues": {
+                        "$ref": "#/PropertyValues"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "propertyValues" ]
+            },
+            {
+                "title": "error",
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "PropertyValuesOrErrorArray": {
+        "type": "array",
+        "description": "A list of property value lists.",
+        "items": {
+            "$ref": "#/PropertyValuesOrError"
+        }
+    },
+    "ElementPropertyValue": {
+        "type": "object",
+        "description": "A property value with the identifiers of the property and its owner element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "type": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "propertyId",
+            "propertyValue"
+        ]
+    },
+    "ElementPropertyValues": {
+        "type": "array",
+        "description": "A list of element property values.",
+        "items": {
+            "$ref": "#/ElementPropertyValue"
+        }
     }
 };
