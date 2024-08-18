@@ -37,7 +37,7 @@ print (json.dumps (response, indent = 4))
 # print (json.dumps (response, indent = 4))
 
 
-# commandName = 'AddComment'
+# commandName = 'AddCommentToIssue'
 # commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'text': 'dropped da comment here', 'author': 'python', 'status': 2}
 
 # print ('Command: {commandName}'.format (commandName = commandName))
@@ -49,7 +49,7 @@ print (json.dumps (response, indent = 4))
 # print (json.dumps (response, indent = 4))
 
 
-# commandName = 'GetComments'
+# commandName = 'GetCommentsFromIssue'
 # commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F'}
 
 # print ('Command: {commandName}'.format (commandName = commandName))
@@ -61,7 +61,7 @@ print (json.dumps (response, indent = 4))
 # print (json.dumps (response, indent = 4))
 
 
-# commandName = 'AttachElements'
+# commandName = 'AttachElementsToIssue'
 # commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'elementsIds': ['22F534EF-F3CE-4A99-9E54-125E899E6AA2',], 'type': 0}
 
 # print ('Command: {commandName}'.format (commandName = commandName))
@@ -73,7 +73,7 @@ print (json.dumps (response, indent = 4))
 # print (json.dumps (response, indent = 4))
 
 
-# commandName = 'DetachElements'
+# commandName = 'DetachElementsFromIssue'
 # commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'elementsIds': ['22F534EF-F3CE-4A99-9E54-125E899E6AA2',]}
 
 # print ('Command: {commandName}'.format (commandName = commandName))
@@ -85,7 +85,7 @@ print (json.dumps (response, indent = 4))
 # print (json.dumps (response, indent = 4))
 
 
-# commandName = 'GetAttachedElements'
+# commandName = 'GetElementsAttachedToIssue'
 # commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'type': 1}
 
 # print ('Command: {commandName}'.format (commandName = commandName))
@@ -97,7 +97,7 @@ print (json.dumps (response, indent = 4))
 # print (json.dumps (response, indent = 4))
 
 
-# commandName = 'ExportToBCF'
+# commandName = 'ExportIssuesToBCF'
 # commandParameters = {'issuesIds': ['B0D7E9D6-56E8-4432-AC74-DE7C3083015F', '50D45AAD-9581-4275-A503-4E82C974C03B'], 'exportPath': 'C:\\Users\\i.yurasov\\Desktop\\dev\\issues_test6.bcfzip', 'useExternalId': False, 'alignBySurveyPoint': True}
 
 # print ('Command: {commandName}'.format (commandName = commandName))
@@ -109,7 +109,7 @@ print (json.dumps (response, indent = 4))
 # print (json.dumps (response, indent = 4))
 
 
-# commandName = 'ImportFromBCF'
+# commandName = 'ImportIssuesFromBCF'
 # commandParameters = {'importPath': 'C:\\Users\\i.yurasov\\Desktop\\dev\\issues_test5.bcfzip', 'alignBySurveyPoint': True}
 
 # print ('Command: {commandName}'.format (commandName = commandName))
