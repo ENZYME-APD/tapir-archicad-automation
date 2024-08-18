@@ -44,7 +44,7 @@ class AssemblyInfo(GhPython.Assemblies.PythonAssemblyInfo):
         return """Grasshopper components to access ArchiCAD via JSON API."""
 
     def get_AssemblyVersion(self):
-        return "1.0.6"
+        return "1.0.7"
 
     def get_AuthorName(self):
         return "EnzymeAPD"
