@@ -362,7 +362,123 @@
                     "required": [
                         "elements"
                     ]  
-                }              
+                }
+            },
+            {
+                name : "GetSubelementsOfHierarchicalElements",
+                version : "1.0.6",
+                description : "Gets the subelements of the given hierarchical elements.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "hierarchicalElements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hierarchicalElements"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "subelementsOfHierarchicalElements": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "description": "Subelements grouped by type.",
+                                "properties": {
+                                    "cWallSegments": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallFrames": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallPanels": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallJunctions": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "cWallAccessories": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "stairRisers": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "stairTreads": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "stairStructures": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingNodes": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingSegments": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingPosts": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingRailEnds": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingRailConnections": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingHandrailEnds": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingHandrailConnections": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingToprailEnds": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingToprailConnections": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingRails": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingToprails": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingHandrails": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingPatterns": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingInnerPosts": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingPanels": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingBalusterSets": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "railingBalusters": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "beamSegments": {
+                                        "$ref": "#/Elements"
+                                    },
+                                    "columnSegments": {
+                                        "$ref": "#/Elements"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "subelementsOfHierarchicalElements"
+                    ]
+                }
             },
             {
                 name : "HighlightElements",
@@ -1102,7 +1218,75 @@
                 }              
             },
         ]
-    },    
+    },
+    {
+        name : 'Property Commands',
+        commands : [
+            {
+                name : "GetPropertyValuesOfElements",
+                version : "1.0.6",
+                description : "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        },
+                        "properties": {
+                            "$ref": "#/PropertyIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements",
+                        "properties"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "propertyValuesForElements": {
+                            "$ref": "#/PropertyValuesOrErrorArray",
+                            "description": "List of property value lists. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyValuesForElements"
+                    ]
+                }
+            },        
+            {
+                name : "SetPropertyValuesOfElements",
+                version : "1.0.6",
+                description : "Sets the property values of elements. It works for subelements of hierarchal elements also.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elementPropertyValues": {
+                            "$ref": "#/ElementPropertyValues"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementPropertyValues"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "executionResults": {
+                            "$ref": "#/ExecutionResults"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "executionResults"
+                    ]
+                }
+            },
+        ]
+    },
     {
         name : 'Teamwork Commands',
         commands : [
