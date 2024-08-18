@@ -29,66 +29,66 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class AddCommentCommand : public CommandBase
+class AddCommentToIssueCommand : public CommandBase
 {
 public:
-    AddCommentCommand ();
+    AddCommentToIssueCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class GetCommentsCommand : public CommandBase
+class GetCommentsFromIssueCommand : public CommandBase
 {
 public:
-    GetCommentsCommand ();
-    virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
-    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-};
-
-class AttachElementsCommand : public CommandBase
-{
-public:
-    AttachElementsCommand ();
-    virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-};
-
-class DetachElementsCommand : public CommandBase
-{
-public:
-    DetachElementsCommand ();
-    virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-};
-
-class GetAttachedElementsCommand : public CommandBase
-{
-public:
-    GetAttachedElementsCommand ();
+    GetCommentsFromIssueCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class ExportToBCFCommand : public CommandBase
+class AttachElementsToIssueCommand : public CommandBase
 {
 public:
-    ExportToBCFCommand ();
+    AttachElementsToIssueCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class ImportFromBCFCommand : public CommandBase
+class DetachElementsFromIssueCommand : public CommandBase
 {
 public:
-    ImportFromBCFCommand ();
+    DetachElementsFromIssueCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetElementsAttachedToIssueCommand : public CommandBase
+{
+public:
+    GetElementsAttachedToIssueCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ExportIssuesToBCFCommand : public CommandBase
+{
+public:
+    ExportIssuesToBCFCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ImportIssuesFromBCFCommand : public CommandBase
+{
+public:
+    ImportIssuesFromBCFCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;

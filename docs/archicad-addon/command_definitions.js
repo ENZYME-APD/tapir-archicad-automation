@@ -1423,8 +1423,8 @@
                 }           
             },
             {
-                name : "AddComment",
-                version : "1.0.2",
+                name : "AddCommentToIssue",
+                version : "1.0.6",
                 description : "Adds a new comment to the chosen issue.",
                 inputScheme : {
 			        "type": "object",
@@ -1455,8 +1455,8 @@
                 outputScheme : null
             },
             {
-                name : "GetComments",
-                version : "1.0.2",
+                name : "GetCommentsFromIssue",
+                version : "1.0.6",
                 description : "Retrieves comments information of the chosen issue.",
                 inputScheme : {
 			        "type": "object",
@@ -1519,8 +1519,8 @@
                 }
             },
             {
-                name : "AttachElements",
-                version : "1.0.2",
+                name : "AttachElementsToIssue",
+                version : "1.0.6",
                 description : "Attaches elements to the chosen issue.",
                 inputScheme : {
 			        "type": "object",
@@ -1547,8 +1547,8 @@
                 outputScheme : null
             },
             {
-                name : "DetachElements",
-                version : "1.0.2",
+                name : "DetachElementsFromIssue",
+                version : "1.0.6",
                 description : "Detaches elements from the chosen issue.",
                 inputScheme : {
 			        "type": "object",
@@ -1570,8 +1570,8 @@
                 outputScheme : null
             },
             {
-                name : "GetAttachedElements",
-                version : "1.0.2",
+                name : "GetElementsAttachedToIssue",
+                version : "1.0.6",
                 description : "Retrieves attached elements of the chosen issue, filtered by attachment type.",
                 inputScheme : {
 			        "type": "object",
@@ -1605,8 +1605,8 @@
                 }
             },
             {
-                name : "ExportToBCF",
-                version : "1.0.2",
+                name : "ExportIssuesToBCF",
+                version : "1.0.6",
                 description : "Exports chosen issues to the bcf file.",
                 inputScheme : {
 			        "type": "object",
@@ -1641,8 +1641,8 @@
                 outputScheme : null
             },
             {
-                name : "ImportFromBCF",
-                version : "1.0.2",
+                name : "ImportIssuesFromBCF",
+                version : "1.0.6",
                 description : "Imports issues from the chosen bcf file.",
                 inputScheme : {
 			        "type": "object",

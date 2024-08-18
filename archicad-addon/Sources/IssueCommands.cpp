@@ -285,17 +285,17 @@ GS::ObjectState GetIssuesCommand::Execute (const GS::ObjectState& /*parameters*/
     return response;
 }
 
-AddCommentCommand::AddCommentCommand () :
+AddCommentToIssueCommand::AddCommentToIssueCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String AddCommentCommand::GetName () const
+GS::String AddCommentToIssueCommand::GetName () const
 {
-    return "AddComment";
+    return "AddCommentToIssue";
 }
 
-GS::Optional<GS::UniString> AddCommentCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> AddCommentToIssueCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -325,7 +325,7 @@ GS::Optional<GS::UniString> AddCommentCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::ObjectState AddCommentCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState AddCommentToIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString issueIdStr;
     GS::UniString text;
@@ -358,17 +358,17 @@ GS::ObjectState AddCommentCommand::Execute (const GS::ObjectState& parameters, G
     return {};
 }
 
-GetCommentsCommand::GetCommentsCommand () :
+GetCommentsFromIssueCommand::GetCommentsFromIssueCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String GetCommentsCommand::GetName () const
+GS::String GetCommentsFromIssueCommand::GetName () const
 {
-    return "GetComments";
+    return "GetCommentsFromIssue";
 }
 
-GS::Optional<GS::UniString> GetCommentsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -385,7 +385,7 @@ GS::Optional<GS::UniString> GetCommentsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> GetCommentsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -435,7 +435,7 @@ GS::Optional<GS::UniString> GetCommentsCommand::GetResponseSchema () const
     })";
 }
 
-GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetCommentsFromIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString issueIdStr;
     if (!parameters.Get ("issueId", issueIdStr)) {
@@ -471,17 +471,17 @@ GS::ObjectState GetCommentsCommand::Execute (const GS::ObjectState& parameters, 
     return response;
 }
 
-AttachElementsCommand::AttachElementsCommand () :
+AttachElementsToIssueCommand::AttachElementsToIssueCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String AttachElementsCommand::GetName () const
+GS::String AttachElementsToIssueCommand::GetName () const
 {
-    return "AttachElements";
+    return "AttachElementsToIssue";
 }
 
-GS::Optional<GS::UniString> AttachElementsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> AttachElementsToIssueCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -507,7 +507,7 @@ GS::Optional<GS::UniString> AttachElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+GS::ObjectState AttachElementsToIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     int type;
     GS::UniString issueIdStr;
@@ -537,17 +537,17 @@ GS::ObjectState AttachElementsCommand::Execute (const GS::ObjectState& parameter
     return {};
 }
 
-DetachElementsCommand::DetachElementsCommand () :
+DetachElementsFromIssueCommand::DetachElementsFromIssueCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String DetachElementsCommand::GetName () const
+GS::String DetachElementsFromIssueCommand::GetName () const
 {
-    return "DetachElements";
+    return "DetachElementsFromIssue";
 }
 
-GS::Optional<GS::UniString> DetachElementsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> DetachElementsFromIssueCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -568,7 +568,7 @@ GS::Optional<GS::UniString> DetachElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState DetachElementsFromIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString issueIdStr;
     API_Guid issueId;
@@ -592,17 +592,17 @@ GS::ObjectState DetachElementsCommand::Execute (const GS::ObjectState& parameter
     return {};
 }
 
-GetAttachedElementsCommand::GetAttachedElementsCommand () :
+GetElementsAttachedToIssueCommand::GetElementsAttachedToIssueCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String GetAttachedElementsCommand::GetName () const
+GS::String GetElementsAttachedToIssueCommand::GetName () const
 {
-    return "GetAttachedElements";
+    return "GetElementsAttachedToIssue";
 }
 
-GS::Optional<GS::UniString> GetAttachedElementsCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -624,7 +624,7 @@ GS::Optional<GS::UniString> GetAttachedElementsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> GetAttachedElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -640,7 +640,7 @@ GS::Optional<GS::UniString> GetAttachedElementsCommand::GetResponseSchema () con
     })";
 }
 
-GS::ObjectState GetAttachedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetElementsAttachedToIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     int type;
     GS::ObjectState response;
@@ -669,17 +669,17 @@ GS::ObjectState GetAttachedElementsCommand::Execute (const GS::ObjectState& para
     return response;
 }
 
-ExportToBCFCommand::ExportToBCFCommand () :
+ExportIssuesToBCFCommand::ExportIssuesToBCFCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String ExportToBCFCommand::GetName () const
+GS::String ExportIssuesToBCFCommand::GetName () const
 {
-    return "ExportToBCF";
+    return "ExportIssuesToBCF";
 }
 
-GS::Optional<GS::UniString> ExportToBCFCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -714,7 +714,7 @@ GS::Optional<GS::UniString> ExportToBCFCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState ExportIssuesToBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString exportPath;
     GS::Array<GS::UniString> issueIdsStr;
@@ -751,17 +751,17 @@ GS::ObjectState ExportToBCFCommand::Execute (const GS::ObjectState& parameters, 
     return {};
 }
 
-ImportFromBCFCommand::ImportFromBCFCommand () :
+ImportIssuesFromBCFCommand::ImportIssuesFromBCFCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String ImportFromBCFCommand::GetName () const
+GS::String ImportIssuesFromBCFCommand::GetName () const
 {
-    return "ImportFromBCF";
+    return "ImportIssuesFromBCF";
 }
 
-GS::Optional<GS::UniString> ImportFromBCFCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> ImportIssuesFromBCFCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -783,7 +783,7 @@ GS::Optional<GS::UniString> ImportFromBCFCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::ObjectState ImportFromBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState ImportIssuesFromBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     bool alignBySurveyPoint = true;
     GS::UniString importPath;
