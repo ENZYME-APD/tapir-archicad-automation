@@ -87,6 +87,11 @@ API_Coord Get2DCoordinateFromObjectState (const GS::ObjectState& objectState)
     return coordinate;
 }
 
+GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c)
+{
+    return GS::ObjectState ("x", c.x, "y", c.y);
+}
+
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)
 {
     API_Coord3D coordinate = {};

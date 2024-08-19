@@ -132,6 +132,25 @@
             "value"
         ]
     },
+    "2DCoordinate": {
+        "type": "object",
+        "description" : "2D coordinate.",
+        "properties" : {
+            "x": {
+                "type": "number",
+                "description" : "X value of the coordinate."
+            },
+            "y" : {
+                "type": "number",
+                "description" : "Y value of the coordinate."
+            }
+        },
+        "additionalProperties": false,
+        "required" : [
+            "x",
+            "y"
+        ]
+    },
     "3DCoordinate": {
         "type": "object",
         "description" : "3D coordinate.",
@@ -387,5 +406,29 @@
         "items": {
             "$ref": "#/ElementPropertyValue"
         }
+    },
+    "ElementType": {
+        "type": "string",
+        "description": "The type of an element.",
+        "enum": [
+            "Wall",
+            "Column",
+            "Beam",
+            "Window",
+            "Door",
+            "Object",
+            "Lamp",
+            "Slab",
+            "Roof",
+            "Mesh",
+            "Zone",
+            "CurtainWall",
+            "Shell",
+            "Skylight",
+            "Morph",
+            "Stair",
+            "Railing",
+            "Opening"
+        ]
     }
 };
