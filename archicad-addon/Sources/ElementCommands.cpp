@@ -187,7 +187,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         const API_ElemTypeID typeID = elem.header.typeID;
 #endif
 
-        detailsOfElement.Add ("type", ElemID_To_Name (typeID));
+        detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
         detailsOfElement.Add ("floorIndex", elem.header.floorInd);
 #ifdef ServerMainVers_2700
         detailsOfElement.Add ("layerIndex", elem.header.layer.ToInt32_Deprecated ());
@@ -234,6 +234,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("height", elem.column.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.column.bottomOffset);
                 break;
+
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
                 break;
