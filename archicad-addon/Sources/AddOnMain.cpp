@@ -12,6 +12,7 @@
 #include "IssueCommands.hpp"
 #include "LibraryCommands.hpp"
 #include "PropertyCommands.hpp"
+#include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
 
 API_AddonType CheckEnvironment (API_EnvirParams* envir)
@@ -78,6 +79,8 @@ GSErrCode Initialize (void)
 
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetPropertyValuesOfElementsCommand> ());
     err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetPropertyValuesOfElementsCommand> ());
+
+    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetClassificationsOfElementsCommand> ());
 
     return err;
 }

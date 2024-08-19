@@ -1288,6 +1288,36 @@
         ]
     },
     {
+        name : 'Classification Commands',
+        commands : [
+            {
+                name : "GetClassificationsOfElements",
+                version : "1.0.7",
+                description : "Returns the classification of the given elements in the given classification systems.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        },
+                        "classificationSystemIds": {
+                            "$ref": "#/ClassificationSystemIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements",
+                        "classificationSystemIds"
+                    ]
+                },
+                outputScheme : {
+                    "$ref": "#/ElementClassificationsOrErrors",
+                    "description": "The list of element classification item identifiers. Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
+                }
+            }
+        ]
+    },
+    {
         name : 'Teamwork Commands',
         commands : [
             {

@@ -1,9 +1,9 @@
 #include "SchemaDefinitions.hpp"
 #include "ObjectState.hpp"
 
-const GS::UniString& GetCommonSchemaDefinitions ()
+GS::UniString GetBaseSchemaDefinitions ()
 {
-    static const GS::UniString commonSchemaDefinitions = R"({
+    const GS::UniString baseSchemaDefinitions = R"(
         "Elements": {
             "type": "array",
             "description": "A list of elements.",
@@ -185,51 +185,6 @@ const GS::UniString& GetCommonSchemaDefinitions ()
                 "z"
             ]
         },
-        "PropertyId": {
-            "type": "object",
-            "description": "The identifier of a property.",
-            "properties": {
-                "guid": {
-                    "$ref": "#/Guid"
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "guid"
-            ]
-        },
-        "PropertyIdArrayItem": {
-            "type": "object",
-            "properties": {
-                "propertyId": {
-                    "$ref": "#/PropertyId"
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "propertyId"
-            ]
-        },
-        "PropertyIds": {
-            "type": "array",
-            "description": "A list of property identifiers.",
-            "items": {
-                "$ref": "#/PropertyIdArrayItem"
-            }
-        },
-        "PropertyValue": {
-            "type": "object",
-            "description": "The display string value of a property.",
-            "properties": {
-                "value": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": true,
-            "required": [
-                "value"
-            ]
-        },
         "Error": {
             "type": "object",
             "description": "The details of an error.",
@@ -310,6 +265,57 @@ const GS::UniString& GetCommonSchemaDefinitions ()
             "items": {
                 "$ref": "#/ExecutionResult"
             }
+        })";
+    return baseSchemaDefinitions;
+}
+
+GS::UniString GetPropertySchemaDefinitions ()
+{
+    const GS::UniString propertySchemaDefinitions = R"(
+        "PropertyId": {
+            "type": "object",
+            "description": "The identifier of a property.",
+            "properties": {
+                "guid": {
+                    "$ref": "#/Guid"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "guid"
+            ]
+        },
+        "PropertyIdArrayItem": {
+            "type": "object",
+            "properties": {
+                "propertyId": {
+                    "$ref": "#/PropertyId"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "propertyId"
+            ]
+        },
+        "PropertyIds": {
+            "type": "array",
+            "description": "A list of property identifiers.",
+            "items": {
+                "$ref": "#/PropertyIdArrayItem"
+            }
+        },
+        "PropertyValue": {
+            "type": "object",
+            "description": "The display string value of a property.",
+            "properties": {
+                "value": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": true,
+            "required": [
+                "value"
+            ]
         },
         "PropertyValueOrErrorItem": {
             "type": "object",
@@ -392,7 +398,139 @@ const GS::UniString& GetCommonSchemaDefinitions ()
             "items": {
                 "$ref": "#/ElementPropertyValue"
             }
-        }
-    })";
+        })";
+    return propertySchemaDefinitions;
+}
+
+GS::UniString GetClassificationSchemaDefinitions ()
+{
+    const GS::UniString classificationSchemaDefinitions = R"(
+        "ClassificationSystemId": {
+            "type": "object",
+            "description": "The identifier of a classification system.",
+            "properties": {
+                "guid": {
+                    "$ref": "#/Guid"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "guid"
+            ]
+        },
+        "ClassificationSystemIdArrayItem": {
+            "type": "object",
+            "properties": {
+                "classificationSystemId": {
+                    "$ref": "#/ClassificationSystemId"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "classificationSystemId"
+            ]
+        },
+        "ClassificationSystemIds": {
+            "type": "array",
+            "description": "A list of classification system identifiers.",
+            "items": {
+                "$ref": "#/ClassificationSystemIdArrayItem"
+            }
+        },
+        "ClassificationItemId": {
+            "type": "object",
+            "description": "The identifier of a classification item.",
+            "properties": {
+                "guid": {
+                    "$ref": "#/Guid"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "guid"
+            ]
+        },
+        "ClassificationId": {
+            "type": "object",
+            "description": "The element classification identifier.",
+            "properties": {
+                "classificationSystemId": {
+                    "$ref": "#/ClassificationSystemId"
+                },
+                "classificationItemId": {
+                    "$ref": "#/ClassificationItemId",
+                    "description": "The element's classification in the given system. If no value is specified here, the element is Unclassified in this system."
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "classificationSystemId"
+            ]
+        },
+        "ClassificationIdOrError": {
+            "type": "object",
+            "description": "A classification identifier or an error.",
+            "oneOf": [
+                {
+                    "title": "classificationId",
+                    "properties": {
+                        "classificationId": {
+                            "$ref": "#/ClassificationId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationId" ]
+                },
+                {
+                    "title": "error",
+                    "$ref": "#/ErrorItem"
+                }
+            ]   
+        },
+        "ClassificationIdsOrErrors": {
+            "type": "array",
+            "description": "A list of element classification identifiers or errors.",
+            "items": {
+                "$ref": "#/ClassificationIdOrError"
+            }
+        },
+        "ElementClassificationOrError": {
+            "type": "object",
+            "description": "Element classification identifiers or errors.",
+            "oneOf": [
+                {
+                    "title": "classificationIds",
+                    "properties": {
+                        "classificationIds": {
+                            "$ref": "#/ClassificationIdsOrErrors"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationIds" ]
+                },
+                {
+                    "title": "error",
+                    "$ref": "#/ErrorItem"
+                }
+            ]
+        },
+        "ElementClassificationsOrErrors": {
+            "type": "array",
+            "description": "A list of element classification identifiers or errors.",
+            "items": {
+                "$ref": "#/ElementClassificationOrError"
+            }
+        })";
+    return classificationSchemaDefinitions;
+}
+
+const GS::UniString& GetCommonSchemaDefinitions ()
+{
+    static const GS::UniString commonSchemaDefinitions =
+        "{" + 
+            GetBaseSchemaDefinitions () + "," +
+            GetPropertySchemaDefinitions () + "," +
+            GetClassificationSchemaDefinitions () +
+        "}";
     return commonSchemaDefinitions;
 }
