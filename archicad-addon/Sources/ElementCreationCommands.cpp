@@ -40,7 +40,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    const GS::UniString elemTypeName = ElemID_To_Name (elemTypeID);
+    const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemTypeID);
     const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
