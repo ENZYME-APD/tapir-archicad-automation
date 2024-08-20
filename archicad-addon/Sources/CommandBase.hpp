@@ -36,6 +36,7 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
+GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 
 struct Story {
@@ -51,3 +52,4 @@ using Stories = GS::Array<Story>;
 
 Stories GetStories ();
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
+GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);

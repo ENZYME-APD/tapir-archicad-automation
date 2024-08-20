@@ -365,6 +365,147 @@
                 }
             },
             {
+                name : "GetDetailsOfElementsCommand",
+                version : "1.0.7",
+                description : "Gets the details of the given elements (geometry parameters etc).",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "detailsOfElements": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "description": "Details of an element.",
+                                "properties": {
+                                    "type": {
+                                        "$ref": "#/ElementType"
+                                    },
+                                    "floorIndex": {
+                                        "type": "number"
+                                    },
+                                    "layerIndex": {
+                                        "type": "number"
+                                    },
+                                    "details": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "title": "WallDetails",
+                                                "properties": {
+                                                    "geometryType": {
+                                                        "type": "string",
+                                                         "enum": [
+                                                            "Straight",
+                                                            "Trapezoid",
+                                                            "Polygonal"
+                                                         ]
+                                                    },
+                                                    "begCoordinate": {
+                                                        "$ref": "#/2DCoordinate"
+                                                    },
+                                                    "endCoordinate": {
+                                                        "$ref": "#/2DCoordinate"
+                                                    },
+                                                    "height": {
+                                                        "type": "number",
+                                                        "description": "height relative to bottom"
+                                                    },
+                                                    "bottomOffset": {
+                                                        "type": "number",
+                                                        "description": "base level of the wall relative to the floor level"
+                                                    },
+                                                    "offset": {
+                                                        "type": "number",
+                                                        "description": "wall's base line's offset from ref. line"
+                                                    },
+                                                    "begThickness": {
+                                                        "type": "number",
+                                                        "description": "Thickness at the beginning in case of trapezoid wall"
+                                                    },
+                                                    "endThickness": {
+                                                        "type": "number",
+                                                        "description": "Thickness at the end in case of trapezoid wall"
+                                                    },
+                                                    "polygonOutline": {
+                                                        "type": "array",
+                                                        "description": "Polygon outline in case of polygonal wall",
+                                                        "items": {
+                                                            "$ref": "#/2DCoordinate"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "geometryType",
+                                                    "begCoordinate",
+                                                    "endCoordinate",
+                                                    "height",
+                                                    "bottomOffset",
+                                                    "offset"
+                                                ]
+                                            },
+                                            {
+                                                "title": "ColumnDetails",
+                                                "properties": {
+                                                    "origin": {
+                                                        "$ref": "#/2DCoordinate"
+                                                    },
+                                                    "height": {
+                                                        "type": "number",
+                                                        "description": "height relative to bottom"
+                                                    },
+                                                    "bottomOffset": {
+                                                        "type": "number",
+                                                        "description": "base level of the column relative to the floor level"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "origin",
+                                                    "height",
+                                                    "bottomOffset"
+                                                ]
+                                            },
+                                            {
+                                                "title": "NotYetSupportedElementTypeDetails",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "error"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "floorIndex",
+                                    "layerIndex",
+                                    "details"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "detailsOfElements"
+                    ]
+                }
+            },
+            {
                 name : "GetSubelementsOfHierarchicalElements",
                 version : "1.0.6",
                 description : "Gets the subelements of the given hierarchical elements.",
