@@ -1,6 +1,253 @@
 #include "ElementCommands.hpp"
 #include "MigrationHelper.hpp"
 
+GetDetailsOfElementsCommand::GetDetailsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDetailsOfElementsCommand::GetName () const
+{
+    return "GetDetailsOfElements";
+}
+
+GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "detailsOfElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "Details of an element.",
+                    "properties": {
+                        "type": {
+                            "$ref": "#/ElementType"
+                        },
+                        "floorIndex": {
+                            "type": "number"
+                        },
+                        "layerIndex": {
+                            "type": "number"
+                        },
+                        "details": {
+                            "type": "object",
+                            "oneOf": [
+                                {
+                                    "title": "WallDetails",
+                                    "properties": {
+                                        "geometryType": {
+                                            "type": "string",
+                                             "enum": [
+                                                "Straight",
+                                                "Trapezoid",
+                                                "Polygonal"
+                                             ]
+                                        },
+                                        "begCoordinate": {
+                                            "$ref": "#/2DCoordinate"
+                                        },
+                                        "endCoordinate": {
+                                            "$ref": "#/2DCoordinate"
+                                        },
+                                        "height": {
+                                            "type": "number",
+                                            "description": "height relative to bottom"
+                                        },
+                                        "bottomOffset": {
+                                            "type": "number",
+                                            "description": "base level of the wall relative to the floor level"
+                                        },
+                                        "offset": {
+                                            "type": "number",
+                                            "description": "wall's base line's offset from ref. line"
+                                        },
+                                        "begThickness": {
+                                            "type": "number",
+                                            "description": "Thickness at the beginning in case of trapezoid wall"
+                                        },
+                                        "endThickness": {
+                                            "type": "number",
+                                            "description": "Thickness at the end in case of trapezoid wall"
+                                        },
+                                        "polygonOutline": {
+                                            "type": "array",
+                                            "description": "Polygon outline in case of polygonal wall",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "geometryType",
+                                        "begCoordinate",
+                                        "endCoordinate",
+                                        "height",
+                                        "bottomOffset",
+                                        "offset"
+                                    ]
+                                },
+                                {
+                                    "title": "ColumnDetails",
+                                    "properties": {
+                                        "origin": {
+                                            "$ref": "#/2DCoordinate"
+                                        },
+                                        "height": {
+                                            "type": "number",
+                                            "description": "height relative to bottom"
+                                        },
+                                        "bottomOffset": {
+                                            "type": "number",
+                                            "description": "base level of the column relative to the floor level"
+                                        }
+                                    },
+                                    "required": [
+                                        "origin",
+                                        "height",
+                                        "bottomOffset"
+                                    ]
+                                },
+                                {
+                                    "title": "NotYetSupportedElementTypeDetails",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "error"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "floorIndex",
+                        "layerIndex",
+                        "details"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "detailsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Element elem = {};
+        elem.header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_Get (&elem);
+
+        if (err != NoError) {
+            detailsOfElements (CreateErrorResponse (err, "Failed to get the details of element"));
+            continue;
+        }
+
+        GS::ObjectState detailsOfElement;
+
+#ifdef ServerMainVers_2600
+        const API_ElemTypeID typeID = elem.header.type.typeID;
+#else
+        const API_ElemTypeID typeID = elem.header.typeID;
+#endif
+
+        detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
+        detailsOfElement.Add ("floorIndex", elem.header.floorInd);
+#ifdef ServerMainVers_2700
+        detailsOfElement.Add ("layerIndex", elem.header.layer.ToInt32_Deprecated ());
+#else
+        detailsOfElement.Add ("layerIndex", elem.header.layer);
+#endif
+
+        GS::ObjectState typeSpecificDetails;
+
+        switch (typeID) {
+            case API_WallID:
+                switch (elem.wall.type) {
+                    case APIWtyp_Normal:
+                        typeSpecificDetails.Add ("geometryType", "Straight");
+                        break;
+                    case APIWtyp_Trapez:
+                        typeSpecificDetails.Add ("geometryType", "Trapezoid");
+                        typeSpecificDetails.Add ("begThickness", elem.wall.thickness);
+                        typeSpecificDetails.Add ("endThickness", elem.wall.thickness1);
+                        break;
+                    case APIWtyp_Poly: {
+                        typeSpecificDetails.Add ("geometryType", "Polygonal");
+                        const auto& polygonOutline = typeSpecificDetails.AddList<GS::ObjectState> ("polygonOutline");
+                        API_ElementMemo memo = {};
+                        err = ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All);
+                        if (err == NoError) {
+                            const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
+                            for (GSIndex iCoord = 1; iCoord < nCoords; ++iCoord) {
+                                polygonOutline (Create2DCoordinateObjectState ((*memo.coords)[iCoord]));
+                            }
+                        }
+                        break;
+                    }
+                }
+                typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.wall.begC));
+                typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.wall.endC));
+                typeSpecificDetails.Add ("height", elem.wall.height);
+                typeSpecificDetails.Add ("bottomOffset", elem.wall.bottomOffset);
+                typeSpecificDetails.Add ("offset", elem.wall.offset);
+                break;
+
+            case API_ColumnID:
+                typeSpecificDetails.Add ("origin", Create2DCoordinateObjectState (elem.column.origoPos));
+                typeSpecificDetails.Add ("height", elem.column.height);
+                typeSpecificDetails.Add ("bottomOffset", elem.column.bottomOffset);
+                break;
+
+            default:
+                typeSpecificDetails.Add ("error", "Not yet supported element type");
+                break;
+        }
+
+        detailsOfElement.Add ("details", typeSpecificDetails);
+
+        detailsOfElements (detailsOfElement);
+    }
+
+    return response;
+}
+
 GetSelectedElementsCommand::GetSelectedElementsCommand () :
     CommandBase (CommonSchema::Used)
 {

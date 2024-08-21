@@ -40,7 +40,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    const GS::UniString elemTypeName = ElemID_To_Name (elemTypeID);
+    const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemTypeID);
     const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
@@ -169,23 +169,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "type": "array",
                         "description": "The 2D coordinates of the edge of the slab.",
                         "items": {
-                            "type": "object",
-                            "description" : "Position of a 2D point.",
-                            "properties" : {
-                                "x": {
-                                    "type": "number",
-                                    "description" : "X value of the point."
-                                },
-                                "y" : {
-                                    "type": "number",
-                                    "description" : "Y value of the point."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required" : [
-                                "x",
-                                "y"
-                            ]
+                            "$ref": "#/2DCoordinate"
                         }
                     },
                     "holes" : {
@@ -199,23 +183,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                                     "type": "array",
                                     "description": "The 2D coordinates of the edge of the slab.",
                                     "items": {
-                                        "type": "object",
-                                        "description" : "Position of a 2D point.",
-                                        "properties" : {
-                                            "x": {
-                                                "type": "number",
-                                                "description" : "X value of the point."
-                                            },
-                                            "y" : {
-                                                "type": "number",
-                                                "description" : "Y value of the point."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required" : [
-                                            "x",
-                                            "y"
-                                        ]
+                                        "$ref": "#/2DCoordinate"
                                     }
                                 }
                             },
