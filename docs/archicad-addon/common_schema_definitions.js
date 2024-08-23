@@ -1,4 +1,4 @@
-﻿var gSchemaDefinitions = {
+var gSchemaDefinitions = {
     "Elements": {
         "type": "array",
         "description": "A list of elements.",
@@ -405,6 +405,135 @@
         "description": "A list of element property values.",
         "items": {
             "$ref": "#/ElementPropertyValue"
+        }
+    },
+    "ClassificationSystemId": {
+        "type": "object",
+        "description": "The identifier of a classification system.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ClassificationSystemIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId"
+        ]
+    },
+    "ClassificationSystemIds": {
+        "type": "array",
+        "description": "A list of classification system identifiers.",
+        "items": {
+            "$ref": "#/ClassificationSystemIdArrayItem"
+        }
+    },
+    "ClassificationItemId": {
+        "type": "object",
+        "description": "The identifier of a classification item.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ClassificationSystemId": {
+        "type": "object",
+        "description": "The identifier of a classification system.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ClassificationId": {
+        "type": "object",
+        "description": "The element classification identifier.",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId",
+                "description": "The element's classification in the given system. If no value is specified here, the element is Unclassified in this system."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId"
+        ]
+    },
+    "ClassificationIdOrError": {
+        "type": "object",
+        "description": "A classification identifier or an error.",
+        "oneOf": [
+            {
+                "title": "classificationId",
+                "properties": {
+                    "classificationId": {
+                        "$ref": "#/ClassificationId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "classificationId" ]
+            },
+            {
+                "title": "error",
+                "$ref": "#/ErrorItem"
+            }
+        ]   
+    },
+    "ClassificationIdsOrErrors": {
+        "type": "array",
+        "description": "A list of element classification identifiers or errors.",
+        "items": {
+            "$ref": "#/ClassificationIdOrError"
+        }
+    },
+    "ElementClassificationOrError": {
+        "type": "object",
+        "description": "Element classification identifiers or errors.",
+        "oneOf": [
+            {
+                "title": "classificationIds",
+                "properties": {
+                    "classificationIds": {
+                        "$ref": "#/ClassificationIdsOrErrors"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "classificationIds" ]
+            },
+            {
+                "title": "error",
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementClassificationsOrErrors": {
+        "type": "array",
+        "description": "A list of element classification identifiers or errors.",
+        "items": {
+            "$ref": "#/ElementClassificationOrError"
         }
     },
     "ElementType": {
