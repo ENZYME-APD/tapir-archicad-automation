@@ -29,7 +29,7 @@ classificationsOfMainElements = ExecuteTapirCommand ('GetClassificationsOfElemen
         'classificationSystemIds' : classificationSystems
     })
 
-responsclassificationsOfSubElementse = ExecuteTapirCommand ('GetClassificationsOfElements', {
+classificationsOfSubElements = ExecuteTapirCommand ('GetClassificationsOfElements', {
         'elements' : allSubElements,
         'classificationSystemIds' : classificationSystems
     })
