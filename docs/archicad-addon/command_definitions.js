@@ -1455,6 +1455,31 @@
                     "$ref": "#/ElementClassificationsOrErrors",
                     "description": "The list of element classification item identifiers. Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
                 }
+            },
+            {
+                name : "SetClassificationsOfElements",
+                version : "1.0.7",
+                description : "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        },
+                        "classificationSystemIds": {
+                            "$ref": "#/ClassificationSystemIds"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements",
+                        "classificationSystemIds"
+                    ]
+                },
+                outputScheme : {
+                    "$ref": "#/ElementClassificationsOrErrors",
+                    "description": "The list of element classification item identifiers. Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
+                }
             }
         ]
     },

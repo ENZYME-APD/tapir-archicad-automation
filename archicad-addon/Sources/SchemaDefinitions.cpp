@@ -563,6 +563,30 @@ GS::UniString GetClassificationSchemaDefinitions ()
             "items": {
                 "$ref": "#/ElementClassificationOrError"
             }
+        },
+        "ElementClassification": {
+            "type": "object",
+            "description": "The classification of an element.",
+            "properties": {
+                "elementId": {
+                    "$ref": "#/ElementId"
+                },
+                "classificationId": {
+                    "$ref": "#/ClassificationId"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "elementId",
+                "classificationId"
+            ]
+        },
+        "ElementClassifications": {
+            "type": "array",
+            "description": "A list of element classification identifiers.",
+            "items": {
+                "$ref": "#/ElementClassification"
+            }
         })";
     return classificationSchemaDefinitions;
 }

@@ -89,3 +89,110 @@ GS::ObjectState GetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
 
     return response;
 }
+
+SetClassificationsOfElementsCommand::SetClassificationsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetClassificationsOfElementsCommand::GetName () const
+{
+    return "SetClassificationsOfElements";
+}
+
+GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementClassifications": {
+                "$ref": "#/ElementClassifications"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementClassifications"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementClassifications;
+    parameters.Get ("elementClassifications", elementClassifications);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("SetClassificationsOfElementsCommand", [&] () -> GSErrCode {
+        for (const GS::ObjectState& elementClassification : elementClassifications) {
+            const GS::ObjectState* elementId = elementClassification.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            const GS::ObjectState* classificationId = elementClassification.Get ("classificationId");
+            if (classificationId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* classificationItemId = classificationId->Get ("classificationItemId");
+            if (classificationItemId != nullptr) {
+                const API_Guid classificationItemGuid = GetGuidFromObjectState (*classificationItemId);
+
+                const GSErrCode err = ACAPI_Element_AddClassificationItem (elemGuid, classificationItemGuid);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to set classification item for element"));
+                    continue;
+                }
+            } else {
+                const GS::ObjectState* classificationSystemId = classificationId->Get ("classificationSystemId");
+                if (classificationSystemId == nullptr) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
+                    continue;
+                }
+
+                const API_Guid classificationSystemGuid = GetGuidFromObjectState (*classificationSystemId);
+
+                API_ClassificationItem item;
+                GSErrCode err = ACAPI_Element_GetClassificationInSystem (elemGuid, classificationSystemGuid, item);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to get classification item for element"));
+                    continue;
+                }
+
+                err = ACAPI_Element_RemoveClassificationItem (elemGuid, item.guid);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for element"));
+                    continue;
+                }
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
