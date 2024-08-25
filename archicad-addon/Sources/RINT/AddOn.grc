@@ -5,3 +5,9 @@
 /* [  1] */		"Tapir Additional JSON Commands"
 /* [  2] */		"Tapir Additional JSON Commands"
 }
+
+'STR#' ID_ADDON_MENU "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [   ] */        "Developer Tools"
+/* [  1] */        "Generate Documentation"
+}
