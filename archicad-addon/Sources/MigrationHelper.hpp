@@ -4,6 +4,9 @@
 
 #ifndef ServerMainVers_2700
 
+#define ACAPI_MenuItem_RegisterMenu ACAPI_Register_Menu
+#define ACAPI_MenuItem_InstallMenuHandler ACAPI_Install_MenuHandler
+
 #define ACAPI_Markup_Create ACAPI_MarkUp_Create
 #define ACAPI_Markup_Delete ACAPI_MarkUp_Delete
 #define ACAPI_Markup_GetList ACAPI_MarkUp_GetList
@@ -106,7 +109,7 @@ inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
 }
 
-inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart *ancestor, bool createIfMissing, bool onlyPlaceable = false)
+inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfMissing, bool onlyPlaceable = false)
 {
     return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);
 }
