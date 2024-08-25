@@ -59,8 +59,6 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-#ifdef ServerMainVers_2600
-
 class HighlightElementsCommand : public CommandBase
 {
 public:
@@ -70,5 +68,3 @@ public:
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
-
-#endif
