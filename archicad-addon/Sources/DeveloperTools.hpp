@@ -7,6 +7,7 @@
 #include "Location.hpp"
 
 #include <vector>
+#include <string>
 
 class CommandInfo
 {
