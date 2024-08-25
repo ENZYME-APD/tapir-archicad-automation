@@ -25,7 +25,7 @@ static std::vector<CommandGroup> gCommandGroups;
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
 {
-    GS::Owner command = GS::NewOwned<CommandType> ();
+    GS::Owner<CommandType> command = GS::NewOwned<CommandType> ();
     group.commands.push_back (CommandInfo (
         command->GetName (),
         description,
