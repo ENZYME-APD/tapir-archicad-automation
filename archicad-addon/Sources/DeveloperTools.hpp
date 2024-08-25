@@ -12,11 +12,13 @@
 class CommandInfo
 {
 public:
-    CommandInfo (const GS::UniString& version, const GS::UniString& description, const std::shared_ptr<CommandBase>& command);
+    CommandInfo (const GS::UniString& name, const GS::UniString& description, const GS::UniString& version, const GS::Optional<GS::UniString>& inputScheme, const GS::Optional<GS::UniString>& outputScheme);
 
-    GS::UniString version;
+    GS::UniString name;
     GS::UniString description;
-    std::shared_ptr<CommandBase> command;
+    GS::UniString version;
+    GS::Optional<GS::UniString> inputScheme;
+    GS::Optional<GS::UniString> outputScheme;
 };
 
 class CommandGroup
@@ -27,16 +29,5 @@ public:
     GS::UniString name;
     std::vector<CommandInfo> commands;
 };
-
-template <typename CommandType>
-GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
-{
-    GSErrCode err = ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CommandType> ());
-    if (err != NoError) {
-        return err;
-    }
-    group.commands.push_back (CommandInfo (version, description, std::make_shared<CommandType> ()));
-    return NoError;
-}
 
 void GenerateDocumentation (const IO::Location& folder, const std::vector<CommandGroup>& commandGroups);

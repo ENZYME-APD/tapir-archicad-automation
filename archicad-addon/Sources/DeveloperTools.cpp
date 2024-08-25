@@ -4,10 +4,12 @@
 
 #include "File.hpp"
 
-CommandInfo::CommandInfo (const GS::UniString& version, const GS::UniString& description, const std::shared_ptr<CommandBase>& command) :
-    version (version),
+CommandInfo::CommandInfo (const GS::UniString& name, const GS::UniString& description, const GS::UniString& version, const GS::Optional<GS::UniString>& inputScheme, const GS::Optional<GS::UniString>& outputScheme) :
+    name (name),
     description (description),
-    command (command)
+    version (version),
+    inputScheme (inputScheme),
+    outputScheme (outputScheme)
 {
 }
 
@@ -49,20 +51,18 @@ void GenerateDocumentation (const IO::Location& folder, const std::vector<Comman
         GS::UniString groupCommandsContent;
         for (size_t commandIndex = 0; commandIndex < group.commands.size (); commandIndex++) {
             const CommandInfo& command = group.commands[commandIndex];
-            GS::Optional<GS::UniString> inputScheme = command.command->GetInputParametersSchema ();
-            GS::Optional<GS::UniString> outputScheme = command.command->GetResponseSchema ();
             groupCommandsContent += GS::UniString::Printf (R"({
-                "name": "%s",
+                "name": "%T",
                 "version": "%T",
                 "description": "%T",
                 "inputScheme": %T,
                 "outputScheme": %T
             })",
-                command.command->GetName ().ToCStr (),
+                command.name.ToPrintf (),
                 command.version.ToPrintf (),
                 command.description.ToPrintf (),
-                inputScheme.HasValue () ? inputScheme.Get ().ToPrintf () : NullString.ToPrintf (),
-                outputScheme.HasValue () ? outputScheme.Get ().ToPrintf () : NullString.ToPrintf ()
+                command.inputScheme.HasValue () ? command.inputScheme.Get ().ToPrintf () : NullString.ToPrintf (),
+                command.outputScheme.HasValue () ? command.outputScheme.Get ().ToPrintf () : NullString.ToPrintf ()
             );
             if (commandIndex < group.commands.size () - 1) {
                 groupCommandsContent += ",";

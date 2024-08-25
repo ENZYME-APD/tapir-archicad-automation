@@ -31,7 +31,6 @@ class CreateBuildingMaterialsCommand : public CreateAttributesCommandBase
 {
 public:
     CreateBuildingMaterialsCommand ();
-protected:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
 };
@@ -40,7 +39,6 @@ class CreateLayersCommand : public CreateAttributesCommandBase
 {
 public:
     CreateLayersCommand ();
-protected:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
 };

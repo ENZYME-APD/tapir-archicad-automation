@@ -22,6 +22,26 @@
 
 static std::vector<CommandGroup> gCommandGroups;
 
+template <typename CommandType>
+GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
+{
+    GS::Owner command = GS::NewOwned<CommandType> ();
+    group.commands.push_back (CommandInfo (
+        command->GetName (),
+        description,
+        version,
+        command->GetInputParametersSchema (),
+        command->GetResponseSchema ())
+    );
+
+    GSErrCode err = ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (command.Pass ());
+    if (err != NoError) {
+        return err;
+    }
+    return NoError;
+}
+
+
 static void GenerateDocumentation ()
 {
     DG::FolderDialog folderPicker;
@@ -156,11 +176,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetClassificationsOfElementsCommand> (
             elementCommands, "1.0.7",
-            "Returns the classification of the given elements in the given classification systems."
+            "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
         );
         err |= RegisterCommand<SetClassificationsOfElementsCommand> (
             elementCommands, "1.0.7",
-            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field."
+            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
         );
         err |= RegisterCommand<CreateColumnsCommand> (
             elementCommands, "1.0.3",
