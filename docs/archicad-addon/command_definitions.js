@@ -48,6 +48,24 @@
                 description : "Performs a quit operation on the currently running Archicad instance.",
                 inputScheme : null,
                 outputScheme : null
+            },
+            {
+                name : "GetCurrentWindowType",
+                version : "1.0.7",
+                description : "Returns the type of the current (active) window.",
+                inputScheme : null,
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "currentWindowType": {
+                            "$ref": "#/WindowType"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "currentWindowType"
+                    ]
+                }
             }
         ]
     },
@@ -362,6 +380,42 @@
                     "required": [
                         "elements"
                     ]  
+                }
+            },
+            {
+                name : "FilterElements",
+                version : "1.0.7",
+                description : "Tests an elements by the given criterias.",
+                inputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        },
+                        "filters": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/ElementFilter"
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                },
+                outputScheme : {
+                    "type": "object",
+                    "properties": {
+                        "filteredElements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "filteredElements"
+                    ]
                 }
             },
             {
@@ -797,7 +851,7 @@
         ]
     },
     {
-        name : 'Element Commands',
+        name : 'Element Creation Commands',
         commands : [
             {
                 name : "CreateColumns",

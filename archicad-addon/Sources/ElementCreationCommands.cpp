@@ -64,7 +64,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
-            elements (GS::ObjectState ("elementId", GS::ObjectState ("guid", APIGuidToString (element.header.guid))));
+            elements (CreateElementIdObjectState (element.header.guid));
         }
 
         return NoError;

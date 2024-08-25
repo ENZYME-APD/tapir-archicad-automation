@@ -36,8 +36,11 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
-GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
+GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
+GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid);
+inline GS::ObjectState CreateElementIdObjectState (const API_Guid& guid)   { return CreateIdObjectState ("elementId", guid); }
+inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { return CreateIdObjectState ("attributeId", guid); }
 
 struct Story {
     Story (short _index, double _level)
