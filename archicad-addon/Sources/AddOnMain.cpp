@@ -1,8 +1,13 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 
+#include "DGModule.hpp"
+#include "DGFolderDialog.hpp"
+
 #include "AddOnVersion.hpp"
 #include "ResourceIds.hpp"
+#include "DeveloperTools.hpp"
+
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
@@ -15,6 +20,51 @@
 #include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
 
+static std::vector<CommandGroup> gCommandGroups;
+
+template <typename CommandType>
+GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
+{
+    GS::Owner<CommandType> command = GS::NewOwned<CommandType> ();
+    group.commands.push_back (CommandInfo (
+        command->GetName (),
+        description,
+        version,
+        command->GetInputParametersSchema (),
+        command->GetResponseSchema ())
+    );
+
+    GSErrCode err = ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (command.Pass ());
+    if (err != NoError) {
+        return err;
+    }
+    return NoError;
+}
+
+
+static void GenerateDocumentation ()
+{
+    DG::FolderDialog folderPicker;
+    if (folderPicker.Invoke ()) {
+        GenerateDocumentation (folderPicker.GetFolder (), gCommandGroups);
+    }
+}
+
+static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
+{
+    switch (menuParams->menuItemRef.menuResID) {
+        case ID_ADDON_MENU:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_GENERATE_DOC:
+                    GenerateDocumentation ();
+                    break;
+            }
+            break;
+    }
+
+    return NoError;
+}
+
 API_AddonType CheckEnvironment (API_EnvirParams* envir)
 {
     RSGetIndString (&envir->addOnInfo.name, ID_ADDON_INFO, ID_ADDON_INFO_NAME, ACAPI_GetOwnResModule ());
@@ -25,66 +75,225 @@ API_AddonType CheckEnvironment (API_EnvirParams* envir)
 
 GSErrCode RegisterInterface (void)
 {
-    return NoError;
+    GSErrCode err = NoError;
+
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
+
+    return err;
 }
 
 GSErrCode Initialize (void)
 {
     GSErrCode err = NoError;
 
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetAddOnVersionCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetArchicadLocationCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<QuitArchicadCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetCurrentWindowTypeCommand> ());
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
 
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetProjectInfoCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetProjectInfoFieldsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetProjectInfoFieldCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetStoryInfoCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetHotlinksCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<PublishPublisherSetCommand> ());
+    { // Application Commands
+        CommandGroup applicationCommands ("Application Commands");
+        err |= RegisterCommand<GetAddOnVersionCommand> (
+            applicationCommands, "0.1.0",
+            "Retrieves the version of the Tapir Additional JSON Commands Add-On."
+        );
+        err |= RegisterCommand<GetArchicadLocationCommand> (
+            applicationCommands, "0.1.0",
+            "Retrieves the location of the currently running Archicad executable."
+        );
+        err |= RegisterCommand<QuitArchicadCommand> (
+            applicationCommands, "0.1.0",
+            "Performs a quit operation on the currently running Archicad instance."
+        );
+        err |= RegisterCommand<GetCurrentWindowTypeCommand> (
+            applicationCommands, "1.0.7",
+            "Returns the type of the current (active) window."
+        );
+        gCommandGroups.push_back (applicationCommands);
+    }
 
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetDetailsOfElementsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetSelectedElementsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetSubelementsOfHierarchicalElementsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<FilterElementsCommand> ());
-#ifdef ServerMainVers_2600
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<HighlightElementsCommand> ());
-#endif
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<MoveElementsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetGDLParametersOfElementsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetGDLParametersOfElementsCommand> ());
+    { // Project Commands
+        CommandGroup projectCommands ("Project Commands");
+        err |= RegisterCommand<GetProjectInfoCommand> (
+            projectCommands, "0.1.0",
+            "Retrieves information about the currently loaded project."
+        );
+        err |= RegisterCommand<GetProjectInfoFieldsCommand> (
+            projectCommands, "0.1.2",
+            "Retrieves the names and values of all project info fields."
+        );
+        err |= RegisterCommand<SetProjectInfoFieldCommand> (
+            projectCommands, "0.1.2",
+            "Sets the value of a project info field."
+        );
+        err |= RegisterCommand<GetStoryInfoCommand> (
+            projectCommands, "1.0.2",
+            "Retrieves information about the story sructure of the currently loaded project."
+        );
+        err |= RegisterCommand<GetHotlinksCommand> (
+            projectCommands, "0.1.0",
+            "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project."
+        );
+        err |= RegisterCommand<PublishPublisherSetCommand> (
+            projectCommands, "0.1.0",
+            "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
+        );
+        gCommandGroups.push_back (projectCommands);
+    }
 
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateColumnsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateSlabsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateObjectsCommand> ());
+    { // Element Commands
+        CommandGroup elementCommands ("Element Commands");
+        err |= RegisterCommand<GetSelectedElementsCommand> (
+            elementCommands, "0.1.0",
+            "Gets the list of the currently selected elements."
+        );
+        err |= RegisterCommand<FilterElementsCommand> (
+            elementCommands, "1.0.7",
+            "Tests an elements by the given criterias."
+        );
+        err |= RegisterCommand<GetDetailsOfElementsCommand> (
+            elementCommands, "1.0.7",
+            "Gets the details of the given elements (geometry parameters etc)."
+        );
+        err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
+            elementCommands, "1.0.6",
+            "Gets the subelements of the given hierarchical elements."
+        );
+        err |= RegisterCommand<HighlightElementsCommand> (
+            elementCommands, "1.0.3",
+            "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights."
+        );
+        err |= RegisterCommand<MoveElementsCommand> (
+            elementCommands, "1.0.2",
+            "Moves elements with a given vector."
+        );
+        err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
+            elementCommands, "1.0.2",
+            "Gets all the GDL parameters (name, type, value) of the given elements."
+        );
+        err |= RegisterCommand<SetGDLParametersOfElementsCommand> (
+            elementCommands, "1.0.2",
+            "Sets the given GDL parameters of the given elements."
+        );
+        err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
+            elementCommands, "1.0.6",
+            "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<SetPropertyValuesOfElementsCommand> (
+            elementCommands, "1.0.6",
+            "Sets the property values of elements. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<GetClassificationsOfElementsCommand> (
+            elementCommands, "1.0.7",
+            "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<SetClassificationsOfElementsCommand> (
+            elementCommands, "1.0.7",
+            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<CreateColumnsCommand> (
+            elementCommands, "1.0.3",
+            "Creates Column elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateSlabsCommand> (
+            elementCommands, "1.0.3",
+            "Creates Slab elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateObjectsCommand> (
+            elementCommands, "1.0.3",
+            "Creates Object elements based on the given parameters."
+        );
+        gCommandGroups.push_back (elementCommands);
+    }
 
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateBuildingMaterialsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateLayersCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateCompositesCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetBuildingMaterialPhysicalPropertiesCommand> ());
+    { // Attribute Commands
+        CommandGroup attributeCommands ("Attribute Commands");
+        err |= RegisterCommand<CreateLayersCommand> (
+            attributeCommands, "1.0.3",
+            "Creates Layer attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateBuildingMaterialsCommand> (
+            attributeCommands, "1.0.1",
+            "Creates Building Material attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateCompositesCommand> (
+            attributeCommands, "1.0.2",
+            "Creates Composite attributes based on the given parameters."
+        );
+        err |= RegisterCommand<GetBuildingMaterialPhysicalPropertiesCommand> (
+            attributeCommands, "0.1.3",
+            "Retrieves the physical properties of the given Building Materials."
+        );
+        gCommandGroups.push_back (attributeCommands);
+    }
 
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<TeamworkReceiveCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetLibrariesCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ReloadLibrariesCommand> ());
+    { // Library Commands
+        CommandGroup libraryCommands ("Library Commands");
+        err |= RegisterCommand<GetLibrariesCommand> (
+            libraryCommands, "1.0.1",
+            "Gets the list of loaded libraries."
+        );
+        err |= RegisterCommand<ReloadLibrariesCommand> (
+            libraryCommands, "1.0.0",
+            "Executes the reload libraries command."
+        );
+        gCommandGroups.push_back (libraryCommands);
+    }
 
-    // Issue management
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<CreateIssueCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<DeleteIssueCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetIssuesCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<AddCommentToIssueCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetCommentsFromIssueCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<AttachElementsToIssueCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<DetachElementsFromIssueCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetElementsAttachedToIssueCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ExportIssuesToBCFCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ImportIssuesFromBCFCommand> ());
+    { // Teamwork Commands
+        CommandGroup teamworkCommands ("Teamwork Commands");
+        err |= RegisterCommand<TeamworkSendCommand> (
+            teamworkCommands, "0.1.0",
+            "Performs a send operation on the currently opened Teamwork project."
+        );
+        err |= RegisterCommand<TeamworkReceiveCommand> (
+            teamworkCommands, "0.1.0",
+            "Performs a receive operation on the currently opened Teamwork project."
+        );
+        gCommandGroups.push_back (teamworkCommands);
+    }
 
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetPropertyValuesOfElementsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetPropertyValuesOfElementsCommand> ());
-
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<GetClassificationsOfElementsCommand> ());
-    err |= ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<SetClassificationsOfElementsCommand> ());
+    { // Issue Management Commands
+        CommandGroup issueCommands ("Issue Management Commands");
+        err |= RegisterCommand<CreateIssueCommand> (
+            issueCommands, "1.0.2",
+            "Creates a new issue."
+        );
+        err |= RegisterCommand<DeleteIssueCommand> (
+            issueCommands, "1.0.2",
+            "Deletes the specified issue."
+        );
+        err |= RegisterCommand<GetIssuesCommand> (
+            issueCommands, "1.0.2",
+            "Retrieves information about existing issues."
+        );
+        err |= RegisterCommand<AddCommentToIssueCommand> (
+            issueCommands, "1.0.6",
+            "Adds a new comment to the specified issue."
+        );
+        err |= RegisterCommand<GetCommentsFromIssueCommand> (
+            issueCommands, "1.0.6",
+            "Retrieves comments information from the specified issue."
+        );
+        err |= RegisterCommand<AttachElementsToIssueCommand> (
+            issueCommands, "1.0.6",
+            "Attaches elements to the specified issue."
+        );
+        err |= RegisterCommand<DetachElementsFromIssueCommand> (
+            issueCommands, "1.0.6",
+            "Detaches elements from the specified issue."
+        );
+        err |= RegisterCommand<GetElementsAttachedToIssueCommand> (
+            issueCommands, "1.0.6",
+            "Retrieves attached elements of the specified issue, filtered by attachment type."
+        );
+        err |= RegisterCommand<ExportIssuesToBCFCommand> (
+            issueCommands, "1.0.6",
+            "Exports specified issues to a BCF file."
+        );
+        err |= RegisterCommand<ImportIssuesFromBCFCommand> (
+            issueCommands, "1.0.6",
+            "Imports issues from the specified BCF file."
+        );
+        gCommandGroups.push_back (issueCommands);
+    }
 
     return err;
 }

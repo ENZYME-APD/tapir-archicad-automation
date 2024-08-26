@@ -1330,8 +1330,6 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
     return response;
 }
 
-#ifdef ServerMainVers_2600
-
 HighlightElementsCommand::HighlightElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1389,6 +1387,8 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetResponseSchema () const
 {
     return {};
 }
+
+#ifdef ServerMainVers_2600
 
 static API_RGBAColor GetRGBAColorFromArray (const GS::Array<GS::Int32>& color)
 {
@@ -1453,6 +1453,13 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
     ACAPI_View_Redraw ();
 
     return {};
+}
+
+#else
+
+GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    return CreateErrorResponse (APIERR_GENERAL, GetName() + " command is not supported for this AC version.");
 }
 
 #endif
