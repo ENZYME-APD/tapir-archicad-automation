@@ -314,13 +314,7 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
             elemGuid = element.sectElem.parentGuid;
         }
 
-        GS::ObjectState elemId;
-        elemId.Add ("guid", APIGuidToString (elemGuid));
-
-        GS::ObjectState elemIdArrayItem;
-        elemIdArrayItem.Add ("elementId", elemId);
-
-        elementsList (elemIdArrayItem);
+        elementsList (CreateElementIdObjectState (elemGuid));
     }
 
     return response;
@@ -467,7 +461,7 @@ static void AddSubelementsToObjectState (GS::ObjectState& subelements, APIElemTy
 
     const auto& subelementsWithThisType = subelements.AddList<GS::ObjectState> (subelementType);
     for (GSIndex i = 0; i < nSubelementsWithThisType; ++i) {
-        subelementsWithThisType (GS::ObjectState ("elementId", GS::ObjectState ("guid", APIGuidToString (subelemArray[i].head.guid))));
+        subelementsWithThisType (CreateElementIdObjectState (subelemArray[i].head.guid));
     }
 }
 
@@ -1220,6 +1214,120 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     }
 
     return {};
+}
+
+FilterElementsCommand::FilterElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String FilterElementsCommand::GetName () const
+{
+    return "FilterElements";
+}
+
+GS::Optional<GS::UniString> FilterElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "filters": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> FilterElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "filteredElements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "filteredElements"
+        ]
+    })";
+}
+
+static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
+{
+    if (filter == "IsEditable")
+        return APIFilt_IsEditable;
+    if (filter == "IsVisibleByLayer")
+        return APIFilt_OnVisLayer;
+    if (filter == "IsVisibleByRenovation")
+        return APIFilt_IsVisibleByRenovation;
+    if (filter == "IsVisibleByStructureDisplay")
+        return APIFilt_IsInStructureDisplay;
+    if (filter == "IsVisibleIn3D")
+        return APIFilt_In3D;
+    if (filter == "OnActualFloor")
+        return APIFilt_OnActFloor;
+    if (filter == "OnActualLayout")
+        return APIFilt_OnActLayout;
+    if (filter == "InMyWorkspace")
+        return APIFilt_InMyWorkspace;
+    if (filter == "IsIndependent")
+        return APIFilt_IsIndependent;
+    if (filter == "InCroppedView")
+        return APIFilt_InCroppedView;
+    if (filter == "HasAccessRight")
+        return APIFilt_HasAccessRight;
+    if (filter == "IsOverriddenByRenovation")
+        return APIFilt_IsOverridden;
+    return APIFilt_None;
+}
+
+GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::Array<GS::UniString> filters;
+    parameters.Get ("filters", filters);
+
+    API_ElemFilterFlags filterFlags = APIFilt_None;
+    for (const GS::UniString& filter : filters) {
+        filterFlags |= ConvertFilterStringToFlag (filter);
+    }
+    if (filterFlags == APIFilt_None) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing filters!");
+    }
+
+    GS::ObjectState response;
+    const auto& filteredElements = response.AddList<GS::ObjectState> ("filteredElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        if (!ACAPI_Element_Filter (elemGuid, filterFlags)) {
+            continue;
+        }
+
+        filteredElements (CreateElementIdObjectState (elemGuid));
+    }
+
+    return response;
 }
 
 HighlightElementsCommand::HighlightElementsCommand () :

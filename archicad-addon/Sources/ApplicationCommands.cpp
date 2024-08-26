@@ -100,3 +100,66 @@ GS::ObjectState QuitArchicadCommand::Execute (const GS::ObjectState& /*parameter
 
     return {};
 }
+
+GetCurrentWindowTypeCommand::GetCurrentWindowTypeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCurrentWindowTypeCommand::GetName () const
+{
+    return "GetCurrentWindowType";
+}
+
+GS::Optional<GS::UniString> GetCurrentWindowTypeCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "currentWindowType": {
+                "$ref": "#/WindowType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "currentWindowType"
+        ]
+    })";
+}
+
+static GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
+{
+    switch (type) {
+        case APIWind_FloorPlanID: return "FloorPlan";
+        case APIWind_SectionID: return "Section";
+        case APIWind_DetailID: return "Details";
+        case APIWind_3DModelID: return "3DModel";
+        case APIWind_LayoutID: return "Layout";
+        case APIWind_DrawingID: return "Drawing";
+        case APIWind_MyTextID: return "CustomText";
+        case APIWind_MyDrawID: return "CustomDraw";
+        case APIWind_MasterLayoutID: return "MasterLayout";
+        case APIWind_ElevationID: return "Elevation";
+        case APIWind_InteriorElevationID: return "InteriorElevation";
+        case APIWind_WorksheetID: return "Worksheet";
+        case APIWind_ReportID: return "Report";
+        case APIWind_DocumentFrom3DID: return "3DDocument";
+        case APIWind_External3DID: return "External3D";
+        case APIWind_Movie3DID: return "Movie3D";
+        case APIWind_MovieRenderingID: return "MovieRendering";
+        case APIWind_RenderingID: return "Rendering";
+        case APIWind_ModelCompareID: return "ModelCompare";
+        case APIWind_IESCommonDrawingID: return "Interactive Schedule";
+        default: return "Unknown";
+    }
+}
+
+GS::ObjectState GetCurrentWindowTypeCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_WindowInfo windowInfo;
+    GSErrCode err = ACAPI_Window_GetCurrentWindow (&windowInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current window!");
+    }
+    return GS::ObjectState ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
+}

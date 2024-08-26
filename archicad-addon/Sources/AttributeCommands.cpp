@@ -207,13 +207,7 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
             }
         }
 
-        GS::ObjectState attributeId;
-        attributeId.Add ("guid", APIGuidToString (attr.header.guid));
-
-        GS::ObjectState attributeIdArrayItem;
-        attributeIdArrayItem.Add ("attributeId", attributeId);
-
-        attributeIds (attributeIdArrayItem);
+        attributeIds (CreateAttributeIdObjectState (attr.header.guid));
     }
 
     return response;
@@ -703,13 +697,7 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
             }
         }
 
-        GS::ObjectState attributeId;
-        attributeId.Add ("guid", APIGuidToString (composite.header.guid));
-
-        GS::ObjectState attributeIdArrayItem;
-        attributeIdArrayItem.Add ("attributeId", attributeId);
-
-        attributeIds (attributeIdArrayItem);
+        attributeIds (CreateAttributeIdObjectState (composite.header.guid));
         ACAPI_DisposeAttrDefsHdlsExt (&compositeDefs);
     }
 

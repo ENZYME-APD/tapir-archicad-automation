@@ -308,6 +308,51 @@ GS::UniString GetBaseSchemaDefinitions ()
                 "Railing",
                 "Opening"
             ]
+        },
+        "ElementFilter": {
+            "type": "string",
+            "description": "A filter type for an element.",
+            "enum": [
+                "IsEditable",
+                "IsVisibleByLayer",
+                "IsVisibleByRenovation",
+                "IsVisibleByStructureDisplay",
+                "IsVisibleIn3D",
+                "OnActualFloor",
+                "OnActualLayout",
+                "InMyWorkspace",
+                "IsIndependent",
+                "InCroppedView",
+                "HasAccessRight",
+                "IsOverriddenByRenovation"
+            ]
+        },
+        "WindowType": {
+            "type": "string",
+            "description": "The type of a window.",
+            "enum": [
+                "FloorPlan",
+                "Section",
+                "Details",
+                "3DModel",
+                "Layout",
+                "Drawing",
+                "CustomText",
+                "CustomDraw",
+                "MasterLayout",
+                "Elevation",
+                "InteriorElevation",
+                "Worksheet",
+                "Report",
+                "3DDocument",
+                "External3D",
+                "Movie3D",
+                "MovieRendering",
+                "Rendering",
+                "ModelCompare",
+                "Interactive Schedule",
+                "Unknown"
+            ]
         })";
     return baseSchemaDefinitions;
 }

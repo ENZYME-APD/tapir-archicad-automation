@@ -102,6 +102,10 @@ GSErrCode Initialize (void)
             applicationCommands, "0.1.0",
             "Performs a quit operation on the currently running Archicad instance."
         );
+        err |= RegisterCommand<GetCurrentWindowTypeCommand> (
+            applicationCommands, "1.0.7",
+            "Returns the type of the current (active) window."
+        );
         gCommandGroups.push_back (applicationCommands);
     }
 
@@ -140,6 +144,10 @@ GSErrCode Initialize (void)
             elementCommands, "0.1.0",
             "Gets the list of the currently selected elements."
         );
+        err |= RegisterCommand<FilterElementsCommand> (
+            elementCommands, "1.0.7",
+            "Tests an elements by the given criterias."
+        );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
             "Gets the details of the given elements (geometry parameters etc)."
@@ -148,12 +156,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
         );
-#ifdef ServerMainVers_2600
         err |= RegisterCommand<HighlightElementsCommand> (
             elementCommands, "1.0.3",
             "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights."
         );
-#endif
         err |= RegisterCommand<MoveElementsCommand> (
             elementCommands, "1.0.2",
             "Moves elements with a given vector."

@@ -79,6 +79,11 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkNodeTree (const API_Guid* hotlinkNodeGu
     return ACAPI_Database (APIDb_GetHotlinkNodeTreeID, (void*) hotlinkNodeGuid, (void*) hotlinkNodeTree);
 }
 
+inline GSErrCode ACAPI_Window_GetCurrentWindow (API_WindowInfo* windowInfo)
+{
+    return ACAPI_Database (APIDb_GetCurrentWindowID, (void*) windowInfo);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorSetNumID, setNum);
