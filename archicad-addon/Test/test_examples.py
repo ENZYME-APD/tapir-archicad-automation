@@ -3,7 +3,7 @@ from pathlib import Path
 from archicad import ACConnection
 
 def MeasureExecutionTime (name, function, *args):
-    print ('{} ... '.format (name), end='')
+    print ('{} ... '.format (name), end='', flush=True)
     start = time.time ()
     result = function (*args)
     end = time.time ()

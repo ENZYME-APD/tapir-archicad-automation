@@ -349,6 +349,58 @@ var gSchemaDefinitions = {
                 "Unknown"
             ]
         },
+        "IssueId": {
+            "type": "object",
+            "description": "The identifier of an issue.",
+            "properties": {
+                "guid": {
+                    "$ref": "#/Guid"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "guid"
+            ]
+        },
+        "IssueIdArrayItem": {
+            "type": "object",
+            "properties": {
+                "issueId": {
+                    "$ref": "#/IssueId"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "issueId"
+            ]
+        },
+        "Issues": {
+            "type": "array",
+            "description": "A list of Issues.",
+            "items": {
+                "$ref": "#/IssueIdArrayItem"
+            }
+        },
+        "IssueElementType": {
+            "type": "string",
+            "description": "The attachment type of an element component of an issue.",
+            "enum": [
+                "Creation",
+                "Highlight",
+                "Deletion",
+                "Modification"
+            ]
+        },
+        "IssueCommentStatus": {
+            "type": "string",
+            "description": "The status of an issue comment.",
+            "enum": [
+                "Error",
+                "Warning",
+                "Info",
+                "Unknown"
+            ]
+        },
         "PropertyId": {
             "type": "object",
             "description": "The identifier of a property.",
