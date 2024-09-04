@@ -2,6 +2,12 @@
 
 #include "ACAPinc.h"
 
+#ifdef ServerMainVers_2800
+    #define CaseInsensitive GS::CaseInsensitive
+#else
+    #define CaseInsensitive GS::UniString::CaseInsensitive
+#endif
+
 #ifndef ServerMainVers_2700
 
 #define ACAPI_MenuItem_RegisterMenu ACAPI_Register_Menu
@@ -28,6 +34,8 @@
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
 
+#define ACAPI_Selection_Select ACAPI_Element_Select
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;
@@ -52,6 +60,11 @@ inline GSErrCode ACAPI_ProjectOperation_ReloadLibraries ()
 inline GSErrCode ACAPI_ProjectOperation_Publish (const API_PublishPars* publishPars, const GS::Array<API_Guid>* selectedLinks = nullptr)
 {
     return ACAPI_Automate (APIDo_PublishID, (void*) publishPars, (void*) selectedLinks);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Open (const API_FileOpenPars * 	fileOpenPars)
+{
+    return ACAPI_Automate (APIDo_OpenID, (void*) fileOpenPars);
 }
 
 inline GSErrCode ACAPI_AutoText_GetAutoTexts (GS::Array<GS::ArrayFB<GS::UniString, 3>>* autotexts, API_AutotextType autotextType)
@@ -173,29 +186,50 @@ inline GSErrCode ACAPI_MarkUp_ImportFromBCF (const IO::Location& bcfFileLoc, con
     TAPIR_ index should distinguish the overriden ones from GS vanilla's API.
 */
 
-inline GSErrCode TAPIR_MarkUp_AttachElements (const API_Guid& issueId, const GS::Array<API_Guid>& elemIds, int type)
+#ifndef ServerMainVers_2600
+typedef enum {
+    APIMarkUpComponent_Creation = 0,
+    APIMarkUpComponent_Highlight,
+    APIMarkUpComponent_Deletion,
+    APIMarkUpComponent_Modification
+} API_MarkUpComponentTypeID;
+
+static bool IsMarkUpComponentShowsAsCorrected (API_MarkUpComponentTypeID type)
+{
+    bool asCorrected = false;
+    switch (type) {
+        case APIMarkUpComponent_Creation:
+        case APIMarkUpComponent_Highlight:
+        case APIMarkUpComponent_Deletion:
+            asCorrected = false;
+            break;
+        case APIMarkUpComponent_Modification:
+            asCorrected = true;
+            break;
+    }
+    return asCorrected;
+}
+#endif
+
+inline GSErrCode TAPIR_MarkUp_AttachElements (const API_Guid& issueId, const GS::Array<API_Guid>& elemIds, API_MarkUpComponentTypeID type)
 {
 #ifdef ServerMainVers_2600
-    API_MarkUpComponentTypeID cType = static_cast<API_MarkUpComponentTypeID>(type);
-    return ACAPI_Markup_AttachElements (issueId, elemIds, cType);
+    return ACAPI_Markup_AttachElements (issueId, elemIds, type);
 #else
-    int cType[] = { 0, 0, 0, 1 }; // AC25: corrected / highlighted
-    return ACAPI_Markup_AttachElements (issueId, elemIds, cType[type]);
+    return ACAPI_Markup_AttachElements (issueId, elemIds, IsMarkUpComponentShowsAsCorrected (type));
 #endif
 }
 
-inline GSErrCode TAPIR_MarkUp_GetAttachedElements (API_Guid issueId, int attachType, GS::Array<API_Guid>& elemIds)
+inline GSErrCode TAPIR_MarkUp_GetAttachedElements (API_Guid issueId, API_MarkUpComponentTypeID attachType, GS::Array<API_Guid>& elemIds)
 {
     GSErrCode err;
 #ifdef ServerMainVers_2600
-    API_MarkUpComponentTypeID elemType = static_cast<API_MarkUpComponentTypeID>(attachType);
-    err = ACAPI_Markup_GetAttachedElements (issueId, elemType, elemIds);
+    err = ACAPI_Markup_GetAttachedElements (issueId, attachType, elemIds);
 #else
-    GS::Array<GS::Array<API_Guid>> elemTypes;
-    elemTypes.SetSize (4);
-    err = ACAPI_Markup_GetAttachedElements (issueId, &elemTypes[3], &elemTypes[1]);
-    elemIds = elemTypes[attachType];
+    GS::Array<API_Guid> correctedElements;
+    GS::Array<API_Guid> highlightedElements;
+    err = ACAPI_Markup_GetAttachedElements (issueId, &correctedElements, &highlightedElements);
+    elemIds = IsMarkUpComponentShowsAsCorrected (attachType) ? correctedElements : highlightedElements;
 #endif
     return err;
-
 }

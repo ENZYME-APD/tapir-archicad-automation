@@ -487,3 +487,73 @@ GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameter
 
     return response;
 }
+
+OpenProjectCommand::OpenProjectCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String OpenProjectCommand::GetName () const
+{
+    return "OpenProject";
+}
+
+GS::Optional<GS::UniString> OpenProjectCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectFilePath": {
+                "type": "string",
+                "description": "The target project file to open."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> OpenProjectCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState OpenProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString projectFilePath;
+    if (!parameters.Get ("projectFilePath", projectFilePath)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "projectFilePath parameter is missing");
+    }
+
+    IO::Location projectLocation (projectFilePath);
+    IO::Name lastLocalName;
+    if (projectLocation.GetLastLocalName (&lastLocalName) != NoError) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "projectFilePath parameter is invalid");
+    }
+
+    const GS::UniString extension = lastLocalName.GetExtension ();
+    API_FileOpenPars openPars = {};
+    if (extension.Compare ("pln", CaseInsensitive) == GS::UniString::Equal) {
+        openPars.fileTypeID = APIFType_PlanFile;
+    } else if (extension.Compare ("pla", CaseInsensitive) == GS::UniString::Equal) {
+        openPars.fileTypeID = APIFType_A_PlanFile;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "projectFilePath parameter is invalid, the extension must be pln or pla");
+    }
+
+    openPars.libGiven = false;
+    openPars.useStoredLib = true;
+    openPars.enableSaveAlert = false;
+    openPars.file = &projectLocation;
+
+    const GSErrCode err = ACAPI_ProjectOperation_Open (&openPars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to open the given project");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}

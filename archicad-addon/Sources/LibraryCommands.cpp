@@ -81,13 +81,12 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("libraries");
 
-    for (UInt32 i = 0; i < libs.GetSize (); i++) {
-
+    for (const API_LibraryInfo& lib : libs) {
         GS::ObjectState libraryData;
         GS::UniString   type;
         GS::UniString   twServerUrl;
         GS::UniString   urlWebLibrary;
-        switch (libs[i].libraryType) {
+        switch (lib.libraryType) {
             case API_LibraryTypeID::API_Undefined:
                 type = "Undefined";
                 break;
@@ -96,7 +95,7 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
                 break;
             case API_LibraryTypeID::API_UrlLibrary:
                 type = "UrlLibrary";
-                urlWebLibrary = libs[i].twServerUrl;
+                urlWebLibrary = lib.twServerUrl;
                 break;
             case API_LibraryTypeID::API_BuiltInLibrary:
                 type = "BuiltInLibrary";
@@ -109,19 +108,19 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
                 break;
             case API_LibraryTypeID::API_UrlOtherObject:
                 type = "UrlOtherObject";
-                urlWebLibrary = libs[i].twServerUrl;
+                urlWebLibrary = lib.twServerUrl;
                 break;
             case API_LibraryTypeID::API_ServerLibrary:
                 type = "ServerLibrary";
-                twServerUrl = libs[i].twServerUrl;
+                twServerUrl = lib.twServerUrl;
                 break;
         }
 
-        libraryData.Add ("name", libs[i].name);
-        libraryData.Add ("path", libs[i].location.ToDisplayText ());
+        libraryData.Add ("name", lib.name);
+        libraryData.Add ("path", lib.location.ToDisplayText ());
         libraryData.Add ("type", type);
-        libraryData.Add ("available", libs[i].available);
-        libraryData.Add ("readOnly", libs[i].readOnly);
+        libraryData.Add ("available", lib.available);
+        libraryData.Add ("readOnly", lib.readOnly);
         libraryData.Add ("twServerUrl", twServerUrl);
         libraryData.Add ("urlWebLibrary", urlWebLibrary);
         listAdder (libraryData);
@@ -131,7 +130,7 @@ GS::ObjectState GetLibrariesCommand::Execute (const GS::ObjectState& /*parameter
 }
 
 ReloadLibrariesCommand::ReloadLibrariesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -140,12 +139,19 @@ GS::String ReloadLibrariesCommand::GetName () const
     return "ReloadLibraries";
 }
 
+GS::Optional<GS::UniString> ReloadLibrariesCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
 GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     GSErrCode err = ACAPI_ProjectOperation_ReloadLibraries ();
     if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to reload libraries.");
+        return CreateFailedExecutionResult (err, "Failed to reload libraries.");
     }
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }

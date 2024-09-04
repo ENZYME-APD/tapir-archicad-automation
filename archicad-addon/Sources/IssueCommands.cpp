@@ -70,7 +70,7 @@ static GSErrCode GetIFCRelationshipData (GS::HashTable<API_Guid, API_IFCRelation
 
 
 CreateIssueCommand::CreateIssueCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -88,9 +88,8 @@ GS::Optional<GS::UniString> CreateIssueCommand::GetInputParametersSchema () cons
                 "type": "string",
                 "description": "The name of the issue."
             },
-            "parentId": {
-                "type": "string",
-                "description": "The id of the parent issue, optional."
+            "parentIssueId": {
+                "$ref": "#/IssueId"
             },
             "tagText": {
                 "type": "string",
@@ -104,37 +103,51 @@ GS::Optional<GS::UniString> CreateIssueCommand::GetInputParametersSchema () cons
     })";
 }
 
+GS::Optional<GS::UniString> CreateIssueCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "$ref": "#/IssueId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId"
+        ]
+    })";
+}
+
 GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString name;
-    GS::UniString parentIdStr = "";
+    GS::ObjectState parentIssueId;
     GS::UniString tagText = "";
 
-    parameters.Get ("parentId", parentIdStr);
     parameters.Get ("tagText", tagText);
     if (!parameters.Get ("name", name)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid input parameters.");
     }
 
     API_MarkUpType issue (name);
     issue.tagText = tagText;
-    if (parentIdStr != "")
-        issue.parentGuid = APIGuidFromString (parentIdStr.ToCStr ());
+    if (parameters.Get ("parentIssueId", parentIssueId))
+        issue.parentGuid = GetGuidFromObjectState (parentIssueId);
 
     GSErrCode err = ACAPI_CallUndoableCommand ("Create issue", [&]() -> GSErrCode {
-        err = ACAPI_Markup_Create (issue);
-        return err;
+        return ACAPI_Markup_Create (issue);
     });
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to create issue.");
     }
 
-    return {};
+    return CreateIdObjectState ("issueId", issue.guid);
 }
 
 DeleteIssueCommand::DeleteIssueCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -149,8 +162,11 @@ GS::Optional<GS::UniString> DeleteIssueCommand::GetInputParametersSchema () cons
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to delete."
+                "$ref": "#/IssueId"
+            },
+            "acceptAllElements": {
+                "type": "boolean",
+                "description": "Accept all creation/deletion/modification of the deleted issue. By default false."
             }
         },
         "additionalProperties": false,
@@ -160,31 +176,37 @@ GS::Optional<GS::UniString> DeleteIssueCommand::GetInputParametersSchema () cons
     })";
 }
 
+GS::Optional<GS::UniString> DeleteIssueCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
 GS::ObjectState DeleteIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString issueIdStr;
+    GS::ObjectState issueId;
     bool acceptAllElements = false;
 
-    if (!parameters.Get ("issueId", issueIdStr)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
+    if (!parameters.Get ("issueId", issueId)) {
+        return CreateFailedExecutionResult (Error, "Invalid input parameters.");
     }
 
     parameters.Get ("acceptAllElements", acceptAllElements);
-    API_Guid guid = APIGuidFromString (issueIdStr.ToCStr ());
+    API_Guid guid = GetGuidFromObjectState (issueId);
     GSErrCode err = ACAPI_CallUndoableCommand ("Delete issue", [&]() -> GSErrCode {
-        err = ACAPI_Markup_Delete (guid, acceptAllElements);
-        return err;
+        return ACAPI_Markup_Delete (guid, acceptAllElements);
     });
 
     if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to delete issue.");
+        return CreateFailedExecutionResult (err, "Failed to delete issue.");
     }
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }
 
 GetIssuesCommand::GetIssuesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -204,17 +226,15 @@ GS::Optional<GS::UniString> GetIssuesCommand::GetResponseSchema () const
                 "items": {
                     "type": "object",
                     "properties": {
-                        "guid": {
-                            "type": "string",
-                            "description": "Issue identifier"
+                        "issueId": {
+                            "$ref": "#/IssueId"
                         },
                         "name": {
                             "type": "string",
                             "description": "Issue name"
                         },
-                        "parentGuid": {
-                            "type": "string",
-                            "description": "The identifier of the parent issue"
+                        "parentIssueId": {
+                            "$ref": "#/IssueId"
                         },
                         "creaTime": {
                             "type": "integer",
@@ -228,9 +248,8 @@ GS::Optional<GS::UniString> GetIssuesCommand::GetResponseSchema () const
                             "type": "string",
                             "description": "Issue tag text - labels"
                         },
-                        "tagTextElemGuid": {
-                            "type": "string",
-                            "description": "The identifier of the attached tag text element"
+                        "tagTextElementId": {
+                            "$ref": "#/ElementId"
                         },
                         "isTagTextElemVisible": {
                             "type": "boolean",
@@ -239,13 +258,13 @@ GS::Optional<GS::UniString> GetIssuesCommand::GetResponseSchema () const
                     },
                     "additionalProperties": false,
                     "required": [
-                        "guid",
+                        "issueId",
                         "name",
-                        "parentGuid",
+                        "parentIssueId",
                         "creaTime",
                         "modiTime",
                         "tagText",
-                        "tagTextElemGuid",
+                        "tagTextElementId",
                         "isTagTextElemVisible"
                     ]
                 }
@@ -271,13 +290,13 @@ GS::ObjectState GetIssuesCommand::Execute (const GS::ObjectState& /*parameters*/
 
     for (auto i = issueList.Enumerate (); i != nullptr; ++i) {
         GS::ObjectState issueData;
-        issueData.Add ("guid", APIGuidToString (i->guid));
+        issueData.Add ("issueId", CreateGuidObjectState (i->guid));
         issueData.Add ("name", i->name);
-        issueData.Add ("parentGuid", APIGuidToString (i->parentGuid));
+        issueData.Add ("parentIssueId", CreateGuidObjectState (i->parentGuid));
         issueData.Add ("creaTime", i->creaTime);
         issueData.Add ("modiTime", i->modiTime);
         issueData.Add ("tagText", i->tagText);
-        issueData.Add ("tagTextElemGuid", APIGuidToString (i->tagTextElemGuid));
+        issueData.Add ("tagTextElementId", CreateGuidObjectState (i->tagTextElemGuid));
         issueData.Add ("isTagTextElemVisible", i->isTagTextElemVisible);
         listAdder (issueData);
     }
@@ -286,7 +305,7 @@ GS::ObjectState GetIssuesCommand::Execute (const GS::ObjectState& /*parameters*/
 }
 
 AddCommentToIssueCommand::AddCommentToIssueCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -301,16 +320,14 @@ GS::Optional<GS::UniString> AddCommentToIssueCommand::GetInputParametersSchema (
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to add the comment."
+                "$ref": "#/IssueId"
             },
             "author": {
                 "type": "string",
                 "description": "The author of the new comment."
             },
             "status": {
-                "type": "integer",
-                "description": "Comment status type."
+                "$ref": "#/IssueCommentStatus"
             },
             "text": {
                 "type": "string",
@@ -325,41 +342,58 @@ GS::Optional<GS::UniString> AddCommentToIssueCommand::GetInputParametersSchema (
     })";
 }
 
+GS::Optional<GS::UniString> AddCommentToIssueCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+static API_MarkUpCommentStatusID ConvertStringToMarkUpCommentStatusID (const GS::UniString& str)
+{
+    if (str == "Error") return APIComment_Error;
+    if (str == "Warning") return APIComment_Warning;
+    if (str == "Info") return APIComment_Info;
+    return APIComment_Unknown;
+}
+
+static GS::UniString ConvertMarkUpCommentStatusIDToString (API_MarkUpCommentStatusID id)
+{
+    switch (id) {
+        case APIComment_Error: return "Error";
+        case APIComment_Warning: return "Warning";
+        case APIComment_Info: return "Info";
+        default: return "Unknown";
+    }
+}
+
 GS::ObjectState AddCommentToIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString issueIdStr;
+    GS::ObjectState issueId;
     GS::UniString text;
     GS::UniString author = "API";
-    int status;
+    GS::UniString status;
 
     parameters.Get ("author", author);
     parameters.Get ("status", status);
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("text", text)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
+    if (!parameters.Get ("issueId", issueId) || !parameters.Get ("text", text)) {
+        return CreateFailedExecutionResult (Error, "Invalid input parameters.");
     }
-    auto GetCommentStatus = [](int status) -> API_MarkUpCommentStatusID {
-        if (status >= 0 && status <= 3) {
-            return static_cast<API_MarkUpCommentStatusID>(status);
-        } else {
-            return APIComment_Unknown;
-        }
-    };
 
-    API_Guid guid = APIGuidFromString (issueIdStr.ToCStr ());
+    API_Guid guid = GetGuidFromObjectState (issueId);
     GSErrCode err = ACAPI_CallUndoableCommand ("Add comment", [&]() -> GSErrCode {
-        API_MarkUpCommentType comment (author, text, GetCommentStatus (status));
-        GSErrCode err = ACAPI_Markup_AddComment (guid, comment);
-        return err;
+        API_MarkUpCommentType comment (author, text, ConvertStringToMarkUpCommentStatusID (status));
+        return ACAPI_Markup_AddComment (guid, comment);
     });
 
     if (err != NoError)
-        return CreateErrorResponse (err, "Failed to create a comment.");
+        return CreateFailedExecutionResult (err, "Failed to create a comment.");
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }
 
 GetCommentsFromIssueCommand::GetCommentsFromIssueCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -374,8 +408,7 @@ GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetInputParametersSchem
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to get the comments."
+                "$ref": "#/IssueId"
             }
         },
         "additionalProperties": false,
@@ -397,7 +430,7 @@ GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetResponseSchema () co
                     "type": "object",
                     "properties": {
                         "guid": {
-                            "type": "string",
+                            "$ref": "#/Guid",
                             "description": "Comment identifier"
                         },
                         "author": {
@@ -409,8 +442,7 @@ GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetResponseSchema () co
                             "description": "Comment text"
                         },
                         "status": {
-                            "type": "string",
-                            "description": "Comment status"
+                            "$ref": "#/IssueCommentStatus"
                         },
                         "creaTime": {
                             "type": "integer",
@@ -437,42 +469,36 @@ GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetResponseSchema () co
 
 GS::ObjectState GetCommentsFromIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString issueIdStr;
-    if (!parameters.Get ("issueId", issueIdStr)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
+    GS::ObjectState issueId;
+    if (!parameters.Get ("issueId", issueId)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid input parameters.");
     }
 
-    API_Guid issueId = APIGuidFromString (issueIdStr.ToCStr ());
     GS::Array<API_MarkUpCommentType> comments;
-    ACAPI_Markup_GetComments (issueId, &comments);
+    GSErrCode err = ACAPI_Markup_GetComments (GetGuidFromObjectState (issueId), &comments);
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get comments for the given issue.");
+    }
 
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("comments");
 
-    comments.Enumerate ([&listAdder](const API_MarkUpCommentType& comment) {
-        auto GetCommentStatusStr = [](API_MarkUpCommentStatusID commentStatusID) -> const char* {
-            switch (commentStatusID) {
-                case APIComment_Error:		return "Error";
-                case APIComment_Warning:	return "Warning";
-                case APIComment_Info:		return "Info";
-                case APIComment_Unknown:
-                default:					return "Unknown";
-            }
-        };
+    for (const API_MarkUpCommentType& comment : comments) {
         GS::ObjectState commentData;
         commentData.Add ("guid", APIGuidToString (comment.guid));
         commentData.Add ("author", comment.author);
         commentData.Add ("text", comment.text);
-        commentData.Add ("status", GetCommentStatusStr (comment.status));
+        commentData.Add ("status", ConvertMarkUpCommentStatusIDToString (comment.status));
         commentData.Add ("creaTime", comment.creaTime);
         listAdder (commentData);
-    });
+    }
 
     return response;
 }
 
 AttachElementsToIssueCommand::AttachElementsToIssueCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -487,58 +513,71 @@ GS::Optional<GS::UniString> AttachElementsToIssueCommand::GetInputParametersSche
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to attach elements."
+                "$ref": "#/IssueId"
             },
-            "elementsIds": {
+            "elements": {
                 "$ref": "#/Elements"
             },
             "type": {
-                "type": "integer",
-                "description": "Attachment type status."
+                "$ref": "#/IssueElementType"
             }
         },
         "additionalProperties": false,
         "required": [
             "issueId",
-            "elementsIds",
+            "elements",
             "type"
         ]
     })";
 }
 
-GS::ObjectState AttachElementsToIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+GS::Optional<GS::UniString> AttachElementsToIssueCommand::GetResponseSchema () const
 {
-    int type;
-    GS::UniString issueIdStr;
-    API_Guid issueId;
-    GS::Array<GS::UniString> elemIdsStr;
-    GS::Array<API_Guid> elemIds;
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
 
-    parameters.Get ("type", type);
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("elementsIds", elemIdsStr) || !(type >= 0 && type <= 3)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
-    } else {
-        issueId = APIGuidFromString (issueIdStr.ToCStr ());
-        for (ULong i = 0; i < elemIdsStr.GetSize (); ++i) {
-            elemIds.Push (APIGuidFromString (elemIdsStr[i].ToCStr ()));
-        }
+static API_MarkUpComponentTypeID ConvertStringToMarkUpComponentTypeID (const GS::UniString& type)
+{
+    if (type == "Creation") {
+        return API_MarkUpComponentTypeID (0);
+    } else if (type == "Highlight") {
+        return API_MarkUpComponentTypeID (1);
+    } else if (type == "Deletion") {
+        return API_MarkUpComponentTypeID (2);
+    } else if (type == "Modification") {
+        return API_MarkUpComponentTypeID (3);
     }
 
+    return API_MarkUpComponentTypeID (0);
+}
+
+GS::ObjectState AttachElementsToIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::UniString type;
+    GS::ObjectState issueId;
+    GS::Array<GS::ObjectState> elements;
+
+    if (!parameters.Get ("type", type) || !parameters.Get ("issueId", issueId) || !parameters.Get ("elements", elements)) {
+        return CreateFailedExecutionResult (Error, "Invalid input parameters.");
+    }
+
+    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+
     GSErrCode err = ACAPI_CallUndoableCommand ("Attach elements", [&]() -> GSErrCode {
-        err = TAPIR_MarkUp_AttachElements (issueId, elemIds, type);
-        return err;
+        return TAPIR_MarkUp_AttachElements (GetGuidFromObjectState (issueId), elemIds, ConvertStringToMarkUpComponentTypeID (type));
     });
 
     if (err != NoError) {
-        return CreateErrorResponse (Error, "Failed to attach elements.");
+        return CreateFailedExecutionResult (Error, "Failed to attach elements.");
     }
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }
 
 DetachElementsFromIssueCommand::DetachElementsFromIssueCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -553,47 +592,51 @@ GS::Optional<GS::UniString> DetachElementsFromIssueCommand::GetInputParametersSc
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to deattach elements."
+                "$ref": "#/IssueId"
             },
-            "elementsIds": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
             "issueId",
-            "elementsIds"
+            "elements"
         ]
+    })";
+}
+
+GS::Optional<GS::UniString> DetachElementsFromIssueCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
     })";
 }
 
 GS::ObjectState DetachElementsFromIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString issueIdStr;
-    API_Guid issueId;
-    GS::Array<GS::UniString> elemIdsStr;
-    GS::Array<API_Guid> elemIds;
+    GS::ObjectState issueId;
+    GS::Array<GS::ObjectState> elements;
 
-    if (!parameters.Get ("issueId", issueIdStr) || !parameters.Get ("elementsIds", elemIdsStr)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
-    } else {
-        issueId = APIGuidFromString (issueIdStr.ToCStr ());
-        for (ULong i = 0; i < elemIdsStr.GetSize (); ++i) {
-            elemIds.Push (APIGuidFromString (elemIdsStr[i].ToCStr ()));
-        }
+    if (!parameters.Get ("issueId", issueId) || !parameters.Get ("elements", elements)) {
+        return CreateFailedExecutionResult (Error, "Invalid input parameters.");
     }
 
+    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+
     GSErrCode err = ACAPI_CallUndoableCommand ("Detach elements", [&]() -> GSErrCode {
-        err = ACAPI_Markup_DetachElements (issueId, elemIds);
-        return err;
+        return ACAPI_Markup_DetachElements (GetGuidFromObjectState (issueId), elemIds);
     });
 
-    return {};
+    if (err != NoError) {
+        return CreateFailedExecutionResult (Error, "Failed to detach elements.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
 }
 
 GetElementsAttachedToIssueCommand::GetElementsAttachedToIssueCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -608,12 +651,10 @@ GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetInputParameter
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to get elements."
+                "$ref": "#/IssueId"
             },
             "type": {
-                "type": "integer",
-                "description": "The attachment type to filter elements."
+                "$ref": "#/IssueElementType"
             }
         },
         "additionalProperties": false,
@@ -633,7 +674,7 @@ GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetResponseSchema
                 "$ref": "#/Elements"
             }
         },
-        "additionalProperties": false,
+        "additionalProperties": true,
         "required": [
             "elements"
         ]
@@ -642,35 +683,32 @@ GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetResponseSchema
 
 GS::ObjectState GetElementsAttachedToIssueCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    int type;
-    GS::ObjectState response;
-    GS::Array<API_Guid> elemIds;
-    GS::UniString issueIdStr;
+    GS::UniString type;
+    GS::ObjectState issueId;
 
-    parameters.Get ("type", type);
-    if (!parameters.Get ("issueId", issueIdStr) || !(type >= 0 && type <= 3)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
+    if (!parameters.Get ("type", type) || !parameters.Get ("issueId", issueId)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid input parameters.");
     }
 
-    API_Guid issueId = APIGuidFromString (issueIdStr.ToCStr ());
-    GSErrCode err = TAPIR_MarkUp_GetAttachedElements (issueId, type, elemIds);
-    const auto& elemObj = response.AddList<GS::ObjectState> ("elements");
+    GS::ObjectState response;
+    GS::Array<API_Guid> attachedElements;
 
-    if (err == NoError) {
-        elemIds.Enumerate ([&elemObj](const API_Guid& guid) {
-            GS::ObjectState elements;
-            elements.Add ("guid", APIGuidToString (guid));
-            elemObj (elements);
-        });
-    } else {
+    GSErrCode err = TAPIR_MarkUp_GetAttachedElements (GetGuidFromObjectState (issueId), ConvertStringToMarkUpComponentTypeID (type), attachedElements);
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrieve attached elements.");
+    }
+
+    for (const API_Guid& guid : attachedElements) {
+        elements (CreateElementIdObjectState (guid));
     }
 
     return response;
 }
 
 ExportIssuesToBCFCommand::ExportIssuesToBCFCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -684,13 +722,9 @@ GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetInputParametersSchema (
     return R"({
         "type": "object",
         "properties": {
-            "issuesIds": {
-                "type": "array",
-                "description": "Issue Ids to export.",
-                "items": {
-                    "type": "string"
-                },
-                "minItems": 1
+            "issues": {
+                "$ref": "#/Issues",
+                "description": "Leave it empty to export all issues."
             },
             "exportPath": {
                 "type": "string",
@@ -714,45 +748,50 @@ GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetInputParametersSchema (
     })";
 }
 
+GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
 GS::ObjectState ExportIssuesToBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString exportPath;
-    GS::Array<GS::UniString> issueIdsStr;
+    GS::Array<GS::ObjectState> issues;
     GS::Array<API_Guid> issueIds;
-    GS::Array<API_MarkUpType> issues;
     bool useExternalId = false;
     bool alignBySurveyPoint = true;
 
     if (!parameters.Get ("exportPath", exportPath) || !parameters.Get ("useExternalId", useExternalId) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
+        return CreateFailedExecutionResult (Error, "Invalid input parameters.");
     }
 
-    parameters.Get ("issuesIds", issueIdsStr);
-    if (issueIdsStr.IsEmpty ()) {
+    parameters.Get ("issues", issues);
+    if (issues.IsEmpty ()) {
+        GS::Array<API_MarkUpType> issues;
         GSErrCode err = ACAPI_Markup_GetList (APINULLGuid, &issues);
         if (err == NoError) {
-            for (const auto& issues : issues) {
-                issueIds.Push (issues.guid);
+            for (const auto& i : issues) {
+                issueIds.Push (i.guid);
             }
         }
     } else {
-        for (ULong i = 0; i < issueIdsStr.GetSize (); ++i) {
-            issueIds.Push (APIGuidFromString (issueIdsStr[i].ToCStr ()));
-        }
+        issueIds = issues.Transform<API_Guid> (GetGuidFromIssuesArrayItem);
     }
 
     IO::Location bcfFilePath (exportPath);
     GSErrCode err = ACAPI_Markup_ExportToBCF (bcfFilePath, issueIds, useExternalId, alignBySurveyPoint);
 
     if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to export issues.");
+        return CreateFailedExecutionResult (err, "Failed to export issues.");
     }
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }
 
 ImportIssuesFromBCFCommand::ImportIssuesFromBCFCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -783,25 +822,31 @@ GS::Optional<GS::UniString> ImportIssuesFromBCFCommand::GetInputParametersSchema
     })";
 }
 
+GS::Optional<GS::UniString> ImportIssuesFromBCFCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
 GS::ObjectState ImportIssuesFromBCFCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     bool alignBySurveyPoint = true;
     GS::UniString importPath;
 
     if (!parameters.Get ("importPath", importPath) || !parameters.Get ("alignBySurveyPoint", alignBySurveyPoint)) {
-        return CreateErrorResponse (Error, "Invalid input parameters.");
+        return CreateFailedExecutionResult (Error, "Invalid input parameters.");
     }
 
     IO::Location bcfFilePath (importPath);
     GSErrCode err = ACAPI_CallUndoableCommand ("Import BCF Issues", [&]() -> GSErrCode {
         API_IFCRelationshipData ifcRelationshipData = GetCurrentProjectIFCRelationshipData ();
-        err = ACAPI_Markup_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false, alignBySurveyPoint);
-        return err;
+        return ACAPI_Markup_ImportFromBCF (bcfFilePath, true, &GetIFCRelationshipData, &ifcRelationshipData, false, alignBySurveyPoint);
     });
 
     if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to import issues.");
+        return CreateFailedExecutionResult (err, "Failed to import issues.");
     }
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }

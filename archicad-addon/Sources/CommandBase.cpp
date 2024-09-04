@@ -61,9 +61,9 @@ GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& e
 
 GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniString& errorMessage)
 {
-    return GS::ObjectState (
-        "success", false,
-        "error", CreateErrorResponse (errorCode, errorMessage));
+    GS::ObjectState error = CreateErrorResponse (errorCode, errorMessage);
+    error.Add ("success", false);
+    return error;
 }
 
 GS::ObjectState CreateSuccessfulExecutionResult ()
@@ -75,8 +75,19 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
 API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
 {
 	GS::String guid;
-	os.Get ("guid", guid);
+	if (!os.Get ("guid", guid)) {
+        return APINULLGuid;
+    }
 	return APIGuidFromString (guid.ToCStr ());
+}
+
+API_Guid GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os)
+{
+    GS::ObjectState idField;
+    if (!os.Get (idFieldName, idField)) {
+        return APINULLGuid;
+    }
+	return GetGuidFromObjectState (idField);
 }
 
 API_Coord Get2DCoordinateFromObjectState (const GS::ObjectState& objectState)
@@ -94,7 +105,7 @@ GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c)
 
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
 {
-    return GS::ObjectState (idFieldName, GS::ObjectState ("guid", APIGuidToString (guid)));
+    return GS::ObjectState (idFieldName, CreateGuidObjectState (guid));
 }
 
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)

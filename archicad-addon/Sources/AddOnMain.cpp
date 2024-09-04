@@ -22,6 +22,12 @@
 
 static std::vector<CommandGroup> gCommandGroups;
 
+#ifdef DEBUG
+static bool IsDebugBuild = true;
+#else
+static bool IsDebugBuild = false;
+#endif
+
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
 {
@@ -77,7 +83,9 @@ GSErrCode RegisterInterface (void)
 {
     GSErrCode err = NoError;
 
-    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
+    if (IsDebugBuild) {
+        err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
+    }
 
     return err;
 }
@@ -86,7 +94,9 @@ GSErrCode Initialize (void)
 {
     GSErrCode err = NoError;
 
-    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
+    if (IsDebugBuild) {
+        err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
+    }
 
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
@@ -135,6 +145,10 @@ GSErrCode Initialize (void)
             projectCommands, "0.1.0",
             "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
         );
+        err |= RegisterCommand<OpenProjectCommand> (
+            projectCommands, "1.0.7",
+            "Opens the given project."
+        );
         gCommandGroups.push_back (projectCommands);
     }
 
@@ -143,6 +157,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetSelectedElementsCommand> (
             elementCommands, "0.1.0",
             "Gets the list of the currently selected elements."
+        );
+        err |= RegisterCommand<ChangeSelectionOfElementsCommand> (
+            elementCommands, "1.0.7",
+            "Adds/removes a number of elements to/from the current selection."
         );
         err |= RegisterCommand<FilterElementsCommand> (
             elementCommands, "1.0.7",

@@ -307,17 +307,17 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
 
 void CreateBuildingMaterialsCommand::SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const
 {
-    GS::UniString id;
+    static GS::UniString id;
     if (parameters.Get ("id", id)) {
         attribute.buildingMaterial.id = &id;
     }
 
-    GS::UniString manufacturer;
+    static GS::UniString manufacturer;
     if (parameters.Get ("manufacturer", manufacturer)) {
         attribute.buildingMaterial.manufacturer = &manufacturer;
     }
 
-    GS::UniString description;
+    static GS::UniString description;
     if (parameters.Get ("description", description)) {
         attribute.buildingMaterial.description = &description;
     }
