@@ -2,7 +2,7 @@ import aclib
 
 # Create layers
 
-layers = [{
+newLayers = [{
     'name' : 'New Layer'
 },{
     'name' : 'New Hidden Layer',
@@ -15,43 +15,35 @@ layers = [{
     'isWireframe' : True
 }]
 
-result = aclib.RunTapirCommand ('CreateLayers', {
-    'layerDataArray' : layers,
-    'overwriteExisting' : True
-})
-
-print (result)
-
-result = aclib.RunCommand ('API.GetLayerAttributes', {
-    'attributeIds' : result['attributeIds']
-})
-
-print (result)
-
-# Modify layer
-
-layers = [{
-    'name' : 'New Locked Layer',
-    'isLocked' : False
-}]
-
-result = aclib.RunTapirCommand ('CreateLayers', {
-    'layerDataArray' : layers,
-    'overwriteExisting' : True
-})
-
-print (result)
+createLayersResult = aclib.RunTapirCommand (
+    'CreateLayers', {
+        'layerDataArray' : newLayers,
+        'overwriteExisting' : True
+    })
 
 result = aclib.RunCommand ('API.GetLayerAttributes', {
-    'attributeIds' : result['attributeIds']
+    'attributeIds' : createLayersResult['attributeIds']
 })
 
-print (result)
+# Modify layer: unlock layer
+
+for layer in newLayers:
+    if 'isLocked' in layer and layer['isLocked']:
+        layer['isLocked'] = False
+
+createLayersResult = aclib.RunTapirCommand (
+    'CreateLayers', {
+        'layerDataArray' : newLayers,
+        'overwriteExisting' : True
+    })
+
+result = aclib.RunCommand ('API.GetLayerAttributes', {
+    'attributeIds' : createLayersResult['attributeIds']
+})
 
 # Delete layer
 
-result = aclib.RunCommand ('API.DeleteAttributes', {
-    'attributeIds' : result['attributeIds']
-})
-
-print (result)
+aclib.RunCommand (
+    'API.DeleteAttributes', {
+        'attributeIds' : createLayersResult['attributeIds']
+    })

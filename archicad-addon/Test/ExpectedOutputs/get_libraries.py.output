@@ -1,0 +1,116 @@
+Command: GetLibraries
+Parameters:
+{}
+Response:
+{
+    "libraries": [
+        {
+            "name": "BuiltInLibraryParts.lcf",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\BuiltInLibraryParts.lcf",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "Collada In-Out.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\Collada In-Out.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "Corner Window.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Standard\\Corner Window.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "GoogleEarthConnectivity.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\GoogleEarthConnectivity.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "Grid Tool.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Local\\Grid Tool.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "IFC In-Out.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\IFC In-Out.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "Interactive Schedule.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Standard\\Interactive Schedule.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "MEP Modeler.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\MEP Modeler\\MEP Modeler.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "PointCloud_In.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\PointCloud_In.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "Rhino_In.apx",
+            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\Rhino_In.apx\\rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "Embedded Library",
+            "path": "C:\\Users\\loran\\Graphisoft\\AutoSave-26\\Emb_<ID>\\content",
+            "type": "EmbeddedLibrary",
+            "available": true,
+            "readOnly": false,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "TestProject.pla",
+            "path": "c:\\Users\\loran\\GitRepos\\tapir-archicad-automation\\archicad-addon\\Test\\TestProject.pla",
+            "type": "LocalLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        }
+    ]
+}

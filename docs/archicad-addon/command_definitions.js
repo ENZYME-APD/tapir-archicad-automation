@@ -43,7 +43,9 @@ var gCommands = [{
                 "version": "0.1.0",
                 "description": "Performs a quit operation on the currently running Archicad instance.",
                 "inputScheme": null,
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "GetCurrentWindowType",
                 "version": "1.0.7",
@@ -274,6 +276,26 @@ var gCommands = [{
         ]
     },
                 "outputScheme": null
+            },{
+                "name": "OpenProject",
+                "version": "1.0.7",
+                "description": "Opens the given project.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "projectFilePath": {
+                "type": "string",
+                "description": "The target project file to open."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectFilePath"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Element Commands",
@@ -292,6 +314,40 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "elements"
+        ]
+    }
+            },{
+                "name": "ChangeSelectionOfElements",
+                "version": "1.0.7",
+                "description": "Adds/removes a number of elements to/from the current selection.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "addElementsToSelection": {
+                "$ref": "#/Elements"
+            },
+            "removeElementsFromSelection": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResultsOfAddToSelection": {
+                "$ref": "#/ExecutionResults"
+            },
+            "executionResultsOfRemoveFromSelection": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResultsOfAddToSelection",
+            "executionResultsOfRemoveFromSelection"
         ]
     }
             },{
@@ -361,6 +417,9 @@ var gCommands = [{
                             "type": "number"
                         },
                         "layerIndex": {
+                            "type": "number"
+                        },
+                        "drawIndex": {
                             "type": "number"
                         },
                         "details": {
@@ -627,7 +686,9 @@ var gCommands = [{
             "highlightedColors"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "MoveElements",
                 "version": "1.0.2",
@@ -686,7 +747,18 @@ var gCommands = [{
             "elementsWithMoveVectors"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
             },{
                 "name": "GetGDLParametersOfElements",
                 "version": "1.0.2",
@@ -752,7 +824,18 @@ var gCommands = [{
         "elementsWithGDLParameters"
     ]
 },
-                "outputScheme": null
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
             },{
                 "name": "GetPropertyValuesOfElements",
                 "version": "1.0.6",
@@ -1459,7 +1542,9 @@ var gCommands = [{
                 "version": "1.0.0",
                 "description": "Executes the reload libraries command.",
                 "inputScheme": null,
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Teamwork Commands",
@@ -1489,9 +1574,8 @@ var gCommands = [{
                 "type": "string",
                 "description": "The name of the issue."
             },
-            "parentId": {
-                "type": "string",
-                "description": "The id of the parent issue, optional."
+            "parentIssueId": {
+                "$ref": "#/IssueId"
             },
             "tagText": {
                 "type": "string",
@@ -1503,7 +1587,18 @@ var gCommands = [{
             "name"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "issueId": {
+                "$ref": "#/IssueId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "issueId"
+        ]
+    }
             },{
                 "name": "DeleteIssue",
                 "version": "1.0.2",
@@ -1512,8 +1607,11 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to delete."
+                "$ref": "#/IssueId"
+            },
+            "acceptAllElements": {
+                "type": "boolean",
+                "description": "Accept all creation/deletion/modification of the deleted issue. By default false."
             }
         },
         "additionalProperties": false,
@@ -1521,7 +1619,9 @@ var gCommands = [{
             "issueId"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "GetIssues",
                 "version": "1.0.2",
@@ -1536,17 +1636,15 @@ var gCommands = [{
                 "items": {
                     "type": "object",
                     "properties": {
-                        "guid": {
-                            "type": "string",
-                            "description": "Issue identifier"
+                        "issueId": {
+                            "$ref": "#/IssueId"
                         },
                         "name": {
                             "type": "string",
                             "description": "Issue name"
                         },
-                        "parentGuid": {
-                            "type": "string",
-                            "description": "The identifier of the parent issue"
+                        "parentIssueId": {
+                            "$ref": "#/IssueId"
                         },
                         "creaTime": {
                             "type": "integer",
@@ -1560,9 +1658,8 @@ var gCommands = [{
                             "type": "string",
                             "description": "Issue tag text - labels"
                         },
-                        "tagTextElemGuid": {
-                            "type": "string",
-                            "description": "The identifier of the attached tag text element"
+                        "tagTextElementId": {
+                            "$ref": "#/ElementId"
                         },
                         "isTagTextElemVisible": {
                             "type": "boolean",
@@ -1571,13 +1668,13 @@ var gCommands = [{
                     },
                     "additionalProperties": false,
                     "required": [
-                        "guid",
+                        "issueId",
                         "name",
-                        "parentGuid",
+                        "parentIssueId",
                         "creaTime",
                         "modiTime",
                         "tagText",
-                        "tagTextElemGuid",
+                        "tagTextElementId",
                         "isTagTextElemVisible"
                     ]
                 }
@@ -1596,16 +1693,14 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to add the comment."
+                "$ref": "#/IssueId"
             },
             "author": {
                 "type": "string",
                 "description": "The author of the new comment."
             },
             "status": {
-                "type": "integer",
-                "description": "Comment status type."
+                "$ref": "#/IssueCommentStatus"
             },
             "text": {
                 "type": "string",
@@ -1618,7 +1713,9 @@ var gCommands = [{
             "text"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "GetCommentsFromIssue",
                 "version": "1.0.6",
@@ -1627,8 +1724,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to get the comments."
+                "$ref": "#/IssueId"
             }
         },
         "additionalProperties": false,
@@ -1646,7 +1742,7 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "guid": {
-                            "type": "string",
+                            "$ref": "#/Guid",
                             "description": "Comment identifier"
                         },
                         "author": {
@@ -1658,8 +1754,7 @@ var gCommands = [{
                             "description": "Comment text"
                         },
                         "status": {
-                            "type": "string",
-                            "description": "Comment status"
+                            "$ref": "#/IssueCommentStatus"
                         },
                         "creaTime": {
                             "type": "integer",
@@ -1690,25 +1785,25 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to attach elements."
+                "$ref": "#/IssueId"
             },
-            "elementsIds": {
+            "elements": {
                 "$ref": "#/Elements"
             },
             "type": {
-                "type": "integer",
-                "description": "Attachment type status."
+                "$ref": "#/IssueElementType"
             }
         },
         "additionalProperties": false,
         "required": [
             "issueId",
-            "elementsIds",
+            "elements",
             "type"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "DetachElementsFromIssue",
                 "version": "1.0.6",
@@ -1717,20 +1812,21 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to deattach elements."
+                "$ref": "#/IssueId"
             },
-            "elementsIds": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
             "issueId",
-            "elementsIds"
+            "elements"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "GetElementsAttachedToIssue",
                 "version": "1.0.6",
@@ -1739,12 +1835,10 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "issueId": {
-                "type": "string",
-                "description": "The id of the issue to get elements."
+                "$ref": "#/IssueId"
             },
             "type": {
-                "type": "integer",
-                "description": "The attachment type to filter elements."
+                "$ref": "#/IssueElementType"
             }
         },
         "additionalProperties": false,
@@ -1760,7 +1854,7 @@ var gCommands = [{
                 "$ref": "#/Elements"
             }
         },
-        "additionalProperties": false,
+        "additionalProperties": true,
         "required": [
             "elements"
         ]
@@ -1772,13 +1866,9 @@ var gCommands = [{
                 "inputScheme": {
         "type": "object",
         "properties": {
-            "issuesIds": {
-                "type": "array",
-                "description": "Issue Ids to export.",
-                "items": {
-                    "type": "string"
-                },
-                "minItems": 1
+            "issues": {
+                "$ref": "#/Issues",
+                "description": "Leave it empty to export all issues."
             },
             "exportPath": {
                 "type": "string",
@@ -1800,7 +1890,9 @@ var gCommands = [{
             "alignBySurveyPoint"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "ImportIssuesFromBCF",
                 "version": "1.0.6",
@@ -1823,6 +1915,8 @@ var gCommands = [{
             "alignBySurveyPoint"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         }];

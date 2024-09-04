@@ -1,0 +1,469 @@
+Command: CreateIssue
+Parameters:
+{
+    "name": "Just a sample issue",
+    "tagText": "python"
+}
+Response:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    }
+}
+Command: CreateIssue
+Parameters:
+{
+    "name": "Just a sample issue #2",
+    "tagText": "python #2"
+}
+Response:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    }
+}
+Command: GetIssues
+Parameters:
+{}
+Response:
+{
+    "issues": [
+        {
+            "issueId": {
+                "guid": "<GUID>"
+            },
+            "name": "Just a sample issue",
+            "parentIssueId": {
+                "guid": "<GUID>"
+            },
+            "creaTime": <TIME>,
+            "modiTime": <TIME>,
+            "tagText": "python",
+            "tagTextElementId": {
+                "guid": "<GUID>"
+            },
+            "isTagTextElemVisible": false
+        },
+        {
+            "issueId": {
+                "guid": "<GUID>"
+            },
+            "name": "Just a sample issue #2",
+            "parentIssueId": {
+                "guid": "<GUID>"
+            },
+            "creaTime": <TIME>,
+            "modiTime": <TIME>,
+            "tagText": "python #2",
+            "tagTextElementId": {
+                "guid": "<GUID>"
+            },
+            "isTagTextElemVisible": false
+        }
+    ]
+}
+Command: AddCommentToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "text": "dropped da comment here",
+    "author": "python",
+    "status": "Info"
+}
+Response:
+{
+    "success": true
+}
+Command: AttachElementsToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "type": "Creation"
+}
+Response:
+{
+    "success": true
+}
+Command: AttachElementsToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "type": "Highlight"
+}
+Response:
+{
+    "success": true
+}
+Command: AttachElementsToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "type": "Deletion"
+}
+Response:
+{
+    "success": true
+}
+Command: AttachElementsToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "elements": [],
+    "type": "Modification"
+}
+Response:
+{
+    "success": true
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Creation"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Highlight"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Deletion"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Modification"
+}
+Response:
+{
+    "elements": []
+}
+Command: ExportIssuesToBCF
+Parameters:
+{
+    "issues": [
+        {
+            "issueId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "issueId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "exportPath": "C:\\Users\\loran\\AppData\\Local\\Temp\\issues_test.bcfzip",
+    "useExternalId": false,
+    "alignBySurveyPoint": true
+}
+Response:
+{
+    "success": true
+}
+Command: DetachElementsFromIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Creation"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Highlight"
+}
+Response:
+{
+    "elements": []
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Deletion"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsAttachedToIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    },
+    "type": "Modification"
+}
+Response:
+{
+    "elements": []
+}
+Command: DeleteIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    }
+}
+Response:
+{
+    "success": true
+}
+Command: DeleteIssue
+Parameters:
+{
+    "issueId": {
+        "guid": "<GUID>"
+    }
+}
+Response:
+{
+    "success": true
+}
+Command: GetIssues
+Parameters:
+{}
+Response:
+{
+    "issues": []
+}
+Command: ImportIssuesFromBCF
+Parameters:
+{
+    "importPath": "C:\\Users\\loran\\AppData\\Local\\Temp\\issues_test.bcfzip",
+    "alignBySurveyPoint": true
+}
+Response:
+{
+    "success": true
+}
+Command: GetIssues
+Parameters:
+{}
+Response:
+{
+    "issues": [
+        {
+            "issueId": {
+                "guid": "<GUID>"
+            },
+            "name": "Just a sample issue",
+            "parentIssueId": {
+                "guid": "<GUID>"
+            },
+            "creaTime": <TIME>,
+            "modiTime": <TIME>,
+            "tagText": "python",
+            "tagTextElementId": {
+                "guid": "<GUID>"
+            },
+            "isTagTextElemVisible": false
+        },
+        {
+            "issueId": {
+                "guid": "<GUID>"
+            },
+            "name": "Just a sample issue #2",
+            "parentIssueId": {
+                "guid": "<GUID>"
+            },
+            "creaTime": <TIME>,
+            "modiTime": <TIME>,
+            "tagText": "python #2",
+            "tagTextElementId": {
+                "guid": "<GUID>"
+            },
+            "isTagTextElemVisible": false
+        }
+    ]
+}

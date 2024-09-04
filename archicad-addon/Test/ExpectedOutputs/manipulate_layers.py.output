@@ -1,0 +1,94 @@
+Command: CreateLayers
+Parameters:
+{
+    "layerDataArray": [
+        {
+            "name": "New Layer"
+        },
+        {
+            "name": "New Hidden Layer",
+            "isHidden": true
+        },
+        {
+            "name": "New Locked Layer",
+            "isLocked": true
+        },
+        {
+            "name": "New Wireframe Layer",
+            "isWireframe": true
+        }
+    ],
+    "overwriteExisting": true
+}
+Response:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: CreateLayers
+Parameters:
+{
+    "layerDataArray": [
+        {
+            "name": "New Layer"
+        },
+        {
+            "name": "New Hidden Layer",
+            "isHidden": true
+        },
+        {
+            "name": "New Locked Layer",
+            "isLocked": false
+        },
+        {
+            "name": "New Wireframe Layer",
+            "isWireframe": true
+        }
+    ],
+    "overwriteExisting": true
+}
+Response:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
