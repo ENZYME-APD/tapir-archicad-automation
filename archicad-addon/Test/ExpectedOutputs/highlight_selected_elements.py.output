@@ -1,0 +1,162 @@
+Command: HighlightElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "F18FA98C-BFC2-4E15-8779-3D1E77606A31"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "7885118B-8890-48EE-8705-1B88553FE9B3"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "D230A6FB-7921-48B0-96F4-E0D63E79CCB0"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "4BB43305-06E7-4E09-A37C-900338E103C6"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "74839492-8FC9-48E3-BB88-2CAEAB3BE7D1"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "0F1F9C73-68E1-4A30-B9F0-D9A63BE38A9F"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "C79034D0-563C-4CAD-AF37-3C7A117BC825"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "64FE99A9-A04A-4DAD-ADF9-79B129C62AE2"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "AFE9CC05-7C1D-4F70-A0AD-84B8A3405ABD"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "6BF6D185-8ED9-47F0-800C-F4E33AE05998"
+            }
+        }
+    ],
+    "highlightedColors": [
+        [
+            0,
+            50,
+            50,
+            255
+        ],
+        [
+            30,
+            50,
+            50,
+            255
+        ],
+        [
+            60,
+            50,
+            50,
+            255
+        ],
+        [
+            90,
+            50,
+            50,
+            255
+        ],
+        [
+            120,
+            50,
+            50,
+            255
+        ],
+        [
+            150,
+            50,
+            50,
+            255
+        ],
+        [
+            180,
+            50,
+            50,
+            255
+        ],
+        [
+            210,
+            50,
+            50,
+            255
+        ],
+        [
+            240,
+            50,
+            50,
+            255
+        ],
+        [
+            15,
+            50,
+            50,
+            255
+        ],
+        [
+            45,
+            50,
+            50,
+            255
+        ],
+        [
+            75,
+            50,
+            50,
+            255
+        ],
+        [
+            105,
+            50,
+            50,
+            255
+        ]
+    ],
+    "wireframe3D": true,
+    "nonHighlightedColor": [
+        0,
+        0,
+        255,
+        128
+    ]
+}
+Response:
+{
+    "success": true
+}

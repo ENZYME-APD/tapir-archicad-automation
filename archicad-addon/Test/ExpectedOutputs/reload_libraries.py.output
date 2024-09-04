@@ -1,0 +1,7 @@
+Command: ReloadLibraries
+Parameters:
+{}
+Response:
+{
+    "success": true
+}

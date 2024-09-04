@@ -1,0 +1,7 @@
+Command: GetCurrentWindowType
+Parameters:
+{}
+Response:
+{
+    "currentWindowType": "FloorPlan"
+}

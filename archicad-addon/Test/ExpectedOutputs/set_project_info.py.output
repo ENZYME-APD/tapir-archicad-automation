@@ -1,0 +1,866 @@
+Command: GetProjectInfoFields
+Parameters:
+{}
+Response:
+{
+    "fields": [
+        {
+            "projectInfoId": "PROJECTNAME",
+            "projectInfoName": "Project Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "PROJECT_DESCRIPTION",
+            "projectInfoName": "Project Description",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "PROJECT_ID",
+            "projectInfoName": "Project ID",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "PROJECT_CODE",
+            "projectInfoName": "Project Code",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "PROJECTNUMBER",
+            "projectInfoName": "Project Number",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "PROJECTSTATUS",
+            "projectInfoName": "Project Status",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "KEYWORDS",
+            "projectInfoName": "Keywords",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "NOTES",
+            "projectInfoName": "Notes",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITE_NAME",
+            "projectInfoName": "Site Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITE_DESCRIPTION",
+            "projectInfoName": "Site Description",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITE_ID",
+            "projectInfoName": "Site ID",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEFULLADDRESS",
+            "projectInfoName": "Site Full Address",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEADDRESS1",
+            "projectInfoName": "Site Address1",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEADDRESS2",
+            "projectInfoName": "Site Address2",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEADDRESS3",
+            "projectInfoName": "Site Address3",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEPOSTBOX",
+            "projectInfoName": "Site Postal Box",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITECITY",
+            "projectInfoName": "Site City",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITESTATE",
+            "projectInfoName": "Site State",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEPOSTCODE",
+            "projectInfoName": "Site Postcode",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITECOUNTRY",
+            "projectInfoName": "Site Country",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEGROSSPERIMETER",
+            "projectInfoName": "Site Gross Perimeter",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEGROSSAREA",
+            "projectInfoName": "Site Gross Area",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "BUILDING_NAME",
+            "projectInfoName": "Building Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "BUILDING_DESCRIPTION",
+            "projectInfoName": "Building Description",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "BUILDING_ID",
+            "projectInfoName": "Building ID",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_FULLNAME",
+            "projectInfoName": "Contact Full Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_PREFIXTITLE",
+            "projectInfoName": "Contact Prefix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_GIVENNAME",
+            "projectInfoName": "Contact Given Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_MIDDLENAME",
+            "projectInfoName": "Contact Middle Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_FAMILYNAME",
+            "projectInfoName": "Contact Family Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_SUFFIXTITLE",
+            "projectInfoName": "Contact Suffix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_NAMEORDER",
+            "projectInfoName": "Contact Name Order",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_ID",
+            "projectInfoName": "Contact ID",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_ROLE",
+            "projectInfoName": "Contact Role",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_DEPARTMENT",
+            "projectInfoName": "Contact Department",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_FULLNAME",
+            "projectInfoName": "CAD Technician Full Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_PREFIXTITLE",
+            "projectInfoName": "CAD Technician Prefix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_GIVENNAME",
+            "projectInfoName": "CAD Technician Given Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_MIDDLENAME",
+            "projectInfoName": "CAD Technician Middle Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_FAMILYNAME",
+            "projectInfoName": "CAD Technician Family Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_SUFFIXTITLE",
+            "projectInfoName": "CAD Technician Suffix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_NAMEORDER",
+            "projectInfoName": "CAD Technician Name Order",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTCOMPANY",
+            "projectInfoName": "Contact Company",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_COMPANYCODE",
+            "projectInfoName": "Contact Company Code",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTFULLADDRESS",
+            "projectInfoName": "Contact Full Address",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTADDRESS1",
+            "projectInfoName": "Contact Address1",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTADDRESS2",
+            "projectInfoName": "Contact Address2",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTADDRESS3",
+            "projectInfoName": "Contact Address3",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTPOSTBOX",
+            "projectInfoName": "Contact Postal Box",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTCITY",
+            "projectInfoName": "Contact City",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTSTATE",
+            "projectInfoName": "Contact State",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTPOSTCODE",
+            "projectInfoName": "Contact Postcode",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTCOUNTRY",
+            "projectInfoName": "Contact Country",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTEMAIL",
+            "projectInfoName": "Contact E-mail",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTPHONE",
+            "projectInfoName": "Contact Phone Number",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTFAX",
+            "projectInfoName": "Contact Fax",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTWEB",
+            "projectInfoName": "Contact Web",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_FULLNAME",
+            "projectInfoName": "Client Full Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_PREFIXTITLE",
+            "projectInfoName": "Client Prefix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_GIVENNAME",
+            "projectInfoName": "Client Given Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_MIDDLENAME",
+            "projectInfoName": "Client Middle Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_FAMILYNAME",
+            "projectInfoName": "Client Family Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_SUFFIXTITLE",
+            "projectInfoName": "Client Suffix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_NAMEORDER",
+            "projectInfoName": "Client Name Order",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTCOMPANY",
+            "projectInfoName": "Client Company",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTFULLADDRESS",
+            "projectInfoName": "Client Full Address",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTADDRESS1",
+            "projectInfoName": "Client Address1",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTADDRESS2",
+            "projectInfoName": "Client Address2",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTADDRESS3",
+            "projectInfoName": "Client Address3",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTPOSTBOX",
+            "projectInfoName": "Client Postal Box",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTCITY",
+            "projectInfoName": "Client City",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTSTATE",
+            "projectInfoName": "Client State",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTPOSTCODE",
+            "projectInfoName": "Client Postcode",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTCOUNTRY",
+            "projectInfoName": "Client Country",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTEMAIL",
+            "projectInfoName": "Client E-mail",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTPHONE",
+            "projectInfoName": "Client Phone Number",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTFAX",
+            "projectInfoName": "Client Fax",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-CLIENT-1",
+            "projectInfoName": "Client Custom",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-BUILDING-1",
+            "projectInfoName": "Building Custom",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-PROJECT-1",
+            "projectInfoName": "Project Custom",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-SITE-1",
+            "projectInfoName": "Site Custom",
+            "projectInfoValue": ""
+        }
+    ]
+}
+Command: SetProjectInfoField
+Parameters:
+{
+    "projectInfoId": "PROJECTNAME",
+    "projectInfoValue": "Tapir"
+}
+Response:
+{}
+Command: SetProjectInfoField
+Parameters:
+{
+    "projectInfoId": "PROJECT_DESCRIPTION",
+    "projectInfoValue": "Tapir"
+}
+Response:
+{}
+Command: SetProjectInfoField
+Parameters:
+{
+    "projectInfoId": "PROJECT_ID",
+    "projectInfoValue": "Tapir"
+}
+Response:
+{}
+Command: SetProjectInfoField
+Parameters:
+{
+    "projectInfoId": "PROJECT_CODE",
+    "projectInfoValue": "Tapir"
+}
+Response:
+{}
+Command: SetProjectInfoField
+Parameters:
+{
+    "projectInfoId": "PROJECTNUMBER",
+    "projectInfoValue": "Tapir"
+}
+Response:
+{}
+Command: GetProjectInfoFields
+Parameters:
+{}
+Response:
+{
+    "fields": [
+        {
+            "projectInfoId": "PROJECTNAME",
+            "projectInfoName": "Project Name",
+            "projectInfoValue": "Tapir"
+        },
+        {
+            "projectInfoId": "PROJECT_DESCRIPTION",
+            "projectInfoName": "Project Description",
+            "projectInfoValue": "Tapir"
+        },
+        {
+            "projectInfoId": "PROJECT_ID",
+            "projectInfoName": "Project ID",
+            "projectInfoValue": "Tapir"
+        },
+        {
+            "projectInfoId": "PROJECT_CODE",
+            "projectInfoName": "Project Code",
+            "projectInfoValue": "Tapir"
+        },
+        {
+            "projectInfoId": "PROJECTNUMBER",
+            "projectInfoName": "Project Number",
+            "projectInfoValue": "Tapir"
+        },
+        {
+            "projectInfoId": "PROJECTSTATUS",
+            "projectInfoName": "Project Status",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "KEYWORDS",
+            "projectInfoName": "Keywords",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "NOTES",
+            "projectInfoName": "Notes",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITE_NAME",
+            "projectInfoName": "Site Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITE_DESCRIPTION",
+            "projectInfoName": "Site Description",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITE_ID",
+            "projectInfoName": "Site ID",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEFULLADDRESS",
+            "projectInfoName": "Site Full Address",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEADDRESS1",
+            "projectInfoName": "Site Address1",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEADDRESS2",
+            "projectInfoName": "Site Address2",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEADDRESS3",
+            "projectInfoName": "Site Address3",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEPOSTBOX",
+            "projectInfoName": "Site Postal Box",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITECITY",
+            "projectInfoName": "Site City",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITESTATE",
+            "projectInfoName": "Site State",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEPOSTCODE",
+            "projectInfoName": "Site Postcode",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITECOUNTRY",
+            "projectInfoName": "Site Country",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEGROSSPERIMETER",
+            "projectInfoName": "Site Gross Perimeter",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "SITEGROSSAREA",
+            "projectInfoName": "Site Gross Area",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "BUILDING_NAME",
+            "projectInfoName": "Building Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "BUILDING_DESCRIPTION",
+            "projectInfoName": "Building Description",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "BUILDING_ID",
+            "projectInfoName": "Building ID",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_FULLNAME",
+            "projectInfoName": "Contact Full Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_PREFIXTITLE",
+            "projectInfoName": "Contact Prefix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_GIVENNAME",
+            "projectInfoName": "Contact Given Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_MIDDLENAME",
+            "projectInfoName": "Contact Middle Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_FAMILYNAME",
+            "projectInfoName": "Contact Family Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_SUFFIXTITLE",
+            "projectInfoName": "Contact Suffix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_NAMEORDER",
+            "projectInfoName": "Contact Name Order",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_ID",
+            "projectInfoName": "Contact ID",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_ROLE",
+            "projectInfoName": "Contact Role",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_DEPARTMENT",
+            "projectInfoName": "Contact Department",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_FULLNAME",
+            "projectInfoName": "CAD Technician Full Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_PREFIXTITLE",
+            "projectInfoName": "CAD Technician Prefix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_GIVENNAME",
+            "projectInfoName": "CAD Technician Given Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_MIDDLENAME",
+            "projectInfoName": "CAD Technician Middle Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_FAMILYNAME",
+            "projectInfoName": "CAD Technician Family Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_SUFFIXTITLE",
+            "projectInfoName": "CAD Technician Suffix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CAD_TECHNICIAN_NAMEORDER",
+            "projectInfoName": "CAD Technician Name Order",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTCOMPANY",
+            "projectInfoName": "Contact Company",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACT_COMPANYCODE",
+            "projectInfoName": "Contact Company Code",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTFULLADDRESS",
+            "projectInfoName": "Contact Full Address",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTADDRESS1",
+            "projectInfoName": "Contact Address1",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTADDRESS2",
+            "projectInfoName": "Contact Address2",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTADDRESS3",
+            "projectInfoName": "Contact Address3",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTPOSTBOX",
+            "projectInfoName": "Contact Postal Box",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTCITY",
+            "projectInfoName": "Contact City",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTSTATE",
+            "projectInfoName": "Contact State",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTPOSTCODE",
+            "projectInfoName": "Contact Postcode",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTCOUNTRY",
+            "projectInfoName": "Contact Country",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTEMAIL",
+            "projectInfoName": "Contact E-mail",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTPHONE",
+            "projectInfoName": "Contact Phone Number",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTFAX",
+            "projectInfoName": "Contact Fax",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CONTACTWEB",
+            "projectInfoName": "Contact Web",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_FULLNAME",
+            "projectInfoName": "Client Full Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_PREFIXTITLE",
+            "projectInfoName": "Client Prefix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_GIVENNAME",
+            "projectInfoName": "Client Given Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_MIDDLENAME",
+            "projectInfoName": "Client Middle Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_FAMILYNAME",
+            "projectInfoName": "Client Family Name",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_SUFFIXTITLE",
+            "projectInfoName": "Client Suffix Title",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENT_NAMEORDER",
+            "projectInfoName": "Client Name Order",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTCOMPANY",
+            "projectInfoName": "Client Company",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTFULLADDRESS",
+            "projectInfoName": "Client Full Address",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTADDRESS1",
+            "projectInfoName": "Client Address1",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTADDRESS2",
+            "projectInfoName": "Client Address2",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTADDRESS3",
+            "projectInfoName": "Client Address3",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTPOSTBOX",
+            "projectInfoName": "Client Postal Box",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTCITY",
+            "projectInfoName": "Client City",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTSTATE",
+            "projectInfoName": "Client State",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTPOSTCODE",
+            "projectInfoName": "Client Postcode",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTCOUNTRY",
+            "projectInfoName": "Client Country",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTEMAIL",
+            "projectInfoName": "Client E-mail",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTPHONE",
+            "projectInfoName": "Client Phone Number",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "CLIENTFAX",
+            "projectInfoName": "Client Fax",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-CLIENT-1",
+            "projectInfoName": "Client Custom",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-BUILDING-1",
+            "projectInfoName": "Building Custom",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-PROJECT-1",
+            "projectInfoName": "Project Custom",
+            "projectInfoValue": ""
+        },
+        {
+            "projectInfoId": "autotext-SITE-1",
+            "projectInfoName": "Site Custom",
+            "projectInfoValue": ""
+        }
+    ]
+}
