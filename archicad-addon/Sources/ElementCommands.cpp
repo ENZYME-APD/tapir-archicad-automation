@@ -248,6 +248,141 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+SetDetailsOfElementsCommand::SetDetailsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetDetailsOfElementsCommand::GetName () const
+{
+    return "SetDetailsOfElements";
+}
+
+GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithDetails": {
+                "type": "array",
+                "description": "The elements with parameters.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "details": {
+                            "type": "object",
+                            "description": "Details of an element.",
+                            "properties": {
+                                "floorIndex": {
+                                    "type": "number"
+                                },
+                                "layerIndex": {
+                                    "type": "number"
+                                },
+                                "drawIndex": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": []
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "details"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithDetails"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithDetails;
+    parameters.Get ("elementsWithDetails", elementsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("SetDetailsOfElementsCommand", [&] () {
+        for (const GS::ObjectState& elementWithDetails : elementsWithDetails) {
+            const GS::ObjectState* elementId = elementWithDetails.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element elem = {};
+            elem.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&elem);
+
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+
+            const GS::ObjectState* details = elementWithDetails.Get ("details");
+            if (details == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "details field is missing"));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            if (details->Get ("floorIndex", elem.header.floorInd)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+            Int32 layerIndex;
+            if (details->Get ("layerIndex", layerIndex)) {
+                elem.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+            }
+            if (details->Get ("drawIndex", elem.header.drwIndex)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
+            }
+
+            constexpr API_ElementMemo* memo = nullptr;
+            constexpr UInt64 memoMask = 0;
+            constexpr bool withDel = true;
+            err = ACAPI_Element_Change (&elem, &mask, memo, memoMask, withDel);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 GetSelectedElementsCommand::GetSelectedElementsCommand () :
     CommandBase (CommonSchema::Used)
 {

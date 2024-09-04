@@ -152,6 +152,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Gets the details of the given elements (geometry parameters etc)."
         );
+        err |= RegisterCommand<SetDetailsOfElementsCommand> (
+            elementCommands, "1.0.7",
+            "Sets the details of the given elements (floor, layer, order etc)."
+        );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
