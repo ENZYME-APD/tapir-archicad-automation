@@ -1,4 +1,5 @@
 Build/*
 Test/TestProject*
+!Test/TestProject.pla
 .DS_Store
 .vscode
