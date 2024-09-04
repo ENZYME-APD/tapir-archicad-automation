@@ -23,9 +23,9 @@
 static std::vector<CommandGroup> gCommandGroups;
 
 #ifdef DEBUG
-static bool IsDebugBuild = true;
+static const bool IsDebugBuild = true;
 #else
-static bool IsDebugBuild = false;
+static const bool IsDebugBuild = false;
 #endif
 
 template <typename CommandType>
