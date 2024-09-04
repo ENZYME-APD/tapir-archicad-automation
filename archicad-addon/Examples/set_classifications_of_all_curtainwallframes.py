@@ -1,15 +1,18 @@
 import json
 import aclib
 
-allCurtainWalls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'CurtainWall'})['elements']
+allCurtainWalls = aclib.RunCommand (
+    'API.GetElementsByType', {
+        'elementType': 'CurtainWall'
+    })['elements']
 print('Project contains {} Curtain Wall(s)'.format(len(allCurtainWalls)))
-allCWSubelements = aclib.RunTapirCommand ('GetSubelementsOfHierarchicalElements', {'hierarchicalElements': allCurtainWalls})['subelementsOfHierarchicalElements']
 
-allCWFrameSubelements = []
-for cwSubelements in allCWSubelements:
-    for cwFrameSubelement in cwSubelements['cWallFrames']:
-        if 'elementId' in cwFrameSubelement:
-            allCWFrameSubelements.append (cwFrameSubelement)
+allCWSubelements = aclib.RunTapirCommand (
+    'GetSubelementsOfHierarchicalElements', {
+        'hierarchicalElements': allCurtainWalls
+    }, debug=False)['subelementsOfHierarchicalElements']
+
+allCWFrameSubelements = [subelement for subelements in allCWSubelements for subelement in subelements['cWallFrames']]
 print('Project contains {} Curtain Wall Frame(s)'.format(len(allCWFrameSubelements)))
 
 classificationSystems = aclib.RunCommand ('API.GetAllClassificationSystems', {})['classificationSystems']
@@ -20,7 +23,7 @@ classificationItemGuidToName = dict()
 classificationsOfAllCWFrameSubelements = aclib.RunTapirCommand ('GetClassificationsOfElements', {
         'elements' : allCWFrameSubelements,
         'classificationSystemIds' : [{'classificationSystemId': s['classificationSystemId']} for s in classificationSystems]
-    })['elementClassifications']
+    }, debug=False)['elementClassifications']
 
 classificationIdCounter = dict()
 
@@ -54,14 +57,14 @@ for classificationSystemGuid, classificationItemGuidsOfElements in classificatio
     if len(cwFrameSubelementsWhichAreNotUsingThatClassificationItemGuid) > 0:
         print('\tSet {} Curtain Wall Frame(s) to "{}" in Classification System "{}" ...'.format(len(cwFrameSubelementsWhichAreNotUsingThatClassificationItemGuid), classificationItemGuidToName[classificationItemGuidWithTheHighestCounter], classificationSystemGuidToName[classificationSystemGuid]))
         response = aclib.RunTapirCommand ('SetClassificationsOfElements', {
-            'elementClassifications' : [{
-                'elementId': cwFrame['elementId'],
-                'classificationId': {
-                    'classificationSystemId': {'guid': classificationSystemGuid},
-                    'classificationItemId': {'guid': classificationItemGuidWithTheHighestCounter}
-                }
-            } for cwFrame in cwFrameSubelementsWhichAreNotUsingThatClassificationItemGuid]
-        })
+                'elementClassifications' : [{
+                    'elementId': cwFrame['elementId'],
+                    'classificationId': {
+                        'classificationSystemId': {'guid': classificationSystemGuid},
+                        'classificationItemId': {'guid': classificationItemGuidWithTheHighestCounter}
+                    }
+                } for cwFrame in cwFrameSubelementsWhichAreNotUsingThatClassificationItemGuid]
+            }, debug=False)
         allSucceeded = all(executionResult['success'] for executionResult in response['executionResults'])
         if allSucceeded:
             print('\tAll succeeded')

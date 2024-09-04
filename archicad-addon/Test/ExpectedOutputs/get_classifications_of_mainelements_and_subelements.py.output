@@ -1,0 +1,2529 @@
+Command: GetSubelementsOfHierarchicalElements
+Parameters:
+{
+    "hierarchicalElements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "subelementsOfHierarchicalElements": [
+        {},
+        {},
+        {},
+        {
+            "columnSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "columnSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "beamSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "beamSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {},
+        {},
+        {},
+        {
+            "cWallSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "cWallFrames": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "cWallPanels": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "stairRisers": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "stairTreads": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "stairStructures": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "railingNodes": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingPosts": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingHandrailEnds": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingToprailEnds": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingRails": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingToprails": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingHandrails": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingInnerPosts": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingBalusterSets": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "railingBalusters": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: GetClassificationsOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "classificationSystemIds": [
+        {
+            "classificationSystemId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elementClassifications": [
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: GetClassificationsOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "classificationSystemIds": [
+        {
+            "classificationSystemId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elementClassifications": [
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}

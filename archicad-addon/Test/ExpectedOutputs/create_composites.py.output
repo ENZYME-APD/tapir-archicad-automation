@@ -1,0 +1,191 @@
+Command: CreateComposites
+Parameters:
+{
+    "compositeDataArray": [
+        {
+            "name": "New Composite",
+            "useWith": [
+                "Wall",
+                "Shell"
+            ],
+            "skins": [
+                {
+                    "type": "Core",
+                    "buildingMaterialId": {
+                        "attributeId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    "framePen": 1,
+                    "thickness": 0.1
+                },
+                {
+                    "type": "Other",
+                    "buildingMaterialId": {
+                        "attributeId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    "framePen": 1,
+                    "thickness": 0.2
+                },
+                {
+                    "type": "Finish",
+                    "buildingMaterialId": {
+                        "attributeId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    "framePen": 1,
+                    "thickness": 0.3
+                }
+            ],
+            "separators": [
+                {
+                    "lineTypeId": {
+                        "attributeId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    "linePen": 1
+                },
+                {
+                    "lineTypeId": {
+                        "attributeId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    "linePen": 2
+                },
+                {
+                    "lineTypeId": {
+                        "attributeId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    "linePen": 3
+                },
+                {
+                    "lineTypeId": {
+                        "attributeId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    "linePen": 4
+                }
+            ]
+        }
+    ],
+    "overwriteExisting": true
+}
+Response:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+New composite:
+{
+    "attributes": [
+        {
+            "compositeAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Composite",
+                "totalThickness": 0.6,
+                "compositeSkins": [
+                    {
+                        "compositeSkin": {
+                            "buildingMaterialId": {
+                                "attributeId": {
+                                    "guid": "<GUID>"
+                                }
+                            },
+                            "framePenIndex": 1,
+                            "thickness": 0.1,
+                            "isCore": true,
+                            "isFinish": false
+                        }
+                    },
+                    {
+                        "compositeSkin": {
+                            "buildingMaterialId": {
+                                "attributeId": {
+                                    "guid": "<GUID>"
+                                }
+                            },
+                            "framePenIndex": 1,
+                            "thickness": 0.2,
+                            "isCore": false,
+                            "isFinish": false
+                        }
+                    },
+                    {
+                        "compositeSkin": {
+                            "buildingMaterialId": {
+                                "attributeId": {
+                                    "guid": "<GUID>"
+                                }
+                            },
+                            "framePenIndex": 1,
+                            "thickness": 0.3,
+                            "isCore": false,
+                            "isFinish": true
+                        }
+                    }
+                ],
+                "compositeLines": [
+                    {
+                        "compositeLine": {
+                            "lineId": {
+                                "attributeId": {
+                                    "guid": "<GUID>"
+                                }
+                            },
+                            "linePenIndex": 1
+                        }
+                    },
+                    {
+                        "compositeLine": {
+                            "lineId": {
+                                "attributeId": {
+                                    "guid": "<GUID>"
+                                }
+                            },
+                            "linePenIndex": 2
+                        }
+                    },
+                    {
+                        "compositeLine": {
+                            "lineId": {
+                                "attributeId": {
+                                    "guid": "<GUID>"
+                                }
+                            },
+                            "linePenIndex": 3
+                        }
+                    },
+                    {
+                        "compositeLine": {
+                            "lineId": {
+                                "attributeId": {
+                                    "guid": "<GUID>"
+                                }
+                            },
+                            "linePenIndex": 4
+                        }
+                    }
+                ],
+                "useWith": [
+                    "Wall",
+                    "Shell"
+                ]
+            }
+        }
+    ]
+}

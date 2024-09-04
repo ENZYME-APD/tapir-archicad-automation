@@ -1,0 +1,649 @@
+Command: GetSubelementsOfHierarchicalElements
+Parameters:
+{
+    "hierarchicalElements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "subelementsOfHierarchicalElements": [
+        {
+            "cWallSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "cWallFrames": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "cWallPanels": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: GetPropertyValuesOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "properties": [
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "propertyValuesForElements": [
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-001"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-010"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-002"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-003"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Mll-001"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Trs-001"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-009"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Trs-002"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-004"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Mll-002"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Trs-003"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-007"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-008"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Trs-004"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-005"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Bnd-006"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "Frame-Mll-003"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: SetPropertyValuesOfElements
+Parameters:
+{
+    "elementPropertyValues": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0000 (PrevID: Frame-Bnd-001)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0001 (PrevID: Frame-Bnd-010)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0002 (PrevID: Frame-Bnd-002)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0003 (PrevID: Frame-Bnd-003)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0004 (PrevID: Frame-Mll-001)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0005 (PrevID: Frame-Trs-001)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0006 (PrevID: Frame-Bnd-009)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0007 (PrevID: Frame-Trs-002)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0008 (PrevID: Frame-Bnd-004)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0009 (PrevID: Frame-Mll-002)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0010 (PrevID: Frame-Trs-003)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0011 (PrevID: Frame-Bnd-007)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0012 (PrevID: Frame-Bnd-008)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0013 (PrevID: Frame-Trs-004)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0014 (PrevID: Frame-Bnd-005)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0015 (PrevID: Frame-Bnd-006)"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "NewID-0016 (PrevID: Frame-Mll-003)"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}

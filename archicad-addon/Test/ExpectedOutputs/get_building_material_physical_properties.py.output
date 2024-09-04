@@ -1,0 +1,977 @@
+Command: GetBuildingMaterialPhysicalProperties
+Parameters:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "properties": [
+        {
+            "properties": {
+                "thermalConductivity": 0.58,
+                "density": 1500,
+                "heatCapacity": 840,
+                "embodiedEnergy": 3,
+                "embodiedCarbon": 0.24
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.6,
+                "density": 1500,
+                "heatCapacity": 840,
+                "embodiedEnergy": 3,
+                "embodiedCarbon": 0.24
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.6,
+                "density": 1500,
+                "heatCapacity": 840,
+                "embodiedEnergy": 3,
+                "embodiedCarbon": 0.24
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.272,
+                "density": 840,
+                "heatCapacity": 920,
+                "embodiedEnergy": 4.5,
+                "embodiedCarbon": 0.36
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.121,
+                "density": 648,
+                "heatCapacity": 920,
+                "embodiedEnergy": 6,
+                "embodiedCarbon": 0.48
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1.15,
+                "density": 1800,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 0.74,
+                "embodiedCarbon": 0.107
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 2.3,
+                "density": 2300,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 1.92,
+                "embodiedCarbon": 0.198
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.6,
+                "density": 1400,
+                "heatCapacity": 880,
+                "embodiedEnergy": 0.72,
+                "embodiedCarbon": 0.088
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.6,
+                "density": 1400,
+                "heatCapacity": 880,
+                "embodiedEnergy": 0.72,
+                "embodiedCarbon": 0.088
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 2.5,
+                "density": 2400,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 2.33,
+                "embodiedCarbon": 0.242
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 2.5,
+                "density": 2400,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 2.33,
+                "embodiedCarbon": 0.242
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.075,
+                "density": 200,
+                "heatCapacity": 1510,
+                "embodiedEnergy": 10.8,
+                "embodiedCarbon": 0.12
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.037,
+                "density": 40,
+                "heatCapacity": 840,
+                "embodiedEnergy": 14.3,
+                "embodiedCarbon": 1.08
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.036,
+                "density": 115,
+                "heatCapacity": 840,
+                "embodiedEnergy": 21.2,
+                "embodiedCarbon": 1.65
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.037,
+                "density": 40,
+                "heatCapacity": 840,
+                "embodiedEnergy": 14.3,
+                "embodiedCarbon": 1.08
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.032,
+                "density": 28,
+                "heatCapacity": 1450,
+                "embodiedEnergy": 87.4,
+                "embodiedCarbon": 3.42
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.04,
+                "density": 25,
+                "heatCapacity": 1400,
+                "embodiedEnergy": 88.7,
+                "embodiedCarbon": 3.53
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.033,
+                "density": 115,
+                "heatCapacity": 1030,
+                "embodiedEnergy": 47,
+                "embodiedCarbon": 1.9
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.18,
+                "density": 600,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 8,
+                "embodiedCarbon": 1.2
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.5,
+                "density": 980,
+                "heatCapacity": 1800,
+                "embodiedEnergy": 76.7,
+                "embodiedCarbon": 1.93
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.23,
+                "density": 1100,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 2.66,
+                "embodiedCarbon": 0.056
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.17,
+                "density": 1390,
+                "heatCapacity": 900,
+                "embodiedEnergy": 77.2,
+                "embodiedCarbon": 3.1
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.14,
+                "density": 500,
+                "heatCapacity": 2300,
+                "embodiedEnergy": 10,
+                "embodiedCarbon": 0.36
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.13,
+                "density": 500,
+                "heatCapacity": 2500,
+                "embodiedEnergy": 7.11,
+                "embodiedCarbon": 0.32
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.24,
+                "density": 1000,
+                "heatCapacity": 1600,
+                "embodiedEnergy": 16.8,
+                "embodiedCarbon": 0.87
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.18,
+                "density": 800,
+                "heatCapacity": 1700,
+                "embodiedEnergy": 13.8,
+                "embodiedCarbon": 0.92
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2000,
+                "heatCapacity": 800,
+                "embodiedEnergy": 3,
+                "embodiedCarbon": 0.24
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1.5,
+                "density": 2000,
+                "heatCapacity": 900,
+                "embodiedEnergy": 6.5,
+                "embodiedCarbon": 0.48
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.8,
+                "density": 1600,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 1.45,
+                "embodiedCarbon": 0.22
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.57,
+                "density": 1300,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 1.8,
+                "embodiedCarbon": 0.13
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.25,
+                "density": 900,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 6.75,
+                "embodiedCarbon": 0.39
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.25,
+                "density": 900,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 6.75,
+                "embodiedCarbon": 0.39
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 160,
+                "density": 2800,
+                "heatCapacity": 880,
+                "embodiedEnergy": 155,
+                "embodiedCarbon": 9.16
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 50,
+                "density": 7500,
+                "heatCapacity": 450,
+                "embodiedEnergy": 25,
+                "embodiedCarbon": 1.21
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 50,
+                "density": 7800,
+                "heatCapacity": 450,
+                "embodiedEnergy": 20.1,
+                "embodiedCarbon": 1.46
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 60,
+                "density": 7800,
+                "heatCapacity": 460,
+                "embodiedEnergy": 25.1,
+                "embodiedCarbon": 1.66
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 17,
+                "density": 7900,
+                "heatCapacity": 460,
+                "embodiedEnergy": 56.7,
+                "embodiedCarbon": 6.15
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 110,
+                "density": 7200,
+                "heatCapacity": 380,
+                "embodiedEnergy": 53.1,
+                "embodiedCarbon": 3.09
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1.7,
+                "density": 2200,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 1.5,
+                "embodiedCarbon": 0.09
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 3.5,
+                "density": 2800,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 2,
+                "embodiedCarbon": 0.13
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.17,
+                "density": 1390,
+                "heatCapacity": 900,
+                "embodiedEnergy": 77.2,
+                "embodiedCarbon": 3.1
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.15,
+                "density": 1.2,
+                "heatCapacity": 1008,
+                "embodiedEnergy": 0,
+                "embodiedCarbon": 0
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.15,
+                "density": 1.2,
+                "heatCapacity": 1008,
+                "embodiedEnergy": 0,
+                "embodiedCarbon": 0
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1.4,
+                "density": 2200,
+                "heatCapacity": 1900,
+                "embodiedEnergy": 0.083,
+                "embodiedCarbon": 0.005
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2500,
+                "heatCapacity": 750,
+                "embodiedEnergy": 15,
+                "embodiedCarbon": 0.91
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1.7,
+                "density": 900,
+                "heatCapacity": 1850,
+                "embodiedEnergy": 0.42,
+                "embodiedCarbon": 0.022
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.6,
+                "density": 1000,
+                "heatCapacity": 4200,
+                "embodiedEnergy": 0.01,
+                "embodiedCarbon": 0.001
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 2.3,
+                "density": 2200,
+                "heatCapacity": 1900,
+                "embodiedEnergy": 0.081,
+                "embodiedCarbon": 0.005
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.18,
+                "density": 700,
+                "heatCapacity": 1600,
+                "embodiedEnergy": 12.1,
+                "embodiedCarbon": 0.39
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.6,
+                "density": 1500,
+                "heatCapacity": 840,
+                "embodiedEnergy": 3,
+                "embodiedCarbon": 0.24
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 2.3,
+                "density": 2600,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 1.7,
+                "embodiedCarbon": 0.095
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.216,
+                "density": 960,
+                "heatCapacity": 920,
+                "embodiedEnergy": 4.5,
+                "embodiedCarbon": 0.36
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.17,
+                "density": 1390,
+                "heatCapacity": 900,
+                "embodiedEnergy": 77.2,
+                "embodiedCarbon": 3.1
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 2.5,
+                "density": 2400,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 2.33,
+                "embodiedCarbon": 0.242
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1.7,
+                "density": 900,
+                "heatCapacity": 1850,
+                "embodiedEnergy": 0.42,
+                "embodiedCarbon": 0.022
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.109,
+                "density": 600,
+                "heatCapacity": 920,
+                "embodiedEnergy": 6,
+                "embodiedCarbon": 0.48
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.037,
+                "density": 40,
+                "heatCapacity": 840,
+                "embodiedEnergy": 14.3,
+                "embodiedCarbon": 1.08
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 2.3,
+                "density": 2300,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 1.92,
+                "embodiedCarbon": 0.198
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 0.25,
+                "density": 900,
+                "heatCapacity": 1000,
+                "embodiedEnergy": 6.75,
+                "embodiedCarbon": 0.39
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
+            }
+        }
+    ]
+}

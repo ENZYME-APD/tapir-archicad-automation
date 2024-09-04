@@ -47,6 +47,9 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                         "layerIndex": {
                             "type": "number"
                         },
+                        "drawIndex": {
+                            "type": "number"
+                        },
                         "details": {
                             "type": "object",
                             "oneOf": [
@@ -194,6 +197,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 #else
         detailsOfElement.Add ("layerIndex", elem.header.layer);
 #endif
+        detailsOfElement.Add ("drawIndex", elem.header.drwIndex);
 
         GS::ObjectState typeSpecificDetails;
 
@@ -320,7 +324,97 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
     return response;
 }
 
+ChangeSelectionOfElementsCommand::ChangeSelectionOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
 
+GS::String ChangeSelectionOfElementsCommand::GetName () const
+{
+    return "ChangeSelectionOfElements";
+}
+
+GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "addElementsToSelection": {
+                "$ref": "#/Elements"
+            },
+            "removeElementsFromSelection": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResultsOfAddToSelection": {
+                "$ref": "#/ExecutionResults"
+            },
+            "executionResultsOfRemoveFromSelection": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResultsOfAddToSelection",
+            "executionResultsOfRemoveFromSelection"
+        ]
+    })";
+}
+
+GS::ObjectState ChangeSelectionOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> addElementsToSelection;
+    parameters.Get ("addElementsToSelection", addElementsToSelection);
+    GS::Array<GS::ObjectState> removeElementsFromSelection;
+    parameters.Get ("removeElementsFromSelection", removeElementsFromSelection);
+
+    GS::ObjectState response;
+    const auto& executionResultsOfAddToSelection = response.AddList<GS::ObjectState> ("executionResultsOfAddToSelection");
+    const auto& executionResultsOfRemoveFromSelection = response.AddList<GS::ObjectState> ("executionResultsOfRemoveFromSelection");
+
+    for (const GS::ObjectState& element : addElementsToSelection) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            executionResultsOfAddToSelection (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, true);
+        if (err != NoError) {
+            executionResultsOfAddToSelection (CreateFailedExecutionResult (err, "Failed to add to selection"));
+        } else {
+            executionResultsOfAddToSelection (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    for (const GS::ObjectState& element : removeElementsFromSelection) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            executionResultsOfRemoveFromSelection (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const GSErrCode err = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, false);
+        if (err != NoError) {
+            executionResultsOfRemoveFromSelection (CreateFailedExecutionResult (err, "Failed to remove from selection"));
+        } else {
+            executionResultsOfRemoveFromSelection (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return response;
+}
 
 GetSubelementsOfHierarchicalElementsCommand::GetSubelementsOfHierarchicalElementsCommand () :
     CommandBase (CommonSchema::Used)
@@ -602,6 +696,22 @@ GS::Optional<GS::UniString> MoveElementsCommand::GetInputParametersSchema () con
     })";
 }
 
+GS::Optional<GS::UniString> MoveElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
 static GSErrCode MoveElement (const API_Guid& elemGuid, const API_Vector3D& moveVector, bool withCopy)
 {
     GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
@@ -619,16 +729,24 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     GS::Array<GS::ObjectState> elementsWithMoveVectors;
     parameters.Get ("elementsWithMoveVectors", elementsWithMoveVectors);
 
-    API_Guid elemGuid;
-    const GSErrCode err = ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+ 
+    ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
         for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
             const GS::ObjectState* elementId = elementWithMoveVector.Get ("elementId");
-            const GS::ObjectState* moveVector = elementWithMoveVector.Get ("moveVector");
-            if (elementId == nullptr || moveVector == nullptr) {
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
                 continue;
             }
 
-            elemGuid = GetGuidFromObjectState (*elementId);
+            const GS::ObjectState* moveVector = elementWithMoveVector.Get ("moveVector");
+            if (moveVector == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "moveVector is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
 
             bool copy = false;
             elementWithMoveVector.Get ("copy", copy);
@@ -637,19 +755,17 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
                                                Get3DCoordinateFromObjectState (*moveVector),
                                                copy);
             if (err != NoError) {
-                return err;
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to move element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+                executionResults (CreateFailedExecutionResult (err, errorMsg));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
             }
         }
 
         return NoError;
     });
 
-    if (err != NoError) {
-        const GS::UniString errorMsg = GS::UniString::Printf ("Failed to move element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
-        return CreateErrorResponse (err, errorMsg);
-    }
-
-    return {};
+    return response;
 }
 
 GetGDLParametersOfElementsCommand::GetGDLParametersOfElementsCommand () :
@@ -924,7 +1040,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
-            continue;
+            listAdder (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
         }
 
         elemGuid = GetGuidFromObjectState (*elementId);
@@ -987,7 +1103,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             ACAPI_DisposeAddParHdl (&memo.params);
         } else {
             const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
-            return CreateErrorResponse (err, errorMsg);
+            listAdder (CreateErrorResponse (err, errorMsg));
         }
     }
 
@@ -1037,30 +1153,47 @@ GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetInputParameter
 })";
 }
 
+GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
 GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementsWithGDLParameters;
     parameters.Get ("elementsWithGDLParameters", elementsWithGDLParameters);
 
-    bool invalidParameter = false;
-    bool notAbleToChangeParameter = false;
-    GS::String badParameterName;
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    API_Guid elemGuid;
-    const GSErrCode err = ACAPI_CallUndoableCommand ("Set GDL Parameters of Elements", [&] () -> GSErrCode {
-        GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("Set GDL Parameters of Elements", [&] () -> GSErrCode {
         for (const GS::ObjectState& elementWithGDLParameters : elementsWithGDLParameters) {
+            GSErrCode err = NoError;
+            GS::UniString errMessage;
             const GS::ObjectState* elementId = elementWithGDLParameters.Get ("elementId");
             if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
                 continue;
             }
 
             const GS::ObjectState* gdlParameters = elementWithGDLParameters.Get ("gdlParameters");
             if (gdlParameters == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "gdlParameters is missing"));
                 continue;
             }
 
-            elemGuid = GetGuidFromObjectState (*elementId);
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
 
             API_ParamOwnerType   paramOwner = {};
 
@@ -1103,9 +1236,9 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 #endif
 
                         if (!gdlParametersTypeDictionary.ContainsKey (parameterName)) {
-                            invalidParameter = true;
-                            badParameterName = parameterName;
-                            return APIERR_BADPARS;
+                            errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                            err = APIERR_BADPARS;
+                            break;
                         }
 
                         CHTruncate (parameterName.ToCStr (), changeParam.name, sizeof (changeParam.name));
@@ -1141,79 +1274,77 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
                         err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
                         if (err != NoError) {
-                            notAbleToChangeParameter = true;
-                            badParameterName = parameterName;
-                            return APIERR_BADPARS;
+                            errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                            break;
                         }
 
                         ACAPI_DisposeAddParHdl (&getParams.params);
                         ACAPI_LibraryPart_GetActParameters (&getParams);
                     }
 
-                    API_Element	element = {};
-                    element.header.guid = elemGuid;
-
-                    err = ACAPI_Element_Get (&element);
                     if (err == NoError) {
-                        API_Element 	mask = {};
-                        API_ElementMemo memo = {};
+                        API_Element	element = {};
+                        element.header.guid = elemGuid;
 
-                        ACAPI_ELEMENT_MASK_CLEAR (mask);
+                        err = ACAPI_Element_Get (&element);
+                        if (err == NoError) {
+                            API_Element 	mask = {};
+                            API_ElementMemo memo = {};
+
+                            ACAPI_ELEMENT_MASK_CLEAR (mask);
 #ifdef ServerMainVers_2600
-                        switch (element.header.type.typeID) {
+                            switch (element.header.type.typeID) {
 #else
-                        switch (element.header.typeID) {
+                            switch (element.header.typeID) {
 #endif
-                            case API_ObjectID:
-                                element.object.xRatio = getParams.a;
-                                element.object.yRatio = getParams.b;
-                                ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, xRatio);
-                                ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, yRatio);
-                                break;
-                            case API_WindowID:
-                            case API_DoorID:
-                                element.window.openingBase.width  = getParams.a;
-                                element.window.openingBase.height = getParams.b;
-                                ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
-                                ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
-                                break;
-                            case API_SkylightID:
-                                element.skylight.openingBase.width  = getParams.a;
-                                element.skylight.openingBase.height = getParams.b;
-                                ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
-                                ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
-                                break;
-                            default:
-                                // Not supported yet
-                                break;
-                        }
+                                case API_ObjectID:
+                                    element.object.xRatio = getParams.a;
+                                    element.object.yRatio = getParams.b;
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, xRatio);
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, yRatio);
+                                    break;
+                                case API_WindowID:
+                                case API_DoorID:
+                                    element.window.openingBase.width  = getParams.a;
+                                    element.window.openingBase.height = getParams.b;
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
+                                    break;
+                                case API_SkylightID:
+                                    element.skylight.openingBase.width  = getParams.a;
+                                    element.skylight.openingBase.height = getParams.b;
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
+                                    break;
+                                default:
+                                    // Not supported yet
+                                    break;
+                            }
 
-                        memo.params = getParams.params;
-                        err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+                            memo.params = getParams.params;
+                            err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+                        }
                     }
                 }
                 ACAPI_LibraryPart_CloseParameters ();
                 ACAPI_DisposeAddParHdl (&getParams.params);
             }
+
+            if (err != NoError) {
+                if (errMessage.IsEmpty ()) {
+                    executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to change parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                } else {
+                    executionResults (CreateFailedExecutionResult (err, errMessage));
+                }
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
         }
 
-        return err;
+        return NoError;
     });
 
-    if (err != NoError) {
-        GS::UniString errorMsg;
-        if (invalidParameter) {
-            errorMsg = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", badParameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
-        } else if (notAbleToChangeParameter) {
-            errorMsg = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", badParameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
-        } else {
-            errorMsg = GS::UniString::Printf ("Failed to change parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
-        }
-
-        return CreateErrorResponse (err, errorMsg);
-    }
-
-    return {};
+    return response;
 }
 
 FilterElementsCommand::FilterElementsCommand () :
@@ -1385,7 +1516,9 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetInputParametersSchema (
 
 GS::Optional<GS::UniString> HighlightElementsCommand::GetResponseSchema () const
 {
-    return {};
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
 }
 
 #ifdef ServerMainVers_2600
@@ -1419,14 +1552,14 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
         ACAPI_UserInput_ClearElementHighlight ();
         // need to call redraw for changes to take effect
         ACAPI_View_Redraw ();
-        return {};
+        return CreateSuccessfulExecutionResult ();
     }
 
     GS::Array<GS::Array<GS::Int32>> highlightedColors;
     parameters.Get ("highlightedColors", highlightedColors);
 
     if (highlightedColors.GetSize () != elements.GetSize ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "The size of 'elements' array and 'highlightedColors' array does not match.");
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The size of 'elements' array and 'highlightedColors' array does not match.");
     }
 
     GS::HashTable<API_Guid, API_RGBAColor> elementsWithColors;
@@ -1452,14 +1585,14 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& parame
     // need to call redraw for changes to take effect
     ACAPI_View_Redraw ();
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }
 
 #else
 
 GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    return CreateErrorResponse (APIERR_GENERAL, GetName() + " command is not supported for this AC version.");
+    return CreateFailedExecutionResult (APIERR_GENERAL, GetName () + " command is not supported for this AC version.");
 }
 
 #endif

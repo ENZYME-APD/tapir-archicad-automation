@@ -1,0 +1,437 @@
+Command: CreateBuildingMaterials
+Parameters:
+{
+    "buildingMaterialDataArray": [
+        {
+            "name": "New Building Material 1",
+            "id": "1",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 1,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 2",
+            "id": "2",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 2,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 3",
+            "id": "3",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 3,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 4",
+            "id": "4",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 4,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 5",
+            "id": "5",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 5,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 6",
+            "id": "6",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 6,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 7",
+            "id": "7",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 7,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 8",
+            "id": "8",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 8,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 9",
+            "id": "9",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 9,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        },
+        {
+            "name": "New Building Material 10",
+            "id": "10",
+            "manufacturer": "Tapir",
+            "description": "This is an example Building Material",
+            "connPriority": 10,
+            "cutFillIndex": 1,
+            "cutFillPen": 2,
+            "cutFillBackgroundPen": 3,
+            "cutSurfaceIndex": 4,
+            "thermalConductivity": 1.0,
+            "density": 2.0,
+            "heatCapacity": 3.0,
+            "embodiedEnergy": 4.0,
+            "embodiedCarbon": 5.0
+        }
+    ],
+    "overwriteExisting": true
+}
+Response:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+New building materials:
+{
+    "attributes": [
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 1",
+                "id": "1",
+                "connectionPriority": 1,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 2",
+                "id": "2",
+                "connectionPriority": 2,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 3",
+                "id": "3",
+                "connectionPriority": 3,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 4",
+                "id": "4",
+                "connectionPriority": 4,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 5",
+                "id": "5",
+                "connectionPriority": 5,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 6",
+                "id": "6",
+                "connectionPriority": 6,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 7",
+                "id": "7",
+                "connectionPriority": 7,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 8",
+                "id": "8",
+                "connectionPriority": 8,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 9",
+                "id": "9",
+                "connectionPriority": 9,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        },
+        {
+            "buildingMaterialAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Building Material 10",
+                "id": "10",
+                "connectionPriority": 10,
+                "cutFillId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "cutFillPenIndex": 2,
+                "cutSurfaceId": {
+                    "attributeId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            }
+        }
+    ]
+}

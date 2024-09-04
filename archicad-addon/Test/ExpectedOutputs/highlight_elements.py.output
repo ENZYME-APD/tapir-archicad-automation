@@ -1,0 +1,172 @@
+Command: HighlightElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "highlightedColors": [
+        [
+            0,
+            50,
+            50,
+            255
+        ],
+        [
+            30,
+            50,
+            50,
+            255
+        ],
+        [
+            60,
+            50,
+            50,
+            255
+        ],
+        [
+            90,
+            50,
+            50,
+            255
+        ],
+        [
+            120,
+            50,
+            50,
+            255
+        ],
+        [
+            150,
+            50,
+            50,
+            255
+        ],
+        [
+            180,
+            50,
+            50,
+            255
+        ],
+        [
+            210,
+            50,
+            50,
+            255
+        ],
+        [
+            240,
+            50,
+            50,
+            255
+        ],
+        [
+            15,
+            50,
+            50,
+            255
+        ],
+        [
+            45,
+            50,
+            50,
+            255
+        ],
+        [
+            75,
+            50,
+            50,
+            255
+        ],
+        [
+            105,
+            50,
+            50,
+            255
+        ]
+    ],
+    "wireframe3D": true,
+    "nonHighlightedColor": [
+        0,
+        0,
+        255,
+        128
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: HighlightElements
+Parameters:
+{
+    "elements": [],
+    "highlightedColors": []
+}
+Response:
+{
+    "success": true
+}

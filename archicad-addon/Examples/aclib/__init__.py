@@ -13,16 +13,23 @@ def RunCommand (command, parameters):
         'parameters': parameters
     }
     request_string = json.dumps (request_data).encode ('utf8')
-    
+
     response_data = urllib.request.urlopen (connection_object, request_string)
     response_json = json.loads (response_data.read())
-    
-    if not response_json['succeeded']:
-        return None
-    
-    return response_json['result']
 
-def RunTapirCommand (command, parameters):
+    if 'error' in response_json:
+        print ('Error:\n{}'.format (JsonDumpDictionary (response_json['error'])))
+
+    if 'succeeded' not in response_json or 'result' not in response_json:
+        return None
+
+    return response_json['result'] if response_json['succeeded'] else None
+
+def RunTapirCommand (command, parameters, debug = True):
+    if debug:
+        print ('Command: ' + command)
+        print ('Parameters:\n' + JsonDumpDictionary (parameters))
+
     commandResult = RunCommand ('API.ExecuteAddOnCommand', {
         'addOnCommandId': {
             'commandNamespace': 'TapirCommand',
@@ -30,6 +37,15 @@ def RunTapirCommand (command, parameters):
         },
         'addOnCommandParameters': parameters
     })
-    if commandResult == None:
-        return None
-    return commandResult['addOnCommandResponse']
+
+    result = None if commandResult == None else commandResult['addOnCommandResponse']
+    if debug:
+        print ('Response:\n' + JsonDumpDictionary (result))
+
+    if 'error' in result:
+        print ('Error:\n{}'.format (JsonDumpDictionary (result['error'])))
+
+    return result
+
+def JsonDumpDictionary (d):
+    return json.dumps (d, indent = 4)

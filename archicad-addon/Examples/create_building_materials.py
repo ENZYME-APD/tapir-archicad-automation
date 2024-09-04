@@ -1,9 +1,6 @@
-import json
 import aclib
 
-buildMats = []
-for i in range (1, 51):
-    buildMats.append ({
+buildMats = [{
         'name' : 'New Building Material ' + str (i),
         'id' : str (i),
         'manufacturer' : 'Tapir',
@@ -18,17 +15,15 @@ for i in range (1, 51):
         'heatCapacity' : 3.0,
         'embodiedEnergy' : 4.0,
         'embodiedCarbon' : 5.0
-    })
+    } for i in range (1, 11)]
 
 result = aclib.RunTapirCommand ('CreateBuildingMaterials', {
     'buildingMaterialDataArray' : buildMats,
     'overwriteExisting' : True
 })
 
-print (result)
-
 result = aclib.RunCommand ('API.GetBuildingMaterialAttributes', {
     'attributeIds' : result['attributeIds']
 })
 
-print (result)
+print ('New building materials:\n' + aclib.JsonDumpDictionary (result))

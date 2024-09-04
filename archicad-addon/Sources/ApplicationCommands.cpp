@@ -86,6 +86,13 @@ GS::String QuitArchicadCommand::GetName () const
     return "QuitArchicad";
 }
 
+GS::Optional<GS::UniString> QuitArchicadCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
 GS::ObjectState QuitArchicadCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #if defined (ServerMainVers_2800)
@@ -95,10 +102,10 @@ GS::ObjectState QuitArchicadCommand::Execute (const GS::ObjectState& /*parameter
     GSErrCode err = ACAPI_ProjectOperation_Quit (magicCode);
 #endif
     if (err != NoError) {
-        return CreateErrorResponse (APIERR_COMMANDFAILED, "Failed to quit Archicad!");
+        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to quit Archicad!");
     }
 
-    return {};
+    return CreateSuccessfulExecutionResult ();
 }
 
 GetCurrentWindowTypeCommand::GetCurrentWindowTypeCommand () :

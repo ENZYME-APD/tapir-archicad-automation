@@ -1,13 +1,11 @@
-import json
 import aclib
 
-commandName = 'GetSelectedElements'
-commandParameters = {}
+walls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Wall'})['elements']
+columns = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Column'})['elements']
 
-print ('Command: {commandName}'.format (commandName = commandName))
-print ('Parameters:')
-print (json.dumps (commandParameters, indent = 4))
+aclib.RunTapirCommand (
+    'ChangeSelectionOfElements', {
+        'addElementsToSelection': walls + columns
+    })
 
-response = aclib.RunTapirCommand (commandName, commandParameters)
-print ('Response:')
-print (json.dumps (response, indent = 4))
+selectedElements = aclib.RunTapirCommand ('GetSelectedElements', {})

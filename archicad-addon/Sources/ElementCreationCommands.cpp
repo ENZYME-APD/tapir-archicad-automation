@@ -56,7 +56,11 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
         GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
 
         for (const GS::ObjectState& data : dataArray) {
-            SetTypeSpecificParameters (element, memo, stories, data);
+            auto os = SetTypeSpecificParameters (element, memo, stories, data);
+            if (os.HasValue ()) {
+                elements (*os);
+                continue;
+            }
 
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {

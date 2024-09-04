@@ -1,61 +1,59 @@
 import json
 import aclib
 
-commandName = 'GetSelectedElements'
-commandParameters = {}
 
-print ('Command: {commandName}'.format (commandName = commandName))
-print ('Parameters:')
-print (json.dumps (commandParameters, indent = 4))
-
-response = aclib.RunTapirCommand (commandName, commandParameters)
-print ('Response:')
-print (json.dumps (response, indent = 4))
+allCurtainWalls = aclib.RunCommand (
+    'API.GetElementsByType', {
+        'elementType': 'CurtainWall'
+    })['elements']
 
 commandName = 'GetSubelementsOfHierarchicalElements'
 commandParameters = {
-    'hierarchicalElements' : response['elements']
+    'hierarchicalElements' : allCurtainWalls
 }
 
-print ('Command: {commandName}'.format (commandName = commandName))
-print ('Parameters:')
-print (json.dumps (commandParameters, indent = 4))
+allCWSubelements = aclib.RunTapirCommand (
+    'GetSubelementsOfHierarchicalElements', {
+        'hierarchicalElements': allCurtainWalls
+    })['subelementsOfHierarchicalElements']
 
-response = aclib.RunTapirCommand (commandName, commandParameters)
-print ('Response:')
-print (json.dumps (response, indent = 4))
+allCWFrameSubelements = [subelement for subelements in allCWSubelements for subelement in subelements['cWallFrames']]
 
 elementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {'properties': [{"type": "BuiltIn", "nonLocalizedName": "General_ElementID"}]})['properties'][0]['propertyId']
-
-cWallFrames = [subelement for subelements in response['subelementsOfHierarchicalElements'] for subelement in subelements['cWallFrames']]
 
 commandName = 'GetPropertyValuesOfElements'
 commandParameters = {
     'elements' : [{
         'elementId': subelement['elementId']
-    } for subelement in cWallFrames],
+    } for subelement in allCWFrameSubelements],
     'properties' : [{
         'propertyId': elementIdPropertyId
     }]
 }
 
-response = aclib.RunTapirCommand (commandName, commandParameters)
-print ('Response:')
-print (json.dumps (response, indent = 4))
+response = aclib.RunTapirCommand (
+    'GetPropertyValuesOfElements', {
+        'elements' : [{
+            'elementId': subelement['elementId']
+        } for subelement in allCWFrameSubelements],
+        'properties' : [{
+            'propertyId': elementIdPropertyId
+        }]
+    })
 
-commandName = 'SetPropertyValuesOfElements'
-commandParameters = {'elementPropertyValues' : []}
+elementPropertyValues = []
 
-for i in range(len(cWallFrames)):
+for i in range(len(allCWFrameSubelements)):
     previousElementIdOfCWallFrame = response['propertyValuesForElements'][i]['propertyValues'][0]['propertyValue']['value']
     newElementIdOfCWallFrame = 'NewID-{:04d} (PrevID: {})'.format(i, previousElementIdOfCWallFrame)
 
-    commandParameters['elementPropertyValues'].append({
-        'elementId': cWallFrames[i]['elementId'],
+    elementPropertyValues.append({
+        'elementId': allCWFrameSubelements[i]['elementId'],
         'propertyId': elementIdPropertyId,
         'propertyValue': {'value': newElementIdOfCWallFrame}
     })
 
-response = aclib.RunTapirCommand (commandName, commandParameters)
-print ('Response:')
-print (json.dumps (response, indent = 4))
+response = aclib.RunTapirCommand (
+    'SetPropertyValuesOfElements', {
+        'elementPropertyValues' : elementPropertyValues
+    })
