@@ -732,7 +732,7 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
  
-    const GSErrCode err = ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
         for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
             const GS::ObjectState* elementId = elementWithMoveVector.Get ("elementId");
             if (elementId == nullptr) {
