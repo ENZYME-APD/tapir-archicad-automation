@@ -1,127 +1,79 @@
-import json
 import aclib
+import tempfile
+import os
 
-commandName = 'CreateIssue'
-commandParameters = {'name': 'Just a sample issue', 'tagText': 'python'}
+newIssue = aclib.RunTapirCommand (
+    'CreateIssue', {
+        'name': 'Just a sample issue', 'tagText': 'python'
+    })
 
-print ('Command: {commandName}'.format (commandName = commandName))
-print ('Parameters:')
-print (json.dumps (commandParameters, indent = 4))
+newIssue2 = aclib.RunTapirCommand (
+    'CreateIssue', {
+        'name': 'Just a sample issue #2', 'tagText': 'python #2'
+    })
 
-response = aclib.RunTapirCommand (commandName, commandParameters)
-print ('Response:')
-print (json.dumps (response, indent = 4))
+issues = aclib.RunTapirCommand ('GetIssues', {})
 
+aclib.RunTapirCommand (
+    'AddCommentToIssue', {
+        'issueId': newIssue['issueId'],
+        'text': 'dropped da comment here',
+        'author': 'python',
+        'status': 'Info'
+    })
 
-# commandName = 'DeleteIssue'
-# commandParameters = {'issueId': '4765CCCA-D30E-4A46-92B3-F544F936E089"'}
+# Archicad cores when using GetCommentsFromIssue after CreateIssue command, but it's an Archicad bug
+# comments = aclib.RunTapirCommand ('GetCommentsFromIssue', {'issueId': newIssue['issueId']})
 
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
+for type, elementType in [('Creation', 'Wall'),
+                          ('Highlight', 'Object'),
+                          ('Deletion', 'Column'),
+                          ('Modification', 'Slab')]:
+    aclib.RunTapirCommand (
+        'AttachElementsToIssue', {
+            'issueId': newIssue['issueId'],
+            'elements': aclib.RunCommand ('API.GetElementsByType', {'elementType': elementType})['elements'],
+            'type': type
+        })
 
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
+for type in ['Creation', 'Highlight', 'Deletion', 'Modification']:
+    attachedElements = aclib.RunTapirCommand (
+        'GetElementsAttachedToIssue', {
+            'issueId': newIssue['issueId'],
+            'type': type
+        })
 
+exportedFilePath = os.path.join (tempfile.gettempdir (), 'issues_test.bcfzip')
+aclib.RunTapirCommand (
+    'ExportIssuesToBCF', {
+        'issues': [newIssue, newIssue2],
+        'exportPath': exportedFilePath,
+        'useExternalId': False,
+        'alignBySurveyPoint': True
+    })
 
-# commandName = 'GetIssues'
-# commandParameters = {}
+aclib.RunTapirCommand (
+    'DetachElementsFromIssue', {
+        'issueId': newIssue['issueId'],
+        'elements': aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Object'})['elements']
+    })
 
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
+for type in ['Creation', 'Highlight', 'Deletion', 'Modification']:
+    attachedElements = aclib.RunTapirCommand (
+        'GetElementsAttachedToIssue', {
+            'issueId': newIssue['issueId'],
+            'type': type
+        })
 
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
+aclib.RunTapirCommand ('DeleteIssue', newIssue)
+aclib.RunTapirCommand ('DeleteIssue', newIssue2)
 
+issues = aclib.RunTapirCommand ('GetIssues', {})
 
-# commandName = 'AddCommentToIssue'
-# commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'text': 'dropped da comment here', 'author': 'python', 'status': 2}
+aclib.RunTapirCommand (
+    'ImportIssuesFromBCF', {
+        'importPath': exportedFilePath,
+        'alignBySurveyPoint': True
+    })
 
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
-
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
-
-
-# commandName = 'GetCommentsFromIssue'
-# commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F'}
-
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
-
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
-
-
-# commandName = 'AttachElementsToIssue'
-# commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'elementsIds': ['22F534EF-F3CE-4A99-9E54-125E899E6AA2',], 'type': 0}
-
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
-
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
-
-
-# commandName = 'DetachElementsFromIssue'
-# commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'elementsIds': ['22F534EF-F3CE-4A99-9E54-125E899E6AA2',]}
-
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
-
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
-
-
-# commandName = 'GetElementsAttachedToIssue'
-# commandParameters = {'issueId': 'B0D7E9D6-56E8-4432-AC74-DE7C3083015F', 'type': 1}
-
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
-
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
-
-
-# commandName = 'ExportIssuesToBCF'
-# commandParameters = {'issuesIds': ['B0D7E9D6-56E8-4432-AC74-DE7C3083015F', '50D45AAD-9581-4275-A503-4E82C974C03B'], 'exportPath': 'C:\\Users\\i.yurasov\\Desktop\\dev\\issues_test6.bcfzip', 'useExternalId': False, 'alignBySurveyPoint': True}
-
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
-
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
-
-
-# commandName = 'ImportIssuesFromBCF'
-# commandParameters = {'importPath': 'C:\\Users\\i.yurasov\\Desktop\\dev\\issues_test5.bcfzip', 'alignBySurveyPoint': True}
-
-# print ('Command: {commandName}'.format (commandName = commandName))
-# print ('Parameters:')
-# print (json.dumps (commandParameters, indent = 4))
-
-# response = aclib.RunTapirCommand (commandName, commandParameters)
-# print ('Response:')
-# print (json.dumps (response, indent = 4))
-
-
-
-
-
-
+issues = aclib.RunTapirCommand ('GetIssues', {})

@@ -6,8 +6,7 @@ buildMatIds = buildMats['attributeIds']
 lineTypes = aclib.RunCommand ('API.GetAttributesByType', { 'attributeType' : 'Line' })
 lineTypeIds = lineTypes['attributeIds']
 
-composites = []
-composites.append ({
+newComposite = {
     'name' : 'New Composite',
     'useWith' : ['Wall', 'Shell'],
     'skins' : [
@@ -48,15 +47,15 @@ composites.append ({
             'linePen' : 4
         }
     ]
-})
+}
 
-print ({
-    'compositeDataArray' : composites,
-    'overwriteExisting' : True
-})
 result = aclib.RunTapirCommand ('CreateComposites', {
-    'compositeDataArray' : composites,
+    'compositeDataArray' : [newComposite],
     'overwriteExisting' : True
 })
 
-print (result)
+result = aclib.RunCommand ('API.GetCompositeAttributes', {
+    'attributeIds' : result['attributeIds']
+})
+
+print ('New composite:\n' + aclib.JsonDumpDictionary (result))
