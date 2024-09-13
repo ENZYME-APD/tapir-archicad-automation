@@ -8,6 +8,8 @@
 #include "ResourceIds.hpp"
 #include "DeveloperTools.hpp"
 
+#include "AboutDialog.hpp"
+
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
@@ -50,8 +52,11 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
     switch (menuParams->menuItemRef.menuResID) {
         case ID_ADDON_MENU:
             switch (menuParams->menuItemRef.itemIndex) {
-                case ID_ADDON_MENU_GENERATE_DOC:
-                    //GenerateDocumentation ();
+                case ID_ADDON_MENU_ABOUT:
+                    {
+                        AboutDialog aboutDialog;
+                        aboutDialog.Invoke ();
+                    }
                     break;
             }
             break;

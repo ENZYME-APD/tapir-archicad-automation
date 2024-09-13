@@ -5,6 +5,8 @@
 #define ID_ADDON_INFO_DESC                  2
 
 #define ID_ADDON_MENU                   32001
-#define ID_ADDON_MENU_GENERATE_DOC          1
+#define ID_ADDON_MENU_ABOUT                 1
 
-#define ID_ADDON_ID                     32500
+#define ID_TAPIR_LOGO                   32502
+
+#define ID_ABOUT_DIALOG                 32003
