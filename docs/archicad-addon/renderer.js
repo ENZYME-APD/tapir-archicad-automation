@@ -46,8 +46,11 @@ function CreateSchemaElement (parentElement, title, schema, schemaDefinitions)
     }
     CreateElement (parentElement, 'div', 'scheme_title', title);    
     let schemeContainer = CreateElement (parentElement, 'div', 'scheme_container', null);
-    ResolveReferences (schemaDefinitions, schema, 'properties', new Set ());
-    let view = new JSONSchemaView (schema);
+    let resolvedObject = {
+        schema : schema
+    };
+    ResolveReferences (schemaDefinitions, resolvedObject, 'schema', new Set ());
+    let view = new JSONSchemaView (resolvedObject.schema);
     schemeContainer.appendChild (view.render ());
 }
 
