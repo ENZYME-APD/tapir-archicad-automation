@@ -1,6 +1,10 @@
 #include "ResourceIds.hpp"
 
-'MDID' ID_ADDON_ID "Add-On Identifier" {
+'MDID' 32500 "Add-On Identifier" {
 	826567491
 	368333322
+}
+
+'GICN' ID_TAPIR_LOGO "TapirLogo" {
+    "TapirLogo"
 }

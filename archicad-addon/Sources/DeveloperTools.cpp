@@ -4,20 +4,7 @@
 
 #include "File.hpp"
 
-CommandInfo::CommandInfo (const GS::UniString& name, const GS::UniString& description, const GS::UniString& version, const GS::Optional<GS::UniString>& inputScheme, const GS::Optional<GS::UniString>& outputScheme) :
-    name (name),
-    description (description),
-    version (version),
-    inputScheme (inputScheme),
-    outputScheme (outputScheme)
-{
-}
-
-CommandGroup::CommandGroup (const GS::UniString& name) :
-    name (name),
-    commands ()
-{
-}
+static std::vector<CommandGroup> gCommandGroups;
 
 static bool WriteStringToFile (const IO::Location& location, const GS::UniString& content)
 {
@@ -35,13 +22,15 @@ static bool WriteStringToFile (const IO::Location& location, const GS::UniString
     return true;
 }
 
-void GenerateDocumentation (const IO::Location& folder, const std::vector<CommandGroup>& commandGroups)
+static bool GenerateDocumentation (const IO::Location& folder, const std::vector<CommandGroup>& commandGroups)
 {
     static const GS::UniString NullString ("null");
     IO::Location commonSchemaLocation = folder;
     commonSchemaLocation.AppendToLocal (IO::Name ("common_schema_definitions.js"));
     GS::UniString commonSchemaContent = "var gSchemaDefinitions = " + GetCommonSchemaDefinitions () + ";";
-    WriteStringToFile (commonSchemaLocation, commonSchemaContent);
+    if (!WriteStringToFile (commonSchemaLocation, commonSchemaContent)) {
+        return false;
+    }
 
     IO::Location commandDefinitionLocation = folder;
     commandDefinitionLocation.AppendToLocal (IO::Name ("command_definitions.js"));
@@ -80,5 +69,76 @@ void GenerateDocumentation (const IO::Location& folder, const std::vector<Comman
         }
     }
     commandDefinitionContent += "];";
-    WriteStringToFile (commandDefinitionLocation, commandDefinitionContent);
+    if (!WriteStringToFile (commandDefinitionLocation, commandDefinitionContent)) {
+        return false;
+    }
+
+    return true;
+}
+
+CommandInfo::CommandInfo (const GS::UniString& name, const GS::UniString& description, const GS::UniString& version, const GS::Optional<GS::UniString>& inputScheme, const GS::Optional<GS::UniString>& outputScheme) :
+    name (name),
+    description (description),
+    version (version),
+    inputScheme (inputScheme),
+    outputScheme (outputScheme)
+{
+}
+
+CommandGroup::CommandGroup (const GS::UniString& name) :
+    name (name),
+    commands ()
+{
+}
+
+void AddCommandGroup (const CommandGroup& commandGroup)
+{
+    gCommandGroups.push_back (commandGroup);
+}
+
+GenerateDocumentationCommand::GenerateDocumentationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GenerateDocumentationCommand::GetName () const
+{
+    return "GenerateDocumentation";
+}
+
+GS::Optional<GS::UniString> GenerateDocumentationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "destinationFolder": {
+                "type": "string",
+                "description": "Destination folder for the generated documentation files.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "destinationFolder"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GenerateDocumentationCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState GenerateDocumentationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString destinationFolder;
+    parameters.Get ("destinationFolder", destinationFolder);
+
+    IO::Location destinationFolderLoc (destinationFolder);
+    if (!GenerateDocumentation (destinationFolderLoc, gCommandGroups)) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to generate documentation.");
+    }
+    return CreateSuccessfulExecutionResult ();
 }

@@ -1919,4 +1919,28 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             }]
+        },{
+            "name": "Developer Commands",
+            "commands": [{
+                "name": "GenerateDocumentation",
+                "version": "1.0.7",
+                "description": "Generates files for the documentation. Used by Tapir developers only.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "destinationFolder": {
+                "type": "string",
+                "description": "Destination folder for the generated documentation files.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "destinationFolder"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            }]
         }];

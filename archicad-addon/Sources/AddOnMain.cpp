@@ -8,6 +8,8 @@
 #include "ResourceIds.hpp"
 #include "DeveloperTools.hpp"
 
+#include "AboutDialog.hpp"
+
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
@@ -19,8 +21,6 @@
 #include "PropertyCommands.hpp"
 #include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
-
-static std::vector<CommandGroup> gCommandGroups;
 
 #ifdef DEBUG
 static const bool IsDebugBuild = true;
@@ -47,22 +47,16 @@ GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, co
     return NoError;
 }
 
-
-static void GenerateDocumentation ()
-{
-    DG::FolderDialog folderPicker;
-    if (folderPicker.Invoke ()) {
-        GenerateDocumentation (folderPicker.GetFolder (), gCommandGroups);
-    }
-}
-
 static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 {
     switch (menuParams->menuItemRef.menuResID) {
         case ID_ADDON_MENU:
             switch (menuParams->menuItemRef.itemIndex) {
-                case ID_ADDON_MENU_GENERATE_DOC:
-                    GenerateDocumentation ();
+                case ID_ADDON_MENU_ABOUT:
+                    {
+                        AboutDialog aboutDialog;
+                        aboutDialog.Invoke ();
+                    }
                     break;
             }
             break;
@@ -116,7 +110,7 @@ GSErrCode Initialize (void)
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window."
         );
-        gCommandGroups.push_back (applicationCommands);
+        AddCommandGroup (applicationCommands);
     }
 
     { // Project Commands
@@ -149,7 +143,7 @@ GSErrCode Initialize (void)
             projectCommands, "1.0.7",
             "Opens the given project."
         );
-        gCommandGroups.push_back (projectCommands);
+        AddCommandGroup (projectCommands);
     }
 
     { // Element Commands
@@ -218,7 +212,7 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.3",
             "Creates Object elements based on the given parameters."
         );
-        gCommandGroups.push_back (elementCommands);
+        AddCommandGroup (elementCommands);
     }
 
     { // Attribute Commands
@@ -239,7 +233,7 @@ GSErrCode Initialize (void)
             attributeCommands, "0.1.3",
             "Retrieves the physical properties of the given Building Materials."
         );
-        gCommandGroups.push_back (attributeCommands);
+        AddCommandGroup (attributeCommands);
     }
 
     { // Library Commands
@@ -252,7 +246,7 @@ GSErrCode Initialize (void)
             libraryCommands, "1.0.0",
             "Executes the reload libraries command."
         );
-        gCommandGroups.push_back (libraryCommands);
+        AddCommandGroup (libraryCommands);
     }
 
     { // Teamwork Commands
@@ -265,7 +259,7 @@ GSErrCode Initialize (void)
             teamworkCommands, "0.1.0",
             "Performs a receive operation on the currently opened Teamwork project."
         );
-        gCommandGroups.push_back (teamworkCommands);
+        AddCommandGroup (teamworkCommands);
     }
 
     { // Issue Management Commands
@@ -310,7 +304,16 @@ GSErrCode Initialize (void)
             issueCommands, "1.0.6",
             "Imports issues from the specified BCF file."
         );
-        gCommandGroups.push_back (issueCommands);
+        AddCommandGroup (issueCommands);
+    }
+
+    { // Developer Commands
+        CommandGroup developerCommands ("Developer Commands");
+        err |= RegisterCommand<GenerateDocumentationCommand> (
+            developerCommands, "1.0.7",
+            "Generates files for the documentation. Used by Tapir developers only."
+        );
+        AddCommandGroup (developerCommands);
     }
 
     return err;
