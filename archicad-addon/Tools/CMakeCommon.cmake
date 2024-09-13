@@ -192,7 +192,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
 
         set(MACOSX_BUNDLE_EXECUTABLE_NAME ${addOnName})
         set(MACOSX_BUNDLE_INFO_STRING ${addOnName})
-        set(MACOSX_BUNDLE_GUI_IDENTIFIER com.graphisoft.${addOnNameIdentifier})
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER com.tapir.${addOnNameIdentifier})
         set(MACOSX_BUNDLE_LONG_VERSION_STRING ${copyright})
         set(MACOSX_BUNDLE_BUNDLE_NAME ${addOnName})
         set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${acVersion}.0.0.${gsBuildNum})
@@ -211,7 +211,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
             MACOSX_BUNDLE_INFO_PLIST "${CMAKE_BINARY_DIR}/AddOnInfo.plist"
 
             # Align parameters for Xcode and in Info.plist to avoid warnings
-            XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER com.graphisoft.${addOnNameIdentifier}
+            XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER com.tapir.${addOnNameIdentifier}
             XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET ${lsMinimumSystemVersion}
 
             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
