@@ -184,7 +184,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
         # Prepare various variables for the Info.plist
         string(TOLOWER "${addOnName}" lowerAddOnName)
         string(REGEX REPLACE "[ _]" "-" addOnNameIdentifier "${lowerAddOnName}")
-        string(TIMESTAMP copyright "Copyright © Tapir, 2022-%Y")
+        string(TIMESTAMP copyright "Copyright © Enzyme APD, %Y")
         # BE on the safe side; load the info from an existing framework
         file(READ "${devKitDir}/Frameworks/GSRoot.framework/Versions/A/Resources/Info.plist" plist_content NEWLINE_CONSUME)
         string(REGEX REPLACE ".*GSBuildNum[^0-9]+([0-9]+).*" "\\1" gsBuildNum "${plist_content}")
@@ -192,7 +192,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
 
         set(MACOSX_BUNDLE_EXECUTABLE_NAME ${addOnName})
         set(MACOSX_BUNDLE_INFO_STRING ${addOnName})
-        set(MACOSX_BUNDLE_GUI_IDENTIFIER com.tapir.${addOnNameIdentifier})
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER com.enzyme.${addOnNameIdentifier})
         set(MACOSX_BUNDLE_LONG_VERSION_STRING ${copyright})
         set(MACOSX_BUNDLE_BUNDLE_NAME ${addOnName})
         set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${acVersion}.0.0.${gsBuildNum})
@@ -211,7 +211,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
             MACOSX_BUNDLE_INFO_PLIST "${CMAKE_BINARY_DIR}/AddOnInfo.plist"
 
             # Align parameters for Xcode and in Info.plist to avoid warnings
-            XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER com.tapir.${addOnNameIdentifier}
+            XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER com.enzyme.${addOnNameIdentifier}
             XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET ${lsMinimumSystemVersion}
 
             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
