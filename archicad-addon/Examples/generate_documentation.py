@@ -10,4 +10,3 @@ commandParameters = {
 }
 
 response = aclib.RunTapirCommand (commandName, commandParameters)
-print (response)

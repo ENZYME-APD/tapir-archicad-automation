@@ -2,15 +2,15 @@ import aclib
 import itertools
 
 print ('-' * 30)
-allElements = aclib.RunCommand ('API.GetAllElements', {})['elements']
+allElements = aclib.RunTapirCommand ('GetAllElements', {}, debug=False)['elements']
 print ('All elements = {}'.format (len (allElements)))
 print ('-' * 30)
 
-typesOfElements = aclib.RunCommand ('API.GetTypesOfElements', {'elements':allElements})['typesOfElements']
+detailsOfElements = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': allElements}, debug=False)['detailsOfElements']
 typeCounterDict = dict()
-for typeOfElement in typesOfElements:
-    if 'typeOfElement' in typeOfElement and 'elementType' in typeOfElement['typeOfElement']:
-        elementType = typeOfElement['typeOfElement']['elementType']
+for detailsOfElement in detailsOfElements:
+    if 'type' in detailsOfElement:
+        elementType = detailsOfElement['type']
         if elementType not in typeCounterDict:
             typeCounterDict[elementType] = 1
         else:
