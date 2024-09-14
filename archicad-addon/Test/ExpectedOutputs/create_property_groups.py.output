@@ -1,0 +1,73 @@
+Command: CreatePropertyGroups
+Parameters:
+{
+    "propertyGroups": [
+        {
+            "propertyGroup": {
+                "name": "Python Property Group #1",
+                "description": "Created from python script"
+            }
+        },
+        {
+            "propertyGroup": {
+                "name": "Python Property Group #2",
+                "description": "Created from python script"
+            }
+        },
+        {
+            "propertyGroup": {
+                "name": "Python Property Group #3",
+                "description": "Created from python script"
+            }
+        }
+    ]
+}
+Response:
+{
+    "propertyGroupIds": [
+        {
+            "propertyGroupId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyGroupId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyGroupId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+New Property Groups:
+{
+    "propertyGroups": [
+        {
+            "propertyGroup": {
+                "propertyGroupId": {
+                    "guid": "<GUID>"
+                },
+                "name": "Python Property Group #1"
+            }
+        },
+        {
+            "propertyGroup": {
+                "propertyGroupId": {
+                    "guid": "<GUID>"
+                },
+                "name": "Python Property Group #2"
+            }
+        },
+        {
+            "propertyGroup": {
+                "propertyGroupId": {
+                    "guid": "<GUID>"
+                },
+                "name": "Python Property Group #3"
+            }
+        }
+    ]
+}

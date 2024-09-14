@@ -961,67 +961,6 @@ var gCommands = [{
         ]
     }
             },{
-                "name": "GetPropertyValuesOfElements",
-                "version": "1.0.6",
-                "description": "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            },
-            "properties": {
-                "$ref": "#/PropertyIds"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements",
-            "properties"
-        ]
-    },
-                "outputScheme": {
-        "type": "object",
-        "properties": {
-            "propertyValuesForElements": {
-                "$ref": "#/PropertyValuesOrErrorArray",
-                "description": "List of property value lists. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "propertyValuesForElements"
-        ]
-    }
-            },{
-                "name": "SetPropertyValuesOfElements",
-                "version": "1.0.6",
-                "description": "Sets the property values of elements. It works for subelements of hierarchal elements also.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "elementPropertyValues": {
-                "$ref": "#/ElementPropertyValues"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elementPropertyValues"
-        ]
-    },
-                "outputScheme": {
-        "type": "object",
-        "properties": {
-            "executionResults": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "executionResults"
-        ]
-    }
-            },{
                 "name": "GetClassificationsOfElements",
                 "version": "1.0.7",
                 "description": "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also.",
@@ -1266,6 +1205,145 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "elements"
+        ]
+    }
+            }]
+        },{
+            "name": "Property Commands",
+            "commands": [{
+                "name": "GetPropertyValuesOfElements",
+                "version": "1.0.6",
+                "description": "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "properties"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyValuesForElements": {
+                "$ref": "#/PropertyValuesOrErrorArray",
+                "description": "List of property value lists. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValuesForElements"
+        ]
+    }
+            },{
+                "name": "SetPropertyValuesOfElements",
+                "version": "1.0.6",
+                "description": "Sets the property values of elements. It works for subelements of hierarchal elements also.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementPropertyValues": {
+                "$ref": "#/ElementPropertyValues"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPropertyValues"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreatePropertyGroups",
+                "version": "1.0.7",
+                "description": "Creates Property Groups based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyGroups": {
+                "type": "array",
+                "description": "The parameters of the new property groups.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroup": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyGroup"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroups"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyGroupIds": {
+                "type": "array",
+                "description": "The identifiers of the created property groups.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": {
+                            "type": "object",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyGroupId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupIds"
         ]
     }
             }]

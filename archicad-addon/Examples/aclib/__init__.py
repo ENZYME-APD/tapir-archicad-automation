@@ -42,7 +42,7 @@ def RunTapirCommand (command, parameters, debug = True):
     if debug:
         print ('Response:\n' + JsonDumpDictionary (result))
 
-    if 'error' in result:
+    if result and 'error' in result:
         print ('Error:\n{}'.format (JsonDumpDictionary (result['error'])))
 
     return result

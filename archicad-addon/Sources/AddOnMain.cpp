@@ -186,14 +186,6 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.2",
             "Sets the given GDL parameters of the given elements."
         );
-        err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
-            elementCommands, "1.0.6",
-            "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also."
-        );
-        err |= RegisterCommand<SetPropertyValuesOfElementsCommand> (
-            elementCommands, "1.0.6",
-            "Sets the property values of elements. It works for subelements of hierarchal elements also."
-        );
         err |= RegisterCommand<GetClassificationsOfElementsCommand> (
             elementCommands, "1.0.7",
             "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
@@ -215,6 +207,23 @@ GSErrCode Initialize (void)
             "Creates Object elements based on the given parameters."
         );
         AddCommandGroup (elementCommands);
+    }
+
+    { // Property Commands
+        CommandGroup propertyCommands ("Property Commands");
+        err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
+            propertyCommands, "1.0.6",
+            "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<SetPropertyValuesOfElementsCommand> (
+            propertyCommands, "1.0.6",
+            "Sets the property values of elements. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<CreatePropertyGroupsCommand> (
+            propertyCommands, "1.0.7",
+            "Creates Property Groups based on the given parameters."
+        );
+        AddCommandGroup (propertyCommands);
     }
 
     { // Attribute Commands

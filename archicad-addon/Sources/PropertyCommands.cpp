@@ -296,3 +296,133 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
     return response;
 }
+
+CreatePropertyGroupsCommand::CreatePropertyGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreatePropertyGroupsCommand::GetName () const
+{
+    return "CreatePropertyGroups";
+}
+
+GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyGroups": {
+                "type": "array",
+                "description": "The parameters of the new property groups.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroup": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyGroup"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyGroupIds": {
+                "type": "array",
+                "description": "The identifiers of the created property groups.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": {
+                            "type": "object",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyGroupId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupIds"
+        ]
+    })";
+}
+
+GS::ObjectState CreatePropertyGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyGroups;
+    parameters.Get ("propertyGroups", propertyGroups);
+
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    GS::ObjectState response;
+    const auto& propertyGroupIds = response.AddList<GS::ObjectState> ("propertyGroupIds");
+
+    ACAPI_CallUndoableCommand ("CreatePropertyGroups", [&] () -> GSErrCode {
+        for (const GS::ObjectState& g : propertyGroups) {
+            const GS::ObjectState* propertyGroup = g.Get ("propertyGroup");
+            if (propertyGroup == nullptr) {
+                propertyGroupIds (CreateErrorResponse (APIERR_BADPARS, "propertyGroup is missing"));
+                continue;
+            }
+
+            API_PropertyGroup apiPropertyGroup;
+            if (!propertyGroup->Get ("name", apiPropertyGroup.name) || apiPropertyGroup.name.IsEmpty ()) {
+                propertyGroupIds (CreateErrorResponse (APIERR_BADPARS, "name is missing or empty"));
+                continue;
+            }
+
+            propertyGroup->Get ("description", apiPropertyGroup.description);
+            GSErrCode err = ACAPI_Property_CreatePropertyGroup (apiPropertyGroup);
+            if (err != NoError) {
+                propertyGroupIds (CreateErrorResponse (APIERR_BADPARS, "name is missing or empty"));
+                continue;
+            }
+
+            propertyGroupIds (CreateIdObjectState ("propertyGroupId", apiPropertyGroup.guid));
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
