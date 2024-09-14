@@ -1,0 +1,9 @@
+Command: GenerateDocumentation
+Parameters:
+{
+    "destinationFolder": "c:\\Users\\loran\\GitRepos\\tapir-archicad-automation\\docs\\archicad-addon"
+}
+Response:
+{
+    "success": true
+}
