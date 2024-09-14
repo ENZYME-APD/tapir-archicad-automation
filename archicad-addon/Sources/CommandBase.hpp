@@ -62,3 +62,4 @@ using Stories = GS::Array<Story>;
 Stories GetStories ();
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
+API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);

@@ -22,12 +22,6 @@
 #include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
 
-#ifdef DEBUG
-static const bool IsDebugBuild = true;
-#else
-static const bool IsDebugBuild = false;
-#endif
-
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
 {
@@ -77,9 +71,7 @@ GSErrCode RegisterInterface (void)
 {
     GSErrCode err = NoError;
 
-    if (IsDebugBuild) {
-        err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
-    }
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
 
     return err;
 }
@@ -88,9 +80,7 @@ GSErrCode Initialize (void)
 {
     GSErrCode err = NoError;
 
-    if (IsDebugBuild) {
-        err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
-    }
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
 
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
@@ -152,6 +142,14 @@ GSErrCode Initialize (void)
             elementCommands, "0.1.0",
             "Gets the list of the currently selected elements."
         );
+        err |= RegisterCommand<GetElementsByTypeCommand> (
+            elementCommands, "1.0.7",
+            "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering."
+        );
+        err |= RegisterCommand<GetAllElementsCommand> (
+            elementCommands, "1.0.7",
+            "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering."
+        );
         err |= RegisterCommand<ChangeSelectionOfElementsCommand> (
             elementCommands, "1.0.7",
             "Adds/removes a number of elements to/from the current selection."
@@ -163,6 +161,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
             "Gets the details of the given elements (geometry parameters etc)."
+        );
+        err |= RegisterCommand<SetDetailsOfElementsCommand> (
+            elementCommands, "1.0.7",
+            "Sets the details of the given elements (floor, layer, order etc)."
         );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
