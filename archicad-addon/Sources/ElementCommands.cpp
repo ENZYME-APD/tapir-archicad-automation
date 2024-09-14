@@ -1,6 +1,139 @@
 #include "ElementCommands.hpp"
 #include "MigrationHelper.hpp"
 
+static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
+{
+    if (filter == "IsEditable")
+        return APIFilt_IsEditable;
+    if (filter == "IsVisibleByLayer")
+        return APIFilt_OnVisLayer;
+    if (filter == "IsVisibleByRenovation")
+        return APIFilt_IsVisibleByRenovation;
+    if (filter == "IsVisibleByStructureDisplay")
+        return APIFilt_IsInStructureDisplay;
+    if (filter == "IsVisibleIn3D")
+        return APIFilt_In3D;
+    if (filter == "OnActualFloor")
+        return APIFilt_OnActFloor;
+    if (filter == "OnActualLayout")
+        return APIFilt_OnActLayout;
+    if (filter == "InMyWorkspace")
+        return APIFilt_InMyWorkspace;
+    if (filter == "IsIndependent")
+        return APIFilt_IsIndependent;
+    if (filter == "InCroppedView")
+        return APIFilt_InCroppedView;
+    if (filter == "HasAccessRight")
+        return APIFilt_HasAccessRight;
+    if (filter == "IsOverriddenByRenovation")
+        return APIFilt_IsOverridden;
+    return APIFilt_None;
+}
+
+GetElementsByTypeCommand::GetElementsByTypeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementsByTypeCommand::GetName () const
+{
+    return "GetElementsByType";
+}
+
+GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "filters": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ElemTypeID elemType = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    }
+
+    API_ElemFilterFlags filterFlags = APIFilt_None;
+    GS::Array<GS::UniString> filters;
+    if (parameters.Get ("filters", filters)) {
+        for (const GS::UniString& filter : filters) {
+            filterFlags |= ConvertFilterStringToFlag (filter);
+        }
+    }
+
+    GS::Array<API_Guid> elemList;
+    GSErrCode err = ACAPI_Element_GetElemList (elemType, &elemList, filterFlags);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve elements.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    for (const API_Guid& elemGuid : elemList) {
+        elements (CreateElementIdObjectState (elemGuid));
+    }
+
+    return response;
+}
+
+GS::String GetAllElementsCommand::GetName () const
+{
+    return "GetAllElements";
+}
+
+GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "filters": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GetDetailsOfElementsCommand::GetDetailsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -146,6 +279,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                         "type",
                         "floorIndex",
                         "layerIndex",
+                        "drawIndex",
                         "details"
                     ]
                 }
@@ -1529,35 +1663,6 @@ GS::Optional<GS::UniString> FilterElementsCommand::GetResponseSchema () const
             "filteredElements"
         ]
     })";
-}
-
-static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
-{
-    if (filter == "IsEditable")
-        return APIFilt_IsEditable;
-    if (filter == "IsVisibleByLayer")
-        return APIFilt_OnVisLayer;
-    if (filter == "IsVisibleByRenovation")
-        return APIFilt_IsVisibleByRenovation;
-    if (filter == "IsVisibleByStructureDisplay")
-        return APIFilt_IsInStructureDisplay;
-    if (filter == "IsVisibleIn3D")
-        return APIFilt_In3D;
-    if (filter == "OnActualFloor")
-        return APIFilt_OnActFloor;
-    if (filter == "OnActualLayout")
-        return APIFilt_OnActLayout;
-    if (filter == "InMyWorkspace")
-        return APIFilt_InMyWorkspace;
-    if (filter == "IsIndependent")
-        return APIFilt_IsIndependent;
-    if (filter == "InCroppedView")
-        return APIFilt_InCroppedView;
-    if (filter == "HasAccessRight")
-        return APIFilt_HasAccessRight;
-    if (filter == "IsOverriddenByRenovation")
-        return APIFilt_IsOverridden;
-    return APIFilt_None;
 }
 
 GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const

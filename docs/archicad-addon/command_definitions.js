@@ -317,6 +317,71 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "GetElementsByType",
+                "version": "1.0.7",
+                "description": "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "filters": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "GetAllElements",
+                "version": "1.0.7",
+                "description": "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "filters": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementFilter"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
                 "name": "ChangeSelectionOfElements",
                 "version": "1.0.7",
                 "description": "Adds/removes a number of elements to/from the current selection.",
@@ -518,6 +583,7 @@ var gCommands = [{
                         "type",
                         "floorIndex",
                         "layerIndex",
+                        "drawIndex",
                         "details"
                     ]
                 }
@@ -526,6 +592,64 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "detailsOfElements"
+        ]
+    }
+            },{
+                "name": "SetDetailsOfElements",
+                "version": "1.0.7",
+                "description": "Sets the details of the given elements (floor, layer, order etc).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementsWithDetails": {
+                "type": "array",
+                "description": "The elements with parameters.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "details": {
+                            "type": "object",
+                            "description": "Details of an element.",
+                            "properties": {
+                                "floorIndex": {
+                                    "type": "number"
+                                },
+                                "layerIndex": {
+                                    "type": "number"
+                                },
+                                "drawIndex": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": []
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "details"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithDetails"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
         ]
     }
             },{
