@@ -30,4 +30,15 @@ public:
     std::vector<CommandInfo> commands;
 };
 
-void GenerateDocumentation (const IO::Location& folder, const std::vector<CommandGroup>& commandGroups);
+class GenerateDocumentationCommand : public CommandBase
+{
+public:
+    GenerateDocumentationCommand ();
+
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+void AddCommandGroup (const CommandGroup& commandGroup);

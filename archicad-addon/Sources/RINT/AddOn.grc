@@ -8,6 +8,19 @@
 
 'STR#' ID_ADDON_MENU "Add-On Menu" {
 /* [   ] */        "Tapir"
-/* [   ] */        "Developer Tools"
-/* [  1] */        "Generate Documentation"
+/* [  1] */        "About Tapir..."
+}
+
+'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
+/* [  1] */ Button                     10  204  180   23    LargePlain "OK"
+/* [  2] */ Icon                       36   10  128  128    ID_TAPIR_LOGO
+/* [  3] */ CenterText                 10  148  180   23    LargeBold vCenter "Tapir Archicad Automation"
+/* [  4] */ CenterText                 10  171  180   23    LargePlain vCenter "Version %T"
+}
+
+'DLGH' ID_ABOUT_DIALOG Save_USDZ_Options {
+1    ""        OkButton
+2    ""        TapirLogo
+3    ""        TapirText
+4    ""        VersionText
 }

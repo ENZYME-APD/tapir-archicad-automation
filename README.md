@@ -18,7 +18,7 @@ The diagram below explains the components and their dependencies.
 
 [The roadmap is publicly available here.](https://github.com/orgs/ENZYME-APD/projects/4)
 
-## ARCHICAD Add-On
+## Archicad Add-On
 
 ### Installation
 

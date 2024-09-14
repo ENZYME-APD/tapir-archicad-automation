@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   id="Layer_2"
+   x="0px"
+   y="0px"
+   viewBox="0 0 128 128"
+   enable-background="new 0 0 32 32"
+   xml:space="preserve"
+   sodipodi:docname="TapirLogo_128x128.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   inkscape:export-filename="C:\Users\Viktor\GitRepos\tapir-archicad-automation\logo\pack\svg\tapir_logo_black_512.png"
+   inkscape:export-xdpi="1536"
+   inkscape:export-ydpi="1536"
+   width="128"
+   height="128"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs11" /><sodipodi:namedview
+   id="namedview9"
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1.0"
+   inkscape:pageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   showgrid="true"
+   inkscape:zoom="53.625002"
+   inkscape:cx="3.3286712"
+   inkscape:cy="47.869462"
+   inkscape:window-width="1920"
+   inkscape:window-height="1112"
+   inkscape:window-x="2392"
+   inkscape:window-y="-8"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="g6"
+   inkscape:showpageshadow="2"
+   inkscape:deskcolor="#d1d1d1"><inkscape:grid
+     id="grid1"
+     units="px"
+     originx="0"
+     originy="0"
+     spacingx="1"
+     spacingy="1"
+     empcolor="#0099e5"
+     empopacity="0.30196078"
+     color="#0099e5"
+     opacity="0.14901961"
+     empspacing="5"
+     dotted="false"
+     gridanglex="30"
+     gridanglez="30"
+     visible="true" /></sodipodi:namedview>
+<g
+   id="g6">
+	<circle
+   fill="#202225"
+   cx="59.599998"
+   cy="59.599998"
+   id="circle2"
+   style="stroke-width:4"
+   r="4.4000001" />
+	<path
+   fill="#202225"
+   d="M 64,0 C 36,0 12.4,18 3.6,42.8 c 2.8,0 4.8,-0.4 6,-0.8 4.8,-2 10,-3.2 15.6,-4 1.2,-4 3.2,-7.2 7.2,-7.2 4,0.4 4,2.8 2.8,6.4 29.6,-0.8 65.2,12.8 78.4,42.4 0.8,2 -3.6,3.2 -5.6,4.8 C 106,86 94,74.8 93.2,75.6 92.4,76.8 64.4,89.6 38.4,90.4 25.2,90.8 18,96 12.4,102 24,117.6 42.8,128 64,128 99.2,128 128,99.2 128,64 128,28.8 99.2,0 64,0 Z"
+   id="path4"
+   style="stroke-width:4" />
+</g>
+</svg>
