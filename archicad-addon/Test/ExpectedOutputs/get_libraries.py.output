@@ -6,16 +6,7 @@ Response:
     "libraries": [
         {
             "name": "BuiltInLibraryParts.lcf",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\BuiltInLibraryParts.lcf",
-            "type": "BuiltInLibrary",
-            "available": true,
-            "readOnly": true,
-            "twServerUrl": "",
-            "urlWebLibrary": ""
-        },
-        {
-            "name": "Collada In-Out.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\Collada In-Out.apx\\rfs",
+            "path": "<PATH>BuiltInLibraryParts.lcf",
             "type": "BuiltInLibrary",
             "available": true,
             "readOnly": true,
@@ -24,16 +15,7 @@ Response:
         },
         {
             "name": "Corner Window.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Standard\\Corner Window.apx\\rfs",
-            "type": "BuiltInLibrary",
-            "available": true,
-            "readOnly": true,
-            "twServerUrl": "",
-            "urlWebLibrary": ""
-        },
-        {
-            "name": "GoogleEarthConnectivity.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\GoogleEarthConnectivity.apx\\rfs",
+            "path": "<PATH>rfs",
             "type": "BuiltInLibrary",
             "available": true,
             "readOnly": true,
@@ -42,7 +24,7 @@ Response:
         },
         {
             "name": "Grid Tool.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Local\\Grid Tool.apx\\rfs",
+            "path": "<PATH>rfs",
             "type": "BuiltInLibrary",
             "available": true,
             "readOnly": true,
@@ -51,7 +33,7 @@ Response:
         },
         {
             "name": "IFC In-Out.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\IFC In-Out.apx\\rfs",
+            "path": "<PATH>rfs",
             "type": "BuiltInLibrary",
             "available": true,
             "readOnly": true,
@@ -60,7 +42,7 @@ Response:
         },
         {
             "name": "Interactive Schedule.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Standard\\Interactive Schedule.apx\\rfs",
+            "path": "<PATH>rfs",
             "type": "BuiltInLibrary",
             "available": true,
             "readOnly": true,
@@ -69,25 +51,7 @@ Response:
         },
         {
             "name": "MEP Modeler.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\MEP Modeler\\MEP Modeler.apx\\rfs",
-            "type": "BuiltInLibrary",
-            "available": true,
-            "readOnly": true,
-            "twServerUrl": "",
-            "urlWebLibrary": ""
-        },
-        {
-            "name": "PointCloud_In.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\PointCloud_In.apx\\rfs",
-            "type": "BuiltInLibrary",
-            "available": true,
-            "readOnly": true,
-            "twServerUrl": "",
-            "urlWebLibrary": ""
-        },
-        {
-            "name": "Rhino_In.apx",
-            "path": "C:\\Program Files\\Graphisoft\\Archicad 26\\Add-Ons\\Import-Export\\Rhino_In.apx\\rfs",
+            "path": "<PATH>rfs",
             "type": "BuiltInLibrary",
             "available": true,
             "readOnly": true,
@@ -96,7 +60,7 @@ Response:
         },
         {
             "name": "Embedded Library",
-            "path": "C:\\Users\\loran\\Graphisoft\\AutoSave-26\\Emb_<ID>\\content",
+            "path": "<PATH>content",
             "type": "EmbeddedLibrary",
             "available": true,
             "readOnly": false,
@@ -105,7 +69,7 @@ Response:
         },
         {
             "name": "TestProject.pla",
-            "path": "c:\\Users\\loran\\GitRepos\\tapir-archicad-automation\\archicad-addon\\Test\\TestProject.pla",
+            "path": "<PATH>TestProject.pla",
             "type": "LocalLibrary",
             "available": true,
             "readOnly": true,

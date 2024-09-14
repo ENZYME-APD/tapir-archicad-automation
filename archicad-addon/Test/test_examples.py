@@ -43,9 +43,8 @@ def ExecuteScript (exampleScriptFilePath):
 def CompareOutput (bynaryOutput, expectedOutputFilePath):
     output = '\n'.join (bynaryOutput.decode ().split ('\r\n'))
     for mask in [(re.compile(r'[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?'), '<GUID>'),
-                 (re.compile(r'"creaTime": [0-9]+'), '"creaTime": <TIME>'),
-                 (re.compile(r'"modiTime": [0-9]+'), '"modiTime": <TIME>'),
-                 (re.compile(r'Emb_[0-9]+'), 'Emb_<ID>')]:
+                 (re.compile(r'Time": [0-9]+'), 'Time": <TIME>'),
+                 (re.compile(r'"(?P<fieldName>[^"]*(folder|path|directory)[^"]*)": "([A-Z]:(\\\\?[^\\"]+)+\\\\?|/?([^/"]+/)+)', re.IGNORECASE), '"\g<fieldName>": "<PATH>')]:
         output = mask[0].sub (mask[1], output)
 
     expectedOutputFilePath = os.path.join (os.path.dirname (__file__), 'ExpectedOutputs', testName + '.output')

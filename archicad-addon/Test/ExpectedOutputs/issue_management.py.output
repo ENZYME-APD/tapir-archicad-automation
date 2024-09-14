@@ -277,7 +277,7 @@ Parameters:
             }
         }
     ],
-    "exportPath": "C:\\Users\\loran\\AppData\\Local\\Temp\\issues_test.bcfzip",
+    "exportPath": "<PATH>issues_test.bcfzip",
     "useExternalId": false,
     "alignBySurveyPoint": true
 }
@@ -420,7 +420,7 @@ Response:
 Command: ImportIssuesFromBCF
 Parameters:
 {
-    "importPath": "C:\\Users\\loran\\AppData\\Local\\Temp\\issues_test.bcfzip",
+    "importPath": "<PATH>issues_test.bcfzip",
     "alignBySurveyPoint": true
 }
 Response:
