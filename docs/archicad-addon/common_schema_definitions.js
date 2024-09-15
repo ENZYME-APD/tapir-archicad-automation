@@ -98,7 +98,7 @@ var gSchemaDefinitions = {
             "type": "object",
             "description": "The dictionary of GDL parameters. The name of the parameter is the key and the details of the parameter are in the value.",
             "additionalProperties": {
-                "type": "#/GDLParameterDetails"
+                "$ref": "#/GDLParameterDetails"
             }
         },
         "GDLParameterDetails": {
@@ -566,7 +566,7 @@ var gSchemaDefinitions = {
                     "$ref": "#/PropertyId"
                 },
                 "propertyValue": {
-                    "type": "#/PropertyValue"
+                    "$ref": "#/PropertyValue"
                 }
             },
             "additionalProperties": false,
