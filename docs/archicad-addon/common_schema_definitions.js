@@ -94,6 +94,22 @@ var gSchemaDefinitions = {
                 "location"
             ]
         },
+        "GDLParameterList": {
+            "type": "object",
+            "description": "The list of GDL parameters.",
+            "properties": {
+                "parameters" : {
+                    "type": "array",
+                    "description": "The list of GDL parameters.",
+                    "items": {
+                        "$ref": "#/GDLParameterDetails"
+                    }
+                }
+            },
+            "required": [
+                "parameters"
+            ]
+        },
         "GDLParametersDictionary": {
             "type": "object",
             "description": "The dictionary of GDL parameters. The name of the parameter is the key and the details of the parameter are in the value.",
@@ -105,6 +121,10 @@ var gSchemaDefinitions = {
             "type": "object",
             "description": "Details of a GDL parameter.",
             "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The name of the parameter."
+                },
                 "index": {
                     "type": "string",
                     "description": "The index of the parameter."

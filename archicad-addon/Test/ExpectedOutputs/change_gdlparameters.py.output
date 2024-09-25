@@ -23,1016 +23,1198 @@ Response:
 {
     "gdlParametersOfElements": [
         {
-            "A": {
-                "index": 0,
-                "type": "Length",
-                "value": 0.7
-            },
-            "B": {
-                "index": 1,
-                "type": "Length",
-                "value": 0.6
-            },
-            "ZZYZX": {
-                "index": 2,
-                "type": "Length",
-                "value": 0.8
-            },
-            "AC_show2DHotspotsIn3D": {
-                "index": 3,
-                "type": "Boolean",
-                "value": false
-            },
-            "ac_bottomlevel": {
-                "index": 4,
-                "type": "Length",
-                "value": 1
-            },
-            "ac_toplevel": {
-                "index": 5,
-                "type": "Length",
-                "value": 0
-            },
-            "gs_seat_height": {
-                "index": 6,
-                "type": "Length",
-                "value": 0.45
-            },
-            "gs_2D_representation": {
-                "index": 7,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel2D": {
-                "index": 8,
-                "type": "Integer",
-                "value": 1
-            },
-            "iChairSymbolType": {
-                "index": 9,
-                "type": "Integer",
-                "value": 4
-            },
-            "gs_cont_pen": {
-                "index": 10,
-                "type": "PenColor",
-                "value": 4
-            },
-            "gs_fill_type": {
-                "index": 11,
-                "type": "FillPattern",
-                "value": {
-                    "index": 65,
-                    "name": "Background"
-                }
-            },
-            "gs_fill_pen": {
-                "index": 12,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_back_pen": {
-                "index": 13,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_min_space": {
-                "index": 14,
-                "type": "Title",
-                "value": ""
-            },
-            "MSFront": {
-                "index": 15,
-                "type": "Length",
-                "value": 0.03
-            },
-            "MSSide": {
-                "index": 16,
-                "type": "Length",
-                "value": 0.15
-            },
-            "MSRear": {
-                "index": 17,
-                "type": "Length",
-                "value": 0.3
-            },
-            "gs_3D_representation": {
-                "index": 18,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel3D": {
-                "index": 19,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_resol": {
-                "index": 20,
-                "type": "Integer",
-                "value": 24
-            },
-            "gs_shadow": {
-                "index": 21,
-                "type": "Boolean",
-                "value": true
-            },
-            "gs_material": {
-                "index": 22,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_seat_mat": {
-                "index": 23,
-                "type": "Material",
-                "value": {
+            "parameters": [
+                {
+                    "name": "A",
+                    "index": 0,
+                    "type": "Length",
+                    "value": 0.7
+                },
+                {
+                    "name": "B",
+                    "index": 1,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "ZZYZX",
+                    "index": 2,
+                    "type": "Length",
+                    "value": 0.8
+                },
+                {
+                    "name": "AC_show2DHotspotsIn3D",
                     "index": 3,
-                    "name": "Paint - Dark Gray"
-                }
-            },
-            "gs_frame_mat": {
-                "index": 24,
-                "type": "Material",
-                "value": {
-                    "index": 15,
-                    "name": "Wood - Pine Grained Horizontal"
-                }
-            },
-            "gs_back_mat": {
-                "index": 25,
-                "type": "Material",
-                "value": {
-                    "index": 66,
-                    "name": "Paint - Sand Beige"
-                }
-            },
-            "gs_list": {
-                "index": 26,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_list_cost": {
-                "index": 27,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "gs_list_manufacturer": {
-                "index": 28,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_note": {
-                "index": 29,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_location": {
-                "index": 30,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_accessories": {
-                "index": 31,
-                "type": "String",
-                "value": ""
-            },
-            "FM_Type": {
-                "index": 32,
-                "type": "String",
-                "value": "Furniture"
-            },
-            "iFMType": {
-                "index": 33,
-                "type": "Integer",
-                "value": 16
-            },
-            "FM_InventoryNumber": {
-                "index": 34,
-                "type": "String",
-                "value": ""
-            },
-            "FM_SerialNumber": {
-                "index": 35,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ProductionYear": {
-                "index": 36,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ObjectWeight": {
-                "index": 37,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "FM_ObjectWeightUnit": {
-                "index": 38,
-                "type": "String",
-                "value": "kg"
-            },
-            "gs_list_custom1": {
-                "index": 39,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom2": {
-                "index": 40,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom3": {
-                "index": 41,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom4": {
-                "index": 42,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom5": {
-                "index": 43,
-                "type": "String",
-                "value": ""
-            },
-            "gs_ui_current_page": {
-                "index": 44,
-                "type": "Integer",
-                "value": 2
-            }
-        },
-        {
-            "A": {
-                "index": 0,
-                "type": "Length",
-                "value": 0.45
-            },
-            "B": {
-                "index": 1,
-                "type": "Length",
-                "value": 0.4
-            },
-            "ZZYZX": {
-                "index": 2,
-                "type": "Length",
-                "value": 0.6
-            },
-            "AC_show2DHotspotsIn3D": {
-                "index": 3,
-                "type": "Boolean",
-                "value": false
-            },
-            "ac_bottomlevel": {
-                "index": 4,
-                "type": "Length",
-                "value": 1
-            },
-            "ac_toplevel": {
-                "index": 5,
-                "type": "Length",
-                "value": 0
-            },
-            "numDrawer": {
-                "index": 6,
-                "type": "Integer",
-                "value": 2
-            },
-            "tDoorPanel": {
-                "index": 7,
-                "type": "Title",
-                "value": ""
-            },
-            "iPanelGroup": {
-                "index": 8,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "iPanelStyle": {
-                "index": 9,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "iFrameJoinery": {
-                "index": 10,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "iFrameBevel": {
-                "index": 11,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "panelFrameWidth": {
-                "index": 12,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.02
-                ]
-            },
-            "mullionWidth": {
-                "index": 13,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.01
-                ]
-            },
-            "nVerticalMullion": {
-                "index": 14,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "nHorizontalMullion": {
-                "index": 15,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "doorCustomPanelName": {
-                "index": 16,
-                "type": "String",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    ""
-                ]
-            },
-            "bKnob": {
-                "index": 17,
-                "type": "Boolean",
-                "value": true
-            },
-            "iKnobGroup": {
-                "index": 18,
-                "type": "Integer",
-                "value": 1
-            },
-            "iKnobStyle": {
-                "index": 19,
-                "type": "Integer",
-                "value": 1
-            },
-            "iKnobOnSide": {
-                "index": 20,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "bDoubleKnob": {
-                "index": 21,
-                "type": "Boolean",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    false
-                ]
-            },
-            "iKnobOrientation": {
-                "index": 22,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "knobLength": {
-                "index": 23,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.2
-                ]
-            },
-            "knobPosDrawerX": {
-                "index": 24,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0
-                ]
-            },
-            "knobPosDrawerY": {
-                "index": 25,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0
-                ]
-            },
-            "doorCustomKnobName": {
-                "index": 26,
-                "type": "String",
-                "value": ""
-            },
-            "customHandleLength": {
-                "index": 27,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.1
-                ]
-            },
-            "customHandleHeight": {
-                "index": 28,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.1
-                ]
-            },
-            "customHandleDepth": {
-                "index": 29,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.1
-                ]
-            },
-            "gs_2D_representation": {
-                "index": 30,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel2D": {
-                "index": 31,
-                "type": "Integer",
-                "value": 1
-            },
-            "iSymbolStyle": {
-                "index": 32,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_cont_pen": {
-                "index": 33,
-                "type": "PenColor",
-                "value": 4
-            },
-            "gs_fill_type": {
-                "index": 34,
-                "type": "FillPattern",
-                "value": {
-                    "index": 65,
-                    "name": "Background"
-                }
-            },
-            "gs_fill_pen": {
-                "index": 35,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_back_pen": {
-                "index": 36,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_min_space": {
-                "index": 37,
-                "type": "Title",
-                "value": ""
-            },
-            "MSFront": {
-                "index": 38,
-                "type": "Length",
-                "value": 0.6
-            },
-            "gs_3D_representation": {
-                "index": 39,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel3D": {
-                "index": 40,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_resol": {
-                "index": 41,
-                "type": "Integer",
-                "value": 24
-            },
-            "gs_shadow": {
-                "index": 42,
-                "type": "Boolean",
-                "value": true
-            },
-            "tSurfaces": {
-                "index": 43,
-                "type": "Title",
-                "value": ""
-            },
-            "matCabinet": {
-                "index": 44,
-                "type": "Material",
-                "value": {
-                    "index": 15,
-                    "name": "Wood - Pine Grained Horizontal"
-                }
-            },
-            "knobMat": {
-                "index": 45,
-                "type": "Material",
-                "value": {
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "name": "ac_bottomlevel",
+                    "index": 4,
+                    "type": "Length",
+                    "value": 1
+                },
+                {
+                    "name": "ac_toplevel",
+                    "index": 5,
+                    "type": "Length",
+                    "value": 0
+                },
+                {
+                    "name": "gs_seat_height",
+                    "index": 6,
+                    "type": "Length",
+                    "value": 0.45
+                },
+                {
+                    "name": "gs_2D_representation",
+                    "index": 7,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel2D",
+                    "index": 8,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iChairSymbolType",
+                    "index": 9,
+                    "type": "Integer",
+                    "value": 4
+                },
+                {
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 4
+                },
+                {
+                    "name": "gs_fill_type",
+                    "index": 11,
+                    "type": "FillPattern",
+                    "value": {
+                        "index": 65,
+                        "name": "Background"
+                    }
+                },
+                {
+                    "name": "gs_fill_pen",
+                    "index": 12,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_back_pen",
                     "index": 13,
-                    "name": "Metal - Chrome 01"
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_min_space",
+                    "index": 14,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "MSFront",
+                    "index": 15,
+                    "type": "Length",
+                    "value": 0.03
+                },
+                {
+                    "name": "MSSide",
+                    "index": 16,
+                    "type": "Length",
+                    "value": 0.15
+                },
+                {
+                    "name": "MSRear",
+                    "index": 17,
+                    "type": "Length",
+                    "value": 0.3
+                },
+                {
+                    "name": "gs_3D_representation",
+                    "index": 18,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel3D",
+                    "index": 19,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_resol",
+                    "index": 20,
+                    "type": "Integer",
+                    "value": 24
+                },
+                {
+                    "name": "gs_shadow",
+                    "index": 21,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "gs_material",
+                    "index": 22,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_seat_mat",
+                    "index": 23,
+                    "type": "Material",
+                    "value": {
+                        "index": 3,
+                        "name": "Paint - Dark Gray"
+                    }
+                },
+                {
+                    "name": "gs_frame_mat",
+                    "index": 24,
+                    "type": "Material",
+                    "value": {
+                        "index": 15,
+                        "name": "Wood - Pine Grained Horizontal"
+                    }
+                },
+                {
+                    "name": "gs_back_mat",
+                    "index": 25,
+                    "type": "Material",
+                    "value": {
+                        "index": 66,
+                        "name": "Paint - Sand Beige"
+                    }
+                },
+                {
+                    "name": "gs_list",
+                    "index": 26,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_cost",
+                    "index": 27,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "gs_list_manufacturer",
+                    "index": 28,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_note",
+                    "index": 29,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_location",
+                    "index": 30,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_accessories",
+                    "index": 31,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_Type",
+                    "index": 32,
+                    "type": "String",
+                    "value": "Furniture"
+                },
+                {
+                    "name": "iFMType",
+                    "index": 33,
+                    "type": "Integer",
+                    "value": 16
+                },
+                {
+                    "name": "FM_InventoryNumber",
+                    "index": 34,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_SerialNumber",
+                    "index": 35,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ProductionYear",
+                    "index": 36,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ObjectWeight",
+                    "index": 37,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "FM_ObjectWeightUnit",
+                    "index": 38,
+                    "type": "String",
+                    "value": "kg"
+                },
+                {
+                    "name": "gs_list_custom1",
+                    "index": 39,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom2",
+                    "index": 40,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom3",
+                    "index": 41,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom4",
+                    "index": 42,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom5",
+                    "index": 43,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_ui_current_page",
+                    "index": 44,
+                    "type": "Integer",
+                    "value": 2
                 }
-            },
-            "tPanelSurf": {
-                "index": 46,
-                "type": "Title",
-                "value": ""
-            },
-            "panelFrameMat": {
-                "index": 47,
-                "type": "Material",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
-                ]
-            },
-            "insetMat1": {
-                "index": 48,
-                "type": "Material",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
-                ]
-            },
-            "insetMat2": {
-                "index": 49,
-                "type": "Material",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
-                ]
-            },
-            "gs_list": {
-                "index": 50,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_list_cost": {
-                "index": 51,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "gs_list_manufacturer": {
-                "index": 52,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_note": {
-                "index": 53,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_location": {
-                "index": 54,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_accessories": {
-                "index": 55,
-                "type": "String",
-                "value": ""
-            },
-            "FM_Type": {
-                "index": 56,
-                "type": "String",
-                "value": "Furniture"
-            },
-            "iFMType": {
-                "index": 57,
-                "type": "Integer",
-                "value": 16
-            },
-            "FM_InventoryNumber": {
-                "index": 58,
-                "type": "String",
-                "value": ""
-            },
-            "FM_SerialNumber": {
-                "index": 59,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ProductionYear": {
-                "index": 60,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ObjectWeight": {
-                "index": 61,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "FM_ObjectWeightUnit": {
-                "index": 62,
-                "type": "String",
-                "value": "kg"
-            },
-            "gs_list_custom1": {
-                "index": 63,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom2": {
-                "index": 64,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom3": {
-                "index": 65,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom4": {
-                "index": 66,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom5": {
-                "index": 67,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_Title": {
-                "index": 68,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_onorm_dimensions": {
-                "index": 69,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_manufacturer": {
-                "index": 70,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_baseheight_value": {
-                "index": 71,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_baseheight": {
-                "index": 72,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_assemblydate": {
-                "index": 73,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_customtext1": {
-                "index": 74,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_customtext2": {
-                "index": 75,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_aks": {
-                "index": 76,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_product": {
-                "index": 77,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_leistungbuch": {
-                "index": 78,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_description": {
-                "index": 79,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_number": {
-                "index": 80,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_id": {
-                "index": 81,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_admission": {
-                "index": 82,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_modification": {
-                "index": 83,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_tozonenumber": {
-                "index": 84,
-                "type": "String",
-                "value": ""
-            },
-            "gs_ui_current_page": {
-                "index": 85,
-                "type": "Integer",
-                "value": 10
-            }
+            ]
         },
         {
-            "A": {
-                "index": 0,
-                "type": "Length",
-                "value": 0.7
-            },
-            "B": {
-                "index": 1,
-                "type": "Length",
-                "value": 0.6
-            },
-            "ZZYZX": {
-                "index": 2,
-                "type": "Length",
-                "value": 0.8
-            },
-            "AC_show2DHotspotsIn3D": {
-                "index": 3,
-                "type": "Boolean",
-                "value": false
-            },
-            "ac_bottomlevel": {
-                "index": 4,
-                "type": "Length",
-                "value": 1
-            },
-            "ac_toplevel": {
-                "index": 5,
-                "type": "Length",
-                "value": 0
-            },
-            "gs_seat_height": {
-                "index": 6,
-                "type": "Length",
-                "value": 0.45
-            },
-            "gs_2D_representation": {
-                "index": 7,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel2D": {
-                "index": 8,
-                "type": "Integer",
-                "value": 1
-            },
-            "iChairSymbolType": {
-                "index": 9,
-                "type": "Integer",
-                "value": 4
-            },
-            "gs_cont_pen": {
-                "index": 10,
-                "type": "PenColor",
-                "value": 4
-            },
-            "gs_fill_type": {
-                "index": 11,
-                "type": "FillPattern",
-                "value": {
-                    "index": 65,
-                    "name": "Background"
-                }
-            },
-            "gs_fill_pen": {
-                "index": 12,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_back_pen": {
-                "index": 13,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_min_space": {
-                "index": 14,
-                "type": "Title",
-                "value": ""
-            },
-            "MSFront": {
-                "index": 15,
-                "type": "Length",
-                "value": 0.03
-            },
-            "MSSide": {
-                "index": 16,
-                "type": "Length",
-                "value": 0.15
-            },
-            "MSRear": {
-                "index": 17,
-                "type": "Length",
-                "value": 0.3
-            },
-            "gs_3D_representation": {
-                "index": 18,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel3D": {
-                "index": 19,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_resol": {
-                "index": 20,
-                "type": "Integer",
-                "value": 24
-            },
-            "gs_shadow": {
-                "index": 21,
-                "type": "Boolean",
-                "value": true
-            },
-            "gs_material": {
-                "index": 22,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_seat_mat": {
-                "index": 23,
-                "type": "Material",
-                "value": {
+            "parameters": [
+                {
+                    "name": "A",
+                    "index": 0,
+                    "type": "Length",
+                    "value": 0.45
+                },
+                {
+                    "name": "B",
+                    "index": 1,
+                    "type": "Length",
+                    "value": 0.4
+                },
+                {
+                    "name": "ZZYZX",
+                    "index": 2,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "AC_show2DHotspotsIn3D",
                     "index": 3,
-                    "name": "Paint - Dark Gray"
-                }
-            },
-            "gs_frame_mat": {
-                "index": 24,
-                "type": "Material",
-                "value": {
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "name": "ac_bottomlevel",
+                    "index": 4,
+                    "type": "Length",
+                    "value": 1
+                },
+                {
+                    "name": "ac_toplevel",
+                    "index": 5,
+                    "type": "Length",
+                    "value": 0
+                },
+                {
+                    "name": "numDrawer",
+                    "index": 6,
+                    "type": "Integer",
+                    "value": 2
+                },
+                {
+                    "name": "tDoorPanel",
+                    "index": 7,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iPanelGroup",
+                    "index": 8,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "iPanelStyle",
+                    "index": 9,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "iFrameJoinery",
+                    "index": 10,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "iFrameBevel",
+                    "index": 11,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "panelFrameWidth",
+                    "index": 12,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.02
+                    ]
+                },
+                {
+                    "name": "mullionWidth",
+                    "index": 13,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.01
+                    ]
+                },
+                {
+                    "name": "nVerticalMullion",
+                    "index": 14,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "nHorizontalMullion",
                     "index": 15,
-                    "name": "Wood - Pine Grained Horizontal"
-                }
-            },
-            "gs_back_mat": {
-                "index": 25,
-                "type": "Material",
-                "value": {
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "doorCustomPanelName",
+                    "index": 16,
+                    "type": "String",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        ""
+                    ]
+                },
+                {
+                    "name": "bKnob",
+                    "index": 17,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "iKnobGroup",
+                    "index": 18,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iKnobStyle",
+                    "index": 19,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iKnobOnSide",
+                    "index": 20,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "bDoubleKnob",
+                    "index": 21,
+                    "type": "Boolean",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        false
+                    ]
+                },
+                {
+                    "name": "iKnobOrientation",
+                    "index": 22,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "knobLength",
+                    "index": 23,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.2
+                    ]
+                },
+                {
+                    "name": "knobPosDrawerX",
+                    "index": 24,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0
+                    ]
+                },
+                {
+                    "name": "knobPosDrawerY",
+                    "index": 25,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0
+                    ]
+                },
+                {
+                    "name": "doorCustomKnobName",
+                    "index": 26,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "customHandleLength",
+                    "index": 27,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.1
+                    ]
+                },
+                {
+                    "name": "customHandleHeight",
+                    "index": 28,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.1
+                    ]
+                },
+                {
+                    "name": "customHandleDepth",
+                    "index": 29,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.1
+                    ]
+                },
+                {
+                    "name": "gs_2D_representation",
+                    "index": 30,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel2D",
+                    "index": 31,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iSymbolStyle",
+                    "index": 32,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_cont_pen",
+                    "index": 33,
+                    "type": "PenColor",
+                    "value": 4
+                },
+                {
+                    "name": "gs_fill_type",
+                    "index": 34,
+                    "type": "FillPattern",
+                    "value": {
+                        "index": 65,
+                        "name": "Background"
+                    }
+                },
+                {
+                    "name": "gs_fill_pen",
+                    "index": 35,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_back_pen",
+                    "index": 36,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_min_space",
+                    "index": 37,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "MSFront",
+                    "index": 38,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "gs_3D_representation",
+                    "index": 39,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel3D",
+                    "index": 40,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_resol",
+                    "index": 41,
+                    "type": "Integer",
+                    "value": 24
+                },
+                {
+                    "name": "gs_shadow",
+                    "index": 42,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "tSurfaces",
+                    "index": 43,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "matCabinet",
+                    "index": 44,
+                    "type": "Material",
+                    "value": {
+                        "index": 15,
+                        "name": "Wood - Pine Grained Horizontal"
+                    }
+                },
+                {
+                    "name": "knobMat",
+                    "index": 45,
+                    "type": "Material",
+                    "value": {
+                        "index": 13,
+                        "name": "Metal - Chrome 01"
+                    }
+                },
+                {
+                    "name": "tPanelSurf",
+                    "index": 46,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "panelFrameMat",
+                    "index": 47,
+                    "type": "Material",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        {
+                            "index": 15,
+                            "name": "Wood - Pine Grained Horizontal"
+                        }
+                    ]
+                },
+                {
+                    "name": "insetMat1",
+                    "index": 48,
+                    "type": "Material",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        {
+                            "index": 15,
+                            "name": "Wood - Pine Grained Horizontal"
+                        }
+                    ]
+                },
+                {
+                    "name": "insetMat2",
+                    "index": 49,
+                    "type": "Material",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        {
+                            "index": 15,
+                            "name": "Wood - Pine Grained Horizontal"
+                        }
+                    ]
+                },
+                {
+                    "name": "gs_list",
+                    "index": 50,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_cost",
+                    "index": 51,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "gs_list_manufacturer",
+                    "index": 52,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_note",
+                    "index": 53,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_location",
+                    "index": 54,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_accessories",
+                    "index": 55,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_Type",
+                    "index": 56,
+                    "type": "String",
+                    "value": "Furniture"
+                },
+                {
+                    "name": "iFMType",
+                    "index": 57,
+                    "type": "Integer",
+                    "value": 16
+                },
+                {
+                    "name": "FM_InventoryNumber",
+                    "index": 58,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_SerialNumber",
+                    "index": 59,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ProductionYear",
+                    "index": 60,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ObjectWeight",
+                    "index": 61,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "FM_ObjectWeightUnit",
+                    "index": 62,
+                    "type": "String",
+                    "value": "kg"
+                },
+                {
+                    "name": "gs_list_custom1",
+                    "index": 63,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom2",
+                    "index": 64,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom3",
+                    "index": 65,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom4",
                     "index": 66,
-                    "name": "Paint - Sand Beige"
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom5",
+                    "index": 67,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_Title",
+                    "index": 68,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_dimensions",
+                    "index": 69,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_manufacturer",
+                    "index": 70,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_baseheight_value",
+                    "index": 71,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_baseheight",
+                    "index": 72,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_assemblydate",
+                    "index": 73,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_customtext1",
+                    "index": 74,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_customtext2",
+                    "index": 75,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_aks",
+                    "index": 76,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_product",
+                    "index": 77,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_leistungbuch",
+                    "index": 78,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_description",
+                    "index": 79,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_number",
+                    "index": 80,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_id",
+                    "index": 81,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_admission",
+                    "index": 82,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_modification",
+                    "index": 83,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_tozonenumber",
+                    "index": 84,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_ui_current_page",
+                    "index": 85,
+                    "type": "Integer",
+                    "value": 10
                 }
-            },
-            "gs_list": {
-                "index": 26,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_list_cost": {
-                "index": 27,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "gs_list_manufacturer": {
-                "index": 28,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_note": {
-                "index": 29,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_location": {
-                "index": 30,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_accessories": {
-                "index": 31,
-                "type": "String",
-                "value": ""
-            },
-            "FM_Type": {
-                "index": 32,
-                "type": "String",
-                "value": "Furniture"
-            },
-            "iFMType": {
-                "index": 33,
-                "type": "Integer",
-                "value": 16
-            },
-            "FM_InventoryNumber": {
-                "index": 34,
-                "type": "String",
-                "value": ""
-            },
-            "FM_SerialNumber": {
-                "index": 35,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ProductionYear": {
-                "index": 36,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ObjectWeight": {
-                "index": 37,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "FM_ObjectWeightUnit": {
-                "index": 38,
-                "type": "String",
-                "value": "kg"
-            },
-            "gs_list_custom1": {
-                "index": 39,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom2": {
-                "index": 40,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom3": {
-                "index": 41,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom4": {
-                "index": 42,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom5": {
-                "index": 43,
-                "type": "String",
-                "value": ""
-            },
-            "gs_ui_current_page": {
-                "index": 44,
-                "type": "Integer",
-                "value": 2
-            }
+            ]
+        },
+        {
+            "parameters": [
+                {
+                    "name": "A",
+                    "index": 0,
+                    "type": "Length",
+                    "value": 0.7
+                },
+                {
+                    "name": "B",
+                    "index": 1,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "ZZYZX",
+                    "index": 2,
+                    "type": "Length",
+                    "value": 0.8
+                },
+                {
+                    "name": "AC_show2DHotspotsIn3D",
+                    "index": 3,
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "name": "ac_bottomlevel",
+                    "index": 4,
+                    "type": "Length",
+                    "value": 1
+                },
+                {
+                    "name": "ac_toplevel",
+                    "index": 5,
+                    "type": "Length",
+                    "value": 0
+                },
+                {
+                    "name": "gs_seat_height",
+                    "index": 6,
+                    "type": "Length",
+                    "value": 0.45
+                },
+                {
+                    "name": "gs_2D_representation",
+                    "index": 7,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel2D",
+                    "index": 8,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iChairSymbolType",
+                    "index": 9,
+                    "type": "Integer",
+                    "value": 4
+                },
+                {
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 4
+                },
+                {
+                    "name": "gs_fill_type",
+                    "index": 11,
+                    "type": "FillPattern",
+                    "value": {
+                        "index": 65,
+                        "name": "Background"
+                    }
+                },
+                {
+                    "name": "gs_fill_pen",
+                    "index": 12,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_back_pen",
+                    "index": 13,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_min_space",
+                    "index": 14,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "MSFront",
+                    "index": 15,
+                    "type": "Length",
+                    "value": 0.03
+                },
+                {
+                    "name": "MSSide",
+                    "index": 16,
+                    "type": "Length",
+                    "value": 0.15
+                },
+                {
+                    "name": "MSRear",
+                    "index": 17,
+                    "type": "Length",
+                    "value": 0.3
+                },
+                {
+                    "name": "gs_3D_representation",
+                    "index": 18,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel3D",
+                    "index": 19,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_resol",
+                    "index": 20,
+                    "type": "Integer",
+                    "value": 24
+                },
+                {
+                    "name": "gs_shadow",
+                    "index": 21,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "gs_material",
+                    "index": 22,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_seat_mat",
+                    "index": 23,
+                    "type": "Material",
+                    "value": {
+                        "index": 3,
+                        "name": "Paint - Dark Gray"
+                    }
+                },
+                {
+                    "name": "gs_frame_mat",
+                    "index": 24,
+                    "type": "Material",
+                    "value": {
+                        "index": 15,
+                        "name": "Wood - Pine Grained Horizontal"
+                    }
+                },
+                {
+                    "name": "gs_back_mat",
+                    "index": 25,
+                    "type": "Material",
+                    "value": {
+                        "index": 66,
+                        "name": "Paint - Sand Beige"
+                    }
+                },
+                {
+                    "name": "gs_list",
+                    "index": 26,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_cost",
+                    "index": 27,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "gs_list_manufacturer",
+                    "index": 28,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_note",
+                    "index": 29,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_location",
+                    "index": 30,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_accessories",
+                    "index": 31,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_Type",
+                    "index": 32,
+                    "type": "String",
+                    "value": "Furniture"
+                },
+                {
+                    "name": "iFMType",
+                    "index": 33,
+                    "type": "Integer",
+                    "value": 16
+                },
+                {
+                    "name": "FM_InventoryNumber",
+                    "index": 34,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_SerialNumber",
+                    "index": 35,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ProductionYear",
+                    "index": 36,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ObjectWeight",
+                    "index": 37,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "FM_ObjectWeightUnit",
+                    "index": 38,
+                    "type": "String",
+                    "value": "kg"
+                },
+                {
+                    "name": "gs_list_custom1",
+                    "index": 39,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom2",
+                    "index": 40,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom3",
+                    "index": 41,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom4",
+                    "index": 42,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom5",
+                    "index": 43,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_ui_current_page",
+                    "index": 44,
+                    "type": "Integer",
+                    "value": 2
+                }
+            ]
         }
     ]
 }
@@ -1042,39 +1224,156 @@ Parameters:
     "elementsWithGDLParameters": [
         {
             "elementId": {
-                "guid": "<GUID>"
+                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
             },
-            "gdlParameters": {
-                "gs_cont_pen": {
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 95
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 10,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
                 }
-            }
+            ]
         },
         {
             "elementId": {
-                "guid": "<GUID>"
+                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
             },
-            "gdlParameters": {
-                "gs_cont_pen": {
-                    "index": 33,
-                    "type": "PenColor",
-                    "value": 95
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 33,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
                 }
-            }
+            ]
         },
         {
             "elementId": {
-                "guid": "<GUID>"
+                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
             },
-            "gdlParameters": {
-                "gs_cont_pen": {
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 95
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 10,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
                 }
-            }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+            },
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 10,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+            },
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 33,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+            },
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 10,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+            },
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 10,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+            },
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 33,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+            },
+            "gdlParameters": [
+                {
+                    "parameters": [
+                        {
+                            "name": "gs_cont_pen",
+                            "index": 10,
+                            "type": "PenColor",
+                            "value": 95
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
@@ -1088,9 +1387,35 @@ Response:
             "success": true
         },
         {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
             "error": {
                 "code": -2130312912,
-                "message": "Failed to change parameters of element with guid <GUID>"
+                "message": "Failed to change parameters of element with guid 025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+            },
+            "success": false
+        },
+        {
+            "error": {
+                "code": -2130312912,
+                "message": "Failed to change parameters of element with guid 025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+            },
+            "success": false
+        },
+        {
+            "error": {
+                "code": -2130312912,
+                "message": "Failed to change parameters of element with guid 025CB9F8-ED73-4B0A-B1D9-C796D598C982"
             },
             "success": false
         }
@@ -1102,17 +1427,17 @@ Parameters:
     "elements": [
         {
             "elementId": {
-                "guid": "<GUID>"
+                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
             }
         },
         {
             "elementId": {
-                "guid": "<GUID>"
+                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
             }
         },
         {
             "elementId": {
-                "guid": "<GUID>"
+                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
             }
         }
     ]
@@ -1121,1016 +1446,1198 @@ Response:
 {
     "gdlParametersOfElements": [
         {
-            "A": {
-                "index": 0,
-                "type": "Length",
-                "value": 0.7
-            },
-            "B": {
-                "index": 1,
-                "type": "Length",
-                "value": 0.6
-            },
-            "ZZYZX": {
-                "index": 2,
-                "type": "Length",
-                "value": 0.8
-            },
-            "AC_show2DHotspotsIn3D": {
-                "index": 3,
-                "type": "Boolean",
-                "value": false
-            },
-            "ac_bottomlevel": {
-                "index": 4,
-                "type": "Length",
-                "value": 1
-            },
-            "ac_toplevel": {
-                "index": 5,
-                "type": "Length",
-                "value": 0
-            },
-            "gs_seat_height": {
-                "index": 6,
-                "type": "Length",
-                "value": 0.45
-            },
-            "gs_2D_representation": {
-                "index": 7,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel2D": {
-                "index": 8,
-                "type": "Integer",
-                "value": 1
-            },
-            "iChairSymbolType": {
-                "index": 9,
-                "type": "Integer",
-                "value": 4
-            },
-            "gs_cont_pen": {
-                "index": 10,
-                "type": "PenColor",
-                "value": 95
-            },
-            "gs_fill_type": {
-                "index": 11,
-                "type": "FillPattern",
-                "value": {
-                    "index": 65,
-                    "name": "Background"
-                }
-            },
-            "gs_fill_pen": {
-                "index": 12,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_back_pen": {
-                "index": 13,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_min_space": {
-                "index": 14,
-                "type": "Title",
-                "value": ""
-            },
-            "MSFront": {
-                "index": 15,
-                "type": "Length",
-                "value": 0.03
-            },
-            "MSSide": {
-                "index": 16,
-                "type": "Length",
-                "value": 0.15
-            },
-            "MSRear": {
-                "index": 17,
-                "type": "Length",
-                "value": 0.3
-            },
-            "gs_3D_representation": {
-                "index": 18,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel3D": {
-                "index": 19,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_resol": {
-                "index": 20,
-                "type": "Integer",
-                "value": 24
-            },
-            "gs_shadow": {
-                "index": 21,
-                "type": "Boolean",
-                "value": true
-            },
-            "gs_material": {
-                "index": 22,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_seat_mat": {
-                "index": 23,
-                "type": "Material",
-                "value": {
+            "parameters": [
+                {
+                    "name": "A",
+                    "index": 0,
+                    "type": "Length",
+                    "value": 0.7
+                },
+                {
+                    "name": "B",
+                    "index": 1,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "ZZYZX",
+                    "index": 2,
+                    "type": "Length",
+                    "value": 0.8
+                },
+                {
+                    "name": "AC_show2DHotspotsIn3D",
                     "index": 3,
-                    "name": "Paint - Dark Gray"
-                }
-            },
-            "gs_frame_mat": {
-                "index": 24,
-                "type": "Material",
-                "value": {
-                    "index": 15,
-                    "name": "Wood - Pine Grained Horizontal"
-                }
-            },
-            "gs_back_mat": {
-                "index": 25,
-                "type": "Material",
-                "value": {
-                    "index": 66,
-                    "name": "Paint - Sand Beige"
-                }
-            },
-            "gs_list": {
-                "index": 26,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_list_cost": {
-                "index": 27,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "gs_list_manufacturer": {
-                "index": 28,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_note": {
-                "index": 29,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_location": {
-                "index": 30,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_accessories": {
-                "index": 31,
-                "type": "String",
-                "value": ""
-            },
-            "FM_Type": {
-                "index": 32,
-                "type": "String",
-                "value": "Furniture"
-            },
-            "iFMType": {
-                "index": 33,
-                "type": "Integer",
-                "value": 16
-            },
-            "FM_InventoryNumber": {
-                "index": 34,
-                "type": "String",
-                "value": ""
-            },
-            "FM_SerialNumber": {
-                "index": 35,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ProductionYear": {
-                "index": 36,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ObjectWeight": {
-                "index": 37,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "FM_ObjectWeightUnit": {
-                "index": 38,
-                "type": "String",
-                "value": "kg"
-            },
-            "gs_list_custom1": {
-                "index": 39,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom2": {
-                "index": 40,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom3": {
-                "index": 41,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom4": {
-                "index": 42,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom5": {
-                "index": 43,
-                "type": "String",
-                "value": ""
-            },
-            "gs_ui_current_page": {
-                "index": 44,
-                "type": "Integer",
-                "value": 2
-            }
-        },
-        {
-            "A": {
-                "index": 0,
-                "type": "Length",
-                "value": 0.45
-            },
-            "B": {
-                "index": 1,
-                "type": "Length",
-                "value": 0.4
-            },
-            "ZZYZX": {
-                "index": 2,
-                "type": "Length",
-                "value": 0.6
-            },
-            "AC_show2DHotspotsIn3D": {
-                "index": 3,
-                "type": "Boolean",
-                "value": false
-            },
-            "ac_bottomlevel": {
-                "index": 4,
-                "type": "Length",
-                "value": 1
-            },
-            "ac_toplevel": {
-                "index": 5,
-                "type": "Length",
-                "value": 0
-            },
-            "numDrawer": {
-                "index": 6,
-                "type": "Integer",
-                "value": 2
-            },
-            "tDoorPanel": {
-                "index": 7,
-                "type": "Title",
-                "value": ""
-            },
-            "iPanelGroup": {
-                "index": 8,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "iPanelStyle": {
-                "index": 9,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "iFrameJoinery": {
-                "index": 10,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "iFrameBevel": {
-                "index": 11,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "panelFrameWidth": {
-                "index": 12,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.02
-                ]
-            },
-            "mullionWidth": {
-                "index": 13,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.01
-                ]
-            },
-            "nVerticalMullion": {
-                "index": 14,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "nHorizontalMullion": {
-                "index": 15,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "doorCustomPanelName": {
-                "index": 16,
-                "type": "String",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    ""
-                ]
-            },
-            "bKnob": {
-                "index": 17,
-                "type": "Boolean",
-                "value": true
-            },
-            "iKnobGroup": {
-                "index": 18,
-                "type": "Integer",
-                "value": 1
-            },
-            "iKnobStyle": {
-                "index": 19,
-                "type": "Integer",
-                "value": 1
-            },
-            "iKnobOnSide": {
-                "index": 20,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "bDoubleKnob": {
-                "index": 21,
-                "type": "Boolean",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    false
-                ]
-            },
-            "iKnobOrientation": {
-                "index": 22,
-                "type": "Integer",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    1
-                ]
-            },
-            "knobLength": {
-                "index": 23,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.2
-                ]
-            },
-            "knobPosDrawerX": {
-                "index": 24,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0
-                ]
-            },
-            "knobPosDrawerY": {
-                "index": 25,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0
-                ]
-            },
-            "doorCustomKnobName": {
-                "index": 26,
-                "type": "String",
-                "value": ""
-            },
-            "customHandleLength": {
-                "index": 27,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.1
-                ]
-            },
-            "customHandleHeight": {
-                "index": 28,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.1
-                ]
-            },
-            "customHandleDepth": {
-                "index": 29,
-                "type": "Length",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    0.1
-                ]
-            },
-            "gs_2D_representation": {
-                "index": 30,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel2D": {
-                "index": 31,
-                "type": "Integer",
-                "value": 1
-            },
-            "iSymbolStyle": {
-                "index": 32,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_cont_pen": {
-                "index": 33,
-                "type": "PenColor",
-                "value": 95
-            },
-            "gs_fill_type": {
-                "index": 34,
-                "type": "FillPattern",
-                "value": {
-                    "index": 65,
-                    "name": "Background"
-                }
-            },
-            "gs_fill_pen": {
-                "index": 35,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_back_pen": {
-                "index": 36,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_min_space": {
-                "index": 37,
-                "type": "Title",
-                "value": ""
-            },
-            "MSFront": {
-                "index": 38,
-                "type": "Length",
-                "value": 0.6
-            },
-            "gs_3D_representation": {
-                "index": 39,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel3D": {
-                "index": 40,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_resol": {
-                "index": 41,
-                "type": "Integer",
-                "value": 24
-            },
-            "gs_shadow": {
-                "index": 42,
-                "type": "Boolean",
-                "value": true
-            },
-            "tSurfaces": {
-                "index": 43,
-                "type": "Title",
-                "value": ""
-            },
-            "matCabinet": {
-                "index": 44,
-                "type": "Material",
-                "value": {
-                    "index": 15,
-                    "name": "Wood - Pine Grained Horizontal"
-                }
-            },
-            "knobMat": {
-                "index": 45,
-                "type": "Material",
-                "value": {
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "name": "ac_bottomlevel",
+                    "index": 4,
+                    "type": "Length",
+                    "value": 1
+                },
+                {
+                    "name": "ac_toplevel",
+                    "index": 5,
+                    "type": "Length",
+                    "value": 0
+                },
+                {
+                    "name": "gs_seat_height",
+                    "index": 6,
+                    "type": "Length",
+                    "value": 0.45
+                },
+                {
+                    "name": "gs_2D_representation",
+                    "index": 7,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel2D",
+                    "index": 8,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iChairSymbolType",
+                    "index": 9,
+                    "type": "Integer",
+                    "value": 4
+                },
+                {
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 95
+                },
+                {
+                    "name": "gs_fill_type",
+                    "index": 11,
+                    "type": "FillPattern",
+                    "value": {
+                        "index": 65,
+                        "name": "Background"
+                    }
+                },
+                {
+                    "name": "gs_fill_pen",
+                    "index": 12,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_back_pen",
                     "index": 13,
-                    "name": "Metal - Chrome 01"
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_min_space",
+                    "index": 14,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "MSFront",
+                    "index": 15,
+                    "type": "Length",
+                    "value": 0.03
+                },
+                {
+                    "name": "MSSide",
+                    "index": 16,
+                    "type": "Length",
+                    "value": 0.15
+                },
+                {
+                    "name": "MSRear",
+                    "index": 17,
+                    "type": "Length",
+                    "value": 0.3
+                },
+                {
+                    "name": "gs_3D_representation",
+                    "index": 18,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel3D",
+                    "index": 19,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_resol",
+                    "index": 20,
+                    "type": "Integer",
+                    "value": 24
+                },
+                {
+                    "name": "gs_shadow",
+                    "index": 21,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "gs_material",
+                    "index": 22,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_seat_mat",
+                    "index": 23,
+                    "type": "Material",
+                    "value": {
+                        "index": 3,
+                        "name": "Paint - Dark Gray"
+                    }
+                },
+                {
+                    "name": "gs_frame_mat",
+                    "index": 24,
+                    "type": "Material",
+                    "value": {
+                        "index": 15,
+                        "name": "Wood - Pine Grained Horizontal"
+                    }
+                },
+                {
+                    "name": "gs_back_mat",
+                    "index": 25,
+                    "type": "Material",
+                    "value": {
+                        "index": 66,
+                        "name": "Paint - Sand Beige"
+                    }
+                },
+                {
+                    "name": "gs_list",
+                    "index": 26,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_cost",
+                    "index": 27,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "gs_list_manufacturer",
+                    "index": 28,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_note",
+                    "index": 29,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_location",
+                    "index": 30,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_accessories",
+                    "index": 31,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_Type",
+                    "index": 32,
+                    "type": "String",
+                    "value": "Furniture"
+                },
+                {
+                    "name": "iFMType",
+                    "index": 33,
+                    "type": "Integer",
+                    "value": 16
+                },
+                {
+                    "name": "FM_InventoryNumber",
+                    "index": 34,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_SerialNumber",
+                    "index": 35,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ProductionYear",
+                    "index": 36,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ObjectWeight",
+                    "index": 37,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "FM_ObjectWeightUnit",
+                    "index": 38,
+                    "type": "String",
+                    "value": "kg"
+                },
+                {
+                    "name": "gs_list_custom1",
+                    "index": 39,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom2",
+                    "index": 40,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom3",
+                    "index": 41,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom4",
+                    "index": 42,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom5",
+                    "index": 43,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_ui_current_page",
+                    "index": 44,
+                    "type": "Integer",
+                    "value": 2
                 }
-            },
-            "tPanelSurf": {
-                "index": 46,
-                "type": "Title",
-                "value": ""
-            },
-            "panelFrameMat": {
-                "index": 47,
-                "type": "Material",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
-                ]
-            },
-            "insetMat1": {
-                "index": 48,
-                "type": "Material",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
-                ]
-            },
-            "insetMat2": {
-                "index": 49,
-                "type": "Material",
-                "dimension1": 1,
-                "dimension2": 1,
-                "value": [
-                    {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
-                ]
-            },
-            "gs_list": {
-                "index": 50,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_list_cost": {
-                "index": 51,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "gs_list_manufacturer": {
-                "index": 52,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_note": {
-                "index": 53,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_location": {
-                "index": 54,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_accessories": {
-                "index": 55,
-                "type": "String",
-                "value": ""
-            },
-            "FM_Type": {
-                "index": 56,
-                "type": "String",
-                "value": "Furniture"
-            },
-            "iFMType": {
-                "index": 57,
-                "type": "Integer",
-                "value": 16
-            },
-            "FM_InventoryNumber": {
-                "index": 58,
-                "type": "String",
-                "value": ""
-            },
-            "FM_SerialNumber": {
-                "index": 59,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ProductionYear": {
-                "index": 60,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ObjectWeight": {
-                "index": 61,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "FM_ObjectWeightUnit": {
-                "index": 62,
-                "type": "String",
-                "value": "kg"
-            },
-            "gs_list_custom1": {
-                "index": 63,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom2": {
-                "index": 64,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom3": {
-                "index": 65,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom4": {
-                "index": 66,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom5": {
-                "index": 67,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_Title": {
-                "index": 68,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_onorm_dimensions": {
-                "index": 69,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_manufacturer": {
-                "index": 70,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_baseheight_value": {
-                "index": 71,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_baseheight": {
-                "index": 72,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_assemblydate": {
-                "index": 73,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_customtext1": {
-                "index": 74,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_customtext2": {
-                "index": 75,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_aks": {
-                "index": 76,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_product": {
-                "index": 77,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_leistungbuch": {
-                "index": 78,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_description": {
-                "index": 79,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_number": {
-                "index": 80,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_id": {
-                "index": 81,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_admission": {
-                "index": 82,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_modification": {
-                "index": 83,
-                "type": "String",
-                "value": ""
-            },
-            "gs_onorm_tozonenumber": {
-                "index": 84,
-                "type": "String",
-                "value": ""
-            },
-            "gs_ui_current_page": {
-                "index": 85,
-                "type": "Integer",
-                "value": 10
-            }
+            ]
         },
         {
-            "A": {
-                "index": 0,
-                "type": "Length",
-                "value": 0.7
-            },
-            "B": {
-                "index": 1,
-                "type": "Length",
-                "value": 0.6
-            },
-            "ZZYZX": {
-                "index": 2,
-                "type": "Length",
-                "value": 0.8
-            },
-            "AC_show2DHotspotsIn3D": {
-                "index": 3,
-                "type": "Boolean",
-                "value": false
-            },
-            "ac_bottomlevel": {
-                "index": 4,
-                "type": "Length",
-                "value": 1
-            },
-            "ac_toplevel": {
-                "index": 5,
-                "type": "Length",
-                "value": 0
-            },
-            "gs_seat_height": {
-                "index": 6,
-                "type": "Length",
-                "value": 0.45
-            },
-            "gs_2D_representation": {
-                "index": 7,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel2D": {
-                "index": 8,
-                "type": "Integer",
-                "value": 1
-            },
-            "iChairSymbolType": {
-                "index": 9,
-                "type": "Integer",
-                "value": 4
-            },
-            "gs_cont_pen": {
-                "index": 10,
-                "type": "PenColor",
-                "value": 4
-            },
-            "gs_fill_type": {
-                "index": 11,
-                "type": "FillPattern",
-                "value": {
-                    "index": 65,
-                    "name": "Background"
-                }
-            },
-            "gs_fill_pen": {
-                "index": 12,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_back_pen": {
-                "index": 13,
-                "type": "PenColor",
-                "value": 19
-            },
-            "gs_min_space": {
-                "index": 14,
-                "type": "Title",
-                "value": ""
-            },
-            "MSFront": {
-                "index": 15,
-                "type": "Length",
-                "value": 0.03
-            },
-            "MSSide": {
-                "index": 16,
-                "type": "Length",
-                "value": 0.15
-            },
-            "MSRear": {
-                "index": 17,
-                "type": "Length",
-                "value": 0.3
-            },
-            "gs_3D_representation": {
-                "index": 18,
-                "type": "Title",
-                "value": ""
-            },
-            "iDetlevel3D": {
-                "index": 19,
-                "type": "Integer",
-                "value": 1
-            },
-            "gs_resol": {
-                "index": 20,
-                "type": "Integer",
-                "value": 24
-            },
-            "gs_shadow": {
-                "index": 21,
-                "type": "Boolean",
-                "value": true
-            },
-            "gs_material": {
-                "index": 22,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_seat_mat": {
-                "index": 23,
-                "type": "Material",
-                "value": {
+            "parameters": [
+                {
+                    "name": "A",
+                    "index": 0,
+                    "type": "Length",
+                    "value": 0.45
+                },
+                {
+                    "name": "B",
+                    "index": 1,
+                    "type": "Length",
+                    "value": 0.4
+                },
+                {
+                    "name": "ZZYZX",
+                    "index": 2,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "AC_show2DHotspotsIn3D",
                     "index": 3,
-                    "name": "Paint - Dark Gray"
-                }
-            },
-            "gs_frame_mat": {
-                "index": 24,
-                "type": "Material",
-                "value": {
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "name": "ac_bottomlevel",
+                    "index": 4,
+                    "type": "Length",
+                    "value": 1
+                },
+                {
+                    "name": "ac_toplevel",
+                    "index": 5,
+                    "type": "Length",
+                    "value": 0
+                },
+                {
+                    "name": "numDrawer",
+                    "index": 6,
+                    "type": "Integer",
+                    "value": 2
+                },
+                {
+                    "name": "tDoorPanel",
+                    "index": 7,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iPanelGroup",
+                    "index": 8,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "iPanelStyle",
+                    "index": 9,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "iFrameJoinery",
+                    "index": 10,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "iFrameBevel",
+                    "index": 11,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "panelFrameWidth",
+                    "index": 12,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.02
+                    ]
+                },
+                {
+                    "name": "mullionWidth",
+                    "index": 13,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.01
+                    ]
+                },
+                {
+                    "name": "nVerticalMullion",
+                    "index": 14,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "nHorizontalMullion",
                     "index": 15,
-                    "name": "Wood - Pine Grained Horizontal"
-                }
-            },
-            "gs_back_mat": {
-                "index": 25,
-                "type": "Material",
-                "value": {
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "doorCustomPanelName",
+                    "index": 16,
+                    "type": "String",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        ""
+                    ]
+                },
+                {
+                    "name": "bKnob",
+                    "index": 17,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "iKnobGroup",
+                    "index": 18,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iKnobStyle",
+                    "index": 19,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iKnobOnSide",
+                    "index": 20,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "bDoubleKnob",
+                    "index": 21,
+                    "type": "Boolean",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        false
+                    ]
+                },
+                {
+                    "name": "iKnobOrientation",
+                    "index": 22,
+                    "type": "Integer",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        1
+                    ]
+                },
+                {
+                    "name": "knobLength",
+                    "index": 23,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.2
+                    ]
+                },
+                {
+                    "name": "knobPosDrawerX",
+                    "index": 24,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0
+                    ]
+                },
+                {
+                    "name": "knobPosDrawerY",
+                    "index": 25,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0
+                    ]
+                },
+                {
+                    "name": "doorCustomKnobName",
+                    "index": 26,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "customHandleLength",
+                    "index": 27,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.1
+                    ]
+                },
+                {
+                    "name": "customHandleHeight",
+                    "index": 28,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.1
+                    ]
+                },
+                {
+                    "name": "customHandleDepth",
+                    "index": 29,
+                    "type": "Length",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        0.1
+                    ]
+                },
+                {
+                    "name": "gs_2D_representation",
+                    "index": 30,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel2D",
+                    "index": 31,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iSymbolStyle",
+                    "index": 32,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_cont_pen",
+                    "index": 33,
+                    "type": "PenColor",
+                    "value": 95
+                },
+                {
+                    "name": "gs_fill_type",
+                    "index": 34,
+                    "type": "FillPattern",
+                    "value": {
+                        "index": 65,
+                        "name": "Background"
+                    }
+                },
+                {
+                    "name": "gs_fill_pen",
+                    "index": 35,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_back_pen",
+                    "index": 36,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_min_space",
+                    "index": 37,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "MSFront",
+                    "index": 38,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "gs_3D_representation",
+                    "index": 39,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel3D",
+                    "index": 40,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_resol",
+                    "index": 41,
+                    "type": "Integer",
+                    "value": 24
+                },
+                {
+                    "name": "gs_shadow",
+                    "index": 42,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "tSurfaces",
+                    "index": 43,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "matCabinet",
+                    "index": 44,
+                    "type": "Material",
+                    "value": {
+                        "index": 15,
+                        "name": "Wood - Pine Grained Horizontal"
+                    }
+                },
+                {
+                    "name": "knobMat",
+                    "index": 45,
+                    "type": "Material",
+                    "value": {
+                        "index": 13,
+                        "name": "Metal - Chrome 01"
+                    }
+                },
+                {
+                    "name": "tPanelSurf",
+                    "index": 46,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "panelFrameMat",
+                    "index": 47,
+                    "type": "Material",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        {
+                            "index": 15,
+                            "name": "Wood - Pine Grained Horizontal"
+                        }
+                    ]
+                },
+                {
+                    "name": "insetMat1",
+                    "index": 48,
+                    "type": "Material",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        {
+                            "index": 15,
+                            "name": "Wood - Pine Grained Horizontal"
+                        }
+                    ]
+                },
+                {
+                    "name": "insetMat2",
+                    "index": 49,
+                    "type": "Material",
+                    "dimension1": 1,
+                    "dimension2": 1,
+                    "value": [
+                        {
+                            "index": 15,
+                            "name": "Wood - Pine Grained Horizontal"
+                        }
+                    ]
+                },
+                {
+                    "name": "gs_list",
+                    "index": 50,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_cost",
+                    "index": 51,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "gs_list_manufacturer",
+                    "index": 52,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_note",
+                    "index": 53,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_location",
+                    "index": 54,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_accessories",
+                    "index": 55,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_Type",
+                    "index": 56,
+                    "type": "String",
+                    "value": "Furniture"
+                },
+                {
+                    "name": "iFMType",
+                    "index": 57,
+                    "type": "Integer",
+                    "value": 16
+                },
+                {
+                    "name": "FM_InventoryNumber",
+                    "index": 58,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_SerialNumber",
+                    "index": 59,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ProductionYear",
+                    "index": 60,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ObjectWeight",
+                    "index": 61,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "FM_ObjectWeightUnit",
+                    "index": 62,
+                    "type": "String",
+                    "value": "kg"
+                },
+                {
+                    "name": "gs_list_custom1",
+                    "index": 63,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom2",
+                    "index": 64,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom3",
+                    "index": 65,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom4",
                     "index": 66,
-                    "name": "Paint - Sand Beige"
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom5",
+                    "index": 67,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_Title",
+                    "index": 68,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_dimensions",
+                    "index": 69,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_manufacturer",
+                    "index": 70,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_baseheight_value",
+                    "index": 71,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_baseheight",
+                    "index": 72,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_assemblydate",
+                    "index": 73,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_customtext1",
+                    "index": 74,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_customtext2",
+                    "index": 75,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_aks",
+                    "index": 76,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_product",
+                    "index": 77,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_leistungbuch",
+                    "index": 78,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_description",
+                    "index": 79,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_number",
+                    "index": 80,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_id",
+                    "index": 81,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_admission",
+                    "index": 82,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_modification",
+                    "index": 83,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_onorm_tozonenumber",
+                    "index": 84,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_ui_current_page",
+                    "index": 85,
+                    "type": "Integer",
+                    "value": 10
                 }
-            },
-            "gs_list": {
-                "index": 26,
-                "type": "Title",
-                "value": ""
-            },
-            "gs_list_cost": {
-                "index": 27,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "gs_list_manufacturer": {
-                "index": 28,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_note": {
-                "index": 29,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_location": {
-                "index": 30,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_accessories": {
-                "index": 31,
-                "type": "String",
-                "value": ""
-            },
-            "FM_Type": {
-                "index": 32,
-                "type": "String",
-                "value": "Furniture"
-            },
-            "iFMType": {
-                "index": 33,
-                "type": "Integer",
-                "value": 16
-            },
-            "FM_InventoryNumber": {
-                "index": 34,
-                "type": "String",
-                "value": ""
-            },
-            "FM_SerialNumber": {
-                "index": 35,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ProductionYear": {
-                "index": 36,
-                "type": "String",
-                "value": ""
-            },
-            "FM_ObjectWeight": {
-                "index": 37,
-                "type": "RealNumber",
-                "value": 0
-            },
-            "FM_ObjectWeightUnit": {
-                "index": 38,
-                "type": "String",
-                "value": "kg"
-            },
-            "gs_list_custom1": {
-                "index": 39,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom2": {
-                "index": 40,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom3": {
-                "index": 41,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom4": {
-                "index": 42,
-                "type": "String",
-                "value": ""
-            },
-            "gs_list_custom5": {
-                "index": 43,
-                "type": "String",
-                "value": ""
-            },
-            "gs_ui_current_page": {
-                "index": 44,
-                "type": "Integer",
-                "value": 2
-            }
+            ]
+        },
+        {
+            "parameters": [
+                {
+                    "name": "A",
+                    "index": 0,
+                    "type": "Length",
+                    "value": 0.7
+                },
+                {
+                    "name": "B",
+                    "index": 1,
+                    "type": "Length",
+                    "value": 0.6
+                },
+                {
+                    "name": "ZZYZX",
+                    "index": 2,
+                    "type": "Length",
+                    "value": 0.8
+                },
+                {
+                    "name": "AC_show2DHotspotsIn3D",
+                    "index": 3,
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "name": "ac_bottomlevel",
+                    "index": 4,
+                    "type": "Length",
+                    "value": 1
+                },
+                {
+                    "name": "ac_toplevel",
+                    "index": 5,
+                    "type": "Length",
+                    "value": 0
+                },
+                {
+                    "name": "gs_seat_height",
+                    "index": 6,
+                    "type": "Length",
+                    "value": 0.45
+                },
+                {
+                    "name": "gs_2D_representation",
+                    "index": 7,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel2D",
+                    "index": 8,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "iChairSymbolType",
+                    "index": 9,
+                    "type": "Integer",
+                    "value": 4
+                },
+                {
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 4
+                },
+                {
+                    "name": "gs_fill_type",
+                    "index": 11,
+                    "type": "FillPattern",
+                    "value": {
+                        "index": 65,
+                        "name": "Background"
+                    }
+                },
+                {
+                    "name": "gs_fill_pen",
+                    "index": 12,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_back_pen",
+                    "index": 13,
+                    "type": "PenColor",
+                    "value": 19
+                },
+                {
+                    "name": "gs_min_space",
+                    "index": 14,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "MSFront",
+                    "index": 15,
+                    "type": "Length",
+                    "value": 0.03
+                },
+                {
+                    "name": "MSSide",
+                    "index": 16,
+                    "type": "Length",
+                    "value": 0.15
+                },
+                {
+                    "name": "MSRear",
+                    "index": 17,
+                    "type": "Length",
+                    "value": 0.3
+                },
+                {
+                    "name": "gs_3D_representation",
+                    "index": 18,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "iDetlevel3D",
+                    "index": 19,
+                    "type": "Integer",
+                    "value": 1
+                },
+                {
+                    "name": "gs_resol",
+                    "index": 20,
+                    "type": "Integer",
+                    "value": 24
+                },
+                {
+                    "name": "gs_shadow",
+                    "index": 21,
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "name": "gs_material",
+                    "index": 22,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_seat_mat",
+                    "index": 23,
+                    "type": "Material",
+                    "value": {
+                        "index": 3,
+                        "name": "Paint - Dark Gray"
+                    }
+                },
+                {
+                    "name": "gs_frame_mat",
+                    "index": 24,
+                    "type": "Material",
+                    "value": {
+                        "index": 15,
+                        "name": "Wood - Pine Grained Horizontal"
+                    }
+                },
+                {
+                    "name": "gs_back_mat",
+                    "index": 25,
+                    "type": "Material",
+                    "value": {
+                        "index": 66,
+                        "name": "Paint - Sand Beige"
+                    }
+                },
+                {
+                    "name": "gs_list",
+                    "index": 26,
+                    "type": "Title",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_cost",
+                    "index": 27,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "gs_list_manufacturer",
+                    "index": 28,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_note",
+                    "index": 29,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_location",
+                    "index": 30,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_accessories",
+                    "index": 31,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_Type",
+                    "index": 32,
+                    "type": "String",
+                    "value": "Furniture"
+                },
+                {
+                    "name": "iFMType",
+                    "index": 33,
+                    "type": "Integer",
+                    "value": 16
+                },
+                {
+                    "name": "FM_InventoryNumber",
+                    "index": 34,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_SerialNumber",
+                    "index": 35,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ProductionYear",
+                    "index": 36,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "FM_ObjectWeight",
+                    "index": 37,
+                    "type": "RealNumber",
+                    "value": 0
+                },
+                {
+                    "name": "FM_ObjectWeightUnit",
+                    "index": 38,
+                    "type": "String",
+                    "value": "kg"
+                },
+                {
+                    "name": "gs_list_custom1",
+                    "index": 39,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom2",
+                    "index": 40,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom3",
+                    "index": 41,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom4",
+                    "index": 42,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_list_custom5",
+                    "index": 43,
+                    "type": "String",
+                    "value": ""
+                },
+                {
+                    "name": "gs_ui_current_page",
+                    "index": 44,
+                    "type": "Integer",
+                    "value": 2
+                }
+            ]
         }
     ]
 }

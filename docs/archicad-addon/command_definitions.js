@@ -906,7 +906,7 @@ var gCommands = [{
             "type": "array",
             "description": "The GDL parameters of elements.",
             "items": {
-                "$ref": "#/GDLParametersDictionary"
+                "$ref": "#/GDLParameterList"
             }
         }
     },
@@ -932,7 +932,7 @@ var gCommands = [{
                         "$ref": "#/ElementId"
                     },
                     "gdlParameters": {
-                        "$ref": "#/GDLParametersDictionary"
+                        "$ref": "#/GDLParameterList"
                     }
                 },
                 "additionalProperties": false,
