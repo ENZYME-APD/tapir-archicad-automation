@@ -9,13 +9,20 @@ elements = getElementsResponse['elements']
 
 changedGDLParameters = []
 for i in range(len(elements)):
-    for name, details in gdlParametersResponse['gdlParametersOfElements'][i].items ():
-        if name == gdlParameterName:
-            details['value'] = newValue
-            changedGDLParameters.append({
-                'elementId' : elements[i]['elementId'],
-                'gdlParameters' : { name : details }
-            })
+    for elemGdlParameters in gdlParametersResponse['gdlParametersOfElements']:
+        for details in elemGdlParameters['parameters']:
+            if details['name'] == gdlParameterName:
+                details['value'] = newValue
+                changedGDLParameters.append({
+                    'elementId' : elements[i]['elementId'],
+                    'gdlParameters' : [
+                        {
+                            'parameters' : [
+                                details
+                            ]
+                        }
+                    ]
+                })
 
 aclib.RunTapirCommand ('SetGDLParametersOfElements', { 'elementsWithGDLParameters' : changedGDLParameters })
 

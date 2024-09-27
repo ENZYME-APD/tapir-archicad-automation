@@ -3,9 +3,9 @@
 #include "ACAPinc.h"
 
 #ifdef ServerMainVers_2800
-    #define CaseInsensitive GS::CaseInsensitive
+#define CaseInsensitive GS::CaseInsensitive
 #else
-    #define CaseInsensitive GS::UniString::CaseInsensitive
+#define CaseInsensitive GS::UniString::CaseInsensitive
 #endif
 
 #ifndef ServerMainVers_2700
@@ -62,7 +62,7 @@ inline GSErrCode ACAPI_ProjectOperation_Publish (const API_PublishPars* publishP
     return ACAPI_Automate (APIDo_PublishID, (void*) publishPars, (void*) selectedLinks);
 }
 
-inline GSErrCode ACAPI_ProjectOperation_Open (const API_FileOpenPars * 	fileOpenPars)
+inline GSErrCode ACAPI_ProjectOperation_Open (const API_FileOpenPars* fileOpenPars)
 {
     return ACAPI_Automate (APIDo_OpenID, (void*) fileOpenPars);
 }
@@ -187,7 +187,8 @@ inline GSErrCode ACAPI_MarkUp_ImportFromBCF (const IO::Location& bcfFileLoc, con
 */
 
 #ifndef ServerMainVers_2600
-typedef enum {
+typedef enum
+{
     APIMarkUpComponent_Creation = 0,
     APIMarkUpComponent_Highlight,
     APIMarkUpComponent_Deletion,
@@ -232,4 +233,22 @@ inline GSErrCode TAPIR_MarkUp_GetAttachedElements (API_Guid issueId, API_MarkUpC
     elemIds = IsMarkUpComponentShowsAsCorrected (attachType) ? correctedElements : highlightedElements;
 #endif
     return err;
+}
+
+inline API_ElemTypeID GetElemTypeId (const API_Elem_Head& elemHead)
+{
+#ifdef ServerMainVers_2600
+    return elemHead.type.typeID;
+#else
+    return elemHead.typeID;
+#endif
+}
+
+inline Int32 GetAttributeIndex (const API_AttributeIndex& index)
+{
+#ifdef ServerMainVers_2700
+    return index.ToInt32_Deprecated ();
+#else
+    return index;
+#endif
 }
