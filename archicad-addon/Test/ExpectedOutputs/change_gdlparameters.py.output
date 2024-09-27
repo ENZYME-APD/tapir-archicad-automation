@@ -94,10 +94,7 @@ Response:
                     "name": "gs_fill_type",
                     "index": 11,
                     "type": "FillPattern",
-                    "value": {
-                        "index": 65,
-                        "name": "Background"
-                    }
+                    "value": 65
                 },
                 {
                     "name": "gs_fill_pen",
@@ -169,28 +166,19 @@ Response:
                     "name": "gs_seat_mat",
                     "index": 23,
                     "type": "Material",
-                    "value": {
-                        "index": 3,
-                        "name": "Paint - Dark Gray"
-                    }
+                    "value": 3
                 },
                 {
                     "name": "gs_frame_mat",
                     "index": 24,
                     "type": "Material",
-                    "value": {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
+                    "value": 15
                 },
                 {
                     "name": "gs_back_mat",
                     "index": 25,
                     "type": "Material",
-                    "value": {
-                        "index": 66,
-                        "name": "Paint - Sand Beige"
-                    }
+                    "value": 66
                 },
                 {
                     "name": "gs_list",
@@ -590,10 +578,7 @@ Response:
                     "name": "gs_fill_type",
                     "index": 34,
                     "type": "FillPattern",
-                    "value": {
-                        "index": 65,
-                        "name": "Background"
-                    }
+                    "value": 65
                 },
                 {
                     "name": "gs_fill_pen",
@@ -653,19 +638,13 @@ Response:
                     "name": "matCabinet",
                     "index": 44,
                     "type": "Material",
-                    "value": {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
+                    "value": 15
                 },
                 {
                     "name": "knobMat",
                     "index": 45,
                     "type": "Material",
-                    "value": {
-                        "index": 13,
-                        "name": "Metal - Chrome 01"
-                    }
+                    "value": 13
                 },
                 {
                     "name": "tPanelSurf",
@@ -680,10 +659,7 @@ Response:
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
-                        {
-                            "index": 15,
-                            "name": "Wood - Pine Grained Horizontal"
-                        }
+                        15
                     ]
                 },
                 {
@@ -693,10 +669,7 @@ Response:
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
-                        {
-                            "index": 15,
-                            "name": "Wood - Pine Grained Horizontal"
-                        }
+                        15
                     ]
                 },
                 {
@@ -706,10 +679,7 @@ Response:
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
-                        {
-                            "index": 15,
-                            "name": "Wood - Pine Grained Horizontal"
-                        }
+                        15
                     ]
                 },
                 {
@@ -1002,10 +972,7 @@ Response:
                     "name": "gs_fill_type",
                     "index": 11,
                     "type": "FillPattern",
-                    "value": {
-                        "index": 65,
-                        "name": "Background"
-                    }
+                    "value": 65
                 },
                 {
                     "name": "gs_fill_pen",
@@ -1077,28 +1044,19 @@ Response:
                     "name": "gs_seat_mat",
                     "index": 23,
                     "type": "Material",
-                    "value": {
-                        "index": 3,
-                        "name": "Paint - Dark Gray"
-                    }
+                    "value": 3
                 },
                 {
                     "name": "gs_frame_mat",
                     "index": 24,
                     "type": "Material",
-                    "value": {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
+                    "value": 15
                 },
                 {
                     "name": "gs_back_mat",
                     "index": 25,
                     "type": "Material",
-                    "value": {
-                        "index": 66,
-                        "name": "Paint - Sand Beige"
-                    }
+                    "value": 66
                 },
                 {
                     "name": "gs_list",
@@ -1224,7 +1182,7 @@ Parameters:
     "elementsWithGDLParameters": [
         {
             "elementId": {
-                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1241,7 +1199,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1258,7 +1216,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1275,7 +1233,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1292,7 +1250,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1309,7 +1267,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1326,7 +1284,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1343,7 +1301,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1360,7 +1318,7 @@ Parameters:
         },
         {
             "elementId": {
-                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+                "guid": "<GUID>"
             },
             "gdlParameters": [
                 {
@@ -1401,21 +1359,21 @@ Response:
         {
             "error": {
                 "code": -2130312912,
-                "message": "Failed to change parameters of element with guid 025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+                "message": "Failed to change parameters of element with guid <GUID>"
             },
             "success": false
         },
         {
             "error": {
                 "code": -2130312912,
-                "message": "Failed to change parameters of element with guid 025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+                "message": "Failed to change parameters of element with guid <GUID>"
             },
             "success": false
         },
         {
             "error": {
                 "code": -2130312912,
-                "message": "Failed to change parameters of element with guid 025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+                "message": "Failed to change parameters of element with guid <GUID>"
             },
             "success": false
         }
@@ -1427,17 +1385,17 @@ Parameters:
     "elements": [
         {
             "elementId": {
-                "guid": "2CBC8127-952F-46C2-9728-39F96D0689E3"
+                "guid": "<GUID>"
             }
         },
         {
             "elementId": {
-                "guid": "818CC40A-E111-4FCF-A559-45BA77D8F3B9"
+                "guid": "<GUID>"
             }
         },
         {
             "elementId": {
-                "guid": "025CB9F8-ED73-4B0A-B1D9-C796D598C982"
+                "guid": "<GUID>"
             }
         }
     ]
@@ -1517,10 +1475,7 @@ Response:
                     "name": "gs_fill_type",
                     "index": 11,
                     "type": "FillPattern",
-                    "value": {
-                        "index": 65,
-                        "name": "Background"
-                    }
+                    "value": 65
                 },
                 {
                     "name": "gs_fill_pen",
@@ -1592,28 +1547,19 @@ Response:
                     "name": "gs_seat_mat",
                     "index": 23,
                     "type": "Material",
-                    "value": {
-                        "index": 3,
-                        "name": "Paint - Dark Gray"
-                    }
+                    "value": 3
                 },
                 {
                     "name": "gs_frame_mat",
                     "index": 24,
                     "type": "Material",
-                    "value": {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
+                    "value": 15
                 },
                 {
                     "name": "gs_back_mat",
                     "index": 25,
                     "type": "Material",
-                    "value": {
-                        "index": 66,
-                        "name": "Paint - Sand Beige"
-                    }
+                    "value": 66
                 },
                 {
                     "name": "gs_list",
@@ -2013,10 +1959,7 @@ Response:
                     "name": "gs_fill_type",
                     "index": 34,
                     "type": "FillPattern",
-                    "value": {
-                        "index": 65,
-                        "name": "Background"
-                    }
+                    "value": 65
                 },
                 {
                     "name": "gs_fill_pen",
@@ -2076,19 +2019,13 @@ Response:
                     "name": "matCabinet",
                     "index": 44,
                     "type": "Material",
-                    "value": {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
+                    "value": 15
                 },
                 {
                     "name": "knobMat",
                     "index": 45,
                     "type": "Material",
-                    "value": {
-                        "index": 13,
-                        "name": "Metal - Chrome 01"
-                    }
+                    "value": 13
                 },
                 {
                     "name": "tPanelSurf",
@@ -2103,10 +2040,7 @@ Response:
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
-                        {
-                            "index": 15,
-                            "name": "Wood - Pine Grained Horizontal"
-                        }
+                        15
                     ]
                 },
                 {
@@ -2116,10 +2050,7 @@ Response:
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
-                        {
-                            "index": 15,
-                            "name": "Wood - Pine Grained Horizontal"
-                        }
+                        15
                     ]
                 },
                 {
@@ -2129,10 +2060,7 @@ Response:
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
-                        {
-                            "index": 15,
-                            "name": "Wood - Pine Grained Horizontal"
-                        }
+                        15
                     ]
                 },
                 {
@@ -2425,10 +2353,7 @@ Response:
                     "name": "gs_fill_type",
                     "index": 11,
                     "type": "FillPattern",
-                    "value": {
-                        "index": 65,
-                        "name": "Background"
-                    }
+                    "value": 65
                 },
                 {
                     "name": "gs_fill_pen",
@@ -2500,28 +2425,19 @@ Response:
                     "name": "gs_seat_mat",
                     "index": 23,
                     "type": "Material",
-                    "value": {
-                        "index": 3,
-                        "name": "Paint - Dark Gray"
-                    }
+                    "value": 3
                 },
                 {
                     "name": "gs_frame_mat",
                     "index": 24,
                     "type": "Material",
-                    "value": {
-                        "index": 15,
-                        "name": "Wood - Pine Grained Horizontal"
-                    }
+                    "value": 15
                 },
                 {
                     "name": "gs_back_mat",
                     "index": 25,
                     "type": "Material",
-                    "value": {
-                        "index": 66,
-                        "name": "Paint - Sand Beige"
-                    }
+                    "value": 66
                 },
                 {
                     "name": "gs_list",

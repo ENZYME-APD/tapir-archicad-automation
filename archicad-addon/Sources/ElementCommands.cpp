@@ -580,10 +580,10 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
         }
 
         elementsList (CreateElementIdObjectState (elemGuid));
-        }
+    }
 
     return response;
-    }
+}
 
 ChangeSelectionOfElementsCommand::ChangeSelectionOfElementsCommand () :
     CommandBase (CommonSchema::Used)
@@ -1100,47 +1100,6 @@ static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
     }
 }
 
-static API_AttrTypeID ConvertAddParIDToAttrTypeID (API_AddParID addParID)
-{
-    switch (addParID) {
-        case APIParT_FillPat:			return API_FilltypeID;
-        case APIParT_Mater:				return API_MaterialID;
-        case APIParT_BuildingMaterial:	return API_BuildingMaterialID;
-        case APIParT_Profile:			return API_ProfileID;
-        case APIParT_LineTyp:			return API_LinetypeID;
-        default:						return API_ZombieAttrID;
-    }
-}
-
-static GS::UniString GetAttributeName (API_AttrTypeID typeID,
-                                       Int32          index)
-{
-    API_Attribute	attrib = {};
-
-    GS::UniString name;
-    attrib.header.typeID = typeID;
-    attrib.header.index = ACAPI_CreateAttributeIndex (index);
-    attrib.header.uniStringNamePtr = &name;
-
-    ACAPI_Attribute_Get (&attrib);
-
-    if (typeID == API_MaterialID && attrib.material.texture.fileLoc != nullptr) {
-        delete attrib.material.texture.fileLoc;
-        attrib.material.texture.fileLoc = nullptr;
-    }
-
-    return name;
-}
-
-static GS::ObjectState GetAttributeObjectState (API_AttrTypeID typeID,
-                                                Int32          index)
-{
-    GS::ObjectState attribute;
-    attribute.Add ("index", index);
-    attribute.Add ("name", GetAttributeName (typeID, index));
-    return attribute;
-}
-
 static void AddValueInteger (GS::ObjectState& gdlParameterDetails,
                              const API_AddParType& actParam)
 {
@@ -1168,25 +1127,6 @@ static void AddValueDouble (GS::ObjectState& gdlParameterDetails,
         for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
             for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
                 arrayValueItemAdder (((double*) *actParam.value.array)[arrayIndex++]);
-            }
-        }
-    }
-}
-
-static void AddValueAttribute (GS::ObjectState& gdlParameterDetails,
-                               const API_AddParType& actParam)
-{
-    if (actParam.typeMod == API_ParSimple) {
-        gdlParameterDetails.Add ("value",
-                                 GetAttributeObjectState (ConvertAddParIDToAttrTypeID (actParam.typeID),
-                                     static_cast<Int32> (actParam.value.real)));
-    } else {
-        const auto& arrayValueItemAdder = gdlParameterDetails.AddList<GS::ObjectState> ("value");
-        Int32 arrayIndex = 0;
-        for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
-            for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (GetAttributeObjectState (ConvertAddParIDToAttrTypeID (actParam.typeID),
-                    static_cast<Int32> (((double*) *actParam.value.array)[arrayIndex++])));
             }
         }
     }
@@ -1345,6 +1285,11 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             switch (actParam.typeID) {
                 case APIParT_Integer:
                 case APIParT_PenCol:
+                case APIParT_LineTyp:
+                case APIParT_Mater:
+                case APIParT_FillPat:
+                case APIParT_BuildingMaterial:
+                case APIParT_Profile:
                     AddValueInteger (gdlParameterDetails, actParam);
                     break;
                 case APIParT_ColRGB:
@@ -1359,13 +1304,6 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     break;
                 case APIParT_Boolean:
                     AddValueBool (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_LineTyp:
-                case APIParT_Mater:
-                case APIParT_FillPat:
-                case APIParT_BuildingMaterial:
-                case APIParT_Profile:
-                    AddValueAttribute (gdlParameterDetails, actParam);
                     break;
                 case APIParT_CString:
                 case APIParT_Title:
@@ -1516,6 +1454,11 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             switch (gdlParametersTypeDictionary[parameterName]) {
                                 case APIParT_Integer:
                                 case APIParT_PenCol:
+                                case APIParT_LineTyp:
+                                case APIParT_Mater:
+                                case APIParT_FillPat:
+                                case APIParT_BuildingMaterial:
+                                case APIParT_Profile:
                                     SetParamValueInteger (changeParam, parameter);
                                     break;
                                 case APIParT_ColRGB:
@@ -1530,13 +1473,6 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                     break;
                                 case APIParT_Boolean:
                                     SetParamValueBool (changeParam, parameter);
-                                    break;
-                                case APIParT_LineTyp:
-                                case APIParT_Mater:
-                                case APIParT_FillPat:
-                                case APIParT_BuildingMaterial:
-                                case APIParT_Profile:
-                                    SetParamValueInteger (changeParam, parameter);
                                     break;
                                 case APIParT_CString:
                                 case APIParT_Title:
