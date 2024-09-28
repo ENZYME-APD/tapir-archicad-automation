@@ -503,7 +503,7 @@ var gSchemaDefinitions = {
         },
         "PropertyDetails": {
             "type": "object",
-            "description": "The display string value of a property.",
+            "description": "The details of the property.",
             "properties": {
                 "propertyId": {
                     "$ref": "#/PropertyId"

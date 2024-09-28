@@ -343,10 +343,10 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
                 result = CreateSuccessfulExecutionResult ();
             }
-    }
+        }
 
         return NoError;
-});
+    });
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
