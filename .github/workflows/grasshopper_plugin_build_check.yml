@@ -1,0 +1,22 @@
+name: Grasshopper Plugin Build Check
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+    runs-on: [ windows-2022 ]
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+    - name: Set up msbuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Setup nuget
+      uses: nuget/setup-nuget@v2
+    - name: Restore nuget packages
+      run: nuget restore grasshopper-plugin/TapirGrasshopperPlugin.sln
+    - name: Build Debug
+      run: msbuild grasshopper-plugin/TapirGrasshopperPlugin.sln -property:Configuration=Debug
+    - name: Build Release
+      run: msbuild grasshopper-plugin/TapirGrasshopperPlugin.sln -property:Configuration=Release
