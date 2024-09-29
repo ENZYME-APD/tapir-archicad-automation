@@ -12,6 +12,8 @@
 
 #define ACAPI_MenuItem_RegisterMenu ACAPI_Register_Menu
 #define ACAPI_MenuItem_InstallMenuHandler ACAPI_Install_MenuHandler
+#define ACAPI_MenuItem_GetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_GetMenuItemFlagsID, par1, par2);
+#define ACAPI_MenuItem_SetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_SetMenuItemFlagsID, par1, par2);
 
 #define ACAPI_Markup_Create ACAPI_MarkUp_Create
 #define ACAPI_Markup_Delete ACAPI_MarkUp_Delete
@@ -27,6 +29,8 @@
 #define ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler ACAPI_Install_AddOnCommandHandler
 
 #define ACAPI_Element_NeigIDToElemType ACAPI_Goodies_NeigIDToElemType
+
+#define ACAPI_Command_GetHttpConnectionPort(par1) ACAPI_Goodies (APIAny_GetHttpConnectionPortID, par1)
 
 #define ACAPI_Teamwork_ReceiveChanges ACAPI_TeamworkControl_ReceiveChanges
 #define ACAPI_Teamwork_SendChanges ACAPI_TeamworkControl_SendChanges
@@ -150,6 +154,11 @@ inline GSErrCode ACAPI_LibraryPart_ChangeAParameter (API_ChangeParamType* change
 inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
 {
     return ACAPI_Goodies (APIAny_CloseParametersID);
+}
+
+inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unId)
+{
+    return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
 }
 
 #endif
