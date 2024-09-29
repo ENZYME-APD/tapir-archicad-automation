@@ -29,7 +29,7 @@
 /* [  1] */ Button                     10  204  180   23    LargePlain "OK"
 /* [  2] */ Icon                       36   10  128  128    ID_TAPIR_LOGO
 /* [  3] */ CenterText                 10  148  180   23    LargeBold vCenter "Tapir Archicad Automation"
-/* [  4] */ CenterText                 10  171  180   23    LargePlain vCenter "Version %T"
+/* [  4] */ CenterText                 10  171  180   23    LargePlain vCenter "Version: %T, Port: %T"
 }
 
 'DLGH' ID_ABOUT_DIALOG Tapir_About_Dialog {

@@ -40,6 +40,8 @@
 
 #define ACAPI_Selection_Select ACAPI_Element_Select
 
+#define ACAPI_Command_GetHttpConnectionPort(par1) ACAPI_Goodies (APIAny_GetHttpConnectionPortID, par1)
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;

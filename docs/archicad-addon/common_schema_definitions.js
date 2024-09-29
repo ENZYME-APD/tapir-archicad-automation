@@ -501,6 +501,27 @@ var gSchemaDefinitions = {
                 "$ref": "#/PropertyIdArrayItem"
             }
         },
+        "PropertyDetails": {
+            "type": "object",
+            "description": "The details of the property.",
+            "properties": {
+                "propertyId": {
+                    "$ref": "#/PropertyId"
+                },
+                "propertyGroupName": {
+                    "type": "string"
+                },
+                "propertyName": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "propertyId",
+                "propertyGroupName",
+                "propertyName"
+            ]
+        },
         "PropertyValue": {
             "type": "object",
             "description": "The display string value of a property.",

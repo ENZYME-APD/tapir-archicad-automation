@@ -228,6 +228,10 @@ GSErrCode Initialize (void)
 
     { // Property Commands
         CommandGroup propertyCommands ("Property Commands");
+        err |= RegisterCommand<GetAllPropertiesCommand> (
+            propertyCommands, "1.0.8",
+            "Returns all user defined and built-in properties."
+        );
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
             "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also."

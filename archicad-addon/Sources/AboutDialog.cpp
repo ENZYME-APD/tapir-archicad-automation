@@ -2,6 +2,7 @@
 
 #include "AddOnVersion.hpp"
 #include "ResourceIds.hpp"
+#include "MigrationHelper.hpp"
 
 #include "ACAPinc.h"
 
@@ -13,8 +14,16 @@ AboutDialog::AboutDialog () :
     AttachToAllItems (*this);
     Attach (*this);
 
+    GS::UShort portNumber = 0;
+    ACAPI_Command_GetHttpConnectionPort (&portNumber);
+
     GS::UniString versionTextContent = versionText.GetText ();
-    versionText.SetText (GS::UniString::SPrintf (versionTextContent, GS::UniString (ADDON_VERSION).ToPrintf ()));
+    GS::UniString versionTextNewContent = GS::UniString::SPrintf (
+        versionTextContent,
+        GS::UniString (ADDON_VERSION).ToPrintf (),
+        GS::ValueToUniString (portNumber).ToPrintf ()
+    );
+    versionText.SetText (versionTextNewContent);
 }
 
 void AboutDialog::ButtonClicked (const DG::ButtonClickEvent& ev)

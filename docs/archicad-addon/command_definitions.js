@@ -1211,6 +1211,27 @@ var gCommands = [{
         },{
             "name": "Property Commands",
             "commands": [{
+                "name": "GetAllProperties",
+                "version": "1.0.8",
+                "description": "Returns all user defined and built-in properties.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "properties": {
+                "type": "array",
+                "description": "A list of property identifiers.",
+                "items": {
+                    "$ref": "#/PropertyDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    }
+            },{
                 "name": "GetPropertyValuesOfElements",
                 "version": "1.0.6",
                 "description": "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also.",

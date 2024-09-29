@@ -1,6 +1,106 @@
 #include "PropertyCommands.hpp"
 #include "MigrationHelper.hpp"
 
+class PropertyConversionUtils : public API_PropertyConversionUtilsInterface
+{
+private:
+    const GS::UniString degreeSymbol = L ("\u00B0");
+    const GS::UniString minuteSymbol = "'";
+    const GS::UniString secondSymbol = "\"";
+    const GS::UniString gradientSymbol = "G";
+    const GS::UniString radianSymbol = "R";
+    const GS::UniString northSymbol = "N";
+    const GS::UniString southSymbol = "S";
+    const GS::UniString eastSymbol = "E";
+    const GS::UniString westSymbol = "w";
+
+public:
+    PropertyConversionUtils () = default;
+    virtual ~PropertyConversionUtils () = default;
+
+    virtual const GS::UniString& GetDegreeSymbol1 () const { return degreeSymbol; }
+    virtual const GS::UniString& GetDegreeSymbol2 () const { return degreeSymbol; }
+    virtual const GS::UniString& GetMinuteSymbol () const { return minuteSymbol; }
+    virtual const GS::UniString& GetSecondSymbol () const { return secondSymbol; }
+
+    virtual const GS::UniString& GetGradientSymbol () const { return gradientSymbol; }
+    virtual const GS::UniString& GetRadianSymbol () const { return radianSymbol; }
+
+    virtual const GS::UniString& GetNorthSymbol () const { return northSymbol; }
+    virtual const GS::UniString& GetSouthSymbol () const { return southSymbol; }
+    virtual const GS::UniString& GetEastSymbol () const { return eastSymbol; }
+    virtual const GS::UniString& GetWestSymbol () const { return westSymbol; }
+
+    virtual GS::uchar_t GetDecimalDelimiterChar () const { return '.'; }
+    virtual GS::Optional<GS::UniChar> GetThousandSeparatorChar () const { return ' '; }
+
+    virtual API_LengthTypeID GetLengthType () const { return API_LengthTypeID::Meter; }
+    virtual API_AreaTypeID GetAreaType () const { return API_AreaTypeID::SquareMeter; }
+    virtual API_VolumeTypeID GetVolumeType () const { return API_VolumeTypeID::CubicMeter; }
+    virtual API_AngleTypeID GetAngleType () const { return API_AngleTypeID::DecimalDegree; }
+};
+
+GetAllPropertiesCommand::GetAllPropertiesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAllPropertiesCommand::GetName () const
+{
+    return "GetAllProperties";
+}
+
+GS::Optional<GS::UniString> GetAllPropertiesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "properties": {
+                "type": "array",
+                "description": "A list of property identifiers.",
+                "items": {
+                    "$ref": "#/PropertyDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    })";
+}
+
+GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    auto propertyAdder = response.AddList<GS::ObjectState> ("properties");
+
+    GS::Array<API_PropertyGroup> groups;
+    ACAPI_Property_GetPropertyGroups (groups);
+    for (const API_PropertyGroup& group : groups) {
+        GS::Array<API_PropertyDefinition> definitions;
+        ACAPI_Property_GetPropertyDefinitions (group.guid, definitions);
+        for (const API_PropertyDefinition& definition : definitions) {
+            if (definition.definitionType != API_PropertyCustomDefinitionType && definition.definitionType != API_PropertyStaticBuiltInDefinitionType) {
+                continue;
+            }
+
+            GS::ObjectState details;
+
+            GS::ObjectState propertyId;
+            propertyId.Add ("guid", APIGuidToString (definition.guid));
+            details.Add ("propertyId", propertyId);
+
+            details.Add ("propertyGroupName", group.name);
+            details.Add ("propertyName", definition.name);
+
+            propertyAdder (details);
+        }
+    }
+
+    return response;
+}
+
 GetPropertyValuesOfElementsCommand::GetPropertyValuesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -152,48 +252,6 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetResponseSchem
     })";
 }
 
-class PropertyConversionUtils : public API_PropertyConversionUtilsInterface {
-private:
-	const GS::UniString degreeSymbol = L("\u00B0");
-	const GS::UniString minuteSymbol = "'";
-	const GS::UniString secondSymbol = "\"";
-	const GS::UniString gradientSymbol = "G";
-	const GS::UniString radianSymbol = "R";
-	const GS::UniString northSymbol = "N";
-	const GS::UniString southSymbol = "S";
-	const GS::UniString eastSymbol = "E";
-	const GS::UniString westSymbol = "w";
-
-public:
-	PropertyConversionUtils ();
-
-	virtual ~PropertyConversionUtils ();
-
-	virtual const GS::UniString& GetDegreeSymbol1	() const { return degreeSymbol; }
-	virtual const GS::UniString& GetDegreeSymbol2	() const { return degreeSymbol; }
-	virtual const GS::UniString& GetMinuteSymbol	() const { return minuteSymbol; }
-	virtual const GS::UniString& GetSecondSymbol	() const { return secondSymbol; }
-
-	virtual const GS::UniString& GetGradientSymbol	() const { return gradientSymbol; }
-	virtual const GS::UniString& GetRadianSymbol	() const { return radianSymbol; }
-
-	virtual const GS::UniString& GetNorthSymbol () const { return northSymbol; }
-	virtual const GS::UniString& GetSouthSymbol () const { return southSymbol; }
-	virtual const GS::UniString& GetEastSymbol	() const { return eastSymbol; }
-	virtual const GS::UniString& GetWestSymbol	() const { return westSymbol; }
-
-	virtual GS::uchar_t					GetDecimalDelimiterChar		() const { return '.'; }
-	virtual GS::Optional<GS::UniChar>	GetThousandSeparatorChar	() const { return ' '; }
-
-	virtual API_LengthTypeID	GetLengthType	() const { return API_LengthTypeID::Meter; }
-	virtual API_AreaTypeID		GetAreaType		() const { return API_AreaTypeID::SquareMeter; }
-	virtual API_VolumeTypeID	GetVolumeType	() const { return API_VolumeTypeID::CubicMeter; }
-	virtual API_AngleTypeID		GetAngleType	() const { return API_AngleTypeID::DecimalDegree; }
-};
-
-PropertyConversionUtils::PropertyConversionUtils () = default;
-PropertyConversionUtils::~PropertyConversionUtils () = default;
-
 GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementPropertyValues;
@@ -243,11 +301,11 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
         const auto guidPair = GS::NewPair (elemGuid, propertyGuid);
         propertyValuesForElements.Add (guidPair, propertyValueDisplayString);
-        resultIndices.Add (guidPair, results.GetSize());
+        resultIndices.Add (guidPair, results.GetSize ());
         results.PushNew ();
     }
 
-    ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementsCommand", [&] () -> GSErrCode {
+    ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementsCommand", [&]() -> GSErrCode {
         for (const auto& kv : propertiesForElements) {
 #ifdef ServerMainVers_2800
             const API_Guid& elemGuid = kv.key;
@@ -397,7 +455,7 @@ GS::ObjectState CreatePropertyGroupsCommand::Execute (const GS::ObjectState& par
     GS::ObjectState response;
     const auto& propertyGroupIds = response.AddList<GS::ObjectState> ("propertyGroupIds");
 
-    ACAPI_CallUndoableCommand ("CreatePropertyGroups", [&] () -> GSErrCode {
+    ACAPI_CallUndoableCommand ("CreatePropertyGroups", [&]() -> GSErrCode {
         for (const GS::ObjectState& g : propertyGroups) {
             const GS::ObjectState* propertyGroup = g.Get ("propertyGroup");
             if (propertyGroup == nullptr) {
