@@ -317,20 +317,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         GS::ObjectState detailsOfElement;
-
-#ifdef ServerMainVers_2600
-        const API_ElemTypeID typeID = elem.header.type.typeID;
-#else
-        const API_ElemTypeID typeID = elem.header.typeID;
-#endif
+        const API_ElemTypeID typeID = GetElemTypeId (elem.header);
 
         detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
         detailsOfElement.Add ("floorIndex", elem.header.floorInd);
-#ifdef ServerMainVers_2700
-        detailsOfElement.Add ("layerIndex", elem.header.layer.ToInt32_Deprecated ());
-#else
-        detailsOfElement.Add ("layerIndex", elem.header.layer);
-#endif
+        detailsOfElement.Add ("layerIndex", GetAttributeIndex (elem.header.layer));
         detailsOfElement.Add ("drawIndex", elem.header.drwIndex);
 
         GS::ObjectState typeSpecificDetails;
@@ -346,19 +337,20 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         typeSpecificDetails.Add ("begThickness", elem.wall.thickness);
                         typeSpecificDetails.Add ("endThickness", elem.wall.thickness1);
                         break;
-                    case APIWtyp_Poly: {
-                        typeSpecificDetails.Add ("geometryType", "Polygonal");
-                        const auto& polygonOutline = typeSpecificDetails.AddList<GS::ObjectState> ("polygonOutline");
-                        API_ElementMemo memo = {};
-                        err = ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All);
-                        if (err == NoError) {
-                            const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
-                            for (GSIndex iCoord = 1; iCoord < nCoords; ++iCoord) {
-                                polygonOutline (Create2DCoordinateObjectState ((*memo.coords)[iCoord]));
+                    case APIWtyp_Poly:
+                        {
+                            typeSpecificDetails.Add ("geometryType", "Polygonal");
+                            const auto& polygonOutline = typeSpecificDetails.AddList<GS::ObjectState> ("polygonOutline");
+                            API_ElementMemo memo = {};
+                            err = ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All);
+                            if (err == NoError) {
+                                const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
+                                for (GSIndex iCoord = 1; iCoord < nCoords; ++iCoord) {
+                                    polygonOutline (Create2DCoordinateObjectState ((*memo.coords)[iCoord]));
+                                }
                             }
+                            break;
                         }
-                        break;
-                    }
                 }
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.wall.begC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.wall.endC));
@@ -466,7 +458,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand ("SetDetailsOfElementsCommand", [&] () {
+    ACAPI_CallUndoableCommand ("SetDetailsOfElementsCommand", [&]() {
         for (const GS::ObjectState& elementWithDetails : elementsWithDetails) {
             const GS::ObjectState* elementId = elementWithDetails.Get ("elementId");
             if (elementId == nullptr) {
@@ -1000,8 +992,8 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
- 
-    ACAPI_CallUndoableCommand ("Move Elements", [&] () -> GSErrCode {
+
+    ACAPI_CallUndoableCommand ("Move Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementWithMoveVector : elementsWithMoveVectors) {
             const GS::ObjectState* elementId = elementWithMoveVector.Get ("elementId");
             if (elementId == nullptr) {
@@ -1072,7 +1064,7 @@ GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetResponseSchema
             "type": "array",
             "description": "The GDL parameters of elements.",
             "items": {
-                "$ref": "#/GDLParametersDictionary"
+                "$ref": "#/GDLParameterList"
             }
         }
     },
@@ -1108,48 +1100,7 @@ static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
     }
 }
 
-static API_AttrTypeID ConvertAddParIDToAttrTypeID (API_AddParID addParID)
-{
-    switch (addParID) {
-        case APIParT_FillPat:			return API_FilltypeID;
-        case APIParT_Mater:				return API_MaterialID;
-        case APIParT_BuildingMaterial:	return API_BuildingMaterialID;
-        case APIParT_Profile:			return API_ProfileID;
-        case APIParT_LineTyp:			return API_LinetypeID;
-        default:						return API_ZombieAttrID;
-    }
-}
-
-static GS::UniString GetAttributeName (API_AttrTypeID typeID,
-                                       Int32          index)
-{
-    API_Attribute	attrib = {};
-
-    GS::UniString name;
-    attrib.header.typeID = typeID;
-    attrib.header.index = ACAPI_CreateAttributeIndex (index);
-    attrib.header.uniStringNamePtr = &name;
-
-    ACAPI_Attribute_Get (&attrib);
-
-    if (typeID == API_MaterialID && attrib.material.texture.fileLoc != nullptr) {
-        delete attrib.material.texture.fileLoc;
-        attrib.material.texture.fileLoc = nullptr;
-    }
-
-    return name;
-}
-
-static GS::ObjectState GetAttributeObjectState (API_AttrTypeID typeID,
-                                                Int32          index)
-{
-    GS::ObjectState attribute;
-    attribute.Add ("index", index);
-    attribute.Add ("name", GetAttributeName (typeID, index));
-    return attribute;
-}
-
-static void AddValueInteger (GS::ObjectState& 	   gdlParameterDetails,
+static void AddValueInteger (GS::ObjectState& gdlParameterDetails,
                              const API_AddParType& actParam)
 {
     if (actParam.typeMod == API_ParSimple) {
@@ -1159,13 +1110,13 @@ static void AddValueInteger (GS::ObjectState& 	   gdlParameterDetails,
         Int32 arrayIndex = 0;
         for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
             for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (static_cast<Int32> (((double*)*actParam.value.array) [arrayIndex++]));
+                arrayValueItemAdder (static_cast<Int32> (((double*) *actParam.value.array)[arrayIndex++]));
             }
         }
     }
 }
 
-static void AddValueDouble (GS::ObjectState& 	  gdlParameterDetails,
+static void AddValueDouble (GS::ObjectState& gdlParameterDetails,
                             const API_AddParType& actParam)
 {
     if (actParam.typeMod == API_ParSimple) {
@@ -1175,33 +1126,14 @@ static void AddValueDouble (GS::ObjectState& 	  gdlParameterDetails,
         Int32 arrayIndex = 0;
         for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
             for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (((double*)*actParam.value.array) [arrayIndex++]);
-            }
-        }
-    }
-}
-
-static void AddValueAttribute (GS::ObjectState& 	 gdlParameterDetails,
-                               const API_AddParType& actParam)
-{
-    if (actParam.typeMod == API_ParSimple) {
-        gdlParameterDetails.Add ("value",
-                                 GetAttributeObjectState (ConvertAddParIDToAttrTypeID (actParam.typeID),
-                                                          static_cast<Int32> (actParam.value.real)));
-    } else {
-        const auto& arrayValueItemAdder = gdlParameterDetails.AddList<GS::ObjectState> ("value");
-        Int32 arrayIndex = 0;
-        for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
-            for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (GetAttributeObjectState (ConvertAddParIDToAttrTypeID (actParam.typeID),
-                                                              static_cast<Int32> (((double*)*actParam.value.array) [arrayIndex++])));
+                arrayValueItemAdder (((double*) *actParam.value.array)[arrayIndex++]);
             }
         }
     }
 }
 
 template<typename T>
-static void AddValueTrueFalseOptions (GS::ObjectState& 	    gdlParameterDetails,
+static void AddValueTrueFalseOptions (GS::ObjectState& gdlParameterDetails,
                                       const API_AddParType& actParam,
                                       T optionTrue,
                                       T optionFalse)
@@ -1213,25 +1145,25 @@ static void AddValueTrueFalseOptions (GS::ObjectState& 	    gdlParameterDetails,
         Int32 arrayIndex = 0;
         for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
             for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (static_cast<Int32> (((double*)*actParam.value.array) [arrayIndex++]) == 0 ? optionFalse : optionTrue);
+                arrayValueItemAdder (static_cast<Int32> (((double*) *actParam.value.array)[arrayIndex++]) == 0 ? optionFalse : optionTrue);
             }
         }
     }
 }
 
-static void AddValueOnOff (GS::ObjectState& 	 gdlParameterDetails,
+static void AddValueOnOff (GS::ObjectState& gdlParameterDetails,
                            const API_AddParType& actParam)
 {
     AddValueTrueFalseOptions (gdlParameterDetails, actParam, GS::String ("On"), GS::String ("Off"));
 }
 
-static void AddValueBool (GS::ObjectState& 	    gdlParameterDetails,
+static void AddValueBool (GS::ObjectState& gdlParameterDetails,
                           const API_AddParType& actParam)
 {
     AddValueTrueFalseOptions (gdlParameterDetails, actParam, true, false);
 }
 
-static void AddValueString (GS::ObjectState& 	  gdlParameterDetails,
+static void AddValueString (GS::ObjectState& gdlParameterDetails,
                             const API_AddParType& actParam)
 {
     if (actParam.typeMod == API_ParSimple) {
@@ -1251,7 +1183,7 @@ static void AddValueString (GS::ObjectState& 	  gdlParameterDetails,
 
 constexpr const char* ParameterValueFieldName = "value";
 
-static void SetParamValueInteger (API_ChangeParamType&   changeParam,
+static void SetParamValueInteger (API_ChangeParamType& changeParam,
                                   const GS::ObjectState& parameterDetails)
 {
     Int32 value;
@@ -1259,7 +1191,7 @@ static void SetParamValueInteger (API_ChangeParamType&   changeParam,
     changeParam.realValue = value;
 }
 
-static void SetParamValueDouble (API_ChangeParamType&   changeParam,
+static void SetParamValueDouble (API_ChangeParamType& changeParam,
                                  const GS::ObjectState& parameterDetails)
 {
     double value;
@@ -1267,7 +1199,7 @@ static void SetParamValueDouble (API_ChangeParamType&   changeParam,
     changeParam.realValue = value;
 }
 
-static void SetParamValueOnOff (API_ChangeParamType&   changeParam,
+static void SetParamValueOnOff (API_ChangeParamType& changeParam,
                                 const GS::ObjectState& parameterDetails)
 {
     GS::String value;
@@ -1275,7 +1207,7 @@ static void SetParamValueOnOff (API_ChangeParamType&   changeParam,
     changeParam.realValue = (value == "Off" ? 0 : 1);
 }
 
-static void SetParamValueBool (API_ChangeParamType&   changeParam,
+static void SetParamValueBool (API_ChangeParamType& changeParam,
                                const GS::ObjectState& parameterDetails)
 {
     bool value;
@@ -1283,7 +1215,7 @@ static void SetParamValueBool (API_ChangeParamType&   changeParam,
     changeParam.realValue = (value ? 0 : 1);
 }
 
-static void SetParamValueString (API_ChangeParamType&   changeParam,
+static void SetParamValueString (API_ChangeParamType& changeParam,
                                  const GS::ObjectState& parameterDetails)
 {
     GS::UniString value;
@@ -1292,7 +1224,7 @@ static void SetParamValueString (API_ChangeParamType&   changeParam,
     constexpr USize MaxStrValueLength = 512;
 
     static GS::uchar_t strValuePtr[MaxStrValueLength];
-    GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min(value.GetLength (), MaxStrValueLength)).Get ());
+    GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength)).Get ());
 
     changeParam.uStrValue = strValuePtr;
 }
@@ -1303,13 +1235,14 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     parameters.Get ("elements", elements);
 
     GS::ObjectState response;
-    const auto& listAdder = response.AddList<GS::ObjectState> ("gdlParametersOfElements");
+    const auto& elemGdlParameterListAdder = response.AddList<GS::ObjectState> ("gdlParametersOfElements");
 
     API_Guid elemGuid;
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
-            listAdder (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            elemGdlParameterListAdder (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
         }
 
         elemGuid = GetGuidFromObjectState (*elementId);
@@ -1317,63 +1250,75 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         API_ParamOwnerType paramOwner = {};
         paramOwner.libInd = 0;
 #ifdef ServerMainVers_2600
-        paramOwner.type   = API_ObjectID;
+        paramOwner.type = API_ObjectID;
 #else
         paramOwner.typeID = API_ObjectID;
 #endif
-        paramOwner.guid   = elemGuid;
+        paramOwner.guid = elemGuid;
 
         API_ElementMemo memo = {};
         const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars);
-        if (err == NoError) {
-            const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
-            GS::ObjectState gdlParametersDictionary;
-            for (GSIndex ii = 0; ii < nParams; ++ii) {
-                const API_AddParType& actParam = (*memo.params)[ii];
-
-                if (actParam.typeID == APIParT_Separator) {
-                    continue;
-                }
-
-                GS::ObjectState gdlParameterDetails;
-                gdlParameterDetails.Add ("index", actParam.index);
-                gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
-                if (actParam.typeMod == API_ParArray) {
-                    gdlParameterDetails.Add ("dimension1", actParam.dim1);
-                    gdlParameterDetails.Add ("dimension2", actParam.dim2);
-                }
-
-                switch (actParam.typeID) {
-                    case APIParT_Integer:
-                    case APIParT_PenCol:			AddValueInteger (gdlParameterDetails, actParam);	break;
-                    case APIParT_ColRGB:
-                    case APIParT_Intens:
-                    case APIParT_Length:
-                    case APIParT_RealNum:
-                    case APIParT_Angle:				AddValueDouble (gdlParameterDetails, actParam);		break;
-                    case APIParT_LightSw:			AddValueOnOff (gdlParameterDetails, actParam); 		break;
-                    case APIParT_Boolean: 			AddValueBool (gdlParameterDetails, actParam);		break;
-                    case APIParT_LineTyp:
-                    case APIParT_Mater:
-                    case APIParT_FillPat:
-                    case APIParT_BuildingMaterial:
-                    case APIParT_Profile: 			AddValueAttribute (gdlParameterDetails, actParam);	break;
-                    case APIParT_CString:
-                    case APIParT_Title: 			AddValueString (gdlParameterDetails, actParam);		break;
-                    default:
-                    case APIParT_Dictionary:
-                        // Not supported by the Archicad API yet
-                        break;
-                }
-
-                gdlParametersDictionary.Add (actParam.name, gdlParameterDetails);
-            }
-            listAdder (gdlParametersDictionary);
-            ACAPI_DisposeAddParHdl (&memo.params);
-        } else {
+        if (err != NoError) {
             const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
-            listAdder (CreateErrorResponse (err, errorMsg));
+            elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
         }
+
+        const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
+        GS::ObjectState gdlParameters;
+        const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
+        for (GSIndex ii = 0; ii < nParams; ++ii) {
+            const API_AddParType& actParam = (*memo.params)[ii];
+
+            if (actParam.typeID == APIParT_Separator) {
+                continue;
+            }
+
+            GS::ObjectState gdlParameterDetails;
+            gdlParameterDetails.Add ("name", actParam.name);
+            gdlParameterDetails.Add ("index", actParam.index);
+            gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
+            if (actParam.typeMod == API_ParArray) {
+                gdlParameterDetails.Add ("dimension1", actParam.dim1);
+                gdlParameterDetails.Add ("dimension2", actParam.dim2);
+            }
+
+            switch (actParam.typeID) {
+                case APIParT_Integer:
+                case APIParT_PenCol:
+                case APIParT_LineTyp:
+                case APIParT_Mater:
+                case APIParT_FillPat:
+                case APIParT_BuildingMaterial:
+                case APIParT_Profile:
+                    AddValueInteger (gdlParameterDetails, actParam);
+                    break;
+                case APIParT_ColRGB:
+                case APIParT_Intens:
+                case APIParT_Length:
+                case APIParT_RealNum:
+                case APIParT_Angle:
+                    AddValueDouble (gdlParameterDetails, actParam);
+                    break;
+                case APIParT_LightSw:
+                    AddValueOnOff (gdlParameterDetails, actParam);
+                    break;
+                case APIParT_Boolean:
+                    AddValueBool (gdlParameterDetails, actParam);
+                    break;
+                case APIParT_CString:
+                case APIParT_Title:
+                    AddValueString (gdlParameterDetails, actParam);
+                    break;
+                default:
+                case APIParT_Dictionary:
+                    // Not supported by the Archicad API yet
+                    break;
+            }
+
+            parameterListAdder (gdlParameterDetails);
+        }
+        elemGdlParameterListAdder (gdlParameters);
+        ACAPI_DisposeAddParHdl (&memo.params);
     }
 
     return response;
@@ -1404,7 +1349,7 @@ GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetInputParameter
                         "$ref": "#/ElementId"
                     },
                     "gdlParameters": {
-                        "$ref": "#/GDLParametersDictionary"
+                        "$ref": "#/GDLParameterList"
                     }
                 },
                 "additionalProperties": false,
@@ -1446,7 +1391,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand ("Set GDL Parameters of Elements", [&] () -> GSErrCode {
+    ACAPI_CallUndoableCommand ("Set GDL Parameters of Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementWithGDLParameters : elementsWithGDLParameters) {
             GSErrCode err = NoError;
             GS::UniString errMessage;
@@ -1456,23 +1401,18 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                 continue;
             }
 
-            const GS::ObjectState* gdlParameters = elementWithGDLParameters.Get ("gdlParameters");
-            if (gdlParameters == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "gdlParameters is missing"));
-                continue;
-            }
-
             const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-
-            API_ParamOwnerType   paramOwner = {};
-
+            API_ParamOwnerType paramOwner = {};
             paramOwner.libInd = 0;
 #ifdef ServerMainVers_2600
-            paramOwner.type   = API_ObjectID;
+            paramOwner.type = API_ObjectID;
 #else
-            paramOwner.typeID  = API_ObjectID;
+            paramOwner.typeID = API_ObjectID;
 #endif
-            paramOwner.guid   = elemGuid;
+            paramOwner.guid = elemGuid;
+
+            GS::Array<GS::ObjectState> elemGdlParameters;
+            elementWithGDLParameters.Get ("gdlParameters", elemGdlParameters);
 
             err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
             if (err == NoError) {
@@ -1483,72 +1423,76 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     GS::HashTable<GS::String, API_AddParID> gdlParametersTypeDictionary;
                     for (GSIndex ii = 0; ii < nParams; ++ii) {
                         const API_AddParType& actParam = (*getParams.params)[ii];
-
                         if (actParam.typeID != APIParT_Separator) {
                             gdlParametersTypeDictionary.Add (GS::String (actParam.name), actParam.typeID);
                         }
                     }
 
-                    GS::HashTable<GS::String, const GS::ObjectState*> changeParamsDictionary;
-                    gdlParameters->EnumerateFields ([&] (const GS::String& parameterName) {
-                        changeParamsDictionary.Add (parameterName, gdlParameters->Get (parameterName));
-                    });
+                    for (const GS::ObjectState& elemGdlParametersItem : elemGdlParameters) {
+                        GS::Array<GS::ObjectState> parameters;
+                        elemGdlParametersItem.Get ("parameters", parameters);
 
-                    API_ChangeParamType changeParam = {};
-                    for (const auto& kv : changeParamsDictionary) {
-#ifdef ServerMainVers_2800
-                        const GS::String& parameterName = kv.key;
-                        const GS::ObjectState& parameterDetails = *kv.value;
-#else
-                        const GS::String& parameterName = *kv.key;
-                        const GS::ObjectState& parameterDetails = **kv.value;
-#endif
+                        API_ChangeParamType changeParam = {};
+                        for (const GS::ObjectState& parameter : parameters) {
+                            GS::String parameterName;
+                            parameter.Get ("name", parameterName);
 
-                        if (!gdlParametersTypeDictionary.ContainsKey (parameterName)) {
-                            errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
-                            err = APIERR_BADPARS;
-                            break;
-                        }
-
-                        CHTruncate (parameterName.ToCStr (), changeParam.name, sizeof (changeParam.name));
-                        if (parameterDetails.Contains ("index1")) {
-                            parameterDetails.Get ("index1", changeParam.ind1);
-                            if (parameterDetails.Contains ("index2")) {
-                                parameterDetails.Get ("index2", changeParam.ind2);
-                            }
-                        }
-
-                        switch (gdlParametersTypeDictionary[parameterName]) {
-                            case APIParT_Integer:
-                            case APIParT_PenCol:			SetParamValueInteger (changeParam, parameterDetails); break;
-                            case APIParT_ColRGB:
-                            case APIParT_Intens:
-                            case APIParT_Length:
-                            case APIParT_RealNum:
-                            case APIParT_Angle:				SetParamValueDouble (changeParam, parameterDetails);  break;
-                            case APIParT_LightSw:			SetParamValueOnOff (changeParam, parameterDetails);   break;
-                            case APIParT_Boolean: 			SetParamValueBool (changeParam, parameterDetails);    break;
-                            case APIParT_LineTyp:
-                            case APIParT_Mater:
-                            case APIParT_FillPat:
-                            case APIParT_BuildingMaterial:
-                            case APIParT_Profile: 			SetParamValueInteger (changeParam, parameterDetails); break;
-                            case APIParT_CString:
-                            case APIParT_Title: 			SetParamValueString (changeParam, parameterDetails);  break;
-                            default:
-                            case APIParT_Dictionary:
-                                // Not supported by the Archicad API yet
+                            if (!gdlParametersTypeDictionary.ContainsKey (parameterName)) {
+                                errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                                err = APIERR_BADPARS;
                                 break;
-                        }
+                            }
 
-                        err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
-                        if (err != NoError) {
-                            errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
-                            break;
-                        }
+                            CHTruncate (parameterName.ToCStr (), changeParam.name, sizeof (changeParam.name));
+                            if (parameter.Contains ("index1")) {
+                                parameter.Get ("index1", changeParam.ind1);
+                                if (parameter.Contains ("index2")) {
+                                    parameter.Get ("index2", changeParam.ind2);
+                                }
+                            }
 
-                        ACAPI_DisposeAddParHdl (&getParams.params);
-                        ACAPI_LibraryPart_GetActParameters (&getParams);
+                            switch (gdlParametersTypeDictionary[parameterName]) {
+                                case APIParT_Integer:
+                                case APIParT_PenCol:
+                                case APIParT_LineTyp:
+                                case APIParT_Mater:
+                                case APIParT_FillPat:
+                                case APIParT_BuildingMaterial:
+                                case APIParT_Profile:
+                                    SetParamValueInteger (changeParam, parameter);
+                                    break;
+                                case APIParT_ColRGB:
+                                case APIParT_Intens:
+                                case APIParT_Length:
+                                case APIParT_RealNum:
+                                case APIParT_Angle:
+                                    SetParamValueDouble (changeParam, parameter);
+                                    break;
+                                case APIParT_LightSw:
+                                    SetParamValueOnOff (changeParam, parameter);
+                                    break;
+                                case APIParT_Boolean:
+                                    SetParamValueBool (changeParam, parameter);
+                                    break;
+                                case APIParT_CString:
+                                case APIParT_Title:
+                                    SetParamValueString (changeParam, parameter);
+                                    break;
+                                default:
+                                case APIParT_Dictionary:
+                                    // Not supported by the Archicad API yet
+                                    break;
+                            }
+
+                            err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+                            if (err != NoError) {
+                                errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                                break;
+                            }
+
+                            ACAPI_DisposeAddParHdl (&getParams.params);
+                            ACAPI_LibraryPart_GetActParameters (&getParams);
+                        }
                     }
 
                     if (err == NoError) {
@@ -1561,11 +1505,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             API_ElementMemo memo = {};
 
                             ACAPI_ELEMENT_MASK_CLEAR (mask);
-#ifdef ServerMainVers_2600
-                            switch (element.header.type.typeID) {
-#else
-                            switch (element.header.typeID) {
-#endif
+                            switch (GetElemTypeId (element.header)) {
                                 case API_ObjectID:
                                     element.object.xRatio = getParams.a;
                                     element.object.yRatio = getParams.b;
@@ -1574,13 +1514,13 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                     break;
                                 case API_WindowID:
                                 case API_DoorID:
-                                    element.window.openingBase.width  = getParams.a;
+                                    element.window.openingBase.width = getParams.a;
                                     element.window.openingBase.height = getParams.b;
                                     ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
                                     ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
                                     break;
                                 case API_SkylightID:
-                                    element.skylight.openingBase.width  = getParams.a;
+                                    element.skylight.openingBase.width = getParams.a;
                                     element.skylight.openingBase.height = getParams.b;
                                     ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
                                     ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);

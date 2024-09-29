@@ -196,11 +196,11 @@ GSErrCode Initialize (void)
             "Moves elements with a given vector."
         );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
-            elementCommands, "1.0.2",
+            elementCommands, "1.0.8",
             "Gets all the GDL parameters (name, type, value) of the given elements."
         );
         err |= RegisterCommand<SetGDLParametersOfElementsCommand> (
-            elementCommands, "1.0.2",
+            elementCommands, "1.0.8",
             "Sets the given GDL parameters of the given elements."
         );
         err |= RegisterCommand<GetClassificationsOfElementsCommand> (

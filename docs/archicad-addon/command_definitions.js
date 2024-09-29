@@ -885,7 +885,7 @@ var gCommands = [{
     }
             },{
                 "name": "GetGDLParametersOfElements",
-                "version": "1.0.2",
+                "version": "1.0.8",
                 "description": "Gets all the GDL parameters (name, type, value) of the given elements.",
                 "inputScheme": {
     "type": "object",
@@ -906,7 +906,7 @@ var gCommands = [{
             "type": "array",
             "description": "The GDL parameters of elements.",
             "items": {
-                "$ref": "#/GDLParametersDictionary"
+                "$ref": "#/GDLParameterList"
             }
         }
     },
@@ -917,7 +917,7 @@ var gCommands = [{
 }
             },{
                 "name": "SetGDLParametersOfElements",
-                "version": "1.0.2",
+                "version": "1.0.8",
                 "description": "Sets the given GDL parameters of the given elements.",
                 "inputScheme": {
     "type": "object",
@@ -932,7 +932,7 @@ var gCommands = [{
                         "$ref": "#/ElementId"
                     },
                     "gdlParameters": {
-                        "$ref": "#/GDLParametersDictionary"
+                        "$ref": "#/GDLParameterList"
                     }
                 },
                 "additionalProperties": false,
