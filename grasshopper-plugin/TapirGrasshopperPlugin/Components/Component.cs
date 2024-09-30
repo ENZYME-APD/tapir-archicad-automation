@@ -1,14 +1,10 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Utilities;
 
-namespace TapirGrasshopperPlugin.Components
+namespace Tapir.Components
 {
     abstract public class Component : GH_Component
     {

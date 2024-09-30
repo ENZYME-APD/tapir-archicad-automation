@@ -1,12 +1,8 @@
-﻿using Grasshopper;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Rhino.Geometry;
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Utilities;
 
 namespace Tapir.Components
 {
@@ -48,7 +44,7 @@ namespace Tapir.Components
             DA.SetData (0, locationInfo.ArchicadLocation);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("8863e688-7b90-47df-918f-f7a8f27bfa54");
     }

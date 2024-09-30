@@ -1,22 +1,16 @@
-﻿using Grasshopper;
-using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Rhino.Geometry;
+﻿using Grasshopper.Kernel;
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Utilities;
 
 namespace Tapir.Components
 {
-    public class SelectArchicadComponent : Component
+    public class ConnectArchicadComponent : Component
     {
-        public SelectArchicadComponent ()
+        public ConnectArchicadComponent ()
           : base (
-                "Select Archicad",
-                "SelectArchicad",
-                "Select Archicad by port number.",
+                "Connect to Archicad by port number",
+                "ConnectArchicad",
+                "Connect to Archicad by port number.",
                 "General"
             )
         {
@@ -35,7 +29,7 @@ namespace Tapir.Components
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             int portNumber = 0;
-            if (!DA.GetData<int> (0, ref portNumber)) {
+            if (!DA.GetData (0, ref portNumber)) {
                 return;
             }
 
@@ -44,7 +38,7 @@ namespace Tapir.Components
             DA.SetData (0, response.Succeeded);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("f99302e6-2cbd-438e-ac63-c90f76f4b7d9");
     }

@@ -1,23 +1,16 @@
-﻿using Grasshopper;
-using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Rhino.Geometry;
+﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Data;
 
 namespace Tapir.Components
 {
-    public class FindProperty : Component
+    public class FindPropertyByName : Component
     {
-        public FindProperty ()
+        public FindPropertyByName ()
           : base (
-                "Find property",
-                "FindProperty",
+                "Find property by name",
+                "FindPropertyByName",
                 "Finds a property by group name and name in a list of properties.",
                 "Properties"
             )
@@ -39,18 +32,21 @@ namespace Tapir.Components
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             List<PropertyDetailsObj> details = new List<PropertyDetailsObj> ();
-            if (!DA.GetDataList<PropertyDetailsObj> (0, details)) {
+            if (!DA.GetDataList (0, details)) {
                 return;
             }
 
             string propertyGroupName = "";
             string propertyName = "";
-            if (!DA.GetData<string> (1, ref propertyGroupName) || !DA.GetData<string> (2, ref propertyName)) {
+            if (!DA.GetData (1, ref propertyGroupName) || !DA.GetData (2, ref propertyName)) {
                 return;
             }
+
             PropertyDetailsObj found = null;
+            propertyGroupName = propertyGroupName.ToLower ();
+            propertyName = propertyName.ToLower ();
             foreach (PropertyDetailsObj detail in details) {
-                if (detail.PropertyGroupName == propertyGroupName && detail.PropertyName == propertyName) {
+                if (detail.PropertyGroupName.ToLower () == propertyGroupName && detail.PropertyName.ToLower () == propertyName) {
                     found = detail;
                     break;
                 }
@@ -60,7 +56,7 @@ namespace Tapir.Components
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("9bb30fb5-9a68-4672-b807-4e35b2d27761");
     }

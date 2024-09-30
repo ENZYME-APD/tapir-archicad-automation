@@ -1,14 +1,9 @@
-﻿using Grasshopper;
-using Grasshopper.Kernel;
-using Newtonsoft.Json;
+﻿using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
-using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Data;
+using Tapir.Utilities;
 
 namespace Tapir.Components
 {
@@ -39,15 +34,15 @@ namespace Tapir.Components
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             PropertyIdObj propertyId = new PropertyIdObj ();
-            if (!DA.GetData<PropertyIdObj> (0, ref propertyId)) {
+            if (!DA.GetData (0, ref propertyId)) {
                 return;
             }
             List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();
-            if (!DA.GetDataList<ElementIdItemObj> (1, elements)) {
+            if (!DA.GetDataList (1, elements)) {
                 return;
             }
             List<string> values = new List<string> ();
-            if (!DA.GetDataList<string> (2, values)) {
+            if (!DA.GetDataList (2, values)) {
                 return;
             }
             if (values.Count != 1 && elements.Count != values.Count) {
@@ -64,7 +59,7 @@ namespace Tapir.Components
                     ElementId = elementId.ElementId,
                     PropertyId = propertyId,
                     PropertyValue = new PropertyValueObj () {
-                        Value = (values.Count == 1 ? values[0] : values[i])
+                        Value = values.Count == 1 ? values[0] : values[i]
                     }
                 };
                 elemPropertyValues.ElementPropertyValues.Add (elemPropertyValue);
@@ -78,7 +73,7 @@ namespace Tapir.Components
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("5d2aa76e-4a59-4b58-a5ce-51878c1478d0");
     }

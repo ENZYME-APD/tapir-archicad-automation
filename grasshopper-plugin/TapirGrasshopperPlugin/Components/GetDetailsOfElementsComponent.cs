@@ -1,16 +1,12 @@
-﻿using GH_IO.Types;
-using Grasshopper;
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
+﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Data;
+using Tapir.Utilities;
 
 namespace Tapir.Components
 {
@@ -49,12 +45,12 @@ namespace Tapir.Components
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element identifiers to get details of.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to get details of.", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("WallIds", "WallIds", "Element identifiers of the found walls.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("WallIds", "WallIds", "Element ids of the found walls.", GH_ParamAccess.list);
             pManager.AddPointParameter ("Begin coordinates", "BegCoords", "Begin coordinates of walls.", GH_ParamAccess.list);
             pManager.AddPointParameter ("End coordinates", "EndCoords", "End coordinates of walls.", GH_ParamAccess.list);
         }
@@ -62,7 +58,7 @@ namespace Tapir.Components
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();
-            if (!DA.GetDataList<ElementIdItemObj> (0, elements)) {
+            if (!DA.GetDataList (0, elements)) {
                 return;
             }
 
@@ -105,7 +101,7 @@ namespace Tapir.Components
             DA.SetDataList (2, endCoords);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("2b7b8e37-b293-475f-a333-d6afe4c5ffff");
     }

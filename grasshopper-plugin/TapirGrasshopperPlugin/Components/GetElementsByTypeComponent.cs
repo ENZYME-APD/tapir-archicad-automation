@@ -1,14 +1,10 @@
-﻿using Grasshopper;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Rhino.Geometry;
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Data;
+using Tapir.Utilities;
 
 namespace Tapir.Components
 {
@@ -44,7 +40,7 @@ namespace Tapir.Components
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             string elemType = "";
-            if (!DA.GetData<string> (0, ref elemType)) {
+            if (!DA.GetData (0, ref elemType)) {
                 return;
             }
 
@@ -61,7 +57,7 @@ namespace Tapir.Components
             DA.SetDataList (0, elements.Elements);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("8075031e-b38d-4f3b-8e5c-8e740d13a091");
     }

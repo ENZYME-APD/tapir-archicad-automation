@@ -7,7 +7,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace TapirGrasshopperPlugin.Data
+namespace Tapir.Data
 {
     public class PropertyIdObj
     {

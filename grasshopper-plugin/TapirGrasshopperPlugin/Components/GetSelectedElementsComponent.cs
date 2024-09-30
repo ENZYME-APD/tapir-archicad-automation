@@ -1,14 +1,7 @@
-﻿using Grasshopper;
-using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Rhino.Geometry;
+﻿using Grasshopper.Kernel;
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Windows.Forms;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using Tapir.Data;
+using Tapir.Utilities;
 
 namespace Tapir.Components
 {
@@ -19,7 +12,7 @@ namespace Tapir.Components
                 "Get selected Elements",
                 "SelectedElems",
                 "Get currently selected elements.",
-                "Selection"
+                "Elements"
             )
         {
         }
@@ -45,7 +38,7 @@ namespace Tapir.Components
             DA.SetDataList (0, elements.Elements);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("1949E4B5-4E37-4F35-8C5C-BEA7575AC1C6");
     }
