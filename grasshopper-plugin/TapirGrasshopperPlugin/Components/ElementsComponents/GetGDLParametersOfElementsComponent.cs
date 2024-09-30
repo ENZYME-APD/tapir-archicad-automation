@@ -4,10 +4,10 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Tapir.Data;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class ElementGDLParametersObj
     {
@@ -73,7 +73,7 @@ namespace Tapir.Components
             DA.SetDataList (1, validGdlParameters);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("c963f9b4-5e98-4c8a-8ed9-f2d67000a6e8");
     }

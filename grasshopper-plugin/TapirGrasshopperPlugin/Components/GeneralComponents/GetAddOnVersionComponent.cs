@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using System;
 using System.Text.Json;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
     public class VersionInfo
     {
@@ -44,7 +44,7 @@ namespace Tapir.Components
             DA.SetData (0, versionInfo.Version);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("de017e94-ea0e-4947-bbf1-7c7d60e5e016");
     }

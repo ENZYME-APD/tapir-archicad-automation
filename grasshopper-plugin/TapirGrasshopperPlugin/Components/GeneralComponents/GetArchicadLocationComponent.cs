@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using System;
 using System.Text.Json;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
     public class LocationInfo
     {
@@ -44,7 +44,7 @@ namespace Tapir.Components
             DA.SetData (0, locationInfo.ArchicadLocation);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("8863e688-7b90-47df-918f-f7a8f27bfa54");
     }

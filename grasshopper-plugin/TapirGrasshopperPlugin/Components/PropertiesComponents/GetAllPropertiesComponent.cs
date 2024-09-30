@@ -3,10 +3,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Tapir.Data;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class AllProperties
     {
@@ -47,7 +47,7 @@ namespace Tapir.Components
             DA.SetDataList (0, allProperties.Properties);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("8a431baa-acf4-47a7-8787-2aa5834b2ae6");
     }

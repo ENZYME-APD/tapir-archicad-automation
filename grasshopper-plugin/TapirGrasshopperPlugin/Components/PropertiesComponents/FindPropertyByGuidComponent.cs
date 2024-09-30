@@ -1,9 +1,9 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
-using Tapir.Data;
+using TapirGrasshopperPlugin.Data;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class FindPropertyByGuidComponent : Component
     {
@@ -53,7 +53,7 @@ namespace Tapir.Components
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
     }

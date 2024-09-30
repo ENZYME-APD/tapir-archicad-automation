@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using System;
 using System.Text.Json;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class ProjectInfo
     {
@@ -31,7 +31,7 @@ namespace Tapir.Components
                 "Get project information",
                 "ProjectInfo",
                 "Get information about the currently active project.",
-                "General"
+                "Project"
             )
         {
         }
@@ -64,7 +64,7 @@ namespace Tapir.Components
             DA.SetData (4, projectInfo.ProjectName);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("d46b6591-cae7-4809-8a3d-9b9b5ed77caf");
     }

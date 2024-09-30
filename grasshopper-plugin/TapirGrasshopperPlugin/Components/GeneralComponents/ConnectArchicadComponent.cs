@@ -1,8 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.General
 {
     public class ConnectArchicadComponent : Component
     {
@@ -38,7 +38,7 @@ namespace Tapir.Components
             DA.SetData (0, response.Succeeded);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("f99302e6-2cbd-438e-ac63-c90f76f4b7d9");
     }

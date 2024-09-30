@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace Tapir.Data
+namespace TapirGrasshopperPlugin.Data
 {
     public class ElementIdObj
     {

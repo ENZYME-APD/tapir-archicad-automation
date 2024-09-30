@@ -5,10 +5,10 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Tapir.Data;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class Point2D
     {
@@ -101,7 +101,7 @@ namespace Tapir.Components
             DA.SetDataList (2, endCoords);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("2b7b8e37-b293-475f-a333-d6afe4c5ffff");
     }

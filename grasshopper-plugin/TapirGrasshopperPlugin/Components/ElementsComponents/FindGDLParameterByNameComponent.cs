@@ -1,9 +1,9 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
-using Tapir.Data;
+using TapirGrasshopperPlugin.Data;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class FindGDLParameterByNameComponent : Component
     {
@@ -70,7 +70,7 @@ namespace Tapir.Components
             DA.SetDataList (1, paramValues);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("c4c0f24c-21c2-4d21-9fa8-a5b32ae55e92");
     }

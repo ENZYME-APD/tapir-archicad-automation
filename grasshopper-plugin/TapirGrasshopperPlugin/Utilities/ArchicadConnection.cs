@@ -9,7 +9,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Tapir.Utilities
+namespace TapirGrasshopperPlugin.Utilities
 {
     public static class ConnectionSettings
     {

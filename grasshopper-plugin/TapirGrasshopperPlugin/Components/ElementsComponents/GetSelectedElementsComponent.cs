@@ -1,9 +1,10 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using Tapir.Data;
-using Tapir.Utilities;
+using TapirGrasshopperPlugin.Components;
+using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Utilities;
 
-namespace Tapir.Components
+namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetSelectedElementsComponent : ArchicadAccessorComponent
     {
@@ -38,7 +39,7 @@ namespace Tapir.Components
             DA.SetDataList (0, elements.Elements);
         }
 
-        protected override System.Drawing.Bitmap Icon => Tapir.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
 
         public override Guid ComponentGuid => new Guid ("1949E4B5-4E37-4F35-8C5C-BEA7575AC1C6");
     }
