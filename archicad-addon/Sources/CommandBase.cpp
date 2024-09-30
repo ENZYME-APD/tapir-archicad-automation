@@ -74,11 +74,11 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
 
 API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
 {
-	GS::String guid;
-	if (!os.Get ("guid", guid)) {
+    GS::String guid;
+    if (!os.Get ("guid", guid)) {
         return APINULLGuid;
     }
-	return APIGuidFromString (guid.ToCStr ());
+    return APIGuidFromString (guid.ToCStr ());
 }
 
 API_Guid GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os)
@@ -87,7 +87,7 @@ API_Guid GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectSt
     if (!os.Get (idFieldName, idField)) {
         return APINULLGuid;
     }
-	return GetGuidFromObjectState (idField);
+    return GetGuidFromObjectState (idField);
 }
 
 API_Coord Get2DCoordinateFromObjectState (const GS::ObjectState& objectState)

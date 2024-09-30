@@ -13,6 +13,7 @@
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
+#include "ElementGDLParameterCommands.hpp"
 #include "ElementCreationCommands.hpp"
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
