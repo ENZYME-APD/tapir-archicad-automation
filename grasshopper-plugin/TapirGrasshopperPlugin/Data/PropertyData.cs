@@ -42,4 +42,10 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("propertyName")]
         public string PropertyName;
     }
+
+    public class AllProperties
+    {
+        [JsonProperty ("properties")]
+        public List<PropertyDetailsObj> Properties { get; set; }
+    }
 }

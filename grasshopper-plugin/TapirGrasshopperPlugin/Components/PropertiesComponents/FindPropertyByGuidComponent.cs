@@ -1,11 +1,14 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
-    public class FindPropertyByGuidComponent : Component
+    public class FindPropertyByGuidComponent : ArchicadAccessorComponent
     {
         public FindPropertyByGuidComponent ()
           : base (
@@ -19,7 +22,6 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("PropertyDetails", "PropertyDetails", "The list of property details to find in.", GH_ParamAccess.list);
             pManager.AddTextParameter ("PropertyGuid", "PropertyGuid", "Property guid name to find.", GH_ParamAccess.item);
         }
 
@@ -30,19 +32,21 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            List<PropertyDetailsObj> details = new List<PropertyDetailsObj> ();
-            if (!DA.GetDataList (0, details)) {
-                return;
-            }
-
             string propertyGuid = "";
-            if (!DA.GetData (1, ref propertyGuid)) {
+            if (!DA.GetData (0, ref propertyGuid)) {
                 return;
             }
 
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            AllProperties properties = response.Result.ToObject<AllProperties> ();
             PropertyDetailsObj found = null;
             propertyGuid = propertyGuid.ToLower ();
-            foreach (PropertyDetailsObj detail in details) {
+            foreach (PropertyDetailsObj detail in properties.Properties) {
                 if (detail.PropertyId.Guid.ToLower () == propertyGuid) {
                     found = detail;
                     break;

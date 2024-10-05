@@ -1,11 +1,14 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
-    public class FindPropertyByName : Component
+    public class FindPropertyByName : ArchicadAccessorComponent
     {
         public FindPropertyByName ()
           : base (
@@ -19,7 +22,6 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("PropertyDetails", "PropertyDetails", "The list of property details to find in.", GH_ParamAccess.list);
             pManager.AddTextParameter ("Group name", "GroupName", "Property group name to find.", GH_ParamAccess.item);
             pManager.AddTextParameter ("Property name", "PropertyName", "Property name to find.", GH_ParamAccess.item);
         }
@@ -31,21 +33,23 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            List<PropertyDetailsObj> details = new List<PropertyDetailsObj> ();
-            if (!DA.GetDataList (0, details)) {
-                return;
-            }
-
             string propertyGroupName = "";
             string propertyName = "";
-            if (!DA.GetData (1, ref propertyGroupName) || !DA.GetData (2, ref propertyName)) {
+            if (!DA.GetData (0, ref propertyGroupName) || !DA.GetData (1, ref propertyName)) {
                 return;
             }
 
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            AllProperties properties = response.Result.ToObject<AllProperties> ();
             PropertyDetailsObj found = null;
             propertyGroupName = propertyGroupName.ToLower ();
             propertyName = propertyName.ToLower ();
-            foreach (PropertyDetailsObj detail in details) {
+            foreach (PropertyDetailsObj detail in properties.Properties) {
                 if (detail.PropertyGroupName.ToLower () == propertyGroupName && detail.PropertyName.ToLower () == propertyName) {
                     found = detail;
                     break;
