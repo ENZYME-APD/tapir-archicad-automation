@@ -12,9 +12,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
     {
         public FindPropertyByName ()
           : base (
-                "Find property by name",
-                "FindPropertyByName",
-                "Finds a property by group name and name in a list of properties.",
+                "Property by Name",
+                "PropertyByName",
+                "Finds a property by group name and name.",
                 "Properties"
             )
         {

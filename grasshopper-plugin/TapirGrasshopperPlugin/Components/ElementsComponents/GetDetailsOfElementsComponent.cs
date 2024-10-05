@@ -35,7 +35,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public GetDetailsOfWallsComponent ()
           : base (
-                "Get wall details",
+                "Wall Details",
                 "WallDetails",
                 "Get details of wall elements.",
                 "Elements"

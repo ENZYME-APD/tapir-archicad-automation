@@ -12,9 +12,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
     {
         public FindPropertyByGuidComponent ()
           : base (
-                "Find property by guid",
-                "FindPropertyByGuid",
-                "Finds a property by goud in a list of properties.",
+                "Property by Guid",
+                "PropertyByGuid",
+                "Finds a property by guid.",
                 "Properties"
             )
         {

@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public GetSelectedElementsComponent ()
           : base (
-                "Get selected Elements",
+                "Selected Elems",
                 "SelectedElems",
                 "Get currently selected elements.",
                 "Elements"

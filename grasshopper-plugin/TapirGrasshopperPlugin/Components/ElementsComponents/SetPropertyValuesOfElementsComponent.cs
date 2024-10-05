@@ -11,7 +11,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public SetPropertyValuesOfElementsComponent ()
           : base (
-                "Set property values of elements",
+                "Set Property Values",
                 "SetPropertyValues",
                 "Set property values of elements.",
                 "Elements"

@@ -9,8 +9,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public FindGDLParameterByNameComponent ()
           : base (
-                "Find GDL parameter value by name",
-                "FindGDLParamByName",
+                "GDL Parameter by Name",
+                "GDLParamByName",
                 "Find GDL parameter value by name.",
                 "Elements"
             )

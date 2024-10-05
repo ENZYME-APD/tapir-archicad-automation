@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
     {
         public GetAddOnVersionComponent ()
           : base (
-                "Get Tapir Add-On version",
+                "Tapir Version",
                 "TapirVersion",
                 "Get Tapir Add-On version.",
                 "General"

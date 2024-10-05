@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
     {
         public GetArchicadLocationComponent ()
           : base (
-                "Get Archicad location",
+                "Archicad Location",
                 "ArchicadLocation",
                 "Get the location of the running Archicad executable.",
                 "General"

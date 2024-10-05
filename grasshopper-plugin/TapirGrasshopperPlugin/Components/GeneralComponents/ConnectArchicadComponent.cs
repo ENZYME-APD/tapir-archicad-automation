@@ -8,7 +8,7 @@ namespace TapirGrasshopperPlugin.Components.General
     {
         public ConnectArchicadComponent ()
           : base (
-                "Connect to Archicad by port number",
+                "Connect Archicad",
                 "ConnectArchicad",
                 "Connect to Archicad by port number.",
                 "General"
