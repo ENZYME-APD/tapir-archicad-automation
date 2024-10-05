@@ -107,4 +107,37 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("parameters")]
         public List<GDLParameterDetailsObj> Parameters;
     }
+
+    public class Box3DObj
+    {
+        [JsonProperty ("xMin")]
+        public double XMin;
+
+        [JsonProperty ("yMin")]
+        public double YMin;
+
+        [JsonProperty ("zMin")]
+        public double ZMin;
+
+        [JsonProperty ("xMax")]
+        public double XMax;
+
+        [JsonProperty ("yMax")]
+        public double YMax;
+
+        [JsonProperty ("zMax")]
+        public double ZMax;
+    }
+
+    public class BoundingBox3DObj
+    {
+        [JsonProperty ("boundingBox3D")]
+        public Box3DObj BoundingBox3D;
+    }
+
+    public class BoundingBoxes3DObj
+    {
+        [JsonProperty ("boundingBoxes3D")]
+        public List<BoundingBox3DObj> BoundingBoxes3D;
+    }
 }
