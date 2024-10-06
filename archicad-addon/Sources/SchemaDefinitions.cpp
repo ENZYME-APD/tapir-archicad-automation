@@ -2,11 +2,11 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "RS.hpp"
-#include "ResourceIDs.hpp"
+#include "ResourceIds.hpp"
 
 static GS::UniString GetResourceFileContent (short resId)
 {
-    GSHandle gsHandle = RSLoadResource ('FILE', ACAPI_GetOwnResModule(), resId);
+    GSHandle gsHandle = RSLoadResource ('FILE', ACAPI_GetOwnResModule (), resId);
     GS::UniString fileContent (*gsHandle, BMGetHandleSize (gsHandle));
     BMKillHandle (&gsHandle);
     return fileContent;
