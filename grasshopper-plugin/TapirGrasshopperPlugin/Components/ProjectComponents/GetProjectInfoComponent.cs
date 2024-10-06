@@ -29,7 +29,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public GetProjectInfoComponent ()
           : base (
                 "Project Details",
-                "ProjectDetials",
+                "ProjectDetails",
                 "Get details of the currently active project.",
                 "Project"
             )
