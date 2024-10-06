@@ -1,4 +1,4 @@
-var gSchemaDefinitions = {
+{
     "Elements": {
         "type": "array",
         "description": "A list of elements.",
@@ -1406,4 +1406,4 @@ var gSchemaDefinitions = {
             "$ref": "#/ElementClassification"
         }
     }
-};
+}

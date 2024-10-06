@@ -1,5 +1,61 @@
 #include "PropertyCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "HashTable.hpp"
+#include <tuple>
+
+using PropertyTypeTuple = std::tuple<API_PropertyCollectionType, API_VariantType, API_PropertyMeasureType>;
+
+static GS::HashTable<GS::UniString, PropertyTypeTuple> PropertyTypeDictionary = {
+    { "number",  PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyRealValueType,    API_PropertyDefaultMeasureType) },
+    { "integer", PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyIntegerValueType, API_PropertyDefaultMeasureType) },
+    { "string",  PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyStringValueType,  API_PropertyDefaultMeasureType) },
+    { "boolean", PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyBooleanValueType, API_PropertyDefaultMeasureType) },
+    { "guid",    PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyGuidValueType,    API_PropertyDefaultMeasureType) },
+
+    { "length", PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyRealValueType,  API_PropertyLengthMeasureType) },
+    { "area",   PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyRealValueType,  API_PropertyAreaMeasureType) },
+    { "volume", PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyRealValueType,  API_PropertyVolumeMeasureType) },
+    { "angle",  PropertyTypeTuple (API_PropertySingleCollectionType, API_PropertyRealValueType,  API_PropertyAngleMeasureType) },
+
+    { "singleEnum", PropertyTypeTuple (API_PropertySingleChoiceEnumerationCollectionType,   API_PropertyStringValueType, API_PropertyDefaultMeasureType) },
+    { "multiEnum",  PropertyTypeTuple (API_PropertyMultipleChoiceEnumerationCollectionType, API_PropertyStringValueType, API_PropertyDefaultMeasureType) },
+
+    { "numberList",  PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyRealValueType,    API_PropertyDefaultMeasureType) },
+    { "integerList", PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyIntegerValueType, API_PropertyDefaultMeasureType) },
+    { "stringList",  PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyStringValueType,  API_PropertyDefaultMeasureType) },
+    { "booleanList", PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyBooleanValueType,  API_PropertyDefaultMeasureType) },
+
+    { "lengthList", PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyRealValueType, API_PropertyLengthMeasureType) },
+    { "areaList",   PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyRealValueType, API_PropertyAreaMeasureType) },
+    { "volumeList", PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyRealValueType, API_PropertyVolumeMeasureType) },
+    { "angleList",  PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyRealValueType, API_PropertyAngleMeasureType) },
+};
+
+static API_Guid GetRandomGuid ()
+{
+	GS::Guid guid;
+	guid.Generate ();
+	return GSGuid2APIGuid (guid);
+}
+
+static API_Guid FindEnumValueGuid (const GS::Array<API_SingleEnumerationVariant>& possibleEnumValues,
+                                   const GS::UniString& enumValueIdTypeStr,
+                                   const GS::UniString& valueStr)
+{
+    const bool isNonLocalizedValue = enumValueIdTypeStr == "nonLocalizedValue";
+
+    for (const API_SingleEnumerationVariant& v : possibleEnumValues) {
+        if (isNonLocalizedValue) {
+            if (v.nonLocalizedValue.HasValue () && *v.nonLocalizedValue == valueStr) {
+                return v.keyVariant.guidValue;
+            }
+        } else if (v.displayVariant.uniStringValue == valueStr) {
+            return v.keyVariant.guidValue;
+        }
+    }
+
+    return APINULLGuid;
+}
 
 class PropertyConversionUtils : public API_PropertyConversionUtilsInterface
 {
@@ -418,16 +474,7 @@ GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetResponseSchema () co
                     "type": "object",
                     "properties": {
                         "propertyGroupId": {
-                            "type": "object",
-                            "properties": {
-                                "guid": {
-                                    "$ref": "#/Guid"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "guid"
-                            ]
+                            "$ref": "#/PropertyGroupId"
                         }
                     },
                     "additionalProperties": false,
@@ -449,9 +496,6 @@ GS::ObjectState CreatePropertyGroupsCommand::Execute (const GS::ObjectState& par
     GS::Array<GS::ObjectState> propertyGroups;
     parameters.Get ("propertyGroups", propertyGroups);
 
-    GS::Array<GS::ObjectState> properties;
-    parameters.Get ("properties", properties);
-
     GS::ObjectState response;
     const auto& propertyGroupIds = response.AddList<GS::ObjectState> ("propertyGroupIds");
 
@@ -472,11 +516,620 @@ GS::ObjectState CreatePropertyGroupsCommand::Execute (const GS::ObjectState& par
             propertyGroup->Get ("description", apiPropertyGroup.description);
             GSErrCode err = ACAPI_Property_CreatePropertyGroup (apiPropertyGroup);
             if (err != NoError) {
-                propertyGroupIds (CreateErrorResponse (APIERR_BADPARS, "name is missing or empty"));
+                propertyGroupIds (CreateErrorResponse (err, "failed to create the property group"));
                 continue;
             }
 
             propertyGroupIds (CreateIdObjectState ("propertyGroupId", apiPropertyGroup.guid));
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+DeletePropertyGroupsCommand::DeletePropertyGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeletePropertyGroupsCommand::GetName () const
+{
+    return "DeletePropertyGroups";
+}
+
+GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyGroupIds": {
+                "type": "array",
+                "description": "The identifiers of property groups to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": {
+                            "$ref": "#/PropertyGroupId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyGroupId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeletePropertyGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyGroupIds;
+    parameters.Get ("propertyGroupIds", propertyGroupIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("DeletePropertyGroups", [&]() -> GSErrCode {
+        for (const GS::ObjectState& p : propertyGroupIds) {
+            const GS::ObjectState* propertyGroupId = p.Get ("propertyGroupId");
+            if (propertyGroupId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyGroupId is missing"));
+                continue;
+            }
+
+            GSErrCode err = ACAPI_Property_DeletePropertyGroup (GetGuidFromObjectState (*propertyGroupId));
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "failed to delete property group"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+CreatePropertyDefinitionsCommand::CreatePropertyDefinitionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreatePropertyDefinitionsCommand::GetName () const
+{
+    return "CreatePropertyDefinitions";
+}
+
+GS::Optional<GS::UniString> CreatePropertyDefinitionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyDefinitions": {
+                "type": "array",
+                "description": "The parameters of the new properties.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyDefinition": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "$ref": "#/PropertyType"
+                                },
+                                "isEditable": {
+                                    "type": "boolean"
+                                },
+                                "defaultValue": {
+                                    "$ref": "#/PropertyDefaultValue"
+                                },
+                                "possibleEnumValues": {
+                                    "type": "array",
+                                    "description": "The possible enum values of the property when the property type is enumeration.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "enumValue": {
+                                                "type": "object",
+                                                "description": "The description of an enumeration value.",
+                                                "properties": {
+                                                    "enumValueId": {
+                                                        "$ref": "#/EnumValueId"
+                                                    },
+                                                    "displayValue": {
+                                                        "type": "string",
+                                                        "description": "Displayed value of the enumeration."
+                                                    },
+                                                    "nonLocalizedValue": {
+                                                        "type": "string",
+                                                        "description": "Nonlocalized value of the enumeration if there is one."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "displayValue"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "enumValue"
+                                        ]
+                                    }
+                                },
+                                "availability": {
+                                    "type": "array",
+                                    "description": "The identifiers of classification items the new property is available for.",    
+                                    "items": {
+                                        "$ref": "#/ClassificationItemIdArrayItem"
+                                    }
+                                },
+                                "group": {
+                                    "type": "object",
+                                    "description": "The property group defined by name or id. If both fields exists the id will be used.",
+                                    "properties": {
+                                        "propertyGroupId": {
+                                            "$ref": "#/PropertyGroupId"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": []
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "description",
+                                "type",
+                                "isEditable",
+                                "availability",
+                                "group"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyDefinition"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinitions"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreatePropertyDefinitionsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "$ref" : "#/PropertyIdOrErrorArray"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    })";
+}
+
+GS::ObjectState CreatePropertyDefinitionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyDefinitions;
+    parameters.Get ("propertyDefinitions", propertyDefinitions);
+
+    GS::ObjectState response;
+    const auto& propertyIds = response.AddList<GS::ObjectState> ("propertyIds");
+
+    ACAPI_CallUndoableCommand ("CreatePropertyDefinitions", [&]() -> GSErrCode {
+        for (const GS::ObjectState& p : propertyDefinitions) {
+            const GS::ObjectState* propertyDefinition = p.Get ("propertyDefinition");
+            if (propertyDefinition == nullptr) {
+                propertyIds (CreateErrorResponse (APIERR_BADPARS, "property is missing"));
+                continue;
+            }
+
+            API_PropertyDefinition apiPropertyDefinition;
+            apiPropertyDefinition.definitionType = API_PropertyCustomDefinitionType;
+
+            const GS::ObjectState* group = propertyDefinition->Get ("group");
+            if (group == nullptr) {
+                propertyIds (CreateErrorResponse (APIERR_BADPARS, "group is missing"));
+                continue;
+            }
+            const GS::ObjectState* groupGuid = group->Get ("propertyGroupId");
+            if (groupGuid != nullptr) {
+                apiPropertyDefinition.groupGuid = GetGuidFromObjectState (*groupGuid);
+            } else {
+                GS::UniString groupName;
+                if (group->Get ("name", groupName) && !groupName.IsEmpty ()) {
+                    GS::Array<API_PropertyGroup> groups;
+                    ACAPI_Property_GetPropertyGroups (groups);
+                    for (const auto& group : groups) {
+                        if (group.name == groupName) {
+                            apiPropertyDefinition.groupGuid = group.guid;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (apiPropertyDefinition.groupGuid == APINULLGuid) {
+                propertyIds (CreateErrorResponse (APIERR_BADPARS, "both group/name and group/propertyGroupId are missing or invalid"));
+                continue;
+            }
+
+            if (!propertyDefinition->Get ("name", apiPropertyDefinition.name) || apiPropertyDefinition.name.IsEmpty ()) {
+                propertyIds (CreateErrorResponse (APIERR_BADPARS, "name is missing or empty"));
+                continue;
+            }
+
+            propertyDefinition->Get ("description", apiPropertyDefinition.description);
+
+            GS::UniString typeStr;
+            if (!propertyDefinition->Get ("type", typeStr) || typeStr.IsEmpty ()) {
+                propertyIds (CreateErrorResponse (APIERR_BADPARS, "type is missing or empty"));
+                continue;
+            }
+            const PropertyTypeTuple* typeTuple = PropertyTypeDictionary.GetPtr (typeStr);
+            if (typeTuple == nullptr) {
+                propertyIds (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("invalid type '%T'", typeStr.ToPrintf ())));
+                continue;
+            }
+            apiPropertyDefinition.collectionType = std::get<0> (*typeTuple);
+            apiPropertyDefinition.valueType      = std::get<1> (*typeTuple);
+            apiPropertyDefinition.measureType    = std::get<2> (*typeTuple);
+
+            GS::Array<GS::ObjectState> availability;
+            if (propertyDefinition->Get ("availability", availability)) {
+                for (const GS::ObjectState& c : availability) {
+                    const GS::ObjectState* classificationItemId = c.Get ("classificationItemId");
+                    if (classificationItemId == nullptr) {
+                        continue;
+                    }
+                    apiPropertyDefinition.availability.Push (GetGuidFromObjectState (*classificationItemId));
+                }
+            }
+
+            GS::Array<GS::ObjectState> possibleEnumValues;
+            if (propertyDefinition->Get ("possibleEnumValues", possibleEnumValues)) {
+                API_SingleEnumerationVariant v;
+                v.displayVariant.type = apiPropertyDefinition.valueType;
+                v.keyVariant.type = API_PropertyGuidValueType;
+                for (const GS::ObjectState& e : possibleEnumValues) {
+                    const GS::ObjectState* enumValue = e.Get ("enumValue");
+                    if (enumValue == nullptr) {
+                        continue;
+                    }
+                    v.keyVariant.guidValue = GetRandomGuid ();
+
+                    if (!enumValue->Get ("displayValue", v.displayVariant.uniStringValue)) {
+                        continue;
+                    }
+
+                    GS::UniString nonLocalizedValueStr;
+                    if (enumValue->Get ("nonLocalizedValue", nonLocalizedValueStr)) {
+                        v.nonLocalizedValue = nonLocalizedValueStr;
+                    }
+
+                    apiPropertyDefinition.possibleEnumValues.Push (v);
+                }
+            }
+
+            apiPropertyDefinition.defaultValue.hasExpression = false;
+            apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.type = apiPropertyDefinition.valueType;
+            const GS::ObjectState* defaultValue = propertyDefinition->Get ("defaultValue");
+            if (defaultValue != nullptr) {
+                defaultValue->Get ("expressions", apiPropertyDefinition.defaultValue.propertyExpressions);
+                apiPropertyDefinition.defaultValue.hasExpression = !apiPropertyDefinition.defaultValue.propertyExpressions.IsEmpty ();
+
+                if (!apiPropertyDefinition.defaultValue.hasExpression) {
+                    const GS::ObjectState* basicDefaultValue = defaultValue->Get ("basicDefaultValue");
+                    if (basicDefaultValue == nullptr) {
+                        propertyIds (CreateErrorResponse (APIERR_BADPARS, "both defaultValue/basicDefaultValue and defaultValue/expressions are missing or empty"));
+                        continue;
+                    }
+
+                    GS::UniString statusStr;
+                    if (!basicDefaultValue->Get ("status", statusStr) || statusStr.IsEmpty ()) {
+                        propertyIds (CreateErrorResponse (APIERR_BADPARS, "defaultValue/basicDefaultValue/status is missing or empty"));
+                        continue;
+                    }
+
+                    if (statusStr == "normal") {
+                        apiPropertyDefinition.defaultValue.basicValue.variantStatus = API_VariantStatusNormal;
+
+                        if (!basicDefaultValue->Get ("type", typeStr) || typeStr.IsEmpty ()) {
+                            propertyIds (CreateErrorResponse (APIERR_BADPARS, "defaultValue/basicDefaultValue/type is missing or empty"));
+                            continue;
+                        }
+                        const PropertyTypeTuple* typeTuple = PropertyTypeDictionary.GetPtr (typeStr);
+                        if (typeTuple == nullptr) {
+                            propertyIds (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("invalid type '%T'", typeStr.ToPrintf ())));
+                            continue;
+                        }
+                        switch (std::get<0> (*typeTuple)) {
+                            case API_PropertySingleCollectionType:
+                                switch (apiPropertyDefinition.valueType) {
+                                    case API_PropertyRealValueType:
+                                        basicDefaultValue->Get ("value", apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.doubleValue);
+                                        break;
+                                    case API_PropertyIntegerValueType:
+                                        basicDefaultValue->Get ("value", apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.intValue);
+                                        break;
+                                    case API_PropertyStringValueType:
+                                        basicDefaultValue->Get ("value", apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.uniStringValue);
+                                        break;
+                                    case API_PropertyBooleanValueType:
+                                        basicDefaultValue->Get ("value", apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.boolValue);
+                                        break;
+                                    case API_PropertyGuidValueType:
+                                        {
+                                            GS::String guidStr;
+                                            basicDefaultValue->Get ("value", guidStr);
+                                            apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.guidValue = APIGuidFromString (guidStr.ToCStr ());
+                                        }
+                                        break;
+                                }
+                                break;
+                            case API_PropertySingleChoiceEnumerationCollectionType:
+                                {
+                                    const GS::ObjectState* enumValueId = basicDefaultValue->Get ("value");
+                                    if (enumValueId == nullptr) {
+                                        propertyIds (CreateErrorResponse (APIERR_BADPARS, "defaultValue/basicDefaultValue/value is missing"));
+                                        continue;
+                                    }
+
+                                    GS::UniString enumValueIdTypeStr;
+                                    enumValueId->Get ("type", enumValueIdTypeStr);
+                                    if (enumValueIdTypeStr.IsEmpty ()) {
+                                        propertyIds (CreateErrorResponse (APIERR_BADPARS, "defaultValue/basicDefaultValue/value/type is missing or empty"));
+                                        continue;
+                                    }
+
+                                    apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.type = API_PropertyGuidValueType;
+                                    GS::UniString valueStr;
+                                    enumValueId->Get (enumValueIdTypeStr.ToCStr ().Get (), valueStr);
+                                    apiPropertyDefinition.defaultValue.basicValue.singleVariant.variant.guidValue = FindEnumValueGuid (apiPropertyDefinition.possibleEnumValues, enumValueIdTypeStr, valueStr);
+                                }
+                                break;
+                            case API_PropertyMultipleChoiceEnumerationCollectionType:
+                                {
+                                    GS::Array<GS::ObjectState> enumValueIds;
+                                    basicDefaultValue->Get ("value", enumValueIds);
+                                    if (enumValueIds.IsEmpty ()) {
+                                        propertyIds (CreateErrorResponse (APIERR_BADPARS, "defaultValue/basicDefaultValue/value is missing or empty"));
+                                        continue;
+                                    }
+
+                                    bool failed = false;
+                                    API_Variant v;
+                                    v.type = API_PropertyGuidValueType;
+                                    for (UIndex i = 0; i < enumValueIds.GetSize (); ++i) {
+                                        const GS::ObjectState* enumValueId = enumValueIds[i].Get ("enumValueId");
+                                        if (enumValueId == nullptr) {
+                                            failed = true;
+                                            propertyIds (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("defaultValue/basicDefaultValue/value[%d]/enumValueId is missing or empty", i)));
+                                            break;
+                                        }
+
+                                        GS::UniString enumValueIdTypeStr;
+                                        enumValueId->Get ("type", enumValueIdTypeStr);
+                                        if (enumValueIdTypeStr.IsEmpty ()) {
+                                            failed = true;
+                                            propertyIds (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("defaultValue/basicDefaultValue/value[%d]/enumValueId/type is missing or empty", i)));
+                                            break;
+                                        }
+
+                                        GS::UniString valueStr;
+                                        enumValueId->Get (enumValueIdTypeStr.ToCStr ().Get (), valueStr);
+                                        v.guidValue = FindEnumValueGuid (apiPropertyDefinition.possibleEnumValues, enumValueIdTypeStr, valueStr);
+                                        if (v.guidValue == APINULLGuid) {
+                                            failed = true;
+                                            propertyIds (CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("defaultValue/basicDefaultValue/value[%d]/enumValueId/%T is missing or invalid", i, enumValueIdTypeStr.ToPrintf ())));
+                                            break;
+                                        }
+                                        apiPropertyDefinition.defaultValue.basicValue.listVariant.variants.Push (v);
+                                    }
+                                    if (failed) {
+                                        continue;
+                                    }
+                                }
+                                break;
+                            case API_PropertyListCollectionType:
+                                switch (apiPropertyDefinition.valueType) {
+                                    case API_PropertyRealValueType:
+                                        {
+                                            GS::Array<double> doubleValues;
+                                            basicDefaultValue->Get ("value", doubleValues);
+                                            for (double d : doubleValues) {
+                                                API_Variant v;
+                                                v.type = apiPropertyDefinition.valueType;
+                                                v.doubleValue = d;
+                                                apiPropertyDefinition.defaultValue.basicValue.listVariant.variants.Push (v);
+                                            }
+                                        }
+                                        break;
+                                    case API_PropertyIntegerValueType:
+                                        {
+                                            GS::Array<int> intValues;
+                                            basicDefaultValue->Get ("value", intValues);
+                                            for (int i : intValues) {
+                                                API_Variant v;
+                                                v.type = apiPropertyDefinition.valueType;
+                                                v.intValue = i;
+                                                apiPropertyDefinition.defaultValue.basicValue.listVariant.variants.Push (v);
+                                            }
+                                        }
+                                        break;
+                                    case API_PropertyStringValueType:
+                                        {
+                                            GS::Array<GS::UniString> uniStringValues;
+                                            basicDefaultValue->Get ("value", uniStringValues);
+                                            for (GS::UniString s : uniStringValues) {
+                                                API_Variant v;
+                                                v.type = apiPropertyDefinition.valueType;
+                                                v.uniStringValue = s;
+                                                apiPropertyDefinition.defaultValue.basicValue.listVariant.variants.Push (v);
+                                            }
+                                        }
+                                        break;
+                                    case API_PropertyBooleanValueType:
+                                        {
+                                            GS::Array<bool> boolValues;
+                                            basicDefaultValue->Get ("value", boolValues);
+                                            for (bool b : boolValues) {
+                                                API_Variant v;
+                                                v.type = apiPropertyDefinition.valueType;
+                                                v.boolValue = b;
+                                                apiPropertyDefinition.defaultValue.basicValue.listVariant.variants.Push (v);
+                                            }
+                                        }
+                                        break;
+                                }
+                                break;
+                        }
+                    } else if (statusStr == "userUndefined") {
+                        apiPropertyDefinition.defaultValue.basicValue.variantStatus = API_VariantStatusUserUndefined;
+                    } else {
+                        apiPropertyDefinition.defaultValue.basicValue.variantStatus = API_VariantStatusNull;
+                    }
+                }
+            } else {
+                apiPropertyDefinition.defaultValue.basicValue.variantStatus = API_VariantStatusNull;
+            }
+
+            propertyDefinition->Get ("isEditable", apiPropertyDefinition.canValueBeEditable);
+
+            GSErrCode err = ACAPI_Property_CreatePropertyDefinition (apiPropertyDefinition);
+            if (err != NoError) {
+                propertyIds (CreateErrorResponse (err, "failed to create the property"));
+                continue;
+            }
+
+            propertyIds (CreateIdObjectState ("propertyId", apiPropertyDefinition.guid));
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+DeletePropertyDefinitionsCommand::DeletePropertyDefinitionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeletePropertyDefinitionsCommand::GetName () const
+{
+    return "DeletePropertyDefinitions";
+}
+
+GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "type": "array",
+                "description": "The identifiers of properties to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeletePropertyDefinitionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyIds;
+    parameters.Get ("propertyIds", propertyIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("DeletePropertyDefinitions", [&]() -> GSErrCode {
+        for (const GS::ObjectState& p : propertyIds) {
+            const GS::ObjectState* propertyId = p.Get ("propertyId");
+            if (propertyId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
+                continue;
+            }
+
+            GSErrCode err = ACAPI_Property_DeletePropertyDefinition (GetGuidFromObjectState (*propertyId));
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "failed to delete property"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
