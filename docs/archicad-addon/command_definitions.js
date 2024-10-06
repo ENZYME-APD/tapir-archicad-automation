@@ -1343,16 +1343,7 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "propertyGroupId": {
-                            "type": "object",
-                            "properties": {
-                                "guid": {
-                                    "$ref": "#/Guid"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "guid"
-                            ]
+                            "$ref": "#/PropertyGroupId"
                         }
                     },
                     "additionalProperties": false,
@@ -1365,6 +1356,209 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "propertyGroupIds"
+        ]
+    }
+            },{
+                "name": "DeletePropertyGroups",
+                "version": "1.0.9",
+                "description": "Deletes the given Custom Property Groups.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyGroupIds": {
+                "type": "array",
+                "description": "The identifiers of property groups to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": {
+                            "$ref": "#/PropertyGroupId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyGroupId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreatePropertyDefinitions",
+                "version": "1.0.9",
+                "description": "Creates Custom Property Definitions based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyDefinitions": {
+                "type": "array",
+                "description": "The parameters of the new properties.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyDefinition": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "$ref": "#/PropertyType"
+                                },
+                                "isEditable": {
+                                    "type": "boolean"
+                                },
+                                "defaultValue": {
+                                    "$ref": "#/PropertyDefaultValue"
+                                },
+                                "possibleEnumValues": {
+                                    "type": "array",
+                                    "description": "The possible enum values of the property when the property type is enumeration.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "enumValue": {
+                                                "type": "object",
+                                                "description": "The description of an enumeration value.",
+                                                "properties": {
+                                                    "enumValueId": {
+                                                        "$ref": "#/EnumValueId"
+                                                    },
+                                                    "displayValue": {
+                                                        "type": "string",
+                                                        "description": "Displayed value of the enumeration."
+                                                    },
+                                                    "nonLocalizedValue": {
+                                                        "type": "string",
+                                                        "description": "Nonlocalized value of the enumeration if there is one."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "displayValue"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "enumValue"
+                                        ]
+                                    }
+                                },
+                                "availability": {
+                                    "type": "array",
+                                    "description": "The identifiers of classification items the new property is available for.",    
+                                    "items": {
+                                        "$ref": "#/ClassificationItemIdArrayItem"
+                                    }
+                                },
+                                "group": {
+                                    "type": "object",
+                                    "description": "The property group defined by name or id. If both fields exists the id will be used.",
+                                    "properties": {
+                                        "propertyGroupId": {
+                                            "$ref": "#/PropertyGroupId"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": []
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "description",
+                                "type",
+                                "isEditable",
+                                "availability",
+                                "group"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyDefinition"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinitions"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "$ref" : "#/PropertyIdOrErrorArray"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    }
+            },{
+                "name": "DeletePropertyDefinitions",
+                "version": "1.0.9",
+                "description": "Deletes the given Custom Property Definitions.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "type": "array",
+                "description": "The identifiers of properties to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
         ]
     }
             }]

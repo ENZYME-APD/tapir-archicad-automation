@@ -228,6 +228,18 @@ GSErrCode Initialize (void)
             propertyCommands, "1.0.7",
             "Creates Property Groups based on the given parameters."
         );
+        err |= RegisterCommand<DeletePropertyGroupsCommand> (
+            propertyCommands, "1.0.9",
+            "Deletes the given Custom Property Groups."
+        );
+        err |= RegisterCommand<CreatePropertyDefinitionsCommand> (
+            propertyCommands, "1.0.9",
+            "Creates Custom Property Definitions based on the given parameters."
+        );
+        err |= RegisterCommand<DeletePropertyDefinitionsCommand> (
+            propertyCommands, "1.0.9",
+            "Deletes the given Custom Property Definitions."
+        );
         AddCommandGroup (propertyCommands);
     }
 

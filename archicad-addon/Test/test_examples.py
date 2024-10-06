@@ -41,7 +41,7 @@ def ExecuteScript (exampleScriptFilePath):
     return subprocess.check_output (['python', exampleScriptFilePath])
 
 def CompareOutput (bynaryOutput, expectedOutputFilePath):
-    output = '\n'.join (bynaryOutput.decode ().split ('\r\n'))
+    output = '\n'.join (bynaryOutput.decode ('utf-8').split ('\r\n'))
     for mask in [(re.compile(r'[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?'), '<GUID>'),
                  (re.compile(r'Time": [0-9]+'), 'Time": <TIME>'),
                  (re.compile(r'"(?P<fieldName>[^"]*(folder|path|directory)[^"]*)": "([A-Z]:(\\\\?[^\\"]+)+\\\\?|/?([^/"]+/)+)', re.IGNORECASE), '"\g<fieldName>": "<PATH>')]:
