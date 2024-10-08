@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             DA.SetData (0, versionInfo.Version);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirVersion;
 
         public override Guid ComponentGuid => new Guid ("de017e94-ea0e-4947-bbf1-7c7d60e5e016");
     }

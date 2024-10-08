@@ -118,7 +118,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="ArchicadLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ArchicadLocation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ConnectArchicad" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ConnectArchicad.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ElemGDLParameters" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ElemGDLParameters.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Elems3DBoxes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Elems3DBoxes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ElemsByType" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ElemsByType.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ProjectDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ProjectDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PropertyByGuid" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PropertyByGuid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PropertyByName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PropertyByName.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SelectedElems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SelectedElems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetPropertyValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetPropertyValues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="TapirLogo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TapirLogo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="TapirVersion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TapirVersion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="WallDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\WallDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

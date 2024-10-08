@@ -52,12 +52,15 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     break;
                 }
             }
-            if (found != null) {
+
+            if (found == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Property is not found.");
+            } else {
                 DA.SetData (0, found.PropertyId);
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirLogo;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PropertyByGuid;
 
         public override Guid ComponentGuid => new Guid ("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
     }

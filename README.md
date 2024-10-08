@@ -5,8 +5,7 @@
 
 This repository contains the Tapir Archicad automation package. It consists of several components:
 - [Tapir Archicad Add-On](archicad-addon): An Add-On that registers several new JSON commands on top of the official commands provided by Graphisoft. You can see the list of new commands [here](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon). This is ready to use, see the installation instructions below.
-- [Tapir Python Package](python-package): A Grasshopper friendly Python wrapper for the Archicad JSON commands. This is heavily work in progress at the moment.
-- [Tapir Grasshopper Plugin](grasshopper-plugin): A Grasshopper plugin to help using the above components even for non-programmers. This is heavily work in progress at the moment.
+- [Tapir Grasshopper Plugin](grasshopper-plugin): A Grasshopper plugin to help using the above components even for non-programmers. This is work in progress at the moment.
 
 ## Architecture
 
@@ -42,4 +41,3 @@ Once you downloaded the Add-On files you have to install it in Archicad. Follow 
 ### Documentation
  
 You can find the documentation of the implemented commands here: https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon.
-
