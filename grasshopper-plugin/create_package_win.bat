@@ -1,6 +1,6 @@
 @echo off
 
-pushd %~dp0\..\YakPackage
+pushd %~dp0\YakPackage
 
 rmdir /s /q net48
 rmdir /s /q net7.0
