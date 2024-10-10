@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
-using System.Text.Json;
 using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents

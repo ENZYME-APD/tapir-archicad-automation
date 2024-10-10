@@ -5,7 +5,6 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 
