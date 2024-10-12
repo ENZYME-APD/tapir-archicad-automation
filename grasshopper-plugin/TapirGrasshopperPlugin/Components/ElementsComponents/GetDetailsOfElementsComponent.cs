@@ -127,8 +127,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter ("WallIds", "WallIds", "Element ids of the found walls.", GH_ParamAccess.list);
-            pManager.AddPointParameter ("Begin coordinates", "BegCoords", "Begin coordinate.", GH_ParamAccess.list);
-            pManager.AddPointParameter ("End coordinates", "EndCoords", "End coordinate.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("Begin coordinate", "BegCoord", "Begin coordinate.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("End coordinate", "EndCoord", "End coordinate.", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance (IGH_DataAccess DA)
