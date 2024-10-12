@@ -23,4 +23,4 @@ jobs:
     - name: Get yak
       run: curl -o yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
     - name: Build yak package
-      run: grasshopper-plugin/create_package_win.bat yak.exe
+      run: grasshopper-plugin/create_package_win.bat ..\..\yak.exe
