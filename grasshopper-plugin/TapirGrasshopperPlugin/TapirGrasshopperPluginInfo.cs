@@ -21,7 +21,7 @@ namespace Tapir
         public override string AuthorName => "Enzyme APD";
 
         //Return a string representing your preferred contact details.
-        public override string AuthorContact => "";
+        public override string AuthorContact => "https://github.com/ENZYME-APD/tapir-archicad-automation";
 
         //Return a string representing the version.  This returns the same version as the assembly.
         public override string AssemblyVersion => "1.1.0";
