@@ -30,6 +30,83 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public Point2D EndCoordinate;
     }
 
+    public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
+    {
+        public GetDetailsOfElementsComponent ()
+          : base (
+                "Elem Details",
+                "ElemDetails",
+                "Get details of elements.",
+                "Elements"
+            )
+        {
+        }
+
+        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to get details of.", GH_ParamAccess.list);
+        }
+
+        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids of the found elements.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("ElemType", "ElemType", "Element type.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter ("StoryIndex", "StoryIndex", "Story index.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter ("LayerIndex", "LayerIndex", "Layer index.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter ("DrawOrder", "DrawOrder", "Drawing order.", GH_ParamAccess.list);
+        }
+
+        protected override void SolveInstance (IGH_DataAccess DA)
+        {
+            List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();
+            if (!DA.GetDataList (0, elements)) {
+                return;
+            }
+
+            ElementsObj inputElements = new ElementsObj () {
+                Elements = elements
+            };
+
+            JObject inputElementsObj = JObject.FromObject (inputElements);
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            List<ElementIdItemObj> validElements = new List<ElementIdItemObj> ();
+            List<String> elemTypes = new List<String> ();
+            List<int> storyIndices = new List<int> ();
+            List<int> layerIndices = new List<int> ();
+            List<int> drawIndices = new List<int> ();
+
+            DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
+            for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
+                DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                if (detailsOfElement == null) {
+                    continue;
+                }
+                validElements.Add (new ElementIdItemObj () {
+                    ElementId = elements[i].ElementId
+                });
+                elemTypes.Add (detailsOfElement.Type);
+                storyIndices.Add (detailsOfElement.FloorIndex);
+                layerIndices.Add (detailsOfElement.LayerIndex);
+                drawIndices.Add (detailsOfElement.DrawIndex);
+            }
+
+            DA.SetDataList (0, validElements);
+            DA.SetDataList (1, elemTypes);
+            DA.SetDataList (2, storyIndices);
+            DA.SetDataList (3, layerIndices);
+            DA.SetDataList (4, drawIndices);
+        }
+
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ElemDetails;
+
+        public override Guid ComponentGuid => new Guid ("d1509981-6510-4c09-8727-dba5981109f8");
+    }
+
     public class GetDetailsOfWallsComponent : ArchicadAccessorComponent
     {
         public GetDetailsOfWallsComponent ()
@@ -50,8 +127,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter ("WallIds", "WallIds", "Element ids of the found walls.", GH_ParamAccess.list);
-            pManager.AddPointParameter ("Begin coordinates", "BegCoords", "Begin coordinates of walls.", GH_ParamAccess.list);
-            pManager.AddPointParameter ("End coordinates", "EndCoords", "End coordinates of walls.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("Begin coordinates", "BegCoords", "Begin coordinate.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("End coordinates", "EndCoords", "End coordinate.", GH_ParamAccess.list);
         }
 
         protected override void SolveInstance (IGH_DataAccess DA)

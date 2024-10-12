@@ -83,6 +83,16 @@ namespace TapirGrasshopperPlugin.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ElemDetails {
+            get {
+                object obj = ResourceManager.GetObject("ElemDetails", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ElemGDLParameters {
             get {
                 object obj = ResourceManager.GetObject("ElemGDLParameters", resourceCulture);

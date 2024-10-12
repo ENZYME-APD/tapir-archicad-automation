@@ -62,6 +62,15 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("type")]
         public string Type;
 
+        [JsonProperty ("floorIndex")]
+        public int FloorIndex;
+
+        [JsonProperty ("layerIndex")]
+        public int LayerIndex;
+
+        [JsonProperty ("drawIndex")]
+        public int DrawIndex;
+
         [JsonProperty ("details")]
         public JObject Details;
     }
