@@ -2,16 +2,15 @@
 
 pushd %~dp0\YakPackage
 
-rmdir /s /q net48
-rmdir /s /q net7.0
+del /s /q *.gha
+del /s /q *.dll
 
-mkdir net48
-mkdir net7.0
+xcopy ..\TapirGrasshopperPlugin\bin\Release\net48\*.gha . /s /d /y
+xcopy ..\TapirGrasshopperPlugin\bin\Release\net48\*.dll . /s /d /y
+xcopy ..\TapirGrasshopperPlugin\bin\Release\net7.0\*.gha net7.0 /I /s /d /y
+xcopy ..\TapirGrasshopperPlugin\bin\Release\net7.0\*.dll net7.0 /I /s /d /y
 
-xcopy ..\TapirGrasshopperPlugin\bin\Release\net48\* net48 /s /d /y
-xcopy ..\TapirGrasshopperPlugin\bin\Release\net7.0\* net7.0 /s /d /y
-
-pushd 
+call %1 build
 
 popd
 exit /b 0
