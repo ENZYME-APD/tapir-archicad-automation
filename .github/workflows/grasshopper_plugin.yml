@@ -1,4 +1,4 @@
-name: "Grasshopper Plugin Build & Deploy to Yak"
+name: Grasshopper Plugin Build and Deploy
 
 on:
   push:
@@ -6,93 +6,34 @@ on:
       - main
     tags:
       - '*'
-      
+
 jobs:
   build:
-    runs-on: [ windows-2019 ]
+    strategy:
+      fail-fast: false
+    runs-on: [ windows-2022 ]
     steps:
-    - name: Checkout Repo
+    - name: Checkout repo
       uses: actions/checkout@v4
-    - name: Install IronPython
-      run: choco install ironpython --version=2.7.12
-    - name: Build Grasshopper Plugin
-      run: ipy grasshopper-plugin/build_module.py
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+    - name: Setup msbuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Setup nuget
+      uses: nuget/setup-nuget@v2
+    - name: Restore nuget packages
+      run: nuget restore grasshopper-plugin/TapirGrasshopperPlugin.sln
+    - name: Build release
+      run: msbuild grasshopper-plugin/TapirGrasshopperPlugin.sln -property:Configuration=Release
+    - name: Create yak package
+      run: grasshopper-plugin/create_package_win.bat
+    - name: Setup yak
+      uses: paramdigma/setup-yak@1.0.0
       with:
-        name: Tapir Grasshopper Plugin
-        path: grasshopper-plugin/bin/tapir_gh.ghpy  
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: grasshopper-plugin/bin/tapir_gh.ghpy
-        draft: true
-        allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
-  deploy:
-    runs-on: windows-latest
-    environment: tapir
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/')
-   
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-        
-      - name: setup yak
-        uses: paramdigma/setup-yak@1.0.0
-        with:
-          token: ${{secrets.YAK_TOKEN}}
-          
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Tapir Grasshopper Plugin
-          path: grasshopper-plugin/bin
-          
-      - name: Copy Image to Destination
-        run: |
-          Copy-Item -Path "../../branding/logo/png/tapir_logo_black_512.png" -Destination "./tapir_logo_black_512.png"
-        working-directory: grasshopper-plugin\bin
-        shell: pwsh
-        
-      - name: Create Yak manifest
-        run: |
-          yak spec
-          Add-Content manifest.yml "icon: tapir_logo_black_512.png"
-          (Get-Content -Path "./manifest.yml") -replace '<version>', '${{ github.ref_name }}' | Set-Content -Path "./manifest.yml"
-          (Get-Content -Path "./manifest.yml") -replace '<name>', 'Tapir' | Set-Content -Path "./manifest.yml"
-          (Get-Content -Path "./manifest.yml") -replace '<author>', 'Tapir Community' | Set-Content -Path "./manifest.yml"
-          (Get-Content -Path "./manifest.yml") -replace '<description>', 'A toolset for Archicad automatization.' | Set-Content -Path "./manifest.yml"
-          (Get-Content -Path "./manifest.yml") -replace '<url>', '"https://www.archicad-api.com/"' | Set-Content -Path "./manifest.yml"
-        working-directory: grasshopper-plugin\bin
-      
-      - name: Print YAML File Content
-        run: |
-          Get-Content -Path "grasshopper-plugin/bin/manifest.yml" -Raw
-        shell: pwsh
-        
-      - name: Build YAK package
-        run: yak build
-        working-directory: grasshopper-plugin\bin
-
-      - name: Find yak file
-        run: |
-          Get-ChildItem -Path .
-          $yakFile = Get-ChildItem -Path . *.yak -Recurse | Select-Object -First 1
-          if ($yakFile -eq $null) {
-            Write-Error "No .yak file found."
-            exit 1
-          }
-          $env:YAK_FILE = $yakFile.FullName
-          echo "YAK_FILE=$env:YAK_FILE" >> $env:GITHUB_ENV
-        working-directory: grasshopper-plugin\bin
-          
-      - name: deploy to yak server
-        run: |
-          yak push $env:YAK_FILE
-          #yak push --source https://test.yak.rhino3d.com $env:YAK_FILE
-        env: 
-          YAK_TOKEN: ${{ secrets.YAK_TOKEN }}
+        token: ${{secrets.YAK_TOKEN}}
+    - name: Build yak package
+      run: yak build
+      working-directory: grasshopper-plugin\YakPackage
+    - name: Deploy yak package
+      run: |
+        $yakFile = Get-ChildItem *.yak
+        yak push $yakFile.FullName
+      working-directory: grasshopper-plugin\YakPackage
