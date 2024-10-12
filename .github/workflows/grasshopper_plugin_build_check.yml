@@ -22,5 +22,8 @@ jobs:
       run: msbuild grasshopper-plugin/TapirGrasshopperPlugin.sln -property:Configuration=Release
     - name: Get yak
       run: curl -o yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
+    - name: Create yak package
+      run: grasshopper-plugin/create_package_win.bat
     - name: Build yak package
-      run: grasshopper-plugin/create_package_win.bat ..\..\yak.exe
+      run: ..\..\yak.exe build
+      working-directory: grasshopper-plugin\YakPackage
