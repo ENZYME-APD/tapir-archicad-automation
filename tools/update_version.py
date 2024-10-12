@@ -36,13 +36,18 @@ def Main ():
         },
         {
             'filePath' : os.path.join (rootPath, 'grasshopper-plugin', 'TapirGrasshopperPlugin', 'TapirGrasshopperPlugin.csproj'),
-            'oldRegex' : r'<Version>{0}\.[0-9]+</Version>'.format (versionPattern),
-            'newRegex' : r'<Version>{0}.0</Version>'.format (version)
+            'oldRegex' : r'<Version>{0}</Version>'.format (versionPattern),
+            'newRegex' : r'<Version>{0}</Version>'.format (version)
+        },
+        {
+            'filePath' : os.path.join (rootPath, 'grasshopper-plugin', 'TapirGrasshopperPlugin', 'TapirGrasshopperPluginInfo.cs'),
+            'oldRegex' : r'AssemblyVersion\s*\=\>\s*"{0}"'.format (versionPattern),
+            'newRegex' : r'AssemblyVersion => "{0}"'.format (version)
         },
         {
             'filePath' : os.path.join (rootPath, 'grasshopper-plugin', 'YakPackage', 'manifest.yml'),
-            'oldRegex' : r'version: {0}\.[0-9]+'.format (versionPattern),
-            'newRegex' : r'version: {0}.0'.format (version)
+            'oldRegex' : r'version: {0}'.format (versionPattern),
+            'newRegex' : r'version: {0}'.format (version)
         }
     ]
     
