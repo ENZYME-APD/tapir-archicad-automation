@@ -41,4 +41,5 @@ You can install the plugin from the Rhino Package Manager. The package is called
 ## Documentation
 
 - [Archicad JSON commands](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon)
+- [Tapir GitHub wiki](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki)
 
