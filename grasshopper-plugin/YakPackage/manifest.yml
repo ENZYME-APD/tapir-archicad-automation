@@ -1,0 +1,10 @@
+name: Tapir
+version: 1.1.0
+authors:
+- Enzyme APD
+description: Grasshopper components to access Archicad via JSON interface.
+url: https://github.com/ENZYME-APD/tapir-archicad-automation
+icon: icon.png
+keywords:
+- archicad
+- tapir
