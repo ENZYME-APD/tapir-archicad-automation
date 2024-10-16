@@ -13,7 +13,7 @@ namespace Tapir
         public override Bitmap Icon => null;
 
         //Return a short string describing the purpose of this GHA library.
-        public override string Description => "Grasshopper components to access Archicad via JSON interface.";
+        public override string Description => "Grasshopper components for connecting to Archicad.";
 
         public override Guid Id => new Guid ("54b11162-627b-455b-b9c0-963e76b36dc7");
 

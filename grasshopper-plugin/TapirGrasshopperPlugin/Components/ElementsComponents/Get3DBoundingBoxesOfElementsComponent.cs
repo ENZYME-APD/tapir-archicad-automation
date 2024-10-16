@@ -14,8 +14,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public Get3DBoundingBoxesOfElementsComponent ()
           : base (
-                "Elems 3D Bounding Boxes",
-                "Elems3DBoxes",
+                "Elem 3D Bounding Boxes",
+                "Elem3DBoxes",
                 "Get 3D bounding boxes of elements.",
                 "Elements"
             )

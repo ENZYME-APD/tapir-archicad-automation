@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 
-namespace TapirGrasshopperPlugin.Components.ElementsComponents
+namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class SetPropertyValuesOfElementsComponent : Component
     {
@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Set Property Values",
                 "SetPropertyValues",
                 "Set property values of elements.",
-                "Elements"
+                "Properties"
             )
         {
         }
@@ -73,7 +73,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SetPropertyValues;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.SetPropertyValues;
 
         public override Guid ComponentGuid => new Guid ("5d2aa76e-4a59-4b58-a5ce-51878c1478d0");
     }
