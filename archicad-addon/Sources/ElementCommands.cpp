@@ -1307,9 +1307,9 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             continue;
         }
 
-        API_Elem_Head elemHead;
+        API_Elem_Head elemHead = {};
         elemHead.guid = GetGuidFromObjectState (*elementId);
-        API_Box3D box3D;
+        API_Box3D box3D = {};
         GSErrCode err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
