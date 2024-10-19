@@ -246,6 +246,37 @@ inline API_ElemTypeID GetElemTypeId (const API_Elem_Head& elemHead)
 #endif
 }
 
+inline GSErrCode TAPIR_Element_AddClassificationItemDefault (const API_Elem_Head& elemHead, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_AddClassificationItemDefault (elemHead.type, itemGuid);
+#else
+    return ACAPI_Element_AddClassificationItemDefault (elemHead.typeID, elemHead.variationID, itemGuid);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& elemHead, const API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_SetCategoryValueDefault (elemHead.type, categoryValue.category, categoryValue);
+#else
+#if defined ServerMainVers_2600
+    return ACAPI_Element_SetCategoryValueDefault (elemHead.type, categoryValue.category, categoryValue);
+#else
+    return ACAPI_Element_SetCategoryValueDefault (elemHead.typeID, elemHead.variationID, categoryValue.category, categoryValue);
+#endif
+#endif
+}
+
+inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& elemHead, const GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.type, properties);
+#else
+    return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.typeID, elemHead.variationID, properties);
+#endif
+}
+
 inline Int32 GetAttributeIndex (const API_AttributeIndex& index)
 {
 #ifdef ServerMainVers_2700
