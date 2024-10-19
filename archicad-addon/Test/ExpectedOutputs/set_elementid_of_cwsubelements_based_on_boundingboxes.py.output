@@ -1,0 +1,921 @@
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "CurtainWall"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetSubelementsOfHierarchicalElements
+Parameters:
+{
+    "hierarchicalElements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "subelementsOfHierarchicalElements": [
+        {
+            "cWallSegments": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "cWallFrames": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ],
+            "cWallPanels": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: Get3DBoundingBoxes
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "boundingBoxes3D": [
+        {
+            "boundingBox3D": {
+                "xMin": -0.25,
+                "xMax": 1.45,
+                "yMin": 2.5,
+                "yMax": 3,
+                "zMin": -0.25,
+                "zMax": 3.25
+            }
+        }
+    ]
+}
+Command: SetPropertyValuesOfElements
+Parameters:
+{
+    "elementPropertyValues": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallSegments-001"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: Get3DBoundingBoxes
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "boundingBoxes3D": [
+        {
+            "boundingBox3D": {
+                "xMin": -0.05,
+                "xMax": 0.9,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": -0.05,
+                "zMax": 0.05
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": -0.05,
+                "xMax": 0.05,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": -0.05,
+                "zMax": 0.9
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.9,
+                "xMax": 1.25,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": -0.05,
+                "zMax": 0.05
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 1.15,
+                "xMax": 1.25,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": -0.05,
+                "zMax": 0.9
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.86,
+                "xMax": 0.94,
+                "yMin": 2.7,
+                "yMax": 2.95,
+                "zMin": 0,
+                "zMax": 0.9
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0,
+                "xMax": 0.9,
+                "yMin": 2.75,
+                "yMax": 2.86,
+                "zMin": 0.87,
+                "zMax": 0.93
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": -0.05,
+                "xMax": 0.05,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": 0.9,
+                "zMax": 2.4
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.9,
+                "xMax": 1.2,
+                "yMin": 2.75,
+                "yMax": 2.86,
+                "zMin": 0.87,
+                "zMax": 0.93
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 1.15,
+                "xMax": 1.25,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": 0.9,
+                "zMax": 2.4
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.86,
+                "xMax": 0.94,
+                "yMin": 2.7,
+                "yMax": 2.95,
+                "zMin": 0.9,
+                "zMax": 2.4
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0,
+                "xMax": 0.9,
+                "yMin": 2.75,
+                "yMax": 2.86,
+                "zMin": 2.37,
+                "zMax": 2.43
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": -0.05,
+                "xMax": 0.9,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": 2.95,
+                "zMax": 3.05
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": -0.05,
+                "xMax": 0.05,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": 2.4,
+                "zMax": 3.05
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.9,
+                "xMax": 1.2,
+                "yMin": 2.75,
+                "yMax": 2.86,
+                "zMin": 2.37,
+                "zMax": 2.43
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 1.15,
+                "xMax": 1.25,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": 2.4,
+                "zMax": 3.05
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.9,
+                "xMax": 1.25,
+                "yMin": 2.7,
+                "yMax": 3,
+                "zMin": 2.95,
+                "zMax": 3.05
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.86,
+                "xMax": 0.94,
+                "yMin": 2.7,
+                "yMax": 2.95,
+                "zMin": 2.4,
+                "zMax": 3
+            }
+        }
+    ]
+}
+Command: SetPropertyValuesOfElements
+Parameters:
+{
+    "elementPropertyValues": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-001"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-002"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-003"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-004"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-005"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-006"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-007"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-008"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-009"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-010"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-011"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-012"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-013"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-014"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-015"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-016"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallFrames-017"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: Get3DBoundingBoxes
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "boundingBoxes3D": [
+        {
+            "boundingBox3D": {
+                "xMin": 0.050000004,
+                "xMax": 0.860000004,
+                "yMin": 2.74,
+                "yMax": 2.76,
+                "zMin": 0.050000004,
+                "zMax": 0.87
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.939999996,
+                "xMax": 1.149999996,
+                "yMin": 2.74,
+                "yMax": 2.76,
+                "zMin": 0.050000004,
+                "zMax": 0.87
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.05,
+                "xMax": 0.86,
+                "yMin": 2.74,
+                "yMax": 2.76,
+                "zMin": 0.93,
+                "zMax": 2.37
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.94,
+                "xMax": 1.15,
+                "yMin": 2.74,
+                "yMax": 2.76,
+                "zMin": 0.93,
+                "zMax": 2.37
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.050000004,
+                "xMax": 0.860000004,
+                "yMin": 2.74,
+                "yMax": 2.76,
+                "zMin": 2.43,
+                "zMax": 2.949999996
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0.94,
+                "xMax": 1.15,
+                "yMin": 2.74,
+                "yMax": 2.76,
+                "zMin": 2.43,
+                "zMax": 2.95
+            }
+        }
+    ]
+}
+Command: SetPropertyValuesOfElements
+Parameters:
+{
+    "elementPropertyValues": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallPanels-001"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallPanels-002"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallPanels-003"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallPanels-004"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallPanels-005"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "cWallPanels-006"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}

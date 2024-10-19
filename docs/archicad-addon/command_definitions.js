@@ -653,6 +653,34 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "Get3DBoundingBoxes",
+                "version": "1.1.2",
+                "description": "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+            "properties": {
+            "boundingBoxes3D": {
+                "$ref": "#/BoundingBoxes3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBoxes3D"
+        ]
+    }
+            },{
                 "name": "GetSubelementsOfHierarchicalElements",
                 "version": "1.0.6",
                 "description": "Gets the subelements of the given hierarchical elements.",
