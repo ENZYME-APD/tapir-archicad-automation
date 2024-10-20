@@ -165,57 +165,6 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
-        }
-    ]
-}
-Response:
-{
-    "boundingBoxes3D": [
-        {
-            "boundingBox3D": {
-                "xMin": -0.25,
-                "xMax": 1.45,
-                "yMin": 2.5,
-                "yMax": 3,
-                "zMin": -0.25,
-                "zMax": 3.25
-            }
-        }
-    ]
-}
-Command: SetPropertyValuesOfElements
-Parameters:
-{
-    "elementPropertyValues": [
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            },
-            "propertyId": {
-                "guid": "<GUID>"
-            },
-            "propertyValue": {
-                "value": "cWallSegments-001"
-            }
-        }
-    ]
-}
-Response:
-{
-    "executionResults": [
-        {
-            "success": true
-        }
-    ]
-}
-Command: Get3DBoundingBoxes
-Parameters:
-{
-    "elements": [
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
         },
         {
             "elementId": {
@@ -486,7 +435,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-001"
+                "value": "CWFrame-001"
             }
         },
         {
@@ -497,7 +446,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-002"
+                "value": "CWFrame-002"
             }
         },
         {
@@ -508,7 +457,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-003"
+                "value": "CWFrame-003"
             }
         },
         {
@@ -519,7 +468,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-004"
+                "value": "CWFrame-004"
             }
         },
         {
@@ -530,7 +479,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-005"
+                "value": "CWFrame-005"
             }
         },
         {
@@ -541,7 +490,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-006"
+                "value": "CWFrame-006"
             }
         },
         {
@@ -552,7 +501,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-007"
+                "value": "CWFrame-007"
             }
         },
         {
@@ -563,7 +512,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-008"
+                "value": "CWFrame-008"
             }
         },
         {
@@ -574,7 +523,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-009"
+                "value": "CWFrame-009"
             }
         },
         {
@@ -585,7 +534,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-010"
+                "value": "CWFrame-010"
             }
         },
         {
@@ -596,7 +545,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-011"
+                "value": "CWFrame-011"
             }
         },
         {
@@ -607,7 +556,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-012"
+                "value": "CWFrame-012"
             }
         },
         {
@@ -618,7 +567,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-013"
+                "value": "CWFrame-013"
             }
         },
         {
@@ -629,7 +578,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-014"
+                "value": "CWFrame-014"
             }
         },
         {
@@ -640,7 +589,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-015"
+                "value": "CWFrame-015"
             }
         },
         {
@@ -651,7 +600,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-016"
+                "value": "CWFrame-016"
             }
         },
         {
@@ -662,7 +611,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallFrames-017"
+                "value": "CWFrame-017"
             }
         }
     ]
@@ -836,7 +785,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallPanels-001"
+                "value": "CWPanel-001"
             }
         },
         {
@@ -847,7 +796,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallPanels-002"
+                "value": "CWPanel-002"
             }
         },
         {
@@ -858,7 +807,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallPanels-003"
+                "value": "CWPanel-003"
             }
         },
         {
@@ -869,7 +818,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallPanels-004"
+                "value": "CWPanel-004"
             }
         },
         {
@@ -880,7 +829,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallPanels-005"
+                "value": "CWPanel-005"
             }
         },
         {
@@ -891,7 +840,7 @@ Parameters:
                 "guid": "<GUID>"
             },
             "propertyValue": {
-                "value": "cWallPanels-006"
+                "value": "CWPanel-006"
             }
         }
     ]
