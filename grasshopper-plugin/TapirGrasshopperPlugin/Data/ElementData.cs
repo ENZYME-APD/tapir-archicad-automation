@@ -39,6 +39,12 @@ namespace TapirGrasshopperPlugin.Data
         public List<ElementIdItemObj> Elements;
     }
 
+    public class HierarchicalElementsObj
+    {
+        [JsonProperty ("hierarchicalElements")]
+        public List<ElementIdItemObj> Elements;
+    }
+
     public class ElementPropertyValueObj
     {
         [JsonProperty ("elementId")]
@@ -79,6 +85,96 @@ namespace TapirGrasshopperPlugin.Data
     {
         [JsonProperty ("detailsOfElements")]
         public List<DetailsOfElementObj> DetailsOfElements;
+    }
+
+    public class SubelementsObj
+    {
+        [JsonProperty ("cWallSegments")]
+        public List<ElementIdItemObj> CurtainWallSegments;
+
+        [JsonProperty ("cWallFrames")]
+        public List<ElementIdItemObj> CurtainWallFrames;
+
+        [JsonProperty ("cWallPanels")]
+        public List<ElementIdItemObj> CurtainWallPanels;
+
+        [JsonProperty ("cWallJunctions")]
+        public List<ElementIdItemObj> CurtainWallJunctions;
+
+        [JsonProperty ("cWallAccessories")]
+        public List<ElementIdItemObj> CurtainWallAccessories;
+
+        [JsonProperty ("stairRisers")]
+        public List<ElementIdItemObj> StairRisers;
+
+        [JsonProperty ("stairTreads")]
+        public List<ElementIdItemObj> StairTreads;
+
+        [JsonProperty ("stairStructures")]
+        public List<ElementIdItemObj> StairStructures;
+
+        [JsonProperty ("railingNodes")]
+        public List<ElementIdItemObj> RailingNodes;
+
+        [JsonProperty ("railingSegments")]
+        public List<ElementIdItemObj> RailingSegments;
+
+        [JsonProperty ("railingPosts")]
+        public List<ElementIdItemObj> RailingPosts;
+
+        [JsonProperty ("railingRailEnds")]
+        public List<ElementIdItemObj> RailingRailEnds;
+
+        [JsonProperty ("railingRailConnections")]
+        public List<ElementIdItemObj> RailingRailConnections;
+
+        [JsonProperty ("railingHandrailEnds")]
+        public List<ElementIdItemObj> RailingHandrailEnds;
+
+        [JsonProperty ("railingHandrailConnections")]
+        public List<ElementIdItemObj> RailingHandrailConnections;
+
+        [JsonProperty ("railingToprailEnds")]
+        public List<ElementIdItemObj> RailingToprailEnds;
+
+        [JsonProperty ("railingToprailConnections")]
+        public List<ElementIdItemObj> RailingToprailConnections;
+
+        [JsonProperty ("railingRails")]
+        public List<ElementIdItemObj> RailingRails;
+
+        [JsonProperty ("railingToprails")]
+        public List<ElementIdItemObj> RailingToprails;
+
+        [JsonProperty ("railingHandrails")]
+        public List<ElementIdItemObj> RailingHandrails;
+
+        [JsonProperty ("railingPatterns")]
+        public List<ElementIdItemObj> RailingPatterns;
+
+        [JsonProperty ("railingInnerPosts")]
+        public List<ElementIdItemObj> RailingInnerPosts;
+
+        [JsonProperty ("railingPanels")]
+        public List<ElementIdItemObj> RailingPanels;
+
+        [JsonProperty ("railingBalusterSets")]
+        public List<ElementIdItemObj> RailingBalusterSets;
+
+        [JsonProperty ("railingBalusters")]
+        public List<ElementIdItemObj> RailingBalusters;
+
+        [JsonProperty ("beamSegments")]
+        public List<ElementIdItemObj> BeamSegments;
+
+        [JsonProperty ("columnSegments")]
+        public List<ElementIdItemObj> ColumnSegments;
+    }
+
+    public class SubelementsOfHierarchicalElementsObj
+    {
+        [JsonProperty ("subelementsOfHierarchicalElements")]
+        public List<SubelementsObj> SubelementsOfHierarchicalElements;
     }
 
     public class GDLParameterDetailsObj
