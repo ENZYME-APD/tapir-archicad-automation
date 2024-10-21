@@ -1405,5 +1405,71 @@
         "items": {
             "$ref": "#/ElementClassification"
         }
+    },
+    "BoundingBox3D": {
+        "type": "object",
+        "description": "A 3D bounding box of an element.",
+        "properties": {
+            "xMin": {
+                "type": "number",
+                "description": "The minimum X value of the bounding box."
+            },
+            "yMin": {
+                "type": "number",
+                "description": "The minimum Y value of the bounding box."
+            },
+            "zMin": {
+                "type": "number",
+                "description": "The minimum Z value of the bounding box."
+            },
+            "xMax": {
+                "type": "number",
+                "description": "The maximum X value of the bounding box."
+            },
+            "yMax": {
+                "type": "number",
+                "description": "The maximum Y value of the bounding box."
+            },
+            "zMax": {
+                "type": "number",
+                "description": "The maximum Z value of the bounding box."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xMin",
+            "yMin",
+            "zMin",
+            "xMax",
+            "yMax",
+            "zMax"
+        ]
+    },
+    "BoundingBox3DOrError": {
+        "type": "object",
+        "description": "A 3D bounding box or an error.",
+        "oneOf": [
+            {
+                "title": "boundingBox3D",
+                "properties": {
+                    "boundingBox3D": {
+                        "$ref": "#/BoundingBox3D"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "boundingBox3D" ]
+            },
+            {
+                "title": "error",
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "BoundingBoxes3D": {
+        "type": "array",
+        "description": "A list of 3D bounding boxes.",
+        "items": {
+            "$ref": "#/BoundingBox3DOrError"
+        }
     }
 }
