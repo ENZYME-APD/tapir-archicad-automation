@@ -67,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DataTree<ElementIdItemObj> subelementsOfHierarchicals = new DataTree<ElementIdItemObj> ();
             SubelementsOfHierarchicalElementsObj subelementsOfHierarchicalElementsObj = response.Result.ToObject<SubelementsOfHierarchicalElementsObj> ();
             for (int i = 0; i < subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements.Count; i++) {
-                List<ElementIdItemObj> subelements = new List<ElementIdItemObj> ();
+                List<ElementIdItemObj> subelements = null;
                 if (subelemType == "CurtainWallSegment") {
                     subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].CurtainWallSegments;
                 } else if (subelemType == "CurtainWallFrame") {
@@ -123,7 +123,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 } else if (subelemType == "ColumnSegment") {
                     subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].ColumnSegments;
                 }
-                if (subelements.Count == 0) {
+                if (subelements == null || subelements.Count == 0) {
                     continue;
                 }
                 hierarchicalElements.Add (new ElementIdItemObj () {
