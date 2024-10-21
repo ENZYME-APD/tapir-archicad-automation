@@ -39,12 +39,6 @@ namespace TapirGrasshopperPlugin.Data
         public List<ElementIdItemObj> Elements;
     }
 
-    public class HierarchicalElementsObj
-    {
-        [JsonProperty ("hierarchicalElements")]
-        public List<ElementIdItemObj> Elements;
-    }
-
     public class ElementPropertyValueObj
     {
         [JsonProperty ("elementId")]

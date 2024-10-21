@@ -1,6 +1,7 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,18 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
+    public class HierarchicalElementsObj
+    {
+        [JsonProperty ("hierarchicalElements")]
+        public List<ElementIdItemObj> Elements;
+    }
+
     public class GetSubelementsOfHierarchicalElementsComponent : ArchicadAccessorComponent
     {
         public GetSubelementsOfHierarchicalElementsComponent ()
           : base (
                 "Subelements",
-                "Subelements",
+                "Subelems",
                 "Gets the subelements of the given hierarchical elements.",
                 "Elements"
             )
@@ -129,7 +136,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataTree (1, subelementsOfHierarchicals);
         }
 
-        //protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SubelementsOfHierarchicalElements;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.Subelems;
 
         public override Guid ComponentGuid => new Guid ("c0e93009-a0b6-4d24-9963-ef6c2e2535ed");
     }
