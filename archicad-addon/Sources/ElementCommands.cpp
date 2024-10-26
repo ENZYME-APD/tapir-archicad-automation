@@ -1249,3 +1249,81 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*para
 }
 
 #endif
+
+Get3DBoundingBoxesCommand::Get3DBoundingBoxesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Get3DBoundingBoxesCommand::GetName () const
+{
+    return "Get3DBoundingBoxes";
+}
+
+GS::Optional<GS::UniString> Get3DBoundingBoxesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> Get3DBoundingBoxesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+            "properties": {
+            "boundingBoxes3D": {
+                "$ref": "#/BoundingBoxes3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBoxes3D"
+        ]
+    })";
+}
+
+GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& boundingBoxes3D = response.AddList<GS::ObjectState> ("boundingBoxes3D");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            boundingBoxes3D (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        API_Box3D box3D = {};
+        GSErrCode err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        if (err != NoError) {
+            boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
+            continue;
+        }
+
+        GS::ObjectState boundingBox3D ("xMin", box3D.xMin,
+                                       "xMax", box3D.xMax,
+                                       "yMin", box3D.yMin,
+                                       "yMax", box3D.yMax,
+                                       "zMin", box3D.zMin,
+                                       "zMax", box3D.zMax);
+        boundingBoxes3D (GS::ObjectState ("boundingBox3D", boundingBox3D));
+    }
+
+    return response;
+}

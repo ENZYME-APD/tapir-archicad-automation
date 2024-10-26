@@ -35,14 +35,19 @@ def Main ():
             'newRegex' : r'#define ADDON_VERSION "{0}"'.format (version)
         },
         {
-            'filePath' : os.path.join (rootPath, 'python-package', 'setup.cfg'),
-            'oldRegex' : r'version = {0}'.format (versionPattern),
-            'newRegex' : r'version = {0}'.format (version)
+            'filePath' : os.path.join (rootPath, 'grasshopper-plugin', 'TapirGrasshopperPlugin', 'TapirGrasshopperPlugin.csproj'),
+            'oldRegex' : r'<Version>{0}</Version>'.format (versionPattern),
+            'newRegex' : r'<Version>{0}</Version>'.format (version)
         },
         {
-            'filePath' : os.path.join (rootPath, 'grasshopper-plugin', 'src', 'tapir.py'),
-            'oldRegex' : r'return "{0}"'.format (versionPattern),
-            'newRegex' : r'return "{0}"'.format (version)
+            'filePath' : os.path.join (rootPath, 'grasshopper-plugin', 'TapirGrasshopperPlugin', 'TapirGrasshopperPluginInfo.cs'),
+            'oldRegex' : r'AssemblyVersion\s*\=\>\s*"{0}"'.format (versionPattern),
+            'newRegex' : r'AssemblyVersion => "{0}"'.format (version)
+        },
+        {
+            'filePath' : os.path.join (rootPath, 'grasshopper-plugin', 'YakPackage', 'manifest.yml'),
+            'oldRegex' : r'version: {0}'.format (versionPattern),
+            'newRegex' : r'version: {0}'.format (version)
         }
     ]
     

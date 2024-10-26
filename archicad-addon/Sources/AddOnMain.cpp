@@ -168,6 +168,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Sets the details of the given elements (floor, layer, order etc)."
         );
+        err |= RegisterCommand<Get3DBoundingBoxesCommand> (
+            elementCommands, "1.1.2",
+            "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
+        );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
@@ -245,6 +249,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreatePropertyGroupsCommand> (
             propertyCommands, "1.0.7",
             "Creates Property Groups based on the given parameters."
+        );
+        err |= RegisterCommand<DeletePropertyGroupsCommand> (
+            propertyCommands, "1.0.9",
+            "Deletes the given Custom Property Groups."
+        );
+        err |= RegisterCommand<CreatePropertyDefinitionsCommand> (
+            propertyCommands, "1.0.9",
+            "Creates Custom Property Definitions based on the given parameters."
+        );
+        err |= RegisterCommand<DeletePropertyDefinitionsCommand> (
+            propertyCommands, "1.0.9",
+            "Deletes the given Custom Property Definitions."
         );
         AddCommandGroup (propertyCommands);
     }

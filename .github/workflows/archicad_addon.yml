@@ -1,9 +1,7 @@
-name: Archicad Add-On Build
+name: Archicad Add-On Build and Release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - '*'
 

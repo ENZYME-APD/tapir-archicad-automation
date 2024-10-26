@@ -1,26 +1,21 @@
 # tapir-archicad-automation
 
-[![Archicad Add-On Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon.yml)
-[![Grasshopper Plugin Build](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin.yml)
+[![Archicad Add-On Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml)
+[![Grasshopper Plugin Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml)
 
 This repository contains the Tapir Archicad automation package. It consists of several components:
 - [Tapir Archicad Add-On](archicad-addon): An Add-On that registers several new JSON commands on top of the official commands provided by Graphisoft. You can see the list of new commands [here](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon). This is ready to use, see the installation instructions below.
-- [Tapir Python Package](python-package): A Grasshopper friendly Python wrapper for the Archicad JSON commands. This is heavily work in progress at the moment.
-- [Tapir Grasshopper Plugin](grasshopper-plugin): A Grasshopper plugin to help using the above components even for non-programmers. This is heavily work in progress at the moment.
+- [Tapir Grasshopper Plugin](grasshopper-plugin): A Grasshopper plugin to help using the above components even for non-programmers. This is work in progress at the moment.
 
-## Architecture
+## Overview
 
 The diagram below explains the components and their dependencies.
 
 ![Tapir](branding/diagrams/TapirArchitecture.png?raw=true)
 
-## Roadmap
+## Installation
 
-[The roadmap is publicly available here.](https://github.com/orgs/ENZYME-APD/projects/4)
-
-## Archicad Add-On
-
-### Installation
+### Archicad Add-On
 
 Download the latest version here:
 
@@ -38,8 +33,13 @@ Once you downloaded the Add-On files you have to install it in Archicad. Follow 
 3. Open the "Edit List of Available Add-Ons" tabpage, and click on the "Add" button.
 4. Browse the downloaded Add-On file.
 5. Click "OK" in the Add-On Manager.
- 
-### Documentation
- 
-You can find the documentation of the implemented commands here: https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon.
+
+### Grasshopper Plugin
+
+You can install the plugin from the Rhino Package Manager. The package is called "tapir".
+
+## Documentation
+
+- [Archicad JSON commands](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon)
+- [Tapir GitHub wiki](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki)
 

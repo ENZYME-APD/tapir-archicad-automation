@@ -109,6 +109,9 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
     file (GLOB AddOnImageFiles CONFIGURE_DEPENDS
         ${addOnResourcesFolder}/RFIX/Images/*.svg
     )
+    file (GLOB AddOnSchemaFiles CONFIGURE_DEPENDS
+        ${addOnResourcesFolder}/RFIX/Schemas/*.json
+    )
     if (WIN32)
         file (GLOB AddOnResourceFiles CONFIGURE_DEPENDS
             ${addOnResourcesFolder}/R${addOnLanguage}/*.grc
@@ -130,7 +133,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
     if (WIN32)
         add_custom_command (
             OUTPUT ${ResourceStampFile}
-            DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles}
+            DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles} ${AddOnSchemaFiles}
             COMMENT "Compiling resources..."
             COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
             COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CompileResources.py" "${addOnLanguage}" "${devKitDir}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${ResourceObjectsDir}/${addOnName}.res"
@@ -139,7 +142,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
     else ()
         add_custom_command (
             OUTPUT ${ResourceStampFile}
-            DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles}
+            DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles} ${AddOnSchemaFiles}
             COMMENT "Compiling resources..."
             COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
             COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CompileResources.py" "${addOnLanguage}" "${devKitDir}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${CMAKE_BINARY_DIR}/$<CONFIG>/${addOnName}.bundle/Contents/Resources"
@@ -161,12 +164,14 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
         ${AddOnHeaderFiles}
         ${AddOnSourceFiles}
         ${AddOnImageFiles}
+        ${AddOnSchemaFiles}
         ${AddOnResourceFiles}
         ${ResourceStampFile}
     )
 
     source_group ("Sources" FILES ${AddOnHeaderFiles} ${AddOnSourceFiles})
     source_group ("Images" FILES ${AddOnImageFiles})
+    source_group ("Schemas" FILES ${AddOnSchemaFiles})
     source_group ("Resources" FILES ${AddOnResourceFiles})
     if (WIN32)
         add_library (${target} SHARED ${AddOnFiles})
