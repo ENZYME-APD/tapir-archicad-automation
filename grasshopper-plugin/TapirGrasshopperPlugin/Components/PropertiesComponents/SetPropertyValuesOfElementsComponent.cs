@@ -7,7 +7,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
-    public class SetPropertyValuesOfElementsComponent : Component
+    public class SetPropertyValuesOfElementsComponent : ArchicadAccessorComponent
     {
         public SetPropertyValuesOfElementsComponent ()
           : base (
