@@ -218,15 +218,11 @@ GSErrCode Initialize (void)
     { // Favorites Commands
         CommandGroup favoritesCommands ("Favorites Commands");
         err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
-            favoritesCommands, "1.0.9",
+            favoritesCommands, "1.1.2",
             "Apply the given favorites to element defaults."
         );
-        err |= RegisterCommand<ApplyFavoritesToElementsCommand> (
-            favoritesCommands, "1.0.9",
-            "Apply the given favorites to the given elements."
-        );
         err |= RegisterCommand<CreateFavoritesFromElementsCommand> (
-            favoritesCommands, "1.0.9",
+            favoritesCommands, "1.1.2",
             "Create favorites from the given elements."
         );
         AddCommandGroup (favoritesCommands);

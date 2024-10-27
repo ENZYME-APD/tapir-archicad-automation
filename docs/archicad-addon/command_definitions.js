@@ -1237,6 +1237,87 @@ var gCommands = [{
     }
             }]
         },{
+            "name": "Favorites Commands",
+            "commands": [{
+                "name": "ApplyFavoritesToElementDefaults",
+                "version": "1.1.2",
+                "description": "Apply the given favorites to element defaults.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "description": "The favorites to apply.",
+                "items": {
+                    "type": "string",
+                    "description": "The name of a favorite."
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreateFavoritesFromElements",
+                "version": "1.1.2",
+                "description": "Create favorites from the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "favoritesFromElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "The identifier of the element and the name of the new favorite.",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "favorite": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "favorite"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoritesFromElements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            }]
+        },{
             "name": "Property Commands",
             "commands": [{
                 "name": "GetAllProperties",

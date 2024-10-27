@@ -18,7 +18,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementDefaultsCommand::GetInputPara
         "properties": {
             "favorites": {
                 "type": "array",
-                "description": "The favorites to apply."
+                "description": "The favorites to apply.",
                 "items": {
                     "type": "string",
                     "description": "The name of a favorite."
@@ -64,7 +64,6 @@ GS::ObjectState ApplyFavoritesToElementDefaultsCommand::Execute (const GS::Objec
     favorite.properties.New ();
     favorite.classifications.New ();
     favorite.elemCategoryValues.New ();
-    favorite.subElements.New ();
 
     ACAPI_CallUndoableCommand ("ApplyFavoritesToElementDefaults", [&]() -> GSErrCode {
         for (const GS::UniString& favoriteName : favorites) {
@@ -77,11 +76,7 @@ GS::ObjectState ApplyFavoritesToElementDefaultsCommand::Execute (const GS::Objec
                 continue;
             }
 
-            if (favorite.subElements->GetSize () > 0) {
-                err = ACAPI_Element_ChangeDefaultsExt (&favorite.element, favorite.memo.GetPtr (), &mask, favorite.subElements->GetSize (), favorite.subElements->GetContent ());
-            } else {
-                err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
-            }
+            err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to set element defaults"));
@@ -99,166 +94,6 @@ GS::ObjectState ApplyFavoritesToElementDefaultsCommand::Execute (const GS::Objec
             TAPIR_Element_SetPropertiesOfDefaultElem (favorite.element.header, *favorite.properties);
 
             executionResults (CreateSuccessfulExecutionResult ());
-        }
-
-        return NoError;
-    });
-
-    return response;
-}
-
-ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
-    CommandBase (CommonSchema::Used)
-{
-}
-
-GS::String ApplyFavoritesToElementsCommand::GetName () const
-{
-    return "ApplyFavoritesToElements";
-}
-
-GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersSchema () const
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "favoritesToElements": {
-                "type": "array",
-                "description": "The favorites and the elements."
-                "items": {
-                    "type": "object",
-                    "description": "The name of a favorite and the elements."
-                    "properties": {
-                        "favorite": {
-                            "type": "string",
-                            "description": "The name of a favorite."
-                        },
-                        "elements": {
-                            "$ref": "#/Elements"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "favorite",
-                        "elements"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "favoritesToElements"
-        ]
-    })";
-}
-
-GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetResponseSchema () const
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "favoritesExecutionResults": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "executionResults": {
-                            "type": {
-                                "$ref": "#/ExecutionResults"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "executionResults"
-                        ]
-                    }
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "favoritesExecutionResults"
-        ]
-    })";
-}
-
-GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    GS::Array<GS::ObjectState> favoritesToElements;
-    parameters.Get ("favoritesToElements", favoritesToElements);
-
-    GS::ObjectState response;
-    const auto& favoritesExecutionResults = response.AddList<GS::ObjectState> ("favoritesExecutionResults");
-
-    API_Element mask;
-    ACAPI_ELEMENT_MASK_SETFULL (mask);
-
-    API_Favorite favorite;
-    favorite.memo.New ();
-    favorite.properties.New ();
-    favorite.classifications.New ();
-    favorite.elemCategoryValues.New ();
-    favorite.subElements.New ();
-
-    ACAPI_CallUndoableCommand ("ApplyFavoritesToElements", [&]() -> GSErrCode {
-        for (const GS::ObjectState& favoriteToElements : favoritesToElements) {
-            favoriteToElements.Get ("favorite", favorite.name);
-
-            GSErrCode err = ACAPI_Favorite_Get (&favorite);
-
-            GS::ObjectState favoriteExecutionResults;
-            const auto& executionResults = favoriteExecutionResults.AddList<GS::ObjectState> ("executionResults");
-
-            GS::Array<GS::ObjectState> elements;
-            favoriteToElements.Get ("elements", elements);
-            const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
-            for (const API_Guid& elemId : elemIds) {
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to get favorite"));
-                    continue;
-                }
-
-                favorite.element.header.guid = elemId;
-
-                constexpr bool withDel = true;
-                if (favorite.subElements->GetSize () > 0) {
-                    err = ACAPI_Element_ChangeExt (&favorite.element,
-                                                &mask,
-                                                favorite.memo.GetPtr (),
-                                                APIMemoMask_All,
-                                                favorite.subElements->GetSize (),
-                                                favorite.subElements->GetContent (),
-                                                withDel,
-                                                ACAPI_ELEMENT_CHANGEEXT_ALLSEGMENTS);
-                } else {
-                    err = ACAPI_Element_Change (&favorite.element,
-                                                &mask,
-                                                favorite.memo.GetPtr (),
-                                                APIMemoMask_All,
-                                                withDel);
-                }
-
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
-                    continue;
-                }
-
-                for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
-                    ACAPI_Element_AddClassificationItem (elemId, pair.second);
-                }
-
-                for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
-                    ACAPI_Element_SetCategoryValue (elemId, categoryValue.category, categoryValue);
-                }
-
-                ACAPI_Element_SetProperties (elemId, *favorite.properties);
-
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
-
-            ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
-
-            favoritesExecutionResults (favoriteExecutionResults);
         }
 
         return NoError;
@@ -286,7 +121,7 @@ GS::Optional<GS::UniString> CreateFavoritesFromElementsCommand::GetInputParamete
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "description": "The identifier of the element and the name of the new favorite."
+                    "description": "The identifier of the element and the name of the new favorite.",
                     "properties": {
                         "elementId": {
                             "$ref": "#/ElementId"
