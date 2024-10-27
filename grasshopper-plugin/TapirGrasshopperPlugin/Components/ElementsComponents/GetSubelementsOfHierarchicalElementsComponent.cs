@@ -40,6 +40,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter ("SubelementIds", "SubelementIds", "Subelements with the given type.", GH_ParamAccess.tree);
         }
 
+        public override void AddedToDocument (GH_Document document)
+        {
+            base.AddedToDocument (document);
+
+            ElementTypeValueList.AddAsSource (this, 1, ElementTypeValueListType.SubElementsOnly);
+        }
+
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();

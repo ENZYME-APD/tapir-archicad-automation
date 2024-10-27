@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -85,11 +86,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         ColumnSegment,
     }
 
+    public enum ElementTypeValueListType
+    {
+        MainElementsOnly,
+        SubElementsOnly,
+        AllElements
+    }
+
     public class ElementTypeValueList : GH_ValueList
     {
-        private bool mainElementsOnly;
+        private ElementTypeValueListType type;
 
-        public ElementTypeValueList ()
+        private ElementTypeValueList (ElementTypeValueListType t)
         {
             CreateAttributes ();
 
@@ -101,7 +109,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             ListMode = GH_ValueListMode.DropDown;
 
-            mainElementsOnly = true;
+            type = t;
 
             AddItems ();
         }
@@ -109,32 +117,45 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public override void AppendAdditionalMenuItems (ToolStripDropDown menu)
         {
             menu.Items.Clear ();
-            GH_DocumentObject.Menu_AppendItem (menu, "MainElements", Menu_MainElementsClicked, enabled: true, @checked: mainElementsOnly);
-            GH_DocumentObject.Menu_AppendItem (menu, "SubElements", Menu_SubElementsClicked, enabled: true, @checked: !mainElementsOnly);
+            GH_DocumentObject.Menu_AppendItem (menu, "MainElements", Menu_MainElementsClicked, enabled: true, @checked: type != ElementTypeValueListType.SubElementsOnly);
+            GH_DocumentObject.Menu_AppendItem (menu, "SubElements", Menu_SubElementsClicked, enabled: true, @checked: type != ElementTypeValueListType.MainElementsOnly);
         }
 
         private void Menu_MainElementsClicked (object sender, EventArgs e)
         {
-            mainElementsOnly = true;
+            if (type == ElementTypeValueListType.SubElementsOnly) {
+                type = ElementTypeValueListType.AllElements;
+            } else if (type == ElementTypeValueListType.AllElements) {
+                type = ElementTypeValueListType.SubElementsOnly;
+            } else {
+                return;
+            }
             AddItems ();
         }
 
         private void Menu_SubElementsClicked (object sender, EventArgs e)
         {
-            mainElementsOnly = false;
+            if (type == ElementTypeValueListType.MainElementsOnly) {
+                type = ElementTypeValueListType.AllElements;
+            } else if (type == ElementTypeValueListType.AllElements) {
+                type = ElementTypeValueListType.MainElementsOnly;
+            } else {
+                return;
+            }
             AddItems ();
         }
 
         private void AddItems ()
         {
             ListItems.Clear ();
-            if (mainElementsOnly) {
+            if (type != ElementTypeValueListType.SubElementsOnly) {
                 foreach (MainElementType type in Enum.GetValues (typeof (MainElementType))) {
                     var item = new GH_ValueListItem (type.ToString (), '"' + type.ToString () + '"');
                     item.Selected = type == MainElementType.Wall;
                     ListItems.Add (item);
                 }
-            } else {
+            }
+            if (type != ElementTypeValueListType.MainElementsOnly) {
                 foreach (SubElementType type in Enum.GetValues (typeof (SubElementType))) {
                     var item = new GH_ValueListItem (type.ToString (), '"' + type.ToString () + '"');
                     item.Selected = type == SubElementType.CurtainWallPanel;
@@ -144,8 +165,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             ExpireSolution (true);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ElemType;
+        static public void AddAsSource (GH_Component component, int inputIndex, ElementTypeValueListType type)
+        {
+            if (component.Params.Input.Count <= inputIndex) {
+                return;
+            }
 
-        public override Guid ComponentGuid => new Guid ("6e504f2a-c7a1-4b6f-8002-f6ad19f49a2e");
+            var vallist = new ElementTypeValueList (type);
+            vallist.CreateAttributes ();
+            component.OnPingDocument ().AddObject (vallist, false);
+            vallist.Attributes.Pivot = new PointF (
+                component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - vallist.Attributes.Bounds.Width - 40.0f,
+                component.Attributes.Pivot.Y + component.Params.Input[inputIndex].Attributes.InputGrip.Y - vallist.Attributes.Bounds.Height / 2.0f);
+            component.Params.Input[inputIndex].AddSource (vallist);
+            vallist.ExpireSolution (true);
+        }
     }
 }
