@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -37,15 +38,18 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             if (!DA.GetData (0, ref propertyId)) {
                 return;
             }
-            List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();
-            if (!DA.GetDataList (1, elements)) {
+            ElementsObj elements = ElementsObj.Create (DA, 1);
+            if (elements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
                 return;
             }
             List<string> values = new List<string> ();
             if (!DA.GetDataList (2, values)) {
                 return;
             }
-            if (values.Count != 1 && elements.Count != values.Count) {
+
+
+            if (values.Count != 1 && elements.Elements.Count != values.Count) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of Values must be 1 or the same as the count of ElementIds.");
                 return;
             }
@@ -53,8 +57,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             ElementPropertyValuesObj elemPropertyValues = new ElementPropertyValuesObj ();
             elemPropertyValues.ElementPropertyValues = new List<ElementPropertyValueObj> ();
 
-            for (int i = 0; i < elements.Count; i++) {
-                ElementIdItemObj elementId = elements[i];
+            for (int i = 0; i < elements.Elements.Count; i++) {
+                ElementIdItemObj elementId = elements.Elements[i];
                 ElementPropertyValueObj elemPropertyValue = new ElementPropertyValueObj () {
                     ElementId = elementId.ElementId,
                     PropertyId = propertyId,

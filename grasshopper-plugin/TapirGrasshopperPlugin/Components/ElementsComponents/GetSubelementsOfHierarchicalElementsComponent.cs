@@ -1,6 +1,7 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -42,8 +43,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();
-            if (!DA.GetDataList (0, elements)) {
+            ElementsObj inputHierarchicalElements = ElementsObj.Create (DA, 0);
+            if (inputHierarchicalElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
                 return;
             }
 
@@ -51,10 +53,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!DA.GetData (1, ref subelemType)) {
                 return;
             }
-
-            HierarchicalElementsObj inputHierarchicalElements = new HierarchicalElementsObj () {
-                Elements = elements
-            };
 
             JObject inputHierarchicalElementsObj = JObject.FromObject (inputHierarchicalElements);
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSubelementsOfHierarchicalElements", inputHierarchicalElementsObj);
@@ -127,7 +125,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     continue;
                 }
                 hierarchicalElements.Add (new ElementIdItemObj () {
-                    ElementId = elements[i].ElementId
+                    ElementId = inputHierarchicalElements.Elements[i].ElementId
                 });
                 subelementsOfHierarchicals.AddRange (subelements, new GH_Path (i));
             }
