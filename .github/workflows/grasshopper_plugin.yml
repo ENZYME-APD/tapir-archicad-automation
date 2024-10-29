@@ -29,9 +29,9 @@ jobs:
         token: ${{secrets.YAK_TOKEN}}
     - name: Build yak package
       run: yak build
-      working-directory: grasshopper-plugin\YakPackage
+      working-directory: grasshopper-plugin/YakPackage
     - name: Deploy yak package
       run: |
         $yakFile = Get-ChildItem *.yak
         yak push $yakFile.FullName
-      working-directory: grasshopper-plugin\YakPackage
+      working-directory: grasshopper-plugin/YakPackage
