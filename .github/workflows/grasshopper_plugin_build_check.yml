@@ -26,4 +26,9 @@ jobs:
       run: curl -o yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
     - name: Build yak package
       run: ..\..\yak.exe build
-      working-directory: grasshopper-plugin\YakPackage
+      working-directory: grasshopper-plugin/YakPackage
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Grasshopper Plugin
+        path: grasshopper-plugin/YakPackage/*.yak
