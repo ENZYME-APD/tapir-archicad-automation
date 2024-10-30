@@ -142,7 +142,7 @@ namespace TapirGrasshopperPlugin.Data
         public List<DetailsOfElementObj> DetailsOfElements;
     }
 
-    public class SubelementsObj
+    public class SubelementsItemObj
     {
         [JsonProperty ("cWallSegments")]
         public List<ElementIdItemObj> CurtainWallSegments;
@@ -226,10 +226,10 @@ namespace TapirGrasshopperPlugin.Data
         public List<ElementIdItemObj> ColumnSegments;
     }
 
-    public class SubelementsOfHierarchicalElementsObj
+    public class SubelementsObj
     {
-        [JsonProperty ("subelementsOfHierarchicalElements")]
-        public List<SubelementsObj> SubelementsOfHierarchicalElements;
+        [JsonProperty ("subelements")]
+        public List<SubelementsItemObj> Subelements;
     }
 
     public class GDLParameterDetailsObj

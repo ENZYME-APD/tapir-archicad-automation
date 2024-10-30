@@ -692,13 +692,13 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetInpu
     return R"({
         "type": "object",
         "properties": {
-            "hierarchicalElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "hierarchicalElements"
+            "elements"
         ]
     })";
 }
@@ -708,7 +708,7 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResp
     return R"({
         "type": "object",
         "properties": {
-            "subelementsOfHierarchicalElements": {
+            "subelements": {
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -801,7 +801,7 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResp
         },
         "additionalProperties": false,
         "required": [
-            "subelementsOfHierarchicalElements"
+            "subelements"
         ]
     })";
 }
@@ -822,13 +822,13 @@ static void AddSubelementsToObjectState (GS::ObjectState& subelements, APIElemTy
 
 GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> hierarchicalElements;
-    parameters.Get ("hierarchicalElements", hierarchicalElements);
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
 
     GS::ObjectState response;
-    const auto& subelementsOfHierarchicalElements = response.AddList<GS::ObjectState> ("subelementsOfHierarchicalElements");
+    const auto& subelementsOfHierarchicalElements = response.AddList<GS::ObjectState> ("subelements");
 
-    for (const GS::ObjectState& hierarchicalElement : hierarchicalElements) {
+    for (const GS::ObjectState& hierarchicalElement : elements) {
         const GS::ObjectState* elementId = hierarchicalElement.Get ("elementId");
         if (elementId == nullptr) {
             subelementsOfHierarchicalElements (CreateErrorResponse (APIERR_BADPARS, "elementId of hierarchicalElement is missing"));

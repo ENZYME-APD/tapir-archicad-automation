@@ -7,8 +7,8 @@ allCurtainWalls = aclib.RunTapirCommand (
 
 allCWSubelements = aclib.RunTapirCommand (
     'GetSubelementsOfHierarchicalElements', {
-        'hierarchicalElements': allCurtainWalls
-    })['subelementsOfHierarchicalElements']
+        'elements': allCurtainWalls
+    })['subelements']
 
 elementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {'properties': [{"type": "BuiltIn", "nonLocalizedName": "General_ElementID"}]})['properties'][0]['propertyId']
 

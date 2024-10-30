@@ -9,8 +9,8 @@ print('Project contains {} Curtain Wall(s)'.format(len(allCurtainWalls)))
 
 allCWSubelements = aclib.RunTapirCommand (
     'GetSubelementsOfHierarchicalElements', {
-        'hierarchicalElements': allCurtainWalls
-    }, debug=False)['subelementsOfHierarchicalElements']
+        'elements': allCurtainWalls
+    }, debug=False)['subelements']
 
 allCWFrameSubelements = [subelement for subelements in allCWSubelements for subelement in subelements['cWallFrames']]
 print('Project contains {} Curtain Wall Frame(s)'.format(len(allCWFrameSubelements)))
