@@ -36,6 +36,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "List of element ids matching the type.", GH_ParamAccess.list);
         }
 
+        public override void AddedToDocument (GH_Document document)
+        {
+            base.AddedToDocument (document);
+
+            ElementTypeValueList.AddAsSource (this, 0, ElementTypeValueListType.AllElements);
+        }
+
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             string elemType = "";
