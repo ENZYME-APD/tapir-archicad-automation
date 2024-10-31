@@ -21,6 +21,7 @@
 #include "LibraryCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ClassificationCommands.hpp"
+#include "FavoritesCommands.hpp"
 #include "MigrationHelper.hpp"
 
 template <typename CommandType>
@@ -212,6 +213,19 @@ GSErrCode Initialize (void)
             "Creates Object elements based on the given parameters."
         );
         AddCommandGroup (elementCommands);
+    }
+
+    { // Favorites Commands
+        CommandGroup favoritesCommands ("Favorites Commands");
+        err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
+            favoritesCommands, "1.1.2",
+            "Apply the given favorites to element defaults."
+        );
+        err |= RegisterCommand<CreateFavoritesFromElementsCommand> (
+            favoritesCommands, "1.1.2",
+            "Create favorites from the given elements."
+        );
+        AddCommandGroup (favoritesCommands);
     }
 
     { // Property Commands

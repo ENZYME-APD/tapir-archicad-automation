@@ -173,13 +173,33 @@ namespace TapirGrasshopperPlugin.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap SnapPointsToGrid {
+            get {
+                object obj = ResourceManager.GetObject("SnapPointsToGrid", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Subelems {
+            get {
+                object obj = ResourceManager.GetObject("Subelems", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap TapirLogo {
             get {
                 object obj = ResourceManager.GetObject("TapirLogo", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+       
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -197,27 +217,6 @@ namespace TapirGrasshopperPlugin.Properties {
             get {
                 object obj = ResourceManager.GetObject("WallDetails", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap ElemType {
-            get {
-                object obj = ResourceManager.GetObject("ElemType", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Subelems
-        {
-            get {
-                object obj = ResourceManager.GetObject ("Subelems", resourceCulture);
-                return ((System.Drawing.Bitmap) (obj));
             }
         }
     }

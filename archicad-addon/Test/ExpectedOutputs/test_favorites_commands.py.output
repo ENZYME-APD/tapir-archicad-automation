@@ -1,0 +1,90 @@
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Column"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: CreateFavoritesFromElements
+Parameters:
+{
+    "favoritesFromElements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "favorite": "ColumnFromPython"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: ApplyFavoritesToElementDefaults
+Parameters:
+{
+    "favorites": [
+        "ColumnFromPython"
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: CreateColumns
+Parameters:
+{
+    "columnsData": [
+        {
+            "coordinates": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "coordinates": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            }
+        }
+    ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}

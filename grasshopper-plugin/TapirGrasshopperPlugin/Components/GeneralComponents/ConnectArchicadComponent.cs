@@ -4,7 +4,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.General
 {
-    public class ConnectArchicadComponent : Component
+    public class ConnectArchicadComponent : ArchicadAccessorComponent
     {
         public ConnectArchicadComponent ()
           : base (
