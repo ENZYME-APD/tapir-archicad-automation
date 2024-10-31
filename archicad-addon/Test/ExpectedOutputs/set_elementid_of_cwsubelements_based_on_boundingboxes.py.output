@@ -16,7 +16,7 @@ Response:
 Command: GetSubelementsOfHierarchicalElements
 Parameters:
 {
-    "hierarchicalElements": [
+    "elements": [
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -26,7 +26,7 @@ Parameters:
 }
 Response:
 {
-    "subelementsOfHierarchicalElements": [
+    "subelements": [
         {
             "cWallSegments": [
                 {

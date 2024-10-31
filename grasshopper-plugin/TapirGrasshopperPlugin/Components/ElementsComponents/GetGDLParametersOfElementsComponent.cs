@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -40,8 +41,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();
-            if (!DA.GetDataList (0, elements)) {
+            ElementsObj inputElements = ElementsObj.Create (DA, 0);
+            if (inputElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
                 return;
             }
 
@@ -51,9 +53,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
             paramName = paramName.ToLower ();
 
-            ElementsObj inputElements = new ElementsObj () {
-                Elements = elements
-            };
             JObject inputElementsObj = JObject.FromObject (inputElements);
 
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetGDLParametersOfElements", inputElementsObj);

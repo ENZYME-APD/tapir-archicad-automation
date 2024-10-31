@@ -1,6 +1,7 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -42,8 +43,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            List<ElementIdItemObj> elements = new List<ElementIdItemObj> ();
-            if (!DA.GetDataList (0, elements)) {
+            ElementsObj inputElements = ElementsObj.Create (DA, 0);
+            if (inputElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
                 return;
             }
 
@@ -52,12 +54,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            HierarchicalElementsObj inputHierarchicalElements = new HierarchicalElementsObj () {
-                Elements = elements
-            };
-
-            JObject inputHierarchicalElementsObj = JObject.FromObject (inputHierarchicalElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSubelementsOfHierarchicalElements", inputHierarchicalElementsObj);
+            JObject inputElementsObj = JObject.FromObject (inputElements);
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSubelementsOfHierarchicalElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -65,69 +63,69 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             List<ElementIdItemObj> hierarchicalElements = new List<ElementIdItemObj> ();
             DataTree<ElementIdItemObj> subelementsOfHierarchicals = new DataTree<ElementIdItemObj> ();
-            SubelementsOfHierarchicalElementsObj subelementsOfHierarchicalElementsObj = response.Result.ToObject<SubelementsOfHierarchicalElementsObj> ();
-            for (int i = 0; i < subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements.Count; i++) {
+            SubelementsObj subElementsObj = response.Result.ToObject<SubelementsObj> ();
+            for (int i = 0; i < subElementsObj.Subelements.Count; i++) {
                 List<ElementIdItemObj> subelements = null;
                 if (subelemType == "CurtainWallSegment") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].CurtainWallSegments;
+                    subelements = subElementsObj.Subelements[i].CurtainWallSegments;
                 } else if (subelemType == "CurtainWallFrame") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].CurtainWallFrames;
+                    subelements = subElementsObj.Subelements[i].CurtainWallFrames;
                 } else if (subelemType == "CurtainWallPanel") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].CurtainWallPanels;
+                    subelements = subElementsObj.Subelements[i].CurtainWallPanels;
                 } else if (subelemType == "CurtainWallJunction") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].CurtainWallJunctions;
+                    subelements = subElementsObj.Subelements[i].CurtainWallJunctions;
                 } else if (subelemType == "CurtainWallAccessory") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].CurtainWallAccessories;
+                    subelements = subElementsObj.Subelements[i].CurtainWallAccessories;
                 } else if (subelemType == "StairRiser") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].StairRisers;
+                    subelements = subElementsObj.Subelements[i].StairRisers;
                 } else if (subelemType == "StairTread") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].StairTreads;
+                    subelements = subElementsObj.Subelements[i].StairTreads;
                 } else if (subelemType == "StairStructure") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].StairStructures;
+                    subelements = subElementsObj.Subelements[i].StairStructures;
                 } else if (subelemType == "RailingNode") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingNodes;
+                    subelements = subElementsObj.Subelements[i].RailingNodes;
                 } else if (subelemType == "RailingSegment") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingSegments;
+                    subelements = subElementsObj.Subelements[i].RailingSegments;
                 } else if (subelemType == "RailingPost") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingPosts;
+                    subelements = subElementsObj.Subelements[i].RailingPosts;
                 } else if (subelemType == "RailingRailEnd") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingRailEnds;
+                    subelements = subElementsObj.Subelements[i].RailingRailEnds;
                 } else if (subelemType == "RailingRailConnection") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingRailConnections;
+                    subelements = subElementsObj.Subelements[i].RailingRailConnections;
                 } else if (subelemType == "RailingHandrailEnd") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingHandrailEnds;
+                    subelements = subElementsObj.Subelements[i].RailingHandrailEnds;
                 } else if (subelemType == "RailingHandrailConnection") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingHandrailConnections;
+                    subelements = subElementsObj.Subelements[i].RailingHandrailConnections;
                 } else if (subelemType == "RailingToprailEnd") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingToprailEnds;
+                    subelements = subElementsObj.Subelements[i].RailingToprailEnds;
                 } else if (subelemType == "RailingToprailConnection") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingToprailConnections;
+                    subelements = subElementsObj.Subelements[i].RailingToprailConnections;
                 } else if (subelemType == "RailingRail") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingRails;
+                    subelements = subElementsObj.Subelements[i].RailingRails;
                 } else if (subelemType == "RailingToprail") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingToprails;
+                    subelements = subElementsObj.Subelements[i].RailingToprails;
                 } else if (subelemType == "RailingHandrail") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingHandrails;
+                    subelements = subElementsObj.Subelements[i].RailingHandrails;
                 } else if (subelemType == "RailingPattern") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingPatterns;
+                    subelements = subElementsObj.Subelements[i].RailingPatterns;
                 } else if (subelemType == "RailingInnerPost") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingInnerPosts;
+                    subelements = subElementsObj.Subelements[i].RailingInnerPosts;
                 } else if (subelemType == "RailingPanel") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingPanels;
+                    subelements = subElementsObj.Subelements[i].RailingPanels;
                 } else if (subelemType == "RailingBalusterSet") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingBalusterSets;
+                    subelements = subElementsObj.Subelements[i].RailingBalusterSets;
                 } else if (subelemType == "RailingBaluster") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].RailingBalusters;
+                    subelements = subElementsObj.Subelements[i].RailingBalusters;
                 } else if (subelemType == "BeamSegment") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].BeamSegments;
+                    subelements = subElementsObj.Subelements[i].BeamSegments;
                 } else if (subelemType == "ColumnSegment") {
-                    subelements = subelementsOfHierarchicalElementsObj.SubelementsOfHierarchicalElements[i].ColumnSegments;
+                    subelements = subElementsObj.Subelements[i].ColumnSegments;
                 }
                 if (subelements == null || subelements.Count == 0) {
                     continue;
                 }
                 hierarchicalElements.Add (new ElementIdItemObj () {
-                    ElementId = elements[i].ElementId
+                    ElementId = inputElements.Elements[i].ElementId
                 });
                 subelementsOfHierarchicals.AddRange (subelements, new GH_Path (i));
             }

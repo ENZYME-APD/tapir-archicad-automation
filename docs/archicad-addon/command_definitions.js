@@ -687,19 +687,19 @@ var gCommands = [{
                 "inputScheme": {
         "type": "object",
         "properties": {
-            "hierarchicalElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "hierarchicalElements"
+            "elements"
         ]
     },
                 "outputScheme": {
         "type": "object",
         "properties": {
-            "subelementsOfHierarchicalElements": {
+            "subelements": {
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -792,7 +792,7 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [
-            "subelementsOfHierarchicalElements"
+            "subelements"
         ]
     }
             },{

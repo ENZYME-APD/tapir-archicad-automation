@@ -1,18 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TapirGrasshopperPlugin.Data
 {
     public class ElementIdObj
     {
+        public static ElementIdObj Create (GH_ObjectWrapper obj)
+        {
+            if (obj.Value is ElementIdObj) {
+                return obj.Value as ElementIdObj;
+            } else if (obj.Value is GH_String) {
+                GH_String stringValue = obj.Value as GH_String;
+                return CreateFromGuidString (stringValue.ToString ());
+            } else if (obj.Value.GetType ().GetProperty ("Guid") != null) {
+                return CreateFromGuidString (obj.Value.GetType ().GetProperty ("Guid").ToString ());
+            } else {
+                return null;
+            }
+        }
+
+        public static ElementIdObj CreateFromGuidString (string guidString)
+        {
+            if (System.Guid.TryParse (guidString, out _)) {
+                return new ElementIdObj () {
+                    Guid = guidString
+                };
+            } else {
+                return null;
+            }
+        }
+
         public override string ToString ()
         {
             return Guid;
@@ -24,6 +45,22 @@ namespace TapirGrasshopperPlugin.Data
 
     public class ElementIdItemObj
     {
+        public static ElementIdItemObj Create (GH_ObjectWrapper obj)
+        {
+            if (obj.Value is ElementIdItemObj) {
+                return obj.Value as ElementIdItemObj;
+            } else {
+                ElementIdObj elementId = ElementIdObj.Create (obj);
+                if (elementId != null) {
+                    return new ElementIdItemObj () {
+                        ElementId = elementId
+                    };
+                } else {
+                    return null;
+                }
+            }
+        }
+
         public override string ToString ()
         {
             return ElementId.ToString ();
@@ -35,6 +72,30 @@ namespace TapirGrasshopperPlugin.Data
 
     public class ElementsObj
     {
+        public static ElementsObj Create (IGH_DataAccess DA, int index)
+        {
+            List<GH_ObjectWrapper> elements = new List<GH_ObjectWrapper> ();
+            if (!DA.GetDataList (index, elements)) {
+                return null;
+            }
+            return Create (elements);
+        }
+
+        public static ElementsObj Create (List<GH_ObjectWrapper> objects)
+        {
+            ElementsObj elements = new ElementsObj ();
+            elements.Elements = new List<ElementIdItemObj> ();
+            foreach (GH_ObjectWrapper obj in objects) {
+                ElementIdItemObj elementId = ElementIdItemObj.Create (obj);
+                if (elementId != null) {
+                    elements.Elements.Add (elementId);
+                } else {
+                    return null;
+                }
+            }
+            return elements;
+        }
+
         [JsonProperty ("elements")]
         public List<ElementIdItemObj> Elements;
     }
@@ -81,7 +142,7 @@ namespace TapirGrasshopperPlugin.Data
         public List<DetailsOfElementObj> DetailsOfElements;
     }
 
-    public class SubelementsObj
+    public class SubelementsItemObj
     {
         [JsonProperty ("cWallSegments")]
         public List<ElementIdItemObj> CurtainWallSegments;
@@ -165,10 +226,10 @@ namespace TapirGrasshopperPlugin.Data
         public List<ElementIdItemObj> ColumnSegments;
     }
 
-    public class SubelementsOfHierarchicalElementsObj
+    public class SubelementsObj
     {
-        [JsonProperty ("subelementsOfHierarchicalElements")]
-        public List<SubelementsObj> SubelementsOfHierarchicalElements;
+        [JsonProperty ("subelements")]
+        public List<SubelementsItemObj> Subelements;
     }
 
     public class GDLParameterDetailsObj

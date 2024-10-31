@@ -7,8 +7,8 @@ allCurtainWalls = aclib.RunCommand (
 
 allCWSubelements = aclib.RunTapirCommand (
     'GetSubelementsOfHierarchicalElements', {
-        'hierarchicalElements': allCurtainWalls
-    })['subelementsOfHierarchicalElements']
+        'elements': allCurtainWalls
+    })['subelements']
 
 allCWFrameSubelements = [subelement for subelements in allCWSubelements for subelement in subelements['cWallFrames']]
 
