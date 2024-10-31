@@ -97,6 +97,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         private ElementTypeValueListType type;
 
+        public ElementTypeValueList () : this (ElementTypeValueListType.AllElements)
+        {
+        }
+
         private ElementTypeValueList (ElementTypeValueListType t)
         {
             CreateAttributes ();
@@ -180,5 +184,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             component.Params.Input[inputIndex].AddSource (vallist);
             vallist.ExpireSolution (true);
         }
+
+        public override Guid ComponentGuid => new Guid ("ce80b380-0e42-467c-865b-69b2e8e5155e");
     }
 }
