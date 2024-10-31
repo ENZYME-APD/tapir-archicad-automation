@@ -1,9 +1,10 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
+using Grasshopper.GUI;
 using System;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
+using System.Runtime.CompilerServices;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -180,7 +181,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             vallist.CreateAttributes ();
             component.OnPingDocument ().AddObject (vallist, false);
             vallist.Attributes.Pivot = new PointF (
-                component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - vallist.Attributes.Bounds.Width - 60.0f,
+                component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - vallist.Attributes.Bounds.Width * GH_GraphicsUtil.UiScale - 40.0f,
                 component.Attributes.Pivot.Y + component.Params.Input[inputIndex].Attributes.InputGrip.Y - vallist.Attributes.Bounds.Height / 2.0f);
             component.Params.Input[inputIndex].AddSource (vallist);
             vallist.ExpireSolution (true);
