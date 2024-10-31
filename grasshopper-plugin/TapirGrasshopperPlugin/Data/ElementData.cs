@@ -7,12 +7,15 @@ using Newtonsoft.Json.Linq;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class ElementIdObj
+    using PropertyIdObj = IdObj;
+    using ElementIdObj = IdObj;
+
+    public class IdObj
     {
-        public static ElementIdObj Create (GH_ObjectWrapper obj)
+        public static IdObj Create (GH_ObjectWrapper obj)
         {
-            if (obj.Value is ElementIdObj) {
-                return obj.Value as ElementIdObj;
+            if (obj.Value is IdObj) {
+                return obj.Value as IdObj;
             } else if (obj.Value is GH_String) {
                 GH_String stringValue = obj.Value as GH_String;
                 return CreateFromGuidString (stringValue.ToString ());
@@ -23,10 +26,10 @@ namespace TapirGrasshopperPlugin.Data
             }
         }
 
-        public static ElementIdObj CreateFromGuidString (string guidString)
+        public static IdObj CreateFromGuidString (string guidString)
         {
             if (System.Guid.TryParse (guidString, out _)) {
-                return new ElementIdObj () {
+                return new IdObj () {
                     Guid = guidString
                 };
             } else {

@@ -9,16 +9,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class PropertyIdObj
-    {
-        public override string ToString ()
-        {
-            return Guid;
-        }
-
-        [JsonProperty ("guid")]
-        public string Guid;
-    }
+    using PropertyIdObj = IdObj;
 
     public class PropertyValueObj
     {

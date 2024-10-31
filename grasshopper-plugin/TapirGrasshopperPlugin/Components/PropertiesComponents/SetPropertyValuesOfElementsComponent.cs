@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
+using PropertyIdObj = TapirGrasshopperPlugin.Data.IdObj;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
