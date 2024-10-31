@@ -2,6 +2,7 @@
 using Grasshopper.Kernel.Special;
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -106,7 +107,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             CreateAttributes ();
 
             Name = "Element Type";
-            NickName = "ElemType";
+            NickName = "";
             Description = "Value List for Archicad Element Types.";
             Category = "Tapir";
             SubCategory = "Elements";
@@ -179,7 +180,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             vallist.CreateAttributes ();
             component.OnPingDocument ().AddObject (vallist, false);
             vallist.Attributes.Pivot = new PointF (
-                component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - vallist.Attributes.Bounds.Width - 40.0f,
+                component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - vallist.Attributes.Bounds.Width - 60.0f,
                 component.Attributes.Pivot.Y + component.Params.Input[inputIndex].Attributes.InputGrip.Y - vallist.Attributes.Bounds.Height / 2.0f);
             component.Params.Input[inputIndex].AddSource (vallist);
             vallist.ExpireSolution (true);
