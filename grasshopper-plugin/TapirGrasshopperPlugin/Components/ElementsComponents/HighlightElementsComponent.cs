@@ -22,9 +22,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        ~HighlightElementsComponent ()
+        public override void DocumentContextChanged (GH_Document document, GH_DocumentContext context) 
         {
-            ClearHighlight ();
+            base.DocumentContextChanged (document, context);
+            if (context == GH_DocumentContext.Close || context == GH_DocumentContext.Unloaded ) {
+                ClearHighlight ();
+            }
         }
 
         public override void RemovedFromDocument (GH_Document document)
@@ -49,7 +52,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (counter > 1) {
                 doc.RemoveObject (this, true);
-                MessageBox.Show("You cannot add this component more than one ...");
+                MessageBox.Show("You cannot add this component more than one ...", "Highlight Elements");
             } else {
                 base.AddedToDocument (document);
             }
@@ -60,6 +63,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Elements to highlight.", GH_ParamAccess.list);
             pManager.AddGenericParameter ("HighligtedColors", "Colors", "Colors for the Elements.", GH_ParamAccess.list);
             pManager.AddGenericParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted Elements.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("NonHighligtedWireframe", "NHWireframe3D", "Switch non-highlighted Elements in the 3D window to wireframe", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("ClearHighlight", "Clear", "Clear highlight.", GH_ParamAccess.item);
+            Params.Input[3].Optional = true;
+            Params.Input[4].Optional = true;
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -68,6 +75,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
+            bool clear = false;
+            if (DA.GetData (4, ref clear) && clear) {
+                ClearHighlight ();
+                return;
+            }
+
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
@@ -84,7 +97,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            HighlightElementsObj highlightElements = new HighlightElementsObj (inputElements, highlightedColors, nonHighlightedColor);
+            bool wireframe3D = false;
+            DA.GetData (3, ref wireframe3D);
+
+            HighlightElementsObj highlightElements = new HighlightElementsObj () {
+                Elements = inputElements.Elements,
+                HighlightedColors = Utilities.Convert.ToColors (highlightedColors, inputElements.Elements.Count),
+                NonHighlightedColor = Utilities.Convert.ToColor (nonHighlightedColor),
+                Wireframe3D = wireframe3D
+            };
             JObject highlightElementsObj = JObject.FromObject (highlightElements);
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "HighlightElements", highlightElementsObj);
             if (!response.Succeeded) {
@@ -114,8 +135,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
         }
 
-        // TODO
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.HighlightElements;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.HighlightElements;
 
         public override Guid ComponentGuid => new Guid ("9ba098dd-63c5-4126-b4cc-3caa56082c8f");
     }

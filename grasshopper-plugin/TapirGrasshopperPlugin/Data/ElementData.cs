@@ -126,41 +126,17 @@ namespace TapirGrasshopperPlugin.Data
             HighlightedColors = new List<List<int>> ();
         }
 
-        public HighlightElementsObj (ElementsObj elements,
-                                     List<GH_Colour> colors,
-                                     GH_Colour nhColors)
-        {
-            Elements = elements.Elements;
-            HighlightedColors = new List<List<int>> ();
-            foreach (GH_Colour rgba in colors) {
-                HighlightedColors.Add (ConvertColorRGBA (rgba));
-            }
-            if (HighlightedColors.Count == 1) {
-                for (int i = HighlightedColors.Count; i < Elements.Count; ++i) {
-                    HighlightedColors.Add (HighlightedColors[0]);
-                }
-            }
-            NonHighlightedColor = ConvertColorRGBA (nhColors);
-        }
-
-        private List<int> ConvertColorRGBA (GH_Colour colorRGBA)
-        {
-            return new List<int> {
-                Convert.ToInt32 (colorRGBA.Value.R),
-                Convert.ToInt32 (colorRGBA.Value.G),
-                Convert.ToInt32 (colorRGBA.Value.B),
-                Convert.ToInt32 (colorRGBA.Value.A)
-            };
-        }
-
         [JsonProperty ("elements")]
         public List<ElementIdItemObj> Elements;
 
         [JsonProperty ("highlightedColors")]
         public List<List<int>> HighlightedColors;
 
-        [JsonProperty ("nonHighlightedColor")]
+        [JsonProperty ("nonHighlightedColor", NullValueHandling = NullValueHandling.Ignore)]
         public List<int> NonHighlightedColor;
+
+        [JsonProperty ("wireframe3D")]
+        public bool Wireframe3D;
     }
 
     public class DetailsOfElementObj
