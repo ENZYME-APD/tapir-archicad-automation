@@ -7,10 +7,10 @@ using Newtonsoft.Json.Linq;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class PropertyIdObj : IdObj<PropertyIdObj> {}
-    public class ElementIdObj : IdObj<ElementIdObj> {}
+    public class PropertyIdObj : IdObj<PropertyIdObj> { }
+    public class ElementIdObj : IdObj<ElementIdObj> { }
 
-    public class IdObj<T> where T : class, new()
+    public class IdObj<T> where T : IdObj<T>, new()
     {
         public static T Create (GH_ObjectWrapper obj)
         {
@@ -38,9 +38,9 @@ namespace TapirGrasshopperPlugin.Data
         public static T CreateFromGuidString (string guidString)
         {
             if (System.Guid.TryParse (guidString, out _)) {
-                return new IdObj<T> () {
+                return new T () {
                     Guid = guidString
-                } as T;
+                };
             } else {
                 return null;
             }

@@ -94,8 +94,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
         }
 
-        // TODO
-        // protected override System.Drawing.Bitmap Icon => Properties.Resources.SetClassifications;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.SetClassifications;
 
         public override Guid ComponentGuid => new Guid ("d5f807eb-ba90-4616-bd31-325c1701506a");
     }

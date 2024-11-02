@@ -7,13 +7,13 @@ using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
-    public class FindClassificationItem : ArchicadAccessorComponent
+    public class FindClassificationItemByIdComponent : ArchicadAccessorComponent
     {
-        public FindClassificationItem ()
+        public FindClassificationItemByIdComponent ()
           : base (
-                "Find Classification Item",
-                "FindClassification",
-                "Finds a Classification Item by name or id in the given Classification System.",
+                "Find Classification Item By Id",
+                "ClassificationById",
+                "Finds a Classification Item by id in the given Classification System.",
                 "Classifications"
             )
         {
@@ -89,8 +89,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
         }
 
-        // TODO
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ClassificationItemByName;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ClassificationById;
 
         public override Guid ComponentGuid => new Guid ("46026689-054d-4164-9d35-ac56150cd733");
     }
