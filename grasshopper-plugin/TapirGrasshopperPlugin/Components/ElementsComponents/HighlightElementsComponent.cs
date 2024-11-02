@@ -15,17 +15,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public HighlightElementsComponent ()
           : base (
                 "Highlight Elements",
-                "Highlight",
+                "HighlightElems",
                 "Highlight Elements.",
                 "Elements"
             )
         {
+            Params.ParameterSourcesChanged += OnParameterSourcesChanged;
         }
 
-        public override void DocumentContextChanged (GH_Document document, GH_DocumentContext context) 
+        public override void DocumentContextChanged (GH_Document document, GH_DocumentContext context)
         {
             base.DocumentContextChanged (document, context);
-            if (context == GH_DocumentContext.Close || context == GH_DocumentContext.Unloaded ) {
+            if (context == GH_DocumentContext.Close || context == GH_DocumentContext.Unloaded) {
                 ClearHighlight ();
             }
         }
@@ -52,7 +53,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (counter > 1) {
                 doc.RemoveObject (this, true);
-                MessageBox.Show("You cannot add this component more than one ...", "Highlight Elements");
+                MessageBox.Show ("Only one instance can be created.", "Highlight Elements");
             } else {
                 base.AddedToDocument (document);
             }
@@ -61,10 +62,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Elements to highlight.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("HighligtedColors", "Colors", "Colors for the Elements.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted Elements.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("NonHighligtedWireframe", "NHWireframe3D", "Switch non-highlighted Elements in the 3D window to wireframe", GH_ParamAccess.item);
-            pManager.AddBooleanParameter ("EnableHighlight", "Enabled", "Enable highlight.", GH_ParamAccess.item, true);
+            pManager.AddColourParameter ("HighligtedColors", "Colors", "Colors for the Elements.", GH_ParamAccess.list);
+            pManager.AddColourParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted Elements.", GH_ParamAccess.item);
+            pManager.AddBooleanParameter ("NonHighligtedWireframe", "NHWireframe3D", "Switch non-highlighted Elements in the 3D window to wireframe", GH_ParamAccess.item, @default: false);
+            pManager.AddBooleanParameter ("EnableHighlight", "Enabled", "Enable highlight.", GH_ParamAccess.item, @default: true);
+            Params.Input[3].Optional = true;
+            Params.Input[4].Optional = true;
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -112,7 +115,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
         }
 
-        protected override void AppendAdditionalComponentMenuItems (ToolStripDropDown menu) {
+        protected override void AppendAdditionalComponentMenuItems (ToolStripDropDown menu)
+        {
             base.AppendAdditionalComponentMenuItems (menu);
             Menu_AppendItem (menu, "Clear Highlight", ClearButtonClicked);
         }
@@ -130,6 +134,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
+            }
+        }
+
+        public void OnParameterSourcesChanged (object source, EventArgs e)
+        {
+            foreach (IGH_Param param in Params.Input) {
+                if (!param.Optional && param.SourceCount == 0) {
+                    ClearHighlight ();
+                    break;
+                }
             }
         }
 
