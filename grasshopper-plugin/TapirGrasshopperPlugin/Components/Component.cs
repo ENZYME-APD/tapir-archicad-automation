@@ -144,5 +144,15 @@ namespace TapirGrasshopperPlugin.Components
         {
             ExpireSolution (true);
         }
+
+        protected override void ExpireDownStreamObjects()
+        {
+            foreach (var input in Params.Input) {
+                if (input is ArchicadAccessorValueList) {
+                    ArchicadAccessorValueList valueList = input as ArchicadAccessorValueList;
+                    valueList.RefreshItems ();
+                }
+            }
+        }
     }
 }

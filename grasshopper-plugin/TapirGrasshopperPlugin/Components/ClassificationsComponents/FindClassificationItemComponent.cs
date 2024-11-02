@@ -5,18 +5,16 @@ using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 using System.Collections.Generic;
 using ClassificationIdObj = TapirGrasshopperPlugin.Data.IdObj;
-using Newtonsoft.Json;
-using System.Linq;
 
-namespace TapirGrasshopperPlugin.Components.PropertiesComponents
+namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
-    public class FindClassificationItemByName : ArchicadAccessorComponent
+    public class FindClassificationItem : ArchicadAccessorComponent
     {
-        public FindClassificationItemByName ()
+        public FindClassificationItem ()
           : base (
-                "Classification Item by Name",
-                "CItemByName",
-                "Finds a Classification Item by name in the given Classification System.",
+                "Find Classification Item",
+                "FindClassification",
+                "Finds a Classification Item by name or id in the given Classification System.",
                 "Classifications"
             )
         {
@@ -24,23 +22,30 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ClassificationSystemId", "CSystemId", "The id of a classification system.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Classification Item name", "ItemName", "Classification Item name to find.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("ClassificationSystemId", "SystemId", "The id of a classification system.", GH_ParamAccess.item);
+            pManager.AddTextParameter ("Classification Item id", "ItemId", "Classification Item id to find.", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ClassificationItemId", "CItemId", "Found ClassificationItem id.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("ClassificationItemId", "ItemGuid", "Found ClassificationItem id.", GH_ParamAccess.item);
         }
 
-        private ClassificationItemDetailsObj FindClassificationItemInTree (List<ClassificationItemObj> branch, string ClassificationItemName)
+        public override void AddedToDocument (GH_Document document)
+        {
+            base.AddedToDocument (document);
+
+            new ClassificationSystemValueList ().AddAsSource (this, 0);
+        }
+
+        private ClassificationItemDetailsObj FindClassificationItemInTree (List<ClassificationItemObj> branch, string classificationItemId)
         {
             foreach (ClassificationItemObj item in branch) {
-                if (item.ClassificationItem.Id.ToLower () == ClassificationItemName) {
+                if (item.ClassificationItem.Id.ToLower () == classificationItemId) {
                     return item.ClassificationItem;
                 }
                 if (item.ClassificationItem.Children != null) {
-                    ClassificationItemDetailsObj foundInChildren = FindClassificationItemInTree (item.ClassificationItem.Children, ClassificationItemName);
+                    ClassificationItemDetailsObj foundInChildren = FindClassificationItemInTree (item.ClassificationItem.Children, classificationItemId);
                     if (foundInChildren != null) {
                         return foundInChildren;
                     }
@@ -52,13 +57,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            ClassificationIdObj classificationSystemId = new ClassificationIdObj ();
-            if (!DA.GetData (0, ref classificationSystemId)) {
+            ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
+            if (classificationSystemId == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClassificationSystemId failed to collect data.");
                 return;
             }
 
-            string ClassificationItemName = "";
-            if (!DA.GetData (1, ref ClassificationItemName)) {
+            string ClassificationItemId = "";
+            if (!DA.GetData (1, ref ClassificationItemId)) {
                 return;
             }
 
@@ -74,8 +80,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
             AllClassificationItemsInSystem classificationItemsInSystem = response.Result.ToObject<AllClassificationItemsInSystem> ();
-            ClassificationItemName = ClassificationItemName.ToLower ();
-            ClassificationItemDetailsObj found = FindClassificationItemInTree (classificationItemsInSystem.ClassificationItems, ClassificationItemName);
+            ClassificationItemId = ClassificationItemId.ToLower ();
+            ClassificationItemDetailsObj found = FindClassificationItemInTree (classificationItemsInSystem.ClassificationItems, ClassificationItemId);
 
             if (found == null) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "ClassificationItem is not found.");

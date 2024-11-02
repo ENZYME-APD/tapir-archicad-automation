@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 using ClassificationIdObj = TapirGrasshopperPlugin.Data.IdObj;
 
-namespace TapirGrasshopperPlugin.Components.PropertiesComponents
+namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class SetClassificationsOfElementsComponent : ArchicadAccessorComponent
     {
@@ -22,28 +23,46 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ClassificationSystemId", "CSystemId", "The id of a classification system.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("ClassificationSystemId", "ClsSystemId", "The id of a classification system.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("ClassificationItemIds", "ClsItemIds", "The ids of classification items to assign for the given elements.", GH_ParamAccess.list);
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to set the classification for.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("ClassificationItemIds", "CItemIds", "The ids of classification items to assign for the given elements.", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
         }
 
+        public override void AddedToDocument (GH_Document document)
+        {
+            base.AddedToDocument (document);
+
+            new ClassificationSystemValueList ().AddAsSource (this, 0);
+        }
+
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            ClassificationIdObj classificationSystemId = new ClassificationIdObj ();
-            if (!DA.GetData (0, ref classificationSystemId)) {
+            ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
+            if (classificationSystemId == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClassificationSystemId failed to collect data.");
                 return;
             }
-            ElementsObj elements = ElementsObj.Create (DA, 1);
+
+            List<GH_ObjectWrapper> inputItemIds = new List<GH_ObjectWrapper> ();
+            if (!DA.GetDataList (1, inputItemIds)) {
+                return;
+            }
+
+            List<ClassificationIdObj> classificationItemIds = new List<ClassificationIdObj> ();
+            foreach (GH_ObjectWrapper obj in inputItemIds) {
+                ClassificationIdObj itemId = ClassificationIdObj.Create (obj);
+                if (itemId != null) {
+                    classificationItemIds.Add (itemId);
+                }
+            }
+
+            ElementsObj elements = ElementsObj.Create (DA, 2);
             if (elements == null) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
-                return;
-            }
-            List<ClassificationIdObj> classificationItemIds = new List<ClassificationIdObj> ();
-            if (!DA.GetDataList (2, classificationItemIds)) {
                 return;
             }
 

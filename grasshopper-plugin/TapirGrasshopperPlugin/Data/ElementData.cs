@@ -26,6 +26,15 @@ namespace TapirGrasshopperPlugin.Data
             }
         }
 
+        public static IdObj Create (IGH_DataAccess DA, int index)
+        {
+            GH_ObjectWrapper obj = new GH_ObjectWrapper ();
+            if (!DA.GetData (index, ref obj)) {
+                return null;
+            }
+            return Create (obj);
+        }
+
         public static IdObj CreateFromGuidString (string guidString)
         {
             if (System.Guid.TryParse (guidString, out _)) {

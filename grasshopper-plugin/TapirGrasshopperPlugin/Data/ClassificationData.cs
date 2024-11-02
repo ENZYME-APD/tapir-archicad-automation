@@ -65,6 +65,11 @@ namespace TapirGrasshopperPlugin.Data
 
         [JsonProperty ("date")]
         public string Date;
+
+        public override string ToString ()
+        {
+            return Name + " " + Version;
+        }
     }
 
     public class ClassificationItemDetailsObj
@@ -83,12 +88,38 @@ namespace TapirGrasshopperPlugin.Data
         
         [JsonProperty ("children")]
         public List<ClassificationItemObj> Children;
+
+        public override string ToString ()
+        {
+            if (Name.Length == 0) {
+                return Id;
+            }
+
+            return Id + " " + Name;
+        }
     }
 
     public class ClassificationItemObj
     {
         [JsonProperty ("classificationItem")]
         public ClassificationItemDetailsObj ClassificationItem;
+    
+        static public ClassificationItemDetailsObj FindClassificationItemInTree (List<ClassificationItemObj> branch, string ClassificationItemName)
+        {
+            foreach (ClassificationItemObj item in branch) {
+                if (item.ClassificationItem.Id.ToLower () == ClassificationItemName) {
+                    return item.ClassificationItem;
+                }
+                if (item.ClassificationItem.Children != null) {
+                    ClassificationItemDetailsObj foundInChildren = FindClassificationItemInTree (item.ClassificationItem.Children, ClassificationItemName);
+                    if (foundInChildren != null) {
+                        return foundInChildren;
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
     public class AllClassificationSystems
