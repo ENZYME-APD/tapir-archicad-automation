@@ -64,9 +64,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter ("HighligtedColors", "Colors", "Colors for the Elements.", GH_ParamAccess.list);
             pManager.AddGenericParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted Elements.", GH_ParamAccess.item);
             pManager.AddGenericParameter ("NonHighligtedWireframe", "NHWireframe3D", "Switch non-highlighted Elements in the 3D window to wireframe", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ClearHighlight", "Clear", "Clear highlight.", GH_ParamAccess.item);
-            Params.Input[3].Optional = true;
-            Params.Input[4].Optional = true;
+            pManager.AddBooleanParameter ("EnableHighlight", "Enabled", "Enable highlight.", GH_ParamAccess.item, true);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -75,8 +73,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            bool clear = false;
-            if (DA.GetData (4, ref clear) && clear) {
+            bool enabled = true;
+            if (DA.GetData (4, ref enabled) && !enabled) {
                 ClearHighlight ();
                 return;
             }
