@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    using ElementIdObj = IdObj;
-    using ClassificationIdObj = IdObj;
+    public class ClassificationIdObj : IdObj<ClassificationIdObj> {}
 
     public class ClassificationSystemObj
     {

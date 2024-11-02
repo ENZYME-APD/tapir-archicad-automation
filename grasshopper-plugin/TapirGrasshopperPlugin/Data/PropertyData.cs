@@ -9,8 +9,6 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    using PropertyIdObj = IdObj;
-
     public class PropertyValueObj
     {
         [JsonProperty ("value")]

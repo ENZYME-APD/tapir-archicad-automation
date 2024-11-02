@@ -4,7 +4,6 @@ using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 using System.Collections.Generic;
-using ClassificationIdObj = TapirGrasshopperPlugin.Data.IdObj;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
