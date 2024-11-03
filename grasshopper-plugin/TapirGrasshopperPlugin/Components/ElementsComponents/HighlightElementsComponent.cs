@@ -67,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddColourParameter ("HighligtedColors", "Colors", "Colors for the elements.", GH_ParamAccess.list);
             pManager.AddColourParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted elements.", GH_ParamAccess.item);
             pManager.AddBooleanParameter ("NonHighligtedWireframe", "NHWire3D", "Switch non-highlighted elements in the 3D window to wireframe", GH_ParamAccess.item, @default: false);
-            pManager.AddNumberParameter ("Transparency", "Transparency", "Sets the transparency of the highlight (0: opaque, 1: transparent).", GH_ParamAccess.item, @default: 0);
+            pManager.AddNumberParameter ("Transparency", "Transparency", "Sets the transparency of the highlight (0.0: opaque, 1.0: transparent).", GH_ParamAccess.item, @default: 0.0);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
