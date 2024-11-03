@@ -63,6 +63,16 @@ namespace TapirGrasshopperPlugin.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap AllProperties {
+            get {
+                object obj = ResourceManager.GetObject("AllProperties", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ArchicadLocation {
             get {
                 object obj = ResourceManager.GetObject("ArchicadLocation", resourceCulture);
@@ -133,16 +143,6 @@ namespace TapirGrasshopperPlugin.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap GetAllProperties {
-            get {
-                object obj = ResourceManager.GetObject("GetAllProperties", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap ProjectDetails {
             get {
                 object obj = ResourceManager.GetObject("ProjectDetails", resourceCulture);
@@ -193,9 +193,9 @@ namespace TapirGrasshopperPlugin.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap SnapPointsToGrid {
+        internal static System.Drawing.Bitmap SnapPt {
             get {
-                object obj = ResourceManager.GetObject("SnapPointsToGrid", resourceCulture);
+                object obj = ResourceManager.GetObject("SnapPt", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

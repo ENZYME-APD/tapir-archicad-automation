@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         public SnapPointsToGridComponent ()
           : base (
                 "Snap Points",
-                "Snap Pt",
+                "SnapPt",
                 "Snap points to an axis-aligned grid.",
                 "Utilities"
             )
@@ -55,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             DA.SetDataList (0, snappedPoints);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.SnapPointsToGrid;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.SnapPt;
 
         public override Guid ComponentGuid => new Guid ("b8b3282c-bdd5-497e-b7d3-7b1af0c71eaa");
     }
