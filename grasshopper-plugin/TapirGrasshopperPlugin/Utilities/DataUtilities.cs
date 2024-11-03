@@ -7,7 +7,7 @@ namespace TapirGrasshopperPlugin.Utilities
 {
     public class Convert
     {
-        static public List<int> ToColor (GH_Colour colorRGBA)
+        static public List<int> ToRGBColor (GH_Colour colorRGBA, int alpha)
         {
             if (colorRGBA == null) {
                 return null;
@@ -16,18 +16,18 @@ namespace TapirGrasshopperPlugin.Utilities
                 colorRGBA.Value.R,
                 colorRGBA.Value.G,
                 colorRGBA.Value.B,
-                colorRGBA.Value.A
+                alpha
             };
         }
 
-        static public List<List<int>> ToColors (List<GH_Colour> colorRGBAs, int minSize = 1)
+        static public List<List<int>> ToRGBColors (List<GH_Colour> colorRGBAs, int alpha, int minSize)
         {
             if (colorRGBAs == null) {
                 return null;
             }
             List<List<int>> colors = new List<List<int>> ();
             foreach (GH_Colour colorRGBA in colorRGBAs) {
-                colors.Add (ToColor (colorRGBA));
+                colors.Add (ToRGBColor (colorRGBA, alpha));
             }
             for (int i = colors.Count; i < minSize; ++i) {
                 colors.Add (colors.Last ());
