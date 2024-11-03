@@ -118,6 +118,27 @@ namespace TapirGrasshopperPlugin.Data
         public List<ElementPropertyValueObj> ElementPropertyValues;
     }
 
+    public class HighlightElementsObj
+    {
+        public HighlightElementsObj ()
+        {
+            Elements = new List<ElementIdItemObj> ();
+            HighlightedColors = new List<List<int>> ();
+        }
+
+        [JsonProperty ("elements")]
+        public List<ElementIdItemObj> Elements;
+
+        [JsonProperty ("highlightedColors")]
+        public List<List<int>> HighlightedColors;
+
+        [JsonProperty ("nonHighlightedColor", NullValueHandling = NullValueHandling.Ignore)]
+        public List<int> NonHighlightedColor;
+
+        [JsonProperty ("wireframe3D")]
+        public bool Wireframe3D;
+    }
+
     public class DetailsOfElementObj
     {
         [JsonProperty ("type")]
