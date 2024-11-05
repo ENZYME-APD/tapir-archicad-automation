@@ -13,6 +13,10 @@ The diagram below explains the components and their dependencies.
 
 ![Tapir](branding/diagrams/TapirArchitecture.png?raw=true)
 
+## Roadmap
+
+[The Tapir Roadmap is available here.](https://github.com/orgs/ENZYME-APD/projects/4/views/1)
+
 ## Installation
 
 ### Archicad Add-On
