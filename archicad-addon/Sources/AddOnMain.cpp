@@ -231,7 +231,7 @@ GSErrCode Initialize (void)
     { // Property Commands
         CommandGroup propertyCommands ("Property Commands");
         err |= RegisterCommand<GetAllPropertiesCommand> (
-            propertyCommands, "1.0.8",
+            propertyCommands, "1.1.3",
             "Returns all user defined and built-in properties."
         );
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (

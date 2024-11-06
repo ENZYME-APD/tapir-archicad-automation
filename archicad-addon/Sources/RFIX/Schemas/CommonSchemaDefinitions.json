@@ -98,7 +98,7 @@
         "type": "object",
         "description": "The list of GDL parameters.",
         "properties": {
-            "parameters" : {
+            "parameters": {
                 "type": "array",
                 "description": "The list of GDL parameters.",
                 "items": {
@@ -147,42 +147,42 @@
     },
     "2DCoordinate": {
         "type": "object",
-        "description" : "2D coordinate.",
-        "properties" : {
+        "description": "2D coordinate.",
+        "properties": {
             "x": {
                 "type": "number",
-                "description" : "X value of the coordinate."
+                "description": "X value of the coordinate."
             },
-            "y" : {
+            "y": {
                 "type": "number",
-                "description" : "Y value of the coordinate."
+                "description": "Y value of the coordinate."
             }
         },
         "additionalProperties": false,
-        "required" : [
+        "required": [
             "x",
             "y"
         ]
     },
     "3DCoordinate": {
         "type": "object",
-        "description" : "3D coordinate.",
-        "properties" : {
+        "description": "3D coordinate.",
+        "properties": {
             "x": {
                 "type": "number",
-                "description" : "X value of the coordinate."
+                "description": "X value of the coordinate."
             },
-            "y" : {
+            "y": {
                 "type": "number",
-                "description" : "Y value of the coordinate."
+                "description": "Y value of the coordinate."
             },
-            "z" : {
+            "z": {
                 "type": "number",
-                "description" : "Z value of the coordinate."
+                "description": "Z value of the coordinate."
             }
         },
         "additionalProperties": false,
-        "required" : [
+        "required": [
             "x",
             "y",
             "z"
@@ -190,23 +190,23 @@
     },
     "3DDimensions": {
         "type": "object",
-        "description" : "Dimensions in 3D.",
-        "properties" : {
+        "description": "Dimensions in 3D.",
+        "properties": {
             "x": {
                 "type": "number",
-                "description" : "X dimension."
+                "description": "X dimension."
             },
-            "y" : {
+            "y": {
                 "type": "number",
-                "description" : "Y dimension."
+                "description": "Y dimension."
             },
-            "z" : {
+            "z": {
                 "type": "number",
-                "description" : "Z dimension."
+                "description": "Z dimension."
             }
         },
         "additionalProperties": false,
-        "required" : [
+        "required": [
             "x",
             "y",
             "z"
@@ -521,18 +521,66 @@
             "propertyId": {
                 "$ref": "#/PropertyId"
             },
+            "propertyType": {
+                "type": "string",
+                "enum": [
+                    "StaticBuiltIn",
+                    "DynamicBuiltIn",
+                    "Custom"
+                ]
+            },
             "propertyGroupName": {
                 "type": "string"
             },
             "propertyName": {
                 "type": "string"
+            },
+            "propertyCollectionType": {
+                "type": "string",
+                "enum": [
+                    "Undefined",
+                    "Single",
+                    "List",
+                    "SingleChoiceEnumeration",
+                    "MultipleChoiceEnumeration"
+                ]
+            },
+            "propertyValueType": {
+                "type": "string",
+                "enum": [
+                    "Undefined",
+                    "Integer",
+                    "Real",
+                    "String",
+                    "Boolean",
+                    "Guid"
+                ]
+            },
+            "propertyMeasureType": {
+                "type": "string",
+                "enum": [
+                    "Undefined",
+                    "Default",
+                    "Length",
+                    "Area",
+                    "Volume",
+                    "Angle"
+                ]
+            },
+            "propertyIsEditable": {
+                "type": "boolean"
             }
         },
         "additionalProperties": false,
         "required": [
             "propertyId",
+            "propertyType",
             "propertyGroupName",
-            "propertyName"
+            "propertyName",
+            "propertyCollectionType",
+            "propertyValueType",
+            "propertyMeasureType",
+            "propertyIsEditable"
         ]
     },
     "PropertyValue": {
@@ -564,7 +612,7 @@
             },
             {
                 "title": "error",
-                    "$ref": "#/ErrorItem"
+                "$ref": "#/ErrorItem"
             }
         ]
     },
@@ -1346,7 +1394,7 @@
                 "title": "error",
                 "$ref": "#/ErrorItem"
             }
-        ]   
+        ]
     },
     "ClassificationIdsOrErrors": {
         "type": "array",
