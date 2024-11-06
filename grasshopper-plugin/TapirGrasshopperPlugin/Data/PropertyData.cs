@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.ComponentModel;
 using Newtonsoft.Json;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class PropertyIdObj
-    {
-        public override string ToString ()
-        {
-            return Guid;
-        }
+    public class PropertyIdObj : IdObj<PropertyIdObj> {}
 
-        [JsonProperty ("guid")]
-        public string Guid;
+    public class PropertyIdItemObj : IdItemObj<PropertyIdObj, PropertyIdItemObj>
+    {
+        [JsonProperty ("propertyId")]
+        public PropertyIdObj PropertyId;
+
+        public override PropertyIdObj Id
+        {
+            get { return PropertyId; }
+            set { PropertyId = Id; }
+        }
     }
 
     public class PropertyValueObj
@@ -47,5 +46,31 @@ namespace TapirGrasshopperPlugin.Data
     {
         [JsonProperty ("properties")]
         public List<PropertyDetailsObj> Properties { get; set; }
+    }
+
+    public class PropertyValue
+    {
+        [JsonProperty ("value")]
+        public string Value;
+    }
+
+    public class PropertyValueOrError
+    {
+        [JsonProperty ("propertyValue", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue (null)]
+        public PropertyValue PropertyValue;
+    }
+
+    public class PropertyValues
+    {
+        [JsonProperty ("propertyValues", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue (null)]
+        public List<PropertyValueOrError> PropertyValuesOrErrors;
+    }
+
+    public class PropertyValuesForElements
+    {
+        [JsonProperty ("propertyValuesForElements")]
+        public List<PropertyValues> PropertyValuesOrErrors { get; set; }
     }
 }

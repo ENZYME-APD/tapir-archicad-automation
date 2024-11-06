@@ -34,8 +34,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            PropertyIdObj propertyId = new PropertyIdObj ();
-            if (!DA.GetData (0, ref propertyId)) {
+            PropertyIdObj propertyId = PropertyIdObj.Create (DA, 0);
+            if (propertyId == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input PropertyId failed to collect data.");
                 return;
             }
             ElementsObj elements = ElementsObj.Create (DA, 1);
