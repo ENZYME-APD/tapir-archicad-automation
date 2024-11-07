@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class PropertyIdObj : IdObj<PropertyIdObj> {}
+    public class PropertyIdObj : IdObj<PropertyIdObj> { }
 
     public class PropertyIdItemObj : IdItemObj<PropertyIdObj, PropertyIdItemObj>
     {
@@ -15,7 +15,19 @@ namespace TapirGrasshopperPlugin.Data
         public override PropertyIdObj Id
         {
             get { return PropertyId; }
-            set { PropertyId = Id; }
+            set { PropertyId = value; }
+        }
+    }
+
+    public class PropertiesObj : IdsObj<PropertyIdObj, PropertyIdItemObj, PropertiesObj>
+    {
+        [JsonProperty ("properties")]
+        public List<PropertyIdItemObj> Properties;
+
+        public override List<PropertyIdItemObj> Ids
+        {
+            get { return Properties; }
+            set { Properties = value; }
         }
     }
 
