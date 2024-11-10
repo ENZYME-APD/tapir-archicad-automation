@@ -31,11 +31,71 @@ static GS::HashTable<GS::UniString, PropertyTypeTuple> PropertyTypeDictionary = 
     { "angleList",  PropertyTypeTuple (API_PropertyListCollectionType, API_PropertyRealValueType, API_PropertyAngleMeasureType) },
 };
 
+static GS::UniString GetPropertyTypeString (API_PropertyDefinitionType type)
+{
+    static GS::HashTable<API_PropertyDefinitionType, GS::UniString> TypeToString ({
+        { API_PropertyStaticBuiltInDefinitionType, "StaticBuiltIn" },
+        { API_PropertyDynamicBuiltInDefinitionType, "DynamicBuiltIn" },
+        { API_PropertyCustomDefinitionType, "Custom" }
+    });
+    if (!TypeToString.ContainsKey (type)) {
+        return GS::EmptyUniString;
+    }
+    return TypeToString[type];
+}
+
+static GS::UniString GetPropertyTypeString (API_PropertyCollectionType type)
+{
+    static GS::HashTable<API_PropertyCollectionType, GS::UniString> TypeToString ({
+        { API_PropertyUndefinedCollectionType, "Undefined" },
+        { API_PropertySingleCollectionType, "Single" },
+        { API_PropertyListCollectionType, "List" },
+        { API_PropertySingleChoiceEnumerationCollectionType, "SingleChoiceEnumeration" },
+        { API_PropertyMultipleChoiceEnumerationCollectionType, "MultipleChoiceEnumeration" }
+    });
+    if (!TypeToString.ContainsKey (type)) {
+        return GS::EmptyUniString;
+    }
+    return TypeToString[type];
+}
+
+static GS::UniString GetPropertyTypeString (API_VariantType type)
+{
+    static GS::HashTable<API_VariantType, GS::UniString> TypeToString ({
+        { API_PropertyUndefinedValueType, "Undefined" },
+        { API_PropertyIntegerValueType, "Integer" },
+        { API_PropertyRealValueType, "Real" },
+        { API_PropertyStringValueType, "String" },
+        { API_PropertyBooleanValueType, "Boolean" },
+        { API_PropertyGuidValueType, "Guid" }
+    });
+    if (!TypeToString.ContainsKey (type)) {
+        return GS::EmptyUniString;
+    }
+    return TypeToString[type];
+}
+
+static GS::UniString GetPropertyTypeString (API_PropertyMeasureType type)
+{
+    static GS::HashTable<API_PropertyMeasureType, GS::UniString> TypeToString ({
+        { API_PropertyUndefinedMeasureType, "Undefined" },
+        { API_PropertyDefaultMeasureType, "Default" },
+        { API_PropertyLengthMeasureType, "Length" },
+        { API_PropertyAreaMeasureType, "Area" },
+        { API_PropertyVolumeMeasureType, "Volume" },
+        { API_PropertyAngleMeasureType, "Angle" }
+    });
+    if (!TypeToString.ContainsKey (type)) {
+        return GS::EmptyUniString;
+    }
+    return TypeToString[type];
+}
+
 static API_Guid GetRandomGuid ()
 {
-	GS::Guid guid;
-	guid.Generate ();
-	return GSGuid2APIGuid (guid);
+    GS::Guid guid;
+    guid.Generate ();
+    return GSGuid2APIGuid (guid);
 }
 
 static API_Guid FindEnumValueGuid (const GS::Array<API_SingleEnumerationVariant>& possibleEnumValues,
@@ -137,18 +197,19 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
         GS::Array<API_PropertyDefinition> definitions;
         ACAPI_Property_GetPropertyDefinitions (group.guid, definitions);
         for (const API_PropertyDefinition& definition : definitions) {
-            if (definition.definitionType != API_PropertyCustomDefinitionType && definition.definitionType != API_PropertyStaticBuiltInDefinitionType) {
-                continue;
-            }
-
             GS::ObjectState details;
 
             GS::ObjectState propertyId;
             propertyId.Add ("guid", APIGuidToString (definition.guid));
             details.Add ("propertyId", propertyId);
 
+            details.Add ("propertyType", GetPropertyTypeString (definition.definitionType));
             details.Add ("propertyGroupName", group.name);
             details.Add ("propertyName", definition.name);
+            details.Add ("propertyCollectionType", GetPropertyTypeString (definition.collectionType));
+            details.Add ("propertyValueType", GetPropertyTypeString (definition.valueType));
+            details.Add ("propertyMeasureType", GetPropertyTypeString (definition.measureType));
+            details.Add ("propertyIsEditable", definition.canValueBeEditable);
 
             propertyAdder (details);
         }
@@ -813,8 +874,8 @@ GS::ObjectState CreatePropertyDefinitionsCommand::Execute (const GS::ObjectState
                 continue;
             }
             apiPropertyDefinition.collectionType = std::get<0> (*typeTuple);
-            apiPropertyDefinition.valueType      = std::get<1> (*typeTuple);
-            apiPropertyDefinition.measureType    = std::get<2> (*typeTuple);
+            apiPropertyDefinition.valueType = std::get<1> (*typeTuple);
+            apiPropertyDefinition.measureType = std::get<2> (*typeTuple);
 
             GS::Array<GS::ObjectState> availability;
             if (propertyDefinition->Get ("availability", availability)) {
