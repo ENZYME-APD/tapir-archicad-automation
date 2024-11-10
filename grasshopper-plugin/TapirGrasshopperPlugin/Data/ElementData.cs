@@ -51,6 +51,11 @@ namespace TapirGrasshopperPlugin.Data
             return Guid;
         }
 
+        public bool IsNullGuid ()
+        {
+            return Guid == null || new System.Guid (Guid) == System.Guid.Empty;
+        }
+
         [JsonProperty ("guid")]
         public string Guid;
     }

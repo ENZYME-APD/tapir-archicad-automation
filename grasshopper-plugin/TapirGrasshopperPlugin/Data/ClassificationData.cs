@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class ClassificationIdObj : IdObj<ClassificationIdObj> {}
+    public class ClassificationIdObj : IdObj<ClassificationIdObj> { }
 
     public class ClassificationSystemObj
     {
@@ -35,7 +35,7 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("elementId")]
         public ElementIdObj ElementId;
 
-        [JsonProperty ("classificationId")]
+        [JsonProperty ("classificationId", NullValueHandling = NullValueHandling.Ignore)]
         public ClassificationObj Classification;
     }
 
@@ -84,7 +84,7 @@ namespace TapirGrasshopperPlugin.Data
 
         [JsonProperty ("description")]
         public string Description;
-        
+
         [JsonProperty ("children")]
         public List<ClassificationItemObj> Children;
 
@@ -102,7 +102,7 @@ namespace TapirGrasshopperPlugin.Data
     {
         [JsonProperty ("classificationItem")]
         public ClassificationItemDetailsObj ClassificationItem;
-    
+
         static public ClassificationItemDetailsObj FindClassificationItemInTree (List<ClassificationItemObj> branch, string ClassificationItemName)
         {
             foreach (ClassificationItemObj item in branch) {

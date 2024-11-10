@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
             ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
             if (classificationSystemId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClassificationSystemId failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClsSystemId failed to collect data.");
                 return;
             }
 
@@ -66,7 +66,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             if (classificationItemIds.Count != 1 && elements.Elements.Count != classificationItemIds.Count) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of CItemIds must be 1 or the same as the count of ElementIds.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of ClsItemIds must be 1 or the same as the count of ElementIds.");
                 return;
             }
 
@@ -79,10 +79,11 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 ElementClassificationObj elementClassification = new ElementClassificationObj () {
                     ElementId = elementId.ElementId,
                     Classification = new ClassificationObj () {
-                        ClassificationSystemId = classificationSystemId,
-                        ClassificationItemId = classificationItemIds.Count == 1 ? classificationItemIds[0] : classificationItemIds[i]
+                        ClassificationSystemId = classificationSystemId
                     }
                 };
+                ClassificationIdObj classificationItemId = classificationItemIds.Count == 1 ? classificationItemIds[0] : classificationItemIds[i];
+                elementClassification.Classification.ClassificationItemId = classificationItemId.IsNullGuid () ? null : classificationItemId;
                 elementClassifications.ElementClassifications.Add (elementClassification);
             }
 
