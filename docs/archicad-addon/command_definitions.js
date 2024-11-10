@@ -1321,7 +1321,7 @@ var gCommands = [{
             "name": "Property Commands",
             "commands": [{
                 "name": "GetAllProperties",
-                "version": "1.0.8",
+                "version": "1.1.3",
                 "description": "Returns all user defined and built-in properties.",
                 "inputScheme": null,
                 "outputScheme": {

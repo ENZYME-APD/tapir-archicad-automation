@@ -1,5 +1,6 @@
 # tapir-archicad-automation
 
+[![Discord](https://img.shields.io/badge/Discord-join-blue?logo=discord&logoColor=fafafa)](https://discord.gg/NAnSennmpY)
 [![Archicad Add-On Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml)
 [![Grasshopper Plugin Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml)
 
@@ -12,6 +13,10 @@ This repository contains the Tapir Archicad automation package. It consists of s
 The diagram below explains the components and their dependencies.
 
 ![Tapir](branding/diagrams/TapirArchitecture.png?raw=true)
+
+## Roadmap
+
+[The Tapir Roadmap is available here.](https://github.com/orgs/ENZYME-APD/projects/4/views/1)
 
 ## Installation
 
