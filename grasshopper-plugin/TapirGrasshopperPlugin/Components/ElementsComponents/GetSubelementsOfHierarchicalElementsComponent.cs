@@ -45,9 +45,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             base.AddedToDocument (document);
 
-            if (Params.Input[1].SourceCount == 0) {
-                ElementTypeValueList.AddAsSource (this, 1, ElementTypeValueListType.SubElementsOnly);
-            }
+            new ElementTypeValueList (ElementTypeValueListType.SubElementsOnly).AddAsSource (this, 1);
         }
 
         protected override void SolveInstance (IGH_DataAccess DA)

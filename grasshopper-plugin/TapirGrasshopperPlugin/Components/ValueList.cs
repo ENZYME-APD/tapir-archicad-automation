@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void AddAsSource (GH_Component component, int inputIndex)
         {
-            if (component.Params.Input.Count <= inputIndex) {
+            if (component.Params.Input.Count <= inputIndex || component.Params.Input[inputIndex].SourceCount > 0) {
                 return;
             }
 
