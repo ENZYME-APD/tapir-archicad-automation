@@ -7,12 +7,21 @@ using Newtonsoft.Json.Linq;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class ElementIdObj
+    public abstract class IdObj<T> where T : IdObj<T>, new()
     {
-        public static ElementIdObj Create (GH_ObjectWrapper obj)
+        public static T Create (IGH_DataAccess DA, int index)
         {
-            if (obj.Value is ElementIdObj) {
-                return obj.Value as ElementIdObj;
+            GH_ObjectWrapper id = new GH_ObjectWrapper ();
+            if (!DA.GetData (index, ref id)) {
+                return null;
+            }
+            return Create (id);
+        }
+
+        public static T Create (GH_ObjectWrapper obj)
+        {
+            if (obj.Value is T) {
+                return obj.Value as T;
             } else if (obj.Value is GH_String) {
                 GH_String stringValue = obj.Value as GH_String;
                 return CreateFromGuidString (stringValue.ToString ());
@@ -23,10 +32,10 @@ namespace TapirGrasshopperPlugin.Data
             }
         }
 
-        public static ElementIdObj CreateFromGuidString (string guidString)
+        public static T CreateFromGuidString (string guidString)
         {
             if (System.Guid.TryParse (guidString, out _)) {
-                return new ElementIdObj () {
+                return new T () {
                     Guid = guidString
                 };
             } else {
@@ -43,17 +52,26 @@ namespace TapirGrasshopperPlugin.Data
         public string Guid;
     }
 
-    public class ElementIdItemObj
+    public abstract class IdItemObj<I, T> where I : IdObj<I>, new() where T : IdItemObj<I, T>, new()
     {
-        public static ElementIdItemObj Create (GH_ObjectWrapper obj)
+        public static T Create (IGH_DataAccess DA, int index)
         {
-            if (obj.Value is ElementIdItemObj) {
-                return obj.Value as ElementIdItemObj;
+            GH_ObjectWrapper idItem = new GH_ObjectWrapper ();
+            if (!DA.GetData (index, ref idItem)) {
+                return null;
+            }
+            return Create (idItem);
+        }
+
+        public static T Create (GH_ObjectWrapper obj)
+        {
+            if (obj.Value is T) {
+                return obj.Value as T;
             } else {
-                ElementIdObj elementId = ElementIdObj.Create (obj);
-                if (elementId != null) {
-                    return new ElementIdItemObj () {
-                        ElementId = elementId
+                I id = IdObj<I>.Create (obj);
+                if (id != null) {
+                    return new T () {
+                        Id = id
                     };
                 } else {
                     return null;
@@ -63,41 +81,74 @@ namespace TapirGrasshopperPlugin.Data
 
         public override string ToString ()
         {
-            return ElementId.ToString ();
+            return Id.ToString ();
         }
 
-        [JsonProperty ("elementId")]
-        public ElementIdObj ElementId;
+        public abstract I Id
+        {
+            get;
+            set;
+        }
     }
 
-    public class ElementsObj
+    public abstract class IdsObj<I, J, T> where I : IdObj<I>, new() where J : IdItemObj<I, J>, new() where T : IdsObj<I, J, T>, new()
     {
-        public static ElementsObj Create (IGH_DataAccess DA, int index)
+        public static T Create (IGH_DataAccess DA, int index)
         {
-            List<GH_ObjectWrapper> elements = new List<GH_ObjectWrapper> ();
-            if (!DA.GetDataList (index, elements)) {
+            List<GH_ObjectWrapper> ids = new List<GH_ObjectWrapper> ();
+            if (!DA.GetDataList (index, ids)) {
                 return null;
             }
-            return Create (elements);
+            return Create (ids);
         }
 
-        public static ElementsObj Create (List<GH_ObjectWrapper> objects)
+        public static T Create (List<GH_ObjectWrapper> objects)
         {
-            ElementsObj elements = new ElementsObj ();
-            elements.Elements = new List<ElementIdItemObj> ();
+            T ids = new T () {
+                Ids = new List<J> ()
+            };
             foreach (GH_ObjectWrapper obj in objects) {
-                ElementIdItemObj elementId = ElementIdItemObj.Create (obj);
-                if (elementId != null) {
-                    elements.Elements.Add (elementId);
+                J id = IdItemObj<I, J>.Create (obj);
+                if (id != null) {
+                    ids.Ids.Add (id);
                 } else {
                     return null;
                 }
             }
-            return elements;
+            return ids;
         }
 
+        public abstract List<J> Ids
+        {
+            get;
+            set;
+        }
+    }
+
+    public class ElementIdObj : IdObj<ElementIdObj> { }
+
+    public class ElementIdItemObj : IdItemObj<ElementIdObj, ElementIdItemObj>
+    {
+        [JsonProperty ("elementId")]
+        public ElementIdObj ElementId;
+
+        public override ElementIdObj Id
+        {
+            get { return ElementId; }
+            set { ElementId = value; }
+        }
+    }
+
+    public class ElementsObj : IdsObj<ElementIdObj, ElementIdItemObj, ElementsObj>
+    {
         [JsonProperty ("elements")]
         public List<ElementIdItemObj> Elements;
+
+        public override List<ElementIdItemObj> Ids
+        {
+            get { return Elements; }
+            set { Elements = value; }
+        }
     }
 
     public class ElementPropertyValueObj
@@ -110,6 +161,15 @@ namespace TapirGrasshopperPlugin.Data
 
         [JsonProperty ("propertyValue")]
         public PropertyValueObj PropertyValue;
+    }
+
+    public class ElementsAndPropertyIdsObj
+    {
+        [JsonProperty ("elements")]
+        public List<ElementIdItemObj> Elements;
+
+        [JsonProperty ("properties")]
+        public List<PropertyIdItemObj> PropertyIds;
     }
 
     public class ElementPropertyValuesObj
