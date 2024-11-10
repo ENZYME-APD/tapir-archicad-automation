@@ -99,7 +99,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         private ElementTypeValueListType type;
 
-        public ElementTypeValueList (ElementTypeValueListType t = ElementTypeValueListType.AllElements) :
+        public ElementTypeValueList () :
+            this (ElementTypeValueListType.AllElements)
+        {
+        }
+
+        public ElementTypeValueList (ElementTypeValueListType t) :
             base ("Element Type", "", "Value List for Archicad Element Types.", "Elements")
         {
             type = t;
