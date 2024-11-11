@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 using System.Windows.Forms;
-using System.Xml.Linq;
+using System.Drawing;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -64,10 +64,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             pManager.AddBooleanParameter ("Enable", "Enable", "Enable highlight.", GH_ParamAccess.item, @default: true);
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Elements to highlight.", GH_ParamAccess.list);
-            pManager.AddColourParameter ("HighligtedColors", "Colors", "Colors for the elements.", GH_ParamAccess.list);
-            pManager.AddColourParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted elements.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter ("NonHighligtedWireframe", "NHWire3D", "Switch non-highlighted elements in the 3D window to wireframe", GH_ParamAccess.item, @default: false);
-            pManager.AddNumberParameter ("Transparency", "Transparency", "Sets the transparency of the highlight (0.0: opaque, 1.0: transparent).", GH_ParamAccess.item, @default: 0.0);
+            pManager.AddColourParameter ("HighligtedColors", "Colors", "Colors for the elements.", GH_ParamAccess.list, @default: Color.Blue);
+            pManager.AddColourParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted elements.", GH_ParamAccess.item, @default: Color.White);
+            pManager.AddBooleanParameter ("NonHighligtedWireframe", "NHWire3D", "Switch non-highlighted elements in the 3D window to wireframe", GH_ParamAccess.item, @default: true);
+            pManager.AddNumberParameter ("Transparency", "Transparency", "Sets the transparency of the highlight (0.0: opaque, 1.0: transparent).", GH_ParamAccess.item, @default: 0.5);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
