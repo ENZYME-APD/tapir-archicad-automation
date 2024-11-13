@@ -35,4 +35,18 @@ namespace TapirGrasshopperPlugin.Utilities
             return colors;
         }
     }
+
+    static class Extensions
+    {
+        public static bool IsValid<T> (this string s) where T : Enum
+        {
+            foreach (T f in Enum.GetValues (typeof (T))) {
+                if (f.ToString () == s) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
 }

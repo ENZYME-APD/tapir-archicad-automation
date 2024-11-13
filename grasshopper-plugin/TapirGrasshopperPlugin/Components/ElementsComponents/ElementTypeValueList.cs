@@ -145,18 +145,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             ListItems.Clear ();
             if (type != ElementTypeValueListType.SubElementsOnly) {
-                foreach (MainElementType type in Enum.GetValues (typeof (MainElementType))) {
-                    var item = new GH_ValueListItem (type.ToString (), '"' + type.ToString () + '"');
-                    item.Selected = type == MainElementType.Wall;
-                    ListItems.Add (item);
-                }
+                AddEnumItems (defaultSelected: MainElementType.Wall);
             }
             if (type != ElementTypeValueListType.MainElementsOnly) {
-                foreach (SubElementType type in Enum.GetValues (typeof (SubElementType))) {
-                    var item = new GH_ValueListItem (type.ToString (), '"' + type.ToString () + '"');
-                    item.Selected = type == SubElementType.CurtainWallPanel;
-                    ListItems.Add (item);
-                }
+                AddEnumItems (defaultSelected: SubElementType.CurtainWallPanel);
             }
             ExpireSolution (true);
         }
