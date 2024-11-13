@@ -95,29 +95,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         AllElements
     }
 
-    public class ElementTypeValueList : GH_ValueList
+    public class ElementTypeValueList : ValueList
     {
         private ElementTypeValueListType type;
 
-        public ElementTypeValueList () : this (ElementTypeValueListType.AllElements)
+        public ElementTypeValueList () :
+            this (ElementTypeValueListType.AllElements)
         {
         }
 
-        private ElementTypeValueList (ElementTypeValueListType t)
+        public ElementTypeValueList (ElementTypeValueListType t) :
+            base ("Element Type", "", "Value List for Archicad Element Types.", "Elements")
         {
-            CreateAttributes ();
-
-            Name = "Element Type";
-            NickName = "";
-            Description = "Value List for Archicad Element Types.";
-            Category = "Tapir";
-            SubCategory = "Elements";
-
-            ListMode = GH_ValueListMode.DropDown;
-
             type = t;
-
-            AddItems ();
         }
 
         public override void AppendAdditionalMenuItems (ToolStripDropDown menu)
@@ -136,7 +126,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             } else {
                 return;
             }
-            AddItems ();
+            RefreshItems ();
         }
 
         private void Menu_SubElementsClicked (object sender, EventArgs e)
@@ -148,10 +138,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             } else {
                 return;
             }
-            AddItems ();
+            RefreshItems ();
         }
 
-        private void AddItems ()
+        public override void RefreshItems ()
         {
             ListItems.Clear ();
             if (type != ElementTypeValueListType.SubElementsOnly) {
@@ -169,22 +159,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
             }
             ExpireSolution (true);
-        }
-
-        static public void AddAsSource (GH_Component component, int inputIndex, ElementTypeValueListType type)
-        {
-            if (component.Params.Input.Count <= inputIndex) {
-                return;
-            }
-
-            var vallist = new ElementTypeValueList (type);
-            vallist.CreateAttributes ();
-            component.OnPingDocument ().AddObject (vallist, false);
-            vallist.Attributes.Pivot = new PointF (
-                component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - vallist.Attributes.Bounds.Width * GH_GraphicsUtil.UiScale - 40.0f,
-                component.Attributes.Pivot.Y + component.Params.Input[inputIndex].Attributes.InputGrip.Y - vallist.Attributes.Bounds.Height / 2.0f);
-            component.Params.Input[inputIndex].AddSource (vallist);
-            vallist.ExpireSolution (true);
         }
 
         protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ElemType;

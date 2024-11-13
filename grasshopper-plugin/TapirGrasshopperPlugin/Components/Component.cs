@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.Components
 {
     public interface IButtonComponent
     {
-        void OnCapsuleButtonPressed();
+        void OnCapsuleButtonPressed ();
     }
 
     public class ButtonAttributes : GH_ComponentAttributes
@@ -27,7 +27,7 @@ namespace TapirGrasshopperPlugin.Components
         #endregion Constructor
 
         #region Methods
-        protected override void Layout()
+        protected override void Layout ()
         {
             base.Layout ();
 
@@ -47,8 +47,7 @@ namespace TapirGrasshopperPlugin.Components
         {
             base.Render (canvas, graphics, channel);
 
-            if (channel == GH_CanvasChannel.Objects)
-            {
+            if (channel == GH_CanvasChannel.Objects) {
                 GH_Capsule buttonCapsule = GH_Capsule.CreateTextCapsule
                 (
                     box: this._buttonBounds,
@@ -64,10 +63,8 @@ namespace TapirGrasshopperPlugin.Components
 
         public override GH_ObjectResponse RespondToMouseDown (GH_Canvas sender, GH_CanvasMouseEvent e)
         {
-            if (e.Button == MouseButtons.Left)
-            {
-                if (this._buttonBounds.Contains (e.CanvasLocation))
-                {
+            if (e.Button == MouseButtons.Left) {
+                if (this._buttonBounds.Contains (e.CanvasLocation)) {
                     this._isPressed = true;
                     sender.Refresh ();
 
@@ -79,15 +76,12 @@ namespace TapirGrasshopperPlugin.Components
 
         public override GH_ObjectResponse RespondToMouseUp (GH_Canvas sender, GH_CanvasMouseEvent e)
         {
-            if (e.Button == System.Windows.Forms.MouseButtons.Left)
-            {
-                if (this._buttonBounds.Contains (e.CanvasLocation) && this._isPressed == true)
-                {
-                    if (this.Owner is IButtonComponent buttonComponent)
-                    {
-                        buttonComponent.OnCapsuleButtonPressed();
+            if (e.Button == System.Windows.Forms.MouseButtons.Left) {
+                if (this._buttonBounds.Contains (e.CanvasLocation) && this._isPressed == true) {
+                    if (this.Owner is IButtonComponent buttonComponent) {
+                        buttonComponent.OnCapsuleButtonPressed ();
                         this._isPressed = false;
-                        sender.Refresh();
+                        sender.Refresh ();
                     }
                     return GH_ObjectResponse.Release;
                 }
@@ -143,6 +137,18 @@ namespace TapirGrasshopperPlugin.Components
         private void OnRefreshButtonClicked (object sender, EventArgs e)
         {
             ExpireSolution (true);
+        }
+
+        protected override void ExpireDownStreamObjects ()
+        {
+            base.ExpireDownStreamObjects ();
+
+            foreach (var input in Params.Input) {
+                if (input is ArchicadAccessorValueList) {
+                    ArchicadAccessorValueList valueList = input as ArchicadAccessorValueList;
+                    valueList.RefreshItems ();
+                }
+            }
         }
     }
 }
