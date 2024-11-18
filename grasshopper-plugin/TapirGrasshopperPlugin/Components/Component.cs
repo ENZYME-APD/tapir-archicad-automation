@@ -13,6 +13,8 @@ namespace TapirGrasshopperPlugin.Components
     public interface IButtonComponent
     {
         void OnCapsuleButtonPressed ();
+
+        string CapsuleButtonText { get; set; }
     }
 
     public class ButtonAttributes : GH_ComponentAttributes
@@ -53,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components
                     box: this._buttonBounds,
                     textbox: this._buttonBounds,
                     palette: this._isPressed ? GH_Palette.Grey : GH_Palette.Black,
-                    text: "Refresh",
+                    text: this.Owner is IButtonComponent buttonComponent ? buttonComponent.CapsuleButtonText : "Refresh",
                     radius: 5,
                     highlight: 0);
                 buttonCapsule.Render (graphics, this.Selected, this.Owner.Locked, false);
@@ -113,9 +115,13 @@ namespace TapirGrasshopperPlugin.Components
 
     abstract public class ArchicadAccessorComponent : Component, IButtonComponent
     {
+        protected static bool AutoRefresh = true;
+        protected static bool ManualRefreshWasExecuted = false;
+
         public ArchicadAccessorComponent (string name, string nickname, string description, string subCategory) :
             base (name, nickname, description, subCategory)
         {
+            CapsuleButtonText = "Refresh";
         }
 
         protected override void AppendAdditionalComponentMenuItems (ToolStripDropDown menu)
@@ -131,12 +137,22 @@ namespace TapirGrasshopperPlugin.Components
 
         public virtual void OnCapsuleButtonPressed ()
         {
-            ExpireSolution (true);
+            ManualRefresh ();
         }
 
         private void OnRefreshButtonClicked (object sender, EventArgs e)
         {
-            ExpireSolution (true);
+            ManualRefresh ();
+        }
+
+        public void ManualRefresh ()
+        {
+            ManualRefreshWasExecuted = true;
+            try {
+                ExpireSolution (true);
+            } finally {
+                ManualRefreshWasExecuted = false;
+            }
         }
 
         protected override void ExpireDownStreamObjects ()
@@ -144,11 +160,23 @@ namespace TapirGrasshopperPlugin.Components
             base.ExpireDownStreamObjects ();
 
             foreach (var input in Params.Input) {
-                if (input is ArchicadAccessorValueList) {
-                    ArchicadAccessorValueList valueList = input as ArchicadAccessorValueList;
+                if (input is ArchicadAccessorValueList valueList) {
                     valueList.RefreshItems ();
                 }
             }
         }
+
+        protected override void SolveInstance (IGH_DataAccess DA)
+        {
+            if (!AutoRefresh && !ManualRefreshWasExecuted) {
+                return;
+            }
+
+            Solve (DA);
+        }
+
+        protected abstract void Solve (IGH_DataAccess DA);
+
+        public string CapsuleButtonText { get; set; }
     }
 }

@@ -48,7 +48,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             pManager.AddTextParameter ("Project Name", "ProjectName", "Name of the project.", GH_ParamAccess.item);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetProjectInfo", null);
             if (!response.Succeeded) {

@@ -14,11 +14,13 @@ namespace TapirGrasshopperPlugin.Components.General
                 "General"
             )
         {
+            CapsuleButtonText = "Refresh All";
         }
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddIntegerParameter ("Port", "Port", "Port number", GH_ParamAccess.item, ConnectionSettings.Port);
+            pManager.AddIntegerParameter ("Port", "Port", "Port number", GH_ParamAccess.item, @default: ConnectionSettings.Port);
+            pManager.AddBooleanParameter ("Allow Automatic Refresh", "Auto Refresh", "Allow Automatic Refresh", GH_ParamAccess.item, @default: AutoRefresh);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -28,14 +30,39 @@ namespace TapirGrasshopperPlugin.Components.General
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
+            Solve (DA);
+        }
+
+        protected override void Solve (IGH_DataAccess DA)
+        {
             int portNumber = 0;
             if (!DA.GetData (0, ref portNumber)) {
+                return;
+            }
+
+            if (!DA.GetData (1, ref AutoRefresh)) {
                 return;
             }
 
             ConnectionSettings.Port = portNumber;
             CommandResponse response = SendArchicadCommand ("IsAlive", null);
             DA.SetData (0, response.Succeeded);
+        }
+
+        public override void OnCapsuleButtonPressed ()
+        {
+            ManualRefreshWasExecuted = true;
+            try {
+                GH_Document doc = OnPingDocument ();
+                if (doc != null) {
+                    foreach (IGH_DocumentObject obj in doc.Objects)
+                        if (obj is ArchicadAccessorComponent archicadAccessor) {
+                            archicadAccessor.ExpireSolution (true);
+                        }
+                }
+            } finally {
+                ManualRefreshWasExecuted = false;
+            }
         }
 
         protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ConnectArchicad;

@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             pManager.AddTextParameter ("FullName", "FullName", "Full name containing the group and the property name.", GH_ParamAccess.list);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
             if (!response.Succeeded) {

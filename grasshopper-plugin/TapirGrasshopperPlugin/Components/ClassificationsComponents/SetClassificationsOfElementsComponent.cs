@@ -38,7 +38,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             new ClassificationSystemValueList ().AddAsSource (this, 0);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
             if (classificationSystemId == null) {

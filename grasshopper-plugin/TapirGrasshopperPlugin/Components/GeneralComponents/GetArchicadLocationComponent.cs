@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             pManager.AddTextParameter ("Location", "Location", "Location of the running Archicad executable.", GH_ParamAccess.item);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetArchicadLocation", null);
             if (!response.Succeeded) {

@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             pManager.AddGenericParameter ("PropertyId", "PropertyId", "Found property id.", GH_ParamAccess.item);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             string propertyGroupName = "";
             string propertyName = "";

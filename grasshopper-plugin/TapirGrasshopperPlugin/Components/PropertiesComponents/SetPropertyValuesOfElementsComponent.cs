@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             PropertyIdObj propertyId = PropertyIdObj.Create (DA, 0);
             if (propertyId == null) {

@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddBoxParameter ("BoundingBoxes", "BoundingBoxes", "Bounding boxes.", GH_ParamAccess.list);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {

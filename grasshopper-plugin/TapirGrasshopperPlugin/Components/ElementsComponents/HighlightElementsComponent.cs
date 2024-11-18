@@ -74,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             bool enabled = true;
             if (DA.GetData (0, ref enabled) && !enabled) {

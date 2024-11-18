@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             pManager.AddTextParameter ("Version", "Version", "Tapir Add-On version.", GH_ParamAccess.item);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAddOnVersion", null);
             if (!response.Succeeded) {

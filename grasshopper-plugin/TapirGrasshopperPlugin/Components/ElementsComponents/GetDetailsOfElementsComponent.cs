@@ -57,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddIntegerParameter ("DrawOrder", "DrawOrder", "Drawing order.", GH_ParamAccess.list);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
@@ -129,7 +129,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddPointParameter ("End coordinate", "EndCoord", "End coordinate.", GH_ParamAccess.list);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
