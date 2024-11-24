@@ -54,7 +54,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new ElementFilterValueList ().AddAsSource (this, 1);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
