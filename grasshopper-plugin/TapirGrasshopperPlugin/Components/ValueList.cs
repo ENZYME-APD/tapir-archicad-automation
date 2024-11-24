@@ -3,6 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Drawing;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Utilities;
@@ -39,6 +40,15 @@ namespace TapirGrasshopperPlugin.Components
         }
 
         abstract public void RefreshItems ();
+
+        public void AddEnumItems<T> (T defaultSelected) where T : Enum
+        {
+            foreach (T i in Enum.GetValues (typeof (T))) {
+                ListItems.Add (new GH_ValueListItem (i.ToString (), '"' + i.ToString () + '"') {
+                    Selected = i.Equals (defaultSelected)
+                });
+            }
+        }
 
         public void AddAsSource (GH_Component component, int inputIndex)
         {

@@ -12,6 +12,7 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("propertyId")]
         public PropertyIdObj PropertyId;
 
+        [JsonIgnore]
         public override PropertyIdObj Id
         {
             get { return PropertyId; }
@@ -24,6 +25,7 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("properties")]
         public List<PropertyIdItemObj> Properties;
 
+        [JsonIgnore]
         public override List<PropertyIdItemObj> Ids
         {
             get { return Properties; }
