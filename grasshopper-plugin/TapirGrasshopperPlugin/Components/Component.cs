@@ -169,6 +169,7 @@ namespace TapirGrasshopperPlugin.Components
         protected override void SolveInstance (IGH_DataAccess DA)
         {
             if (!AutoRefresh && !ManualRefreshWasExecuted) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Remark, "Outdated, waiting for manual refresh");
                 return;
             }
 
