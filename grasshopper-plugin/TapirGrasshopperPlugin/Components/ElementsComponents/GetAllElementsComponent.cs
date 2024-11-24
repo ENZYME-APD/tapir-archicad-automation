@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class ElementFiltersObj
+    public class ElementFiltersObj : AcceptsElementFilters
     {
         [JsonProperty ("filters", NullValueHandling = NullValueHandling.Ignore)]
         private List<string> filters;
@@ -16,14 +16,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         [JsonIgnore]
         public List<string> Filters
         {
-            get { return filters; }
-            set {
-                filters = value;
-                filters.RemoveAll (f => f == ElementFilter.NoFilter.ToString () || !f.IsValid<ElementFilter> ());
-                if (filters.Count == 0) {
-                    filters = null;
-                }
-            }
+            get => filters;
+            set => filters = AcceptElementFilters (value);
         }
     }
 

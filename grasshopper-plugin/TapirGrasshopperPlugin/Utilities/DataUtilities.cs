@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Grasshopper.Kernel.Types;
+using TapirGrasshopperPlugin.Components.ElementsComponents;
 
 namespace TapirGrasshopperPlugin.Utilities
 {
@@ -47,6 +48,18 @@ namespace TapirGrasshopperPlugin.Utilities
             }
 
             return false;
+        }
+    }
+
+    public class AcceptsElementFilters
+    {
+        public List<string> AcceptElementFilters (List<string> filters)
+        {
+            filters.RemoveAll (f => f == ElementFilter.NoFilter.ToString () || !f.IsValid<ElementFilter> ());
+            if (filters.Count == 0) {
+                return null;
+            }
+            return filters;
         }
     }
 }
