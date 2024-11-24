@@ -89,6 +89,7 @@ namespace TapirGrasshopperPlugin.Data
             return Id.ToString ();
         }
 
+        [JsonIgnore]
         public abstract I Id
         {
             get;
@@ -123,6 +124,7 @@ namespace TapirGrasshopperPlugin.Data
             return ids;
         }
 
+        [JsonIgnore]
         public abstract List<J> Ids
         {
             get;
@@ -137,6 +139,7 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("elementId")]
         public ElementIdObj ElementId;
 
+        [JsonIgnore]
         public override ElementIdObj Id
         {
             get { return ElementId; }
@@ -149,6 +152,7 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("elements")]
         public List<ElementIdItemObj> Elements;
 
+        [JsonIgnore]
         public override List<ElementIdItemObj> Ids
         {
             get { return Elements; }

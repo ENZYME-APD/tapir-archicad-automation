@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Grasshopper.Kernel.Types;
+using TapirGrasshopperPlugin.Components.ElementsComponents;
 
 namespace TapirGrasshopperPlugin.Utilities
 {
@@ -33,6 +34,32 @@ namespace TapirGrasshopperPlugin.Utilities
                 colors.Add (colors.Last ());
             }
             return colors;
+        }
+    }
+
+    static class Extensions
+    {
+        public static bool IsValid<T> (this string s) where T : Enum
+        {
+            foreach (T f in Enum.GetValues (typeof (T))) {
+                if (f.ToString () == s) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    public class AcceptsElementFilters
+    {
+        public List<string> AcceptElementFilters (List<string> filters)
+        {
+            filters.RemoveAll (f => f == ElementFilter.NoFilter.ToString () || !f.IsValid<ElementFilter> ());
+            if (filters.Count == 0) {
+                return null;
+            }
+            return filters;
         }
     }
 }

@@ -1067,13 +1067,13 @@ GS::Optional<GS::UniString> FilterElementsCommand::GetResponseSchema () const
     return R"({
         "type": "object",
         "properties": {
-            "filteredElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "filteredElements"
+            "elements"
         ]
     })";
 }
@@ -1095,7 +1095,7 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GS::ObjectState response;
-    const auto& filteredElements = response.AddList<GS::ObjectState> ("filteredElements");
+    const auto& filteredElements = response.AddList<GS::ObjectState> ("elements");
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
