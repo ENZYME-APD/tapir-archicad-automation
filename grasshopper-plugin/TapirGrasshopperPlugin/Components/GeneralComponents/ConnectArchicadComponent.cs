@@ -51,7 +51,7 @@ namespace TapirGrasshopperPlugin.Components.General
 
         public override void OnCapsuleButtonPressed ()
         {
-            ManualRefreshWasExecuted = true;
+            ManualRefreshRequested = true;
             try {
                 GH_Document doc = OnPingDocument ();
                 if (doc != null) {
@@ -61,7 +61,7 @@ namespace TapirGrasshopperPlugin.Components.General
                         }
                 }
             } finally {
-                ManualRefreshWasExecuted = false;
+                ManualRefreshRequested = false;
             }
         }
 

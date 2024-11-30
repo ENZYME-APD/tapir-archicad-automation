@@ -49,13 +49,13 @@ namespace TapirGrasshopperPlugin.Components
         {
             base.Render (canvas, graphics, channel);
 
-            if (channel == GH_CanvasChannel.Objects) {
-                GH_Capsule buttonCapsule = GH_Capsule.CreateTextCapsule
-                (
+            if (channel == GH_CanvasChannel.Objects &&
+                this.Owner is IButtonComponent buttonComponent) {
+                GH_Capsule buttonCapsule = GH_Capsule.CreateTextCapsule (
                     box: this._buttonBounds,
                     textbox: this._buttonBounds,
                     palette: this._isPressed ? GH_Palette.Grey : GH_Palette.Black,
-                    text: this.Owner is IButtonComponent buttonComponent ? buttonComponent.CapsuleButtonText : "Refresh",
+                    text: buttonComponent.CapsuleButtonText,
                     radius: 5,
                     highlight: 0);
                 buttonCapsule.Render (graphics, this.Selected, this.Owner.Locked, false);
@@ -116,7 +116,7 @@ namespace TapirGrasshopperPlugin.Components
     abstract public class ArchicadAccessorComponent : Component, IButtonComponent
     {
         protected static bool AutoRefresh = true;
-        protected static bool ManualRefreshWasExecuted = false;
+        protected static bool ManualRefreshRequested = false;
 
         public ArchicadAccessorComponent (string name, string nickname, string description, string subCategory) :
             base (name, nickname, description, subCategory)
@@ -147,11 +147,11 @@ namespace TapirGrasshopperPlugin.Components
 
         public void ManualRefresh ()
         {
-            ManualRefreshWasExecuted = true;
+            ManualRefreshRequested = true;
             try {
                 ExpireSolution (true);
             } finally {
-                ManualRefreshWasExecuted = false;
+                ManualRefreshRequested = false;
             }
         }
 
@@ -168,7 +168,7 @@ namespace TapirGrasshopperPlugin.Components
 
         protected override void SolveInstance (IGH_DataAccess DA)
         {
-            if (!AutoRefresh && !ManualRefreshWasExecuted) {
+            if (!AutoRefresh && !ManualRefreshRequested) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Remark, "Outdated, waiting for manual refresh");
                 return;
             }
