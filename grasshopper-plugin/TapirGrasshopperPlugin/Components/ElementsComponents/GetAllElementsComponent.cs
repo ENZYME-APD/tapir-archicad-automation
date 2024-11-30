@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "List of element ids matching the filter.", GH_ParamAccess.list);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             List<string> filters = new List<string> ();
             if (!DA.GetDataList (0, filters)) {

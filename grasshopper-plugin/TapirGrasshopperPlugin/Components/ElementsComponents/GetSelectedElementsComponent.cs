@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Currently selected element ids.", GH_ParamAccess.list);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSelectedElements", null);
             if (!response.Succeeded) {

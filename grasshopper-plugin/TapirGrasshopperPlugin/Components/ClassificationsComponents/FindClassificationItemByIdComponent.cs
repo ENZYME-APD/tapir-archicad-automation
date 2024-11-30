@@ -54,7 +54,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             return null;
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
             if (classificationSystemId == null) {

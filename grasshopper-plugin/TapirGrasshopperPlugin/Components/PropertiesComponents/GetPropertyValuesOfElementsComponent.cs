@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             pManager.AddTextParameter ("Values", "Values", "The property values of the elements.", GH_ParamAccess.tree);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             PropertiesObj properties = PropertiesObj.Create (DA, 0);
             if (properties == null) {

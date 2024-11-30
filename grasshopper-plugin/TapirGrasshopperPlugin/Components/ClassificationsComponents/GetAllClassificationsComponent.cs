@@ -46,7 +46,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             return list;
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             CommandResponse response = SendArchicadCommand ("GetAllClassificationSystems", null);
             if (!response.Succeeded) {

@@ -55,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new ElementTypeValueList ().AddAsSource (this, 0);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void Solve (IGH_DataAccess DA)
         {
             string elemType = "";
             if (!DA.GetData (0, ref elemType)) {
