@@ -263,6 +263,10 @@ GSErrCode Initialize (void)
 
     { // Attribute Commands
         CommandGroup attributeCommands ("Attribute Commands");
+        err |= RegisterCommand<GetAttributesByTypeCommand> (
+            attributeCommands, "1.1.3",
+            "Returns the details of every attribute of the given type."
+        );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
             "Creates Layer attributes based on the given parameters."
