@@ -39,6 +39,8 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
         }
 
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ClassificationSystemsValueList;
+
         public override Guid ComponentGuid => new Guid ("a4206a77-3e1e-42e1-b220-dbd7aafdf8f5");
     }
 }

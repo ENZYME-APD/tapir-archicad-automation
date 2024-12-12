@@ -38,7 +38,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             ExpireSolution (true);
         }
 
-        //protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.AttributeType;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.AttributesByTypeValueList;
 
         public override Guid ComponentGuid => new Guid ("0f6abd5b-6efe-4699-8e0f-ac67eea42890");
     }
