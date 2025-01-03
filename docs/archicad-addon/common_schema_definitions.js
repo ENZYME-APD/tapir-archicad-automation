@@ -31,6 +31,24 @@ var gSchemaDefinitions = {
             "guid"
         ]
     },
+    "AttributeType": {
+        "type": "string",
+        "description": "The type of an attribute.",
+        "enum": [
+            "Layer",
+            "Line",
+            "Fill",
+            "Composite",
+            "Surface",
+            "LayerCombination",
+            "ZoneCategory",
+            "Profile",
+            "PenTable",
+            "MEPSystem",
+            "OperationProfile",
+            "BuildingMaterial"
+        ]
+    },
     "AttributeIds": {
         "type": "array",
         "description": "A list of attributes.",
@@ -1519,5 +1537,36 @@ var gSchemaDefinitions = {
         "items": {
             "$ref": "#/BoundingBox3DOrError"
         }
+    },
+    "LibPartUnId": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "LibPartDetails": {
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "parentUnID": {
+                "$ref": "#/LibPartUnId"
+            },
+            "ownUnID": {
+                "$ref": "#/LibPartUnId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "parentUnID",
+            "ownUnID"
+        ]
     }
 };

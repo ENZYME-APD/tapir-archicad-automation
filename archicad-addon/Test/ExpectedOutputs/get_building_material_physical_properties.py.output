@@ -840,15 +840,6 @@ Response:
         },
         {
             "properties": {
-                "thermalConductivity": 1,
-                "density": 2,
-                "heatCapacity": 3,
-                "embodiedEnergy": 4,
-                "embodiedCarbon": 5
-            }
-        },
-        {
-            "properties": {
                 "thermalConductivity": 1.7,
                 "density": 900,
                 "heatCapacity": 1850,
@@ -890,6 +881,15 @@ Response:
                 "heatCapacity": 1000,
                 "embodiedEnergy": 6.75,
                 "embodiedCarbon": 0.39
+            }
+        },
+        {
+            "properties": {
+                "thermalConductivity": 1,
+                "density": 2,
+                "heatCapacity": 3,
+                "embodiedEnergy": 4,
+                "embodiedCarbon": 5
             }
         },
         {

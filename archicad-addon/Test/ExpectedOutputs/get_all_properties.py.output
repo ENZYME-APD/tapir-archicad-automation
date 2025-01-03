@@ -17842,18 +17842,6 @@ Response:
             },
             "propertyType": "DynamicBuiltIn",
             "propertyGroupName": "CategoryPropertyDefinitionGroup",
-            "propertyName": "Classification by DIN 277",
-            "propertyCollectionType": "SingleChoiceEnumeration",
-            "propertyValueType": "String",
-            "propertyMeasureType": "Default",
-            "propertyIsEditable": true
-        },
-        {
-            "propertyId": {
-                "guid": "<GUID>"
-            },
-            "propertyType": "DynamicBuiltIn",
-            "propertyGroupName": "CategoryPropertyDefinitionGroup",
             "propertyName": "Show On Renovation Filter",
             "propertyCollectionType": "SingleChoiceEnumeration",
             "propertyValueType": "String",

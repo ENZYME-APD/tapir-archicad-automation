@@ -441,13 +441,13 @@ var gCommands = [{
                 "outputScheme": {
         "type": "object",
         "properties": {
-            "filteredElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "filteredElements"
+            "elements"
         ]
     }
             },{
@@ -477,6 +477,9 @@ var gCommands = [{
                     "properties": {
                         "type": {
                             "$ref": "#/ElementType"
+                        },
+                        "id": {
+                            "type": "string"
                         },
                         "floorIndex": {
                             "type": "number"
@@ -566,6 +569,20 @@ var gCommands = [{
                                     ]
                                 },
                                 {
+                                    "title": "LibPartBasedElementDetails",
+                                    "properties": {
+                                        "libPart": {
+                                            "$ref": "#/LibPartDetails"
+                                        },
+                                        "ownerElementId": {
+                                            "$ref": "#/ElementId"
+                                        }
+                                    },
+                                    "required": [
+                                        "libPart"
+                                    ]
+                                },
+                                {
                                     "title": "NotYetSupportedElementTypeDetails",
                                     "properties": {
                                         "error": {
@@ -581,6 +598,7 @@ var gCommands = [{
                     },
                     "required": [
                         "type",
+                        "id",
                         "floorIndex",
                         "layerIndex",
                         "drawIndex",
@@ -1674,6 +1692,57 @@ var gCommands = [{
         },{
             "name": "Attribute Commands",
             "commands": [{
+                "name": "GetAttributesByType",
+                "version": "1.1.3",
+                "description": "Returns the details of every attribute of the given type.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "attributeType": {
+                "$ref": "#/AttributeType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeType"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "attributes" : {
+                "type": "array",
+                "description" : "Details of attributes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeDetails": {
+                            "type": "object",
+                            "description": "Details of an attribute.",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId"
+                                },
+                                "index": {
+                                    "type": "number",
+                                    "description": "Index of the attribute."
+                                },
+                                "name": {
+                                    "type": "number",
+                                    "description": "Name of the attribute."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    }
+            },{
                 "name": "CreateLayers",
                 "version": "1.0.3",
                 "description": "Creates Layer attributes based on the given parameters.",
