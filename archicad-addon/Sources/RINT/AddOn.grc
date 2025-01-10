@@ -8,7 +8,7 @@
 
 'STR#' ID_ADDON_MENU "Add-On Menu" {
 /* [   ] */        "Tapir"
-/* [  1] */        "About Tapir..."
+/* [  1] */        "About Tapir...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
 'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
