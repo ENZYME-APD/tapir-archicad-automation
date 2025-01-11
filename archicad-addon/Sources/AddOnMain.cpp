@@ -176,6 +176,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
         );
+        err |= RegisterCommand<GetConnectedElementsCommand> (
+            elementCommands, "1.1.4",
+            "Gets connected elements of the given elements."
+        );
         err |= RegisterCommand<HighlightElementsCommand> (
             elementCommands, "1.0.3",
             "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights."
