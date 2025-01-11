@@ -131,6 +131,11 @@ inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
 }
 
+inline GSErrCode ACAPI_LibraryPart_Get (API_LibPart* libpart)
+{
+    return ACAPI_LibPart_Get (libpart);
+}
+
 inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfMissing, bool onlyPlaceable = false)
 {
     return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);

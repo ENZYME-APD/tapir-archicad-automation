@@ -1,5 +1,6 @@
 #include "ElementCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "GSUnID.hpp"
 
 static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
 {
@@ -174,6 +175,9 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                         "type": {
                             "$ref": "#/ElementType"
                         },
+                        "id": {
+                            "type": "string"
+                        },
                         "floorIndex": {
                             "type": "number"
                         },
@@ -262,6 +266,20 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                     ]
                                 },
                                 {
+                                    "title": "LibPartBasedElementDetails",
+                                    "properties": {
+                                        "libPart": {
+                                            "$ref": "#/LibPartDetails"
+                                        },
+                                        "ownerElementId": {
+                                            "$ref": "#/ElementId"
+                                        }
+                                    },
+                                    "required": [
+                                        "libPart"
+                                    ]
+                                },
+                                {
                                     "title": "NotYetSupportedElementTypeDetails",
                                     "properties": {
                                         "error": {
@@ -277,6 +295,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                     },
                     "required": [
                         "type",
+                        "id",
                         "floorIndex",
                         "layerIndex",
                         "drawIndex",
@@ -290,6 +309,21 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
             "detailsOfElements"
         ]
     })";
+}
+
+static void AddLibPartBasedElementDetails (GS::ObjectState& os, const API_Guid& owner, Int32 libInd)
+{
+    API_LibPart	lp = {};
+    lp.index = libInd;
+    ACAPI_LibraryPart_Get (&lp);
+    os.Add ("libPart", GS::ObjectState (
+        "name", GS::UniString (lp.docu_UName),
+        "parentUnID", CreateGuidObjectState (GS::UnID (lp.parentUnID).GetMainGuid ()),
+        "ownUnID", CreateGuidObjectState (GS::UnID (lp.ownUnID).GetMainGuid ())));
+
+    if (owner != APINULLGuid) {
+        os.Add ("ownerElementId", CreateGuidObjectState (owner));
+    }
 }
 
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -323,6 +357,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         detailsOfElement.Add ("floorIndex", elem.header.floorInd);
         detailsOfElement.Add ("layerIndex", GetAttributeIndex (elem.header.layer));
         detailsOfElement.Add ("drawIndex", elem.header.drwIndex);
+
+        API_ElementMemo memo = {};
+        ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
+
+        detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
 
         GS::ObjectState typeSpecificDetails;
 
@@ -363,6 +402,20 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("origin", Create2DCoordinateObjectState (elem.column.origoPos));
                 typeSpecificDetails.Add ("height", elem.column.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.column.bottomOffset);
+                break;
+
+            case API_DoorID:
+            case API_WindowID:
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.window.owner, elem.window.openingBase.libInd);
+                break;
+
+            case API_LabelID:
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.label.parent, elem.label.labelClass == APILblClass_Symbol ? elem.label.u.symbol.libInd : -1);
+                break;
+
+            case API_ObjectID:
+            case API_LampID:
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.object.owner, elem.object.libInd);
                 break;
 
             default:

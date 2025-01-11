@@ -37,5 +37,5 @@ flags = [
 for i in range (2):
     for p in itertools.permutations (flags, r=i + 1):
         response = aclib.RunTapirCommand ('FilterElements', { 'elements': allElements, 'filters': [f for f in p] }, debug=False)
-        print ('{} = {}'.format ('|'.join (p), len (response['filteredElements'])))
+        print ('{} = {}'.format ('|'.join (p), len (response['elements'])))
     print ('-' * 30)

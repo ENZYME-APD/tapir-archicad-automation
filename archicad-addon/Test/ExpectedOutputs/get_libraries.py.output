@@ -14,7 +14,34 @@ Response:
             "urlWebLibrary": ""
         },
         {
+            "name": "Collada In-Out.apx",
+            "path": "<PATH>rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
             "name": "Corner Window.apx",
+            "path": "<PATH>rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "DXF-DWG In-Out.apx",
+            "path": "<PATH>rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "GoogleEarthConnectivity.apx",
             "path": "<PATH>rfs",
             "type": "BuiltInLibrary",
             "available": true,
@@ -50,7 +77,25 @@ Response:
             "urlWebLibrary": ""
         },
         {
-            "name": "MEP Modeler.apx",
+            "name": "KeynoteLegend.apx",
+            "path": "<PATH>rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "PointCloud_In.apx",
+            "path": "<PATH>rfs",
+            "type": "BuiltInLibrary",
+            "available": true,
+            "readOnly": true,
+            "twServerUrl": "",
+            "urlWebLibrary": ""
+        },
+        {
+            "name": "Rhino_In.apx",
             "path": "<PATH>rfs",
             "type": "BuiltInLibrary",
             "available": true,
