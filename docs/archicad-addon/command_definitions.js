@@ -814,6 +814,50 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "GetConnectedElements",
+                "version": "1.1.4",
+                "description": "Gets connected elements of the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "connectedElementType": {
+                "$ref": "#/ElementType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "connectedElementType"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "connectedElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectedElements"
+        ]
+    }
+            },{
                 "name": "HighlightElements",
                 "version": "1.0.3",
                 "description": "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights.",

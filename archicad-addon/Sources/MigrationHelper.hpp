@@ -35,6 +35,7 @@
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
 
 #define ACAPI_Selection_Select ACAPI_Element_Select
+#define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
 #define ACAPI_Command_GetHttpConnectionPort(par1) ACAPI_Goodies (APIAny_GetHttpConnectionPortID, par1)
 

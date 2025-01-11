@@ -1,0 +1,7468 @@
+Command: GetAllElements
+Parameters:
+{}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetConnectedElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "connectedElementType": "Window"
+}
+Response:
+{
+    "connectedElements": [
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        }
+    ]
+}
+Command: GetConnectedElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "connectedElementType": "Door"
+}
+Response:
+{
+    "connectedElements": [
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        }
+    ]
+}
+Command: GetConnectedElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "connectedElementType": "Label"
+}
+Response:
+{
+    "connectedElements": [
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        }
+    ]
+}

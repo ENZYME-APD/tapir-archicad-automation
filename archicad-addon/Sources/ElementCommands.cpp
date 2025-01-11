@@ -942,6 +942,102 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
     return response;
 }
 
+GetConnectedElementsCommand::GetConnectedElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetConnectedElementsCommand::GetName () const
+{
+    return "GetConnectedElements";
+}
+
+GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "connectedElementType": {
+                "$ref": "#/ElementType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "connectedElementType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetConnectedElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "connectedElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectedElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    API_ElemTypeID elemType = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("connectedElementType", elementTypeStr)) {
+        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    }
+
+    GS::ObjectState response;
+    const auto& connectedElementsOfInputElements = response.AddList<GS::ObjectState> ("connectedElements");
+
+    for (const GS::ObjectState& ownerElementOS : elements) {
+        const GS::ObjectState* elementId = ownerElementOS.Get ("elementId");
+        if (elementId == nullptr) {
+            connectedElementsOfInputElements (CreateErrorResponse (APIERR_BADPARS, "elementId of owner element is missing"));
+            continue;
+        }
+
+        const API_Guid ownerElemGuid = GetGuidFromObjectState (*elementId);
+
+        GS::ObjectState elementsOS;
+        const auto& elements = elementsOS.AddList<GS::ObjectState> ("elements");
+        GS::Array<API_Guid> connectedElements;
+        if (ACAPI_Grouping_GetConnectedElements (ownerElemGuid, elemType, &connectedElements) == NoError) {
+            for (const API_Guid& elem : connectedElements) {
+                elements (CreateElementIdObjectState (elem));
+            }
+        }
+
+        connectedElementsOfInputElements (elementsOS);
+    }
+
+    return response;
+}
+
 MoveElementsCommand::MoveElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
