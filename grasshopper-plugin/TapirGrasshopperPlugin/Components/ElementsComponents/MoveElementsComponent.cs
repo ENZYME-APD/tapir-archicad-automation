@@ -58,8 +58,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to move.", GH_ParamAccess.list);
-            pManager.AddVectorParameter ("MoveVectors", "Moving 3D Vectors", "The 3D vectors to move elements (input only 1 vector to move all elements with the same vector).", GH_ParamAccess.list);
-            pManager.AddBooleanParameter ("MoveCopies", "Move copies", "Move copies of the elements.", GH_ParamAccess.item, @default: false);
+            pManager.AddVectorParameter ("Moving 3D Vectors", "MoveVectors", "The 3D vectors to move elements (input only 1 vector to move all elements with the same vector).", GH_ParamAccess.list);
+            pManager.AddBooleanParameter ("Move copies", "MoveCopies", "Move copies of the elements.", GH_ParamAccess.item, @default: false);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
