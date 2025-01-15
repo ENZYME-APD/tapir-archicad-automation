@@ -1728,7 +1728,7 @@ var gCommands = [{
                                     "description": "Index of the attribute."
                                 },
                                 "name": {
-                                    "type": "number",
+                                    "type": "string",
                                     "description": "Name of the attribute."
                                 }
                             }
