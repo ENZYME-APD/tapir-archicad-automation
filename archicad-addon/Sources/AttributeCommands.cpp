@@ -92,7 +92,7 @@ GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetResponseSchema () con
                                     "description": "Index of the attribute."
                                 },
                                 "name": {
-                                    "type": "number",
+                                    "type": "string",
                                     "description": "Name of the attribute."
                                 }
                             }
@@ -125,7 +125,7 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
         GS::ObjectState attributeDetails;
         attributeDetails.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
         attributeDetails.Add ("index", GetAttributeIndex (attr.header.index));
-        attributeDetails.Add ("name", attr.header.name);
+        attributeDetails.Add ("name", GS::UniString (attr.header.name));
         attributes (attributeDetails);
 
         DisposeAttribute (attr);

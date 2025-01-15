@@ -1,0 +1,4124 @@
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "Layer"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "\u0014"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Interior - Partition"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Interior - Furniture "
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Shell - Roof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Site & Landscape - General"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Interior - Stair & Railing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Annotation - Structure"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Dimensioning - Structure"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Annotation - General"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "2D Drafting - Hotspot"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "MEP - HVAC"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "MEP - Electrical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 26,
+            "name": "Dimensioning - Site "
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 29,
+            "name": "Annotation - Label"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 31,
+            "name": "Marker - Section"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 32,
+            "name": "Structural - Shear"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 33,
+            "name": "Structural - Bearing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 34,
+            "name": "Structural - Stair & Railing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 35,
+            "name": "Interior - Lamp"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 36,
+            "name": "Model Unit - Zone"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 38,
+            "name": "Dimensioning - Detail"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 39,
+            "name": "MEP - Plumbing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 42,
+            "name": "Annotation - Text"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 44,
+            "name": "2D Drafting - General"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 45,
+            "name": "Site & Landscape - Terrain"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 46,
+            "name": "Model Unit - Module"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 47,
+            "name": "Marker - Detail"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 48,
+            "name": "Drawing & Figure"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 49,
+            "name": "Finish - Ceiling"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 50,
+            "name": "Marker - Elevation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 51,
+            "name": "Finish - Floor"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 52,
+            "name": "Interior - Equipment"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 53,
+            "name": "Finish - Wall"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 54,
+            "name": "Shell - General"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 55,
+            "name": "Dimensioning - General"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 56,
+            "name": "- Hidden"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 57,
+            "name": "Structural - Grid"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 58,
+            "name": "Marker - Interior Elevation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 59,
+            "name": "Marker - Worksheet"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 60,
+            "name": "Morph - General"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 61,
+            "name": "Marker - Change"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "Line"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Solid"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Dotted Dense"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Dotted"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Dashed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Dashed Long"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Dot & Dashed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Dashed Double"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "Dashed Triple"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Zigzag"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Double"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Break"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Slash"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "Arrow"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Wave"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "X"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "Slash Double"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "Circle"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Square"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Zigzag Big"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Crossed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Hidden"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "Sketch"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "Insulation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "Bubble"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Dashed Small"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "Fill"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Common Brick"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Face Brick"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Fire Brick"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Masonry Block"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Concrete Block"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Structural Concrete"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Lightweight Concrete"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "Plaster"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Gypsum"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Facing Tile"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Steel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Aluminium"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "Brass/Bronze"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Cut Stone"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "Rubble"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "Air Space"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "Rigid Insulation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Batt Insulation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Wood"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Plywood"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Insulation 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "75 %"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "50 %"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "25 %"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Solid + Dot & Dashed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 26,
+            "name": "Solid + Dashed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 27,
+            "name": "Dot & Dashed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 28,
+            "name": "Dashed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 29,
+            "name": "Double 1:4"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 30,
+            "name": "Double 1:8"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 31,
+            "name": "Triangular Grid"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 32,
+            "name": "Triangles"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 33,
+            "name": "Hexagonal"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 34,
+            "name": "Grass"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 35,
+            "name": "Facing Tile - Large Scale"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 36,
+            "name": "Rubble - Large Scale"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 37,
+            "name": "Plywood - Large Scale"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 38,
+            "name": "Earth"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 39,
+            "name": "Plank Floor"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 40,
+            "name": "Strip Floor 1:3"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 41,
+            "name": "Strip Floor 1:4"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 42,
+            "name": "Block Floor 1:3"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 43,
+            "name": "Block Floor 1:4"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 44,
+            "name": "Grid 25x25"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 45,
+            "name": "Glazed Tile"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 46,
+            "name": "Brick Floor - Laid Flat"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 47,
+            "name": "Brick Floor - Laid on Edge"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 48,
+            "name": "Stone Mosaic Paving"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 49,
+            "name": "Carpet"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 50,
+            "name": "Brick - Running Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 51,
+            "name": "Brick - Common Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 52,
+            "name": "Brick - Flemish Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 53,
+            "name": "Brick - English Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 54,
+            "name": "Brick - Stack Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 55,
+            "name": "Block - Running Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 56,
+            "name": "Block - Stack Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 57,
+            "name": "Long Brick - Running Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 58,
+            "name": "Long Brick - Stack Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 59,
+            "name": "2x4 Stud Wall 16 O.C."
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 60,
+            "name": "Roof Tiles"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 61,
+            "name": "Circles 1"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 62,
+            "name": "Circles 2"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 63,
+            "name": "Fire Proofing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 64,
+            "name": "Foreground"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 65,
+            "name": "Background"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 66,
+            "name": "Insulation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 67,
+            "name": "Stars"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 68,
+            "name": "Gravel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 69,
+            "name": "Roof Tile"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 70,
+            "name": "Pavement 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 71,
+            "name": "Pavement 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 72,
+            "name": "Pavement 03"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 73,
+            "name": "Pavement 04"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 74,
+            "name": "Pavement 05"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 75,
+            "name": "Pavement 06"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 76,
+            "name": "Pavement 07"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 77,
+            "name": "Pavement 08"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 78,
+            "name": "Pavement 09"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 79,
+            "name": "Pavement 10"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 80,
+            "name": "Pavement 11"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 81,
+            "name": "Pavement 12"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 82,
+            "name": "Pavement 13"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 83,
+            "name": "Pavement 14"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 84,
+            "name": "Pavement 15"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 85,
+            "name": "Pavement 16"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 86,
+            "name": "Pavement 17"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 87,
+            "name": "Pavement 18"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 88,
+            "name": "Pavement 19"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 89,
+            "name": "Render"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 90,
+            "name": "Roof Tile 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 91,
+            "name": "Roof Tile 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 92,
+            "name": "Roof Tile 03"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 93,
+            "name": "Roof Tile 04"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 94,
+            "name": "Roof Tile 05"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 95,
+            "name": "Roof Tile 06"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 96,
+            "name": "Roof Tile 07"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 97,
+            "name": "Roof Tile 08"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 98,
+            "name": "Roof Tile 09"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 99,
+            "name": "Roof Tile Blank"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 100,
+            "name": "Roof Tile Stack"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 101,
+            "name": "Shakes"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 102,
+            "name": "Stacked Stone"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 103,
+            "name": "Stone 1 Course"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 104,
+            "name": "Stone 2 Course "
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 105,
+            "name": "Styrofoam SM Insulation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 106,
+            "name": "Thermal Block"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 107,
+            "name": "Wood  00"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 108,
+            "name": "Wood  45"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 109,
+            "name": "Wood  90"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 110,
+            "name": "Wood 135"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 111,
+            "name": "Wood 180"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 112,
+            "name": "Fieldstone 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 113,
+            "name": "Fieldstone 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 114,
+            "name": "Brick - Common Bond + Mortar"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 115,
+            "name": "Brick - English Bond + Mortar"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 116,
+            "name": "Brick - Stack Bond + Mortar"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 117,
+            "name": "Brick Flemish Bond + Mortar "
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 118,
+            "name": "Brick Running Bond + Mortar"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 119,
+            "name": "Linear Gradient Fill"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 120,
+            "name": "Radial Gradient Fill"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 121,
+            "name": "Standing Seam"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 122,
+            "name": "Shingle"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 123,
+            "name": "Brick - Soldier Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 124,
+            "name": "River Rock "
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 125,
+            "name": "Grid 30x30"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 126,
+            "name": "Grid 15x15"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 127,
+            "name": "Grid 60x60"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 128,
+            "name": "Grid 60x120"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 129,
+            "name": "Grid 90x90"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 130,
+            "name": "Grid 5x5 Diagonal"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 131,
+            "name": "Normal Tiles"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 132,
+            "name": "Gray Carpet"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 133,
+            "name": "Wood Parquet"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 134,
+            "name": "Insulation 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 135,
+            "name": "Waterproofing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 136,
+            "name": "Brick - Running Bond - 20.3/6.8"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 137,
+            "name": "Grid 100x100"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 138,
+            "name": "Shingle - 30/12.5"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 139,
+            "name": "Brick - Common Bond - 20.3/6.76"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 140,
+            "name": "Roof Tile 15"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 141,
+            "name": "Grid 50x100"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 142,
+            "name": "Grid Checkered 25x25"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 143,
+            "name": "Brick - Herringbone"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 144,
+            "name": "Brick - Flemish Bond - 10.16/6.8"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 145,
+            "name": "Brick - Stack Bond - 20.3/6.76"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 146,
+            "name": "Brick - Running Bond - 19.9/6.78"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 147,
+            "name": "Parquet 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 148,
+            "name": "Roof Shingle 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 149,
+            "name": "Shingle - 20/30"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 150,
+            "name": "Roof Tile 11"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 151,
+            "name": "Wooden Plank Horizontal - 10"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 152,
+            "name": "Brick - Running Bond - 26/7.5"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 153,
+            "name": "Roof Tile 12"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 154,
+            "name": "Stonework 13"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 155,
+            "name": "Stonework 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 156,
+            "name": "Stonework 12"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 157,
+            "name": "Grid 2.5x2.5"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 158,
+            "name": "Wooden Plank Vertical - 10"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 159,
+            "name": "Wooden Plank Horizontal - 14.15"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 160,
+            "name": "Panel 100x50"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 161,
+            "name": "Concrete Pavement 01"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "Composite"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Concrete Floor Insulated with Parquet"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Concrete Floor Insulated with 10mm Tile"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Concrete Floor with 10mm Tile"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "100 Block Insulated Cavity Plastered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "100 Block Double Plastered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "100 Block Insulated Cavity"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "215 Block Insulated Cavity Plastered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Double 50 Block Cavity Plastered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Stud Partition"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Double 50 Block Cavity"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Brick Double Plastered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "Brick Single Plastered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "140 Block Insulated Cavity"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "Concrete Floor with Parquet"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "215 Block Insulated Cavity"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "140 Block Insulated Cavity Plastered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Roof Aluminium"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Roof Tiled"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Basement Wall"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Roof Zinc"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "Flat Roof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "Generic Wall/Shell"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "Generic Slab/Roof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Generic Roof/Shell"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "New Composite"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "Surface"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Brick - Running Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Stucco - White Rough"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Paint - Dark Gray"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Concrete - 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Stone - Limestone Fine"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Stone - Marble Carrara White"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Stone - Granite Gray"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "Stone - Granite Red"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Roof - Asphalt Shingle Gray"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Paint - Anthracite"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Metal - Stainless Steel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Metal - Copper New"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "Metal - Chrome 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Wood - Pine Grained Vertical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "Wood - Pine Grained Horizontal"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "Wood - Walnut Horizontal"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "Wood - Walnut Vertical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Paint - Titanium White"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Paint - Vermilion"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Paint - Ultramarine Violet"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Tiles - Tan 30x30"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "Ceramic - Porcelain"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "Plastic - Laminate"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "Glass - Clear Fast"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Leather - Tabac"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 26,
+            "name": "Textile - 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 27,
+            "name": "Carpet - 03"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 28,
+            "name": "Water - Pond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 29,
+            "name": "Glass - Blue"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 30,
+            "name": "Grass - Green"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 31,
+            "name": "Foliage - Leaves Tree Small"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 32,
+            "name": "Paint - Bordeaux"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 33,
+            "name": "Earth - Brown"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 34,
+            "name": "Glass - Lamp"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 35,
+            "name": "Brick - Common Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 36,
+            "name": "Roof Tiles - French Red"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 37,
+            "name": "Stone - Sandstone 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 38,
+            "name": "Stone - Marble Black"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 39,
+            "name": "Stone - Marble Pink"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 40,
+            "name": "Metal - Iron"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 41,
+            "name": "Metal - Copper Aged"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 42,
+            "name": "Metal - Bronze"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 43,
+            "name": "Metal - Brass"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 44,
+            "name": "Metal - Nickel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 45,
+            "name": "Metal - Aluminium"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 46,
+            "name": "Metal - Gold"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 47,
+            "name": "Metal - Zinc"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 48,
+            "name": "Paint - Cobalt Blue"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 49,
+            "name": "Paint - Ivory Black"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 50,
+            "name": "Roof - Asphalt Shingle Green"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 51,
+            "name": "Pavement - Brick Moss"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 52,
+            "name": "Wood - Oak Light"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 53,
+            "name": "Concrete - 04"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 54,
+            "name": "Siding - Dark"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 55,
+            "name": "Lino - Checkered"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 56,
+            "name": "Brick - Red"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 57,
+            "name": "Siding - Medium"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 58,
+            "name": "Siding - Light"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 59,
+            "name": "Wood - Mahogany Vertical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 60,
+            "name": "Paint - Glossy White"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 61,
+            "name": "Brick - Red Herringbone"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 62,
+            "name": "Brick - Flemish Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 63,
+            "name": "Brick - Soldier Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 64,
+            "name": "Brick - Stack Bond"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 65,
+            "name": "Brick - Aged Natural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 66,
+            "name": "Paint - Sand Beige"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 67,
+            "name": "Paint - Golden Beige"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 68,
+            "name": "Paint - Sienna Sand"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 69,
+            "name": "Paint - Celadon"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 70,
+            "name": "Paint - Pale Jade"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 71,
+            "name": "Paint - Peach"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 72,
+            "name": "Paint - Pink Blush"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 73,
+            "name": "Paint - Golden Ochre"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 74,
+            "name": "Paint - Yellow Ochre"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 75,
+            "name": "Paint - Royal Blue"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 76,
+            "name": "Paint - Forest Green"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 77,
+            "name": "Paint - Cadmium Orange"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 78,
+            "name": "Paint - Cadmium Yellow"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 79,
+            "name": "Paint - Alizarin Carmine"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 80,
+            "name": "Brick - Brown"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 81,
+            "name": "Stucco - White Fine"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 82,
+            "name": "Parquet - 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 83,
+            "name": "Brick - Surface Colour"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 84,
+            "name": "Pavement - Asphalt Dark"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 85,
+            "name": "Roof - Asphalt Shingle Drop"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 86,
+            "name": "Roof - Cedar Shingle Light"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 87,
+            "name": "Roof Tiles - Dutch"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 88,
+            "name": "Roof - Asphalt Shingle Brown"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 89,
+            "name": "Textile - 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 90,
+            "name": "Floorboards - 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 91,
+            "name": "Glass - Mirror"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 92,
+            "name": "Brick - White Natural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 93,
+            "name": "Carpet - 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 94,
+            "name": "Carpet - 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 95,
+            "name": "Grass - Brown"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 96,
+            "name": "Bark - Deciduous"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 97,
+            "name": "Foliage - Wild grapes"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 98,
+            "name": "Water - Wavy"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 99,
+            "name": "Paint - Light Gray"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 100,
+            "name": "Paint - Pale Blue"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 101,
+            "name": "Paint - Lead Oxide Yellow"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 102,
+            "name": "Pavement - Asphalt Light"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 103,
+            "name": "Roof Tiles - Spanish 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 104,
+            "name": "Tiles - White Matte 15x15"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 105,
+            "name": "Metal - Perforated Small Dots"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 106,
+            "name": "Tiles - Tan 25x25"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 107,
+            "name": "Roof - Corrugated Sheet Matte"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 108,
+            "name": "Ceiling - Tile 60x60"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 109,
+            "name": "Ceiling - Tile 60x120"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 110,
+            "name": "Metal - Fence Chainlink"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 111,
+            "name": "Stonework - 13"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 112,
+            "name": "Stonework - 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 113,
+            "name": "Stonework - 12"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 114,
+            "name": "Tiles - Light Brown 15x15"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 115,
+            "name": "Tiles - Mosaic Blue"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 116,
+            "name": "Parquet - 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 117,
+            "name": "Stucco - Yellow Rough"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 118,
+            "name": "Stucco - Red Rough"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 119,
+            "name": "Stucco - Beige Rough"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 120,
+            "name": "Lino - Blue"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 121,
+            "name": "Lino - Gray"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 122,
+            "name": "Roof Tiles - French Brown"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 123,
+            "name": "Floorboards - 03"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 124,
+            "name": "Wood - Mahogany Horizontal"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 125,
+            "name": "Glass - Satin"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 126,
+            "name": "Metal - Steel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 127,
+            "name": "Insulation - Bubble Wrap"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 128,
+            "name": "Insulation - Cellulose"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 129,
+            "name": "Insulation - Fiberglass"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 130,
+            "name": "Insulation - Solid Brown"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 131,
+            "name": "Air"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 132,
+            "name": "Concrete - 10"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "LayerCombination"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "02 Drafting"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "06 Plans - Mechanical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "07 Plans - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "09 Layouting"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "01 Site"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "04 Plans - Approval"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "08 Rendering"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "05 Plans - Detailed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "03 Plans - Preliminary"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "10 Show 3D Zones as Solid"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "ZoneCategory"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Medical Treatment"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Other Usage"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Education & Culture"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Office"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Residential and Recreation"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Communication & Access"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "Storage & Sales"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Technical Equipment"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Production & Research"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "GROSS AREA"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Generic"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "Profile"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Brick Wall w Concrete Lintel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Brick Veneer Block Wall"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Precast Double Tee"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Precast Single Tee"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Precast Inverted Tee"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Precast Girder 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Precast Girder 01"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "I Joist - Wood"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Joist - Timber"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Steel C Section"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Steel Z Section"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Steel L Section"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "I Joist - Steel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Steel Rectangular Hollow"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "Steel T Section"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "Steel Universal Section"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "Concrete Column/Beam w Cover"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Plaster Cornice/Coving"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Brick Wall w Footing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Concrete Slab Edge Footing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Generic Beam"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "Generic Column"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "IPE 240"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "Stair Nosing Classic"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Stair Riser Slanted 150 "
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 26,
+            "name": "Stair Interlacing Block 150/300"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 27,
+            "name": "Stair Tread 300 for Riser Slanted 150"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 28,
+            "name": "Stair Edge Protection with Non-Slip Band"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 29,
+            "name": "Rail Wood on Steel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 30,
+            "name": "Rail Wood Simple"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 31,
+            "name": "Rail Wood Complex"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 32,
+            "name": "Railing Revolved Profile"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 33,
+            "name": "Rail Double Steel Bars"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 34,
+            "name": "Stair Stringer C Section"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 35,
+            "name": "CW Frame 80/160"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 36,
+            "name": "CW Frame Butt-glazed 80/160"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 37,
+            "name": "CW Cap 80/20"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 38,
+            "name": "CW Window Frame 48/48"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 39,
+            "name": "CW Corner Frame 80/160"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 40,
+            "name": "CW Corner Frame Butt-glazed 80/160"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 41,
+            "name": "CW Corner Cap 80/20"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 42,
+            "name": "Precast Single Tee 02"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 43,
+            "name": "IPE300"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 44,
+            "name": "HEA200"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 45,
+            "name": "UPE100"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 46,
+            "name": "L100X50X10"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 47,
+            "name": "RHS100X100X5"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 48,
+            "name": "CHS48.3X5.0"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "PenTable"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "09 Color"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "10 Grayscale"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "11 Archicad 9"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "04 Building plans 50"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "03 Architectural 100"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "02 Site 500"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "08 Electrical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "06 Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "05 Detailing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "07 Mechanical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "01 Color Conceptual"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "MEPSystem"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Exhaust Air"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Fresh Air"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Heating"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Cooling"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Cabling"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Sprinkler"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "OperationProfile"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Personal office"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Landscaped office"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Meeting, conference or seminar room"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Booking hall"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Retail shop/department store"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Classroom"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Lecture room, auditorium"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "Hospital ward or dormitory"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Hotel room"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Canteen"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Restaurant"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Kitchen (non residential)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "Kitchen (preparation or store room)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Toilets and sanitary facilities (non residential)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "Other habitable rooms (non residential)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "Auxiliary spaces (non residential)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "Circulation and traffic areas"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Storeroom"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Server room, computer center"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Workshop"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Spectator and audience areas"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "Theatre foyer"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "Stage"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "Fair/congress building"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Showroom and museums"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 26,
+            "name": "Library (reading room)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 27,
+            "name": "Library (open stacks area)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 28,
+            "name": "Library (magazine and stores)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 29,
+            "name": "Sports hall"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 30,
+            "name": "Garage buildings (offices and private use)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 31,
+            "name": "Garage buildings (public use)"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 32,
+            "name": "Residential"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 33,
+            "name": "Unconditioned"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "BuildingMaterial"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Brick"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Brick - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Brick - Finish"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Masonry Block - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Masonry Block - Filler"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Concrete"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Concrete - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "Concrete Block - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Concrete Block - Filler"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Reinforced Concrete - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Reinforced Concrete - Prefab"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Insulation - Fiber Hard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "Insulation - Fiber Soft"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Insulation - Mineral Hard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "Insulation - Mineral Soft"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "Insulation - Plastic Hard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "Insulation - Plastic Soft"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Insulation - Thermal Break"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Fire Proofing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Membrane - Vapor Barrier"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Membrane - Waterproof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "Membrane - Rainproof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "Timber - Roof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "Timber - Floor"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Plywood"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 26,
+            "name": "Fiberboard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 27,
+            "name": "Tile - Roof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 28,
+            "name": "Tile - Floor"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 29,
+            "name": "Plaster - Lime Sand"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 30,
+            "name": "Plaster - Gypsum"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 31,
+            "name": "Gypsum Plasterboard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 32,
+            "name": "Gypsum Plasterboard - Waterproof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 33,
+            "name": "Aluminium"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 34,
+            "name": "Iron"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 35,
+            "name": "Steel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 36,
+            "name": "Steel - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 37,
+            "name": "Steel - Stainless"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 38,
+            "name": "Titanium Zinc"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 39,
+            "name": "Stone - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 40,
+            "name": "Stone - Finish"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 41,
+            "name": "Plastic - Solid"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 42,
+            "name": "Air Space"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 43,
+            "name": "Air Space - Frame"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 44,
+            "name": "Gravel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 45,
+            "name": "Glass"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 46,
+            "name": "Soil"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 47,
+            "name": "Water"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 48,
+            "name": "Sand"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 49,
+            "name": "Timber - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 50,
+            "name": "Tile - Wall"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 51,
+            "name": "GENERIC - EXTERNAL CLADDING"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 52,
+            "name": "GENERIC - EXTERNAL FILLER"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 53,
+            "name": "GENERIC - EXTERNAL MEMBRANE"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 54,
+            "name": "GENERIC - PREFABRICATED"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 56,
+            "name": "GENERIC - ENVIRONMENT"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 57,
+            "name": "GENERIC - INTERNAL FILLER"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 58,
+            "name": "GENERIC - INSULATION"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 59,
+            "name": "GENERIC - STRUCTURAL"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 60,
+            "name": "GENERIC - INTERNAL CLADDING"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 55,
+            "name": "New Building Material 1"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 61,
+            "name": "New Building Material 2"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 62,
+            "name": "New Building Material 3"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 63,
+            "name": "New Building Material 4"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 64,
+            "name": "New Building Material 5"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 65,
+            "name": "New Building Material 6"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 66,
+            "name": "New Building Material 7"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 67,
+            "name": "New Building Material 8"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 68,
+            "name": "New Building Material 9"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 69,
+            "name": "New Building Material 10"
+        }
+    ]
+}
