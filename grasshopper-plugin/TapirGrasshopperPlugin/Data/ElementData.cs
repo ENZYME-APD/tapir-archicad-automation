@@ -48,6 +48,17 @@ namespace TapirGrasshopperPlugin.Data
             return Guid;
         }
 
+        public override bool Equals (object other)
+        {
+            var o = other as IdObj<T>;
+            return o != null && Guid == o.Guid;
+        }
+
+        public override int GetHashCode ()
+        {
+            return Guid.GetHashCode ();
+        }
+
         public bool IsNullGuid ()
         {
             return Guid == null || new System.Guid (Guid) == System.Guid.Empty;
@@ -87,6 +98,17 @@ namespace TapirGrasshopperPlugin.Data
         public override string ToString ()
         {
             return Id.ToString ();
+        }
+
+        public override bool Equals (object other)
+        {
+            var o = other as IdItemObj<I, T>;
+            return o != null && Id.Guid == o.Id.Guid;
+        }
+
+        public override int GetHashCode ()
+        {
+            return Id.GetHashCode ();
         }
 
         [JsonIgnore]
