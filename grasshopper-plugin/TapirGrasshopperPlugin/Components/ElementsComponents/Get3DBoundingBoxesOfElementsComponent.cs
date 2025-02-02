@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to get the bounding box of.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get the bounding box of.", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -37,7 +37,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 

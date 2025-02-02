@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("AttributeIds", "AttributeIds", "List of attribute ids.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("AttributeGuids", "AttributeGuids", "List of attribute Guids.", GH_ParamAccess.list);
             pManager.AddGenericParameter ("AttributeIndices", "AttributeIndices", "List of attribute indices.", GH_ParamAccess.list);
             pManager.AddGenericParameter ("AttributeNames", "AttributeNames", "List of attribute names.", GH_ParamAccess.list);
         }

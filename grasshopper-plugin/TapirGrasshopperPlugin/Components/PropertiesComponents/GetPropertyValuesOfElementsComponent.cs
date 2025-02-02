@@ -22,13 +22,13 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("PropertyIds", "PropertyIds", "The property ids to get the value for.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to get the value for.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("PropertyGuids", "PropertyGuids", "The property Guids to get the value for.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get the value for.", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids the property is available for.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids the property is available for.", GH_ParamAccess.tree);
             pManager.AddTextParameter ("Values", "Values", "The property values of the elements.", GH_ParamAccess.tree);
         }
 
@@ -36,12 +36,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         {
             PropertiesObj properties = PropertiesObj.Create (DA, 0);
             if (properties == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input PropertyIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input PropertyGuids failed to collect data.");
                 return;
             }
             ElementsObj elements = ElementsObj.Create (DA, 1);
             if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 

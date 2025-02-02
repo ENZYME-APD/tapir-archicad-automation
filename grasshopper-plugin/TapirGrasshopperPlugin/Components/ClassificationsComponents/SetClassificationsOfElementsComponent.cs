@@ -22,9 +22,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ClassificationSystemId", "ClsSystemId", "The id of a classification system.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ClassificationItemIds", "ClsItemIds", "The ids of classification items to assign for the given elements.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to set the classification for.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ClassificationSystemGuid", "ClsSystemGuid", "The Guid of a classification system.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("ClassificationItemGuids", "ClsItemGuids", "The Guids of classification items to assign for the given elements.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to set the classification for.", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
             ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
             if (classificationSystemId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClsSystemId failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClsSystemGuid failed to collect data.");
                 return;
             }
 
@@ -61,12 +61,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             ElementsObj elements = ElementsObj.Create (DA, 2);
             if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 
             if (classificationItemIds.Count != 1 && elements.Elements.Count != classificationItemIds.Count) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of ClsItemIds must be 1 or the same as the count of ElementIds.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of ClsItemGuids must be 1 or the same as the count of ElementGuids.");
                 return;
             }
 

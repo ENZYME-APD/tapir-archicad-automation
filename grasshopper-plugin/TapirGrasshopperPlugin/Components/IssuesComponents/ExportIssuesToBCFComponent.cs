@@ -37,7 +37,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("IssueIds", "IssueIds", "Issues to export.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("IssueGuids", "IssueGuids", "Issues to export.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ExportedFilePath", "ExportedFilePath", "Path to the output BCF file.", GH_ParamAccess.item);
             pManager.AddBooleanParameter ("UseExternalId", "UseExternalId", "Use external IFC ID or Archicad IFC ID as referenced in BCF topics.", GH_ParamAccess.item, @default: true);
             pManager.AddBooleanParameter ("AlignBySurveyPoint", "AlignBySurveyPoint", "Align BCF views by Archicad Survey Point or Archicad Project Origin.", GH_ParamAccess.item, @default: true);
@@ -51,7 +51,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
             IssuesObj issues = IssuesObj.Create (DA, 0);
             if (issues == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueGuids failed to collect data.");
                 return;
             }
 

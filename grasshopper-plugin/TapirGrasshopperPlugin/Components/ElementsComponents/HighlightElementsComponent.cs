@@ -63,7 +63,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
             pManager.AddBooleanParameter ("Enable", "Enable", "Enable highlight.", GH_ParamAccess.item, @default: true);
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Elements to highlight.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Elements to highlight.", GH_ParamAccess.list);
             pManager.AddColourParameter ("HighligtedColors", "Colors", "Colors for the elements.", GH_ParamAccess.list, @default: Color.Blue);
             pManager.AddColourParameter ("NonHighligtedColor", "NHColor", "Color for the non-highlighted elements.", GH_ParamAccess.item, @default: Color.White);
             pManager.AddBooleanParameter ("NonHighligtedWireframe", "NHWire3D", "Switch non-highlighted elements in the 3D window to wireframe", GH_ParamAccess.item, @default: true);
@@ -84,7 +84,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             ElementsObj inputElements = ElementsObj.Create (DA, 1);
             if (inputElements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 
@@ -94,7 +94,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             if (highlightedColors.Count != 1 && inputElements.Elements.Count != highlightedColors.Count) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of highlighted colors must be 1 or the same as the count of ElementIds.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of highlighted colors must be 1 or the same as the count of ElementGuids.");
                 return;
             }
 
