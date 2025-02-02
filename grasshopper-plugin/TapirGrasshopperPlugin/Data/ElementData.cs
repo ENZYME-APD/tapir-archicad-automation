@@ -235,6 +235,9 @@ namespace TapirGrasshopperPlugin.Data
         [JsonProperty ("type")]
         public string Type;
 
+        [JsonProperty ("id")]
+        public string ElementID;
+
         [JsonProperty ("floorIndex")]
         public int FloorIndex;
 

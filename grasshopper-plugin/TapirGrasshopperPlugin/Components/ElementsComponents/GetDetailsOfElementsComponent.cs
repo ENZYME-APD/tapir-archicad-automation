@@ -52,6 +52,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids of the found elements.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ElemType", "ElemType", "Element type.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("ElementID", "ElementID", "ElementID property values.", GH_ParamAccess.list);
             pManager.AddIntegerParameter ("StoryIndex", "StoryIndex", "Story index.", GH_ParamAccess.list);
             pManager.AddIntegerParameter ("LayerIndex", "LayerIndex", "Layer index.", GH_ParamAccess.list);
             pManager.AddIntegerParameter ("DrawOrder", "DrawOrder", "Drawing order.", GH_ParamAccess.list);
@@ -74,6 +75,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             List<ElementIdItemObj> validElements = new List<ElementIdItemObj> ();
             List<String> elemTypes = new List<String> ();
+            List<String> elementIDs = new List<String> ();
             List<int> storyIndices = new List<int> ();
             List<int> layerIndices = new List<int> ();
             List<int> drawIndices = new List<int> ();
@@ -88,6 +90,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     ElementId = inputElements.Elements[i].ElementId
                 });
                 elemTypes.Add (detailsOfElement.Type);
+                elementIDs.Add (detailsOfElement.ElementID);
                 storyIndices.Add (detailsOfElement.FloorIndex);
                 layerIndices.Add (detailsOfElement.LayerIndex);
                 drawIndices.Add (detailsOfElement.DrawIndex);
@@ -95,9 +98,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             DA.SetDataList (0, validElements);
             DA.SetDataList (1, elemTypes);
-            DA.SetDataList (2, storyIndices);
-            DA.SetDataList (3, layerIndices);
-            DA.SetDataList (4, drawIndices);
+            DA.SetDataList (2, elementIDs);
+            DA.SetDataList (3, storyIndices);
+            DA.SetDataList (4, layerIndices);
+            DA.SetDataList (5, drawIndices);
         }
 
         protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ElemDetails;
