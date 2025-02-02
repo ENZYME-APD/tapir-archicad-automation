@@ -31,6 +31,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public Point2D EndCoordinate;
     }
 
+    public class ColumnDetails
+    {
+        [JsonProperty ("origin")]
+        public Point2D OrigoCoordinate;
+    }
+
     public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
     {
         public GetDetailsOfElementsComponent ()
@@ -179,5 +185,70 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.WallDetails;
 
         public override Guid ComponentGuid => new Guid ("2b7b8e37-b293-475f-a333-d6afe4c5ffff");
+    }
+
+    public class GetDetailsOfColumnsComponent : ArchicadAccessorComponent
+    {
+        public GetDetailsOfColumnsComponent ()
+          : base (
+                "Column Details",
+                "ColumnDetails",
+                "Get details of column elements.",
+                "Elements"
+            )
+        {
+        }
+
+        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get details of.", GH_ParamAccess.list);
+        }
+
+        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ColumnGuids", "ColumnGuids", "Element Guids of the found columns.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("Origo coordinate", "OrigoCoord", "Origo coordinate.", GH_ParamAccess.list);
+        }
+
+        protected override void Solve (IGH_DataAccess DA)
+        {
+            ElementsObj inputElements = ElementsObj.Create (DA, 0);
+            if (inputElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+                return;
+            }
+
+            JObject inputElementsObj = JObject.FromObject (inputElements);
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            List<ElementIdItemObj> columns = new List<ElementIdItemObj> ();
+            List<Point2d> origoCoords = new List<Point2d> ();
+            DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
+            for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
+                DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Column") {
+                    continue;
+                }
+                ColumnDetails columnDetails = detailsOfElement.Details.ToObject<ColumnDetails> ();
+                if (columnDetails == null) {
+                    continue;
+                }
+                columns.Add (new ElementIdItemObj () {
+                    ElementId = inputElements.Elements[i].ElementId
+                });
+                origoCoords.Add (new Point2d (columnDetails.OrigoCoordinate.X, columnDetails.OrigoCoordinate.Y));
+            }
+
+            DA.SetDataList (0, columns);
+            DA.SetDataList (1, origoCoords);
+        }
+
+        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ColumnDetails;
+
+        public override Guid ComponentGuid => new Guid ("ded49694-9869-4670-af85-645535a7be6a");
     }
 }
