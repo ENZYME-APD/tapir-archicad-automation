@@ -22,7 +22,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("IssueId", "IssueId", "Issue id.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("IssueGuid", "IssueGuid", "Issue Guid.", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -34,7 +34,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
             IssueIdItemObj issueId = IssueIdItemObj.Create (DA, 0);
             if (issueId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueId failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueGuid failed to collect data.");
                 return;
             }
 

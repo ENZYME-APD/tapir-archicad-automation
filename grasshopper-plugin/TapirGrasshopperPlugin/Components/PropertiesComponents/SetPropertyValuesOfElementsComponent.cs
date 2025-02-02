@@ -22,8 +22,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("PropertyId", "PropertyId", "The property id to set the value for.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to set the value for.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("PropertyGuid", "PropertyGuid", "The property Guid to set the value for.", GH_ParamAccess.item);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to set the value for.", GH_ParamAccess.list);
             pManager.AddTextParameter ("Values", "Values", "Single value or list of values to set for the corresponding elements.", GH_ParamAccess.list);
         }
 
@@ -36,12 +36,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         {
             PropertyIdObj propertyId = PropertyIdObj.Create (DA, 0);
             if (propertyId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input PropertyId failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input PropertyGuid failed to collect data.");
                 return;
             }
             ElementsObj elements = ElementsObj.Create (DA, 1);
             if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
             List<string> values = new List<string> ();
@@ -51,7 +51,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
 
             if (values.Count != 1 && elements.Elements.Count != values.Count) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of Values must be 1 or the same as the count of ElementIds.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of Values must be 1 or the same as the count of ElementGuids.");
                 return;
             }
 

@@ -23,9 +23,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddTextParameter ("ClassificationSystemId", "SystemId", "Found Classification System Id.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("ClassificationSystemGuid", "SystemGuid", "Found Classification System Guid.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ClassificationSystemNameAndVersion", "SystemNameAndVersion", "Found Classification System name and version.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("ClassificationItemId", "ItemId", "Found ClassificationItem id.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("ClassificationItemGuid", "ItemGuid", "Found ClassificationItem Guid.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ClassificationItemDisplayId", "ItemDisplayId", "Found ClassificationItem display id.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ClassificationItemFullDisplayId", "ItemFullDisplayId", "Found ClassificationItem full display id.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ClassificationItemName", "ItemName", "Found ClassificationItem name.", GH_ParamAccess.list);

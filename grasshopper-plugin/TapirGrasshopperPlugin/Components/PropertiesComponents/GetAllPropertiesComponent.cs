@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("PropertyId", "PropertyId", "Property id.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("PropertyGuid", "PropertyGuid", "Property Guid.", GH_ParamAccess.list);
             pManager.AddTextParameter ("GroupName", "GroupName", "Property group name.", GH_ParamAccess.list);
             pManager.AddTextParameter ("PropertyName", "PropertyName", "Property name.", GH_ParamAccess.list);
             pManager.AddTextParameter ("FullName", "FullName", "Full name containing the group and the property name.", GH_ParamAccess.list);

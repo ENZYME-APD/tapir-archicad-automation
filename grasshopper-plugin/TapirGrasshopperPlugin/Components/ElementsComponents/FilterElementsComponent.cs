@@ -38,13 +38,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to filter.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to filter.", GH_ParamAccess.list);
             pManager.AddTextParameter ("Filter", "Filter", "Element filter.", GH_ParamAccess.list, @default: new List<string> ());
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "List of element ids matching the filter.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "List of element Guids matching the filter.", GH_ParamAccess.list);
         }
 
         public override void AddedToDocument (GH_Document document)
@@ -58,7 +58,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 
