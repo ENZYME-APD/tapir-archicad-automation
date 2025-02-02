@@ -52,7 +52,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids of the found elements.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ElemType", "ElemType", "Element type.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("ElementID Property Values", "ElementIDPropValues", "ElementID property values.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("ElementID", "ElementID", "ElementID property values.", GH_ParamAccess.list);
             pManager.AddIntegerParameter ("StoryIndex", "StoryIndex", "Story index.", GH_ParamAccess.list);
             pManager.AddIntegerParameter ("LayerIndex", "LayerIndex", "Layer index.", GH_ParamAccess.list);
             pManager.AddIntegerParameter ("DrawOrder", "DrawOrder", "Drawing order.", GH_ParamAccess.list);
