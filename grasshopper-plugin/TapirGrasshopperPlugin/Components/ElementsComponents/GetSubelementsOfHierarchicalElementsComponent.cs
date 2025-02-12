@@ -31,14 +31,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids of hierarchical elements to get subelements of.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids of hierarchical elements to get subelements of.", GH_ParamAccess.list);
             pManager.AddTextParameter ("SubelemType", "SubelemType", "Type of subelements.", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids of the found hierarchical elements which has subelements with the given type.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("SubelementIds", "SubelementIds", "Subelements with the given type.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids of the found hierarchical elements which has subelements with the given type.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("SubelementGuids", "SubelementGuids", "Subelements with the given type.", GH_ParamAccess.tree);
         }
 
         public override void AddedToDocument (GH_Document document)
@@ -52,7 +52,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 

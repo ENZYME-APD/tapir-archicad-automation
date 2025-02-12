@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Currently selected element ids.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Currently selected element Guids.", GH_ParamAccess.list);
         }
 
         protected override void Solve (IGH_DataAccess DA)
