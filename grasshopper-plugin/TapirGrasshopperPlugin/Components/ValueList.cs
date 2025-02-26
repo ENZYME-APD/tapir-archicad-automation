@@ -3,7 +3,6 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Drawing;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Utilities;
@@ -58,8 +57,10 @@ namespace TapirGrasshopperPlugin.Components
 
             component.OnPingDocument ().AddObject (this, false);
             Attributes.Pivot = new PointF (
-                component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - this.Attributes.Bounds.Width * GH_GraphicsUtil.UiScale - 40.0f,
-                component.Attributes.Pivot.Y + component.Params.Input[inputIndex].Attributes.InputGrip.Y - this.Attributes.Bounds.Height / 2.0f);
+                //component.Attributes.Pivot.X + component.Params.Input[inputIndex].Attributes.InputGrip.X - this.Attributes.Bounds.Width * GH_GraphicsUtil.UiScale - 40.0f,
+                component.Attributes.Pivot.X - component.Attributes.Bounds.Left + component.Params.Input[inputIndex].Attributes.InputGrip.X - this.Attributes.Bounds.Width  * GH_GraphicsUtil.UiScale - 100.0f,
+                //component.Attributes.Pivot.Y + component.Params.Input[inputIndex].Attributes.InputGrip.Y - this.Attributes.Bounds.Height / 2.0f);
+                component.Attributes.Pivot.Y - component.Attributes.Bounds.Top  + component.Params.Input[inputIndex].Attributes.InputGrip.Y - this.Attributes.Bounds.Height * GH_GraphicsUtil.UiScale - 12.0f);
             component.Params.Input[inputIndex].AddSource (this);
             ExpireSolution (true);
         }
