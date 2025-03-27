@@ -605,6 +605,25 @@ var gCommands = [{
                                             "items": {
                                                 "$ref": "#/2DCoordinate"
                                             }
+                                        },
+                                        "linkData": {
+                                            "type": "object",
+                                            "description": "The marker link data",
+                                            "properties": {
+                                                "referredView": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view. Only if the marker refers to a view."
+                                                },
+                                                "referredDrawing": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
+                                                },
+                                                "referredPMViewPoint": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view point. Only if the marker refers to a view point."
+                                                }
+                                            },
+                                            "required": []
                                         }
                                     },
                                     "required": [
@@ -615,7 +634,8 @@ var gCommands = [{
                                         "detailIdStr",
                                         "isHorizontalMarker",
                                         "isWindowOpened",
-                                        "clipPolygon"
+                                        "clipPolygon",
+                                        "linkData"
                                     ]
                                 },
                                 {

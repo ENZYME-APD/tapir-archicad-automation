@@ -302,6 +302,25 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                             "items": {
                                                 "$ref": "#/2DCoordinate"
                                             }
+                                        },
+                                        "linkData": {
+                                            "type": "object",
+                                            "description": "The marker link data",
+                                            "properties": {
+                                                "referredView": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view. Only if the marker refers to a view."
+                                                },
+                                                "referredDrawing": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
+                                                },
+                                                "referredPMViewPoint": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view point. Only if the marker refers to a view point."
+                                                }
+                                            },
+                                            "required": []
                                         }
                                     },
                                     "required": [
@@ -312,7 +331,8 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                         "detailIdStr",
                                         "isHorizontalMarker",
                                         "isWindowOpened",
-                                        "clipPolygon"
+                                        "clipPolygon",
+                                        "linkData"
                                     ]
                                 },
                                 {
@@ -461,7 +481,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
 
             case API_DetailID:
-            case API_WorksheetID:
+            case API_WorksheetID: {
                 typeSpecificDetails.Add ("basePoint", Create2DCoordinateObjectState (elem.detail.pos));
                 typeSpecificDetails.Add ("angle", elem.detail.angle);
                 typeSpecificDetails.Add ("markerId", CreateGuidObjectState (elem.detail.markId));
@@ -470,7 +490,22 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("isHorizontalMarker", elem.detail.horizontalMarker);
                 typeSpecificDetails.Add ("isWindowOpened", elem.detail.windOpened);
                 AddPolygonFromMemoCoords (typeSpecificDetails, "clipPolygon", elem.header.guid);
-                break;
+                GS::ObjectState linkDataOS;
+                switch (elem.detail.linkData.referringLevel) {
+                    case API_ReferringLevel::ReferredToView:
+                        linkDataOS.Add ("referredView", CreateGuidObjectState (elem.detail.linkData.referredView));
+                        break;
+                    case API_ReferringLevel::ReferredToDrawing:
+                        linkDataOS.Add ("referredDrawing", CreateGuidObjectState (elem.detail.linkData.referredDrawing));
+                        break;
+                    case API_ReferringLevel::ReferredToViewPoint:
+                        linkDataOS.Add ("referredPMViewPoint", CreateGuidObjectState (elem.detail.linkData.referredPMViewPoint));
+                        break;
+                    default:
+                        break;
+                }
+                typeSpecificDetails.Add ("linkData", linkDataOS);
+            } break;
 
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
