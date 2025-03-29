@@ -266,6 +266,76 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                     ]
                                 },
                                 {
+                                    "title": "DetailWorksheetDetails",
+                                    "properties": {
+                                        "basePoint": {
+                                            "$ref": "#/2DCoordinate",
+                                            "description": "Coordinate of the base point"
+                                        },
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The rotation angle (radian) of the marker symbol"
+                                        },
+                                        "markerId": {
+                                            "$ref": "#/ElementId",
+                                            "description": "Guid of the marker symbol"
+                                        },
+                                        "detailName": {
+                                            "type": "string",
+                                            "description": "Name of the detail/worksheet"
+                                        },
+                                        "detailIdStr": {
+                                            "type": "string",
+                                            "description": "Reference ID of the detail/worksheet"
+                                        },
+                                        "isHorizontalMarker": {
+                                            "type": "boolean",
+                                            "description": "Marker symbol is always horizontal?"
+                                        },
+                                        "isWindowOpened": {
+                                            "type": "boolean",
+                                            "description": "Side (detail/worksheet) window is opened?"
+                                        },
+                                        "clipPolygon": {
+                                            "type": "array",
+                                            "description": "The clip polygon of the detail/worksheet",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "linkData": {
+                                            "type": "object",
+                                            "description": "The marker link data",
+                                            "properties": {
+                                                "referredView": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view. Only if the marker refers to a view."
+                                                },
+                                                "referredDrawing": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
+                                                },
+                                                "referredPMViewPoint": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view point. Only if the marker refers to a view point."
+                                                }
+                                            },
+                                            "required": []
+                                        }
+                                    },
+                                    "required": [
+                                        "basePoint",
+                                        "angle",
+                                        "markerId",
+                                        "detailName",
+                                        "detailIdStr",
+                                        "isHorizontalMarker",
+                                        "isWindowOpened",
+                                        "clipPolygon",
+                                        "linkData"
+                                    ]
+                                },
+                                {
                                     "title": "LibPartBasedElementDetails",
                                     "properties": {
                                         "libPart": {
@@ -379,15 +449,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     case APIWtyp_Poly:
                         {
                             typeSpecificDetails.Add ("geometryType", "Polygonal");
-                            const auto& polygonOutline = typeSpecificDetails.AddList<GS::ObjectState> ("polygonOutline");
-                            API_ElementMemo memo = {};
-                            err = ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All);
-                            if (err == NoError) {
-                                const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
-                                for (GSIndex iCoord = 1; iCoord < nCoords; ++iCoord) {
-                                    polygonOutline (Create2DCoordinateObjectState ((*memo.coords)[iCoord]));
-                                }
-                            }
+                            AddPolygonFromMemoCoords (typeSpecificDetails, "polygonOutline", elem.header.guid);
                             break;
                         }
                 }
@@ -417,6 +479,33 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_LampID:
                 AddLibPartBasedElementDetails (typeSpecificDetails, elem.object.owner, elem.object.libInd);
                 break;
+
+            case API_DetailID:
+            case API_WorksheetID: {
+                typeSpecificDetails.Add ("basePoint", Create2DCoordinateObjectState (elem.detail.pos));
+                typeSpecificDetails.Add ("angle", elem.detail.angle);
+                typeSpecificDetails.Add ("markerId", CreateGuidObjectState (elem.detail.markId));
+                typeSpecificDetails.Add ("detailName", GS::UniString (elem.detail.detailName));
+                typeSpecificDetails.Add ("detailIdStr", GS::UniString (elem.detail.detailIdStr));
+                typeSpecificDetails.Add ("isHorizontalMarker", elem.detail.horizontalMarker);
+                typeSpecificDetails.Add ("isWindowOpened", elem.detail.windOpened);
+                AddPolygonFromMemoCoords (typeSpecificDetails, "clipPolygon", elem.header.guid);
+                GS::ObjectState linkDataOS;
+                switch (elem.detail.linkData.referringLevel) {
+                    case API_ReferringLevel::ReferredToView:
+                        linkDataOS.Add ("referredView", CreateGuidObjectState (elem.detail.linkData.referredView));
+                        break;
+                    case API_ReferringLevel::ReferredToDrawing:
+                        linkDataOS.Add ("referredDrawing", CreateGuidObjectState (elem.detail.linkData.referredDrawing));
+                        break;
+                    case API_ReferringLevel::ReferredToViewPoint:
+                        linkDataOS.Add ("referredPMViewPoint", CreateGuidObjectState (elem.detail.linkData.referredPMViewPoint));
+                        break;
+                    default:
+                        break;
+                }
+                typeSpecificDetails.Add ("linkData", linkDataOS);
+            } break;
 
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");

@@ -569,6 +569,76 @@ var gCommands = [{
                                     ]
                                 },
                                 {
+                                    "title": "DetailWorksheetDetails",
+                                    "properties": {
+                                        "basePoint": {
+                                            "$ref": "#/2DCoordinate",
+                                            "description": "Coordinate of the base point"
+                                        },
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The rotation angle (radian) of the marker symbol"
+                                        },
+                                        "markerId": {
+                                            "$ref": "#/ElementId",
+                                            "description": "Guid of the marker symbol"
+                                        },
+                                        "detailName": {
+                                            "type": "string",
+                                            "description": "Name of the detail/worksheet"
+                                        },
+                                        "detailIdStr": {
+                                            "type": "string",
+                                            "description": "Reference ID of the detail/worksheet"
+                                        },
+                                        "isHorizontalMarker": {
+                                            "type": "boolean",
+                                            "description": "Marker symbol is always horizontal?"
+                                        },
+                                        "isWindowOpened": {
+                                            "type": "boolean",
+                                            "description": "Side (detail/worksheet) window is opened?"
+                                        },
+                                        "clipPolygon": {
+                                            "type": "array",
+                                            "description": "The clip polygon of the detail/worksheet",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "linkData": {
+                                            "type": "object",
+                                            "description": "The marker link data",
+                                            "properties": {
+                                                "referredView": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view. Only if the marker refers to a view."
+                                                },
+                                                "referredDrawing": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
+                                                },
+                                                "referredPMViewPoint": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view point. Only if the marker refers to a view point."
+                                                }
+                                            },
+                                            "required": []
+                                        }
+                                    },
+                                    "required": [
+                                        "basePoint",
+                                        "angle",
+                                        "markerId",
+                                        "detailName",
+                                        "detailIdStr",
+                                        "isHorizontalMarker",
+                                        "isWindowOpened",
+                                        "clipPolygon",
+                                        "linkData"
+                                    ]
+                                },
+                                {
                                     "title": "LibPartBasedElementDetails",
                                     "properties": {
                                         "libPart": {

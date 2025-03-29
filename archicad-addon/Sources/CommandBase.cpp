@@ -103,6 +103,18 @@ GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c)
     return GS::ObjectState ("x", c.x, "y", c.y);
 }
 
+void AddPolygonFromMemoCoords (GS::ObjectState& os, const GS::String& fieldName, const API_Guid& elemGuid)
+{
+    const auto& polygon = os.AddList<GS::ObjectState> (fieldName);
+    API_ElementMemo memo = {};
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon) == NoError) {
+        const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
+        for (GSIndex iCoord = 1; iCoord < nCoords; ++iCoord) {
+            polygon (Create2DCoordinateObjectState ((*memo.coords)[iCoord]));
+        }
+    }
+}
+
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
 {
     return GS::ObjectState (idFieldName, CreateGuidObjectState (guid));
