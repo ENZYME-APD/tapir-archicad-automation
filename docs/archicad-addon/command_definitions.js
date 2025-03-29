@@ -2269,6 +2269,85 @@ var gCommands = [{
                 "description": "Performs a receive operation on the currently opened Teamwork project.",
                 "inputScheme": null,
                 "outputScheme": null
+            },{
+                "name": "ReserveElements",
+                "version": "1.1.4",
+                "description": "Reserves elements in Teamwork mode.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            },
+            "conflicts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "user": {
+                            "type": "object",
+                            "properties": {
+                                "userId": {
+                                    "type": "number"
+                                },
+                                "userName": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "userId",
+                                "userName"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "user"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
+    }
+            },{
+                "name": "ReleaseElements",
+                "version": "1.1.4",
+                "description": "Releases elements in Teamwork mode.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Issue Management Commands",
