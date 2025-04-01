@@ -23,6 +23,7 @@
 #include "ClassificationCommands.hpp"
 #include "FavoritesCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NavigatorCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -126,10 +127,6 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetHotlinksCommand> (
             projectCommands, "0.1.0",
             "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project."
-        );
-        err |= RegisterCommand<PublishPublisherSetCommand> (
-            projectCommands, "0.1.0",
-            "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
         );
         err |= RegisterCommand<OpenProjectCommand> (
             projectCommands, "1.0.7",
@@ -314,6 +311,19 @@ GSErrCode Initialize (void)
             "Performs a receive operation on the currently opened Teamwork project."
         );
         AddCommandGroup (teamworkCommands);
+    }
+
+    { // Navigator Commands
+        CommandGroup navigatorCommands ("Navigator Commands");
+        err |= RegisterCommand<PublishPublisherSetCommand> (
+            navigatorCommands, "0.1.0",
+            "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
+        );
+        err |= RegisterCommand<UpdateDrawingsCommand> (
+            navigatorCommands, "1.1.4",
+            "Performs a drawing update on the given elements."
+        );
+        AddCommandGroup (navigatorCommands);
     }
 
     { // Issue Management Commands
