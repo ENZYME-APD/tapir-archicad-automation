@@ -253,30 +253,6 @@ var gCommands = [{
         ]
     }
             },{
-                "name": "PublishPublisherSet",
-                "version": "0.1.0",
-                "description": "Performs a publish operation on the currently opened project. Only the given publisher set will be published.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "publisherSetName": {
-                "type": "string",
-                "description": "The name of the publisher set.",
-                "minLength": 1
-            },
-            "outputPath": {
-                "type": "string",
-                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publiser set will be used.",
-                "minLength": 1
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "publisherSetName"
-        ]
-    },
-                "outputScheme": null
-            },{
                 "name": "OpenProject",
                 "version": "1.0.7",
                 "description": "Opens the given project.",
@@ -2269,6 +2245,52 @@ var gCommands = [{
                 "description": "Performs a receive operation on the currently opened Teamwork project.",
                 "inputScheme": null,
                 "outputScheme": null
+            }]
+        },{
+            "name": "Navigator Commands",
+            "commands": [{
+                "name": "PublishPublisherSet",
+                "version": "0.1.0",
+                "description": "Performs a publish operation on the currently opened project. Only the given publisher set will be published.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "publisherSetName": {
+                "type": "string",
+                "description": "The name of the publisher set.",
+                "minLength": 1
+            },
+            "outputPath": {
+                "type": "string",
+                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publiser set will be used.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "publisherSetName"
+        ]
+    },
+                "outputScheme": null
+            },{
+                "name": "UpdateDrawings",
+                "version": "1.1.4",
+                "description": "Performs a drawing update on the given elements.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+},
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Issue Management Commands",
