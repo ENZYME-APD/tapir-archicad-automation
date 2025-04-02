@@ -310,6 +310,14 @@ GSErrCode Initialize (void)
             teamworkCommands, "0.1.0",
             "Performs a receive operation on the currently opened Teamwork project."
         );
+        err |= RegisterCommand<ReserveElementsCommand> (
+            teamworkCommands, "1.1.4",
+            "Reserves elements in Teamwork mode."
+        );
+        err |= RegisterCommand<ReleaseElementsCommand> (
+            teamworkCommands, "1.1.4",
+            "Releases elements in Teamwork mode."
+        );
         AddCommandGroup (teamworkCommands);
     }
 

@@ -25,7 +25,7 @@ def RunCommand (command, parameters):
 
     return response_json['result'] if response_json['succeeded'] else None
 
-def RunTapirCommand (command, parameters, debug = True):
+def RunTapirCommand (command, parameters = {}, debug = True):
     if debug:
         print ('Command: ' + command)
         print ('Parameters:\n' + JsonDumpDictionary (parameters))
