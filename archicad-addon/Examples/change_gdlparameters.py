@@ -7,8 +7,8 @@ getElementsResponse = aclib.RunCommand ('API.GetElementsByType', { 'elementType'
 gdlParametersResponse = aclib.RunTapirCommand ('GetGDLParametersOfElements', getElementsResponse)
 elements = getElementsResponse['elements']
 
-changedGDLParameters = []
 for i in range(len(elements)):
+    changedGDLParameters = []
     for elemGdlParameters in gdlParametersResponse['gdlParametersOfElements']:
         for details in elemGdlParameters['parameters']:
             if details['name'] == gdlParameterName:
