@@ -556,6 +556,43 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetInputParametersSchem
                                 },
                                 "drawIndex": {
                                     "type": "number"
+                                },
+                                "typeSpecificDetails": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {
+                                            "title": "WallDetails",
+                                            "properties": {
+                                                "begCoordinate": {
+                                                    "$ref": "#/2DCoordinate"
+                                                },
+                                                "endCoordinate": {
+                                                    "$ref": "#/2DCoordinate"
+                                                },
+                                                "height": {
+                                                    "type": "number",
+                                                    "description": "height relative to bottom"
+                                                },
+                                                "bottomOffset": {
+                                                    "type": "number",
+                                                    "description": "base level of the wall relative to the floor level"
+                                                },
+                                                "offset": {
+                                                    "type": "number",
+                                                    "description": "wall's base line's offset from ref. line"
+                                                },
+                                                "begThickness": {
+                                                    "type": "number",
+                                                    "description": "Thickness at the beginning in case of trapezoid wall"
+                                                },
+                                                "endThickness": {
+                                                    "type": "number",
+                                                    "description": "Thickness at the end in case of trapezoid wall"
+                                                }
+                                            },
+                                            "required": []
+                                        }
+                                    ]
                                 }
                             },
                             "required": []
@@ -634,6 +671,46 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
             if (details->Get ("drawIndex", elem.header.drwIndex)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
+            }
+
+            const GS::ObjectState* typeSpecificDetails = details->Get ("typeSpecificDetails");
+            if (typeSpecificDetails != nullptr) {
+                switch (GetElemTypeId (elem.header)) {
+                    case API_WallID: {
+                        const GS::ObjectState* begCoordinate = typeSpecificDetails->Get ("begCoordinate");
+                        if (begCoordinate != nullptr) {
+                            elem.wall.begC = Get2DCoordinateFromObjectState (*begCoordinate);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, begC);
+                        }
+                        const GS::ObjectState* endCoordinate = typeSpecificDetails->Get ("endCoordinate");
+                        if (endCoordinate != nullptr) {
+                            elem.wall.endC = Get2DCoordinateFromObjectState (*endCoordinate);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, endC);
+                        }
+                        if (typeSpecificDetails->Get ("height", elem.wall.height)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, height);
+                        }
+                        if (typeSpecificDetails->Get ("offset", elem.wall.offset)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, offset);
+                        }
+
+                        switch (elem.wall.type) {
+                            case APIWtyp_Trapez: {
+                                if (typeSpecificDetails->Get ("begThickness", elem.wall.thickness)) {
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness);
+                                }
+                                if (typeSpecificDetails->Get ("endThickness", elem.wall.thickness1)) {
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness1);
+                                }
+                            } break;
+                            default:
+                            break;
+                        }
+                    } break;
+                    default:
+                    break;
+                }
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
             }
 
