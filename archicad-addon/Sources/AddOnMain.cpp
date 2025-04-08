@@ -331,6 +331,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Performs a drawing update on the given elements."
         );
+        err |= RegisterCommand<GetDatabaseIdFromNavigatorItemIdCommand> (
+            navigatorCommands, "1.1.4",
+            "Gets the ID of the database associated with the supplied navigator item id"
+        );
         AddCommandGroup (navigatorCommands);
     }
 

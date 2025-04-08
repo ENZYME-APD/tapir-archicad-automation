@@ -31,6 +31,68 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
     return APIFilt_None;
 }
 
+template <typename ListProxyType>
+static void GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
+{
+    API_ElemTypeID elemType = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    }
+
+    API_ElemFilterFlags filterFlags = APIFilt_None;
+    GS::Array<GS::UniString> filters;
+    if (parameters.Get ("filters", filters)) {
+        for (const GS::UniString& filter : filters) {
+            filterFlags |= ConvertFilterStringToFlag (filter);
+        }
+    }
+
+    GS::Array<API_Guid> elemList;
+    GSErrCode err = ACAPI_Element_GetElemList (elemType, &elemList, filterFlags);
+    if (err != NoError) {
+        elementsListProxy (CreateErrorResponse (err, "Failed to retrieve elements."));
+    }
+
+    for (const API_Guid& elemGuid : elemList) {
+        elementsListProxy (CreateElementIdObjectState (elemGuid));
+    }
+}
+
+template <typename ListProxyType>
+static GSErrCode ExecuteActionForEachDatabase (
+    const GS::Array<API_Guid>& databaseIds,
+    ListProxyType& elementsListProxy,
+    const std::function<void ()>& action)
+{
+    API_DatabaseInfo startingDatabase;
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    for (const API_Guid databaseId : databaseIds) {
+        API_DatabaseInfo targetDbInfo = {};
+        targetDbInfo.databaseUnId.elemSetId = databaseId;
+        err = ACAPI_Window_GetDatabaseInfo (&targetDbInfo);
+        if (err != NoError) {
+            elementsListProxy (CreateErrorResponse (err, "Failed to get database info"));
+            continue;
+        }
+        err = ACAPI_Database_ChangeCurrentDatabase (&targetDbInfo);
+        if (err != NoError) {
+            elementsListProxy (CreateErrorResponse (err, "Failed to switch to database"));
+            continue;
+        }
+        action();
+    }
+
+    err = ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    return NoError;
+}
+
 GetElementsByTypeCommand::GetElementsByTypeCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -55,6 +117,9 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema (
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -81,32 +146,26 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
 }
 
 GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    API_ElemTypeID elemType = API_ZombieElemID;
-    GS::UniString elementTypeStr;
-    if (parameters.Get ("elementType", elementTypeStr)) {
-        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
-    }
-
-    API_ElemFilterFlags filterFlags = APIFilt_None;
-    GS::Array<GS::UniString> filters;
-    if (parameters.Get ("filters", filters)) {
-        for (const GS::UniString& filter : filters) {
-            filterFlags |= ConvertFilterStringToFlag (filter);
-        }
-    }
-
-    GS::Array<API_Guid> elemList;
-    GSErrCode err = ACAPI_Element_GetElemList (elemType, &elemList, filterFlags);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to retrieve elements.");
-    }
-
+{   
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    for (const API_Guid& elemGuid : elemList) {
-        elements (CreateElementIdObjectState (elemGuid));
+    GS::Array<GS::ObjectState> databases;
+    bool databasesParameterExists = parameters.Get ("databases", databases);
+    if (!databasesParameterExists) {
+        GetElementsFromCurrentDatabase (parameters, elements);
+    }
+    else {
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromBatabaseArrayItem);
+
+        auto action = [&]() {
+            GetElementsFromCurrentDatabase (parameters, elements);
+        };
+
+        GSErrCode err = ExecuteActionForEachDatabase (databaseIds, elements, action);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get elements from each database");
+        }
     }
 
     return response;
@@ -128,6 +187,9 @@ GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () c
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
