@@ -32,7 +32,7 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
 }
 
 template <typename ListProxyType>
-static void GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
+static bool GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
     API_ElemTypeID elemType = API_ZombieElemID;
     GS::UniString elementTypeStr;
@@ -51,19 +51,21 @@ static void GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, L
     GS::Array<API_Guid> elemList;
     GSErrCode err = ACAPI_Element_GetElemList (elemType, &elemList, filterFlags);
     if (err != NoError) {
-        elementsListProxy (CreateErrorResponse (err, "Failed to retrieve elements."));
+        return false;
     }
 
     for (const API_Guid& elemGuid : elemList) {
         elementsListProxy (CreateElementIdObjectState (elemGuid));
     }
+    return true;
 }
 
 template <typename ListProxyType>
 static GSErrCode ExecuteActionForEachDatabase (
+    const std::function<bool ()>& action,
     const GS::Array<API_Guid>& databaseIds,
-    ListProxyType& elementsListProxy,
-    const std::function<void ()>& action)
+    ListProxyType& executionResultsListProxy
+    )
 {
     API_DatabaseInfo startingDatabase;
     GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
@@ -75,15 +77,21 @@ static GSErrCode ExecuteActionForEachDatabase (
         targetDbInfo.databaseUnId.elemSetId = databaseId;
         err = ACAPI_Window_GetDatabaseInfo (&targetDbInfo);
         if (err != NoError) {
-            elementsListProxy (CreateErrorResponse (err, "Failed to get database info"));
+            executionResultsListProxy (CreateFailedExecutionResult (err, "Failed to get database info"));
             continue;
         }
         err = ACAPI_Database_ChangeCurrentDatabase (&targetDbInfo);
         if (err != NoError) {
-            elementsListProxy (CreateErrorResponse (err, "Failed to switch to database"));
+            executionResultsListProxy (CreateFailedExecutionResult (err, "Failed to switch to database"));
             continue;
         }
-        action();
+        bool success = action();
+        if (success) {
+            executionResultsListProxy (CreateSuccessfulExecutionResult ());
+        }
+        else {
+            executionResultsListProxy (CreateFailedExecutionResult (err, "Failed to retrieve elements."));
+        }
     }
 
     err = ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
@@ -136,11 +144,15 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
             }
         },
         "additionalProperties": false,
         "required": [
-            "elements"
+            "elements",
+            "executionResultForDatabases"
         ]
     })";
 }
@@ -149,22 +161,24 @@ GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parame
 {   
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
 
     GS::Array<GS::ObjectState> databases;
     bool databasesParameterExists = parameters.Get ("databases", databases);
     if (!databasesParameterExists) {
         GetElementsFromCurrentDatabase (parameters, elements);
+        executionResultForDatabases (CreateSuccessfulExecutionResult());
     }
     else {
-        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromBatabaseArrayItem);
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
 
-        auto action = [&]() {
-            GetElementsFromCurrentDatabase (parameters, elements);
+        auto action = [&]() -> bool {
+            return GetElementsFromCurrentDatabase (parameters, elements);
         };
 
-        GSErrCode err = ExecuteActionForEachDatabase (databaseIds, elements, action);
+        GSErrCode err = ExecuteActionForEachDatabase (action, databaseIds, executionResultForDatabases);
         if (err != NoError) {
-            return CreateErrorResponse (err, "Failed to get elements from each database");
+            return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
         }
     }
 

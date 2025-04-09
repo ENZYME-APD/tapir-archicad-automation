@@ -1,13 +1,13 @@
 import aclib
 
-def get_drawing_guids_from_tree(current_branch, drawing_guids, navigator_item_type):
+def get_navigator_item_guids_from_tree(current_branch, navigator_item_guids, navigator_item_type):
     for navigator_item in current_branch:
         navigator_item = navigator_item['navigatorItem']
         if navigator_item['type'] == navigator_item_type:
-            drawing_guids.append(navigator_item['navigatorItemId'])
+            navigator_item_guids.append(navigator_item['navigatorItemId'])
         children = navigator_item.get('children')
         if children:
-            get_drawing_guids_from_tree(children, drawing_guids, navigator_item_type)
+            get_navigator_item_guids_from_tree(children, navigator_item_guids, navigator_item_type)
 
 
 navigator_tree_id = {'navigatorTreeId': {'type': 'LayoutBook'}}
@@ -15,18 +15,18 @@ navigator_tree_id = {'navigatorTreeId': {'type': 'LayoutBook'}}
 navigator_tree = aclib.RunCommand(command='API.GetNavigatorItemTree',
                                   parameters=navigator_tree_id)
 
-drawing_gids = []
-get_drawing_guids_from_tree(navigator_tree['navigatorTree']['rootItem']['children'],
-                            drawing_gids, navigator_item_type='LayoutItem')
+layout_guids = []
+get_navigator_item_guids_from_tree(navigator_tree['navigatorTree']['rootItem']['children'],
+                            layout_guids, navigator_item_type='LayoutItem')
 
-drawing_elements = [{'navigatorItemId': guid} for guid in drawing_gids]
+layout_elements = [{'navigatorItemId': guid} for guid in layout_guids]
 
 databases = aclib.RunTapirCommand(command='GetDatabaseIdFromNavigatorItemId',
-                                  parameters={'navigatorItemIds': drawing_elements}, debug=True)
+                                  parameters={'navigatorItemIds': layout_elements}, debug=True)
 
 drawings = aclib.RunTapirCommand(command='GetElementsByType',
                                  parameters={'elementType': 'Drawing',
                                              'databases': databases['databases']} )
 
 aclib.RunTapirCommand(command='UpdateDrawings',
-                      parameters=drawings, debug=True)
+                      parameters={'elements' : drawings['elements']}, debug=True)

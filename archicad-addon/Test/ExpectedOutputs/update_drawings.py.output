@@ -1,0 +1,147 @@
+Command: GetDatabaseIdFromNavigatorItemId
+Parameters:
+{
+    "navigatorItemIds": [
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "databases": [
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Drawing",
+    "databases": [
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "executionResultForDatabases": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: UpdateDrawings
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}

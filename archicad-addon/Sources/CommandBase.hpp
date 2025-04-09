@@ -40,7 +40,7 @@ inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)        
 inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      { return GetGuidFromArrayItem ("attributeId", os); }
 inline API_Guid GetGuidFromIssuesArrayItem (const GS::ObjectState& os)          { return GetGuidFromArrayItem ("issueId", os); }
 inline API_Guid GetGuidFromNavigatorItemIdArrayItem (const GS::ObjectState& os) { return GetGuidFromArrayItem ("navigatorItemId", os); }
-inline API_Guid GetGuidFromBatabaseArrayItem (const GS::ObjectState& os)      { return GetGuidFromArrayItem ("databaseId", os); }
+inline API_Guid GetGuidFromDatabaseArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("databaseId", os); }
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
