@@ -165,6 +165,26 @@ inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
     return ACAPI_Goodies (APIAny_CloseParametersID);
 }
 
+inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
+}
+
+inline GSErrCode ACAPI_Database_ChangeCurrentDatabase (API_DatabaseInfo* par1)
+{
+    return ACAPI_Database (APIDb_ChangeCurrentDatabaseID, (void*) par1);
+}
+
+inline GSErrCode ACAPI_Database_GetCurrentDatabase (API_DatabaseInfo* par1)
+{
+    return ACAPI_Database (APIDb_GetCurrentDatabaseID, (void*) par1);
+}
+
+inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
+{
+    return ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr);
+}
+
 #endif
 
 #ifndef ServerMainVers_2600
