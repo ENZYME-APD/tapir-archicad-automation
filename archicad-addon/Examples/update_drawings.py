@@ -26,7 +26,7 @@ databases = aclib.RunTapirCommand(command='GetDatabaseIdFromNavigatorItemId',
 
 drawings = aclib.RunTapirCommand(command='GetElementsByType',
                                  parameters={'elementType': 'Drawing',
-                                             'databases': databases['databases']} )
+                                             'databases': databases['databases']} )['elements']
 
 aclib.RunTapirCommand(command='UpdateDrawings',
-                      parameters={'elements' : drawings['elements']}, debug=True)
+                      parameters={'elements' : drawings}, debug=True)

@@ -151,8 +151,7 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
         },
         "additionalProperties": false,
         "required": [
-            "elements",
-            "executionResultForDatabases"
+            "elements"
         ]
     })";
 }
@@ -167,7 +166,6 @@ GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parame
     bool databasesParameterExists = parameters.Get ("databases", databases);
     if (!databasesParameterExists) {
         GetElementsFromCurrentDatabase (parameters, elements);
-        executionResultForDatabases (CreateSuccessfulExecutionResult());
     }
     else {
         const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
