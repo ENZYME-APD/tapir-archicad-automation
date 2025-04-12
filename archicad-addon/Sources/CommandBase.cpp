@@ -190,7 +190,8 @@ Stories GetStories ()
     if (err == NoError) {
         const short numberOfStories = storyInfo.lastStory - storyInfo.firstStory + 1;
         for (short i = 0; i < numberOfStories; ++i) {
-            stories.PushNew ((*storyInfo.data)[i].index, (*storyInfo.data)[i].level);
+            const Story story = { (*storyInfo.data)[i].index, (*storyInfo.data)[i].level };
+            stories.emplace ((*storyInfo.data)[i].index, story);
         }
         BMKillHandle ((GSHandle*) &storyInfo.data);
     }
@@ -200,19 +201,35 @@ Stories GetStories ()
 
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories)
 {
-    if (stories.IsEmpty ()) {
-        return { 0, zPos };
-    }
-
-    const Story* storyPtr = &stories[0];
-    for (const auto& story : stories) {
+    const Story* storyPtr = nullptr;
+    for (const auto& kv : stories) {
+        const Story& story = kv.second;
         if (story.level > zPos) {
             break;
         }
         storyPtr = &story;
     }
 
+    if (storyPtr == nullptr) {
+        return { 0, zPos };
+    }
+
     return { storyPtr->index, zPos - storyPtr->level };
+}
+
+double GetZPos (const short floorIndex, const double offset, const Stories& stories)
+{
+    if (stories.empty ()) {
+        return offset;
+    }
+
+    auto it = stories.find (floorIndex);
+    if (it == stories.end ()) {
+        return offset;
+    }
+
+    const Story& story = it->second;
+    return story.level + offset;
 }
 
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID)

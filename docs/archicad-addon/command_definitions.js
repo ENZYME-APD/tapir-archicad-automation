@@ -486,6 +486,9 @@ var gCommands = [{
                                         "endCoordinate": {
                                             "$ref": "#/2DCoordinate"
                                         },
+                                        "zCoordinate": {
+                                            "type": "number"
+                                        },
                                         "height": {
                                             "type": "number",
                                             "description": "height relative to bottom"
@@ -518,6 +521,7 @@ var gCommands = [{
                                         "geometryType",
                                         "begCoordinate",
                                         "endCoordinate",
+                                        "zCoordinate",
                                         "height",
                                         "bottomOffset",
                                         "offset"
@@ -537,6 +541,9 @@ var gCommands = [{
                                         "offsetFromTop": {
                                             "type": "number",
                                             "description": "Vertical distance between the reference level and the top of the slab."
+                                        },
+                                        "zCoordinate": {
+                                            "type": "number"
                                         },
                                         "polygonOutline": {
                                             "type": "array",
@@ -569,7 +576,9 @@ var gCommands = [{
                                         "thickness",
                                         "level",
                                         "offsetFromTop",
-                                        "polygonOutline"
+                                        "zCoordinate",
+                                        "polygonOutline",
+                                        "holes"
                                     ]
                                 },
                                 {

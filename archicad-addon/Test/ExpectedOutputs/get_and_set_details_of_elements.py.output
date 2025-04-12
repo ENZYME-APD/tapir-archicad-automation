@@ -2633,6 +2633,7 @@ Response:
             "id": "SW - 001",
             "details": {
                 "geometryType": "Straight",
+                "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 0,
                     "y": 0
@@ -2656,6 +2657,7 @@ Response:
                 "geometryType": "Trapezoid",
                 "begThickness": 0.2,
                 "endThickness": 0.25,
+                "zCoordinate": 3.2,
                 "begCoordinate": {
                     "x": 0,
                     "y": 0.4
@@ -2695,6 +2697,7 @@ Response:
                         "y": 0.6
                     }
                 ],
+                "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 1.35,
                     "y": 0.4
@@ -2734,6 +2737,7 @@ Response:
                         "y": 2.622139298
                     }
                 ],
+                "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 4.328634698,
                     "y": 1.273521209
@@ -5780,6 +5784,7 @@ Response:
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,
+                "zCoordinate": 0,
                 "polygonOutline": [
                     {
                         "x": 2.218574919,
@@ -5815,6 +5820,7 @@ Response:
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,
+                "zCoordinate": 0,
                 "polygonOutline": [
                     {
                         "x": 4.054339493,
@@ -7066,7 +7072,17 @@ Parameters:
             },
             "details": {
                 "layerIndex": 34,
-                "floorIndex": 1
+                "floorIndex": 1,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 4.7286346980000005,
+                        "y": 1.8735212090000002
+                    },
+                    "endCoordinate": {
+                        "x": 5.512474801,
+                        "y": 1.973521209
+                    }
+                }
             }
         },
         {
@@ -12014,6 +12030,7 @@ Response:
             "id": "SW - 001",
             "details": {
                 "geometryType": "Straight",
+                "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 0.4,
                     "y": 0.6
@@ -12037,6 +12054,7 @@ Response:
                 "geometryType": "Trapezoid",
                 "begThickness": 0.2,
                 "endThickness": 0.25,
+                "zCoordinate": 6.2,
                 "begCoordinate": {
                     "x": 0.4,
                     "y": 1
@@ -12076,6 +12094,7 @@ Response:
                         "y": 0.6
                     }
                 ],
+                "zCoordinate": 6,
                 "begCoordinate": {
                     "x": 1.35,
                     "y": 0.4
@@ -12115,6 +12134,7 @@ Response:
                         "y": 2.622139298
                     }
                 ],
+                "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 4.328634698,
                     "y": 1.273521209
@@ -15161,6 +15181,7 @@ Response:
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,
+                "zCoordinate": 3,
                 "polygonOutline": [
                     {
                         "x": 2.218574919,
@@ -15196,6 +15217,7 @@ Response:
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,
+                "zCoordinate": 3,
                 "polygonOutline": [
                     {
                         "x": 4.054339493,

@@ -5,6 +5,8 @@
 
 #include "ObjectState.hpp"
 
+#include <map>
+
 enum class CommonSchema
 {
     Used,
@@ -60,9 +62,10 @@ struct Story {
     short  index;
     double level;
 };
-using Stories = GS::Array<Story>;
+using Stories = std::map<short, Story>;
 
 Stories GetStories ();
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
+double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
