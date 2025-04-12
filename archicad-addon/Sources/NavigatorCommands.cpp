@@ -132,3 +132,79 @@ GS::ObjectState UpdateDrawingsCommand::Execute(const GS::ObjectState& parameters
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "DrawingUpdateCommand is not supported in Archicad versions earlier than 27.");
 #endif
 }
+
+GetDatabaseIdFromNavigatorItemIdCommand::GetDatabaseIdFromNavigatorItemIdCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetDatabaseIdFromNavigatorItemIdCommand::GetName () const
+{
+    return "GetDatabaseIdFromNavigatorItemId";
+}
+
+GS::Optional<GS::UniString> GetDatabaseIdFromNavigatorItemIdCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "navigatorItemIds": {
+            "$ref": "#/NavigatorItemIds"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "navigatorItemIds"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> GetDatabaseIdFromNavigatorItemIdCommand::GetResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "databases": {
+            "$ref": "#/Databases"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "databases"
+    ]
+})";
+}
+
+GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    parameters.Get ("navigatorItemIds", navigatorItemIds);
+
+    GS::ObjectState response;
+    const auto& databases = response.AddList<GS::ObjectState> ("databases");
+
+    for (const GS::ObjectState& navigatorItemIdArrayItem : navigatorItemIds) {
+        API_Guid navGuid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemIdArrayItem);
+        if (navGuid == APINULLGuid) {
+            databases (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing"));
+            continue;
+        }
+
+        API_NavigatorItem navigatorItem = {};
+        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+
+        if (err != NoError) {
+            databases (CreateErrorResponse (err, "Failed to get navigator item from guid"));
+            continue;
+        }
+
+        API_Guid databaseGuid = navigatorItem.db.databaseUnId.elemSetId;
+
+      if (databaseGuid == APINULLGuid) {
+            databases (CreateErrorResponse (APIERR_BADPARS, "Navigator item {navigatorItem.itemType} has no associated database"));
+            continue;
+        }
+
+        databases (CreateDatabaseIdObjectState (databaseGuid));
+    }
+    return response;
+}

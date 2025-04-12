@@ -1568,5 +1568,69 @@
             "parentUnID",
             "ownUnID"
         ]
+    },
+    "NavigatorItemIds": {
+        "type": "array",
+        "description": "A list of navigator item identifiers.",
+        "items": {
+            "$ref": "#/NavigatorItemIdArrayItem"
+        }
+    },
+    "NavigatorItemIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemId"
+        ]
+    },
+    "NavigatorItemId": {
+        "type": "object",
+        "description": "The identifier of a navigator item.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "Databases": {
+        "type": "array",
+        "description": "A list of Archicad databases.",
+        "items": {
+            "$ref": "#/DatabaseIdArrayItem"
+        }
+    },
+    "DatabaseIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "databaseId": {
+                "$ref": "#/DatabaseId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databaseId"
+        ]
+    },
+    "DatabaseId": {
+        "type": "object",
+        "description": "The identifier of a database",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
     }
 }
