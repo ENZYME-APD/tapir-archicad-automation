@@ -7009,7 +7009,17 @@ Parameters:
             },
             "details": {
                 "layerIndex": 34,
-                "floorIndex": 1
+                "floorIndex": 1,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 0.4,
+                        "y": 0.6
+                    },
+                    "endCoordinate": {
+                        "x": 1.534,
+                        "y": 0.7
+                    }
+                }
             }
         },
         {
@@ -7018,7 +7028,17 @@ Parameters:
             },
             "details": {
                 "layerIndex": 34,
-                "floorIndex": 2
+                "floorIndex": 2,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 0.4,
+                        "y": 1.0
+                    },
+                    "endCoordinate": {
+                        "x": 1.534,
+                        "y": 1.1
+                    }
+                }
             }
         },
         {
@@ -7027,7 +7047,17 @@ Parameters:
             },
             "details": {
                 "layerIndex": 34,
-                "floorIndex": 2
+                "floorIndex": 2,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 1.75,
+                        "y": 1.0
+                    },
+                    "endCoordinate": {
+                        "x": 2.884,
+                        "y": 1.1
+                    }
+                }
             }
         },
         {
@@ -11985,12 +12015,12 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "begCoordinate": {
-                    "x": 0,
-                    "y": 0
+                    "x": 0.4,
+                    "y": 0.6
                 },
                 "endCoordinate": {
-                    "x": 1.234,
-                    "y": 0
+                    "x": 1.534,
+                    "y": 0.7
                 },
                 "height": 3,
                 "bottomOffset": 0,
@@ -12008,12 +12038,12 @@ Response:
                 "begThickness": 0.2,
                 "endThickness": 0.25,
                 "begCoordinate": {
-                    "x": 0,
-                    "y": 0.4
+                    "x": 0.4,
+                    "y": 1
                 },
                 "endCoordinate": {
-                    "x": 1.234,
-                    "y": 0.4
+                    "x": 1.534,
+                    "y": 1.1
                 },
                 "height": 2.8,
                 "bottomOffset": 0.2,
