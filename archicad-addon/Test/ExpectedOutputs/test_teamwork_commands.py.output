@@ -1,0 +1,172 @@
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Wall"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: TeamworkReceive
+Parameters:
+{}
+Response:
+{
+    "error": {
+        "code": -2130313005,
+        "message": "Failed to receive changes."
+    },
+    "success": false
+}
+Error:
+{
+    "code": -2130313005,
+    "message": "Failed to receive changes."
+}
+Command: ReserveElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResult": {
+        "error": {
+            "code": -2130313005,
+            "message": "Failed to reserve elements."
+        },
+        "success": false
+    }
+}
+Command: MoveElements
+Parameters:
+{
+    "elementsWithMoveVectors": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: ReleaseElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "error": {
+        "code": -2130313005,
+        "message": "Failed to release elements."
+    },
+    "success": false
+}
+Error:
+{
+    "code": -2130313005,
+    "message": "Failed to release elements."
+}
+Command: TeamworkSend
+Parameters:
+{}
+Response:
+{
+    "error": {
+        "code": -2130313005,
+        "message": "Failed to send changes."
+    },
+    "success": false
+}
+Error:
+{
+    "code": -2130313005,
+    "message": "Failed to send changes."
+}
