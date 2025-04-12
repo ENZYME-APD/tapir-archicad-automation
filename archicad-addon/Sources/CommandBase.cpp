@@ -113,7 +113,6 @@ static GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
         return {};
     }
 
-    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
     const GSSize nPolys = BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32) - 1;
     std::vector<std::vector<API_Coord>> polygons (nPolys);
     for (GSIndex iPoly = 0; iPoly < nPolys; ++iPoly) {
