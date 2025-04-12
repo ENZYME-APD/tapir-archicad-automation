@@ -36,9 +36,11 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);
-inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)   { return GetGuidFromArrayItem ("elementId", os); }
-inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os) { return GetGuidFromArrayItem ("attributeId", os); }
-inline API_Guid GetGuidFromIssuesArrayItem (const GS::ObjectState& os)     { return GetGuidFromArrayItem ("issueId", os); }
+inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("elementId", os); }
+inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      { return GetGuidFromArrayItem ("attributeId", os); }
+inline API_Guid GetGuidFromIssuesArrayItem (const GS::ObjectState& os)          { return GetGuidFromArrayItem ("issueId", os); }
+inline API_Guid GetGuidFromNavigatorItemIdArrayItem (const GS::ObjectState& os) { return GetGuidFromArrayItem ("navigatorItemId", os); }
+inline API_Guid GetGuidFromDatabaseArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("databaseId", os); }
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
@@ -49,6 +51,7 @@ GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Gu
 inline GS::ObjectState CreateElementIdObjectState (const API_Guid& guid)   { return CreateIdObjectState ("elementId", guid); }
 inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { return CreateIdObjectState ("attributeId", guid); }
 inline GS::ObjectState CreateIssueIdObjectState (const API_Guid& guid)     { return CreateIdObjectState ("issueId", guid); }
+inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { return CreateIdObjectState ("databaseId", guid); }
 
 struct Story {
     Story (short _index, double _level)

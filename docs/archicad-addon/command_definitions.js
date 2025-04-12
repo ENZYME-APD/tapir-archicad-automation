@@ -308,6 +308,9 @@ var gCommands = [{
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -320,11 +323,15 @@ var gCommands = [{
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
             }
         },
         "additionalProperties": false,
         "required": [
-            "elements"
+            "elements",
+            "executionResultForDatabases"
         ]
     }
             },{
@@ -340,6 +347,9 @@ var gCommands = [{
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -350,11 +360,15 @@ var gCommands = [{
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
             }
         },
         "additionalProperties": false,
         "required": [
-            "elements"
+            "elements",
+            "executionResultForDatabases"
         ]
     }
             },{
@@ -2411,6 +2425,34 @@ var gCommands = [{
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
     }
+            },{
+                "name": "GetDatabaseIdFromNavigatorItemId",
+                "version": "1.1.4",
+                "description": "Gets the ID of the database associated with the supplied navigator item id",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "navigatorItemIds": {
+            "$ref": "#/NavigatorItemIds"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "navigatorItemIds"
+    ]
+},
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "databases": {
+            "$ref": "#/Databases"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "databases"
+    ]
+}
             }]
         },{
             "name": "Issue Management Commands",
