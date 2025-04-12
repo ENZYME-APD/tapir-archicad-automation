@@ -1,0 +1,116 @@
+import Grasshopper as gh
+import re
+
+# INPUTS:
+# - strings_list: List of strings (required)
+#   A list of strings to search through. Must be provided; empty or None will trigger an error message.
+# - search_str: String (required)
+#   The string to search for within the strings_list. Can be a single string or a list (first item used).
+#   Empty or None will trigger an error message.
+# - case_sensitive: Boolean (optional)
+#   Determines if the search is case-sensitive. Defaults to False if unconnected.
+#   Set to True for case-sensitive matching (e.g., "Test" ≠ "test").
+# - whole_words: Boolean (optional)
+#   Determines if the search matches whole words only. Defaults to True if unconnected.
+#   Set to True to match only whole words (e.g., "word" matches "word" but not "sword").
+#   Set to False for partial matches (e.g., "word" matches "sword").
+
+# Default settings (can be added as inputs to the component)
+if 'case_sensitive' not in globals() or case_sensitive is None:
+    case_sensitive = False  # Set to True for case-sensitive search
+if 'whole_words' not in globals() or whole_words is None:
+    whole_words = True    # Set to True to match only whole words
+
+# Initialize outputs
+filtered_list = []
+filtered_indices = []
+count = 0
+message = "Waiting for input strings."
+pattern = []  # New output: Boolean pattern
+
+# Set component UI
+ghenv.Component.Name = "Filter Contains String"
+ghenv.Component.NickName = "Filter Contains"
+ghenv.Component.Message = message
+
+def wrap_text(text, width=40):
+    """Wrap text to specified width, preserving words and existing newlines"""
+    # Split into lines based on existing newlines first
+    lines = text.split('\n')
+    wrapped_lines = []
+    
+    for line in lines:
+        words = line.split()
+        current_line = []
+        current_length = 0
+        
+        for word in words:
+            if current_length + len(word) + 1 <= width:  # +1 for space
+                current_line.append(word)
+                current_length += len(word) + 1
+            else:
+                if current_line:  # Add current line if it exists
+                    wrapped_lines.append(' '.join(current_line))
+                current_line = [word]
+                current_length = len(word)
+        
+        if current_line:  # Add the last line
+            wrapped_lines.append(' '.join(current_line))
+    
+    return '\n'.join(wrapped_lines)
+
+# Input validation
+if strings_list is None or not strings_list or search_str is None or search_str == "":
+    message = wrap_text("Error: Provide both a strings list and a search string.")
+    print(message)
+else:
+    # Ensure search_str is a string
+    search_str = str(search_str[0]) if isinstance(search_str, list) else str(search_str)
+    
+    try:
+        # Main Script - Store tuples of (index, string)
+        if whole_words:
+            pattern = r'\b' + re.escape(search_str) + r'\b'
+            if not case_sensitive:
+                pattern = re.compile(pattern, re.IGNORECASE)
+            else:
+                pattern = re.compile(pattern)
+            filtered_with_indices = [(i, s) for i, s in enumerate(strings_list) if re.search(pattern, s)]
+        else:
+            if case_sensitive:
+                filtered_with_indices = [(i, s) for i, s in enumerate(strings_list) if search_str in s]
+            else:
+                filtered_with_indices = [(i, s) for i, s in enumerate(strings_list) if search_str.lower() in s.lower()]
+        
+        # Unzip the filtered results into separate lists
+        filtered_indices, filtered_list = zip(*filtered_with_indices) if filtered_with_indices else ([], [])
+        
+        filtered_indices = list(filtered_indices)
+        filtered_list = list(filtered_list)
+        
+        # Generate boolean pattern
+        pattern = [False] * len(strings_list)  # Initialize with False for all
+        for idx in filtered_indices:
+            pattern[idx] = True
+        
+        count = len(filtered_list)
+        
+        # Create message parts
+        mode_whole_words = f"whole_words: {whole_words}"
+        mode_case_sensitive = f"case_sensitive: {case_sensitive}"
+        match_count = f"Number of matches: {count}"
+        
+        # Ensure three lines with explicit newlines
+        message = f"{mode_whole_words}\n{mode_case_sensitive}\n{match_count}"
+        message = wrap_text(message)  # Apply wrapping while preserving newlines
+    
+    except Exception as e:
+        message = wrap_text(f"Error: {str(e)}")
+        filtered_list = []
+        filtered_indices = []
+        count = 0
+        pattern = []
+        print(message)
+
+# Update Grasshopper component message
+ghenv.Component.Message = message

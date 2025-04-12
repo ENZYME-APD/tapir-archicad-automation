@@ -1,0 +1,79 @@
+from Grasshopper import DataTree
+from Grasshopper.Kernel.Data import GH_Path
+
+# Input validation
+if not data_list or not values_list:
+    message = "Error: Both data list and values list are required"
+    print(message)
+    output_tree = DataTree[object]()
+    unique_values = []
+    branch_counts = []
+else:
+    # Convert inputs to lists if they're not already
+    data_list = list(data_list)
+    values_list = list(values_list)
+    
+    # Validate lists have same length
+    if len(data_list) != len(values_list):
+        message = f"Error: Lists have different lengths. Data: {len(data_list)}, Values: {len(values_list)}"
+        print(message)
+        output_tree = DataTree[object]()
+        unique_values = []
+        branch_counts = []
+    else:
+        try:
+            # Create dictionary to store unique values and their data
+            groups = {}
+            
+            # Group data by values
+            for item, val in zip(data_list, values_list):
+                if val not in groups:
+                    groups[val] = []
+                groups[val].append(item)
+            
+            # Create data tree
+            output_tree = DataTree[object]()
+            
+            # Sort groups by values and create unique values list
+            sorted_items = sorted(groups.items())
+            unique_values = [value for value, _ in sorted_items]
+            branch_counts = [len(items) for _, items in sorted_items]
+            
+            # Add branches to tree
+            for i, (value, items) in enumerate(sorted_items):
+                path = GH_Path(i)
+                output_tree.AddRange(items, path)
+            
+            # Format message
+            message = f"Created {len(groups)} branches from {len(data_list)} items\n"
+            message += "Items per branch: \n"
+            
+            # Format items per branch with wrapping
+            items_message = ', '.join(f'{v}({c})' for v, c in zip(unique_values, branch_counts))
+            max_line_length = 40
+            current_line = ""
+            
+            for item in items_message.split(', '):
+                if len(current_line) + len(item) + 2 <= max_line_length:  # +2 for ", "
+                    current_line += item + ", "
+                else:
+                    message += current_line.rstrip(", ") + "\n"
+                    current_line = item + ", "
+            
+            # Add the last line
+            if current_line:
+                message += current_line.rstrip(", ")
+            
+            print(message)
+            
+        except Exception as e:
+            message = f"Error: {str(e)}"
+            print(message)
+            output_tree = DataTree[object]()
+            unique_values = []
+            branch_counts = []
+
+# Update component properties
+ghenv.Component.Name = "Group to Tree"
+ghenv.Component.NickName = 'GroupTree'
+ghenv.Component.Message = message

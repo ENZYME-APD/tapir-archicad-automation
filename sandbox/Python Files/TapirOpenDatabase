@@ -1,0 +1,18 @@
+import System
+from System.Diagnostics import ProcessStartInfo, Process
+
+def open_website(url):
+    """Opens the specified URL in the default browser."""
+    start_info = ProcessStartInfo()
+    start_info.FileName = url
+    start_info.UseShellExecute = True
+    Process.Start(start_info)
+
+# Set the component's name, nickname, and message
+ghenv.Component.Name = "Open Website Button"
+ghenv.Component.NickName = "Prop_DB"
+ghenv.Component.Message = "Properties GUID\nV1.0"  # Add a second line with "\n"
+
+# Inputs
+if Run:  # 'Run' is a Boolean input
+    open_website("https://app.teable.io/invite?invitationId=invgOX6hmfzc7LrBfsM&invitationCode=8dc6c46ad990e79239f36e071dc1264fc378581b86c109b268d6ca9cdc6fa544")  # Replace with your URL

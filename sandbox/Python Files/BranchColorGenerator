@@ -1,0 +1,177 @@
+import Grasshopper as gh
+from Grasshopper import DataTree
+from Grasshopper.Kernel.Data import GH_Path
+import System
+from System.Drawing import Color
+import random
+import colorsys
+
+# Set component UI
+ghenv.Component.Name = "Branch Color Generator"
+ghenv.Component.NickName = "BranchColorGen"
+
+# Default message
+message = "Waiting for input DataTree."
+
+# Initialize outputs
+colors = DataTree[object]()
+inputTree = DataTree[object]()
+
+# INPUTS:
+# - tree: DataTree[object] (required)
+#   A Grasshopper DataTree with multiple branches. Each branch can contain any number of items
+#   (e.g., colors, numbers, strings). The structure determines the output structure.
+# - initColor: System.Drawing.Color or GH_Colour (optional)
+#   The starting color for gradient or base color for complementary mode. Required for gradient
+#   and complementary modes. Defaults to black if unconnected or invalid.
+# - endColor: System.Drawing.Color or GH_Colour (optional)
+#   The ending color for gradient mode. Ignored in complementary and random modes.
+#   Defaults to white if unconnected or invalid.
+# - seed: Integer (optional)
+#   A seed value for random color generation. Used only in random mode. If unconnected,
+#   random colors are non-reproducible.
+# - flatten: Boolean (optional)
+#   Determines whether outputs are flattened. If True, both colors and inputTree are flattened
+#   into a single list at path {0}. If False, outputs retain the input tree's structure.
+#   Defaults to False if unconnected.
+# - mode: String or Integer (optional)
+#   Selects the color generation mode. Accepts "gradient", "complementary", or "random" (case-insensitive),
+#   or integers 0 (gradient), 1 (complementary), 2 (random). Defaults to "random" if unconnected.
+
+# Default values
+if 'flatten' not in globals() or flatten is None:
+    flatten = False
+if 'mode' not in globals() or mode is None:
+    mode = "random"  # Default mode
+
+# Function to generate a random color
+def random_color(used_colors, seed=None):
+    if seed is not None:
+        random.seed(seed)  # Set the seed for reproducibility
+    while True:
+        r = random.randint(0, 255)
+        g = random.randint(0, 255)
+        b = random.randint(0, 255)
+        color = Color.FromArgb(r, g, b)
+        # Ensure the color is unique (or close enough)
+        if color not in used_colors:
+            return color
+
+# Function to interpolate between two colors
+def interpolate_color(start_color, end_color, t):
+    r = int(start_color.R + (end_color.R - start_color.R) * t)
+    g = int(start_color.G + (end_color.G - start_color.G) * t)
+    b = int(start_color.B + (end_color.B - start_color.B) * t)
+    return Color.FromArgb(r, g, b)
+
+# Function to convert data to Grasshopper-compatible format
+def convert_to_gh_compatible(item):
+    if isinstance(item, (int, float)):
+        return gh.Kernel.Types.GH_Number(item)
+    elif isinstance(item, str):
+        return gh.Kernel.Types.GH_String(item)
+    elif isinstance(item, Color):
+        return gh.Kernel.Types.GH_Colour(item)
+    elif isinstance(item, gh.Kernel.Types.GH_Colour):
+        return item  # Already a GH_Colour, no conversion needed
+    return item  # Return as-is if no conversion is needed
+
+# Function to normalize mode input
+def get_mode(mode_input):
+    if isinstance(mode_input, (int, float)):
+        mode_map = {0: "gradient", 1: "complementary", 2: "random"}
+        return mode_map.get(int(mode_input), "random")
+    elif isinstance(mode_input, str):
+        return mode_input.lower().strip() in ["gradient", "complementary", "random"] and mode_input.lower() or "random"
+    return "random"
+
+# Function to generate evenly distributed colors based on initColor
+def get_distributed_colors(init_color, num_colors):
+    if not isinstance(init_color, Color):
+        init_color = Color.Black
+    # Convert initColor to HSV
+    r, g, b = init_color.R / 255.0, init_color.G / 255.0, init_color.B / 255.0
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    
+    colors_list = []
+    # First color is initColor
+    colors_list.append(init_color)
+    
+    if num_colors > 1:
+        # Calculate evenly spaced hues starting with the complement
+        hue_step = 1.0 / num_colors
+        for i in range(1, num_colors):
+            # Offset hue by complement (0.5) and distribute evenly
+            new_hue = (h + 0.5 + i * hue_step) % 1.0
+            r, g, b = colorsys.hsv_to_rgb(new_hue, s, v)
+            color = Color.FromArgb(int(r * 255), int(g * 255), int(b * 255))
+            colors_list.append(color)
+    
+    return colors_list
+
+# Process the input DataTree
+if tree is not None and isinstance(tree, DataTree[object]) and tree.BranchCount > 0:
+    num_branches = tree.BranchCount
+    
+    # Copy the input tree to the output with type conversion
+    for i in range(tree.BranchCount):
+        path = tree.Paths[i]
+        branch_data = tree.Branch(path)
+        # Convert each item to Grasshopper-compatible format
+        converted_data = [convert_to_gh_compatible(item) for item in branch_data]
+        inputTree.AddRange(converted_data, path)
+    
+    # Generate colors based on selected mode
+    branch_colors = []
+    selected_mode = get_mode(mode)
+    
+    if selected_mode == "gradient" and initColor is not None and endColor is not None:
+        start_color = initColor if isinstance(initColor, Color) else Color.Black
+        end_color = endColor if isinstance(endColor, Color) else Color.White
+        for i in range(num_branches):
+            t = i / (num_branches - 1) if num_branches > 1 else 0
+            color = interpolate_color(start_color, end_color, t)
+            branch_colors.append(color)
+        mode_message = "Mode: gradient"
+    elif selected_mode == "complementary" and initColor is not None:
+        branch_colors = get_distributed_colors(initColor, num_branches)
+        mode_message = "Mode: complementary"
+    else:  # Default to random mode
+        used_colors = set()
+        for _ in range(num_branches):
+            color = random_color(used_colors, seed)
+            branch_colors.append(color)
+            used_colors.add(color)
+        mode_message = "Mode: random color"
+    
+    # Populate the colors DataTree to mirror the input tree structure
+    for i in range(num_branches):
+        path = tree.Paths[i]
+        branch_data = tree.Branch(path)
+        # Duplicate the color for each item in the branch
+        color = branch_colors[i]
+        color_list = [color] * len(branch_data)  # Repeat the color for each item in the branch
+        colors.AddRange(color_list, path)
+    
+    # Handle flattening based on the flatten input
+    flatten_message = "output flattened" if flatten else "keep datatree"
+    if flatten:
+        # Flatten colors
+        flat_colors = DataTree[object]()
+        flat_colors.AddRange([color for branch in colors.Branches for color in branch], GH_Path(0))
+        colors = flat_colors
+        
+        # Flatten inputTree
+        flat_input = DataTree[object]()
+        all_data = []
+        for i in range(inputTree.BranchCount):
+            branch_data = list(inputTree.Branch(inputTree.Paths[i]))
+            all_data.extend(branch_data)
+        flat_input.AddRange(all_data, GH_Path(0))
+        inputTree = flat_input
+    
+    # Update message with mode and flatten info
+    message = f"{mode_message}\n{flatten_message}\n{num_branches} colors for {num_branches} branches"
+
+# Update component message
+ghenv.Component.Message = message
