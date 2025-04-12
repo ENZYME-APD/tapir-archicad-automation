@@ -524,6 +524,55 @@ var gCommands = [{
                                     ]
                                 },
                                 {
+                                    "title": "SlabDetails",
+                                    "properties": {
+                                        "thickness": {
+                                            "type": "number",
+                                            "description": "Thickness of the slab."
+                                        },
+                                        "level": {
+                                            "type": "number",
+                                            "description": "Distance of the reference level of the slab from the floor level."
+                                        },
+                                        "offsetFromTop": {
+                                            "type": "number",
+                                            "description": "Vertical distance between the reference level and the top of the slab."
+                                        },
+                                        "polygonOutline": {
+                                            "type": "array",
+                                            "description": "Polygon outline of the slab.",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "holes": {
+                                            "type": "array",
+                                            "description": "Holes of the slab.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "polygonOutline": {
+                                                        "type": "array",
+                                                        "description": "Polygon outline of the hole.",
+                                                        "items": {
+                                                            "$ref": "#/2DCoordinate"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "polygonOutline"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "thickness",
+                                        "level",
+                                        "offsetFromTop",
+                                        "polygonOutline"
+                                    ]
+                                },
+                                {
                                     "title": "ColumnDetails",
                                     "properties": {
                                         "origin": {
@@ -2238,13 +2287,17 @@ var gCommands = [{
                 "version": "0.1.0",
                 "description": "Performs a send operation on the currently opened Teamwork project.",
                 "inputScheme": null,
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "TeamworkReceive",
                 "version": "0.1.0",
                 "description": "Performs a receive operation on the currently opened Teamwork project.",
                 "inputScheme": null,
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "ReserveElements",
                 "version": "1.1.4",

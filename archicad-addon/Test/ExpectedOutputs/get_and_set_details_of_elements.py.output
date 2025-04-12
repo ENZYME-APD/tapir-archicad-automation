@@ -1283,6 +1283,31 @@ Response:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -1290,6 +1315,31 @@ Command: GetDetailsOfElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -2654,6 +2704,45 @@ Response:
                     "y": 0.4
                 },
                 "height": 2.5,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 002",
+            "details": {
+                "geometryType": "Polygonal",
+                "polygonOutline": [
+                    {
+                        "x": 4.328634698,
+                        "y": 1.273521209
+                    },
+                    {
+                        "x": 5.212474801,
+                        "y": 1.273521209
+                    },
+                    {
+                        "x": 4.625787836,
+                        "y": 2.622139298
+                    },
+                    {
+                        "x": 4.084816738,
+                        "y": 2.622139298
+                    }
+                ],
+                "begCoordinate": {
+                    "x": 4.328634698,
+                    "y": 1.273521209
+                },
+                "endCoordinate": {
+                    "x": 5.212474801,
+                    "y": 1.273521209
+                },
+                "height": 3,
                 "bottomOffset": 0,
                 "offset": 0
             }
@@ -5661,6 +5750,130 @@ Response:
             }
         },
         {
+            "type": "Object",
+            "floorIndex": 0,
+            "layerIndex": 47,
+            "drawIndex": 8,
+            "id": "",
+            "details": {
+                "libPart": {
+                    "name": "Built-in Detail Marker",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Slab",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SLA - 001",
+            "details": {
+                "thickness": 0.3,
+                "level": 0,
+                "offsetFromTop": 0.1,
+                "polygonOutline": [
+                    {
+                        "x": 2.218574919,
+                        "y": 1.239075573
+                    },
+                    {
+                        "x": 3.802060041,
+                        "y": 1.239075573
+                    },
+                    {
+                        "x": 3.374293918,
+                        "y": 2.59742063
+                    },
+                    {
+                        "x": 2.413696309,
+                        "y": 2.875093377
+                    },
+                    {
+                        "x": 2.218574919,
+                        "y": 2.679971987
+                    }
+                ],
+                "holes": []
+            }
+        },
+        {
+            "type": "Slab",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SLA - 002",
+            "details": {
+                "thickness": 0.3,
+                "level": 0,
+                "offsetFromTop": 0.1,
+                "polygonOutline": [
+                    {
+                        "x": 4.054339493,
+                        "y": 3.048820728
+                    },
+                    {
+                        "x": 5.071517543,
+                        "y": 3.048820728
+                    },
+                    {
+                        "x": 5.071517543,
+                        "y": 4.065998778
+                    },
+                    {
+                        "x": 4.054339493,
+                        "y": 4.065998778
+                    }
+                ],
+                "holes": [
+                    {
+                        "polygonOutline": [
+                            {
+                                "x": 4.400256223,
+                                "y": 3.655317902
+                            },
+                            {
+                                "x": 4.551118586,
+                                "y": 3.806180265
+                            },
+                            {
+                                "x": 4.765983163,
+                                "y": 3.591315688
+                            },
+                            {
+                                "x": 4.573976519,
+                                "y": 3.30787731
+                            }
+                        ]
+                    },
+                    {
+                        "polygonOutline": [
+                            {
+                                "x": 4.829985377,
+                                "y": 3.170729708
+                            },
+                            {
+                                "x": 4.957989806,
+                                "y": 3.399309045
+                            },
+                            {
+                                "x": 4.775126336,
+                                "y": 3.399309045
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "type": "Dimension",
             "floorIndex": 0,
             "layerIndex": 55,
@@ -5678,6 +5891,50 @@ Response:
             "id": "",
             "details": {
                 "error": "Not yet supported element type"
+            }
+        },
+        {
+            "type": "Detail",
+            "floorIndex": 0,
+            "layerIndex": 47,
+            "drawIndex": 9,
+            "id": "",
+            "details": {
+                "basePoint": {
+                    "x": 2.313326875,
+                    "y": 2.774525523
+                },
+                "angle": 0,
+                "markerId": {
+                    "guid": "<GUID>"
+                },
+                "detailName": "Detail",
+                "detailIdStr": "D-01",
+                "isHorizontalMarker": false,
+                "isWindowOpened": false,
+                "clipPolygon": [
+                    {
+                        "x": 2.050460637,
+                        "y": 3.00310486
+                    },
+                    {
+                        "x": 2.576193112,
+                        "y": 3.00310486
+                    },
+                    {
+                        "x": 2.576193112,
+                        "y": 2.545946186
+                    },
+                    {
+                        "x": 2.050460637,
+                        "y": 2.545946186
+                    }
+                ],
+                "linkData": {
+                    "referredPMViewPoint": {
+                        "guid": "<GUID>"
+                    }
+                }
             }
         },
         {
@@ -6771,6 +7028,15 @@ Parameters:
             "details": {
                 "layerIndex": 34,
                 "floorIndex": 2
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 34,
+                "floorIndex": 1
             }
         },
         {
@@ -8083,6 +8349,33 @@ Parameters:
                 "guid": "<GUID>"
             },
             "details": {
+                "layerIndex": 48,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 34,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 34,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
                 "layerIndex": 56,
                 "floorIndex": 1
             }
@@ -8093,6 +8386,15 @@ Parameters:
             },
             "details": {
                 "layerIndex": 56,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 48,
                 "floorIndex": 1
             }
         },
@@ -9095,6 +9397,9 @@ Response:
             "success": true
         },
         {
+            "success": true
+        },
+        {
             "error": {
                 "code": -2130312313,
                 "message": "Failed to change element"
@@ -9938,6 +10243,18 @@ Response:
                 "message": "Failed to change element"
             },
             "success": false
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
         },
         {
             "success": true
@@ -11628,6 +11945,31 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -11713,6 +12055,45 @@ Response:
                     "y": 0.4
                 },
                 "height": 2.5,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 1,
+            "layerIndex": 34,
+            "drawIndex": 7,
+            "id": "SW - 002",
+            "details": {
+                "geometryType": "Polygonal",
+                "polygonOutline": [
+                    {
+                        "x": 4.328634698,
+                        "y": 1.273521209
+                    },
+                    {
+                        "x": 5.212474801,
+                        "y": 1.273521209
+                    },
+                    {
+                        "x": 4.625787836,
+                        "y": 2.622139298
+                    },
+                    {
+                        "x": 4.084816738,
+                        "y": 2.622139298
+                    }
+                ],
+                "begCoordinate": {
+                    "x": 4.328634698,
+                    "y": 1.273521209
+                },
+                "endCoordinate": {
+                    "x": 5.212474801,
+                    "y": 1.273521209
+                },
+                "height": 3,
                 "bottomOffset": 0,
                 "offset": 0
             }
@@ -14720,6 +15101,130 @@ Response:
             }
         },
         {
+            "type": "Object",
+            "floorIndex": 0,
+            "layerIndex": 48,
+            "drawIndex": 8,
+            "id": "",
+            "details": {
+                "libPart": {
+                    "name": "Built-in Detail Marker",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Slab",
+            "floorIndex": 1,
+            "layerIndex": 34,
+            "drawIndex": 7,
+            "id": "SLA - 001",
+            "details": {
+                "thickness": 0.3,
+                "level": 0,
+                "offsetFromTop": 0.1,
+                "polygonOutline": [
+                    {
+                        "x": 2.218574919,
+                        "y": 1.239075573
+                    },
+                    {
+                        "x": 3.802060041,
+                        "y": 1.239075573
+                    },
+                    {
+                        "x": 3.374293918,
+                        "y": 2.59742063
+                    },
+                    {
+                        "x": 2.413696309,
+                        "y": 2.875093377
+                    },
+                    {
+                        "x": 2.218574919,
+                        "y": 2.679971987
+                    }
+                ],
+                "holes": []
+            }
+        },
+        {
+            "type": "Slab",
+            "floorIndex": 1,
+            "layerIndex": 34,
+            "drawIndex": 7,
+            "id": "SLA - 002",
+            "details": {
+                "thickness": 0.3,
+                "level": 0,
+                "offsetFromTop": 0.1,
+                "polygonOutline": [
+                    {
+                        "x": 4.054339493,
+                        "y": 3.048820728
+                    },
+                    {
+                        "x": 5.071517543,
+                        "y": 3.048820728
+                    },
+                    {
+                        "x": 5.071517543,
+                        "y": 4.065998778
+                    },
+                    {
+                        "x": 4.054339493,
+                        "y": 4.065998778
+                    }
+                ],
+                "holes": [
+                    {
+                        "polygonOutline": [
+                            {
+                                "x": 4.400256223,
+                                "y": 3.655317902
+                            },
+                            {
+                                "x": 4.551118586,
+                                "y": 3.806180265
+                            },
+                            {
+                                "x": 4.765983163,
+                                "y": 3.591315688
+                            },
+                            {
+                                "x": 4.573976519,
+                                "y": 3.30787731
+                            }
+                        ]
+                    },
+                    {
+                        "polygonOutline": [
+                            {
+                                "x": 4.829985377,
+                                "y": 3.170729708
+                            },
+                            {
+                                "x": 4.957989806,
+                                "y": 3.399309045
+                            },
+                            {
+                                "x": 4.775126336,
+                                "y": 3.399309045
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "type": "Dimension",
             "floorIndex": 0,
             "layerIndex": 56,
@@ -14737,6 +15242,50 @@ Response:
             "id": "",
             "details": {
                 "error": "Not yet supported element type"
+            }
+        },
+        {
+            "type": "Detail",
+            "floorIndex": 0,
+            "layerIndex": 48,
+            "drawIndex": 9,
+            "id": "",
+            "details": {
+                "basePoint": {
+                    "x": 2.313326875,
+                    "y": 2.774525523
+                },
+                "angle": 0,
+                "markerId": {
+                    "guid": "<GUID>"
+                },
+                "detailName": "Detail",
+                "detailIdStr": "D-01",
+                "isHorizontalMarker": false,
+                "isWindowOpened": false,
+                "clipPolygon": [
+                    {
+                        "x": 2.050460637,
+                        "y": 3.00310486
+                    },
+                    {
+                        "x": 2.576193112,
+                        "y": 3.00310486
+                    },
+                    {
+                        "x": 2.576193112,
+                        "y": 2.545946186
+                    },
+                    {
+                        "x": 2.050460637,
+                        "y": 2.545946186
+                    }
+                ],
+                "linkData": {
+                    "referredPMViewPoint": {
+                        "guid": "<GUID>"
+                    }
+                }
             }
         },
         {

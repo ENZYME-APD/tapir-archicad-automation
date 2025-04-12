@@ -245,6 +245,55 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                     ]
                                 },
                                 {
+                                    "title": "SlabDetails",
+                                    "properties": {
+                                        "thickness": {
+                                            "type": "number",
+                                            "description": "Thickness of the slab."
+                                        },
+                                        "level": {
+                                            "type": "number",
+                                            "description": "Distance of the reference level of the slab from the floor level."
+                                        },
+                                        "offsetFromTop": {
+                                            "type": "number",
+                                            "description": "Vertical distance between the reference level and the top of the slab."
+                                        },
+                                        "polygonOutline": {
+                                            "type": "array",
+                                            "description": "Polygon outline of the slab.",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "holes": {
+                                            "type": "array",
+                                            "description": "Holes of the slab.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "polygonOutline": {
+                                                        "type": "array",
+                                                        "description": "Polygon outline of the hole.",
+                                                        "items": {
+                                                            "$ref": "#/2DCoordinate"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "polygonOutline"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "thickness",
+                                        "level",
+                                        "offsetFromTop",
+                                        "polygonOutline"
+                                    ]
+                                },
+                                {
                                     "title": "ColumnDetails",
                                     "properties": {
                                         "origin": {
@@ -458,6 +507,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("height", elem.wall.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.wall.bottomOffset);
                 typeSpecificDetails.Add ("offset", elem.wall.offset);
+                break;
+
+            case API_SlabID:
+                typeSpecificDetails.Add ("thickness", elem.slab.thickness);
+                typeSpecificDetails.Add ("level", elem.slab.level);
+                typeSpecificDetails.Add ("offsetFromTop", elem.slab.offsetFromTop);
+                AddPolygonWithHolesFromMemoCoords (typeSpecificDetails, "polygonOutline", "holes", "polygonOutline", elem.header.guid);
                 break;
 
             case API_ColumnID:
