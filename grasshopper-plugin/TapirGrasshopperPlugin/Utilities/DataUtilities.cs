@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Grasshopper.Kernel.Types;
+using Rhino.Collections;
+using Rhino.Geometry;
 using TapirGrasshopperPlugin.Components.ElementsComponents;
 
 namespace TapirGrasshopperPlugin.Utilities
@@ -34,6 +36,16 @@ namespace TapirGrasshopperPlugin.Utilities
                 colors.Add (colors.Last ());
             }
             return colors;
+        }
+
+        static public Polyline ToPolygon (List<Point2D> points, double zCoordinate)
+        {
+            Point3dList polygon = new Point3dList ();
+            foreach (Point2D point2D in points) {
+                polygon.Add (new Point3d (point2D.X, point2D.Y, zCoordinate));
+            }
+            polygon.Add (polygon.First);
+            return new Polyline (polygon);
         }
     }
 

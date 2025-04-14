@@ -1,7 +1,9 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
+﻿using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Rhino.Collections;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -35,6 +37,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         [JsonProperty ("origin")]
         public Point2D OrigoCoordinate;
+    }
+
+    public class HoleDetails
+    {
+        [JsonProperty ("polygonOutline")]
+        public List<Point2D> PolygonCoordinates;
+    }
+
+    public class SlabDetails
+    {
+        [JsonProperty ("zCoordinate")]
+        public double ZCoordinate;
+
+        [JsonProperty ("polygonOutline")]
+        public List<Point2D> PolygonCoordinates;
+
+        [JsonProperty ("holes")]
+        public List<HoleDetails> Holes;
     }
 
     public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
@@ -250,5 +270,79 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ColumnDetails;
 
         public override Guid ComponentGuid => new Guid ("ded49694-9869-4670-af85-645535a7be6a");
+    }
+
+    public class GetDetailsOfSlabsComponent : ArchicadAccessorComponent
+    {
+        public GetDetailsOfSlabsComponent ()
+          : base (
+                "Slab Details",
+                "SlabDetails",
+                "Get details of slab elements.",
+                "Elements"
+            )
+        {
+        }
+
+        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get details of.", GH_ParamAccess.list);
+        }
+
+        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("SlabGuids", "SlabGuids", "Element Guids of the found slabs.", GH_ParamAccess.list);
+            pManager.AddCurveParameter ("Polygon outlines", "Polygons", "The outline polygons of the slabs.", GH_ParamAccess.list);
+            pManager.AddCurveParameter ("Holes", "HolePolygons", "The outline polygons of the holes in the slabs.", GH_ParamAccess.tree);
+        }
+
+        protected override void Solve (IGH_DataAccess DA)
+        {
+            ElementsObj inputElements = ElementsObj.Create (DA, 0);
+            if (inputElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+                return;
+            }
+
+            JObject inputElementsObj = JObject.FromObject (inputElements);
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            List<ElementIdItemObj> slabs = new List<ElementIdItemObj> ();
+            List<Polyline> polygons = new List<Polyline> ();
+            DataTree<Polyline> holePolygonsTree = new DataTree<Polyline> ();
+            DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
+            for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
+                DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Slab") {
+                    continue;
+                }
+                SlabDetails slabDetails = detailsOfElement.Details.ToObject<SlabDetails> ();
+                if (slabDetails == null) {
+                    continue;
+                }
+                slabs.Add (new ElementIdItemObj () {
+                    ElementId = inputElements.Elements[i].ElementId
+                });
+                polygons.Add (Utilities.Convert.ToPolygon (slabDetails.PolygonCoordinates, slabDetails.ZCoordinate));
+
+                List<Polyline> holePolygons = new List<Polyline> ();
+                foreach (HoleDetails holeDetail in slabDetails.Holes) {
+                    holePolygons.Add (Utilities.Convert.ToPolygon (holeDetail.PolygonCoordinates, slabDetails.ZCoordinate));
+                }
+                holePolygonsTree.AddRange (holePolygons, new GH_Path (slabs.Count));
+            }
+
+            DA.SetDataList (0, slabs);
+            DA.SetDataList (1, polygons);
+            DA.SetDataTree (2, holePolygonsTree);
+        }
+
+        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SlabDetails;
+
+        public override Guid ComponentGuid => new Guid ("f942eece-cc80-4945-a911-fe548dae4ae8");
     }
 }
