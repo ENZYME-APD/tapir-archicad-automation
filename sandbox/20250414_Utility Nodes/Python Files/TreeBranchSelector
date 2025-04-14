@@ -7,7 +7,7 @@ from Grasshopper.Kernel.Data import GH_Path
 
 # Initialize outputs
 selected_branch = []
-other_branches = []
+other_branches = DataTree[object]()  # Changed to DataTree to preserve branch structure
 total_branches = 0
 
 # Input validation
@@ -33,16 +33,15 @@ else:
             # Get branch data at the selected path
             selected_branch = list(input_tree.Branch(selected_path))
             
-            # Get all other branches
-            other_branches = []
+            # Get all other branches, preserving their structure
             for i, path in enumerate(paths):
                 if i != index:
                     branch_data = list(input_tree.Branch(path))
-                    other_branches.extend(branch_data)
+                    other_branches.AddRange(branch_data, path)  # Add each branch with its original path
             
             message = (f"Selected branch {index} of {total_branches} (Path: {selected_path})\n"
                       f"Selected branch: {len(selected_branch)} items\n"
-                      f"Other branches: {len(other_branches)} items")
+                      f"Other branches: {sum(1 for _ in other_branches.Paths)} branches with {sum(len(other_branches.Branch(p)) for p in other_branches.Paths)} items")
             print(message)
                 
     except Exception as e:
