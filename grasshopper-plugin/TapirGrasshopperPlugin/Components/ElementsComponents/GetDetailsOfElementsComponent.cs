@@ -1,4 +1,5 @@
-﻿using Grasshopper.Kernel;
+﻿using GH_IO.Types;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,6 +13,27 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class Point2D
     {
+        public static Point2D Create (object obj)
+        {
+            if (obj is Point2D) {
+                return obj as Point2D;
+            } else if (obj is Point2d) {
+                Point2d point2D = (Point2d) obj;
+                return new Point2D () {
+                    X = point2D.X,
+                    Y = point2D.Y
+                };
+            } else if (obj is Point3d) {
+                Point3d point3D = (Point3d) obj;
+                return new Point2D () {
+                    X = point3D.X,
+                    Y = point3D.Y
+                };
+            } else {
+                return null;
+            }
+        }
+
         [JsonProperty ("x")]
         public double X;
 
@@ -29,6 +51,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         [JsonProperty ("endCoordinate")]
         public Point2D EndCoordinate;
+
+        [JsonProperty ("height")]
+        public double Height;
     }
 
     public class ColumnDetails
@@ -137,6 +162,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter ("WallGuids", "WallGuids", "Element Guids of the found walls.", GH_ParamAccess.list);
             pManager.AddPointParameter ("Begin coordinate", "BegCoord", "Begin coordinate.", GH_ParamAccess.list);
             pManager.AddPointParameter ("End coordinate", "EndCoord", "End coordinate.", GH_ParamAccess.list);
+            pManager.AddNumberParameter ("Height", "Height", "Height.", GH_ParamAccess.list);
         }
 
         protected override void Solve (IGH_DataAccess DA)
@@ -157,6 +183,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             List<ElementIdItemObj> walls = new List<ElementIdItemObj> ();
             List<Point2d> begCoords = new List<Point2d> ();
             List<Point2d> endCoords = new List<Point2d> ();
+            List<double> heights = new List<double> ();
             DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
             for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
                 DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
@@ -175,11 +202,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 });
                 begCoords.Add (new Point2d (wallDetails.BegCoordinate.X, wallDetails.BegCoordinate.Y));
                 endCoords.Add (new Point2d (wallDetails.EndCoordinate.X, wallDetails.EndCoordinate.Y));
+                heights.Add (wallDetails.Height);
             }
 
             DA.SetDataList (0, walls);
             DA.SetDataList (1, begCoords);
             DA.SetDataList (2, endCoords);
+            DA.SetDataList (3, heights);
         }
 
         protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.WallDetails;
