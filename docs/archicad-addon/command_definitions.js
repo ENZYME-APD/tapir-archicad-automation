@@ -500,6 +500,9 @@ var gCommands = [{
                                         "endCoordinate": {
                                             "$ref": "#/2DCoordinate"
                                         },
+                                        "zCoordinate": {
+                                            "type": "number"
+                                        },
                                         "height": {
                                             "type": "number",
                                             "description": "height relative to bottom"
@@ -532,9 +535,64 @@ var gCommands = [{
                                         "geometryType",
                                         "begCoordinate",
                                         "endCoordinate",
+                                        "zCoordinate",
                                         "height",
                                         "bottomOffset",
                                         "offset"
+                                    ]
+                                },
+                                {
+                                    "title": "SlabDetails",
+                                    "properties": {
+                                        "thickness": {
+                                            "type": "number",
+                                            "description": "Thickness of the slab."
+                                        },
+                                        "level": {
+                                            "type": "number",
+                                            "description": "Distance of the reference level of the slab from the floor level."
+                                        },
+                                        "offsetFromTop": {
+                                            "type": "number",
+                                            "description": "Vertical distance between the reference level and the top of the slab."
+                                        },
+                                        "zCoordinate": {
+                                            "type": "number"
+                                        },
+                                        "polygonOutline": {
+                                            "type": "array",
+                                            "description": "Polygon outline of the slab.",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "holes": {
+                                            "type": "array",
+                                            "description": "Holes of the slab.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "polygonOutline": {
+                                                        "type": "array",
+                                                        "description": "Polygon outline of the hole.",
+                                                        "items": {
+                                                            "$ref": "#/2DCoordinate"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "polygonOutline"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "thickness",
+                                        "level",
+                                        "offsetFromTop",
+                                        "zCoordinate",
+                                        "polygonOutline",
+                                        "holes"
                                     ]
                                 },
                                 {
