@@ -22,10 +22,15 @@ namespace TapirGrasshopperPlugin.Components
         #region Fields
         private bool _isPressed = false;
         private RectangleF _buttonBounds = new RectangleF ();
+        private int _additionalWidth;
         #endregion Fields
 
         #region Constructor
-        public ButtonAttributes (IGH_Component component) : base (component) { }
+        public ButtonAttributes (IGH_Component component, int additionalWidth = 0)
+            : base (component)
+        {
+            _additionalWidth = additionalWidth;
+        }
         #endregion Constructor
 
         #region Methods
@@ -34,6 +39,7 @@ namespace TapirGrasshopperPlugin.Components
             base.Layout ();
 
             Rectangle componentCapsule = GH_Convert.ToRectangle (this.Bounds);
+            componentCapsule.Width += _additionalWidth;
             componentCapsule.Height += 30;
 
             Rectangle buttonCapsule = componentCapsule;
@@ -177,6 +183,28 @@ namespace TapirGrasshopperPlugin.Components
         }
 
         protected abstract void Solve (IGH_DataAccess DA);
+
+        public string CapsuleButtonText { get; set; }
+    }
+
+    abstract public class ButtonComponent : Component, IButtonComponent
+    {
+        private int _additionalWidth;
+
+        public ButtonComponent (string name, string nickname, string description, string subCategory, string buttonText, int additionalWidth = 0) :
+            base (name, nickname, description, subCategory)
+        {
+            CapsuleButtonText = buttonText;
+            _additionalWidth = additionalWidth;
+            CreateAttributes ();
+        }
+
+        public override void CreateAttributes ()
+        {
+            this.m_attributes = new ButtonAttributes (this, _additionalWidth);
+        }
+
+        public abstract void OnCapsuleButtonPressed ();
 
         public string CapsuleButtonText { get; set; }
     }
