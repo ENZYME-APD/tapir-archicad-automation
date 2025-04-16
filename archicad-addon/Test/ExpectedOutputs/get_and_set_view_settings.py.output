@@ -1,0 +1,279 @@
+Command: GetNavigatorViews
+Parameters:
+{
+    "navigatorItemIds": [
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "navigatorViews": [
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get navigator item from guid"
+            }
+        },
+        {
+            "modelViewOptions": "01 Site",
+            "layerCombination": "01 Site"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get navigator item from guid"
+            }
+        },
+        {
+            "modelViewOptions": "02 Drafting",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get navigator item from guid"
+            }
+        }
+    ]
+}
+Command: SetNavigatorViews
+Parameters:
+{
+    "navigatorItemIdsWithViewSettings": [
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "navigatorView": {
+                "modelViewOptions": "01 Site",
+                "layerCombination": "01 Site"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "navigatorView": {
+                "modelViewOptions": "02 Drafting",
+                "layerCombination": "02 Drafting"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "navigatorView": {
+                "modelViewOptions": "03 Building Plans",
+                "layerCombination": "01 Site"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "navigatorView": {
+                "modelViewOptions": "01 Site",
+                "layerCombination": "02 Drafting"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "navigatorView": {
+                "modelViewOptions": "02 Drafting",
+                "layerCombination": "01 Site"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "navigatorView": {
+                "modelViewOptions": "01 Site",
+                "layerCombination": "01 Site"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: GetNavigatorViews
+Parameters:
+{
+    "navigatorItemIds": [
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "navigatorViews": [
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get navigator item from guid"
+            }
+        },
+        {
+            "modelViewOptions": "01 Site",
+            "layerCombination": "01 Site"
+        },
+        {
+            "modelViewOptions": "02 Drafting",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "01 Site"
+        },
+        {
+            "modelViewOptions": "01 Site",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "02 Drafting",
+            "layerCombination": "01 Site"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get navigator item from guid"
+            }
+        },
+        {
+            "modelViewOptions": "01 Site",
+            "layerCombination": "01 Site"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get navigator item from guid"
+            }
+        }
+    ]
+}

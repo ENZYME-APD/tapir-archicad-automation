@@ -78,28 +78,7 @@ Parameters:
 }
 Response:
 {
-    "elements": [
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        }
-    ],
+    "elements": [],
     "executionResultForDatabases": [
         {
             "success": true
@@ -118,28 +97,7 @@ Response:
 Command: UpdateDrawings
 Parameters:
 {
-    "elements": [
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        }
-    ]
+    "elements": []
 }
 Response:
 {

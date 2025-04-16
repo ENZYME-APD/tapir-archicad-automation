@@ -1309,7 +1309,8 @@ Response:
                 "guid": "<GUID>"
             }
         }
-    ]
+    ],
+    "executionResultForDatabases": []
 }
 Command: GetDetailsOfElements
 Parameters:

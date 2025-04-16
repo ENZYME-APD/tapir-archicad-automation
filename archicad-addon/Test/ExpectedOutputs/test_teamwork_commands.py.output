@@ -26,7 +26,8 @@ Response:
                 "guid": "<GUID>"
             }
         }
-    ]
+    ],
+    "executionResultForDatabases": []
 }
 Command: TeamworkReceive
 Parameters:

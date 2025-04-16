@@ -1632,5 +1632,21 @@
         "required": [
             "guid"
         ]
+    },
+    "NavigatorView": {
+        "type": "object",
+        "description": "The settings of a navigator view",
+        "properties": {
+            "modelViewOptions": {
+                "type": "string",
+                "description": "The name of the model view options. If empty, the view has custom model view options."
+            },
+            "layerCombination": {
+                "type": "string",
+                "description": "The name of the layer combination. If empty, the view has custom layer combination."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
     }
 }
