@@ -11,8 +11,7 @@ Response:
                 "guid": "<GUID>"
             }
         }
-    ],
-    "executionResultForDatabases": []
+    ]
 }
 Command: GetSubelementsOfHierarchicalElements
 Parameters:

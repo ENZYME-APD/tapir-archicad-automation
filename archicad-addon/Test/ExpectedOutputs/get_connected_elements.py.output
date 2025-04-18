@@ -1309,8 +1309,7 @@ Response:
                 "guid": "<GUID>"
             }
         }
-    ],
-    "executionResultForDatabases": []
+    ]
 }
 Command: GetConnectedElements
 Parameters:

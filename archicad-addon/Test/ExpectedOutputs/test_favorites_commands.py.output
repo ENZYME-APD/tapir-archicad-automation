@@ -16,8 +16,7 @@ Response:
                 "guid": "<GUID>"
             }
         }
-    ],
-    "executionResultForDatabases": []
+    ]
 }
 Command: CreateFavoritesFromElements
 Parameters:
