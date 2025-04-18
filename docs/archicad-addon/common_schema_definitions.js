@@ -1633,7 +1633,7 @@ var gSchemaDefinitions = {
             "guid"
         ]
     },
-    "NavigatorView": {
+    "ViewSettings": {
         "type": "object",
         "description": "The settings of a navigator view",
         "properties": {

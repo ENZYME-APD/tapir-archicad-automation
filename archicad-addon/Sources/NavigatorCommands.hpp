@@ -31,20 +31,29 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class GetNavigatorViewsCommand : public CommandBase
+class GetModelViewOptionsCommand : public CommandBase
 {
 public:
-    GetNavigatorViewsCommand ();
+    GetModelViewOptionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetViewSettingsCommand : public CommandBase
+{
+public:
+    GetViewSettingsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class SetNavigatorViewsCommand : public CommandBase
+class SetViewSettingsCommand : public CommandBase
 {
 public:
-    SetNavigatorViewsCommand ();
+    SetViewSettingsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;

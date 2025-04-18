@@ -1,38 +1,37 @@
 import aclib
 
-def get_navigator_item_guids_from_tree(current_branch):
-    guids = []
-    for navigator_item in current_branch:
-        navigator_item = navigator_item['navigatorItem']
-        guids.append(navigator_item['navigatorItemId'])
-        children = navigator_item.get('children')
+def getNavigatorItemIdsFromTree(branch):
+    navigatorItemIds = []
+    for navigatorItem in branch:
+        navigatorItem = navigatorItem['navigatorItem']
+        navigatorItemIds.append({'navigatorItemId': navigatorItem['navigatorItemId']})
+        children = navigatorItem.get('children')
         if children:
-            guids.extend(get_navigator_item_guids_from_tree(children))
-    return guids
+            navigatorItemIds.extend(getNavigatorItemIdsFromTree(children))
+    return navigatorItemIds
 
-navigator_tree = aclib.RunCommand('API.GetNavigatorItemTree', {'navigatorTreeId': {'type': 'ViewMap'}})
+viewMapTree = aclib.RunCommand('API.GetNavigatorItemTree', {'navigatorTreeId': {'type': 'ViewMap'}})
+views = getNavigatorItemIdsFromTree(viewMapTree['navigatorTree']['rootItem']['children'])
 
-viewItems = [{'navigatorItemId': guid} for guid in get_navigator_item_guids_from_tree(navigator_tree['navigatorTree']['rootItem']['children'])]
+viewSettings = aclib.RunTapirCommand('GetViewSettings', {'navigatorItemIds': views})['viewSettings']
 
-viewSettings = aclib.RunTapirCommand('GetNavigatorViews', {'navigatorItemIds': viewItems})['navigatorViews']
-
-modelViewOptions = list(set([viewSetting['modelViewOptions'] for viewSetting in viewSettings if 'modelViewOptions' in viewSetting]))
-layerCombinations = list(set([viewSetting['layerCombination'] for viewSetting in viewSettings if 'layerCombination' in viewSetting]))
+modelViewOptions = aclib.RunTapirCommand('GetModelViewOptions')['modelViewOptions']
+layerCombinations = aclib.RunTapirCommand('GetAttributesByType', {'attributeType': 'LayerCombination'})['attributes']
 
 navigatorItemIdsWithViewSettings = []
 for i in range(len(viewSettings)):
     oldViewSettings = viewSettings[i]
     newViewSettings = {}
     if 'modelViewOptions' in oldViewSettings:
-        newViewSettings['modelViewOptions'] = modelViewOptions[i % len(modelViewOptions)]
+        newViewSettings['modelViewOptions'] = modelViewOptions[i % len(modelViewOptions)]['name']
     if 'layerCombination' in oldViewSettings:
-        newViewSettings['layerCombination'] = layerCombinations[i % len(layerCombinations)]
+        newViewSettings['layerCombination'] = layerCombinations[i % len(layerCombinations)]['name']
     if newViewSettings:
         navigatorItemIdsWithViewSettings.append({
-                'navigatorItemId': viewItems[i]['navigatorItemId'],
-                'navigatorView': newViewSettings
+                'navigatorItemId': views[i]['navigatorItemId'],
+                'viewSettings': newViewSettings
             })
 
-aclib.RunTapirCommand('SetNavigatorViews', {'navigatorItemIdsWithViewSettings': navigatorItemIdsWithViewSettings})
+aclib.RunTapirCommand('SetViewSettings', {'navigatorItemIdsWithViewSettings': navigatorItemIdsWithViewSettings})
 
-aclib.RunTapirCommand('GetNavigatorViews', {'navigatorItemIds': viewItems})
+aclib.RunTapirCommand('GetViewSettings', {'navigatorItemIds': views})

@@ -1913,24 +1913,24 @@ var gCommands = [{
                 "items": {
                     "type": "object",
                     "properties": {
-                        "attributeDetails": {
-                            "type": "object",
-                            "description": "Details of an attribute.",
-                            "properties": {
-                                "attributeId": {
-                                    "$ref": "#/AttributeId"
-                                },
-                                "index": {
-                                    "type": "number",
-                                    "description": "Index of the attribute."
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "Name of the attribute."
-                                }
-                            }
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "number",
+                            "description": "Index of the attribute."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the attribute."
                         }
-                    }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "index",
+                        "name"
+                    ]
                 }
             }
         },
@@ -2510,9 +2510,39 @@ var gCommands = [{
     ]
 }
             },{
-                "name": "GetNavigatorViews",
+                "name": "GetModelViewOptions",
                 "version": "1.1.4",
-                "description": "Gets the view settings of a navigator item",
+                "description": "Gets all model view options",
+                "inputScheme": null,
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "modelViewOptions": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "Represents the model view options.",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "modelViewOptions"
+    ]
+}
+            },{
+                "name": "GetViewSettings",
+                "version": "1.1.4",
+                "description": "Gets the view settings of navigator items",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2528,31 +2558,16 @@ var gCommands = [{
                 "outputScheme": {
     "type": "object",
     "properties": {
-        "navigatorViews": {
+        "viewSettings": {
             "type": "array",
             "item": {
                 "type": "object",
                 "description": "The settings of a navigator view or an error.",
                 "oneOf": [
                     {
-                        "properties": {
-                            "modelViewOptions": {
-                                "type": "string",
-                                "description": "The name of the model view options. If empty, the view has custom model view options."
-                            },
-                            "layerCombination": {
-                                "type": "string",
-                                "description": "The name of the layer combination. If empty, the view has custom layer combination."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "modelViewOptions",
-                            "layerCombination"
-                        ]
+                        "$ref": "#/ViewSettings"
                     },
                     {
-                        "title": "error",
                         "$ref": "#/ErrorItem"
                     }
                 ]
@@ -2561,13 +2576,13 @@ var gCommands = [{
     },
     "additionalProperties": false,
     "required": [
-        "navigatorViews"
+        "viewSettings"
     ]
 }
             },{
-                "name": "SetNavigatorViews",
+                "name": "SetViewSettings",
                 "version": "1.1.4",
-                "description": "Sets the view settings of a navigator item",
+                "description": "Sets the view settings of navigator items",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2579,14 +2594,14 @@ var gCommands = [{
                         "navigatorItemId": {
                             "$ref": "#/NavigatorItemId"
                         },
-                        "navigatorView": {
-                            "$ref": "#/NavigatorView"
+                        "viewSettings": {
+                            "$ref": "#/ViewSettings"
                         }
                     },
                     "additionalProperties": false,
                     "required": [
                         "navigatorItemId",
-                        "navigatorView"
+                        "viewSettings"
                     ]
                 }
             }
