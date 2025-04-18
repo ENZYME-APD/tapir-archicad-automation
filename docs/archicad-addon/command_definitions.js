@@ -330,8 +330,7 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [
-            "elements",
-            "executionResultForDatabases"
+            "elements"
         ]
     }
             },{
@@ -367,8 +366,7 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [
-            "elements",
-            "executionResultForDatabases"
+            "elements"
         ]
     }
             },{
@@ -1915,24 +1913,24 @@ var gCommands = [{
                 "items": {
                     "type": "object",
                     "properties": {
-                        "attributeDetails": {
-                            "type": "object",
-                            "description": "Details of an attribute.",
-                            "properties": {
-                                "attributeId": {
-                                    "$ref": "#/AttributeId"
-                                },
-                                "index": {
-                                    "type": "number",
-                                    "description": "Index of the attribute."
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "Name of the attribute."
-                                }
-                            }
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "number",
+                            "description": "Index of the attribute."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the attribute."
                         }
-                    }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "index",
+                        "name"
+                    ]
                 }
             }
         },
@@ -2511,6 +2509,120 @@ var gCommands = [{
         "databases"
     ]
 }
+            },{
+                "name": "GetModelViewOptions",
+                "version": "1.1.4",
+                "description": "Gets all model view options",
+                "inputScheme": null,
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "modelViewOptions": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "Represents the model view options.",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "modelViewOptions"
+    ]
+}
+            },{
+                "name": "GetViewSettings",
+                "version": "1.1.4",
+                "description": "Gets the view settings of navigator items",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": {
+                "$ref": "#/NavigatorItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIds"
+        ]
+    },
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "viewSettings": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "The settings of a navigator view or an error.",
+                "oneOf": [
+                    {
+                        "$ref": "#/ViewSettings"
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "viewSettings"
+    ]
+}
+            },{
+                "name": "SetViewSettings",
+                "version": "1.1.4",
+                "description": "Sets the view settings of navigator items",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "navigatorItemIdsWithViewSettings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId"
+                        },
+                        "viewSettings": {
+                            "$ref": "#/ViewSettings"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "navigatorItemId",
+                        "viewSettings"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIdsWithViewSettings"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
             }]
         },{
             "name": "Issue Management Commands",

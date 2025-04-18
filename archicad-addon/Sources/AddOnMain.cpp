@@ -335,6 +335,18 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Gets the ID of the database associated with the supplied navigator item id"
         );
+        err |= RegisterCommand<GetModelViewOptionsCommand> (
+            navigatorCommands, "1.1.4",
+            "Gets all model view options"
+        );
+        err |= RegisterCommand<GetViewSettingsCommand> (
+            navigatorCommands, "1.1.4",
+            "Gets the view settings of navigator items"
+        );
+        err |= RegisterCommand<SetViewSettingsCommand> (
+            navigatorCommands, "1.1.4",
+            "Sets the view settings of navigator items"
+        );
         AddCommandGroup (navigatorCommands);
     }
 

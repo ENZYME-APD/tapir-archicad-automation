@@ -160,7 +160,6 @@ GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parame
 {   
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
-    const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
 
     GS::Array<GS::ObjectState> databases;
     bool databasesParameterExists = parameters.Get ("databases", databases);
@@ -168,6 +167,8 @@ GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parame
         GetElementsFromCurrentDatabase (parameters, elements);
     }
     else {
+        const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+
         const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
 
         auto action = [&]() -> bool {

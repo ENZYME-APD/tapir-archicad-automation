@@ -80,24 +80,24 @@ GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetResponseSchema () con
                 "items": {
                     "type": "object",
                     "properties": {
-                        "attributeDetails": {
-                            "type": "object",
-                            "description": "Details of an attribute.",
-                            "properties": {
-                                "attributeId": {
-                                    "$ref": "#/AttributeId"
-                                },
-                                "index": {
-                                    "type": "number",
-                                    "description": "Index of the attribute."
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "Name of the attribute."
-                                }
-                            }
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "number",
+                            "description": "Index of the attribute."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the attribute."
                         }
-                    }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "index",
+                        "name"
+                    ]
                 }
             }
         },
