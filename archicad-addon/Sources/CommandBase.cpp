@@ -3,6 +3,8 @@
 #include "SchemaDefinitions.hpp"
 #include "MigrationHelper.hpp"
 
+#include <vector>
+
 constexpr const char* CommandNamespace = "TapirCommand";
 
 CommandBase::CommandBase (CommonSchema commonSchema) :
@@ -103,15 +105,64 @@ GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c)
     return GS::ObjectState ("x", c.x, "y", c.y);
 }
 
+std::vector<std::vector<API_Coord>>
+static GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
+{
+    API_ElementMemo memo = {};
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon) != NoError) {
+        return {};
+    }
+
+    const GSSize nPolys = BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32) - 1;
+    std::vector<std::vector<API_Coord>> polygons (nPolys);
+    for (GSIndex iPoly = 0; iPoly < nPolys; ++iPoly) {
+        const auto startIndex = (*memo.pends)[iPoly] + 1;
+        const auto endIndex = (*memo.pends)[iPoly + 1];
+        std::vector<API_Coord>& polygon = polygons[iPoly];
+        polygon.reserve (endIndex - startIndex);
+        for (GSIndex iCoord = startIndex; iCoord < endIndex; ++iCoord) {
+            polygon.push_back ((*memo.coords)[iCoord]);
+        }
+    }
+
+    return polygons;
+}
+
 void AddPolygonFromMemoCoords (GS::ObjectState& os, const GS::String& fieldName, const API_Guid& elemGuid)
 {
     const auto& polygon = os.AddList<GS::ObjectState> (fieldName);
-    API_ElementMemo memo = {};
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon) == NoError) {
-        const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
-        for (GSIndex iCoord = 1; iCoord < nCoords; ++iCoord) {
-            polygon (Create2DCoordinateObjectState ((*memo.coords)[iCoord]));
+
+    const auto polygons = GetPolygonsFromMemoCoords (elemGuid);
+    if (polygons.empty ()) {
+        return;
+    }
+
+    for (const auto& coord : polygons[0]) {
+        polygon (Create2DCoordinateObjectState (coord));
+    }
+}
+
+void AddPolygonWithHolesFromMemoCoords (GS::ObjectState& os, const GS::String& polygonFieldName, const GS::String& holesArrayFieldName, const GS::String& holePolygonFieldName, const API_Guid& elemGuid)
+{
+    const auto& polygon = os.AddList<GS::ObjectState> (polygonFieldName);
+    const auto& holes = os.AddList<GS::ObjectState> (holesArrayFieldName);
+
+    const auto polygons = GetPolygonsFromMemoCoords (elemGuid);
+    if (polygons.empty ()) {
+        return;
+    }
+
+    for (const auto& coord : polygons[0]) {
+        polygon (Create2DCoordinateObjectState (coord));
+    }
+
+    for (size_t i = 1; i < polygons.size (); ++i) {
+        GS::ObjectState hole;
+        const auto& holePolygon = hole.AddList<GS::ObjectState> (holePolygonFieldName);
+        for (const auto& coord : polygons[i]) {
+            holePolygon (Create2DCoordinateObjectState (coord));
         }
+        holes (hole);
     }
 }
 
@@ -139,7 +190,8 @@ Stories GetStories ()
     if (err == NoError) {
         const short numberOfStories = storyInfo.lastStory - storyInfo.firstStory + 1;
         for (short i = 0; i < numberOfStories; ++i) {
-            stories.PushNew ((*storyInfo.data)[i].index, (*storyInfo.data)[i].level);
+            const Story story = { (*storyInfo.data)[i].index, (*storyInfo.data)[i].level };
+            stories.emplace ((*storyInfo.data)[i].index, story);
         }
         BMKillHandle ((GSHandle*) &storyInfo.data);
     }
@@ -149,19 +201,35 @@ Stories GetStories ()
 
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories)
 {
-    if (stories.IsEmpty ()) {
-        return { 0, zPos };
-    }
-
-    const Story* storyPtr = &stories[0];
-    for (const auto& story : stories) {
+    const Story* storyPtr = nullptr;
+    for (const auto& kv : stories) {
+        const Story& story = kv.second;
         if (story.level > zPos) {
             break;
         }
         storyPtr = &story;
     }
 
+    if (storyPtr == nullptr) {
+        return { 0, zPos };
+    }
+
     return { storyPtr->index, zPos - storyPtr->level };
+}
+
+double GetZPos (const short floorIndex, const double offset, const Stories& stories)
+{
+    if (stories.empty ()) {
+        return offset;
+    }
+
+    auto it = stories.find (floorIndex);
+    if (it == stories.end ()) {
+        return offset;
+    }
+
+    const Story& story = it->second;
+    return story.level + offset;
 }
 
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID)

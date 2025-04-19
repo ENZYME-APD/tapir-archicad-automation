@@ -115,6 +115,16 @@ inline GSErrCode ACAPI_Navigator_GetNavigatorSet (API_NavigatorSet* navigatorSet
     return ACAPI_Navigator (APINavigator_GetNavigatorSetID, navigatorSet, index);
 }
 
+inline GSErrCode ACAPI_Navigator_GetNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorViewID, navigatorItem, navigatorView);
+}
+
+inline GSErrCode ACAPI_Navigator_ChangeNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView)
+{
+    return ACAPI_Navigator (APINavigator_ChangeNavigatorViewID, navigatorItem, navigatorView);
+}
+
 inline GSErrCode ACAPI_View_Redraw ()
 {
     return ACAPI_Automate (APIDo_RedrawID);

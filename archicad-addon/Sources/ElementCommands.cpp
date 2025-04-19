@@ -160,7 +160,6 @@ GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parame
 {   
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
-    const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
 
     GS::Array<GS::ObjectState> databases;
     bool databasesParameterExists = parameters.Get ("databases", databases);
@@ -168,6 +167,8 @@ GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parame
         GetElementsFromCurrentDatabase (parameters, elements);
     }
     else {
+        const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+
         const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
 
         auto action = [&]() -> bool {
@@ -281,6 +282,9 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                         "endCoordinate": {
                                             "$ref": "#/2DCoordinate"
                                         },
+                                        "zCoordinate": {
+                                            "type": "number"
+                                        },
                                         "height": {
                                             "type": "number",
                                             "description": "height relative to bottom"
@@ -313,9 +317,64 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                         "geometryType",
                                         "begCoordinate",
                                         "endCoordinate",
+                                        "zCoordinate",
                                         "height",
                                         "bottomOffset",
                                         "offset"
+                                    ]
+                                },
+                                {
+                                    "title": "SlabDetails",
+                                    "properties": {
+                                        "thickness": {
+                                            "type": "number",
+                                            "description": "Thickness of the slab."
+                                        },
+                                        "level": {
+                                            "type": "number",
+                                            "description": "Distance of the reference level of the slab from the floor level."
+                                        },
+                                        "offsetFromTop": {
+                                            "type": "number",
+                                            "description": "Vertical distance between the reference level and the top of the slab."
+                                        },
+                                        "zCoordinate": {
+                                            "type": "number"
+                                        },
+                                        "polygonOutline": {
+                                            "type": "array",
+                                            "description": "Polygon outline of the slab.",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "holes": {
+                                            "type": "array",
+                                            "description": "Holes of the slab.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "polygonOutline": {
+                                                        "type": "array",
+                                                        "description": "Polygon outline of the hole.",
+                                                        "items": {
+                                                            "$ref": "#/2DCoordinate"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "polygonOutline"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "thickness",
+                                        "level",
+                                        "offsetFromTop",
+                                        "zCoordinate",
+                                        "polygonOutline",
+                                        "holes"
                                     ]
                                 },
                                 {
@@ -478,6 +537,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
 
+    const Stories stories = GetStories ();
+
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
@@ -527,11 +588,20 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             break;
                         }
                 }
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.wall.bottomOffset, stories));
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.wall.begC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.wall.endC));
                 typeSpecificDetails.Add ("height", elem.wall.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.wall.bottomOffset);
                 typeSpecificDetails.Add ("offset", elem.wall.offset);
+                break;
+
+            case API_SlabID:
+                typeSpecificDetails.Add ("thickness", elem.slab.thickness);
+                typeSpecificDetails.Add ("level", elem.slab.level);
+                typeSpecificDetails.Add ("offsetFromTop", elem.slab.offsetFromTop);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.slab.level, stories));
+                AddPolygonWithHolesFromMemoCoords (typeSpecificDetails, "polygonOutline", "holes", "polygonOutline", elem.header.guid);
                 break;
 
             case API_ColumnID:

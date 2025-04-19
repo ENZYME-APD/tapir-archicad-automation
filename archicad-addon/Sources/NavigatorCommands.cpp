@@ -199,12 +199,289 @@ GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::Obje
 
         API_Guid databaseGuid = navigatorItem.db.databaseUnId.elemSetId;
 
-      if (databaseGuid == APINULLGuid) {
+        if (databaseGuid == APINULLGuid) {
             databases (CreateErrorResponse (APIERR_BADPARS, "Navigator item {navigatorItem.itemType} has no associated database"));
             continue;
         }
 
         databases (CreateDatabaseIdObjectState (databaseGuid));
     }
+    return response;
+}
+
+GetModelViewOptionsCommand::GetModelViewOptionsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetModelViewOptionsCommand::GetName () const
+{
+    return "GetModelViewOptions";
+}
+
+GS::Optional<GS::UniString> GetModelViewOptionsCommand::GetResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "modelViewOptions": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "Represents the model view options.",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "modelViewOptions"
+    ]
+})";
+}
+
+GS::ObjectState GetModelViewOptionsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    const auto& modelViewOptions = response.AddList<GS::ObjectState> ("modelViewOptions");
+
+#ifdef ServerMainVers_2700
+    UInt32 count = 0;
+    ACAPI_Navigator_ModelViewOptions_GetNum (count);
+
+    for (UInt32 i = 1; i <= count; ++i) {
+        GS::UniString name;
+        API_ModelViewOptionsType modelViewOption = {};
+        modelViewOption.head.index = i;
+        modelViewOption.head.uniStringNamePtr = &name;
+
+        if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) == NoError) {
+            modelViewOptions (GS::ObjectState ("name", name));
+        }
+    }
+#else
+    API_AttributeIndex count = 0;
+    ACAPI_Attribute_GetNum (API_ModelViewOptionsID, &count);
+
+    for (API_AttributeIndex i = 1; i <= count; ++i) {
+        GS::UniString name;
+        API_Attribute attr = {};
+        attr.header.typeID = API_ModelViewOptionsID;
+        attr.header.index = i;
+        attr.header.uniStringNamePtr = &name;
+
+        if (ACAPI_Attribute_Get (&attr) == NoError) {
+            modelViewOptions (GS::ObjectState ("name", name));
+        }
+    }
+#endif
+
+    return response;
+}
+
+GetViewSettingsCommand::GetViewSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetViewSettingsCommand::GetName () const
+{
+    return "GetViewSettings";
+}
+
+GS::Optional<GS::UniString> GetViewSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": {
+                "$ref": "#/NavigatorItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetViewSettingsCommand::GetResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "viewSettings": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "The settings of a navigator view or an error.",
+                "oneOf": [
+                    {
+                        "$ref": "#/ViewSettings"
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "viewSettings"
+    ]
+})";
+}
+
+GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    parameters.Get ("navigatorItemIds", navigatorItemIds);
+
+    GS::ObjectState response;
+    const auto& viewSettings = response.AddList<GS::ObjectState> ("viewSettings");
+
+    for (const GS::ObjectState& navigatorItemIdArrayItem : navigatorItemIds) {
+        API_NavigatorItem navigatorItem = {};
+        navigatorItem.guid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemIdArrayItem);
+        if (navigatorItem.guid == APINULLGuid) {
+            viewSettings (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing"));
+            continue;
+        }
+
+        navigatorItem.mapId = API_PublicViewMap;
+
+        API_NavigatorView navigatorView = {};
+        GSErrCode err = ACAPI_Navigator_GetNavigatorView (&navigatorItem, &navigatorView);
+        if (err != NoError) {
+            viewSettings (CreateErrorResponse (err, "Failed to get view settings from the navigator item, probably it's not a view"));
+            continue;
+        }
+
+        viewSettings (GS::ObjectState (
+            "modelViewOptions", navigatorView.modelViewOptName,
+            "layerCombination", navigatorView.layerCombination));
+    }
+
+    return response;
+}
+
+SetViewSettingsCommand::SetViewSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetViewSettingsCommand::GetName () const
+{
+    return "SetViewSettings";
+}
+
+GS::Optional<GS::UniString> SetViewSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIdsWithViewSettings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId"
+                        },
+                        "viewSettings": {
+                            "$ref": "#/ViewSettings"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "navigatorItemId",
+                        "viewSettings"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIdsWithViewSettings"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetViewSettingsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> navigatorItemIdsWithViewSettings;
+    parameters.Get ("navigatorItemIdsWithViewSettings", navigatorItemIdsWithViewSettings);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& navigatorItemIdWithViewSetting : navigatorItemIdsWithViewSettings) {
+        const GS::ObjectState* viewSettingsOS = navigatorItemIdWithViewSetting.Get ("viewSettings");
+        if (viewSettingsOS == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "viewSettings input is missing"));
+            continue;
+        }
+    
+        API_Guid guid = GetGuidFromNavigatorItemIdArrayItem (navigatorItemIdWithViewSetting);
+        if (guid == APINULLGuid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId is corrupt or missing"));
+            continue;
+        }
+
+        API_NavigatorItem navigatorItem = {};
+        navigatorItem.mapId = API_PublicViewMap;
+        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navigatorItem);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get navigator item from guid"));
+            continue;
+        }
+
+
+        API_NavigatorView navigatorView = {};
+        err = ACAPI_Navigator_GetNavigatorView (&navigatorItem, &navigatorView);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get navigator view settings from the navigator item"));
+            continue;
+        }
+
+        GS::UniString name;
+        if (viewSettingsOS->Get ("modelViewOptions", name)) {
+            CHTruncate (name.ToCStr ().Get (), navigatorView.modelViewOptName, sizeof (navigatorView.modelViewOptName));
+        }
+        if (viewSettingsOS->Get ("layerCombination", name)) {
+            CHTruncate (name.ToCStr ().Get (), navigatorView.layerCombination, sizeof (navigatorView.layerCombination));
+        }
+
+        err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to set navigator item view settings"));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
     return response;
 }
