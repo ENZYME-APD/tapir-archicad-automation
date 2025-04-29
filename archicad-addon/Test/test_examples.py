@@ -38,7 +38,10 @@ def OpenProject (projectFilePath):
     return ACConnection.connect ()
 
 def ExecuteScript (exampleScriptFilePath):
-    return subprocess.check_output (['python', exampleScriptFilePath])
+    try:
+        return subprocess.check_output (['python', exampleScriptFilePath, 'silent'], timeout=10)
+    except subprocess.TimeoutExpired:
+        return b'timeout'
 
 def CompareOutput (bynaryOutput, expectedOutputFilePath):
     output = '\n'.join (bynaryOutput.decode ('utf-8').split ('\r\n'))
