@@ -120,11 +120,11 @@ GSErrCode Initialize (void)
             projectCommands, "0.1.2",
             "Sets the value of a project info field."
         );
-        err |= RegisterCommand<GetStoryInfoCommand> (
-            projectCommands, "1.0.2",
+        err |= RegisterCommand<GetStoriesCommand> (
+            projectCommands, "1.1.5",
             "Retrieves information about the story sructure of the currently loaded project."
         );
-        err |= RegisterCommand<SetStoryInfoCommand> (
+        err |= RegisterCommand<SetStoriesCommand> (
             projectCommands, "1.1.5",
             "Sets the story sructure of the currently loaded project."
         );

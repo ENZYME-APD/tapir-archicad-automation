@@ -165,8 +165,8 @@ var gCommands = [{
     },
                 "outputScheme": null
             },{
-                "name": "GetStoryInfo",
-                "version": "1.0.2",
+                "name": "GetStories",
+                "version": "1.1.5",
                 "description": "Retrieves information about the story sructure of the currently loaded project.",
                 "inputScheme": null,
                 "outputScheme": {
@@ -210,7 +210,7 @@ var gCommands = [{
                             "type": "number",
                             "description": "The story level."
                         },
-                        "uName": {
+                        "name": {
                             "type": "string",
                             "description": "The name of the story."
                         }
@@ -221,7 +221,7 @@ var gCommands = [{
                         "floorId",
                         "dispOnSections",
                         "level",
-                        "uName"
+                        "name"
                     ]
                 }
             }
@@ -236,7 +236,7 @@ var gCommands = [{
         ]
     }
             },{
-                "name": "SetStoryInfo",
+                "name": "SetStories",
                 "version": "1.1.5",
                 "description": "Sets the story sructure of the currently loaded project.",
                 "inputScheme": {
@@ -256,7 +256,7 @@ var gCommands = [{
                             "type": "number",
                             "description": "The story level."
                         },
-                        "uName": {
+                        "name": {
                             "type": "string",
                             "description": "The name of the story."
                         }
@@ -265,7 +265,7 @@ var gCommands = [{
                     "required": [
                         "dispOnSections",
                         "level",
-                        "uName"
+                        "name"
                     ]
                 }
             }

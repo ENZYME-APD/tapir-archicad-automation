@@ -1,4 +1,4 @@
-Command: GetStoryInfo
+Command: GetStories
 Parameters:
 {}
 Response:
@@ -13,25 +13,25 @@ Response:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 3,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         }
     ]
 }
-Command: SetStoryInfo
+Command: SetStories
 Parameters:
 {
     "stories": [
@@ -40,31 +40,31 @@ Parameters:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 3,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "dispOnSections": true,
             "level": 8.0,
-            "uName": "Tapir story #1"
+            "name": "Tapir story #1"
         },
         {
             "dispOnSections": false,
             "level": 9.0,
-            "uName": "Tapir story #2"
+            "name": "Tapir story #2"
         }
     ]
 }
@@ -72,7 +72,7 @@ Response:
 {
     "success": true
 }
-Command: GetStoryInfo
+Command: GetStories
 Parameters:
 {}
 Response:
@@ -87,39 +87,39 @@ Response:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 3,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir story #1"
+            "name": "Tapir story #1"
         },
         {
             "index": 4,
             "floorId": 4,
             "dispOnSections": false,
             "level": 9,
-            "uName": "Tapir story #2"
+            "name": "Tapir story #2"
         }
     ]
 }
-Command: SetStoryInfo
+Command: SetStories
 Parameters:
 {
     "stories": [
@@ -128,28 +128,28 @@ Parameters:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 3,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir story #1"
+            "name": "Tapir story #1"
         }
     ]
 }
@@ -157,7 +157,7 @@ Response:
 {
     "success": true
 }
-Command: GetStoryInfo
+Command: GetStories
 Parameters:
 {}
 Response:
@@ -172,32 +172,32 @@ Response:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 3,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir story #1"
+            "name": "Tapir story #1"
         }
     ]
 }
-Command: SetStoryInfo
+Command: SetStories
 Parameters:
 {
     "stories": [
@@ -206,28 +206,28 @@ Parameters:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 4.0,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir story #1"
+            "name": "Tapir story #1"
         }
     ]
 }
@@ -235,7 +235,7 @@ Response:
 {
     "success": true
 }
-Command: GetStoryInfo
+Command: GetStories
 Parameters:
 {}
 Response:
@@ -250,32 +250,32 @@ Response:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 4,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir story #1"
+            "name": "Tapir story #1"
         }
     ]
 }
-Command: SetStoryInfo
+Command: SetStories
 Parameters:
 {
     "stories": [
@@ -284,28 +284,28 @@ Parameters:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 4,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir renamed story"
+            "name": "Tapir renamed story"
         }
     ]
 }
@@ -313,7 +313,7 @@ Response:
 {
     "success": true
 }
-Command: GetStoryInfo
+Command: GetStories
 Parameters:
 {}
 Response:
@@ -328,32 +328,32 @@ Response:
             "floorId": 1,
             "dispOnSections": true,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 4,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir renamed story"
+            "name": "Tapir renamed story"
         }
     ]
 }
-Command: SetStoryInfo
+Command: SetStories
 Parameters:
 {
     "stories": [
@@ -362,28 +362,28 @@ Parameters:
             "floorId": 1,
             "dispOnSections": false,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 4,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir renamed story"
+            "name": "Tapir renamed story"
         }
     ]
 }
@@ -391,7 +391,7 @@ Response:
 {
     "success": true
 }
-Command: GetStoryInfo
+Command: GetStories
 Parameters:
 {}
 Response:
@@ -406,28 +406,28 @@ Response:
             "floorId": 1,
             "dispOnSections": false,
             "level": 0,
-            "uName": "Ground Floor"
+            "name": "Ground Floor"
         },
         {
             "index": 1,
             "floorId": 2,
             "dispOnSections": true,
             "level": 4,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 2,
             "floorId": 3,
             "dispOnSections": true,
             "level": 6,
-            "uName": ""
+            "name": ""
         },
         {
             "index": 3,
             "floorId": 5,
             "dispOnSections": true,
             "level": 8,
-            "uName": "Tapir renamed story"
+            "name": "Tapir renamed story"
         }
     ]
 }

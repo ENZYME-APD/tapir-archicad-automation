@@ -291,17 +291,17 @@ GS::ObjectState GetHotlinksCommand::Execute (const GS::ObjectState& /*parameters
     return response;
 }
 
-GetStoryInfoCommand::GetStoryInfoCommand () :
+GetStoriesCommand::GetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String GetStoryInfoCommand::GetName () const
+GS::String GetStoriesCommand::GetName () const
 {
-    return "GetStoryInfo";
+    return "GetStories";
 }
 
-GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetStoriesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -344,7 +344,7 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
                             "type": "number",
                             "description": "The story level."
                         },
-                        "uName": {
+                        "name": {
                             "type": "string",
                             "description": "The name of the story."
                         }
@@ -355,7 +355,7 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
                         "floorId",
                         "dispOnSections",
                         "level",
-                        "uName"
+                        "name"
                     ]
                 }
             }
@@ -372,11 +372,12 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
 }
 
 
-GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_StoryInfo storyInfo = {};
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
     if (err != NoError) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
         return CreateErrorResponse (err, "Failed to retrive stories info.");
     }
 
@@ -398,25 +399,27 @@ GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameter
         storyData.Add ("floorId", story.floorId);
         storyData.Add ("dispOnSections", story.dispOnSections);
         storyData.Add ("level", story.level);
-        storyData.Add ("uName", uName);
+        storyData.Add ("name", uName);
 
         listAdder (storyData);
     }
 
+    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+
     return response;
 }
 
-SetStoryInfoCommand::SetStoryInfoCommand () :
+SetStoriesCommand::SetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-GS::String SetStoryInfoCommand::GetName () const
+GS::String SetStoriesCommand::GetName () const
 {
-    return "SetStoryInfo";
+    return "SetStories";
 }
 
-GS::Optional<GS::UniString> SetStoryInfoCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -435,7 +438,7 @@ GS::Optional<GS::UniString> SetStoryInfoCommand::GetInputParametersSchema () con
                             "type": "number",
                             "description": "The story level."
                         },
-                        "uName": {
+                        "name": {
                             "type": "string",
                             "description": "The name of the story."
                         }
@@ -444,7 +447,7 @@ GS::Optional<GS::UniString> SetStoryInfoCommand::GetInputParametersSchema () con
                     "required": [
                         "dispOnSections",
                         "level",
-                        "uName"
+                        "name"
                     ]
                 }
             }
@@ -456,7 +459,7 @@ GS::Optional<GS::UniString> SetStoryInfoCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> SetStoryInfoCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> SetStoriesCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -464,7 +467,7 @@ GS::Optional<GS::UniString> SetStoryInfoCommand::GetResponseSchema () const
 }
 
 
-GS::ObjectState SetStoryInfoCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stories;
     parameters.Get ("stories", stories);
@@ -488,9 +491,9 @@ GS::ObjectState SetStoryInfoCommand::Execute (const GS::ObjectState& parameters,
                 stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
                 stories[i].Get ("level", storyCmd.elevation);
 
-                GS::UniString uName;
-                stories[i].Get ("uName", uName);
-                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), uName.ToCStr ());
+                GS::UniString name;
+                stories[i].Get ("name", name);
+                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
             
                 err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
                 if (err != NoError) {
@@ -540,11 +543,11 @@ GS::ObjectState SetStoryInfoCommand::Execute (const GS::ObjectState& parameters,
                 return CreateFailedExecutionResult (err, "Failed to modify dispOnSections settings.");
             }
         } else {
-            GS::UniString uName;
-            stories[i].Get ("uName", uName);
+            GS::UniString name;
+            stories[i].Get ("name", name);
 
-            if (story.uName != uName) {
-                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), uName.ToCStr ());
+            if (story.uName != name) {
+                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
                 storyCmd.action = APIStory_Rename;
             
                 err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
