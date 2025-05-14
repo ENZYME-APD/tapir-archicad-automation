@@ -236,6 +236,49 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "SetStoryInfo",
+                "version": "1.1.5",
+                "description": "Sets the story sructure of the currently loaded project.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "stories": {
+                "type": "array",
+                "description": "A list of project stories.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "dispOnSections": {
+                            "type": "boolean",
+                            "description": "Story level lines should appear on sections and elevations."
+                        },
+                        "level": {
+                            "type": "number",
+                            "description": "The story level."
+                        },
+                        "uName": {
+                            "type": "string",
+                            "description": "The name of the story."
+                        }
+                    },
+                    "additionalProperties": true,
+                    "required": [
+                        "dispOnSections",
+                        "level",
+                        "uName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": true,
+        "required": [
+            "stories"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "GetHotlinks",
                 "version": "0.1.0",
                 "description": "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project.",

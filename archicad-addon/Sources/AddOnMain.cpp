@@ -124,6 +124,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.0.2",
             "Retrieves information about the story sructure of the currently loaded project."
         );
+        err |= RegisterCommand<SetStoryInfoCommand> (
+            projectCommands, "1.1.5",
+            "Sets the story sructure of the currently loaded project."
+        );
         err |= RegisterCommand<GetHotlinksCommand> (
             projectCommands, "0.1.0",
             "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project."

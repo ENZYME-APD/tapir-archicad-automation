@@ -374,8 +374,7 @@ GS::Optional<GS::UniString> GetStoryInfoCommand::GetResponseSchema () const
 
 GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    API_StoryInfo storyInfo;
-    BNZeroMemory (&storyInfo, sizeof (API_StoryInfo));
+    API_StoryInfo storyInfo = {};
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrive stories info.");
@@ -390,7 +389,7 @@ GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameter
     const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
 
     short storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
-    for (short i = storyCount - 1; i >= 0; i--) {
+    for (short i = 0; i < storyCount; i++) {
         const API_StoryType& story = (*storyInfo.data)[i];
         GS::ObjectState storyData;
         GS::UniString uName = story.uName;
@@ -405,6 +404,206 @@ GS::ObjectState GetStoryInfoCommand::Execute (const GS::ObjectState& /*parameter
     }
 
     return response;
+}
+
+SetStoryInfoCommand::SetStoryInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String SetStoryInfoCommand::GetName () const
+{
+    return "SetStoryInfo";
+}
+
+GS::Optional<GS::UniString> SetStoryInfoCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stories": {
+                "type": "array",
+                "description": "A list of project stories.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "dispOnSections": {
+                            "type": "boolean",
+                            "description": "Story level lines should appear on sections and elevations."
+                        },
+                        "level": {
+                            "type": "number",
+                            "description": "The story level."
+                        },
+                        "uName": {
+                            "type": "string",
+                            "description": "The name of the story."
+                        }
+                    },
+                    "additionalProperties": true,
+                    "required": [
+                        "dispOnSections",
+                        "level",
+                        "uName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": true,
+        "required": [
+            "stories"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetStoryInfoCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+
+GS::ObjectState SetStoryInfoCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> stories;
+    parameters.Get ("stories", stories);
+
+    API_StoryInfo storyInfo = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    if (err != NoError) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+    }
+
+    GS::USize storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+
+    if (storyCount != stories.GetSize ()) {
+        if (storyCount < stories.GetSize ()) {
+            for (GS::UIndex i = storyCount; i < stories.GetSize (); ++i) {
+                API_StoryCmdType storyCmd = {};
+                storyCmd.action = APIStory_InsAbove;
+                storyCmd.index  = storyInfo.lastStory;
+
+                stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
+                stories[i].Get ("level", storyCmd.elevation);
+
+                GS::UniString uName;
+                stories[i].Get ("uName", uName);
+                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), uName.ToCStr ());
+            
+                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+                if (err != NoError) {
+                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+                    return CreateFailedExecutionResult (err, "Failed to create new story.");
+                }
+            }
+        } else {
+            for (GS::UIndex i = storyCount - 1; i >= stories.GetSize (); --i) {
+                API_StoryCmdType storyCmd = {};
+                storyCmd.action = APIStory_Delete;
+                storyCmd.index  = static_cast<short> (i);
+            
+                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+                if (err != NoError) {
+                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+                    return CreateFailedExecutionResult (err, "Failed to delete story.");
+                }
+            }
+        }
+
+        err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+        
+        storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    }
+
+    GS::USize recursionCount = 0;
+    constexpr GS::USize maxRecursion = 5;
+    for (GS::UIndex i = 0; i < storyCount;) {
+        const API_StoryType& story = (*storyInfo.data)[i];
+
+        API_StoryCmdType storyCmd = {};
+        storyCmd.index  = static_cast<short> (i);
+
+        stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
+
+        if (story.dispOnSections != storyCmd.dispOnSections) {
+            storyCmd.action = APIStory_SetDispOnSections;
+        
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+                return CreateFailedExecutionResult (err, "Failed to modify dispOnSections settings.");
+            }
+        } else {
+            GS::UniString uName;
+            stories[i].Get ("uName", uName);
+
+            if (story.uName != uName) {
+                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), uName.ToCStr ());
+                storyCmd.action = APIStory_Rename;
+            
+                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+                if (err != NoError) {
+                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+                    return CreateFailedExecutionResult (err, "Failed to rename story.");
+                }
+            } else {
+                stories[i].Get ("level", storyCmd.elevation);
+
+                if (std::abs (story.level - storyCmd.elevation) >= 0.0001) {
+                    storyCmd.action = APIStory_SetElevation;
+                
+                    err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+                    if (err != NoError) {
+                        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+                        return CreateFailedExecutionResult (err, "Failed to change story level.");
+                    }
+                } else {
+                    const API_StoryType*   actNextStory = i + 1 < storyCount ? &(*storyInfo.data)[i + 1] : nullptr;
+                    const GS::ObjectState* newNextStory = i + 1 < stories.GetSize () ? &stories[i + 1] : nullptr;
+
+                    double newNextLevel = 0;
+                    if (actNextStory != nullptr && newNextStory != nullptr &&
+                        newNextStory->Get ("level", newNextLevel) &&
+                        std::abs ((newNextLevel - storyCmd.elevation) - (actNextStory->level - story.level)) >= 0.0001) {
+                        storyCmd.height = newNextLevel - storyCmd.elevation;
+                        storyCmd.action = APIStory_SetHeight;
+                    
+                        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+                        if (err != NoError) {
+                            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+                            return CreateFailedExecutionResult (err, "Failed to change story height.");
+                        }
+                    } else {
+                        ++i;
+                        continue;
+                    }
+                }
+            }
+        }
+
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+
+        recursionCount++;
+        if (recursionCount >= maxRecursion) {
+            ++i;
+            continue;
+        }
+    }
+
+    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+
+    return CreateSuccessfulExecutionResult ();
 }
 
 OpenProjectCommand::OpenProjectCommand () :

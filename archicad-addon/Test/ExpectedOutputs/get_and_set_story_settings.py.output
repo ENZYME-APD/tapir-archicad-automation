@@ -1,0 +1,433 @@
+Command: GetStoryInfo
+Parameters:
+{}
+Response:
+{
+    "firstStory": 0,
+    "lastStory": 2,
+    "actStory": 0,
+    "skipNullFloor": false,
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 3,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        }
+    ]
+}
+Command: SetStoryInfo
+Parameters:
+{
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 3,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "dispOnSections": true,
+            "level": 8.0,
+            "uName": "Tapir story #1"
+        },
+        {
+            "dispOnSections": false,
+            "level": 9.0,
+            "uName": "Tapir story #2"
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: GetStoryInfo
+Parameters:
+{}
+Response:
+{
+    "firstStory": 0,
+    "lastStory": 4,
+    "actStory": 0,
+    "skipNullFloor": false,
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 3,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir story #1"
+        },
+        {
+            "index": 4,
+            "floorId": 4,
+            "dispOnSections": false,
+            "level": 9,
+            "uName": "Tapir story #2"
+        }
+    ]
+}
+Command: SetStoryInfo
+Parameters:
+{
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 3,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir story #1"
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: GetStoryInfo
+Parameters:
+{}
+Response:
+{
+    "firstStory": 0,
+    "lastStory": 3,
+    "actStory": 3,
+    "skipNullFloor": false,
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 3,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir story #1"
+        }
+    ]
+}
+Command: SetStoryInfo
+Parameters:
+{
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 4.0,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir story #1"
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: GetStoryInfo
+Parameters:
+{}
+Response:
+{
+    "firstStory": 0,
+    "lastStory": 3,
+    "actStory": 3,
+    "skipNullFloor": false,
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 4,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir story #1"
+        }
+    ]
+}
+Command: SetStoryInfo
+Parameters:
+{
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 4,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir renamed story"
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: GetStoryInfo
+Parameters:
+{}
+Response:
+{
+    "firstStory": 0,
+    "lastStory": 3,
+    "actStory": 3,
+    "skipNullFloor": false,
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": true,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 4,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir renamed story"
+        }
+    ]
+}
+Command: SetStoryInfo
+Parameters:
+{
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": false,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 4,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir renamed story"
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: GetStoryInfo
+Parameters:
+{}
+Response:
+{
+    "firstStory": 0,
+    "lastStory": 3,
+    "actStory": 3,
+    "skipNullFloor": false,
+    "stories": [
+        {
+            "index": 0,
+            "floorId": 1,
+            "dispOnSections": false,
+            "level": 0,
+            "uName": "Ground Floor"
+        },
+        {
+            "index": 1,
+            "floorId": 2,
+            "dispOnSections": true,
+            "level": 4,
+            "uName": ""
+        },
+        {
+            "index": 2,
+            "floorId": 3,
+            "dispOnSections": true,
+            "level": 6,
+            "uName": ""
+        },
+        {
+            "index": 3,
+            "floorId": 5,
+            "dispOnSections": true,
+            "level": 8,
+            "uName": "Tapir renamed story"
+        }
+    ]
+}
