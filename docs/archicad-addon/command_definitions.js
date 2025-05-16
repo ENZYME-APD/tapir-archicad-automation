@@ -253,30 +253,6 @@ var gCommands = [{
         ]
     }
             },{
-                "name": "PublishPublisherSet",
-                "version": "0.1.0",
-                "description": "Performs a publish operation on the currently opened project. Only the given publisher set will be published.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "publisherSetName": {
-                "type": "string",
-                "description": "The name of the publisher set.",
-                "minLength": 1
-            },
-            "outputPath": {
-                "type": "string",
-                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publiser set will be used.",
-                "minLength": 1
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "publisherSetName"
-        ]
-    },
-                "outputScheme": null
-            },{
                 "name": "OpenProject",
                 "version": "1.0.7",
                 "description": "Opens the given project.",
@@ -332,6 +308,9 @@ var gCommands = [{
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -344,6 +323,9 @@ var gCommands = [{
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
             }
         },
         "additionalProperties": false,
@@ -364,6 +346,9 @@ var gCommands = [{
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -374,6 +359,9 @@ var gCommands = [{
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
             }
         },
         "additionalProperties": false,
@@ -441,13 +429,13 @@ var gCommands = [{
                 "outputScheme": {
         "type": "object",
         "properties": {
-            "filteredElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "filteredElements"
+            "elements"
         ]
     }
             },{
@@ -478,6 +466,9 @@ var gCommands = [{
                         "type": {
                             "$ref": "#/ElementType"
                         },
+                        "id": {
+                            "type": "string"
+                        },
                         "floorIndex": {
                             "type": "number"
                         },
@@ -506,6 +497,9 @@ var gCommands = [{
                                         },
                                         "endCoordinate": {
                                             "$ref": "#/2DCoordinate"
+                                        },
+                                        "zCoordinate": {
+                                            "type": "number"
                                         },
                                         "height": {
                                             "type": "number",
@@ -539,9 +533,64 @@ var gCommands = [{
                                         "geometryType",
                                         "begCoordinate",
                                         "endCoordinate",
+                                        "zCoordinate",
                                         "height",
                                         "bottomOffset",
                                         "offset"
+                                    ]
+                                },
+                                {
+                                    "title": "SlabDetails",
+                                    "properties": {
+                                        "thickness": {
+                                            "type": "number",
+                                            "description": "Thickness of the slab."
+                                        },
+                                        "level": {
+                                            "type": "number",
+                                            "description": "Distance of the reference level of the slab from the floor level."
+                                        },
+                                        "offsetFromTop": {
+                                            "type": "number",
+                                            "description": "Vertical distance between the reference level and the top of the slab."
+                                        },
+                                        "zCoordinate": {
+                                            "type": "number"
+                                        },
+                                        "polygonOutline": {
+                                            "type": "array",
+                                            "description": "Polygon outline of the slab.",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "holes": {
+                                            "type": "array",
+                                            "description": "Holes of the slab.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "polygonOutline": {
+                                                        "type": "array",
+                                                        "description": "Polygon outline of the hole.",
+                                                        "items": {
+                                                            "$ref": "#/2DCoordinate"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "polygonOutline"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "thickness",
+                                        "level",
+                                        "offsetFromTop",
+                                        "zCoordinate",
+                                        "polygonOutline",
+                                        "holes"
                                     ]
                                 },
                                 {
@@ -566,6 +615,90 @@ var gCommands = [{
                                     ]
                                 },
                                 {
+                                    "title": "DetailWorksheetDetails",
+                                    "properties": {
+                                        "basePoint": {
+                                            "$ref": "#/2DCoordinate",
+                                            "description": "Coordinate of the base point"
+                                        },
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The rotation angle (radian) of the marker symbol"
+                                        },
+                                        "markerId": {
+                                            "$ref": "#/ElementId",
+                                            "description": "Guid of the marker symbol"
+                                        },
+                                        "detailName": {
+                                            "type": "string",
+                                            "description": "Name of the detail/worksheet"
+                                        },
+                                        "detailIdStr": {
+                                            "type": "string",
+                                            "description": "Reference ID of the detail/worksheet"
+                                        },
+                                        "isHorizontalMarker": {
+                                            "type": "boolean",
+                                            "description": "Marker symbol is always horizontal?"
+                                        },
+                                        "isWindowOpened": {
+                                            "type": "boolean",
+                                            "description": "Side (detail/worksheet) window is opened?"
+                                        },
+                                        "clipPolygon": {
+                                            "type": "array",
+                                            "description": "The clip polygon of the detail/worksheet",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "linkData": {
+                                            "type": "object",
+                                            "description": "The marker link data",
+                                            "properties": {
+                                                "referredView": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view. Only if the marker refers to a view."
+                                                },
+                                                "referredDrawing": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
+                                                },
+                                                "referredPMViewPoint": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view point. Only if the marker refers to a view point."
+                                                }
+                                            },
+                                            "required": []
+                                        }
+                                    },
+                                    "required": [
+                                        "basePoint",
+                                        "angle",
+                                        "markerId",
+                                        "detailName",
+                                        "detailIdStr",
+                                        "isHorizontalMarker",
+                                        "isWindowOpened",
+                                        "clipPolygon",
+                                        "linkData"
+                                    ]
+                                },
+                                {
+                                    "title": "LibPartBasedElementDetails",
+                                    "properties": {
+                                        "libPart": {
+                                            "$ref": "#/LibPartDetails"
+                                        },
+                                        "ownerElementId": {
+                                            "$ref": "#/ElementId"
+                                        }
+                                    },
+                                    "required": [
+                                        "libPart"
+                                    ]
+                                },
+                                {
                                     "title": "NotYetSupportedElementTypeDetails",
                                     "properties": {
                                         "error": {
@@ -581,6 +714,7 @@ var gCommands = [{
                     },
                     "required": [
                         "type",
+                        "id",
                         "floorIndex",
                         "layerIndex",
                         "drawIndex",
@@ -622,6 +756,43 @@ var gCommands = [{
                                 },
                                 "drawIndex": {
                                     "type": "number"
+                                },
+                                "typeSpecificDetails": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {
+                                            "title": "WallDetails",
+                                            "properties": {
+                                                "begCoordinate": {
+                                                    "$ref": "#/2DCoordinate"
+                                                },
+                                                "endCoordinate": {
+                                                    "$ref": "#/2DCoordinate"
+                                                },
+                                                "height": {
+                                                    "type": "number",
+                                                    "description": "height relative to bottom"
+                                                },
+                                                "bottomOffset": {
+                                                    "type": "number",
+                                                    "description": "base level of the wall relative to the floor level"
+                                                },
+                                                "offset": {
+                                                    "type": "number",
+                                                    "description": "wall's base line's offset from ref. line"
+                                                },
+                                                "begThickness": {
+                                                    "type": "number",
+                                                    "description": "Thickness at the beginning in case of trapezoid wall"
+                                                },
+                                                "endThickness": {
+                                                    "type": "number",
+                                                    "description": "Thickness at the end in case of trapezoid wall"
+                                                }
+                                            },
+                                            "required": []
+                                        }
+                                    ]
                                 }
                             },
                             "required": []
@@ -653,25 +824,53 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "Get3DBoundingBoxes",
+                "version": "1.1.2",
+                "description": "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+            "properties": {
+            "boundingBoxes3D": {
+                "$ref": "#/BoundingBoxes3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBoxes3D"
+        ]
+    }
+            },{
                 "name": "GetSubelementsOfHierarchicalElements",
                 "version": "1.0.6",
                 "description": "Gets the subelements of the given hierarchical elements.",
                 "inputScheme": {
         "type": "object",
         "properties": {
-            "hierarchicalElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "hierarchicalElements"
+            "elements"
         ]
     },
                 "outputScheme": {
         "type": "object",
         "properties": {
-            "subelementsOfHierarchicalElements": {
+            "subelements": {
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -764,7 +963,51 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [
-            "subelementsOfHierarchicalElements"
+            "subelements"
+        ]
+    }
+            },{
+                "name": "GetConnectedElements",
+                "version": "1.1.4",
+                "description": "Gets connected elements of the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "connectedElementType": {
+                "$ref": "#/ElementType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "connectedElementType"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "connectedElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectedElements"
         ]
     }
             },{
@@ -1209,10 +1452,91 @@ var gCommands = [{
     }
             }]
         },{
+            "name": "Favorites Commands",
+            "commands": [{
+                "name": "ApplyFavoritesToElementDefaults",
+                "version": "1.1.2",
+                "description": "Apply the given favorites to element defaults.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "description": "The favorites to apply.",
+                "items": {
+                    "type": "string",
+                    "description": "The name of a favorite."
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreateFavoritesFromElements",
+                "version": "1.1.2",
+                "description": "Create favorites from the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "favoritesFromElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "The identifier of the element and the name of the new favorite.",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "favorite": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "favorite"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favoritesFromElements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            }]
+        },{
             "name": "Property Commands",
             "commands": [{
                 "name": "GetAllProperties",
-                "version": "1.0.8",
+                "version": "1.1.3",
                 "description": "Returns all user defined and built-in properties.",
                 "inputScheme": null,
                 "outputScheme": {
@@ -1343,16 +1667,7 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "propertyGroupId": {
-                            "type": "object",
-                            "properties": {
-                                "guid": {
-                                    "$ref": "#/Guid"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "guid"
-                            ]
+                            "$ref": "#/PropertyGroupId"
                         }
                     },
                     "additionalProperties": false,
@@ -1367,10 +1682,264 @@ var gCommands = [{
             "propertyGroupIds"
         ]
     }
+            },{
+                "name": "DeletePropertyGroups",
+                "version": "1.0.9",
+                "description": "Deletes the given Custom Property Groups.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyGroupIds": {
+                "type": "array",
+                "description": "The identifiers of property groups to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": {
+                            "$ref": "#/PropertyGroupId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyGroupId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreatePropertyDefinitions",
+                "version": "1.0.9",
+                "description": "Creates Custom Property Definitions based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyDefinitions": {
+                "type": "array",
+                "description": "The parameters of the new properties.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyDefinition": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "$ref": "#/PropertyType"
+                                },
+                                "isEditable": {
+                                    "type": "boolean"
+                                },
+                                "defaultValue": {
+                                    "$ref": "#/PropertyDefaultValue"
+                                },
+                                "possibleEnumValues": {
+                                    "type": "array",
+                                    "description": "The possible enum values of the property when the property type is enumeration.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "enumValue": {
+                                                "type": "object",
+                                                "description": "The description of an enumeration value.",
+                                                "properties": {
+                                                    "enumValueId": {
+                                                        "$ref": "#/EnumValueId"
+                                                    },
+                                                    "displayValue": {
+                                                        "type": "string",
+                                                        "description": "Displayed value of the enumeration."
+                                                    },
+                                                    "nonLocalizedValue": {
+                                                        "type": "string",
+                                                        "description": "Nonlocalized value of the enumeration if there is one."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "displayValue"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "enumValue"
+                                        ]
+                                    }
+                                },
+                                "availability": {
+                                    "type": "array",
+                                    "description": "The identifiers of classification items the new property is available for.",    
+                                    "items": {
+                                        "$ref": "#/ClassificationItemIdArrayItem"
+                                    }
+                                },
+                                "group": {
+                                    "type": "object",
+                                    "description": "The property group defined by name or id. If both fields exists the id will be used.",
+                                    "properties": {
+                                        "propertyGroupId": {
+                                            "$ref": "#/PropertyGroupId"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": []
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "description",
+                                "type",
+                                "isEditable",
+                                "availability",
+                                "group"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyDefinition"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinitions"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "$ref" : "#/PropertyIdOrErrorArray"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    }
+            },{
+                "name": "DeletePropertyDefinitions",
+                "version": "1.0.9",
+                "description": "Deletes the given Custom Property Definitions.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyIds": {
+                "type": "array",
+                "description": "The identifiers of properties to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
             }]
         },{
             "name": "Attribute Commands",
             "commands": [{
+                "name": "GetAttributesByType",
+                "version": "1.1.3",
+                "description": "Returns the details of every attribute of the given type.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "attributeType": {
+                "$ref": "#/AttributeType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeType"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "attributes" : {
+                "type": "array",
+                "description" : "Details of attributes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "number",
+                            "description": "Index of the attribute."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the attribute."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "index",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    }
+            },{
                 "name": "CreateLayers",
                 "version": "1.0.3",
                 "description": "Creates Layer attributes based on the given parameters.",
@@ -1776,13 +2345,284 @@ var gCommands = [{
                 "version": "0.1.0",
                 "description": "Performs a send operation on the currently opened Teamwork project.",
                 "inputScheme": null,
-                "outputScheme": null
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             },{
                 "name": "TeamworkReceive",
                 "version": "0.1.0",
                 "description": "Performs a receive operation on the currently opened Teamwork project.",
                 "inputScheme": null,
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "ReserveElements",
+                "version": "1.1.4",
+                "description": "Reserves elements in Teamwork mode.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            },
+            "conflicts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "user": {
+                            "type": "object",
+                            "properties": {
+                                "userId": {
+                                    "type": "number"
+                                },
+                                "userName": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "userId",
+                                "userName"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "user"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
+    }
+            },{
+                "name": "ReleaseElements",
+                "version": "1.1.4",
+                "description": "Releases elements in Teamwork mode.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            }]
+        },{
+            "name": "Navigator Commands",
+            "commands": [{
+                "name": "PublishPublisherSet",
+                "version": "0.1.0",
+                "description": "Performs a publish operation on the currently opened project. Only the given publisher set will be published.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "publisherSetName": {
+                "type": "string",
+                "description": "The name of the publisher set.",
+                "minLength": 1
+            },
+            "outputPath": {
+                "type": "string",
+                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publiser set will be used.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "publisherSetName"
+        ]
+    },
                 "outputScheme": null
+            },{
+                "name": "UpdateDrawings",
+                "version": "1.1.4",
+                "description": "Performs a drawing update on the given elements.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+},
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "GetDatabaseIdFromNavigatorItemId",
+                "version": "1.1.4",
+                "description": "Gets the ID of the database associated with the supplied navigator item id",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "navigatorItemIds": {
+            "$ref": "#/NavigatorItemIds"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "navigatorItemIds"
+    ]
+},
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "databases": {
+            "$ref": "#/Databases"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "databases"
+    ]
+}
+            },{
+                "name": "GetModelViewOptions",
+                "version": "1.1.4",
+                "description": "Gets all model view options",
+                "inputScheme": null,
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "modelViewOptions": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "Represents the model view options.",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "modelViewOptions"
+    ]
+}
+            },{
+                "name": "GetViewSettings",
+                "version": "1.1.4",
+                "description": "Gets the view settings of navigator items",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": {
+                "$ref": "#/NavigatorItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIds"
+        ]
+    },
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "viewSettings": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "The settings of a navigator view or an error.",
+                "oneOf": [
+                    {
+                        "$ref": "#/ViewSettings"
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "viewSettings"
+    ]
+}
+            },{
+                "name": "SetViewSettings",
+                "version": "1.1.4",
+                "description": "Sets the view settings of navigator items",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "navigatorItemIdsWithViewSettings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId"
+                        },
+                        "viewSettings": {
+                            "$ref": "#/ViewSettings"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "navigatorItemId",
+                        "viewSettings"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemIdsWithViewSettings"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
             }]
         },{
             "name": "Issue Management Commands",

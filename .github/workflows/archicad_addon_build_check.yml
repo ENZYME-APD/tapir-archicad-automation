@@ -15,7 +15,7 @@ jobs:
           - acVersion: 27
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip
           - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.2000/API.Development.Kit.WIN.28.2000.zip
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip
     runs-on: [ windows-2019 ]
     steps:
     - name: Checkout Repo
@@ -28,6 +28,11 @@ jobs:
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
       run: cmake --build archicad-addon/Build --config RelWithDebInfo
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Add-On AC${{ matrix.params.acVersion }} Win
+        path: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
 
   build_mac:
     strategy:
@@ -41,8 +46,8 @@ jobs:
           - acVersion: 27
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.MAC.27.3001.zip
           - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.2000/API.Development.Kit.MAC.28.2000.zip
-    runs-on: [ macos-12 ]
+            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.MAC.28.3001.zip
+    runs-on: [ macos-13 ]
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
@@ -54,3 +59,10 @@ jobs:
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo
       run: cmake --build archicad-addon/Build --config RelWithDebInfo
+    - name: Create zip file
+      run: ditto -c -k --keepParent archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.bundle archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Add-On AC${{ matrix.params.acVersion }} Mac
+        path: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip

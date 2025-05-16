@@ -1,0 +1,144 @@
+import math
+import Rhino.Geometry as rg
+
+# Grasshopper component details
+ghenv.Component.Name = "Wall Orientation"
+ghenv.Component.NickName = "WallOrient"
+ghenv.Component.Message = "Wall Orientation\nV1.0"
+
+def calculate_normal_vector(start, end):
+    if not start or not end:
+        return None, None
+
+    # Extract coordinates from Rhino Point3d
+    start_coords = [float(start.X), float(start.Y)]
+    end_coords = [float(end.X), float(end.Y)]
+
+    # Calculate midpoint
+    midpoint = rg.Point3d(
+        (start_coords[0] + end_coords[0]) / 2,
+        (start_coords[1] + end_coords[1]) / 2,
+        0
+    )
+
+    dx = end_coords[0] - start_coords[0]
+    dy = end_coords[1] - start_coords[1]
+
+    # Handle zero-length line
+    if dx == 0 and dy == 0:
+        return None, None
+
+    # Calculate normal vector
+    normal_vector = [-dy, dx]
+    length = math.sqrt(normal_vector[0]**2 + normal_vector[1]**2)
+    normal_vector = [
+        normal_vector[0] / length,
+        normal_vector[1] / length
+    ]
+
+    return normal_vector, midpoint
+
+def calculate_orientation(normal_vector, north_rotation=0):
+    if not normal_vector:
+        return None
+    angle = math.atan2(normal_vector[0], normal_vector[1])
+    angle_degrees = math.degrees(angle)
+
+    # Apply north rotation
+    adjusted_angle = (angle_degrees - north_rotation) % 360
+
+    return adjusted_angle
+
+def get_orientation_code(angle):
+    if angle is None:
+        return None
+    boundaries = {
+        'N': [(337.5, 360), (0, 22.5)],
+        'NE': (22.5, 67.5),
+        'E': (67.5, 112.5),
+        'SE': (112.5, 157.5),
+        'S': (157.5, 202.5),
+        'SW': (202.5, 247.5),
+        'W': (247.5, 292.5),
+        'NW': (292.5, 337.5)
+    }
+
+    for direction, angle_range in boundaries.items():
+        if direction == 'N':
+            if any(min_angle <= angle < max_angle for min_angle, max_angle in angle_range):
+                return direction
+        else:
+            if isinstance(angle_range, tuple) and angle_range[0] <= angle < angle_range[1]:
+                return direction
+
+    return None
+
+# Ensure inputs are lists
+startPt = [startPt] if not isinstance(startPt, list) else startPt
+endPt = [endPt] if not isinstance(endPt, list) else endPt
+northRotation = [northRotation] if northRotation and not isinstance(northRotation, list) else (northRotation or [0])
+
+# Initialize outputs
+n = []        # Normal vectors as 2D lists
+OrAngle = []  # Orientation angles in degrees
+OrCode = []   # Orientation codes (N, NE, E, etc.)
+RH_NV = []    # Rhino Vector3d objects
+MP = []       # Midpoints of wall segments
+VEC_LINE = [] # Vector lines at wall midpoints
+
+# Process each wall
+for start, end in zip(startPt, endPt):
+    # Calculate normal vector and midpoint
+    normal_vector, midpoint = calculate_normal_vector(start, end)
+
+    # Skip invalid results
+    if not normal_vector or not midpoint:
+        n.append(None)
+        OrAngle.append(None)
+        OrCode.append(None)
+        RH_NV.append(None)
+        MP.append(None)
+        VEC_LINE.append(None)
+        continue
+
+    # Determine orientation angle
+    orientation_angle = calculate_orientation(normal_vector, northRotation[0])
+
+    # Get orientation code
+    orientation_code = get_orientation_code(orientation_angle)
+
+    # Create Rhino vector
+    rhino_vector = rg.Vector3d(normal_vector[0], normal_vector[1], 0)
+
+    # Debugging vector creation
+    print(f"Normal Vector Array: {normal_vector}")
+    print(f"Rhino Vector3d: {rhino_vector}")
+
+    # Create vector line with hardcoded length of 2
+    vec_endpoint = rg.Point3d(
+        midpoint.X + normal_vector[0] * 2,  # Length of vector is hardcoded as 2
+        midpoint.Y + normal_vector[1] * 2,
+        0
+    )
+    vector_line = rg.LineCurve(midpoint, vec_endpoint)
+
+    # Append results
+    n.append(normal_vector)
+    OrAngle.append(orientation_angle)
+    OrCode.append(orientation_code)
+    RH_NV.append(rhino_vector)
+    MP.append(midpoint)
+    VEC_LINE.append(vector_line)
+
+# Debug Outputs
+print(f"Midpoints: {MP}")
+print(f"Rhino Vectors: {RH_NV}")
+print(f"Vector Lines: {VEC_LINE}")
+
+# Grasshopper Outputs
+n = n          # Normal vectors as 2D lists
+OrAngle = OrAngle  # Orientation angles in degrees
+OrCode = OrCode    # Orientation codes (N, NE, E, etc.)
+RH_NV = RH_NV      # Rhino Vector3d objects
+MP = MP            # Midpoints of wall segments
+VEC_LINE = VEC_LINE  # Vector lines at wall midpoints

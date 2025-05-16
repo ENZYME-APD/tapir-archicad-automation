@@ -1,5 +1,6 @@
 #include "ElementCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "GSUnID.hpp"
 
 static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
 {
@@ -30,6 +31,76 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
     return APIFilt_None;
 }
 
+template <typename ListProxyType>
+static bool GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
+{
+    API_ElemTypeID elemType = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    }
+
+    API_ElemFilterFlags filterFlags = APIFilt_None;
+    GS::Array<GS::UniString> filters;
+    if (parameters.Get ("filters", filters)) {
+        for (const GS::UniString& filter : filters) {
+            filterFlags |= ConvertFilterStringToFlag (filter);
+        }
+    }
+
+    GS::Array<API_Guid> elemList;
+    GSErrCode err = ACAPI_Element_GetElemList (elemType, &elemList, filterFlags);
+    if (err != NoError) {
+        return false;
+    }
+
+    for (const API_Guid& elemGuid : elemList) {
+        elementsListProxy (CreateElementIdObjectState (elemGuid));
+    }
+    return true;
+}
+
+template <typename ListProxyType>
+static GSErrCode ExecuteActionForEachDatabase (
+    const std::function<bool ()>& action,
+    const GS::Array<API_Guid>& databaseIds,
+    ListProxyType& executionResultsListProxy
+    )
+{
+    API_DatabaseInfo startingDatabase;
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    for (const API_Guid databaseId : databaseIds) {
+        API_DatabaseInfo targetDbInfo = {};
+        targetDbInfo.databaseUnId.elemSetId = databaseId;
+        err = ACAPI_Window_GetDatabaseInfo (&targetDbInfo);
+        if (err != NoError) {
+            executionResultsListProxy (CreateFailedExecutionResult (err, "Failed to get database info"));
+            continue;
+        }
+        err = ACAPI_Database_ChangeCurrentDatabase (&targetDbInfo);
+        if (err != NoError) {
+            executionResultsListProxy (CreateFailedExecutionResult (err, "Failed to switch to database"));
+            continue;
+        }
+        bool success = action();
+        if (success) {
+            executionResultsListProxy (CreateSuccessfulExecutionResult ());
+        }
+        else {
+            executionResultsListProxy (CreateFailedExecutionResult (err, "Failed to retrieve elements."));
+        }
+    }
+
+    err = ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    return NoError;
+}
+
 GetElementsByTypeCommand::GetElementsByTypeCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -54,6 +125,9 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema (
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -70,6 +144,9 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
             }
         },
         "additionalProperties": false,
@@ -80,32 +157,28 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
 }
 
 GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    API_ElemTypeID elemType = API_ZombieElemID;
-    GS::UniString elementTypeStr;
-    if (parameters.Get ("elementType", elementTypeStr)) {
-        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
-    }
-
-    API_ElemFilterFlags filterFlags = APIFilt_None;
-    GS::Array<GS::UniString> filters;
-    if (parameters.Get ("filters", filters)) {
-        for (const GS::UniString& filter : filters) {
-            filterFlags |= ConvertFilterStringToFlag (filter);
-        }
-    }
-
-    GS::Array<API_Guid> elemList;
-    GSErrCode err = ACAPI_Element_GetElemList (elemType, &elemList, filterFlags);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to retrieve elements.");
-    }
-
+{   
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
-    for (const API_Guid& elemGuid : elemList) {
-        elements (CreateElementIdObjectState (elemGuid));
+    GS::Array<GS::ObjectState> databases;
+    bool databasesParameterExists = parameters.Get ("databases", databases);
+    if (!databasesParameterExists) {
+        GetElementsFromCurrentDatabase (parameters, elements);
+    }
+    else {
+        const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+        auto action = [&]() -> bool {
+            return GetElementsFromCurrentDatabase (parameters, elements);
+        };
+
+        GSErrCode err = ExecuteActionForEachDatabase (action, databaseIds, executionResultForDatabases);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
+        }
     }
 
     return response;
@@ -127,6 +200,9 @@ GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () c
                     "$ref": "#/ElementFilter"
                 },
                 "minItems": 1
+            },
+            "databases": {
+                 "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -174,6 +250,9 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                         "type": {
                             "$ref": "#/ElementType"
                         },
+                        "id": {
+                            "type": "string"
+                        },
                         "floorIndex": {
                             "type": "number"
                         },
@@ -202,6 +281,9 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                         },
                                         "endCoordinate": {
                                             "$ref": "#/2DCoordinate"
+                                        },
+                                        "zCoordinate": {
+                                            "type": "number"
                                         },
                                         "height": {
                                             "type": "number",
@@ -235,9 +317,64 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                         "geometryType",
                                         "begCoordinate",
                                         "endCoordinate",
+                                        "zCoordinate",
                                         "height",
                                         "bottomOffset",
                                         "offset"
+                                    ]
+                                },
+                                {
+                                    "title": "SlabDetails",
+                                    "properties": {
+                                        "thickness": {
+                                            "type": "number",
+                                            "description": "Thickness of the slab."
+                                        },
+                                        "level": {
+                                            "type": "number",
+                                            "description": "Distance of the reference level of the slab from the floor level."
+                                        },
+                                        "offsetFromTop": {
+                                            "type": "number",
+                                            "description": "Vertical distance between the reference level and the top of the slab."
+                                        },
+                                        "zCoordinate": {
+                                            "type": "number"
+                                        },
+                                        "polygonOutline": {
+                                            "type": "array",
+                                            "description": "Polygon outline of the slab.",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "holes": {
+                                            "type": "array",
+                                            "description": "Holes of the slab.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "polygonOutline": {
+                                                        "type": "array",
+                                                        "description": "Polygon outline of the hole.",
+                                                        "items": {
+                                                            "$ref": "#/2DCoordinate"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "polygonOutline"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "thickness",
+                                        "level",
+                                        "offsetFromTop",
+                                        "zCoordinate",
+                                        "polygonOutline",
+                                        "holes"
                                     ]
                                 },
                                 {
@@ -262,6 +399,90 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                     ]
                                 },
                                 {
+                                    "title": "DetailWorksheetDetails",
+                                    "properties": {
+                                        "basePoint": {
+                                            "$ref": "#/2DCoordinate",
+                                            "description": "Coordinate of the base point"
+                                        },
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The rotation angle (radian) of the marker symbol"
+                                        },
+                                        "markerId": {
+                                            "$ref": "#/ElementId",
+                                            "description": "Guid of the marker symbol"
+                                        },
+                                        "detailName": {
+                                            "type": "string",
+                                            "description": "Name of the detail/worksheet"
+                                        },
+                                        "detailIdStr": {
+                                            "type": "string",
+                                            "description": "Reference ID of the detail/worksheet"
+                                        },
+                                        "isHorizontalMarker": {
+                                            "type": "boolean",
+                                            "description": "Marker symbol is always horizontal?"
+                                        },
+                                        "isWindowOpened": {
+                                            "type": "boolean",
+                                            "description": "Side (detail/worksheet) window is opened?"
+                                        },
+                                        "clipPolygon": {
+                                            "type": "array",
+                                            "description": "The clip polygon of the detail/worksheet",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        },
+                                        "linkData": {
+                                            "type": "object",
+                                            "description": "The marker link data",
+                                            "properties": {
+                                                "referredView": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view. Only if the marker refers to a view."
+                                                },
+                                                "referredDrawing": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
+                                                },
+                                                "referredPMViewPoint": {
+                                                    "$ref": "#/ElementId",
+                                                    "description": "Guid of the referred view point. Only if the marker refers to a view point."
+                                                }
+                                            },
+                                            "required": []
+                                        }
+                                    },
+                                    "required": [
+                                        "basePoint",
+                                        "angle",
+                                        "markerId",
+                                        "detailName",
+                                        "detailIdStr",
+                                        "isHorizontalMarker",
+                                        "isWindowOpened",
+                                        "clipPolygon",
+                                        "linkData"
+                                    ]
+                                },
+                                {
+                                    "title": "LibPartBasedElementDetails",
+                                    "properties": {
+                                        "libPart": {
+                                            "$ref": "#/LibPartDetails"
+                                        },
+                                        "ownerElementId": {
+                                            "$ref": "#/ElementId"
+                                        }
+                                    },
+                                    "required": [
+                                        "libPart"
+                                    ]
+                                },
+                                {
                                     "title": "NotYetSupportedElementTypeDetails",
                                     "properties": {
                                         "error": {
@@ -277,6 +498,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                     },
                     "required": [
                         "type",
+                        "id",
                         "floorIndex",
                         "layerIndex",
                         "drawIndex",
@@ -292,6 +514,21 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
     })";
 }
 
+static void AddLibPartBasedElementDetails (GS::ObjectState& os, const API_Guid& owner, Int32 libInd)
+{
+    API_LibPart	lp = {};
+    lp.index = libInd;
+    ACAPI_LibraryPart_Get (&lp);
+    os.Add ("libPart", GS::ObjectState (
+        "name", GS::UniString (lp.docu_UName),
+        "parentUnID", CreateGuidObjectState (GS::UnID (lp.parentUnID).GetMainGuid ()),
+        "ownUnID", CreateGuidObjectState (GS::UnID (lp.ownUnID).GetMainGuid ())));
+
+    if (owner != APINULLGuid) {
+        os.Add ("ownerElementId", CreateGuidObjectState (owner));
+    }
+}
+
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -299,6 +536,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
+
+    const Stories stories = GetStories ();
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -324,6 +563,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         detailsOfElement.Add ("layerIndex", GetAttributeIndex (elem.header.layer));
         detailsOfElement.Add ("drawIndex", elem.header.drwIndex);
 
+        API_ElementMemo memo = {};
+        ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
+
+        detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+
         GS::ObjectState typeSpecificDetails;
 
         switch (typeID) {
@@ -340,18 +584,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     case APIWtyp_Poly:
                         {
                             typeSpecificDetails.Add ("geometryType", "Polygonal");
-                            const auto& polygonOutline = typeSpecificDetails.AddList<GS::ObjectState> ("polygonOutline");
-                            API_ElementMemo memo = {};
-                            err = ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All);
-                            if (err == NoError) {
-                                const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
-                                for (GSIndex iCoord = 1; iCoord < nCoords; ++iCoord) {
-                                    polygonOutline (Create2DCoordinateObjectState ((*memo.coords)[iCoord]));
-                                }
-                            }
+                            AddPolygonFromMemoCoords (typeSpecificDetails, "polygonOutline", elem.header.guid);
                             break;
                         }
                 }
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.wall.bottomOffset, stories));
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.wall.begC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.wall.endC));
                 typeSpecificDetails.Add ("height", elem.wall.height);
@@ -359,11 +596,60 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("offset", elem.wall.offset);
                 break;
 
+            case API_SlabID:
+                typeSpecificDetails.Add ("thickness", elem.slab.thickness);
+                typeSpecificDetails.Add ("level", elem.slab.level);
+                typeSpecificDetails.Add ("offsetFromTop", elem.slab.offsetFromTop);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.slab.level, stories));
+                AddPolygonWithHolesFromMemoCoords (typeSpecificDetails, "polygonOutline", "holes", "polygonOutline", elem.header.guid);
+                break;
+
             case API_ColumnID:
                 typeSpecificDetails.Add ("origin", Create2DCoordinateObjectState (elem.column.origoPos));
                 typeSpecificDetails.Add ("height", elem.column.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.column.bottomOffset);
                 break;
+
+            case API_DoorID:
+            case API_WindowID:
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.window.owner, elem.window.openingBase.libInd);
+                break;
+
+            case API_LabelID:
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.label.parent, elem.label.labelClass == APILblClass_Symbol ? elem.label.u.symbol.libInd : -1);
+                break;
+
+            case API_ObjectID:
+            case API_LampID:
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.object.owner, elem.object.libInd);
+                break;
+
+            case API_DetailID:
+            case API_WorksheetID: {
+                typeSpecificDetails.Add ("basePoint", Create2DCoordinateObjectState (elem.detail.pos));
+                typeSpecificDetails.Add ("angle", elem.detail.angle);
+                typeSpecificDetails.Add ("markerId", CreateGuidObjectState (elem.detail.markId));
+                typeSpecificDetails.Add ("detailName", GS::UniString (elem.detail.detailName));
+                typeSpecificDetails.Add ("detailIdStr", GS::UniString (elem.detail.detailIdStr));
+                typeSpecificDetails.Add ("isHorizontalMarker", elem.detail.horizontalMarker);
+                typeSpecificDetails.Add ("isWindowOpened", elem.detail.windOpened);
+                AddPolygonFromMemoCoords (typeSpecificDetails, "clipPolygon", elem.header.guid);
+                GS::ObjectState linkDataOS;
+                switch (elem.detail.linkData.referringLevel) {
+                    case API_ReferringLevel::ReferredToView:
+                        linkDataOS.Add ("referredView", CreateGuidObjectState (elem.detail.linkData.referredView));
+                        break;
+                    case API_ReferringLevel::ReferredToDrawing:
+                        linkDataOS.Add ("referredDrawing", CreateGuidObjectState (elem.detail.linkData.referredDrawing));
+                        break;
+                    case API_ReferringLevel::ReferredToViewPoint:
+                        linkDataOS.Add ("referredPMViewPoint", CreateGuidObjectState (elem.detail.linkData.referredPMViewPoint));
+                        break;
+                    default:
+                        break;
+                }
+                typeSpecificDetails.Add ("linkData", linkDataOS);
+            } break;
 
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
@@ -414,6 +700,43 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetInputParametersSchem
                                 },
                                 "drawIndex": {
                                     "type": "number"
+                                },
+                                "typeSpecificDetails": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {
+                                            "title": "WallDetails",
+                                            "properties": {
+                                                "begCoordinate": {
+                                                    "$ref": "#/2DCoordinate"
+                                                },
+                                                "endCoordinate": {
+                                                    "$ref": "#/2DCoordinate"
+                                                },
+                                                "height": {
+                                                    "type": "number",
+                                                    "description": "height relative to bottom"
+                                                },
+                                                "bottomOffset": {
+                                                    "type": "number",
+                                                    "description": "base level of the wall relative to the floor level"
+                                                },
+                                                "offset": {
+                                                    "type": "number",
+                                                    "description": "wall's base line's offset from ref. line"
+                                                },
+                                                "begThickness": {
+                                                    "type": "number",
+                                                    "description": "Thickness at the beginning in case of trapezoid wall"
+                                                },
+                                                "endThickness": {
+                                                    "type": "number",
+                                                    "description": "Thickness at the end in case of trapezoid wall"
+                                                }
+                                            },
+                                            "required": []
+                                        }
+                                    ]
                                 }
                             },
                             "required": []
@@ -492,6 +815,46 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
             if (details->Get ("drawIndex", elem.header.drwIndex)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
+            }
+
+            const GS::ObjectState* typeSpecificDetails = details->Get ("typeSpecificDetails");
+            if (typeSpecificDetails != nullptr) {
+                switch (GetElemTypeId (elem.header)) {
+                    case API_WallID: {
+                        const GS::ObjectState* begCoordinate = typeSpecificDetails->Get ("begCoordinate");
+                        if (begCoordinate != nullptr) {
+                            elem.wall.begC = Get2DCoordinateFromObjectState (*begCoordinate);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, begC);
+                        }
+                        const GS::ObjectState* endCoordinate = typeSpecificDetails->Get ("endCoordinate");
+                        if (endCoordinate != nullptr) {
+                            elem.wall.endC = Get2DCoordinateFromObjectState (*endCoordinate);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, endC);
+                        }
+                        if (typeSpecificDetails->Get ("height", elem.wall.height)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, height);
+                        }
+                        if (typeSpecificDetails->Get ("offset", elem.wall.offset)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, offset);
+                        }
+
+                        switch (elem.wall.type) {
+                            case APIWtyp_Trapez: {
+                                if (typeSpecificDetails->Get ("begThickness", elem.wall.thickness)) {
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness);
+                                }
+                                if (typeSpecificDetails->Get ("endThickness", elem.wall.thickness1)) {
+                                    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness1);
+                                }
+                            } break;
+                            default:
+                            break;
+                        }
+                    } break;
+                    default:
+                    break;
+                }
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
             }
 
@@ -692,13 +1055,13 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetInpu
     return R"({
         "type": "object",
         "properties": {
-            "hierarchicalElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "hierarchicalElements"
+            "elements"
         ]
     })";
 }
@@ -708,7 +1071,7 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResp
     return R"({
         "type": "object",
         "properties": {
-            "subelementsOfHierarchicalElements": {
+            "subelements": {
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -801,7 +1164,7 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResp
         },
         "additionalProperties": false,
         "required": [
-            "subelementsOfHierarchicalElements"
+            "subelements"
         ]
     })";
 }
@@ -822,13 +1185,13 @@ static void AddSubelementsToObjectState (GS::ObjectState& subelements, APIElemTy
 
 GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> hierarchicalElements;
-    parameters.Get ("hierarchicalElements", hierarchicalElements);
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
 
     GS::ObjectState response;
-    const auto& subelementsOfHierarchicalElements = response.AddList<GS::ObjectState> ("subelementsOfHierarchicalElements");
+    const auto& subelementsOfHierarchicalElements = response.AddList<GS::ObjectState> ("subelements");
 
-    for (const GS::ObjectState& hierarchicalElement : hierarchicalElements) {
+    for (const GS::ObjectState& hierarchicalElement : elements) {
         const GS::ObjectState* elementId = hierarchicalElement.Get ("elementId");
         if (elementId == nullptr) {
             subelementsOfHierarchicalElements (CreateErrorResponse (APIERR_BADPARS, "elementId of hierarchicalElement is missing"));
@@ -884,6 +1247,102 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
 #undef AddSubelementsToObjectState
 
         subelementsOfHierarchicalElements (subelements);
+    }
+
+    return response;
+}
+
+GetConnectedElementsCommand::GetConnectedElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetConnectedElementsCommand::GetName () const
+{
+    return "GetConnectedElements";
+}
+
+GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "connectedElementType": {
+                "$ref": "#/ElementType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "connectedElementType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetConnectedElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "connectedElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectedElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    API_ElemTypeID elemType = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("connectedElementType", elementTypeStr)) {
+        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    }
+
+    GS::ObjectState response;
+    const auto& connectedElementsOfInputElements = response.AddList<GS::ObjectState> ("connectedElements");
+
+    for (const GS::ObjectState& ownerElementOS : elements) {
+        const GS::ObjectState* elementId = ownerElementOS.Get ("elementId");
+        if (elementId == nullptr) {
+            connectedElementsOfInputElements (CreateErrorResponse (APIERR_BADPARS, "elementId of owner element is missing"));
+            continue;
+        }
+
+        const API_Guid ownerElemGuid = GetGuidFromObjectState (*elementId);
+
+        GS::ObjectState elementsOS;
+        const auto& elements = elementsOS.AddList<GS::ObjectState> ("elements");
+        GS::Array<API_Guid> connectedElements;
+        if (ACAPI_Grouping_GetConnectedElements (ownerElemGuid, elemType, &connectedElements) == NoError) {
+            for (const API_Guid& elem : connectedElements) {
+                elements (CreateElementIdObjectState (elem));
+            }
+        }
+
+        connectedElementsOfInputElements (elementsOS);
     }
 
     return response;
@@ -1029,533 +1488,6 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     return response;
 }
 
-GetGDLParametersOfElementsCommand::GetGDLParametersOfElementsCommand () :
-    CommandBase (CommonSchema::Used)
-{
-}
-
-GS::String GetGDLParametersOfElementsCommand::GetName () const
-{
-    return "GetGDLParametersOfElements";
-}
-
-GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetInputParametersSchema () const
-{
-    return R"({
-    "type": "object",
-    "properties": {
-        "elements": {
-            "$ref": "#/Elements"
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "elements"
-    ]
-})";
-}
-
-GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetResponseSchema () const
-{
-    return R"({
-    "type": "object",
-    "properties": {
-        "gdlParametersOfElements": {
-            "type": "array",
-            "description": "The GDL parameters of elements.",
-            "items": {
-                "$ref": "#/GDLParameterList"
-            }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "gdlParametersOfElements"
-    ]
-})";
-}
-
-static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
-{
-    switch (addParID) {
-        case APIParT_Integer:			return "Integer";
-        case APIParT_Length:			return "Length";
-        case APIParT_Angle:				return "Angle";
-        case APIParT_RealNum:			return "RealNumber";
-        case APIParT_LightSw:			return "LightSwitch";
-        case APIParT_ColRGB:			return "RGBColor";
-        case APIParT_Intens:			return "Intensity";
-        case APIParT_LineTyp:			return "LineType";
-        case APIParT_Mater:				return "Material";
-        case APIParT_FillPat:			return "FillPattern";
-        case APIParT_PenCol:			return "PenColor";
-        case APIParT_CString:			return "String";
-        case APIParT_Boolean:			return "Boolean";
-        case APIParT_Separator:			return "Separator";
-        case APIParT_Title:				return "Title";
-        case APIParT_BuildingMaterial:	return "BuildingMaterial";
-        case APIParT_Profile:			return "Profile";
-        case APIParT_Dictionary:		return "Dictionary";
-        default:						return "UNKNOWN";
-    }
-}
-
-static void AddValueInteger (GS::ObjectState& gdlParameterDetails,
-                             const API_AddParType& actParam)
-{
-    if (actParam.typeMod == API_ParSimple) {
-        gdlParameterDetails.Add ("value", static_cast<Int32> (actParam.value.real));
-    } else {
-        const auto& arrayValueItemAdder = gdlParameterDetails.AddList<Int32> ("value");
-        Int32 arrayIndex = 0;
-        for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
-            for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (static_cast<Int32> (((double*) *actParam.value.array)[arrayIndex++]));
-            }
-        }
-    }
-}
-
-static void AddValueDouble (GS::ObjectState& gdlParameterDetails,
-                            const API_AddParType& actParam)
-{
-    if (actParam.typeMod == API_ParSimple) {
-        gdlParameterDetails.Add ("value", actParam.value.real);
-    } else {
-        const auto& arrayValueItemAdder = gdlParameterDetails.AddList<double> ("value");
-        Int32 arrayIndex = 0;
-        for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
-            for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (((double*) *actParam.value.array)[arrayIndex++]);
-            }
-        }
-    }
-}
-
-template<typename T>
-static void AddValueTrueFalseOptions (GS::ObjectState& gdlParameterDetails,
-                                      const API_AddParType& actParam,
-                                      T optionTrue,
-                                      T optionFalse)
-{
-    if (actParam.typeMod == API_ParSimple) {
-        gdlParameterDetails.Add ("value", static_cast<Int32> (actParam.value.real) == 0 ? optionFalse : optionTrue);
-    } else {
-        const auto& arrayValueItemAdder = gdlParameterDetails.AddList<T> ("value");
-        Int32 arrayIndex = 0;
-        for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
-            for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                arrayValueItemAdder (static_cast<Int32> (((double*) *actParam.value.array)[arrayIndex++]) == 0 ? optionFalse : optionTrue);
-            }
-        }
-    }
-}
-
-static void AddValueOnOff (GS::ObjectState& gdlParameterDetails,
-                           const API_AddParType& actParam)
-{
-    AddValueTrueFalseOptions (gdlParameterDetails, actParam, GS::String ("On"), GS::String ("Off"));
-}
-
-static void AddValueBool (GS::ObjectState& gdlParameterDetails,
-                          const API_AddParType& actParam)
-{
-    AddValueTrueFalseOptions (gdlParameterDetails, actParam, true, false);
-}
-
-static void AddValueString (GS::ObjectState& gdlParameterDetails,
-                            const API_AddParType& actParam)
-{
-    if (actParam.typeMod == API_ParSimple) {
-        gdlParameterDetails.Add ("value", GS::UniString (actParam.value.uStr));
-    } else {
-        const auto& arrayValueItemAdder = gdlParameterDetails.AddList<GS::UniString> ("value");
-        Int32 arrayIndex = 0;
-        for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
-            for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
-                GS::uchar_t* uValueStr = (reinterpret_cast<GS::uchar_t*>(*actParam.value.array)) + arrayIndex;
-                arrayIndex += GS::ucslen32 (uValueStr) + 1;
-                arrayValueItemAdder (GS::UniString (uValueStr));
-            }
-        }
-    }
-}
-
-constexpr const char* ParameterValueFieldName = "value";
-
-static void SetParamValueInteger (API_ChangeParamType& changeParam,
-                                  const GS::ObjectState& parameterDetails)
-{
-    Int32 value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = value;
-}
-
-static void SetParamValueDouble (API_ChangeParamType& changeParam,
-                                 const GS::ObjectState& parameterDetails)
-{
-    double value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = value;
-}
-
-static void SetParamValueOnOff (API_ChangeParamType& changeParam,
-                                const GS::ObjectState& parameterDetails)
-{
-    GS::String value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = (value == "Off" ? 0 : 1);
-}
-
-static void SetParamValueBool (API_ChangeParamType& changeParam,
-                               const GS::ObjectState& parameterDetails)
-{
-    bool value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = (value ? 0 : 1);
-}
-
-static void SetParamValueString (API_ChangeParamType& changeParam,
-                                 const GS::ObjectState& parameterDetails)
-{
-    GS::UniString value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-
-    constexpr USize MaxStrValueLength = 512;
-
-    static GS::uchar_t strValuePtr[MaxStrValueLength];
-    GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength)).Get ());
-
-    changeParam.uStrValue = strValuePtr;
-}
-
-GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    GS::Array<GS::ObjectState> elements;
-    parameters.Get ("elements", elements);
-
-    GS::ObjectState response;
-    const auto& elemGdlParameterListAdder = response.AddList<GS::ObjectState> ("gdlParametersOfElements");
-
-    API_Guid elemGuid;
-    for (const GS::ObjectState& element : elements) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            elemGdlParameterListAdder (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
-            continue;
-        }
-
-        elemGuid = GetGuidFromObjectState (*elementId);
-
-        API_ParamOwnerType paramOwner = {};
-        paramOwner.libInd = 0;
-#ifdef ServerMainVers_2600
-        paramOwner.type = API_ObjectID;
-#else
-        paramOwner.typeID = API_ObjectID;
-#endif
-        paramOwner.guid = elemGuid;
-
-        API_ElementMemo memo = {};
-        const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars);
-        if (err != NoError) {
-            const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
-            elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
-        }
-
-        const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
-        GS::ObjectState gdlParameters;
-        const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
-        for (GSIndex ii = 0; ii < nParams; ++ii) {
-            const API_AddParType& actParam = (*memo.params)[ii];
-
-            if (actParam.typeID == APIParT_Separator) {
-                continue;
-            }
-
-            GS::ObjectState gdlParameterDetails;
-            gdlParameterDetails.Add ("name", actParam.name);
-            gdlParameterDetails.Add ("index", actParam.index);
-            gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
-            if (actParam.typeMod == API_ParArray) {
-                gdlParameterDetails.Add ("dimension1", actParam.dim1);
-                gdlParameterDetails.Add ("dimension2", actParam.dim2);
-            }
-
-            switch (actParam.typeID) {
-                case APIParT_Integer:
-                case APIParT_PenCol:
-                case APIParT_LineTyp:
-                case APIParT_Mater:
-                case APIParT_FillPat:
-                case APIParT_BuildingMaterial:
-                case APIParT_Profile:
-                    AddValueInteger (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_ColRGB:
-                case APIParT_Intens:
-                case APIParT_Length:
-                case APIParT_RealNum:
-                case APIParT_Angle:
-                    AddValueDouble (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_LightSw:
-                    AddValueOnOff (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_Boolean:
-                    AddValueBool (gdlParameterDetails, actParam);
-                    break;
-                case APIParT_CString:
-                case APIParT_Title:
-                    AddValueString (gdlParameterDetails, actParam);
-                    break;
-                default:
-                case APIParT_Dictionary:
-                    // Not supported by the Archicad API yet
-                    break;
-            }
-
-            parameterListAdder (gdlParameterDetails);
-        }
-        elemGdlParameterListAdder (gdlParameters);
-        ACAPI_DisposeAddParHdl (&memo.params);
-    }
-
-    return response;
-}
-
-SetGDLParametersOfElementsCommand::SetGDLParametersOfElementsCommand () :
-    CommandBase (CommonSchema::Used)
-{
-}
-
-GS::String SetGDLParametersOfElementsCommand::GetName () const
-{
-    return "SetGDLParametersOfElements";
-}
-
-GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetInputParametersSchema () const
-{
-    return R"({
-    "type": "object",
-    "properties": {
-        "elementsWithGDLParameters": {
-            "type": "array",
-            "description": "The elements with GDL parameters dictionary pairs.",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "elementId": {
-                        "$ref": "#/ElementId"
-                    },
-                    "gdlParameters": {
-                        "$ref": "#/GDLParameterList"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "elementId",
-                    "gdlParameters"
-                ]
-            }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "elementsWithGDLParameters"
-    ]
-})";
-}
-
-GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetResponseSchema () const
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "executionResults": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "executionResults"
-        ]
-    })";
-}
-
-GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-    GS::Array<GS::ObjectState> elementsWithGDLParameters;
-    parameters.Get ("elementsWithGDLParameters", elementsWithGDLParameters);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("Set GDL Parameters of Elements", [&]() -> GSErrCode {
-        for (const GS::ObjectState& elementWithGDLParameters : elementsWithGDLParameters) {
-            GSErrCode err = NoError;
-            GS::UniString errMessage;
-            const GS::ObjectState* elementId = elementWithGDLParameters.Get ("elementId");
-            if (elementId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-                continue;
-            }
-
-            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-            API_ParamOwnerType paramOwner = {};
-            paramOwner.libInd = 0;
-#ifdef ServerMainVers_2600
-            paramOwner.type = API_ObjectID;
-#else
-            paramOwner.typeID = API_ObjectID;
-#endif
-            paramOwner.guid = elemGuid;
-
-            GS::Array<GS::ObjectState> elemGdlParameters;
-            elementWithGDLParameters.Get ("gdlParameters", elemGdlParameters);
-
-            err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
-            if (err == NoError) {
-                API_GetParamsType getParams = {};
-                err = ACAPI_LibraryPart_GetActParameters (&getParams);
-                if (err == NoError) {
-                    const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
-                    GS::HashTable<GS::String, API_AddParID> gdlParametersTypeDictionary;
-                    for (GSIndex ii = 0; ii < nParams; ++ii) {
-                        const API_AddParType& actParam = (*getParams.params)[ii];
-                        if (actParam.typeID != APIParT_Separator) {
-                            gdlParametersTypeDictionary.Add (GS::String (actParam.name), actParam.typeID);
-                        }
-                    }
-
-                    for (const GS::ObjectState& elemGdlParametersItem : elemGdlParameters) {
-                        GS::Array<GS::ObjectState> parameters;
-                        elemGdlParametersItem.Get ("parameters", parameters);
-
-                        API_ChangeParamType changeParam = {};
-                        for (const GS::ObjectState& parameter : parameters) {
-                            GS::String parameterName;
-                            parameter.Get ("name", parameterName);
-
-                            if (!gdlParametersTypeDictionary.ContainsKey (parameterName)) {
-                                errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
-                                err = APIERR_BADPARS;
-                                break;
-                            }
-
-                            CHTruncate (parameterName.ToCStr (), changeParam.name, sizeof (changeParam.name));
-                            if (parameter.Contains ("index1")) {
-                                parameter.Get ("index1", changeParam.ind1);
-                                if (parameter.Contains ("index2")) {
-                                    parameter.Get ("index2", changeParam.ind2);
-                                }
-                            }
-
-                            switch (gdlParametersTypeDictionary[parameterName]) {
-                                case APIParT_Integer:
-                                case APIParT_PenCol:
-                                case APIParT_LineTyp:
-                                case APIParT_Mater:
-                                case APIParT_FillPat:
-                                case APIParT_BuildingMaterial:
-                                case APIParT_Profile:
-                                    SetParamValueInteger (changeParam, parameter);
-                                    break;
-                                case APIParT_ColRGB:
-                                case APIParT_Intens:
-                                case APIParT_Length:
-                                case APIParT_RealNum:
-                                case APIParT_Angle:
-                                    SetParamValueDouble (changeParam, parameter);
-                                    break;
-                                case APIParT_LightSw:
-                                    SetParamValueOnOff (changeParam, parameter);
-                                    break;
-                                case APIParT_Boolean:
-                                    SetParamValueBool (changeParam, parameter);
-                                    break;
-                                case APIParT_CString:
-                                case APIParT_Title:
-                                    SetParamValueString (changeParam, parameter);
-                                    break;
-                                default:
-                                case APIParT_Dictionary:
-                                    // Not supported by the Archicad API yet
-                                    break;
-                            }
-
-                            err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
-                            if (err != NoError) {
-                                errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
-                                break;
-                            }
-
-                            ACAPI_DisposeAddParHdl (&getParams.params);
-                            ACAPI_LibraryPart_GetActParameters (&getParams);
-                        }
-                    }
-
-                    if (err == NoError) {
-                        API_Element	element = {};
-                        element.header.guid = elemGuid;
-
-                        err = ACAPI_Element_Get (&element);
-                        if (err == NoError) {
-                            API_Element 	mask = {};
-                            API_ElementMemo memo = {};
-
-                            ACAPI_ELEMENT_MASK_CLEAR (mask);
-                            switch (GetElemTypeId (element.header)) {
-                                case API_ObjectID:
-                                    element.object.xRatio = getParams.a;
-                                    element.object.yRatio = getParams.b;
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, xRatio);
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, yRatio);
-                                    break;
-                                case API_WindowID:
-                                case API_DoorID:
-                                    element.window.openingBase.width = getParams.a;
-                                    element.window.openingBase.height = getParams.b;
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
-                                    break;
-                                case API_SkylightID:
-                                    element.skylight.openingBase.width = getParams.a;
-                                    element.skylight.openingBase.height = getParams.b;
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
-                                    break;
-                                default:
-                                    // Not supported yet
-                                    break;
-                            }
-
-                            memo.params = getParams.params;
-                            err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
-                        }
-                    }
-                }
-                ACAPI_LibraryPart_CloseParameters ();
-                ACAPI_DisposeAddParHdl (&getParams.params);
-            }
-
-            if (err != NoError) {
-                if (errMessage.IsEmpty ()) {
-                    executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to change parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
-                } else {
-                    executionResults (CreateFailedExecutionResult (err, errMessage));
-                }
-            } else {
-                executionResults (CreateSuccessfulExecutionResult ());
-            }
-        }
-
-        return NoError;
-    });
-
-    return response;
-}
-
 FilterElementsCommand::FilterElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1594,13 +1526,13 @@ GS::Optional<GS::UniString> FilterElementsCommand::GetResponseSchema () const
     return R"({
         "type": "object",
         "properties": {
-            "filteredElements": {
+            "elements": {
                 "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "filteredElements"
+            "elements"
         ]
     })";
 }
@@ -1622,7 +1554,7 @@ GS::ObjectState FilterElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GS::ObjectState response;
-    const auto& filteredElements = response.AddList<GS::ObjectState> ("filteredElements");
+    const auto& filteredElements = response.AddList<GS::ObjectState> ("elements");
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -1776,3 +1708,81 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*para
 }
 
 #endif
+
+Get3DBoundingBoxesCommand::Get3DBoundingBoxesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Get3DBoundingBoxesCommand::GetName () const
+{
+    return "Get3DBoundingBoxes";
+}
+
+GS::Optional<GS::UniString> Get3DBoundingBoxesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> Get3DBoundingBoxesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+            "properties": {
+            "boundingBoxes3D": {
+                "$ref": "#/BoundingBoxes3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBoxes3D"
+        ]
+    })";
+}
+
+GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& boundingBoxes3D = response.AddList<GS::ObjectState> ("boundingBoxes3D");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            boundingBoxes3D (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        API_Box3D box3D = {};
+        GSErrCode err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        if (err != NoError) {
+            boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
+            continue;
+        }
+
+        GS::ObjectState boundingBox3D ("xMin", box3D.xMin,
+                                       "xMax", box3D.xMax,
+                                       "yMin", box3D.yMin,
+                                       "yMax", box3D.yMax,
+                                       "zMin", box3D.zMin,
+                                       "zMax", box3D.zMax);
+        boundingBoxes3D (GS::ObjectState ("boundingBox3D", boundingBox3D));
+    }
+
+    return response;
+}

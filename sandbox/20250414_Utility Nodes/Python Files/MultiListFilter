@@ -1,0 +1,82 @@
+import Grasshopper as gh
+import System
+
+# Set component UI
+ghenv.Component.Name = "Multi-List Filter"
+ghenv.Component.NickName = 'MLFilter'
+
+# Default message
+message = "Waiting for at least one input list."
+
+# Collect input lists without modifying globals during iteration
+input_keys = [key for key, value in globals().items() if key.startswith('list') and (isinstance(value, (list, tuple)) or value is None)]
+input_lists = [globals()[key] for key in input_keys]
+
+# Initialize outputs as empty lists
+for i in range(4):  # Support up to 4 lists (list1 to list4)
+    globals()[f'out{i+1}'] = []
+
+# Process only if we have at least one non-None input list
+non_none_lists = [lst for lst in input_lists if lst is not None]
+
+if non_none_lists:
+    # Convert input lists to regular lists
+    input_lists = [list(lst) for lst in non_none_lists]
+    
+    # Validate lists have the same length
+    lengths = [len(lst) for lst in input_lists]
+    if not all(x == lengths[0] for x in lengths):
+        # Format error message with line breaks
+        message = f"Lists have different lengths:\n{lengths}"
+        # Outputs already set to empty lists
+    else:
+        # Convert index to list for unified processing
+        indices = [index] if not isinstance(index, list) else index
+        indices = [int(i) if i >= 0 else lengths[0] + int(i) for i in indices]
+        
+        try:
+            # Filter all lists using the indices
+            filtered_lists = []
+            for lst in input_lists:
+                filtered = [lst[i] for i in indices]
+                # If only one index was used, return single items instead of lists
+                if len(indices) == 1:
+                    filtered = filtered[0]
+                filtered_lists.append(filtered)
+            
+            # Assign to output variables
+            for i, filtered in enumerate(filtered_lists):
+                globals()[f'out{i+1}'] = filtered
+            
+            # Format success message with line breaks
+            if len(indices) == 1:
+                message = f"Output: {len(indices)} value\nfrom {len(input_lists)} lists"
+            else:
+                message = f"Output: {len(indices)} values\nfrom {len(input_lists)} lists"
+            
+            # Add additional details if needed
+            if len(message) < 40:
+                message += f"\nof {lengths[0]} elements"
+            
+        except IndexError as e:
+            # Format error message with line breaks
+            message = f"Index out of range.\nValid range is -{lengths[0]} to {lengths[0]-1}"
+            # Outputs already set to empty lists
+
+# Ensure the message is properly formatted with line breaks
+def format_message(msg, max_length=30):
+    """Helper function to format the message with line breaks."""
+    lines = []
+    current_line = ""
+    for word in msg.split():
+        if len(current_line) + len(word) + 1 <= max_length:
+            current_line += word + " "
+        else:
+            lines.append(current_line.strip())
+            current_line = word + " "
+    if current_line:
+        lines.append(current_line.strip())
+    return "\n".join(lines)
+
+# Format the final message
+ghenv.Component.Message = format_message(message)

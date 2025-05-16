@@ -24,3 +24,7 @@
 'FILE' ID_BUILTIN_SCRIPT_1 "" {
     "HelloWorld.py"
 }
+
+'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
+    "CommonSchemaDefinitions.json"
+}

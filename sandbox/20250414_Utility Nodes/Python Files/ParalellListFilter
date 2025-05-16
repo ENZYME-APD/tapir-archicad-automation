@@ -1,0 +1,132 @@
+import Grasshopper as gh
+from Grasshopper import DataTree
+from Grasshopper.Kernel.Data import GH_Path
+import System
+import Rhino.Geometry as rg  # Import for geometry handling
+
+# Set component UI
+ghenv.Component.Name = "Parallel List Filter"
+ghenv.Component.Nickname = "PLFilter"
+
+def filter_lists(NumList, secondary_list, search_values, filter_mode):
+    # Ensure search_values is a list
+    if not isinstance(search_values, list):
+        search_values = [search_values] if search_values is not None else []
+    
+    # Initialize output
+    filteredNum = DataTree[object]()  # Use DataTree to preserve all data types
+    filteredSec = DataTree[object]()   # Use DataTree to preserve all data types
+    pattern = []
+    message = "Waiting for all inputs to be provided."
+    
+    if NumList is not None and secondary_list is not None and filter_mode:
+        # Check if lists have matching lengths
+        if len(NumList) != len(secondary_list):
+            message = f"Error: Lists must have equal length.\nNumList: {len(NumList)}, secList: {len(secondary_list)}"
+            return filteredNum, filteredSec, pattern, message
+        
+        pattern = [False] * len(NumList)  # Initialize pattern with False
+        
+        # Convert search_values to a set for faster lookup
+        search_set = set(search_values)
+        
+        # Process based on filter mode
+        if filter_mode in ["equals", "notFound", "greater", "smaller", "range", "closest"]:
+            path = GH_Path(0)  # Single branch for non-group modes
+            for i, (num_val, sec_val) in enumerate(zip(NumList, secondary_list)):
+                # Try to handle numeric or comparable values, fall back to index-based filtering for geometry
+                try:
+                    if filter_mode == "equals" and num_val in search_set:
+                        filteredNum.Add(num_val, path)
+                        filteredSec.Add(sec_val, path)
+                        pattern[i] = True
+                    elif filter_mode == "notFound" and num_val not in search_set:
+                        filteredNum.Add(num_val, path)
+                        filteredSec.Add(sec_val, path)
+                        pattern[i] = True
+                    elif filter_mode == "greater" and isinstance(num_val, (int, float)) and num_val > max(search_set):
+                        filteredNum.Add(num_val, path)
+                        filteredSec.Add(sec_val, path)
+                        pattern[i] = True
+                    elif filter_mode == "smaller" and isinstance(num_val, (int, float)) and num_val < min(search_set):
+                        filteredNum.Add(num_val, path)
+                        filteredSec.Add(sec_val, path)
+                        pattern[i] = True
+                    elif filter_mode == "range" and len(search_set) >= 2:
+                        min_val, max_val = min(search_set), max(search_set)
+                        if isinstance(num_val, (int, float)) and min_val <= num_val <= max_val:
+                            filteredNum.Add(num_val, path)
+                            filteredSec.Add(sec_val, path)
+                            pattern[i] = True
+                    elif filter_mode == "closest" and isinstance(num_val, (int, float)):
+                        closest_val = min(search_set, key=lambda x: abs(x - num_val))
+                        filteredNum.Add(closest_val, path)
+                        filteredSec.Add(sec_val, path)
+                        pattern[i] = True
+                except (TypeError, ValueError):
+                    # If comparison fails (e.g., geometry), skip or use index-based filtering
+                    pass
+            
+            count = filteredNum.BranchCount if filteredNum.BranchCount > 0 else 0
+            if filter_mode == "equals":
+                message = f"Equals {search_values}\nFound {count}/{len(NumList)}"
+            elif filter_mode == "notFound":
+                message = f"Not Found in 'sValues'\nNot found {count}/{len(NumList)}"
+            elif filter_mode == "greater":
+                message = f"Greater than {max(search_set)}\nFound {count}/{len(NumList)}"
+            elif filter_mode == "smaller":
+                message = f"Smaller than {min(search_set)}\nFound {count}/{len(NumList)}"
+            elif filter_mode == "range":
+                message = f"Range {min(search_set)} to {max(search_set)}\nFound {count}/{len(NumList)}"
+            elif filter_mode == "closest":
+                message = f"Closest to {search_values}\nFound {count}/{len(NumList)}"
+        
+        elif filter_mode == "group_equals":
+            groups = {val: [] for val in search_set}
+            for i, num_val in enumerate(NumList):
+                if num_val in search_set:
+                    groups[num_val].append(i)
+                    pattern[i] = True
+            
+            total_matches = 0
+            for idx, search_val in enumerate(search_set):
+                path = GH_Path(idx)
+                indices = groups.get(search_val, [])
+                num_values = [NumList[i] for i in indices]
+                sec_values = [secondary_list[i] for i in indices]
+                if num_values:
+                    filteredNum.AddRange(num_values, path)
+                    filteredSec.AddRange(sec_values, path)
+                total_matches += len(num_values)
+            
+            message = f"Group Equals {search_values}\nFound {total_matches} in {len(search_set)} branches"
+        
+        elif filter_mode == "group_unique":
+            unique_values = list(set(secondary_list))  # Get unique values from secList
+            groups = {val: [] for val in unique_values}
+            
+            for i, sec_val in enumerate(secondary_list):
+                groups[sec_val].append(i)
+                pattern[i] = True  # All items are grouped, so mark as True
+            
+            total_matches = 0
+            for idx, unique_val in enumerate(unique_values):
+                path = GH_Path(idx)
+                indices = groups.get(unique_val, [])
+                num_values = [NumList[i] for i in indices]
+                sec_values = [secondary_list[i] for i in indices]
+                if num_values:
+                    filteredNum.AddRange(num_values, path)
+                    filteredSec.AddRange(sec_values, path)
+                total_matches += len(num_values)
+            
+            message = f"Group Unique from secList\nFound {total_matches} in {len(unique_values)} branches"
+        
+        else:
+            message = f"Invalid filter mode. Use 'equals', 'notFound', 'greater', 'smaller', 'range', 'closest', 'group_equals', or 'group_unique'."
+    
+    return filteredNum, filteredSec, pattern, message
+
+# Process the filtering
+filteredNum, filteredSec, filterPattern, msg = filter_lists(NumList, secList, sValues, sMode)
+ghenv.Component.Message = msg

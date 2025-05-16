@@ -1,0 +1,34 @@
+name: Grasshopper Plugin Build Check
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+    runs-on: [ windows-2022 ]
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Setup msbuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Setup nuget
+      uses: nuget/setup-nuget@v2
+    - name: Restore nuget packages
+      run: nuget restore grasshopper-plugin/TapirGrasshopperPlugin.sln
+    - name: Build debug
+      run: msbuild grasshopper-plugin/TapirGrasshopperPlugin.sln -property:Configuration=Debug
+    - name: Build release
+      run: msbuild grasshopper-plugin/TapirGrasshopperPlugin.sln -property:Configuration=Release
+    - name: Create yak package
+      run: grasshopper-plugin/create_package_win.bat
+    - name: Get yak
+      run: curl -o yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
+    - name: Build yak package
+      run: ..\..\yak.exe build
+      working-directory: grasshopper-plugin/YakPackage
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Grasshopper Plugin
+        path: grasshopper-plugin/YakPackage/*.yak

@@ -2,11 +2,11 @@ import aclib
 
 mainElements = aclib.RunCommand ('API.GetAllElements', {})['elements']
 response = aclib.RunTapirCommand ('GetSubelementsOfHierarchicalElements', {
-        'hierarchicalElements' : mainElements
+        'elements' : mainElements
     })
 
 allSubElements = []
-for subelementGroups in response['subelementsOfHierarchicalElements']:
+for subelementGroups in response['subelements']:
     for subelements in subelementGroups.values():
         for subelement in subelements:
             if 'elementId' in subelement:

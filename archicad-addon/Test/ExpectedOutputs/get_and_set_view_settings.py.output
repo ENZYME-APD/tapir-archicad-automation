@@ -1,0 +1,379 @@
+Command: GetViewSettings
+Parameters:
+{
+    "navigatorItemIds": [
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "viewSettings": [
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get view settings from the navigator item, probably it's not a view"
+            }
+        },
+        {
+            "modelViewOptions": "01 Site",
+            "layerCombination": "01 Site"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get view settings from the navigator item, probably it's not a view"
+            }
+        },
+        {
+            "modelViewOptions": "02 Drafting",
+            "layerCombination": "02 Drafting"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get view settings from the navigator item, probably it's not a view"
+            }
+        }
+    ]
+}
+Command: GetModelViewOptions
+Parameters:
+{}
+Response:
+{
+    "modelViewOptions": [
+        {
+            "name": "01 Site"
+        },
+        {
+            "name": "02 Drafting"
+        },
+        {
+            "name": "03 Building Plans"
+        },
+        {
+            "name": "04 Ceiling Plans"
+        }
+    ]
+}
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "LayerCombination"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "02 Drafting"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "06 Plans - Mechanical"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "07 Plans - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "09 Layouting"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "01 Site"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "04 Plans - Approval"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "08 Rendering"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "05 Plans - Detailed"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "03 Plans - Preliminary"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "10 Show 3D Zones as Solid"
+        }
+    ]
+}
+Command: SetViewSettings
+Parameters:
+{
+    "navigatorItemIdsWithViewSettings": [
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "viewSettings": {
+                "modelViewOptions": "02 Drafting",
+                "layerCombination": "06 Plans - Mechanical"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "viewSettings": {
+                "modelViewOptions": "03 Building Plans",
+                "layerCombination": "07 Plans - Structural"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "viewSettings": {
+                "modelViewOptions": "04 Ceiling Plans",
+                "layerCombination": "09 Layouting"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "viewSettings": {
+                "modelViewOptions": "01 Site",
+                "layerCombination": "01 Site"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "viewSettings": {
+                "modelViewOptions": "02 Drafting",
+                "layerCombination": "04 Plans - Approval"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "viewSettings": {
+                "modelViewOptions": "04 Ceiling Plans",
+                "layerCombination": "05 Plans - Detailed"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: GetViewSettings
+Parameters:
+{
+    "navigatorItemIds": [
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "viewSettings": [
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get view settings from the navigator item, probably it's not a view"
+            }
+        },
+        {
+            "modelViewOptions": "02 Drafting",
+            "layerCombination": "06 Plans - Mechanical"
+        },
+        {
+            "modelViewOptions": "03 Building Plans",
+            "layerCombination": "07 Plans - Structural"
+        },
+        {
+            "modelViewOptions": "04 Ceiling Plans",
+            "layerCombination": "09 Layouting"
+        },
+        {
+            "modelViewOptions": "01 Site",
+            "layerCombination": "01 Site"
+        },
+        {
+            "modelViewOptions": "02 Drafting",
+            "layerCombination": "04 Plans - Approval"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get view settings from the navigator item, probably it's not a view"
+            }
+        },
+        {
+            "modelViewOptions": "04 Ceiling Plans",
+            "layerCombination": "05 Plans - Detailed"
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "Failed to get view settings from the navigator item, probably it's not a view"
+            }
+        }
+    ]
+}

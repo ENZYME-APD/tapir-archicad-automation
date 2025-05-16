@@ -5,6 +5,8 @@
 
 #include "ObjectState.hpp"
 
+#include <map>
+
 enum class CommonSchema
 {
     Used,
@@ -36,17 +38,23 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);
-inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)   { return GetGuidFromArrayItem ("elementId", os); }
-inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os) { return GetGuidFromArrayItem ("attributeId", os); }
-inline API_Guid GetGuidFromIssuesArrayItem (const GS::ObjectState& os)     { return GetGuidFromArrayItem ("issueId", os); }
+inline API_Guid GetGuidFromElementsArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("elementId", os); }
+inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      { return GetGuidFromArrayItem ("attributeId", os); }
+inline API_Guid GetGuidFromIssuesArrayItem (const GS::ObjectState& os)          { return GetGuidFromArrayItem ("issueId", os); }
+inline API_Guid GetGuidFromNavigatorItemIdArrayItem (const GS::ObjectState& os) { return GetGuidFromArrayItem ("navigatorItemId", os); }
+inline API_Guid GetGuidFromDatabaseArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("databaseId", os); }
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
+void AddPolygonFromMemoCoords (GS::ObjectState& os, const GS::String& fieldName, const API_Guid& elemGuid);
+void AddPolygonWithHolesFromMemoCoords (GS::ObjectState& os, const GS::String& polygonFieldName, const GS::String& holesArrayFieldName, const GS::String& holePolygonFieldName, const API_Guid& elemGuid);
 inline GS::ObjectState CreateGuidObjectState (const API_Guid& guid) { return GS::ObjectState ("guid", APIGuidToString (guid)); }
+inline GS::ObjectState CreateGuidObjectState (const GS::Guid& guid) { return GS::ObjectState ("guid", guid.ToUniString()); }
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid);
 inline GS::ObjectState CreateElementIdObjectState (const API_Guid& guid)   { return CreateIdObjectState ("elementId", guid); }
 inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { return CreateIdObjectState ("attributeId", guid); }
 inline GS::ObjectState CreateIssueIdObjectState (const API_Guid& guid)     { return CreateIdObjectState ("issueId", guid); }
+inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { return CreateIdObjectState ("databaseId", guid); }
 
 struct Story {
     Story (short _index, double _level)
@@ -57,9 +65,10 @@ struct Story {
     short  index;
     double level;
 };
-using Stories = GS::Array<Story>;
+using Stories = std::map<short, Story>;
 
 Stories GetStories ();
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
+double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);

@@ -34,13 +34,19 @@
 
 #define ACAPI_Teamwork_ReceiveChanges ACAPI_TeamworkControl_ReceiveChanges
 #define ACAPI_Teamwork_SendChanges ACAPI_TeamworkControl_SendChanges
+#define ACAPI_Teamwork_ReserveElements ACAPI_TeamworkControl_ReserveElements
+#define ACAPI_Teamwork_ReleaseElements ACAPI_TeamworkControl_ReleaseElements
+#define ACAPI_Teamwork_GetUsernameFromId ACAPI_TeamworkControl_GetUsernameFromId
 
 #define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
 #define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
 
 #define ACAPI_Selection_Select ACAPI_Element_Select
+#define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
 #define ACAPI_Command_GetHttpConnectionPort(par1) ACAPI_Goodies (APIAny_GetHttpConnectionPortID, par1)
+
+#define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
@@ -113,6 +119,16 @@ inline GSErrCode ACAPI_Navigator_GetNavigatorSet (API_NavigatorSet* navigatorSet
     return ACAPI_Navigator (APINavigator_GetNavigatorSetID, navigatorSet, index);
 }
 
+inline GSErrCode ACAPI_Navigator_GetNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorViewID, navigatorItem, navigatorView);
+}
+
+inline GSErrCode ACAPI_Navigator_ChangeNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView)
+{
+    return ACAPI_Navigator (APINavigator_ChangeNavigatorViewID, navigatorItem, navigatorView);
+}
+
 inline GSErrCode ACAPI_View_Redraw ()
 {
     return ACAPI_Automate (APIDo_RedrawID);
@@ -131,6 +147,11 @@ inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
 {
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
+}
+
+inline GSErrCode ACAPI_LibraryPart_Get (API_LibPart* libpart)
+{
+    return ACAPI_LibPart_Get (libpart);
 }
 
 inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfMissing, bool onlyPlaceable = false)
@@ -161,6 +182,26 @@ inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
 inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unId)
 {
     return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
+}
+
+inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
+}
+
+inline GSErrCode ACAPI_Database_ChangeCurrentDatabase (API_DatabaseInfo* par1)
+{
+    return ACAPI_Database (APIDb_ChangeCurrentDatabaseID, (void*) par1);
+}
+
+inline GSErrCode ACAPI_Database_GetCurrentDatabase (API_DatabaseInfo* par1)
+{
+    return ACAPI_Database (APIDb_GetCurrentDatabaseID, (void*) par1);
+}
+
+inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
+{
+    return ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr);
 }
 
 #endif
@@ -255,6 +296,37 @@ inline API_ElemTypeID GetElemTypeId (const API_Elem_Head& elemHead)
 #endif
 }
 
+inline GSErrCode TAPIR_Element_AddClassificationItemDefault (const API_Elem_Head& elemHead, const API_Guid& itemGuid)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_AddClassificationItemDefault (elemHead.type, itemGuid);
+#else
+    return ACAPI_Element_AddClassificationItemDefault (elemHead.typeID, elemHead.variationID, itemGuid);
+#endif
+}
+
+inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& elemHead, const API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_SetCategoryValueDefault (elemHead.type, categoryValue.category, categoryValue);
+#else
+#if defined ServerMainVers_2600
+    return ACAPI_Element_SetCategoryValueDefault (elemHead.type, categoryValue.category, categoryValue);
+#else
+    return ACAPI_Element_SetCategoryValueDefault (elemHead.typeID, elemHead.variationID, categoryValue.category, categoryValue);
+#endif
+#endif
+}
+
+inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& elemHead, const GS::Array<API_Property>& properties)
+{
+#ifdef ServerMainVers_2600
+    return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.type, properties);
+#else
+    return ACAPI_Element_SetPropertiesOfDefaultElem (elemHead.typeID, elemHead.variationID, properties);
+#endif
+}
+
 inline Int32 GetAttributeIndex (const API_AttributeIndex& index)
 {
 #ifdef ServerMainVers_2700
@@ -262,4 +334,31 @@ inline Int32 GetAttributeIndex (const API_AttributeIndex& index)
 #else
     return index;
 #endif
+}
+
+#ifndef ServerMainVers_2700
+inline GSErrCode ACAPI_Attribute_GetAttributesByType (API_AttrTypeID typeID, GS::Array<API_Attribute>& attributes)
+{
+    API_AttributeIndex count;
+    GSErrCode err = ACAPI_Attribute_GetNum (typeID, &count);
+
+    for (API_AttributeIndex i = 1; i <= count; ++i) {
+        API_Attribute attr = {};
+        attr.header.typeID = typeID;
+        attr.header.index = i;
+
+        if (ACAPI_Attribute_Get (&attr) == NoError) {
+            attributes.Push (attr);
+        }
+    }
+
+    return err;
+}
+#endif
+
+inline void DisposeAttribute (API_Attribute& attr)
+{
+    if (attr.header.typeID == API_MaterialID) {
+        delete attr.material.texture.fileLoc;
+    }
 }

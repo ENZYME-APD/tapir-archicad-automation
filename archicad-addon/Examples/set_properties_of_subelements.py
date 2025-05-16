@@ -1,35 +1,18 @@
-import json
 import aclib
-
 
 allCurtainWalls = aclib.RunCommand (
     'API.GetElementsByType', {
         'elementType': 'CurtainWall'
     })['elements']
 
-commandName = 'GetSubelementsOfHierarchicalElements'
-commandParameters = {
-    'hierarchicalElements' : allCurtainWalls
-}
-
 allCWSubelements = aclib.RunTapirCommand (
     'GetSubelementsOfHierarchicalElements', {
-        'hierarchicalElements': allCurtainWalls
-    })['subelementsOfHierarchicalElements']
+        'elements': allCurtainWalls
+    })['subelements']
 
 allCWFrameSubelements = [subelement for subelements in allCWSubelements for subelement in subelements['cWallFrames']]
 
 elementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {'properties': [{"type": "BuiltIn", "nonLocalizedName": "General_ElementID"}]})['properties'][0]['propertyId']
-
-commandName = 'GetPropertyValuesOfElements'
-commandParameters = {
-    'elements' : [{
-        'elementId': subelement['elementId']
-    } for subelement in allCWFrameSubelements],
-    'properties' : [{
-        'propertyId': elementIdPropertyId
-    }]
-}
 
 response = aclib.RunTapirCommand (
     'GetPropertyValuesOfElements', {

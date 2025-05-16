@@ -1,0 +1,1457 @@
+Command: API.GetComponentsOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "componentsOfElements": [
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                },
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                },
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                },
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: API.GetPropertyValuesOfElementComponents
+Parameters:
+{
+    "elementComponents": [
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        }
+    ],
+    "properties": [
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "propertyValuesForElementComponents": [
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - EXTERNAL CLADDING"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.05
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 3.702
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.25
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 3.702
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.2
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 3.4552
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.2
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 3.085
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.3
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 2.651520367
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - INTERNAL CLADDING"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.1
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 2.028901792
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.2
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 2.028901792
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - INTERNAL CLADDING"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.1
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 0.923361853
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.2
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 0.923361853
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: CreatePropertyGroups
+Parameters:
+{
+    "propertyGroups": [
+        {
+            "propertyGroup": {
+                "name": "Skins (by Tapir)"
+            }
+        }
+    ]
+}
+Response:
+{
+    "propertyGroupIds": [
+        {
+            "propertyGroupId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: CreatePropertyDefinitions
+Parameters:
+{
+    "propertyDefinitions": [
+        {
+            "propertyDefinition": {
+                "name": "Skin number",
+                "description": "by Tapir",
+                "type": "integer",
+                "isEditable": false,
+                "defaultValue": {
+                    "basicDefaultValue": {
+                        "type": "integer",
+                        "status": "normal",
+                        "value": 0
+                    }
+                },
+                "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "group": {
+                    "name": "Skins (by Tapir)"
+                }
+            }
+        },
+        {
+            "propertyDefinition": {
+                "name": "Skin#1 Building Material Name",
+                "description": "by Tapir",
+                "type": "string",
+                "isEditable": false,
+                "defaultValue": {
+                    "basicDefaultValue": {
+                        "type": "string",
+                        "status": "userUndefined"
+                    }
+                },
+                "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "group": {
+                    "name": "Skins (by Tapir)"
+                }
+            }
+        },
+        {
+            "propertyDefinition": {
+                "name": "Skin#1 Component Thickness",
+                "description": "by Tapir",
+                "type": "string",
+                "isEditable": false,
+                "defaultValue": {
+                    "basicDefaultValue": {
+                        "type": "string",
+                        "status": "userUndefined"
+                    }
+                },
+                "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "group": {
+                    "name": "Skins (by Tapir)"
+                }
+            }
+        },
+        {
+            "propertyDefinition": {
+                "name": "Skin#1 Projected Component Area (Net)",
+                "description": "by Tapir",
+                "type": "string",
+                "isEditable": false,
+                "defaultValue": {
+                    "basicDefaultValue": {
+                        "type": "string",
+                        "status": "userUndefined"
+                    }
+                },
+                "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "group": {
+                    "name": "Skins (by Tapir)"
+                }
+            }
+        },
+        {
+            "propertyDefinition": {
+                "name": "Skin#2 Building Material Name",
+                "description": "by Tapir",
+                "type": "string",
+                "isEditable": false,
+                "defaultValue": {
+                    "basicDefaultValue": {
+                        "type": "string",
+                        "status": "userUndefined"
+                    }
+                },
+                "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "group": {
+                    "name": "Skins (by Tapir)"
+                }
+            }
+        },
+        {
+            "propertyDefinition": {
+                "name": "Skin#2 Component Thickness",
+                "description": "by Tapir",
+                "type": "string",
+                "isEditable": false,
+                "defaultValue": {
+                    "basicDefaultValue": {
+                        "type": "string",
+                        "status": "userUndefined"
+                    }
+                },
+                "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "group": {
+                    "name": "Skins (by Tapir)"
+                }
+            }
+        },
+        {
+            "propertyDefinition": {
+                "name": "Skin#2 Projected Component Area (Net)",
+                "description": "by Tapir",
+                "type": "string",
+                "isEditable": false,
+                "defaultValue": {
+                    "basicDefaultValue": {
+                        "type": "string",
+                        "status": "userUndefined"
+                    }
+                },
+                "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "group": {
+                    "name": "Skins (by Tapir)"
+                }
+            }
+        }
+    ]
+}
+Response:
+{
+    "propertyIds": [
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: API.SetPropertyValuesOfElements
+Parameters:
+{
+    "elementPropertyValues": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 2
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - EXTERNAL CLADDING"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.05"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "3.702"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.25"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "3.702"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.2"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "3.4552"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.2"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "3.085"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.3"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "2.651520367"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 2
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - INTERNAL CLADDING"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.1"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "2.028901792"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.2"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "2.028901792"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 2
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - INTERNAL CLADDING"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.1"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.923361853"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.2"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.923361853"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+The below properties were successfully created and set for 6 element(s).
+
+Skins (by Tapir)/Skin number
+Skins (by Tapir)/Skin#1 Building Material Name
+Skins (by Tapir)/Skin#1 Component Thickness
+Skins (by Tapir)/Skin#1 Projected Component Area (Net)
+Skins (by Tapir)/Skin#2 Building Material Name
+Skins (by Tapir)/Skin#2 Component Thickness
+Skins (by Tapir)/Skin#2 Projected Component Area (Net)

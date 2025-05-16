@@ -8,12 +8,12 @@
 
 'STR#' ID_ADDON_MENU "Add-On Menu" {
 /* [   ] */        "Tapir"
-/* [  1] */        "About Tapir...^ES^EE^EI^ED^EW^E3^EL"
+/* [  1] */        "About Tapir...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
 'STR#' ID_ADDON_MENU_FOR_PALETTE "Add-On Menu" {
 /* [   ] */        "Tapir"
-/* [  1] */        "Tapir Palette^ES^EE^EI^ED^EW^E3^EL"
+/* [  1] */        "Tapir Palette^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
 'STR#' ID_PALETTE_STRINGS "Tapir Palette Strings" {

@@ -14,6 +14,7 @@
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
+#include "ElementGDLParameterCommands.hpp"
 #include "ElementCreationCommands.hpp"
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
@@ -21,7 +22,9 @@
 #include "LibraryCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ClassificationCommands.hpp"
+#include "FavoritesCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NavigatorCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -142,10 +145,6 @@ GSErrCode Initialize (void)
             projectCommands, "0.1.0",
             "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project."
         );
-        err |= RegisterCommand<PublishPublisherSetCommand> (
-            projectCommands, "0.1.0",
-            "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
-        );
         err |= RegisterCommand<OpenProjectCommand> (
             projectCommands, "1.0.7",
             "Opens the given project."
@@ -183,9 +182,17 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Sets the details of the given elements (floor, layer, order etc)."
         );
+        err |= RegisterCommand<Get3DBoundingBoxesCommand> (
+            elementCommands, "1.1.2",
+            "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
+        );
         err |= RegisterCommand<GetSubelementsOfHierarchicalElementsCommand> (
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements."
+        );
+        err |= RegisterCommand<GetConnectedElementsCommand> (
+            elementCommands, "1.1.4",
+            "Gets connected elements of the given elements."
         );
         err |= RegisterCommand<HighlightElementsCommand> (
             elementCommands, "1.0.3",
@@ -226,10 +233,23 @@ GSErrCode Initialize (void)
         AddCommandGroup (elementCommands);
     }
 
+    { // Favorites Commands
+        CommandGroup favoritesCommands ("Favorites Commands");
+        err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
+            favoritesCommands, "1.1.2",
+            "Apply the given favorites to element defaults."
+        );
+        err |= RegisterCommand<CreateFavoritesFromElementsCommand> (
+            favoritesCommands, "1.1.2",
+            "Create favorites from the given elements."
+        );
+        AddCommandGroup (favoritesCommands);
+    }
+
     { // Property Commands
         CommandGroup propertyCommands ("Property Commands");
         err |= RegisterCommand<GetAllPropertiesCommand> (
-            propertyCommands, "1.0.8",
+            propertyCommands, "1.1.3",
             "Returns all user defined and built-in properties."
         );
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
@@ -244,11 +264,27 @@ GSErrCode Initialize (void)
             propertyCommands, "1.0.7",
             "Creates Property Groups based on the given parameters."
         );
+        err |= RegisterCommand<DeletePropertyGroupsCommand> (
+            propertyCommands, "1.0.9",
+            "Deletes the given Custom Property Groups."
+        );
+        err |= RegisterCommand<CreatePropertyDefinitionsCommand> (
+            propertyCommands, "1.0.9",
+            "Creates Custom Property Definitions based on the given parameters."
+        );
+        err |= RegisterCommand<DeletePropertyDefinitionsCommand> (
+            propertyCommands, "1.0.9",
+            "Deletes the given Custom Property Definitions."
+        );
         AddCommandGroup (propertyCommands);
     }
 
     { // Attribute Commands
         CommandGroup attributeCommands ("Attribute Commands");
+        err |= RegisterCommand<GetAttributesByTypeCommand> (
+            attributeCommands, "1.1.3",
+            "Returns the details of every attribute of the given type."
+        );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
             "Creates Layer attributes based on the given parameters."
@@ -291,7 +327,44 @@ GSErrCode Initialize (void)
             teamworkCommands, "0.1.0",
             "Performs a receive operation on the currently opened Teamwork project."
         );
+        err |= RegisterCommand<ReserveElementsCommand> (
+            teamworkCommands, "1.1.4",
+            "Reserves elements in Teamwork mode."
+        );
+        err |= RegisterCommand<ReleaseElementsCommand> (
+            teamworkCommands, "1.1.4",
+            "Releases elements in Teamwork mode."
+        );
         AddCommandGroup (teamworkCommands);
+    }
+
+    { // Navigator Commands
+        CommandGroup navigatorCommands ("Navigator Commands");
+        err |= RegisterCommand<PublishPublisherSetCommand> (
+            navigatorCommands, "0.1.0",
+            "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
+        );
+        err |= RegisterCommand<UpdateDrawingsCommand> (
+            navigatorCommands, "1.1.4",
+            "Performs a drawing update on the given elements."
+        );
+        err |= RegisterCommand<GetDatabaseIdFromNavigatorItemIdCommand> (
+            navigatorCommands, "1.1.4",
+            "Gets the ID of the database associated with the supplied navigator item id"
+        );
+        err |= RegisterCommand<GetModelViewOptionsCommand> (
+            navigatorCommands, "1.1.4",
+            "Gets all model view options"
+        );
+        err |= RegisterCommand<GetViewSettingsCommand> (
+            navigatorCommands, "1.1.4",
+            "Gets the view settings of navigator items"
+        );
+        err |= RegisterCommand<SetViewSettingsCommand> (
+            navigatorCommands, "1.1.4",
+            "Sets the view settings of navigator items"
+        );
+        AddCommandGroup (navigatorCommands);
     }
 
     { // Issue Management Commands

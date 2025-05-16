@@ -25,3 +25,5 @@
 
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004
+
+#define ID_COMMON_SCHEMA_DEFINITIONS_FILE 32001

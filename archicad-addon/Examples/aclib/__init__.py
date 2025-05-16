@@ -4,7 +4,11 @@ import urllib.request
 host = 'http://127.0.0.1'
 port = '19723'
 
-def RunCommand (command, parameters):
+def RunCommand (command, parameters, debug = False):
+    if debug:
+        print ('Command: ' + command)
+        print ('Parameters:\n' + JsonDumpDictionary (parameters))
+
     connection_object = urllib.request.Request ('{}:{}'.format (host, port))
     connection_object.add_header ('Content-Type', 'application/json')
 
@@ -23,9 +27,13 @@ def RunCommand (command, parameters):
     if 'succeeded' not in response_json or 'result' not in response_json:
         return None
 
-    return response_json['result'] if response_json['succeeded'] else None
+    result = response_json['result'] if response_json['succeeded'] else None
+    if debug:
+        print ('Response:\n' + JsonDumpDictionary (result))
 
-def RunTapirCommand (command, parameters, debug = True):
+    return result
+
+def RunTapirCommand (command, parameters = {}, debug = True):
     if debug:
         print ('Command: ' + command)
         print ('Parameters:\n' + JsonDumpDictionary (parameters))
@@ -36,7 +44,7 @@ def RunTapirCommand (command, parameters, debug = True):
             'commandName': command
         },
         'addOnCommandParameters': parameters
-    })
+    }, debug = False)
 
     result = None if commandResult == None else commandResult['addOnCommandResponse']
     if debug:

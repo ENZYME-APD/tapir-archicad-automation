@@ -3,18 +3,8 @@
 
 static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId, API_AttrTypeID attributeType, API_AttributeIndex& attributeIndex)
 {
-    GS::ObjectState attributeIdInner;
-    if (!attributeId.Get ("attributeId", attributeIdInner)) {
-        return false;
-    }
-
-    GS::String attributeGuidString;
-    if (!attributeIdInner.Get ("guid", attributeGuidString)) {
-        return false;
-    }
-
     API_Attribute attribute = {};
-    attribute.header.guid = APIGuidFromString (attributeGuidString.ToCStr ());
+    attribute.header.guid = GetGuidFromAttributesArrayItem (attributeId);
     attribute.header.typeID = attributeType;
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
@@ -22,6 +12,126 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
 
     attributeIndex = attribute.header.index;
     return true;
+}
+
+static API_AttrTypeID ConvertAttributeTypeStringToID (const GS::UniString& typeStr)
+{
+    if (typeStr == "Layer")
+        return API_LayerID;
+    if (typeStr == "Line")
+        return API_LinetypeID;
+    if (typeStr == "Fill")
+        return API_FilltypeID;
+    if (typeStr == "Composite")
+        return API_CompWallID;
+    if (typeStr == "Surface")
+        return API_MaterialID;
+    if (typeStr == "LayerCombination")
+        return API_LayerCombID;
+    if (typeStr == "ZoneCategory")
+        return API_ZoneCatID;
+    if (typeStr == "Profile")
+        return API_ProfileID;
+    if (typeStr == "PenTable")
+        return API_PenTableID;
+    if (typeStr == "MEPSystem")
+        return API_MEPSystemID;
+    if (typeStr == "OperationProfile")
+        return API_OperationProfileID;
+    if (typeStr == "BuildingMaterial")
+        return API_BuildingMaterialID;
+    return API_ZombieAttrID;
+}
+
+GetAttributesByTypeCommand::GetAttributesByTypeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAttributesByTypeCommand::GetName () const
+{
+    return "GetAttributesByType";
+}
+
+GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeType": {
+                "$ref": "#/AttributeType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributes" : {
+                "type": "array",
+                "description" : "Details of attributes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "number",
+                            "description": "Index of the attribute."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the attribute."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "index",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString typeStr;
+    parameters.Get ("attributeType", typeStr);
+
+    API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+
+    GS::ObjectState response;
+    const auto& attributes = response.AddList<GS::ObjectState> ("attributes");
+
+    GS::Array<API_Attribute> attrs;
+    ACAPI_Attribute_GetAttributesByType (typeID, attrs);
+
+    for (API_Attribute& attr : attrs) {
+        GS::ObjectState attributeDetails;
+        attributeDetails.Add ("attributeId", CreateGuidObjectState (attr.header.guid));
+        attributeDetails.Add ("index", GetAttributeIndex (attr.header.index));
+        attributeDetails.Add ("name", GS::UniString (attr.header.name));
+        attributes (attributeDetails);
+
+        DisposeAttribute (attr);
+    }
+
+    return response;
 }
 
 GetBuildingMaterialPhysicalPropertiesCommand::GetBuildingMaterialPhysicalPropertiesCommand () :

@@ -97,6 +97,11 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ],
     "type": "Creation"
@@ -164,7 +169,18 @@ Parameters:
     "issueId": {
         "guid": "<GUID>"
     },
-    "elements": [],
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
     "type": "Modification"
 }
 Response:
@@ -182,6 +198,11 @@ Parameters:
 Response:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -260,7 +281,28 @@ Parameters:
 }
 Response:
 {
-    "elements": []
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
 }
 Command: ExportIssuesToBCF
 Parameters:
@@ -338,6 +380,11 @@ Response:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -386,7 +433,28 @@ Parameters:
 }
 Response:
 {
-    "elements": []
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
 }
 Command: DeleteIssue
 Parameters:
@@ -437,13 +505,13 @@ Response:
             "issueId": {
                 "guid": "<GUID>"
             },
-            "name": "Just a sample issue",
+            "name": "Just a sample issue #2",
             "parentIssueId": {
                 "guid": "<GUID>"
             },
             "creaTime": <TIME>,
             "modiTime": <TIME>,
-            "tagText": "python",
+            "tagText": "python #2",
             "tagTextElementId": {
                 "guid": "<GUID>"
             },
@@ -453,13 +521,13 @@ Response:
             "issueId": {
                 "guid": "<GUID>"
             },
-            "name": "Just a sample issue #2",
+            "name": "Just a sample issue",
             "parentIssueId": {
                 "guid": "<GUID>"
             },
             "creaTime": <TIME>,
             "modiTime": <TIME>,
-            "tagText": "python #2",
+            "tagText": "python",
             "tagTextElementId": {
                 "guid": "<GUID>"
             },

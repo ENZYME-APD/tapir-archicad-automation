@@ -1,0 +1,54 @@
+"""Inputs:
+    input_tree: Tree structure to select from
+    path_index_: Integer for branch selection"""
+
+from Grasshopper import DataTree
+from Grasshopper.Kernel.Data import GH_Path
+
+# Initialize outputs
+selected_branch = []
+other_branches = DataTree[object]()  # Changed to DataTree to preserve branch structure
+total_branches = 0
+
+# Input validation
+if input_tree is None:
+    message = "Error: Input tree is required"
+    print(message)
+else:
+    try:
+        # Get all paths from the tree
+        paths = input_tree.Paths
+        total_branches = len(paths)
+        
+        if total_branches == 0:
+            message = "Input tree is empty"
+            print(message)
+        else:
+            # Convert path_index_ to int and handle bounds
+            index = int(path_index_) % total_branches
+            
+            # Get the path at the specified index
+            selected_path = paths[index]
+            
+            # Get branch data at the selected path
+            selected_branch = list(input_tree.Branch(selected_path))
+            
+            # Get all other branches, preserving their structure
+            for i, path in enumerate(paths):
+                if i != index:
+                    branch_data = list(input_tree.Branch(path))
+                    other_branches.AddRange(branch_data, path)  # Add each branch with its original path
+            
+            message = (f"Selected branch {index} of {total_branches} (Path: {selected_path})\n"
+                      f"Selected branch: {len(selected_branch)} items\n"
+                      f"Other branches: {sum(1 for _ in other_branches.Paths)} branches with {sum(len(other_branches.Branch(p)) for p in other_branches.Paths)} items")
+            print(message)
+                
+    except Exception as e:
+        message = f"Error: {str(e)}"
+        print(message)
+
+# Update component properties
+ghenv.Component.Name = "Tree Branch Selector"
+ghenv.Component.NickName = 'BranchSel'
+ghenv.Component.Message = message
