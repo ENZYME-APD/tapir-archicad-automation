@@ -145,6 +145,11 @@ inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
 }
 
+inline GSErrCode ACAPI_ProjectSetting_ChangeStorySettings (API_StoryCmdType* storyCmd)
+{
+    return ACAPI_Environment (APIEnv_ChangeStorySettingsID, storyCmd, nullptr);
+}
+
 inline GSErrCode ACAPI_LibraryPart_Get (API_LibPart* libpart)
 {
     return ACAPI_LibPart_Get (libpart);
