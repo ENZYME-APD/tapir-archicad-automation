@@ -21,10 +21,14 @@
     "Kill"
 }
 
-'FILE' ID_BUILTIN_SCRIPT_1 "" {
-    "HelloWorld.py"
-}
-
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
+}
+
+'FILE' ID_ACLIB_INIT_PY_FILE "" {
+    "__init__.py"
+}
+
+'FILE' 1 "" {
+    "TapirTest_MoveElements.py"
 }

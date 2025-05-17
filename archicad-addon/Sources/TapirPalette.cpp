@@ -3,11 +3,10 @@
 #include "IBinaryChannelUtilities.hpp"
 #include "IOBinProtocolXs.hpp"
 #include "FileSystem.hpp"
+#include "Folder.hpp"
 #include "MessageLoopExecutor.hpp"
 #include "GSProcessControl.hpp"
 #include "MigrationHelper.hpp"
-
-#define PREFERENCES_VERSION 1
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
@@ -21,6 +20,10 @@ static UShort GetConnectionPort ()
 
 static bool IsValidLocation (const IO::Location& location)
 {
+    if (location.IsEmpty ()) {
+        return false;
+    }
+
     bool exists = false;
     GSErrCode err = IO::fileSystem.Contains (location, &exists);
     return err == NoError && exists;
@@ -33,7 +36,23 @@ static IO::Location GetBuiltInScriptLocation (GSResID resId)
 
     IO::Location tempFileLoc;
     IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &tempFileLoc);
-    tempFileLoc.AppendToLocal (IO::Name (RSGetIndString (ID_BUILTINSCRIPTS_NAMES, resId, ACAPI_GetOwnResModule ()) + ".py"));
+
+    tempFileLoc.AppendToLocal (IO::Name ("TapirBuiltInScripts"));
+
+    if (resId == ID_ACLIB_INIT_PY_FILE) {
+        tempFileLoc.AppendToLocal (IO::Name ("aclib"));
+
+        IO::fileSystem.CreateFolderTree (tempFileLoc);
+        tempFileLoc.AppendToLocal (IO::Name ("__init__.py"));
+    } else {
+        GS::UniString scriptName = RSGetIndString (ID_BUILTINSCRIPTS_NAMES, resId, ACAPI_GetOwnResModule ());
+        if (scriptName.IsEmpty ()) {
+            return {};
+        }
+
+        IO::fileSystem.CreateFolderTree (tempFileLoc);
+        tempFileLoc.AppendToLocal (IO::Name (scriptName));
+    }
 
     IO::File file (tempFileLoc, IO::File::OnNotFound::Create);
     if (file.Open (IO::File::WriteEmptyMode) != NoError) {
@@ -45,9 +64,16 @@ static IO::Location GetBuiltInScriptLocation (GSResID resId)
     return tempFileLoc;
 }
 
-bool TapirPalette::EnumFILEResIDsCallback (GSResID resID, GSResType /*resType*/, GSResModule /*resModule*/, void* palette)
+bool TapirPalette::EnumFILEResBuiltInScriptsCallback (GSResID resID, GSResType /*resType*/, GSResModule /*resModule*/, void* palette)
 {
-    reinterpret_cast<TapirPalette*>(palette)->AddScriptToPopUp (GetBuiltInScriptLocation (resID), DG::PopUp::BottomItem);
+    const IO::Location tmpScriptLocation = GetBuiltInScriptLocation (resID);
+
+    if (resID != ID_ACLIB_INIT_PY_FILE) {
+        reinterpret_cast<TapirPalette*>(palette)->AddScriptToPopUp (tmpScriptLocation, DG::PopUp::BottomItem);
+    } else {
+        reinterpret_cast<TapirPalette*>(palette)->tmpACLibInitPyLoc = tmpScriptLocation;
+    }
+
     return true;
 }
 
@@ -56,30 +82,19 @@ TapirPalette::TapirPalette ()
     , tapirIcon (GetReference (), 1)
     , scriptSelectionPopUp (GetReference (), 2)
     , runScriptButton (GetReference (), 3)
-    , console (GetReference (), DG::Rect (DG::Point (0, 25), 250, 0), DG::RichEdit::HVScroll, DG::RichEdit::ReadOnly, DG::RichEdit::NoFrame)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
-    short countOfOwnScripts = GetScriptsFromPreferences ();
-    if (countOfOwnScripts > 0) {
-        hasOwnScript = true;
-        scriptSelectionPopUp.AppendSeparator ();
-    } else {
-        hasOwnScript = false;
-    }
-
-	RSEnumResourceIDs (EnumFILEResIDsCallback, this, 'FILE', ACAPI_GetOwnResModule ());
+    AddScriptsFromCustomScriptsFolder ();
+    AddBuiltInScripts ();
 
     scriptSelectionPopUp.AppendSeparator ();
     scriptSelectionPopUp.AppendItem ();
-    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Add new script files...");
+    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload Custom Scripts...");
 
-    console.Show ();
-
+    EnableIdleEvent (true);
     BeginEventProcessing ();
-
-    SetMinClientHeight (24);
 }
 
 TapirPalette::~TapirPalette ()
@@ -144,19 +159,29 @@ bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
     return false;
 }
 
-void TapirPalette::PanelResized (const DG::PanelResizeEvent& ev)
-{
-    BeginMoveResizeItems ();
-    scriptSelectionPopUp.Resize (ev.GetHorizontalChange (), 0);
-    runScriptButton.Move (ev.GetHorizontalChange (), 0);
-    console.Resize (ev.GetHorizontalChange (), ev.GetVerticalChange ());
-    EndMoveResizeItems ();
-}
-
 void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool* accepted)
 {
     Hide ();
     *accepted = true;
+}
+
+void TapirPalette::PanelIdle (const DG::PanelIdleEvent&)
+{
+    if (runScriptButton.GetIcon ().GetResourceId () == ID_RUN_BUTTON_ICON) {
+        return;
+    }
+
+    if (process.IsTerminated ()) {
+        auto stdError = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (process.GetStandardErrorChannel (), GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+        if (!stdError.IsEmpty ()) {
+            WriteReport (DG_ERROR, stdError);
+        }
+
+        auto stdOutput = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (process.GetStandardOutputChannel (), GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+        WriteReport (DG_INFORMATION, stdOutput);
+
+        runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), ID_RUN_BUTTON_ICON));
+    }
 }
 
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
@@ -168,9 +193,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
                 ExecuteScript (*fileRef);
             }
         } else {
-            if (executorThread) {
-                process.Kill ();
-            }
+            process.Kill ();
         }
     }
 }
@@ -179,35 +202,9 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 {
     const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
     if (selectedItem == scriptSelectionPopUp.GetItemCount ()) {
-        FTM::FileTypeManager	ftMan ("Python Script");
-        FTM::GroupID			gid = ftMan.AddGroup ("Python Script");
-        ftMan.AddType (FTM::FileType ("Python Script", "py", '    ', '    ', 0), gid);
-        DG::FileDialog dlg (DG::FileDialog::OpenMultiFile);
-        dlg.AddFilter (gid);
-        dlg.SetHeader (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_SELECT_SCRIPTS_TITLE, ACAPI_GetOwnResModule ()));
-        dlg.SetOKButtonText (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_SELECT_SCRIPTS_BUTTON, ACAPI_GetOwnResModule ()));
-        if (!dlg.Invoke ()) {
-            return;
-        }
-        bool hasNew = false;
-        for (UIndex i = 0; i < dlg.GetSelectionCount (); ++i) {
-            IO::Location file = dlg.GetSelectedFile (i);
-            if (IsPopUpContainsFile (file)) {
-                continue;
-            }
-            if (!hasOwnScript) {
-                scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
-                hasOwnScript = true;
-            }
-            AddScriptToPopUp (file);
-            hasNew = true;
-        }
-        if (hasNew) {
-            scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
-            SaveScriptsToPreferences ();
-        } else {
-            scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
-        }
+        AddScriptsFromCustomScriptsFolder ();
+
+        scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
     }
 }
 
@@ -271,69 +268,50 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
     GS::UniString filePath;
     fileLocation.ToPath (&filePath);
 
-    IO::Name fileName;
-    fileLocation.GetLastLocalName (&fileName);
+    class PythonExecutionTask : public GS::Runnable
+    {
+    protected:
+        GS::Process& process;
+        const GS::UniString filePath;
 
-    if (!IsValidLocation (fileLocation)) {
-        UpdateConsol (GS::UniString::Printf ("Failed to execute %T", fileName.ToString ().ToPrintf ()));
-        return;
-    }
-
-    const GS::Array<GS::UniString> args = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
-
-    try {
-        class IconUpdateTask : public GS::Runnable {
-            short resId;
-        public:
-            IconUpdateTask (short _resId) : resId(_resId)
-            {
-            }
-            virtual void Run ()
-            {
-                TapirPalette::Instance ().runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
-            }
-        };
-        class ConsolUpdateTask : public GS::Runnable {
-            GS::UniString text;
-        public:
-            ConsolUpdateTask (const GS::UniString& _text) : text(_text)
-            {
-            }
-            virtual void Run ()
-            {
-                TapirPalette::Instance ().UpdateConsol (text);
-            }
-        };
-        class PythonExecutionTask : public GS::Runnable
+    public:
+        explicit PythonExecutionTask (
+            GS::Process& p,
+            const GS::UniString filePath)
+            : process(p)
+            , filePath(filePath)
         {
-        protected:
-            GS::Process& process;
+        }
 
-        public:
-            explicit PythonExecutionTask (GS::Process& p) : process(p)
-            {
-            }
-            virtual void Run () override final
-            {
-                GS::MessageLoopExecutor ().Execute (new IconUpdateTask (ID_KILL_BUTTON_ICON));
-                process.GetExitCode ();
-                auto output = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (process.GetStandardErrorChannel (), GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
-                if (!output.IsEmpty ()) {
-                    output += '\n';
+        void Run () override final
+        {
+            try {
+                TapirPalette::Instance ().WriteReport (DG_INFORMATION, "Executing %T", filePath.ToPrintf ());
+
+                GS::UniString command;
+                GS::Array<GS::UniString> argv;
+                if (filePath.EndsWith (".py")) {
+                    command = "python";
+                    argv = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
+                } else {
+                    command = filePath;
+                    argv = {"--port", GS::ValueToUniString (GetConnectionPort ())};
                 }
-                output += GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (process.GetStandardOutputChannel (), GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
-                GS::MessageLoopExecutor ().Execute (new ConsolUpdateTask (output));
-                GS::MessageLoopExecutor ().Execute (new IconUpdateTask (ID_RUN_BUTTON_ICON));
+                constexpr bool redirectStandardOutput = true;
+                constexpr bool redirectStandardInput = false;
+                constexpr bool redirectStandardError = true;
+                process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+
+                TapirPalette::Instance ().runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), ID_KILL_BUTTON_ICON));
+            } catch (const GS::ProcessException&) {
+                TapirPalette::Instance ().WriteReport (DG_ERROR, "Failed to execute %T", filePath.ToPrintf ());
+            } catch (...) {
+                TapirPalette::Instance ().WriteReport (DG_ERROR, "Unexpected issue while executing %T", filePath.ToPrintf ());
             }
-        };
-        process = GS::Process::Create ("python", args, GS::Process::CreateNoWindow, true, false, true);
-	    executorThread = GS::NewRef<GS::Thread> (new PythonExecutionTask (process), "PythonProcess");
-        executorThread->Start ();
-    } catch (const GS::ProcessException&) {
-        UpdateConsol (GS::UniString::Printf ("Failed to execute %T", fileName.ToString ().ToPrintf ()));
-    } catch (...) {
-        UpdateConsol (GS::UniString::Printf ("Unexpected issue while executing %T", fileName.ToString ().ToPrintf ()));
-    }
+        }
+    };
+
+    GS::MessageLoopExecutor ().Execute (new PythonExecutionTask (process, filePath));
 }
 
 bool TapirPalette::AddScriptToPopUp (const IO::Location& fileLocation, short index)
@@ -351,52 +329,48 @@ bool TapirPalette::AddScriptToPopUp (const IO::Location& fileLocation, short ind
     return true;
 }
 
-void TapirPalette::SaveScriptsToPreferences ()
+void TapirPalette::AddBuiltInScripts ()
 {
-    GS::UniString preferencesStr;
-    if (hasOwnScript) {
-        for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1 && !scriptSelectionPopUp.IsSeparator (i); ++i) {
-            GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (i));
-            if (fileRef == nullptr) {
-                continue;
-            }
-
-            preferencesStr += fileRef->ToDisplayText () + '\n';
-        }
-    }
-    auto cStr = preferencesStr.ToCStr ();
-	ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
+	RSEnumResourceIDs (EnumFILEResBuiltInScriptsCallback, this, 'FILE', ACAPI_GetOwnResModule ());
 }
 
-short TapirPalette::GetScriptsFromPreferences ()
+void TapirPalette::AddScriptsFromCustomScriptsFolder ()
 {
-    Int32 version;
-    GSSize nBytes;
-
-    ACAPI_GetPreferences (&version, &nBytes, nullptr);
-    if (version != PREFERENCES_VERSION || nBytes <= 0) {
-        return 0;
-    }
-
-    std::unique_ptr<char> data(new char[nBytes]);
-    short n = 0;
-
-    ACAPI_GetPreferences (&version, &nBytes, data.get ());
-    GS::Array<GS::UniString> ownScriptPathArray;
-    GS::UniString (data.get ()).Split ("\n", GS::UniString::SkipEmptyParts, &ownScriptPathArray);
-    for (auto&& scriptPath : ownScriptPathArray) {
-        IO::Location ownScript (scriptPath);
-        if (AddScriptToPopUp (ownScript, DG::PopUp::BottomItem)) {
-            ++n;
+    if (hasCustomScript) {
+        while (!scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
+            scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
         }
+        scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
+        hasCustomScript = false;
     }
 
-    return n;
-}
+    IO::Location customScriptsFolderLoc;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserDocuments, &customScriptsFolderLoc);
+    customScriptsFolderLoc.AppendToLocal (IO::Name ("TapirCustomScripts"));
 
-void TapirPalette::UpdateConsol (const GS::UniString& text)
-{
-    console.SetText (text);
-    auto lastChar = console.GetLength () - 1;
-    console.SetSelection (DG::CharRange (lastChar, lastChar));
+    IO::Location acLibInitPyLoc = customScriptsFolderLoc;
+    acLibInitPyLoc.AppendToLocal (IO::Name ("aclib"));
+
+    IO::fileSystem.CreateFolderTree (acLibInitPyLoc);
+    acLibInitPyLoc.AppendToLocal (IO::Name ("__init__.py"));
+    IO::fileSystem.Copy (tmpACLibInitPyLoc, acLibInitPyLoc);
+
+    IO::Folder customScriptsFolder (customScriptsFolderLoc);
+    customScriptsFolder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+        if (isFolder) {
+            return;
+        }
+
+        IO::Location file (customScriptsFolderLoc, name);
+        if (IsPopUpContainsFile (file)) {
+            return;
+        }
+
+        if (!hasCustomScript) {
+            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
+            hasCustomScript = true;
+        }
+
+        AddScriptToPopUp (file);
+    });
 }

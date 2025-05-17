@@ -21,10 +21,6 @@
 /* [  2] */ "Add"
 }
 
-'STR#' ID_BUILTINSCRIPTS_NAMES "BuiltIn Scripts Display Name" {
-/* [  1] */ "Hello World"
-}
-
 'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
 /* [  1] */ Button                     10  204  180   23    LargePlain "OK"
 /* [  2] */ Icon                       36   10  128  128    ID_TAPIR_LOGO
@@ -39,14 +35,18 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | topCaption | close | grow   0   0  250  24  "Tapir Palette"  {
-/* [  1] */ Icon                       0   0  24  24    ID_TAPIR_LOGO_MINI
-/* [  2] */ PopupControl              24   1 202  22    80  3
-/* [  3] */ IconButton               226   0  24  24    ID_RUN_BUTTON_ICON noFrame
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  256  28  "Tapir Palette"  {
+/* [  1] */ Icon                       0   2  24  24    ID_TAPIR_LOGO_MINI
+/* [  2] */ PopupControl              26   3 202  22    80  3
+/* [  3] */ IconButton               228   0  28  28    ID_RUN_BUTTON_ICON noFrame
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
 1    ""        TapirLogo
 2    ""        ScriptSelection
 3    ""        RunButton
+}
+
+'STR#' ID_BUILTINSCRIPTS_NAMES "BuiltIn Scripts Display Name" {
+/* [  1] */ "TapirTest_MoveElements.py"
 }

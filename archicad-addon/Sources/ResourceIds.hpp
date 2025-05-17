@@ -21,9 +21,8 @@
 #define ID_RUN_BUTTON_ICON              32504
 #define ID_KILL_BUTTON_ICON             32505
 
-#define ID_BUILTIN_SCRIPT_1             1
-
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004
 
 #define ID_COMMON_SCHEMA_DEFINITIONS_FILE 32001
+#define ID_ACLIB_INIT_PY_FILE             32000

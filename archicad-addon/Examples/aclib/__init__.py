@@ -4,7 +4,7 @@ import urllib.request
 host = 'http://127.0.0.1'
 port = '19723'
 
-def RunCommand (command, parameters, debug = False):
+def RunCommand (command, parameters = {}, debug = False):
     if debug:
         print ('Command: ' + command)
         print ('Parameters:\n' + JsonDumpDictionary (parameters))
