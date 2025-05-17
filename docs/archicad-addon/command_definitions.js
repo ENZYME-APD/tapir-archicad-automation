@@ -742,6 +742,20 @@ var gCommands = [{
                                     ]
                                 },
                                 {
+                                    "title": "PolylineDetails",
+                                    "properties": {
+                                        "coordinates": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "coordinates"
+                                    ]
+                                },
+                                {
                                     "title": "NotYetSupportedElementTypeDetails",
                                     "properties": {
                                         "error": {

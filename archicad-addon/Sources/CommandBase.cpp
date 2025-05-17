@@ -106,7 +106,7 @@ GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c)
 }
 
 std::vector<std::vector<API_Coord>>
-static GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
+static GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool isPolyline = false)
 {
     API_ElementMemo memo = {};
     if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon) != NoError) {
@@ -117,7 +117,10 @@ static GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
     std::vector<std::vector<API_Coord>> polygons (nPolys);
     for (GSIndex iPoly = 0; iPoly < nPolys; ++iPoly) {
         const auto startIndex = (*memo.pends)[iPoly] + 1;
-        const auto endIndex = (*memo.pends)[iPoly + 1];
+        auto endIndex = (*memo.pends)[iPoly + 1];
+        if (isPolyline) {
+            endIndex++;
+        }
         std::vector<API_Coord>& polygon = polygons[iPoly];
         polygon.reserve (endIndex - startIndex);
         for (GSIndex iCoord = startIndex; iCoord < endIndex; ++iCoord) {
@@ -128,11 +131,11 @@ static GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
     return polygons;
 }
 
-void AddPolygonFromMemoCoords (GS::ObjectState& os, const GS::String& fieldName, const API_Guid& elemGuid)
+void AddPolygonFromMemoCoords (GS::ObjectState& os, const GS::String& fieldName, const API_Guid& elemGuid, bool isPolyline)
 {
     const auto& polygon = os.AddList<GS::ObjectState> (fieldName);
 
-    const auto polygons = GetPolygonsFromMemoCoords (elemGuid);
+    const auto polygons = GetPolygonsFromMemoCoords (elemGuid, isPolyline);
     if (polygons.empty ()) {
         return;
     }
