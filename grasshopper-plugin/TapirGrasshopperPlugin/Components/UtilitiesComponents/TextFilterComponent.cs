@@ -144,7 +144,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             this.Message = message;
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_FindText;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.FilterContainsString;
 
         public override Guid ComponentGuid => new Guid ("A3B11162-627B-455B-B9C0-963E76B36DC3");
     }

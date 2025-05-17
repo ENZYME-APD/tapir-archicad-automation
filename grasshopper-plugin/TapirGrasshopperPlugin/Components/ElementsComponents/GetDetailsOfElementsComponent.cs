@@ -295,7 +295,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataList (1, origoCoords);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ColumnDetails;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ColumnDetails;
 
         public override Guid ComponentGuid => new Guid ("ded49694-9869-4670-af85-645535a7be6a");
     }
@@ -369,7 +369,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataTree (2, holePolygonsTree);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SlabDetails;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SlabDetails;
 
         public override Guid ComponentGuid => new Guid ("f942eece-cc80-4945-a911-fe548dae4ae8");
     }

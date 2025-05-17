@@ -194,7 +194,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             return null;
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_WallOrientation;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.WallOrientation;
 
         public override Guid ComponentGuid => new Guid ("A4B11162-627B-455B-B9C0-963E76B36DC4");
     }

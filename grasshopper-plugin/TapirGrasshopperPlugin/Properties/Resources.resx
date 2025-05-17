@@ -202,28 +202,79 @@
   <data name="WallDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WallDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_FindText" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_FindText.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="FilterContainsString" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\FilterContainsString.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_ListItemVar" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_ListItemVar.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="MultiListFilter" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MultiListFilter.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_RandomColors" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_RandomColors.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="BranchColorGenerator" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BranchColorGenerator.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_Tree" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_Tree.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="GroupToTree" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GroupToTree.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_TreeBranchSelector" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_TreeBranchSelector.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="TreeBranchSelector" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TreeBranchSelector.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_WallOrientation" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_WallOrientation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="WallOrientation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\WallOrientation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_WEBDB" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_WEBDB.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="OpenWebsiteButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OpenWebsiteButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="GH_ParallelFilter" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GH_ParallelFilter.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ParallelListFilter" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ParallelListFilter.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AddCommentToAnIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddCommentToAnIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AllIssues" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AllIssues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AttachElementsToAnIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AttachElementsToAnIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ChangeSelection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ChangeSelection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ColumnDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ColumnDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ConnectedElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ConnectedElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DetachElementsFromAnIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DetachElementsFromAnIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ExportIssuesToBCF" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ExportIssuesToBCF.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetCommentsOfAnIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetCommentsOfAnIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetElementsAttachedToAnIssue" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetElementsAttachedToAnIssue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ImportIssuesFromBCF" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ImportIssuesFromBCF.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IssueElementType" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IssueElementType.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MoveElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MoveElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetWallDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetWallDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SlabDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SlabDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
