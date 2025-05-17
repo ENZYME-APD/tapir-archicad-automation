@@ -32,7 +32,6 @@ static bool IsValidLocation (const IO::Location& location)
 static IO::Location GetBuiltInScriptLocation (GSResID resId)
 {
     GSHandle gsHandle = RSLoadResource ('FILE', ACAPI_GetOwnResModule(), resId);
-	API_LibPart	builtInLibpart = {};
 
     IO::Location tempFileLoc;
     IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &tempFileLoc);
