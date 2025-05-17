@@ -1,15 +1,18 @@
 import json
 import urllib.request
+import argparse
 
-host = 'http://127.0.0.1'
-port = '19723'
+parser = argparse.ArgumentParser()
+parser.add_argument('--host', dest='host', type=str, default='http://127.0.0.1')
+parser.add_argument('--port', dest='port', type=int, default=19723)
+args = parser.parse_args()
 
 def RunCommand (command, parameters = {}, debug = False):
     if debug:
         print ('Command: ' + command)
         print ('Parameters:\n' + JsonDumpDictionary (parameters))
 
-    connection_object = urllib.request.Request ('{}:{}'.format (host, port))
+    connection_object = urllib.request.Request ('{}:{}'.format (args.host, args.port))
     connection_object.add_header ('Content-Type', 'application/json')
 
     request_data = {

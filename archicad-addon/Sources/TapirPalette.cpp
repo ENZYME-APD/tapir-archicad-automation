@@ -86,8 +86,8 @@ TapirPalette::TapirPalette ()
     Attach (*this);
     AttachToAllItems (*this);
 
-    AddScriptsFromCustomScriptsFolder ();
     AddBuiltInScripts ();
+    AddScriptsFromCustomScriptsFolder ();
 
     scriptSelectionPopUp.AppendSeparator ();
     scriptSelectionPopUp.AppendItem ();
