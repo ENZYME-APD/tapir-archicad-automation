@@ -163,7 +163,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             return string.Join ("\n", lines);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_ListItemVar;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.MultiListFilter;
 
         public override Guid ComponentGuid => new Guid ("A6B11162-627B-455B-B9C0-963E76B36DC6");
     }

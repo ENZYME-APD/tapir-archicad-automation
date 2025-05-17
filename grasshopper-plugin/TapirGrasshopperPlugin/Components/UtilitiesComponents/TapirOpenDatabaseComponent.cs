@@ -56,7 +56,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             OpenWebsite (WebsiteURL);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_WEBDB;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.OpenWebsiteButton;
 
         public override Guid ComponentGuid => new Guid ("A8B11162-627B-455B-B9C0-963E76B36DC8");
     }
