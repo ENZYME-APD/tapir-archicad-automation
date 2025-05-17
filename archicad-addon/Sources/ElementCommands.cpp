@@ -483,6 +483,20 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                     ]
                                 },
                                 {
+                                    "title": "PolylineDetails",
+                                    "properties": {
+                                        "coordinates": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "coordinates"
+                                    ]
+                                },
+                                {
                                     "title": "NotYetSupportedElementTypeDetails",
                                     "properties": {
                                         "error": {
@@ -649,6 +663,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         break;
                 }
                 typeSpecificDetails.Add ("linkData", linkDataOS);
+            } break;
+
+            case API_PolyLineID: {
+                constexpr bool isPolyline = true;
+                AddPolygonFromMemoCoords (typeSpecificDetails, "coordinates", elem.header.guid, isPolyline);
             } break;
 
             default:
