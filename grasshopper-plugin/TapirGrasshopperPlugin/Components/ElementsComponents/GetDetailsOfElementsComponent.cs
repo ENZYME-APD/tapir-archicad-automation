@@ -81,6 +81,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public List<HoleDetails> Holes;
     }
 
+    public class PolylineDetails
+    {
+        [JsonProperty ("coordinates")]
+        public List<Point2D> Coordinates;
+    }
+
     public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
     {
         public GetDetailsOfElementsComponent ()
@@ -295,7 +301,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataList (1, origoCoords);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ColumnDetails;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ColumnDetails;
 
         public override Guid ComponentGuid => new Guid ("ded49694-9869-4670-af85-645535a7be6a");
     }
@@ -369,8 +375,73 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataTree (2, holePolygonsTree);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SlabDetails;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SlabDetails;
 
         public override Guid ComponentGuid => new Guid ("f942eece-cc80-4945-a911-fe548dae4ae8");
+    }
+
+    public class GetDetailsOfPolylinesComponent : ArchicadAccessorComponent
+    {
+        public GetDetailsOfPolylinesComponent ()
+          : base (
+                "Polyline Details",
+                "PolylineDetails",
+                "Get details of polyline elements.",
+                "Elements"
+            )
+        {
+        }
+
+        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get details of.", GH_ParamAccess.list);
+        }
+
+        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("PolylineGuids", "PolylineGuids", "Element Guids of the found polylines.", GH_ParamAccess.list);
+            pManager.AddCurveParameter ("Coordinates", "Coordinates", "The coordinates of the polylines.", GH_ParamAccess.list);
+        }
+
+        protected override void Solve (IGH_DataAccess DA)
+        {
+            ElementsObj inputElements = ElementsObj.Create (DA, 0);
+            if (inputElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+                return;
+            }
+
+            JObject inputElementsObj = JObject.FromObject (inputElements);
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            List<ElementIdItemObj> polylines = new List<ElementIdItemObj> ();
+            List<Polyline> rhinoPolylines = new List<Polyline> ();
+            DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
+            for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
+                DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                if (detailsOfElement.Type != "PolyLine") {
+                    continue;
+                }
+                PolylineDetails polylineDetails = detailsOfElement.Details.ToObject<PolylineDetails> ();
+                if (polylineDetails == null) {
+                    continue;
+                }
+                polylines.Add (new ElementIdItemObj () {
+                    ElementId = inputElements.Elements[i].ElementId
+                });
+                rhinoPolylines.Add (Utilities.Convert.ToPolyline (polylineDetails.Coordinates));
+            }
+
+            DA.SetDataList (0, polylines);
+            DA.SetDataList (1, rhinoPolylines);
+        }
+
+        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PolylineDetails;
+
+        public override Guid ComponentGuid => new Guid ("b96c3b7e-303d-44f2-af22-6fd07ade11fc");
     }
 }

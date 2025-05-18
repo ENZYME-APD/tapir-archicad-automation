@@ -299,7 +299,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             return (filteredPrimary, filteredSecondary, pattern, message);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_ParallelFilter;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.ParallelListFilter;
 
         public override Guid ComponentGuid => new Guid ("A5B11162-627B-455B-B9C0-963E76B36DC5");
     }

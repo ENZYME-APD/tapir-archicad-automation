@@ -89,7 +89,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataTree (0, connectedElementsTree);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ConnectedElems;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ConnectedElements;
 
         public override Guid ComponentGuid => new Guid ("f857d496-6c7f-4b15-928a-d900a85dea32");
     }

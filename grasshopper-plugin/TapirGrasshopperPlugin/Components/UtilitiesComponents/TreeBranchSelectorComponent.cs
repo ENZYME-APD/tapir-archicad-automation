@@ -104,7 +104,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             this.Message = message;
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_TreeBranchSelector;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.TreeBranchSelector;
 
         public override Guid ComponentGuid => new Guid ("A2B11162-627B-455B-B9C0-963E76B36DC2");
     }

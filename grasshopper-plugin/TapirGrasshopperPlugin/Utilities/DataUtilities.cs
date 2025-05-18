@@ -47,6 +47,15 @@ namespace TapirGrasshopperPlugin.Utilities
             polygon.Add (polygon.First);
             return new Polyline (polygon);
         }
+
+        static public Polyline ToPolyline (List<Point2D> points)
+        {
+            Point3dList polygon = new Point3dList ();
+            foreach (Point2D point2D in points) {
+                polygon.Add (new Point3d (point2D.X, point2D.Y, 0));
+            }
+            return new Polyline (polygon);
+        }
     }
 
     static class Extensions

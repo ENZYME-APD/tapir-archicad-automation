@@ -291,7 +291,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             return colorsList;
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_RandomColors;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.BranchColorGenerator;
 
         public override Guid ComponentGuid => new Guid ("A1B11162-627B-455B-B9C0-963E76B36DC1");
     }

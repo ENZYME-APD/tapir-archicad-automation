@@ -49,7 +49,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             DA.SetDataList (0, comments.Comments);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.GetComments;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.GetCommentsOfAnIssue;
 
         public override Guid ComponentGuid => new Guid ("2c122dc0-ef6a-4e98-b35d-943ba30a99ee");
     }

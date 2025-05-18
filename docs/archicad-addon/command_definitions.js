@@ -165,8 +165,8 @@ var gCommands = [{
     },
                 "outputScheme": null
             },{
-                "name": "GetStoryInfo",
-                "version": "1.0.2",
+                "name": "GetStories",
+                "version": "1.1.5",
                 "description": "Retrieves information about the story sructure of the currently loaded project.",
                 "inputScheme": null,
                 "outputScheme": {
@@ -210,7 +210,7 @@ var gCommands = [{
                             "type": "number",
                             "description": "The story level."
                         },
-                        "uName": {
+                        "name": {
                             "type": "string",
                             "description": "The name of the story."
                         }
@@ -221,7 +221,7 @@ var gCommands = [{
                         "floorId",
                         "dispOnSections",
                         "level",
-                        "uName"
+                        "name"
                     ]
                 }
             }
@@ -234,6 +234,49 @@ var gCommands = [{
             "skipNullFloor",
             "stories"
         ]
+    }
+            },{
+                "name": "SetStories",
+                "version": "1.1.5",
+                "description": "Sets the story sructure of the currently loaded project.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "stories": {
+                "type": "array",
+                "description": "A list of project stories.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "dispOnSections": {
+                            "type": "boolean",
+                            "description": "Story level lines should appear on sections and elevations."
+                        },
+                        "level": {
+                            "type": "number",
+                            "description": "The story level."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the story."
+                        }
+                    },
+                    "additionalProperties": true,
+                    "required": [
+                        "dispOnSections",
+                        "level",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": true,
+        "required": [
+            "stories"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
     }
             },{
                 "name": "GetHotlinks",
@@ -696,6 +739,20 @@ var gCommands = [{
                                     },
                                     "required": [
                                         "libPart"
+                                    ]
+                                },
+                                {
+                                    "title": "PolylineDetails",
+                                    "properties": {
+                                        "coordinates": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/2DCoordinate"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "coordinates"
                                     ]
                                 },
                                 {
