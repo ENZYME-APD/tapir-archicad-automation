@@ -8,14 +8,11 @@
    enable-background="new 0 0 18 18"
    xml:space="preserve"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"><defs
-   id="defs1" />
+   xmlns:svg="http://www.w3.org/2000/svg">
 <path
    fill="none"
    stroke="#263238"
    stroke-linecap="round"
    stroke-linejoin="round"
-   stroke-miterlimit="10"
    d="M 3.645784,2.145784 14.354279,9.623129 3.645784,15.854251 V 2.145784"
-   id="path1"
-   style="stroke-width:1.29157" /></svg>
+   style="stroke-width:1" /></svg>

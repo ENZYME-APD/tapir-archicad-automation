@@ -1,12 +1,20 @@
 #include "TapirPalette.hpp"
 #include "ResourceIds.hpp"
+#include "HTTP/Client/ClientConnection.hpp"
+#include "HTTP/Client/Request.hpp"
+#include "HTTP/Client/Response.hpp"
+#include "JSON/Value.hpp"
+#include "JSON/JDOMParser.hpp"
 #include "IBinaryChannelUtilities.hpp"
 #include "IOBinProtocolXs.hpp"
+#include "IChannelX.hpp"
+#include "StringConversion.hpp"
 #include "FileSystem.hpp"
 #include "Folder.hpp"
 #include "MessageLoopExecutor.hpp"
-#include "GSProcessControl.hpp"
 #include "MigrationHelper.hpp"
+
+#include <map>
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
@@ -29,68 +37,105 @@ static bool IsValidLocation (const IO::Location& location)
     return err == NoError && exists;
 }
 
-static IO::Location GetBuiltInScriptLocation (GSResID resId)
+static IO::Location SaveBuiltInScript (const IO::RelativeLocation& relLoc, const GS::UniString& content)
 {
-    GSHandle gsHandle = RSLoadResource ('FILE', ACAPI_GetOwnResModule(), resId);
+    IO::Location fileLoc;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserDocuments, &fileLoc);
+    fileLoc.AppendToLocal (IO::Name ("Tapir"));
+    fileLoc.AppendToLocal (relLoc);
 
-    IO::Location tempFileLoc;
-    IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &tempFileLoc);
+    IO::Location folderToCreate = fileLoc;
+    folderToCreate.DeleteLastLocalName ();
 
-    tempFileLoc.AppendToLocal (IO::Name ("TapirBuiltInScripts"));
+    IO::fileSystem.CreateFolderTree (folderToCreate);
 
-    if (resId == ID_ACLIB_INIT_PY_FILE) {
-        tempFileLoc.AppendToLocal (IO::Name ("aclib"));
-
-        IO::fileSystem.CreateFolderTree (tempFileLoc);
-        tempFileLoc.AppendToLocal (IO::Name ("__init__.py"));
-    } else {
-        GS::UniString scriptName = RSGetIndString (ID_BUILTINSCRIPTS_NAMES, resId, ACAPI_GetOwnResModule ());
-        if (scriptName.IsEmpty ()) {
-            return {};
-        }
-
-        IO::fileSystem.CreateFolderTree (tempFileLoc);
-        tempFileLoc.AppendToLocal (IO::Name (scriptName));
-    }
-
-    IO::File file (tempFileLoc, IO::File::OnNotFound::Create);
+    IO::File file (fileLoc, IO::File::OnNotFound::Create);
     if (file.Open (IO::File::WriteEmptyMode) != NoError) {
         return {};
     }
 
-    file.WriteBin (*gsHandle, BMGetHandleSize (gsHandle));
+    auto cStr = content.ToCStr ();
+    file.WriteBin (cStr.Get (), (GS::USize)strlen (cStr.Get()));
 
-    return tempFileLoc;
+    return fileLoc;
 }
 
-bool TapirPalette::EnumFILEResBuiltInScriptsCallback (GSResID resID, GSResType /*resType*/, GSResModule /*resModule*/, void* palette)
+static GS::UniString DownloadFile (const GS::UniString& fileDownloadUrl)
 {
-    const IO::Location tmpScriptLocation = GetBuiltInScriptLocation (resID);
+	IO::URI::URI connectionUrl (fileDownloadUrl);
+	HTTP::Client::ClientConnection clientConnection (connectionUrl);
+	clientConnection.Connect ();
 
-    if (resID != ID_ACLIB_INIT_PY_FILE) {
-        reinterpret_cast<TapirPalette*>(palette)->AddScriptToPopUp (tmpScriptLocation, DG::PopUp::BottomItem);
-    } else {
-        reinterpret_cast<TapirPalette*>(palette)->tmpACLibInitPyLoc = tmpScriptLocation;
+	HTTP::Client::Request getRequest (HTTP::MessageHeader::Method::Get, "");
+
+	getRequest.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::UserAgent,
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
+	clientConnection.Send (getRequest);
+
+	HTTP::Client::Response response;
+	GS::IChannelX channel (clientConnection.BeginReceive (response), GS::GetNetworkByteOrderIProtocolX ());
+
+	GS::UniString body = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (channel, GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+
+	clientConnection.FinishReceive ();
+	clientConnection.Close (false);
+
+    return body;
+}
+
+static std::map<GS::UniString, GS::UniString> GetFilesFromGitHubInRelativeLocation (const GS::UniString& relLoc = {})
+{
+    std::map<GS::UniString, GS::UniString> files;
+
+    try {
+        IO::URI::URI connectionUrl ("https://api.github.com");
+        HTTP::Client::ClientConnection clientConnection (connectionUrl);
+        clientConnection.Connect ();
+
+        HTTP::Client::Request request (HTTP::MessageHeader::Method::Get, "/repos/ENZYME-APD/tapir-archicad-automation/contents/" + relLoc);
+        request.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::UserAgent,
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36");
+        clientConnection.Send (request);
+
+        HTTP::Client::Response response;
+        JSON::JDOMParser parser;
+        JSON::ValueRef parsed = parser.Parse (clientConnection.BeginReceive (response));
+
+        if (response.GetStatusCode () == HTTP::MessageHeader::StatusCode::OK) {
+            JSON::ArrayValueRef arrayValue = GS::DynamicCast<JSON::ArrayValue> (parsed);
+            arrayValue->Enumerate ([&] (const JSON::ValueRef& assetValue) {
+                JSON::ObjectValueRef objectValue = GS::DynamicCast<JSON::ObjectValue> (assetValue);
+                JSON::StringValueRef typeValue = GS::DynamicCast<JSON::StringValue> (objectValue->Get ("type"));
+                JSON::StringValueRef pathValue = GS::DynamicCast<JSON::StringValue> (objectValue->Get ("path"));
+
+                if (typeValue->Get () == "dir") {
+                    auto subFiles = GetFilesFromGitHubInRelativeLocation (pathValue->Get ());
+                    files.insert (subFiles.begin (), subFiles.end ());
+                } else {
+                    JSON::StringValueRef downloadUrlValue = GS::DynamicCast<JSON::StringValue> (objectValue->Get ("download_url"));
+                    files[pathValue->Get ()] = downloadUrlValue->Get ();
+                }
+            });
+        }
+
+        clientConnection.Close (false);
+    } catch (...) {
     }
 
-    return true;
+    return files;
 }
 
 TapirPalette::TapirPalette ()
     : DG::Palette (ACAPI_GetOwnResModule (), ID_PALETTE, ACAPI_GetOwnResModule (), paletteGuid)
-    , tapirIcon (GetReference (), 1)
+    , tapirButton (GetReference (), 1)
     , scriptSelectionPopUp (GetReference (), 2)
     , runScriptButton (GetReference (), 3)
+    , openScriptButton (GetReference (), 4)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
-    AddBuiltInScripts ();
-    AddScriptsFromCustomScriptsFolder ();
-
-    scriptSelectionPopUp.AppendSeparator ();
-    scriptSelectionPopUp.AppendItem ();
-    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload Custom Scripts...");
+    LoadScriptsToPopUp ();
 
     EnableIdleEvent (true);
     BeginEventProcessing ();
@@ -143,21 +188,6 @@ void TapirPalette::SetMenuItemCheckedState (bool isChecked)
     ACAPI_MenuItem_SetMenuItemFlags (&itemRef, &itemFlags);
 }
 
-bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
-{
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
-        }
-
-        GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (fileRef != nullptr && *fileRef == fileLocation) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool* accepted)
 {
     Hide ();
@@ -183,6 +213,19 @@ void TapirPalette::PanelIdle (const DG::PanelIdleEvent&)
     }
 }
 
+static void OpenWebpage (const GS::UniString& webpage)
+{
+    const GS::UniString command = GS::UniString::Printf (
+        "%s %T",
+#ifdef WINDOWS
+        "start",
+#else
+        "open",
+#endif
+        webpage.ToPrintf ());
+    system (command.ToCStr ().Get ());
+}
+
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &runScriptButton) {
@@ -194,16 +237,56 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         } else {
             process.Kill ();
         }
+    } else if (ev.GetSource () == &tapirButton) {
+        OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation");
+    } else if (ev.GetSource () == &openScriptButton) {
+        OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts"));
     }
+}
+
+bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
+{
+    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
+        if (scriptSelectionPopUp.IsSeparator (i)) {
+            continue;
+        }
+
+        GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (i));
+        if (fileRef != nullptr && *fileRef == fileLocation) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 {
     const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+
     if (selectedItem == scriptSelectionPopUp.GetItemCount ()) {
-        AddScriptsFromCustomScriptsFolder ();
+        if (AddNewScript ()) {
+            scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+            SaveScriptsToPreferences ();
+        } else {
+            scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
+        }
+    } else if (selectedItem == scriptSelectionPopUp.GetItemCount () - 1) {
+        LoadScriptsToPopUp ();
 
         scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
+    } else {
+        size_t countOfSeparatorsAfterSelection = 0;
+        for (short i = selectedItem; i <= scriptSelectionPopUp.GetItemCount (); ++i) {
+            if (scriptSelectionPopUp.IsSeparator (i)) {
+                countOfSeparatorsAfterSelection++;
+            }
+        }
+        const bool isSelectedScriptFromGitHub = countOfSeparatorsAfterSelection == 1;
+        if (isSelectedScriptFromGitHub) {
+            openScriptButton.Enable ();
+        } else {
+            openScriptButton.Disable ();
+        }
     }
 }
 
@@ -228,16 +311,6 @@ GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID mess
         case APIPalMsg_HidePalette_End:
             if (HasInstance () && !Instance ().IsVisible ())
                 Instance ().Show ();
-            break;
-
-        case APIPalMsg_DisableItems_Begin:
-            if (HasInstance () && Instance ().IsVisible ())
-                Instance ().DisableItems ();
-            break;
-
-        case APIPalMsg_DisableItems_End:
-            if (HasInstance () && Instance ().IsVisible ())
-                Instance ().EnableItems ();
             break;
 
         case APIPalMsg_IsPaletteVisible:
@@ -328,40 +401,30 @@ bool TapirPalette::AddScriptToPopUp (const IO::Location& fileLocation, short ind
     return true;
 }
 
-void TapirPalette::AddBuiltInScripts ()
+void TapirPalette::AddBuiltInScriptsFromGithub ()
 {
-	RSEnumResourceIDs (EnumFILEResBuiltInScriptsCallback, this, 'FILE', ACAPI_GetOwnResModule ());
+    for (auto kv : GetFilesFromGitHubInRelativeLocation ("builtin-scripts")) {
+        const IO::RelativeLocation relLoc (kv.first);
+        const IO::Location fileLoc = SaveBuiltInScript (relLoc, DownloadFile (kv.second));
+        if (relLoc.GetLength () == 2) {
+            AddScriptToPopUp (fileLoc, DG::PopUp::BottomItem);
+        }
+    }
 }
 
 void TapirPalette::AddScriptsFromCustomScriptsFolder ()
 {
-    if (hasCustomScript) {
-        while (!scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
-            scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
-        }
-        scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
-        hasCustomScript = false;
-    }
+    IO::Location docsFolderLoc;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserDocuments, &docsFolderLoc);
+    IO::Location customScriptsFolderLoc = docsFolderLoc;
+    customScriptsFolderLoc.AppendToLocal (IO::Name ("Tapir"));
+    customScriptsFolderLoc.AppendToLocal (IO::Name ("custom-scripts"));
 
-    IO::Location customScriptsFolderLoc;
-    IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserDocuments, &customScriptsFolderLoc);
-    customScriptsFolderLoc.AppendToLocal (IO::Name ("TapirCustomScripts"));
-
-    IO::Location acLibInitPyLoc = customScriptsFolderLoc;
-    acLibInitPyLoc.AppendToLocal (IO::Name ("aclib"));
-
-    IO::fileSystem.CreateFolderTree (acLibInitPyLoc);
-    acLibInitPyLoc.AppendToLocal (IO::Name ("__init__.py"));
-    IO::fileSystem.Copy (tmpACLibInitPyLoc, acLibInitPyLoc);
+    IO::fileSystem.CreateFolderTree (customScriptsFolderLoc);
 
     IO::Folder customScriptsFolder (customScriptsFolderLoc);
     customScriptsFolder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
         if (isFolder) {
-            return;
-        }
-
-        IO::Location file (customScriptsFolderLoc, name);
-        if (IsPopUpContainsFile (file)) {
             return;
         }
 
@@ -370,6 +433,102 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
             hasCustomScript = true;
         }
 
+        IO::Location file (customScriptsFolderLoc, name);
         AddScriptToPopUp (file);
     });
+}
+
+void TapirPalette::LoadScriptsToPopUp ()
+{
+    scriptSelectionPopUp.DeleteItem (DG_ALL_ITEMS);
+
+    hasCustomScript = false;
+    hasAddedScript = false;
+
+    AddScriptsFromCustomScriptsFolder ();
+    AddScriptsFromPreferences ();
+    AddBuiltInScriptsFromGithub ();
+
+    scriptSelectionPopUp.AppendSeparator ();
+    scriptSelectionPopUp.AppendItem ();
+    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload scripts...");
+    scriptSelectionPopUp.AppendItem ();
+    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Add new script...");
+}
+
+#define PREFERENCES_VERSION 10
+
+void TapirPalette::SaveScriptsToPreferences ()
+{
+    GS::UniString preferencesStr;
+    if (hasAddedScript) {
+        for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1 && !scriptSelectionPopUp.IsSeparator (i); ++i) {
+            GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (i));
+            if (fileRef == nullptr) {
+                continue;
+            }
+
+            GS::UniString pathStr;
+            fileRef->ToPath (&pathStr);
+            preferencesStr += pathStr + '\n';
+        }
+    }
+    auto cStr = preferencesStr.ToCStr ();
+	ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
+}
+
+void TapirPalette::AddScriptsFromPreferences ()
+{
+    Int32 version;
+    GSSize nBytes;
+
+    ACAPI_GetPreferences (&version, &nBytes, nullptr);
+    if (version != PREFERENCES_VERSION || nBytes <= 0) {
+        return;
+    }
+
+    std::unique_ptr<char> data(new char[nBytes]);
+    ACAPI_GetPreferences (&version, &nBytes, data.get ());
+    GS::Array<GS::UniString> scriptPathArray;
+    GS::UniString (data.get ()).Split ("\n", GS::UniString::SkipEmptyParts, &scriptPathArray);
+    for (auto&& scriptPath : scriptPathArray) {
+        IO::Location ownScript (scriptPath);
+        if (!IsValidLocation (ownScript)) {
+            continue;
+        }
+        if (!hasAddedScript) {
+            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
+            hasAddedScript = true;
+        }
+        AddScriptToPopUp (ownScript);
+    }
+}
+
+bool TapirPalette::AddNewScript ()
+{
+    FTM::FileTypeManager	ftMan ("Python Script");
+    FTM::GroupID			gid = ftMan.AddGroup ("Python Script");
+    ftMan.AddType (FTM::FileType ("Python Script", "py", '    ', '    ', 0), gid);
+    DG::FileDialog dlg (DG::FileDialog::OpenMultiFile);
+    dlg.AddFilter (gid);
+    dlg.SetHeader (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_SELECT_SCRIPTS_TITLE, ACAPI_GetOwnResModule ()));
+    dlg.SetOKButtonText (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_SELECT_SCRIPTS_BUTTON, ACAPI_GetOwnResModule ()));
+    if (!dlg.Invoke ()) {
+        return false;
+    }
+    bool hasNew = false;
+    for (UIndex i = 0; i < dlg.GetSelectionCount (); ++i) {
+        IO::Location file = dlg.GetSelectedFile (i);
+        if (IsPopUpContainsFile (file)) {
+            continue;
+        }
+        if (!hasAddedScript) {
+            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
+            hasAddedScript = true;
+        }
+        AddScriptToPopUp (file);
+        hasNew = true;
+    }
+
+    return hasNew;
 }

@@ -20,6 +20,7 @@
 #define ID_TAPIR_LOGO_MINI              32503
 #define ID_RUN_BUTTON_ICON              32504
 #define ID_KILL_BUTTON_ICON             32505
+#define ID_OPENSCRIPT_BUTTON_ICON       32506
 
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004
