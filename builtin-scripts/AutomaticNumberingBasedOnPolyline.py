@@ -129,7 +129,7 @@ def closest_point_on_polyline(polyline_points, point):
 ################################
 
 # Get all selected elements
-selectedElementsResponse = aclib.RunTapirCommand('GetSelectedElements', {})
+selectedElementsResponse = aclib.RunTapirCommand('GetSelectedElements', {}, debug=False)
 selectedElements = selectedElementsResponse.get('elements', [])
 
 if not selectedElements:
@@ -277,8 +277,6 @@ for index, elem in enumerate(sorted_elements, start=starting_number):
 # Set the new property values for all elements
 try:
     acc.SetPropertyValuesOfElements(elemPropertyValues)
-    print(
-        f"Successfully numbered {len(sorted_elements)} elements starting from {starting_number}")
 except Exception as e:
     show_popup(
         f"Error setting property values: {e}", "Processing Error", "error")

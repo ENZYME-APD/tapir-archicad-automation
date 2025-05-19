@@ -201,12 +201,20 @@ void TapirPalette::PanelIdle (const DG::PanelIdleEvent&)
     }
 
     if (process.IsTerminated ()) {
-        auto stdError = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (process.GetStandardErrorChannel (), GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+        GS::IBinaryChannel& stdErrorChannel = process.GetStandardErrorChannel ();
+        GS::UniString stdError;
+        while (stdErrorChannel.GetAvailable () > 0) {
+            stdError += GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (stdErrorChannel, GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+        }
         if (!stdError.IsEmpty ()) {
             WriteReport (DG_ERROR, stdError);
         }
 
-        auto stdOutput = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (process.GetStandardOutputChannel (), GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+        GS::IBinaryChannel& stdOutputChannel = process.GetStandardOutputChannel ();
+        GS::UniString stdOutput;
+        while (stdOutputChannel.GetAvailable () > 0) {
+            stdOutput += GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (stdOutputChannel, GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+        }
         WriteReport (DG_INFORMATION, stdOutput);
 
         runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), ID_RUN_BUTTON_ICON));
@@ -215,15 +223,13 @@ void TapirPalette::PanelIdle (const DG::PanelIdleEvent&)
 
 static void OpenWebpage (const GS::UniString& webpage)
 {
-    const GS::UniString command = GS::UniString::Printf (
-        "%s %T",
+    const GS::UniString command =
 #ifdef WINDOWS
-        "start",
+        "start";
 #else
-        "open",
+        "open";
 #endif
-        webpage.ToPrintf ());
-    system (command.ToCStr ().Get ());
+    GS::Process::Create (command, { webpage }, GS::Process::CreateNoWindow);
 }
 
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
@@ -240,7 +246,27 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
     } else if (ev.GetSource () == &tapirButton) {
         OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation");
     } else if (ev.GetSource () == &openScriptButton) {
-        OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts");
+        if (IsSelectedScriptFromGitHub ()) {
+            OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/" + scriptSelectionPopUp.GetItemText (scriptSelectionPopUp.GetSelectedItem ()));
+        } else {
+            GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
+            if (fileRef == nullptr) {
+                return;
+            }
+
+            IO::Location folderLoc = *fileRef;
+            folderLoc.DeleteLastLocalName ();
+
+            GS::UniString pathStr;
+            folderLoc.ToPath (&pathStr);
+            const GS::UniString command =
+#ifdef WINDOWS
+                "explorer";
+#else
+                "open";
+#endif
+            GS::Process::Create (command, { pathStr }, GS::Process::CreateNoWindow);
+        }
     }
 }
 
@@ -274,19 +300,6 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
         LoadScriptsToPopUp ();
 
         scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
-    } else {
-        size_t countOfSeparatorsAfterSelection = 0;
-        for (short i = selectedItem; i <= scriptSelectionPopUp.GetItemCount (); ++i) {
-            if (scriptSelectionPopUp.IsSeparator (i)) {
-                countOfSeparatorsAfterSelection++;
-            }
-        }
-        const bool isSelectedScriptFromGitHub = countOfSeparatorsAfterSelection == 1;
-        if (isSelectedScriptFromGitHub) {
-            openScriptButton.Enable ();
-        } else {
-            openScriptButton.Disable ();
-        }
     }
 }
 
@@ -531,4 +544,15 @@ bool TapirPalette::AddNewScript ()
     }
 
     return hasNew;
+}
+
+bool TapirPalette::IsSelectedScriptFromGitHub () const
+{
+    size_t countOfSeparatorsAfterSelection = 0;
+    for (short i = scriptSelectionPopUp.GetSelectedItem (); i <= scriptSelectionPopUp.GetItemCount (); ++i) {
+        if (scriptSelectionPopUp.IsSeparator (i)) {
+            countOfSeparatorsAfterSelection++;
+        }
+    }
+    return countOfSeparatorsAfterSelection == 1;
 }

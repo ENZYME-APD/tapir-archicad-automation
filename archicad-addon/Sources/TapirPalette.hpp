@@ -43,6 +43,7 @@ private:
     void SaveScriptsToPreferences ();
     void AddScriptsFromPreferences ();
     bool AddNewScript ();
+    bool IsSelectedScriptFromGitHub () const;
 
     template<typename... Args>
     void WriteReport (short type, const GS::UniString& format, Args&&... args);
