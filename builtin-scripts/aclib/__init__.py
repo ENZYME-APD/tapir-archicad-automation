@@ -7,7 +7,10 @@ parser.add_argument('--host', dest='host', type=str, default='http://127.0.0.1')
 parser.add_argument('--port', dest='port', type=int, default=19723)
 args = parser.parse_args()
 
-def RunCommand (command, parameters = {}, debug = False):
+def RunCommand (command, parameters = None, debug = False):
+    if parameters is None:
+        parameters = {}
+
     if debug:
         print ('Command: ' + command)
         print ('Parameters:\n' + JsonDumpDictionary (parameters))
@@ -36,7 +39,10 @@ def RunCommand (command, parameters = {}, debug = False):
 
     return result
 
-def RunTapirCommand (command, parameters = {}, debug = True):
+def RunTapirCommand (command, parameters = None, debug = True):
+    if parameters is None:
+        parameters = {}
+
     if debug:
         print ('Command: ' + command)
         print ('Parameters:\n' + JsonDumpDictionary (parameters))
