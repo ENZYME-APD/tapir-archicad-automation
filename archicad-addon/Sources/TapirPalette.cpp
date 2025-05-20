@@ -137,7 +137,7 @@ TapirPalette::TapirPalette ()
 
     LoadScriptsToPopUp ();
 
-    EnableIdleEvent (true);
+    EnableIdleEvent ();
     BeginEventProcessing ();
 }
 
@@ -194,42 +194,53 @@ void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool*
     *accepted = true;
 }
 
+static GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
+{
+    if (channel.GetAvailable () <= 0) {
+        return GS::EmptyUniString;
+    }
+
+    const GS::USize uSize = static_cast<GS::USize> (channel.GetAvailable ());
+
+	std::unique_ptr<char> buffer;
+    buffer.reset (new char[uSize + 1]);
+
+    GS::IBinaryChannelUtilities::ReadFully (channel, buffer.get (), uSize);
+    return GS::UniString (buffer.get (), uSize, CC_UTF8);
+}
+
 void TapirPalette::PanelIdle (const DG::PanelIdleEvent&)
 {
     if (runScriptButton.GetIcon ().GetResourceId () == ID_RUN_BUTTON_ICON) {
         return;
     }
 
-    if (process.IsTerminated ()) {
-        GS::IBinaryChannel& stdErrorChannel = process.GetStandardErrorChannel ();
-        GS::UniString stdError;
-        while (stdErrorChannel.GetAvailable () > 0) {
-            stdError += GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (stdErrorChannel, GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
-        }
-        if (!stdError.IsEmpty ()) {
-            WriteReport (DG_ERROR, stdError);
-        }
+    const GS::UniString stdError = ReadFromChannel (process.GetStandardErrorChannel ());
+    if (!stdError.IsEmpty ()) {
+        WriteReport (DG_ERROR, stdError);
+    }
 
-        GS::IBinaryChannel& stdOutputChannel = process.GetStandardOutputChannel ();
-        GS::UniString stdOutput;
-        while (stdOutputChannel.GetAvailable () > 0) {
-            stdOutput += GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (stdOutputChannel, GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
-        }
+    const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
+    if (!stdOutput.IsEmpty ()) {
         WriteReport (DG_INFORMATION, stdOutput);
+    }
 
+    if (process.IsTerminated ()) {
         runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), ID_RUN_BUTTON_ICON));
     }
 }
 
 static void OpenWebpage (const GS::UniString& webpage)
 {
-    const GS::UniString command =
+    const GS::UniString command = GS::UniString::Printf (
+        "%s %T",
 #ifdef WINDOWS
-        "start";
+        "start",
 #else
-        "open";
+        "open",
 #endif
-    GS::Process::Create (command, { webpage }, GS::Process::CreateNoWindow);
+        webpage.ToPrintf ());
+    system (command.ToCStr ().Get ());
 }
 
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
@@ -259,13 +270,15 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 
             GS::UniString pathStr;
             folderLoc.ToPath (&pathStr);
-            const GS::UniString command =
+            const GS::UniString command = GS::UniString::Printf (
+                "%s %T",
 #ifdef WINDOWS
-                "explorer";
+        "explorer",
 #else
-                "open";
+        "open",
 #endif
-            GS::Process::Create (command, { pathStr }, GS::Process::CreateNoWindow);
+                pathStr.ToPrintf ());
+            system (command.ToCStr ().Get ());
         }
     }
 }
@@ -467,6 +480,8 @@ void TapirPalette::LoadScriptsToPopUp ()
     scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload scripts...");
     scriptSelectionPopUp.AppendItem ();
     scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Add new script...");
+
+    scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
 }
 
 #define PREFERENCES_VERSION 10

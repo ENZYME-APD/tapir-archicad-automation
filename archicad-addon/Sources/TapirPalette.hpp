@@ -78,5 +78,5 @@ void TapirPalette::WriteReport (short type, const GS::UniString& format, Args&&.
     }
 
     constexpr bool withDial = false;
-    ACAPI_WriteReport ("Tapir Script Execution Report:\n" + typeStr + format, withDial, std::forward<Args> (args)...);
+    ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" + typeStr + format, withDial, std::forward<Args> (args)...);
 }
