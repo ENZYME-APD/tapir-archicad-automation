@@ -58,7 +58,7 @@ def generatePropertyValueString(elemIndex: int) -> str:
     return f"{elemIndex:03d}"  # Format as 001, 002, etc.
 
 # Create NormalStringPropertyValue from the string
-def generatePropertyValue(elemIndex: int) -> act.NormalStringPropertyValue:
+def generatePropertyValue(elemIndex: int):
     return act.NormalStringPropertyValue(generatePropertyValueString(elemIndex))
 
 # Calculate distance between two points
