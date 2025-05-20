@@ -40,7 +40,6 @@ class ResourceCompiler (object):
 
     def RunResConv (self, platformSign, codepage, inputFilePath, nativeResourceFileExtenion):
         imageResourcesFolder = os.path.join (self.resourcesPath, 'RFIX', 'Images')
-        schemaResourcesFolder = os.path.join (self.resourcesPath, 'RFIX', 'Schemas')
         inputFileBaseName = os.path.splitext (os.path.split (inputFilePath)[1])[0]
         nativeResourceFilePath = os.path.join (self.resourceObjectsPath, inputFileBaseName + nativeResourceFileExtenion)
         result = subprocess.call ([
@@ -49,7 +48,7 @@ class ResourceCompiler (object):
             '-T', platformSign,                # target platform
             '-q', 'utf8', codepage,            # code page conversion
             '-w', '2',                        # HiDPI image size list
-            '-p', imageResourcesFolder + ';' + schemaResourcesFolder, # image/file search path
+            '-p', imageResourcesFolder,        # image search path
             '-i', inputFilePath,            # input path
             '-o', nativeResourceFilePath    # output path
         ])

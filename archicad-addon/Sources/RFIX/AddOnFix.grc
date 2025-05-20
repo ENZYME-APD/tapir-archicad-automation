@@ -9,6 +9,22 @@
     "TapirLogo"
 }
 
+'GICN' ID_TAPIR_LOGO_MINI "TapirLogoMini" {
+    "TapirLogoMini"
+}
+
+'GICN' ID_RUN_BUTTON_ICON "Run" {
+    "Run"
+}
+
+'GICN' ID_KILL_BUTTON_ICON "Kill" {
+    "Kill"
+}
+
+'GICN' ID_OPENSCRIPT_BUTTON_ICON "Code" {
+    "Code"
+}
+
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
 }

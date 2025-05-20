@@ -11,6 +11,16 @@
 /* [  1] */        "About Tapir...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
+'STR#' ID_ADDON_MENU_FOR_PALETTE "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Tapir Palette^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_PALETTE_STRINGS "Tapir Palette Strings" {
+/* [  1] */ "Select Python Scripts"
+/* [  2] */ "Add"
+}
+
 'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
 /* [  1] */ Button                     10  204  180   23    LargePlain "OK"
 /* [  2] */ Icon                       36   10  128  128    ID_TAPIR_LOGO
@@ -18,9 +28,22 @@
 /* [  4] */ CenterText                 10  171  180   23    LargePlain vCenter "Version: %T, Port: %T"
 }
 
-'DLGH' ID_ABOUT_DIALOG Save_USDZ_Options {
+'DLGH' ID_ABOUT_DIALOG Tapir_About_Dialog {
 1    ""        OkButton
 2    ""        TapirLogo
 3    ""        TapirText
 4    ""        VersionText
+}
+
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  344  28  "Tapir Palette"  {
+/* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
+/* [  2] */ PopupControl              28   3 260  22    80  3
+/* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
+/* [  4] */ IconButton               316   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
+}
+
+'DLGH' ID_PALETTE Tapir_Palette {
+1    ""        TapirButton
+2    ""        ScriptSelection
+3    ""        RunButton
 }

@@ -46,7 +46,6 @@ def show_input_dialog(prompt, title="Input Needed", default="1"):
 # CONFIGURATION PARAMETERS
 ################################
 
-
 # Property ID for the General_ElementID that will be numbered
 propertyId = acu.GetBuiltInPropertyId('General_ElementID')
 
@@ -59,7 +58,7 @@ def generatePropertyValueString(elemIndex: int) -> str:
     return f"{elemIndex:03d}"  # Format as 001, 002, etc.
 
 # Create NormalStringPropertyValue from the string
-def generatePropertyValue(elemIndex: int) -> act.NormalStringPropertyValue:
+def generatePropertyValue(elemIndex: int):
     return act.NormalStringPropertyValue(generatePropertyValueString(elemIndex))
 
 # Calculate distance between two points
@@ -129,9 +128,8 @@ def closest_point_on_polyline(polyline_points, point):
 # MAIN PROCESS
 ################################
 
-
 # Get all selected elements
-selectedElementsResponse = aclib.RunTapirCommand('GetSelectedElements', {})
+selectedElementsResponse = aclib.RunTapirCommand('GetSelectedElements', {}, debug=False)
 selectedElements = selectedElementsResponse.get('elements', [])
 
 if not selectedElements:
@@ -279,8 +277,6 @@ for index, elem in enumerate(sorted_elements, start=starting_number):
 # Set the new property values for all elements
 try:
     acc.SetPropertyValuesOfElements(elemPropertyValues)
-    print(
-        f"Successfully numbered {len(sorted_elements)} elements starting from {starting_number}")
 except Exception as e:
     show_popup(
         f"Error setting property values: {e}", "Processing Error", "error")

@@ -9,6 +9,7 @@
 #include "DeveloperTools.hpp"
 
 #include "AboutDialog.hpp"
+#include "TapirPalette.hpp"
 
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
@@ -57,6 +58,19 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     break;
             }
             break;
+        case ID_ADDON_MENU_FOR_PALETTE:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_PALETTE:
+                    {
+                        if (TapirPalette::HasInstance () && TapirPalette::Instance ().IsVisible ()) {
+                            TapirPalette::Instance ().Hide ();
+                        } else {
+                            TapirPalette::Instance ().Show ();
+                        }
+                    }
+                    break;
+            }
+            break;
     }
 
     return NoError;
@@ -74,6 +88,7 @@ GSErrCode RegisterInterface (void)
 {
     GSErrCode err = NoError;
 
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_PALETTE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
 
     return err;
@@ -83,7 +98,9 @@ GSErrCode Initialize (void)
 {
     GSErrCode err = NoError;
 
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_PALETTE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
+	err |= TapirPalette::RegisterPaletteControlCallBack ();
 
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");

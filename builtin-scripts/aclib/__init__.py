@@ -39,7 +39,7 @@ def RunCommand (command, parameters = None, debug = False):
 
     return result
 
-def RunTapirCommand (command, parameters = None, debug = True):
+def RunTapirCommand (command, parameters = None, debug = False):
     if parameters is None:
         parameters = {}
 
