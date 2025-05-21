@@ -163,6 +163,30 @@ var gSchemaDefinitions = {
             "value"
         ]
     },
+    "PolyArc": {
+        "type": "object",
+        "description": "Representation of an arc segment of a two dimensional polygon/polyline.",
+        "properties": {
+            "begIndex": {
+                "type": "integer",
+                "description": "Node index of one end point of the arc."
+            },
+            "endIndex": {
+                "type": "integer",
+                "description": "Node index of the other end point of the arc."
+            },
+            "arcAngle": {
+                "type": "number",
+                "description": "Angle of the arc; it is positive, if the arc is on the right-hand side of the straight segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begIndex",
+            "endIndex",
+            "arcAngle"
+        ]
+    },
     "2DCoordinate": {
         "type": "object",
         "description": "2D coordinate.",
@@ -1648,5 +1672,275 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false,
         "required": []
+    },
+    "WallDetails": {
+        "type": "object",
+        "properties": {
+            "geometryType": {
+                "type": "string",
+                    "enum": [
+                    "Straight",
+                    "Trapezoid",
+                    "Polygonal"
+                    ]
+            },
+            "begCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "endCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "zCoordinate": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number",
+                "description": "height relative to bottom"
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "base level of the wall relative to the floor level"
+            },
+            "offset": {
+                "type": "number",
+                "description": "wall's base line's offset from ref. line"
+            },
+            "begThickness": {
+                "type": "number",
+                "description": "Thickness at the beginning in case of trapezoid wall"
+            },
+            "endThickness": {
+                "type": "number",
+                "description": "Thickness at the end in case of trapezoid wall"
+            },
+            "polygonOutline": {
+                "type": "array",
+                "description": "Polygon outline in case of polygonal wall",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon arcs in case of polygonal wall",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "required": [
+            "geometryType",
+            "begCoordinate",
+            "endCoordinate",
+            "zCoordinate",
+            "height",
+            "bottomOffset",
+            "offset"
+        ]
+    },
+    "SlabDetails": {
+        "type": "object",
+        "properties": {
+            "thickness": {
+                "type": "number",
+                "description": "Thickness of the slab."
+            },
+            "level": {
+                "type": "number",
+                "description": "Distance of the reference level of the slab from the floor level."
+            },
+            "offsetFromTop": {
+                "type": "number",
+                "description": "Vertical distance between the reference level and the top of the slab."
+            },
+            "zCoordinate": {
+                "type": "number"
+            },
+            "polygonOutline": {
+                "type": "array",
+                "description": "Polygon outline of the slab.",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the slab.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "type": "array",
+                "description": "Holes of the slab.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "polygonOutline": {
+                            "type": "array",
+                            "description": "Polygon outline of the hole.",
+                            "items": {
+                                "$ref": "#/2DCoordinate"
+                            }
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Polygon outline arcs of the hole.",
+                            "items": {
+                                "$ref": "#/PolyArc"
+                            }
+                        }
+                    },
+                    "required": [
+                        "polygonOutline"
+                    ]
+                }
+            }
+        },
+        "required": [
+            "thickness",
+            "level",
+            "offsetFromTop",
+            "zCoordinate",
+            "polygonOutline",
+            "holes"
+        ]
+    },
+    "ColumnDetails": {
+        "type": "object",
+        "properties": {
+            "origin": {
+                "$ref": "#/2DCoordinate"
+            },
+            "height": {
+                "type": "number",
+                "description": "height relative to bottom"
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "base level of the column relative to the floor level"
+            }
+        },
+        "required": [
+            "origin",
+            "height",
+            "bottomOffset"
+        ]
+    },
+    "DetailWorksheetDetails": {
+        "type": "object",
+        "properties": {
+            "basePoint": {
+                "$ref": "#/2DCoordinate",
+                "description": "Coordinate of the base point"
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle (radian) of the marker symbol"
+            },
+            "markerId": {
+                "$ref": "#/ElementId",
+                "description": "Guid of the marker symbol"
+            },
+            "detailName": {
+                "type": "string",
+                "description": "Name of the detail/worksheet"
+            },
+            "detailIdStr": {
+                "type": "string",
+                "description": "Reference ID of the detail/worksheet"
+            },
+            "isHorizontalMarker": {
+                "type": "boolean",
+                "description": "Marker symbol is always horizontal?"
+            },
+            "isWindowOpened": {
+                "type": "boolean",
+                "description": "Side (detail/worksheet) window is opened?"
+            },
+            "clipPolygon": {
+                "type": "array",
+                "description": "The clip polygon of the detail/worksheet",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                }
+            },
+            "linkData": {
+                "type": "object",
+                "description": "The marker link data",
+                "properties": {
+                    "referredView": {
+                        "$ref": "#/ElementId",
+                        "description": "Guid of the referred view. Only if the marker refers to a view."
+                    },
+                    "referredDrawing": {
+                        "$ref": "#/ElementId",
+                        "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
+                    },
+                    "referredPMViewPoint": {
+                        "$ref": "#/ElementId",
+                        "description": "Guid of the referred view point. Only if the marker refers to a view point."
+                    }
+                },
+                "required": []
+            }
+        },
+        "required": [
+            "basePoint",
+            "angle",
+            "markerId",
+            "detailName",
+            "detailIdStr",
+            "isHorizontalMarker",
+            "isWindowOpened",
+            "clipPolygon",
+            "linkData"
+        ]
+    },
+    "LibPartBasedElementDetails": {
+        "type": "object",
+        "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails"
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "required": [
+            "libPart"
+        ]
+    },
+    "PolylineDetails": {
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                }
+            },
+            "arcs": { 
+                "type": "array",
+                "description": "The arcs of the polyline.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "required": [
+            "coordinates"
+        ]
+    },
+    "NotYetSupportedElementTypeDetails": {
+        "type": "object",
+        "properties": {
+            "error": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "error"
+        ]
     }
 };

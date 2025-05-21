@@ -3,8 +3,8 @@ import urllib.request
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--host', dest='host', type=str)
-parser.add_argument('--port', dest='port', type=int)
+parser.add_argument('--host', dest='host', type=str, default='http://127.0.0.1')
+parser.add_argument('--port', dest='port', type=int, default=19723)
 args, unknownArgs = parser.parse_known_args()
 host = 'http://127.0.0.1' if 'host' not in args else args.host
 port = 19723 if 'port' not in args else args.port
