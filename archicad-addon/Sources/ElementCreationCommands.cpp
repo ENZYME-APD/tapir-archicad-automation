@@ -289,6 +289,78 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+CreatePolylinesCommand::CreatePolylinesCommand () :
+    CreateElementsCommandBase ("CreatePolylines", API_PolyLineID, "polylinesData")
+{
+}
+
+GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "polylinesData": {
+            "type": "array",
+            "description": "Array of data to create Polylines.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Polyline.",
+                "properties" : {
+                    "floorInd": {
+                        "type": "number",
+                        "description" : "The identifier of the floor. Optinal parameter, by default the current floor is used."	
+                    },
+                    "coordinates": { 
+                        "type": "array",
+                        "description": "The 2D coordinates of the polyline.",
+                        "items": {
+                            "$ref": "#/2DCoordinate"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required" : [
+                    "coordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "polylinesData"
+    ]
+})";
+}
+
+static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coordinates,
+                           API_ElementMemo& 				 memo)
+{
+    Int32 iCoord = 0;
+    for (const GS::ObjectState& c : coordinates) {
+        (*memo.coords)[++iCoord] = Get2DCoordinateFromObjectState (c);
+    }
+    (*memo.pends)[1] = iCoord;
+}
+
+GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorInd", element.header.floorInd);
+
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+    element.polyLine.poly.nCoords	= coordinates.GetSize();
+    element.polyLine.poly.nSubPolys	= 1;
+    element.polyLine.poly.nArcs		= 0; // Curved edges are not supported yet by my code
+
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.polyLine.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.polyLine.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+
+    AddPolyToMemo(coordinates,
+                  memo);
+
+    return {};
+}
+
 CreateObjectsCommand::CreateObjectsCommand () :
     CreateElementsCommandBase ("CreateObjects", API_ObjectID, "objectsData")
 {

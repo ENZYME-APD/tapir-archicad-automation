@@ -1457,6 +1457,56 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "CreatePolylines",
+                "version": "1.1.5",
+                "description": "Creates Polyline elements based on the given parameters.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "polylinesData": {
+            "type": "array",
+            "description": "Array of data to create Polylines.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Polyline.",
+                "properties" : {
+                    "floorInd": {
+                        "type": "number",
+                        "description" : "The identifier of the floor. Optinal parameter, by default the current floor is used."	
+                    },
+                    "coordinates": { 
+                        "type": "array",
+                        "description": "The 2D coordinates of the polyline.",
+                        "items": {
+                            "$ref": "#/2DCoordinate"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required" : [
+                    "coordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "polylinesData"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
                 "name": "CreateObjects",
                 "version": "1.0.3",
                 "description": "Creates Object elements based on the given parameters.",
