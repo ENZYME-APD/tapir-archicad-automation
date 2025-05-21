@@ -43,11 +43,11 @@ inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      
 inline API_Guid GetGuidFromIssuesArrayItem (const GS::ObjectState& os)          { return GetGuidFromArrayItem ("issueId", os); }
 inline API_Guid GetGuidFromNavigatorItemIdArrayItem (const GS::ObjectState& os) { return GetGuidFromArrayItem ("navigatorItemId", os); }
 inline API_Guid GetGuidFromDatabaseArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("databaseId", os); }
+bool   IsSame2DCoordinate (const GS::ObjectState& o1, const GS::ObjectState& o2);
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
-void AddPolygonFromMemoCoords (GS::ObjectState& os, const GS::String& fieldName, const API_Guid& elemGuid, bool isPolyline = false);
-void AddPolygonWithHolesFromMemoCoords (GS::ObjectState& os, const GS::String& polygonFieldName, const GS::String& holesArrayFieldName, const GS::String& holePolygonFieldName, const API_Guid& elemGuid);
+GS::ObjectState CreatePolyArcObjectState (const API_PolyArc& a);
 inline GS::ObjectState CreateGuidObjectState (const API_Guid& guid) { return GS::ObjectState ("guid", APIGuidToString (guid)); }
 inline GS::ObjectState CreateGuidObjectState (const GS::Guid& guid) { return GS::ObjectState ("guid", guid.ToUniString()); }
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid);
@@ -55,6 +55,9 @@ inline GS::ObjectState CreateElementIdObjectState (const API_Guid& guid)   { ret
 inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { return CreateIdObjectState ("attributeId", guid); }
 inline GS::ObjectState CreateIssueIdObjectState (const API_Guid& guid)     { return CreateIdObjectState ("issueId", guid); }
 inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { return CreateIdObjectState ("databaseId", guid); }
+
+void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName = {}, bool isPolyline = false);
+void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName);
 
 struct Story {
     Story (short _index, double _level)

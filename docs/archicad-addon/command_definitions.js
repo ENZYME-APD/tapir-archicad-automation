@@ -522,251 +522,7 @@ var gCommands = [{
                             "type": "number"
                         },
                         "details": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "title": "WallDetails",
-                                    "properties": {
-                                        "geometryType": {
-                                            "type": "string",
-                                             "enum": [
-                                                "Straight",
-                                                "Trapezoid",
-                                                "Polygonal"
-                                             ]
-                                        },
-                                        "begCoordinate": {
-                                            "$ref": "#/2DCoordinate"
-                                        },
-                                        "endCoordinate": {
-                                            "$ref": "#/2DCoordinate"
-                                        },
-                                        "zCoordinate": {
-                                            "type": "number"
-                                        },
-                                        "height": {
-                                            "type": "number",
-                                            "description": "height relative to bottom"
-                                        },
-                                        "bottomOffset": {
-                                            "type": "number",
-                                            "description": "base level of the wall relative to the floor level"
-                                        },
-                                        "offset": {
-                                            "type": "number",
-                                            "description": "wall's base line's offset from ref. line"
-                                        },
-                                        "begThickness": {
-                                            "type": "number",
-                                            "description": "Thickness at the beginning in case of trapezoid wall"
-                                        },
-                                        "endThickness": {
-                                            "type": "number",
-                                            "description": "Thickness at the end in case of trapezoid wall"
-                                        },
-                                        "polygonOutline": {
-                                            "type": "array",
-                                            "description": "Polygon outline in case of polygonal wall",
-                                            "items": {
-                                                "$ref": "#/2DCoordinate"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "geometryType",
-                                        "begCoordinate",
-                                        "endCoordinate",
-                                        "zCoordinate",
-                                        "height",
-                                        "bottomOffset",
-                                        "offset"
-                                    ]
-                                },
-                                {
-                                    "title": "SlabDetails",
-                                    "properties": {
-                                        "thickness": {
-                                            "type": "number",
-                                            "description": "Thickness of the slab."
-                                        },
-                                        "level": {
-                                            "type": "number",
-                                            "description": "Distance of the reference level of the slab from the floor level."
-                                        },
-                                        "offsetFromTop": {
-                                            "type": "number",
-                                            "description": "Vertical distance between the reference level and the top of the slab."
-                                        },
-                                        "zCoordinate": {
-                                            "type": "number"
-                                        },
-                                        "polygonOutline": {
-                                            "type": "array",
-                                            "description": "Polygon outline of the slab.",
-                                            "items": {
-                                                "$ref": "#/2DCoordinate"
-                                            }
-                                        },
-                                        "holes": {
-                                            "type": "array",
-                                            "description": "Holes of the slab.",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "polygonOutline": {
-                                                        "type": "array",
-                                                        "description": "Polygon outline of the hole.",
-                                                        "items": {
-                                                            "$ref": "#/2DCoordinate"
-                                                        }
-                                                    }
-                                                },
-                                                "required": [
-                                                    "polygonOutline"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "thickness",
-                                        "level",
-                                        "offsetFromTop",
-                                        "zCoordinate",
-                                        "polygonOutline",
-                                        "holes"
-                                    ]
-                                },
-                                {
-                                    "title": "ColumnDetails",
-                                    "properties": {
-                                        "origin": {
-                                            "$ref": "#/2DCoordinate"
-                                        },
-                                        "height": {
-                                            "type": "number",
-                                            "description": "height relative to bottom"
-                                        },
-                                        "bottomOffset": {
-                                            "type": "number",
-                                            "description": "base level of the column relative to the floor level"
-                                        }
-                                    },
-                                    "required": [
-                                        "origin",
-                                        "height",
-                                        "bottomOffset"
-                                    ]
-                                },
-                                {
-                                    "title": "DetailWorksheetDetails",
-                                    "properties": {
-                                        "basePoint": {
-                                            "$ref": "#/2DCoordinate",
-                                            "description": "Coordinate of the base point"
-                                        },
-                                        "angle": {
-                                            "type": "number",
-                                            "description": "The rotation angle (radian) of the marker symbol"
-                                        },
-                                        "markerId": {
-                                            "$ref": "#/ElementId",
-                                            "description": "Guid of the marker symbol"
-                                        },
-                                        "detailName": {
-                                            "type": "string",
-                                            "description": "Name of the detail/worksheet"
-                                        },
-                                        "detailIdStr": {
-                                            "type": "string",
-                                            "description": "Reference ID of the detail/worksheet"
-                                        },
-                                        "isHorizontalMarker": {
-                                            "type": "boolean",
-                                            "description": "Marker symbol is always horizontal?"
-                                        },
-                                        "isWindowOpened": {
-                                            "type": "boolean",
-                                            "description": "Side (detail/worksheet) window is opened?"
-                                        },
-                                        "clipPolygon": {
-                                            "type": "array",
-                                            "description": "The clip polygon of the detail/worksheet",
-                                            "items": {
-                                                "$ref": "#/2DCoordinate"
-                                            }
-                                        },
-                                        "linkData": {
-                                            "type": "object",
-                                            "description": "The marker link data",
-                                            "properties": {
-                                                "referredView": {
-                                                    "$ref": "#/ElementId",
-                                                    "description": "Guid of the referred view. Only if the marker refers to a view."
-                                                },
-                                                "referredDrawing": {
-                                                    "$ref": "#/ElementId",
-                                                    "description": "Guid of the referred drawing. Only if the marker refers to a drawing."
-                                                },
-                                                "referredPMViewPoint": {
-                                                    "$ref": "#/ElementId",
-                                                    "description": "Guid of the referred view point. Only if the marker refers to a view point."
-                                                }
-                                            },
-                                            "required": []
-                                        }
-                                    },
-                                    "required": [
-                                        "basePoint",
-                                        "angle",
-                                        "markerId",
-                                        "detailName",
-                                        "detailIdStr",
-                                        "isHorizontalMarker",
-                                        "isWindowOpened",
-                                        "clipPolygon",
-                                        "linkData"
-                                    ]
-                                },
-                                {
-                                    "title": "LibPartBasedElementDetails",
-                                    "properties": {
-                                        "libPart": {
-                                            "$ref": "#/LibPartDetails"
-                                        },
-                                        "ownerElementId": {
-                                            "$ref": "#/ElementId"
-                                        }
-                                    },
-                                    "required": [
-                                        "libPart"
-                                    ]
-                                },
-                                {
-                                    "title": "PolylineDetails",
-                                    "properties": {
-                                        "coordinates": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/2DCoordinate"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "coordinates"
-                                    ]
-                                },
-                                {
-                                    "title": "NotYetSupportedElementTypeDetails",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "error"
-                                    ]
-                                }
-                            ]
+                            "$ref": "#/TypeSpecificDetails"
                         }
                     },
                     "required": [
@@ -1409,6 +1165,13 @@ var gCommands = [{
                             "$ref": "#/2DCoordinate"
                         }
                     },
+                    "polygonArcs": {
+                        "type": "array",
+                        "description": "Polygon outline arcs of the slab.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
                     "holes" : {
                         "type": "array",
                         "description": "Array of parameters of holes.",
@@ -1418,9 +1181,16 @@ var gCommands = [{
                             "properties" : {
                                 "polygonCoordinates": { 
                                     "type": "array",
-                                    "description": "The 2D coordinates of the edge of the slab.",
+                                    "description": "The 2D coordinates of the edge of the hole.",
                                     "items": {
                                         "$ref": "#/2DCoordinate"
+                                    }
+                                },
+                                "polygonArcs": {
+                                    "type": "array",
+                                    "description": "Polygon outline arcs of the hole.",
+                                    "items": {
+                                        "$ref": "#/PolyArc"
                                     }
                                 }
                             },
@@ -1442,6 +1212,63 @@ var gCommands = [{
     "additionalProperties": false,
     "required": [
         "slabsData"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "CreatePolylines",
+                "version": "1.1.5",
+                "description": "Creates Polyline elements based on the given parameters.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "polylinesData": {
+            "type": "array",
+            "description": "Array of data to create Polylines.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Polyline.",
+                "properties" : {
+                    "floorInd": {
+                        "type": "number",
+                        "description" : "The identifier of the floor. Optinal parameter, by default the current floor is used."	
+                    },
+                    "coordinates": { 
+                        "type": "array",
+                        "description": "The 2D coordinates of the polyline.",
+                        "items": {
+                            "$ref": "#/2DCoordinate"
+                        }
+                    },
+                    "arcs": { 
+                        "type": "array",
+                        "description": "The arcs of the polyline.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required" : [
+                    "coordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "polylinesData"
     ]
 },
                 "outputScheme": {

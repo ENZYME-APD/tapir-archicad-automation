@@ -5,7 +5,9 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--host', dest='host', type=str, default='http://127.0.0.1')
 parser.add_argument('--port', dest='port', type=int, default=19723)
-args = parser.parse_args()
+args, unknownArgs = parser.parse_known_args()
+host = 'http://127.0.0.1' if 'host' not in args else args.host
+port = 19723 if 'port' not in args else args.port
 
 def RunCommand (command, parameters = None, debug = False):
     if parameters is None:
@@ -15,7 +17,7 @@ def RunCommand (command, parameters = None, debug = False):
         print ('Command: ' + command)
         print ('Parameters:\n' + JsonDumpDictionary (parameters))
 
-    connection_object = urllib.request.Request ('{}:{}'.format (args.host, args.port))
+    connection_object = urllib.request.Request ('{}:{}'.format (host, port))
     connection_object.add_header ('Content-Type', 'application/json')
 
     request_data = {

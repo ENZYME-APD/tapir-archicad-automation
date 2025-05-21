@@ -5,6 +5,7 @@
 
 #include <vector>
 
+constexpr double EPS = 0.001;
 constexpr const char* CommandNamespace = "TapirCommand";
 
 CommandBase::CommandBase (CommonSchema commonSchema) :
@@ -92,6 +93,13 @@ API_Guid GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectSt
     return GetGuidFromObjectState (idField);
 }
 
+bool   IsSame2DCoordinate (const GS::ObjectState& o1, const GS::ObjectState& o2)
+{
+    API_Coord c1 = Get2DCoordinateFromObjectState (o1);
+    API_Coord c2 = Get2DCoordinateFromObjectState (o2);
+    return std::abs (c1.x - c2.x) < EPS && std::abs (c1.y - c2.y);
+}
+
 API_Coord Get2DCoordinateFromObjectState (const GS::ObjectState& objectState)
 {
     API_Coord coordinate = {};
@@ -105,7 +113,17 @@ GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c)
     return GS::ObjectState ("x", c.x, "y", c.y);
 }
 
-std::vector<std::vector<API_Coord>>
+GS::ObjectState CreatePolyArcObjectState (const API_PolyArc& a)
+{
+    return GS::ObjectState ("begIndex", a.begIndex - 1, "endIndex", a.endIndex - 1, "arcAngle", a.arcAngle);
+}
+
+struct PolygonData {
+    std::vector<API_Coord>   coords;
+    std::vector<API_PolyArc> arcs;
+};
+
+std::vector<PolygonData>
 static GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool isPolyline = false)
 {
     API_ElementMemo memo = {};
@@ -114,40 +132,64 @@ static GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool isPolyline = fa
     }
 
     const GSSize nPolys = BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32) - 1;
-    std::vector<std::vector<API_Coord>> polygons (nPolys);
+    std::vector<std::pair<GS::Int32, GS::Int32>> startEndIndices;
+    startEndIndices.reserve (nPolys);
+    std::vector<PolygonData> polygons (nPolys);
     for (GSIndex iPoly = 0; iPoly < nPolys; ++iPoly) {
         const auto startIndex = (*memo.pends)[iPoly] + 1;
         auto endIndex = (*memo.pends)[iPoly + 1];
         if (isPolyline) {
             endIndex++;
         }
-        std::vector<API_Coord>& polygon = polygons[iPoly];
-        polygon.reserve (endIndex - startIndex);
+        startEndIndices.emplace_back (startIndex, endIndex);
+        std::vector<API_Coord>& coords = polygons[iPoly].coords;
+        coords.reserve (endIndex - startIndex);
         for (GSIndex iCoord = startIndex; iCoord < endIndex; ++iCoord) {
-            polygon.push_back ((*memo.coords)[iCoord]);
+            coords.push_back ((*memo.coords)[iCoord]);
         }
+    }
+
+    const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (API_PolyArc);
+    for (GSIndex iArc = 0; iArc < nArcs; ++iArc) {
+        API_PolyArc& arc = (*memo.parcs)[iArc];
+        GSIndex iPoly = 0;
+        for (; iPoly < nPolys; ++iPoly) {
+            const auto& startEndPair = startEndIndices[iPoly];
+            if (arc.begIndex >= startEndPair.first && arc.endIndex < startEndPair.second) {
+                break;
+            }
+        }
+        polygons[iPoly].arcs.push_back ((*memo.parcs)[iArc]);
     }
 
     return polygons;
 }
 
-void AddPolygonFromMemoCoords (GS::ObjectState& os, const GS::String& fieldName, const API_Guid& elemGuid, bool isPolyline)
+void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, bool isPolyline)
 {
-    const auto& polygon = os.AddList<GS::ObjectState> (fieldName);
+    const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
 
     const auto polygons = GetPolygonsFromMemoCoords (elemGuid, isPolyline);
     if (polygons.empty ()) {
         return;
     }
 
-    for (const auto& coord : polygons[0]) {
-        polygon (Create2DCoordinateObjectState (coord));
+    for (const auto& coord : polygons[0].coords) {
+        coords (Create2DCoordinateObjectState (coord));
+    }
+
+    if (arcsFieldName.HasValue () && !polygons[0].arcs.empty ()) {
+        const auto& arcs = os.AddList<GS::ObjectState> (*arcsFieldName);
+
+        for (const auto& arc : polygons[0].arcs) {
+            arcs (CreatePolyArcObjectState (arc));
+        }
     }
 }
 
-void AddPolygonWithHolesFromMemoCoords (GS::ObjectState& os, const GS::String& polygonFieldName, const GS::String& holesArrayFieldName, const GS::String& holePolygonFieldName, const API_Guid& elemGuid)
+void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName)
 {
-    const auto& polygon = os.AddList<GS::ObjectState> (polygonFieldName);
+    const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
     const auto& holes = os.AddList<GS::ObjectState> (holesArrayFieldName);
 
     const auto polygons = GetPolygonsFromMemoCoords (elemGuid);
@@ -155,16 +197,33 @@ void AddPolygonWithHolesFromMemoCoords (GS::ObjectState& os, const GS::String& p
         return;
     }
 
-    for (const auto& coord : polygons[0]) {
-        polygon (Create2DCoordinateObjectState (coord));
+    for (const auto& coord : polygons[0].coords) {
+        coords (Create2DCoordinateObjectState (coord));
+    }
+
+    if (arcsFieldName.HasValue () && !polygons[0].arcs.empty ()) {
+        const auto& arcs = os.AddList<GS::ObjectState> (*arcsFieldName);
+
+        for (const auto& arc : polygons[0].arcs) {
+            arcs (CreatePolyArcObjectState (arc));
+        }
     }
 
     for (size_t i = 1; i < polygons.size (); ++i) {
         GS::ObjectState hole;
-        const auto& holePolygon = hole.AddList<GS::ObjectState> (holePolygonFieldName);
-        for (const auto& coord : polygons[i]) {
-            holePolygon (Create2DCoordinateObjectState (coord));
+        const auto& holeCoords = hole.AddList<GS::ObjectState> (holeCoordsFieldName);
+        for (const auto& coord : polygons[i].coords) {
+            holeCoords (Create2DCoordinateObjectState (coord));
         }
+
+        if (holeArcsFieldName.HasValue () && !polygons[i].arcs.empty ()) {
+            const auto& holeArcs = hole.AddList<GS::ObjectState> (*holeArcsFieldName);
+
+            for (const auto& arc : polygons[i].arcs) {
+                holeArcs (CreatePolyArcObjectState (arc));
+            }
+        }
+
         holes (hole);
     }
 }

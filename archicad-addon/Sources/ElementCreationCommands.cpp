@@ -176,6 +176,13 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                             "$ref": "#/2DCoordinate"
                         }
                     },
+                    "polygonArcs": {
+                        "type": "array",
+                        "description": "Polygon outline arcs of the slab.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
                     "holes" : {
                         "type": "array",
                         "description": "Array of parameters of holes.",
@@ -185,9 +192,16 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                             "properties" : {
                                 "polygonCoordinates": { 
                                     "type": "array",
-                                    "description": "The 2D coordinates of the edge of the slab.",
+                                    "description": "The 2D coordinates of the edge of the hole.",
                                     "items": {
                                         "$ref": "#/2DCoordinate"
+                                    }
+                                },
+                                "polygonArcs": {
+                                    "type": "array",
+                                    "description": "Polygon outline arcs of the hole.",
+                                    "items": {
+                                        "$ref": "#/PolyArc"
                                     }
                                 }
                             },
@@ -213,15 +227,32 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
 })";
 }
 
-static void AddPolyToMemo (const GS::Array<GS::ObjectState>& polygonCoordinates,
+static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs)
+{
+    GS::Array<API_PolyArc> polyArcs;
+    for (const GS::ObjectState& arc : arcs) {
+        API_PolyArc polyArc = {};
+        if (arc.Get ("begIndex", polyArc.begIndex) &&
+            arc.Get ("endIndex", polyArc.endIndex) &&
+            arc.Get ("arcAngle", polyArc.arcAngle)) {
+            polyArc.begIndex++;
+            polyArc.endIndex++;
+            polyArcs.Push (polyArc);
+        }
+    }
+    return polyArcs;
+}
+
+static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
+                           const GS::Array<GS::ObjectState>& arcs,
                            const API_OverriddenAttribute&	 sideMat,
                            Int32& 							 iCoord,
                            Int32& 							 iPends,
                            API_ElementMemo& 				 memo)
 {
     Int32 iStart = iCoord;
-    for (const GS::ObjectState& polygonCoordinate : polygonCoordinates) {
-        (*memo.coords)[iCoord] = Get2DCoordinateFromObjectState (polygonCoordinate);
+    for (const GS::ObjectState& coord : coords) {
+        (*memo.coords)[iCoord] = Get2DCoordinateFromObjectState (coord);
         (*memo.edgeTrims)[iCoord].sideType = APIEdgeTrim_Vertical; // Only vertical trim is supported yet by my code
         memo.sideMaterials[iCoord] = sideMat;
         ++iCoord;
@@ -232,6 +263,12 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& polygonCoordinates,
     (*memo.edgeTrims)[iCoord].sideAngle = (*memo.edgeTrims)[iStart].sideAngle;
     memo.sideMaterials[iCoord] = memo.sideMaterials[iStart];
     ++iCoord;
+
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs);
+    Int32 iArc = 0;
+    for (const API_PolyArc& a : polyArcs) {
+        (*memo.parcs)[iArc++] = a;
+    }
 }
 
 GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
@@ -241,32 +278,45 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.header.floorInd = floorIndexAndOffset.first;
 
     GS::Array<GS::ObjectState> polygonCoordinates;
+    GS::Array<GS::ObjectState> polygonArcs;
     GS::Array<GS::ObjectState> holes;
     parameters.Get ("polygonCoordinates", polygonCoordinates);
+    parameters.Get ("polygonArcs", polygonArcs);
     parameters.Get ("holes", holes);
+    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
+        polygonCoordinates.Pop ();
+    }
     element.slab.poly.nCoords	= polygonCoordinates.GetSize() + 1;
     element.slab.poly.nSubPolys	= 1;
-    element.slab.poly.nArcs		= 0; // Curved edges are not supported yet by my code
+    element.slab.poly.nArcs		= polygonArcs.GetSize ();
 
     for (const GS::ObjectState& hole : holes) {
         if (!hole.Contains ("polygonCoordinates")) {
             continue;
         }
         GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonArcs;
         hole.Get ("polygonCoordinates", holePolygonCoordinates);
+        hole.Get ("polygonArcs", holePolygonArcs);
+        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
+            holePolygonCoordinates.Pop ();
+        }
 
         element.slab.poly.nCoords += holePolygonCoordinates.GetSize() + 1;
         ++element.slab.poly.nSubPolys;
+        element.slab.poly.nArcs += holePolygonArcs.GetSize ();
     }
 
     memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
     memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
     memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.slab.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.slab.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
 
     Int32 iCoord = 1;
     Int32 iPends = 1;
     AddPolyToMemo(polygonCoordinates,
+                  polygonArcs,
                   element.slab.sideMat,
                   iCoord,
                   iPends,
@@ -277,14 +327,113 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
             continue;
         }
         GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonArcs;
         hole.Get ("polygonCoordinates", holePolygonCoordinates);
+        hole.Get ("polygonArcs", holePolygonArcs);
+        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
+            holePolygonCoordinates.Pop ();
+        }
 
         AddPolyToMemo(holePolygonCoordinates,
+                      holePolygonArcs,
                       element.slab.sideMat,
                       iCoord,
                       iPends,
                       memo);
     }
+
+    return {};
+}
+
+CreatePolylinesCommand::CreatePolylinesCommand () :
+    CreateElementsCommandBase ("CreatePolylines", API_PolyLineID, "polylinesData")
+{
+}
+
+GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "polylinesData": {
+            "type": "array",
+            "description": "Array of data to create Polylines.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Polyline.",
+                "properties" : {
+                    "floorInd": {
+                        "type": "number",
+                        "description" : "The identifier of the floor. Optinal parameter, by default the current floor is used."	
+                    },
+                    "coordinates": { 
+                        "type": "array",
+                        "description": "The 2D coordinates of the polyline.",
+                        "items": {
+                            "$ref": "#/2DCoordinate"
+                        }
+                    },
+                    "arcs": { 
+                        "type": "array",
+                        "description": "The arcs of the polyline.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required" : [
+                    "coordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "polylinesData"
+    ]
+})";
+}
+
+static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coordinates,
+                           const GS::Array<GS::ObjectState>& arcs,
+                           API_Polygon&                      poly,
+                           API_ElementMemo& 				 memo)
+{
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs);
+    poly.nCoords	= coordinates.GetSize();
+    poly.nSubPolys	= 1;
+    poly.nArcs		= polyArcs.GetSize ();
+
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+
+    Int32 iCoord = 0;
+    for (const GS::ObjectState& c : coordinates) {
+        (*memo.coords)[++iCoord] = Get2DCoordinateFromObjectState (c);
+    }
+    (*memo.pends)[1] = iCoord;
+
+    Int32 iArc = 0;
+    for (const API_PolyArc& a : polyArcs) {
+        (*memo.parcs)[iArc++] = a;
+    }
+}
+
+GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorInd", element.header.floorInd);
+
+    GS::Array<GS::ObjectState> coordinates;
+    GS::Array<GS::ObjectState> arcs;
+    parameters.Get ("coordinates", coordinates);
+    parameters.Get ("arcs", arcs);
+
+    AddPolyToMemo(coordinates,
+                  arcs,
+                  element.polyLine.poly,
+                  memo);
 
     return {};
 }
