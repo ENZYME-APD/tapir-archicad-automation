@@ -28,8 +28,11 @@ private:
     DG::PopUp      scriptSelectionPopUp;
     DG::IconButton runScriptButton;
     DG::IconButton openScriptButton;
+    DG::IconButton addScriptButton;
+    DG::IconButton delScriptButton;
 
     GS::Process process;
+    GS::Ref<GS::Thread> uiUpdaterThread;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
 
@@ -43,13 +46,14 @@ private:
     void SaveScriptsToPreferences ();
     void AddScriptsFromPreferences ();
     bool AddNewScript ();
+    void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
+    void SetDeleteScriptButtonStatus ();
 
     template<typename... Args>
     void WriteReport (short type, const GS::UniString& format, Args&&... args);
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
-	virtual void PanelIdle (const DG::PanelIdleEvent& ev) override;
 	virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
 	virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
 

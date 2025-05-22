@@ -40,7 +40,7 @@ static bool IsValidLocation (const IO::Location& location)
 static IO::Location SaveBuiltInScript (const IO::RelativeLocation& relLoc, const GS::UniString& content)
 {
     IO::Location fileLoc;
-    IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserDocuments, &fileLoc);
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &fileLoc);
     fileLoc.AppendToLocal (IO::Name ("Tapir"));
     fileLoc.AppendToLocal (relLoc);
 
@@ -131,13 +131,14 @@ TapirPalette::TapirPalette ()
     , scriptSelectionPopUp (GetReference (), 2)
     , runScriptButton (GetReference (), 3)
     , openScriptButton (GetReference (), 4)
+    , addScriptButton (GetReference (), 5)
+    , delScriptButton (GetReference (), 6)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
     LoadScriptsToPopUp ();
 
-    EnableIdleEvent ();
     BeginEventProcessing ();
 }
 
@@ -194,42 +195,6 @@ void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool*
     *accepted = true;
 }
 
-static GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
-{
-    if (channel.GetAvailable () <= 0) {
-        return GS::EmptyUniString;
-    }
-
-    const GS::USize uSize = static_cast<GS::USize> (channel.GetAvailable ());
-
-	std::unique_ptr<char> buffer;
-    buffer.reset (new char[uSize + 1]);
-
-    GS::IBinaryChannelUtilities::ReadFully (channel, buffer.get (), uSize);
-    return GS::UniString (buffer.get (), uSize, CC_UTF8);
-}
-
-void TapirPalette::PanelIdle (const DG::PanelIdleEvent&)
-{
-    if (runScriptButton.GetIcon ().GetResourceId () == ID_RUN_BUTTON_ICON) {
-        return;
-    }
-
-    const GS::UniString stdError = ReadFromChannel (process.GetStandardErrorChannel ());
-    if (!stdError.IsEmpty ()) {
-        WriteReport (DG_ERROR, stdError);
-    }
-
-    const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
-    if (!stdOutput.IsEmpty ()) {
-        WriteReport (DG_INFORMATION, stdOutput);
-    }
-
-    if (process.IsTerminated ()) {
-        runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), ID_RUN_BUTTON_ICON));
-    }
-}
-
 static void OpenWebpage (const GS::UniString& webpage)
 {
     const GS::UniString command = GS::UniString::Printf (
@@ -280,6 +245,12 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
                 pathStr.ToPrintf ());
             system (command.ToCStr ().Get ());
         }
+    } else if (ev.GetSource () == &addScriptButton) {
+        if (AddNewScript ()) {
+            scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+        }
+    } else if (ev.GetSource () == &delScriptButton) {
+        DeleteScriptFromPopUp ();
     }
 }
 
@@ -303,17 +274,17 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
     const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
 
     if (selectedItem == scriptSelectionPopUp.GetItemCount ()) {
-        if (AddNewScript ()) {
-            scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
-            SaveScriptsToPreferences ();
-        } else {
-            scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
-        }
-    } else if (selectedItem == scriptSelectionPopUp.GetItemCount () - 1) {
         LoadScriptsToPopUp ();
 
-        scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
+        if (!scriptSelectionPopUp.IsSeparator (ev.GetPreviousSelection ()) &&
+            ev.GetPreviousSelection () < scriptSelectionPopUp.GetItemCount ()) {
+            scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
+        } else {
+            scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+        }
     }
+
+    SetDeleteScriptButtonStatus ();
 }
 
 GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID messageID, GS::IntPtr param)
@@ -366,6 +337,73 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
     GS::UniString filePath;
     fileLocation.ToPath (&filePath);
 
+    class IconUpdateTask : public GS::Runnable {
+        short resId;
+    public:
+        explicit IconUpdateTask (short _resId) : resId(_resId)
+        {
+        }
+        virtual void Run ()
+        {
+            TapirPalette::Instance ().runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
+        }
+    };
+    class OutputUpdateTask : public GS::Runnable {
+        short type;
+        GS::UniString text;
+    public:
+        OutputUpdateTask (short _type, const GS::UniString& _text) : text(_text), type(_type)
+        {
+        }
+        virtual void Run ()
+        {
+            TapirPalette::Instance ().WriteReport (type, text);
+        }
+    };
+    class UIUpdaterThread : public GS::Runnable
+    {
+    protected:
+        GS::Process& process;
+
+    public:
+        explicit UIUpdaterThread (GS::Process& p) : process(p)
+        {
+        }
+        GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
+        {
+            if (channel.GetAvailable () <= 0) {
+                return GS::EmptyUniString;
+            }
+
+            return GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (channel, GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+        }
+        void ReadFromChannels ()
+        {
+            const GS::UniString stdError = ReadFromChannel (process.GetStandardErrorChannel ());
+            if (!stdError.IsEmpty ()) {
+                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_ERROR, stdError));
+            }
+            const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
+            if (!stdOutput.IsEmpty ()) {
+                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stdOutput));
+            }
+        }
+        virtual void Run () override final
+        {
+            GS::MessageLoopExecutor ().Execute (new IconUpdateTask (ID_KILL_BUTTON_ICON));
+
+            const GS::Timeout Timeout1ms = {0, 0, 0, 1};
+            while (!process.WaitFor (Timeout1ms)) {
+                ReadFromChannels ();
+            }
+
+            const int exitCode = process.GetExitCode ();
+            ReadFromChannels ();
+
+            GS::MessageLoopExecutor ().Execute (new IconUpdateTask (ID_RUN_BUTTON_ICON));
+            GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
+        }
+    };
     class PythonExecutionTask : public GS::Runnable
     {
     protected:
@@ -383,8 +421,9 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
 
         void Run () override final
         {
+            auto& tapirPalette = TapirPalette::Instance ();
             try {
-                TapirPalette::Instance ().WriteReport (DG_INFORMATION, "Executing %T", filePath.ToPrintf ());
+                tapirPalette.WriteReport (DG_INFORMATION, "Executing %T", filePath.ToPrintf ());
 
                 GS::UniString command;
                 GS::Array<GS::UniString> argv;
@@ -396,15 +435,15 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
                     argv = {"--port", GS::ValueToUniString (GetConnectionPort ())};
                 }
                 constexpr bool redirectStandardOutput = true;
-                constexpr bool redirectStandardInput = false;
+                constexpr bool redirectStandardInput = true;
                 constexpr bool redirectStandardError = true;
                 process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
-
-                TapirPalette::Instance ().runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), ID_KILL_BUTTON_ICON));
+                tapirPalette.uiUpdaterThread = GS::NewRef<GS::Thread> (new UIUpdaterThread (process), "PythonProcess");
+                tapirPalette.uiUpdaterThread->Start ();
             } catch (const GS::ProcessException&) {
-                TapirPalette::Instance ().WriteReport (DG_ERROR, "Failed to execute %T", filePath.ToPrintf ());
+                tapirPalette.WriteReport (DG_ERROR, "Failed to execute %T", filePath.ToPrintf ());
             } catch (...) {
-                TapirPalette::Instance ().WriteReport (DG_ERROR, "Unexpected issue while executing %T", filePath.ToPrintf ());
+                tapirPalette.WriteReport (DG_ERROR, "Unexpected issue while executing %T", filePath.ToPrintf ());
             }
         }
     };
@@ -478,10 +517,9 @@ void TapirPalette::LoadScriptsToPopUp ()
     scriptSelectionPopUp.AppendSeparator ();
     scriptSelectionPopUp.AppendItem ();
     scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload scripts...");
-    scriptSelectionPopUp.AppendItem ();
-    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Add new script...");
 
     scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+    SetDeleteScriptButtonStatus ();
 }
 
 #define PREFERENCES_VERSION 10
@@ -558,7 +596,23 @@ bool TapirPalette::AddNewScript ()
         hasNew = true;
     }
 
+    SaveScriptsToPreferences ();
+    SetDeleteScriptButtonStatus ();
+
     return hasNew;
+}
+
+void TapirPalette::DeleteScriptFromPopUp ()
+{
+    short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    scriptSelectionPopUp.DeleteItem (selectedItem);
+    if (scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
+        scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
+        hasAddedScript = false;
+    }
+
+    SaveScriptsToPreferences ();
+    SetDeleteScriptButtonStatus ();
 }
 
 bool TapirPalette::IsSelectedScriptFromGitHub () const
@@ -570,4 +624,21 @@ bool TapirPalette::IsSelectedScriptFromGitHub () const
         }
     }
     return countOfSeparatorsAfterSelection == 1;
+}
+
+void TapirPalette::SetDeleteScriptButtonStatus ()
+{
+    if (!hasAddedScript) {
+        delScriptButton.Disable ();
+        return;
+    }
+
+    for (short i = scriptSelectionPopUp.GetSelectedItem (); i >= DG_POPUP_TOP; --i) {
+        if (scriptSelectionPopUp.IsSeparator (i)) {
+            delScriptButton.Disable ();
+            return;
+        }
+    }
+
+    delScriptButton.Enable ();
 }
