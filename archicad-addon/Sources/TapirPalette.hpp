@@ -3,7 +3,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "DGModule.hpp"
-#include "Thread.hpp"
+#include "ThreadedExecutor.hpp"
 #include "Process.hpp"
 
 class TapirPalette final : public DG::Palette,
@@ -32,7 +32,7 @@ private:
     DG::IconButton delScriptButton;
 
     GS::Process process;
-    GS::Ref<GS::Thread> uiUpdaterThread;
+    GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
 

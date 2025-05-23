@@ -208,6 +208,28 @@ static void OpenWebpage (const GS::UniString& webpage)
     system (command.ToCStr ().Get ());
 }
 
+static void OpenFileInExplorer (GS::Ref<IO::Location> fileRef)
+{
+    if (fileRef == nullptr) {
+        return;
+    }
+
+    IO::Location folderLoc = *fileRef;
+    folderLoc.DeleteLastLocalName ();
+
+    GS::UniString pathStr;
+    folderLoc.ToPath (&pathStr);
+    const GS::UniString command = GS::UniString::Printf (
+        "%s %T",
+#ifdef WINDOWS
+        "explorer",
+#else
+        "open",
+#endif
+        pathStr.ToPrintf ());
+    system (command.ToCStr ().Get ());
+}
+
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &runScriptButton) {
@@ -226,29 +248,10 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
             OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/" + scriptSelectionPopUp.GetItemText (scriptSelectionPopUp.GetSelectedItem ()));
         } else {
             GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
-            if (fileRef == nullptr) {
-                return;
-            }
-
-            IO::Location folderLoc = *fileRef;
-            folderLoc.DeleteLastLocalName ();
-
-            GS::UniString pathStr;
-            folderLoc.ToPath (&pathStr);
-            const GS::UniString command = GS::UniString::Printf (
-                "%s %T",
-#ifdef WINDOWS
-        "explorer",
-#else
-        "open",
-#endif
-                pathStr.ToPrintf ());
-            system (command.ToCStr ().Get ());
+            OpenFileInExplorer (fileRef);
         }
     } else if (ev.GetSource () == &addScriptButton) {
-        if (AddNewScript ()) {
-            scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
-        }
+        AddNewScript ();
     } else if (ev.GetSource () == &delScriptButton) {
         DeleteScriptFromPopUp ();
     }
@@ -337,33 +340,31 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
     GS::UniString filePath;
     fileLocation.ToPath (&filePath);
 
-    class IconUpdateTask : public GS::Runnable {
-        short resId;
-    public:
-        explicit IconUpdateTask (short _resId) : resId(_resId)
-        {
-        }
-        virtual void Run ()
-        {
-            TapirPalette::Instance ().runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
-        }
-    };
-    class OutputUpdateTask : public GS::Runnable {
-        short type;
-        GS::UniString text;
-    public:
-        OutputUpdateTask (short _type, const GS::UniString& _text) : text(_text), type(_type)
-        {
-        }
-        virtual void Run ()
-        {
-            TapirPalette::Instance ().WriteReport (type, text);
-        }
-    };
     class UIUpdaterThread : public GS::Runnable
     {
-    protected:
         GS::Process& process;
+        
+        class IconUpdateTask : public GS::Runnable {
+            short resId;
+        public:
+            explicit IconUpdateTask (short _resId) : resId(_resId)
+            {}
+            virtual void Run ()
+            {
+                TapirPalette::Instance ().runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
+            }
+        };
+        class OutputUpdateTask : public GS::Runnable {
+            short type;
+            GS::UniString text;
+        public:
+            OutputUpdateTask (short _type, const GS::UniString& _text) : text(_text), type(_type)
+            {}
+            virtual void Run ()
+            {
+                TapirPalette::Instance ().WriteReport (type, text);
+            }
+        };
 
     public:
         explicit UIUpdaterThread (GS::Process& p) : process(p)
@@ -375,7 +376,13 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
                 return GS::EmptyUniString;
             }
 
-            return GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (channel, GS::GetBinIProtocolX (), GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+            const GS::USize uSize = static_cast<GS::USize> (channel.GetAvailable ());
+
+            std::unique_ptr<char> buffer;
+            buffer.reset (new char[uSize + 1]);
+
+            GS::IBinaryChannelUtilities::ReadFully (channel, buffer.get (), uSize);
+            return GS::UniString (buffer.get (), uSize, CC_UTF8);
         }
         void ReadFromChannels ()
         {
@@ -392,8 +399,8 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
         {
             GS::MessageLoopExecutor ().Execute (new IconUpdateTask (ID_KILL_BUTTON_ICON));
 
-            const GS::Timeout Timeout1ms = {0, 0, 0, 1};
-            while (!process.WaitFor (Timeout1ms)) {
+            const GS::Timeout Timeout = {0, 0, 0, 10 /*ms*/};
+            while (!process.WaitFor (Timeout)) {
                 ReadFromChannels ();
             }
 
@@ -404,51 +411,34 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
             GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
         }
     };
-    class PythonExecutionTask : public GS::Runnable
-    {
-    protected:
-        GS::Process& process;
-        const GS::UniString filePath;
 
-    public:
-        explicit PythonExecutionTask (
-            GS::Process& p,
-            const GS::UniString filePath)
-            : process(p)
-            , filePath(filePath)
-        {
+    try {
+        WriteReport (DG_INFORMATION, "Executing %T", filePath.ToPrintf ());
+
+        GS::UniString command;
+        GS::Array<GS::UniString> argv;
+        if (filePath.EndsWith (".py")) {
+            command = "python";
+            argv = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
+        } else {
+            command = filePath;
+            argv = {"--port", GS::ValueToUniString (GetConnectionPort ())};
         }
 
-        void Run () override final
-        {
-            auto& tapirPalette = TapirPalette::Instance ();
-            try {
-                tapirPalette.WriteReport (DG_INFORMATION, "Executing %T", filePath.ToPrintf ());
-
-                GS::UniString command;
-                GS::Array<GS::UniString> argv;
-                if (filePath.EndsWith (".py")) {
-                    command = "python";
-                    argv = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
-                } else {
-                    command = filePath;
-                    argv = {"--port", GS::ValueToUniString (GetConnectionPort ())};
-                }
-                constexpr bool redirectStandardOutput = true;
-                constexpr bool redirectStandardInput = true;
-                constexpr bool redirectStandardError = true;
-                process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
-                tapirPalette.uiUpdaterThread = GS::NewRef<GS::Thread> (new UIUpdaterThread (process), "PythonProcess");
-                tapirPalette.uiUpdaterThread->Start ();
-            } catch (const GS::ProcessException&) {
-                tapirPalette.WriteReport (DG_ERROR, "Failed to execute %T", filePath.ToPrintf ());
-            } catch (...) {
-                tapirPalette.WriteReport (DG_ERROR, "Unexpected issue while executing %T", filePath.ToPrintf ());
-            }
+        constexpr bool redirectStandardOutput = true;
+        constexpr bool redirectStandardInput = false;
+        constexpr bool redirectStandardError = true;
+        process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+	    if (!process.IsValid ()) {
+            WriteReport (DG_ERROR, "Python is missing.\nPlease install python!");
         }
-    };
 
-    GS::MessageLoopExecutor ().Execute (new PythonExecutionTask (process, filePath));
+        executor.Execute (new UIUpdaterThread (process));
+    } catch (const GS::ProcessException&) {
+        WriteReport (DG_ERROR, "Failed to execute %T", filePath.ToPrintf ());
+    } catch (...) {
+        WriteReport (DG_ERROR, "Unexpected issue while executing %T", filePath.ToPrintf ());
+    }
 }
 
 bool TapirPalette::AddScriptToPopUp (const IO::Location& fileLocation, short index)
@@ -596,8 +586,11 @@ bool TapirPalette::AddNewScript ()
         hasNew = true;
     }
 
-    SaveScriptsToPreferences ();
-    SetDeleteScriptButtonStatus ();
+    if (hasNew) {
+        scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+        SaveScriptsToPreferences ();
+        SetDeleteScriptButtonStatus ();
+    }
 
     return hasNew;
 }
