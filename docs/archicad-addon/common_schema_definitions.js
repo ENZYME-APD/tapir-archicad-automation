@@ -1705,6 +1705,10 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "wall's base line's offset from ref. line"
             },
+            "arcAngle": {
+                "type": "number",
+                "description": "The arc angle of the curved wall in radians."
+            },
             "begThickness": {
                 "type": "number",
                 "description": "Thickness at the beginning in case of trapezoid wall"
@@ -1941,6 +1945,32 @@ var gSchemaDefinitions = {
         },
         "required": [
             "error"
+        ]
+    },
+    "TypeSpecificDetails": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/WallDetails"
+            },
+            {
+                "$ref": "#/SlabDetails"
+            },
+            {
+                "$ref": "#/ColumnDetails"
+            },
+            {
+                "$ref": "#/DetailWorksheetDetails"
+            },
+            {
+                "$ref": "#/LibPartBasedElementDetails"
+            },
+            {
+                "$ref": "#/PolylineDetails"
+            },
+            {
+                "$ref": "#/NotYetSupportedElementTypeDetails"
+            }
         ]
     }
 };

@@ -110,7 +110,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
         ${addOnResourcesFolder}/RFIX/Images/*.svg
     )
     file (GLOB AddOnSchemaFiles CONFIGURE_DEPENDS
-        ${addOnResourcesFolder}/RFIX/Schemas/*.json
+        ${addOnResourcesFolder}/RFIX/Images/*.json
     )
     if (WIN32)
         file (GLOB AddOnResourceFiles CONFIGURE_DEPENDS
@@ -171,7 +171,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
 
     source_group ("Sources" FILES ${AddOnHeaderFiles} ${AddOnSourceFiles})
     source_group ("Images" FILES ${AddOnImageFiles})
-    source_group ("Schemas" FILES ${AddOnSchemaFiles})
+    source_group ("Images" FILES ${AddOnSchemaFiles})
     source_group ("Resources" FILES ${AddOnResourceFiles})
     if (WIN32)
         add_library (${target} SHARED ${AddOnFiles})

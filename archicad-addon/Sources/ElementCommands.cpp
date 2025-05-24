@@ -345,6 +345,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 switch (elem.wall.type) {
                     case APIWtyp_Normal:
                         typeSpecificDetails.Add ("geometryType", "Straight");
+                        typeSpecificDetails.Add ("arcAngle", elem.wall.angle);
                         break;
                     case APIWtyp_Trapez:
                         typeSpecificDetails.Add ("geometryType", "Trapezoid");
