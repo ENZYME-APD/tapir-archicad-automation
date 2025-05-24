@@ -1942,5 +1942,31 @@ var gSchemaDefinitions = {
         "required": [
             "error"
         ]
+    },
+    "TypeSpecificDetails": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/WallDetails"
+            },
+            {
+                "$ref": "#/SlabDetails"
+            },
+            {
+                "$ref": "#/ColumnDetails"
+            },
+            {
+                "$ref": "#/DetailWorksheetDetails"
+            },
+            {
+                "$ref": "#/LibPartBasedElementDetails"
+            },
+            {
+                "$ref": "#/PolylineDetails"
+            },
+            {
+                "$ref": "#/NotYetSupportedElementTypeDetails"
+            }
+        ]
     }
 };

@@ -1,7 +1,9 @@
 import json
 import aclib
 
-response = aclib.RunTapirCommand ('GetProjectInfoFields', {})
+response = aclib.RunTapirCommand ('GetProjectInfo')
+response = aclib.RunTapirCommand ('GetGeoLocation')
+response = aclib.RunTapirCommand ('GetProjectInfoFields')
 
 for field in response['fields'][:5]: # Set the first five fields
     aclib.RunTapirCommand (
@@ -10,4 +12,4 @@ for field in response['fields'][:5]: # Set the first five fields
             'projectInfoValue' : 'Tapir'
         })
 
-response = aclib.RunTapirCommand ('GetProjectInfoFields', {})
+response = aclib.RunTapirCommand ('GetProjectInfoFields')

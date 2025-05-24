@@ -690,3 +690,151 @@ GS::ObjectState OpenProjectCommand::Execute (const GS::ObjectState& parameters, 
 
     return CreateSuccessfulExecutionResult ();
 }
+
+GetGeoLocationCommand::GetGeoLocationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetGeoLocationCommand::GetName () const
+{
+    return "GetGeoLocation";
+}
+
+GS::Optional<GS::UniString> GetGeoLocationCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectLocation": {
+                "type": "object",
+                "properties": {
+                    "longitude": {
+                        "type": "number",
+                        "description": "longitude in degrees"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "description": "latitude in degrees"
+                    },
+                    "altitude": {
+                        "type": "number",
+                        "description": "altitude in meters"
+                    },
+                    "north": {
+                        "type": "number",
+                        "description": "north direction in radians"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "longitude",
+                    "latitude",
+                    "altitude",
+                    "north"
+                ]
+            },
+            "surveyPoint": {
+                "type": "object",
+                "properties": {
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "eastings": {
+                                "type": "number",
+                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+                            },
+                            "northings": {
+                                "type": "number",
+                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+                            },
+                            "elevation": {
+                                "type": "number",
+                                "description": "Orthogonal height relative to the vertical datum specified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "eastings",
+                            "northings",
+                            "elevation"
+                        ]
+                    },
+                    "geoReferencingParameters": {
+                        "type": "object",
+                        "properties": {
+                            "crsName": {
+                                "type": "string",
+                                "description": "Name by which the coordinate reference system is identified."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Informal description of this coordinate reference system."
+                            },
+                            "geodeticDatum": {
+                                "type": "string",
+                                "description": "Name by which this datum is identified."
+                            },
+                            "verticalDatum": {
+                                "type": "string",
+                                "description": "Name by which the vertical datum is identified."
+                            },
+                            "mapProjection": {
+                                "type": "string",
+                                "description": "Name by which the map projection is identified."
+                            },
+                            "mapZone": {
+                                "type": "string",
+                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "crsName",
+                            "description",
+                            "geodeticDatum",
+                            "verticalDatum",
+                            "mapProjection",
+                            "mapZone"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "position",
+                    "geoReferencingParameters"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectLocation",
+            "surveyPoint"
+        ]
+    })";
+}
+
+GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_GeoLocation apiGeoLocation = {};
+    ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
+
+    return GS::ObjectState (
+        "projectLocation", GS::ObjectState (
+            "longitude", apiGeoLocation.placeInfo.longitude,
+            "latitude", apiGeoLocation.placeInfo.latitude,
+            "altitude", apiGeoLocation.placeInfo.altitude,
+            "north", apiGeoLocation.placeInfo.north),
+        "surveyPoint", GS::ObjectState (
+            "position", GS::ObjectState (
+                "eastings", apiGeoLocation.geoReferenceData.eastings,
+                "northings", apiGeoLocation.geoReferenceData.northings,
+                "elevation", apiGeoLocation.geoReferenceData.orthogonalHeight),
+            "geoReferencingParameters", GS::ObjectState (
+                "crsName", apiGeoLocation.geoReferenceData.name,
+                "description", apiGeoLocation.geoReferenceData.description,
+                "geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum,
+                "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
+                "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
+                "mapZone", apiGeoLocation.geoReferenceData.mapZone)));
+}

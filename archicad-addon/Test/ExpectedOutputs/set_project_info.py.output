@@ -1,3 +1,41 @@
+Command: GetProjectInfo
+Parameters:
+{}
+Response:
+{
+    "isUntitled": false,
+    "isTeamwork": false,
+    "projectLocation": "c:\\Users\\loran\\GitRepos\\tapir-archicad-automation\\archicad-addon\\Test\\TestProject.pla",
+    "projectPath": "<PATH>TestProject.pla",
+    "projectName": "TestProject"
+}
+Command: GetGeoLocation
+Parameters:
+{}
+Response:
+{
+    "projectLocation": {
+        "longitude": 19.054779,
+        "latitude": 47.559708,
+        "altitude": 10,
+        "north": 1.221730476
+    },
+    "surveyPoint": {
+        "position": {
+            "eastings": 0,
+            "northings": 0,
+            "elevation": 0
+        },
+        "geoReferencingParameters": {
+            "crsName": "Asdf",
+            "description": "Fdsa",
+            "geodeticDatum": "",
+            "verticalDatum": "",
+            "mapProjection": "",
+            "mapZone": ""
+        }
+    }
+}
 Command: GetProjectInfoFields
 Parameters:
 {}
@@ -7,7 +45,7 @@ Response:
         {
             "projectInfoId": "PROJECTNAME",
             "projectInfoName": "Project Name",
-            "projectInfoValue": ""
+            "projectInfoValue": "Test Project"
         },
         {
             "projectInfoId": "PROJECT_DESCRIPTION",
@@ -62,12 +100,12 @@ Response:
         {
             "projectInfoId": "SITEFULLADDRESS",
             "projectInfoName": "Site Full Address",
-            "projectInfoValue": ""
+            "projectInfoValue": "Graphisoft Park 1. Budapest 1222 Hungary"
         },
         {
             "projectInfoId": "SITEADDRESS1",
             "projectInfoName": "Site Address1",
-            "projectInfoValue": ""
+            "projectInfoValue": "Graphisoft Park 1."
         },
         {
             "projectInfoId": "SITEADDRESS2",
@@ -87,7 +125,7 @@ Response:
         {
             "projectInfoId": "SITECITY",
             "projectInfoName": "Site City",
-            "projectInfoValue": ""
+            "projectInfoValue": "Budapest"
         },
         {
             "projectInfoId": "SITESTATE",
@@ -97,12 +135,12 @@ Response:
         {
             "projectInfoId": "SITEPOSTCODE",
             "projectInfoName": "Site Postcode",
-            "projectInfoValue": ""
+            "projectInfoValue": "1222"
         },
         {
             "projectInfoId": "SITECOUNTRY",
             "projectInfoName": "Site Country",
-            "projectInfoValue": ""
+            "projectInfoValue": "Hungary"
         },
         {
             "projectInfoId": "SITEGROSSPERIMETER",
@@ -515,12 +553,12 @@ Response:
         {
             "projectInfoId": "SITEFULLADDRESS",
             "projectInfoName": "Site Full Address",
-            "projectInfoValue": ""
+            "projectInfoValue": "Graphisoft Park 1. Budapest 1222 Hungary"
         },
         {
             "projectInfoId": "SITEADDRESS1",
             "projectInfoName": "Site Address1",
-            "projectInfoValue": ""
+            "projectInfoValue": "Graphisoft Park 1."
         },
         {
             "projectInfoId": "SITEADDRESS2",
@@ -540,7 +578,7 @@ Response:
         {
             "projectInfoId": "SITECITY",
             "projectInfoName": "Site City",
-            "projectInfoValue": ""
+            "projectInfoValue": "Budapest"
         },
         {
             "projectInfoId": "SITESTATE",
@@ -550,12 +588,12 @@ Response:
         {
             "projectInfoId": "SITEPOSTCODE",
             "projectInfoName": "Site Postcode",
-            "projectInfoValue": ""
+            "projectInfoValue": "1222"
         },
         {
             "projectInfoId": "SITECOUNTRY",
             "projectInfoName": "Site Country",
-            "projectInfoValue": ""
+            "projectInfoValue": "Hungary"
         },
         {
             "projectInfoId": "SITEGROSSPERIMETER",
