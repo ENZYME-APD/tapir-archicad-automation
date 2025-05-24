@@ -1705,9 +1705,9 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "wall's base line's offset from ref. line"
             },
-            "angle": {
+            "arcAngle": {
                 "type": "number",
-                "description": "The rotation angle of the wall in radians."
+                "description": "The arc angle of the curved wall in radians."
             },
             "begThickness": {
                 "type": "number",
