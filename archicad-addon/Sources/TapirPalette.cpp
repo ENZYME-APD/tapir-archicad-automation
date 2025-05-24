@@ -62,23 +62,23 @@ static IO::Location SaveBuiltInScript (const IO::RelativeLocation& relLoc, const
 
 static GS::UniString DownloadFile (const GS::UniString& fileDownloadUrl)
 {
-	IO::URI::URI connectionUrl (fileDownloadUrl);
-	HTTP::Client::ClientConnection clientConnection (connectionUrl);
-	clientConnection.Connect ();
+    IO::URI::URI connectionUrl (fileDownloadUrl);
+    HTTP::Client::ClientConnection clientConnection (connectionUrl);
+    clientConnection.Connect ();
 
-	HTTP::Client::Request getRequest (HTTP::MessageHeader::Method::Get, "");
+    HTTP::Client::Request getRequest (HTTP::MessageHeader::Method::Get, "");
 
-	getRequest.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::UserAgent,
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
-	clientConnection.Send (getRequest);
+    getRequest.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::UserAgent,
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
+    clientConnection.Send (getRequest);
 
-	HTTP::Client::Response response;
-	GS::IChannelX channel (clientConnection.BeginReceive (response), GS::GetNetworkByteOrderIProtocolX ());
+    HTTP::Client::Response response;
+    GS::IChannelX channel (clientConnection.BeginReceive (response), GS::GetNetworkByteOrderIProtocolX ());
 
-	GS::UniString body = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (channel, GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+    GS::UniString body = GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (channel, GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
 
-	clientConnection.FinishReceive ();
-	clientConnection.Close (false);
+    clientConnection.FinishReceive ();
+    clientConnection.Close (false);
 
     return body;
 }
@@ -123,6 +123,61 @@ static std::map<GS::UniString, GS::UniString> GetFilesFromGitHubInRelativeLocati
     }
 
     return files;
+}
+
+static GS::UniString GetShell ()
+{
+#if defined (macintosh)
+    return "/bin/bash";
+#else
+    IO::Location systemLoc;
+    GS::UniString shellPath;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::System, &systemLoc);
+    systemLoc.AppendToLocal (IO::Name ("cmd.exe"));
+    systemLoc.ToPath (&shellPath);
+    return shellPath;
+#endif
+}
+
+static GS::UniString RunShell (const GS::Array<GS::UniString>& args)
+{
+    constexpr bool redirectStandardOutput = true;
+    constexpr bool redirectStandardInput = false;
+    constexpr bool redirectStandardError = true;
+    GS::Process process = GS::Process::Create (GetShell (), args, GS::Process::CreateFlags::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+    process.GetExitCode ();
+    return GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (
+            process.GetStandardOutputChannel (),
+            GS::GetBinIProtocolX (),
+            GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
+}
+
+static GS::UniString GetPythonExePath ()
+{
+    constexpr const char* PythonCommand = "python";
+    GS::Array<GS::UniString> args;
+    args.Push ("-c");
+#if defined(macintosh)
+    args.Push (GS::UniString::Printf ("PATH=\"/usr/local/bin:$PATH\"; source ~/.bash_profile; %s %s",
+        PythonCommand, "-c \"import sys;print(sys.executable)\""));
+#else
+    args.Append ({"/C", PythonCommand, "-c", "import sys;print(sys.executable)"});
+#endif
+
+    GS::UniString output = RunShell (args);
+#if defined (macintosh)
+    output.ReplaceAll ("\n", "");
+#else
+    output.ReplaceAll ("\r\n", "");
+#endif
+
+    if (!IsValidLocation (IO::Location (output))) {
+        return GS::EmptyUniString;
+    }
+
+    ACAPI_WriteReport ("Tapir found python executable: %T", false, output.ToPrintf ());
+
+    return output;
 }
 
 TapirPalette::TapirPalette ()
@@ -337,6 +392,11 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
 
 void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
 {
+    if (pythonExePath.IsEmpty ()) {
+        WriteReport (DG_ERROR, "Python is missing.\nPlease install python!");
+        return;
+    }
+
     GS::UniString filePath;
     fileLocation.ToPath (&filePath);
 
@@ -418,7 +478,7 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
         GS::UniString command;
         GS::Array<GS::UniString> argv;
         if (filePath.EndsWith (".py")) {
-            command = "python";
+            command = pythonExePath;
             argv = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
         } else {
             command = filePath;
@@ -510,6 +570,8 @@ void TapirPalette::LoadScriptsToPopUp ()
 
     scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
     SetDeleteScriptButtonStatus ();
+
+    pythonExePath = GetPythonExePath ();
 }
 
 #define PREFERENCES_VERSION 10
@@ -530,7 +592,7 @@ void TapirPalette::SaveScriptsToPreferences ()
         }
     }
     auto cStr = preferencesStr.ToCStr ();
-	ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
+    ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
 }
 
 void TapirPalette::AddScriptsFromPreferences ()

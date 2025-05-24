@@ -31,6 +31,7 @@ private:
     DG::IconButton addScriptButton;
     DG::IconButton delScriptButton;
 
+    GS::UniString pythonExePath;
     GS::Process process;
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
