@@ -315,6 +315,185 @@ var gCommands = [{
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
     }
+            },{
+                "name": "GetGeoLocation",
+                "version": "1.1.6",
+                "description": "Gets the project location details.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "projectLocation": {
+                "type": "object",
+                "properties": {
+                    "longitude": {
+                        "type": "number",
+                        "description": "longitude in degrees"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "description": "latitude in degrees"
+                    },
+                    "altitude": {
+                        "type": "number",
+                        "description": "altitude in meters"
+                    },
+                    "north": {
+                        "type": "number",
+                        "description": "north direction in radians"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "longitude",
+                    "latitude",
+                    "altitude",
+                    "north"
+                ]
+            },
+            "surveyPoint": {
+                "type": "object",
+                "properties": {
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "eastings": {
+                                "type": "number",
+                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+                            },
+                            "northings": {
+                                "type": "number",
+                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+                            },
+                            "elevation": {
+                                "type": "number",
+                                "description": "Orthogonal height relative to the vertical datum specified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "eastings",
+                            "northings",
+                            "elevation"
+                        ]
+                    },
+                    "geoReferencingParameters": {
+                        "type": "object",
+                        "properties": {
+                            "crsName": {
+                                "type": "string",
+                                "description": "Name by which the coordinate reference system is identified."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Informal description of this coordinate reference system."
+                            },
+                            "geodeticDatum": {
+                                "type": "string",
+                                "description": "Name by which this datum is identified."
+                            },
+                            "verticalDatum": {
+                                "type": "string",
+                                "description": "Name by which the vertical datum is identified."
+                            },
+                            "mapProjection": {
+                                "type": "string",
+                                "description": "Name by which the map projection is identified."
+                            },
+                            "mapZone": {
+                                "type": "string",
+                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "crsName",
+                            "description",
+                            "geodeticDatum",
+                            "verticalDatum",
+                            "mapProjection",
+                            "mapZone"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "position",
+                    "geoReferencingParameters"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectLocation",
+            "surveyPoint"
+        ]
+    }
+            },{
+                "name": "GetProjectNotes",
+                "version": "1.1.6",
+                "description": "Gets project notes.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "client": {
+                "type": "string"
+            },
+            "projectName": {
+                "type": "string"
+            },
+            "company": {
+                "type": "string"
+            },
+            "street": {
+                "type": "string"
+            },
+            "city": {
+                "type": "string"
+            },
+            "country": {
+                "type": "string"
+            },
+            "postalCode": {
+                "type": "string"
+            },
+            "architect": {
+                "type": "string"
+            },
+            "draftsmen": {
+                "type": "string"
+            },
+            "projectStatus": {
+                "type": "string"
+            },
+            "dateOfIssue": {
+                "type": "string"
+            },
+            "keywords": {
+                "type": "string"
+            },
+            "notes": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "client",
+            "projectName",
+            "company",
+            "street",
+            "city",
+            "country",
+            "postalCode",
+            "architect",
+            "draftsmen",
+            "projectStatus",
+            "dateOfIssue",
+            "keywords",
+            "notes"
+        ]
+    }
             }]
         },{
             "name": "Element Commands",
