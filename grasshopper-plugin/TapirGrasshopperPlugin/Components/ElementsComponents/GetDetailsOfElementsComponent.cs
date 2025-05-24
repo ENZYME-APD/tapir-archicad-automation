@@ -47,6 +47,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         [JsonProperty ("geometryType")]
         public string GeometryType;
 
+        [JsonProperty ("zCoordinate")]
+        public double ZCoordinate;
+
         [JsonProperty ("begCoordinate")]
         public Point2D BegCoordinate;
 
@@ -206,8 +209,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             List<ElementIdItemObj> walls = new List<ElementIdItemObj> ();
-            List<Point2d> begCoords = new List<Point2d> ();
-            List<Point2d> endCoords = new List<Point2d> ();
+            List<Point3d> begCoords = new List<Point3d> ();
+            List<Point3d> endCoords = new List<Point3d> ();
             List<double> heights = new List<double> ();
             DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
             for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
@@ -225,8 +228,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 walls.Add (new ElementIdItemObj () {
                     ElementId = inputElements.Elements[i].ElementId
                 });
-                begCoords.Add (new Point2d (wallDetails.BegCoordinate.X, wallDetails.BegCoordinate.Y));
-                endCoords.Add (new Point2d (wallDetails.EndCoordinate.X, wallDetails.EndCoordinate.Y));
+                begCoords.Add (new Point3d (wallDetails.BegCoordinate.X, wallDetails.BegCoordinate.Y, wallDetails.ZCoordinate));
+                endCoords.Add (new Point3d (wallDetails.EndCoordinate.X, wallDetails.EndCoordinate.Y, wallDetails.ZCoordinate));
                 heights.Add (wallDetails.Height);
             }
 
