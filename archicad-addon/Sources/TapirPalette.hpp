@@ -3,7 +3,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "DGModule.hpp"
-#include "Thread.hpp"
+#include "ThreadedExecutor.hpp"
 #include "Process.hpp"
 
 class TapirPalette final : public DG::Palette,
@@ -28,8 +28,12 @@ private:
     DG::PopUp      scriptSelectionPopUp;
     DG::IconButton runScriptButton;
     DG::IconButton openScriptButton;
+    DG::IconButton addScriptButton;
+    DG::IconButton delScriptButton;
 
+    GS::UniString pythonExePath;
     GS::Process process;
+    GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
 
@@ -43,13 +47,14 @@ private:
     void SaveScriptsToPreferences ();
     void AddScriptsFromPreferences ();
     bool AddNewScript ();
+    void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
+    void SetDeleteScriptButtonStatus ();
 
     template<typename... Args>
     void WriteReport (short type, const GS::UniString& format, Args&&... args);
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
-	virtual void PanelIdle (const DG::PanelIdleEvent& ev) override;
 	virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
 	virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
 

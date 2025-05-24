@@ -25,6 +25,14 @@
     "Code"
 }
 
+'GICN' ID_ADDSCRIPT_BUTTON_ICON "Add" {
+    "Add"
+}
+
+'GICN' ID_DELSCRIPT_BUTTON_ICON "Del" {
+    "Del"
+}
+
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
 }
