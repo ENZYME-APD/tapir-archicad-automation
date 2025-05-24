@@ -2633,6 +2633,7 @@ Response:
             "id": "SW - 001",
             "details": {
                 "geometryType": "Straight",
+                "arcAngle": 0,
                 "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 0,
@@ -12030,6 +12031,7 @@ Response:
             "id": "SW - 001",
             "details": {
                 "geometryType": "Straight",
+                "arcAngle": 0,
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 0.4,

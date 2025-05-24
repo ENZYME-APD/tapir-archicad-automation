@@ -1705,6 +1705,10 @@
                 "type": "number",
                 "description": "wall's base line's offset from ref. line"
             },
+            "arcAngle": {
+                "type": "number",
+                "description": "The arc angle of the curved wall in radians."
+            },
             "begThickness": {
                 "type": "number",
                 "description": "Thickness at the beginning in case of trapezoid wall"
