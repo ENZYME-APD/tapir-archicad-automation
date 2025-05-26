@@ -153,6 +153,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.0.7",
             "Opens the given project."
         );
+        err |= RegisterCommand<GetGeoLocationCommand> (
+            projectCommands, "1.1.6",
+            "Gets the project location details."
+        );
         AddCommandGroup (projectCommands);
     }
 
