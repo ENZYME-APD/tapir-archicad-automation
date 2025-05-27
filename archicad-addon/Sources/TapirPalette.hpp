@@ -5,12 +5,14 @@
 #include "DGModule.hpp"
 #include "ThreadedExecutor.hpp"
 #include "Process.hpp"
+#include "PythonFinder.hpp"
 
 class TapirPalette final : public DG::Palette,
                            public DG::PanelObserver,
                            public DG::ButtonItemObserver,
                            public DG::PopUpObserver,
-                           public DG::CompoundItemObserver
+                           public DG::CompoundItemObserver,
+                           public PythonFinder
 {
 public:
     virtual ~TapirPalette ();
@@ -30,8 +32,8 @@ private:
     DG::IconButton openScriptButton;
     DG::IconButton addScriptButton;
     DG::IconButton delScriptButton;
+    DG::PopUp      pythonVersionsPopUp;
 
-    GS::UniString pythonExePath;
     GS::Process process;
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
@@ -43,6 +45,7 @@ private:
     void AddBuiltInScriptsFromGithub ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
+    void LoadPythonVersionsToPopUp ();
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();
     void AddScriptsFromPreferences ();
@@ -50,6 +53,8 @@ private:
     void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
+
+    const GS::UniString& GetSelectedPythonExe () const;
 
     template<typename... Args>
     void WriteReport (short type, const GS::UniString& format, Args&&... args);
