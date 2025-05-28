@@ -429,71 +429,6 @@ var gCommands = [{
             "surveyPoint"
         ]
     }
-            },{
-                "name": "GetProjectNotes",
-                "version": "1.1.6",
-                "description": "Gets project notes.",
-                "inputScheme": null,
-                "outputScheme": {
-        "type": "object",
-        "properties": {
-            "client": {
-                "type": "string"
-            },
-            "projectName": {
-                "type": "string"
-            },
-            "company": {
-                "type": "string"
-            },
-            "street": {
-                "type": "string"
-            },
-            "city": {
-                "type": "string"
-            },
-            "country": {
-                "type": "string"
-            },
-            "postalCode": {
-                "type": "string"
-            },
-            "architect": {
-                "type": "string"
-            },
-            "draftsmen": {
-                "type": "string"
-            },
-            "projectStatus": {
-                "type": "string"
-            },
-            "dateOfIssue": {
-                "type": "string"
-            },
-            "keywords": {
-                "type": "string"
-            },
-            "notes": {
-                "type": "string"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "client",
-            "projectName",
-            "company",
-            "street",
-            "city",
-            "country",
-            "postalCode",
-            "architect",
-            "draftsmen",
-            "projectStatus",
-            "dateOfIssue",
-            "keywords",
-            "notes"
-        ]
-    }
             }]
         },{
             "name": "Element Commands",
@@ -2686,6 +2621,84 @@ var gCommands = [{
             "executionResults"
         ]
     }
+            },{
+                "name": "GetView2DTransformations",
+                "version": "1.1.7",
+                "description": "Get zoom and rotation of 2D views",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "databases": {
+                 "$ref": "#/Databases"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+                "outputScheme": {
+    "type": "object",
+    "properties": {
+        "transformations": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "The transformation parameters or an error.",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "zoom": {
+                                "type": "object",
+                                "description": "The actual zoom parameters, rectangular region of the model.",
+                                "properties": {
+                                    "xMin": {
+                                        "type": "number",
+                                        "description": "The minimum X value of the zoom box."
+                                    },
+                                    "yMin": {
+                                        "type": "number",
+                                        "description": "The minimum Y value of the zoom box."
+                                    },
+                                    "xMax": {
+                                        "type": "number",
+                                        "description": "The maximum X value of the zoom box."
+                                    },
+                                    "yMax": {
+                                        "type": "number",
+                                        "description": "The maximum Y value of the zoom box."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "xMin",
+                                    "yMin",
+                                    "xMax",
+                                    "yMax"
+                                ]
+                            },
+                            "rotation": {
+                                "type": "double",
+                                "description": "The orientation in radian."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "zoom",
+                            "rotation"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "transformations"
+    ]
+}
             }]
         },{
             "name": "Issue Management Commands",
