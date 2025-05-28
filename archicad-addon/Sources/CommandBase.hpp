@@ -75,3 +75,9 @@ GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories
 double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
+
+GSErrCode ExecuteActionForEachDatabase (
+    const GS::Array<API_Guid>& databaseIds,
+    const std::function<GSErrCode ()>& action,
+    const std::function<void ()>& actionSuccess,
+    const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);

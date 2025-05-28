@@ -449,3 +449,43 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
     if (typeStr == "Opening") return API_OpeningID;
     return API_ZombieElemID;
 }
+
+GSErrCode ExecuteActionForEachDatabase (
+    const GS::Array<API_Guid>& databaseIds,
+    const std::function<GSErrCode ()>& action,
+    const std::function<void ()>& actionSuccess,
+    const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure)
+{
+    API_DatabaseInfo startingDatabase;
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    for (const API_Guid databaseId : databaseIds) {
+        API_DatabaseInfo targetDbInfo = {};
+        targetDbInfo.databaseUnId.elemSetId = databaseId;
+        err = ACAPI_Window_GetDatabaseInfo (&targetDbInfo);
+        if (err != NoError) {
+            actionFailure (err, "Failed to get database info");
+            continue;
+        }
+        err = ACAPI_Database_ChangeCurrentDatabase (&targetDbInfo);
+        if (err != NoError) {
+            actionFailure (err, "Failed to switch to database");
+            continue;
+        }
+        err = action ();
+        if (err == NoError) {
+            actionSuccess ();
+        }
+        else {
+            actionFailure (err, "Failed to execute command for this database.");
+        }
+    }
+
+    err = ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    return NoError;
+}
