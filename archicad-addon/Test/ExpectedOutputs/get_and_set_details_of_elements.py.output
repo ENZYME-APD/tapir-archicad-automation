@@ -2763,6 +2763,7 @@ Response:
                     "x": 0,
                     "y": 1
                 },
+                "zCoordinate": 0.3,
                 "height": 2.5,
                 "bottomOffset": 0.3
             }
@@ -2778,6 +2779,7 @@ Response:
                     "x": 1,
                     "y": 1
                 },
+                "zCoordinate": 0,
                 "height": 2.8,
                 "bottomOffset": 0
             }
@@ -2789,7 +2791,17 @@ Response:
             "drawIndex": 9,
             "id": "BMR - 001",
             "details": {
-                "error": "Not yet supported element type"
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2
+                },
+                "endCoordinate": {
+                    "x": 1.234,
+                    "y": 2
+                },
+                "level": 0,
+                "offset": 0
             }
         },
         {
@@ -2799,7 +2811,17 @@ Response:
             "drawIndex": 9,
             "id": "BMR - 001",
             "details": {
-                "error": "Not yet supported element type"
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 1.5
+                },
+                "endCoordinate": {
+                    "x": 1.234,
+                    "y": 1.5
+                },
+                "level": 0,
+                "offset": 0
             }
         },
         {
@@ -12161,6 +12183,7 @@ Response:
                     "x": 0,
                     "y": 1
                 },
+                "zCoordinate": 3.3,
                 "height": 2.5,
                 "bottomOffset": 0.3
             }
@@ -12176,6 +12199,7 @@ Response:
                     "x": 1,
                     "y": 1
                 },
+                "zCoordinate": 3,
                 "height": 2.8,
                 "bottomOffset": 0
             }
@@ -12187,7 +12211,17 @@ Response:
             "drawIndex": 9,
             "id": "BMR - 001",
             "details": {
-                "error": "Not yet supported element type"
+                "zCoordinate": 3,
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2
+                },
+                "endCoordinate": {
+                    "x": 1.234,
+                    "y": 2
+                },
+                "level": 0,
+                "offset": 0
             }
         },
         {
@@ -12197,7 +12231,17 @@ Response:
             "drawIndex": 9,
             "id": "BMR - 001",
             "details": {
-                "error": "Not yet supported element type"
+                "zCoordinate": 3,
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 1.5
+                },
+                "endCoordinate": {
+                    "x": 1.234,
+                    "y": 1.5
+                },
+                "level": 0,
+                "offset": 0
             }
         },
         {
