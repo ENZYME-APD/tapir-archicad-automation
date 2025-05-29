@@ -1761,6 +1761,18 @@
             "offset": {
                 "type": "number",
                 "description": "beam ref.line offset from the center"
+            },
+            "slantAngle": {
+                "type": "number",
+                "description": "The slant angle of the beam in radians."
+            },
+            "arcAngle": {
+                "type": "number",
+                "description": "The arc angle of the (horizontally) curved beam in radians."
+            },
+            "verticalCurveHeight": {
+                "type": "number",
+                "description": "The height of the vertical curve of the beam."
             }
         },
         "required": [
@@ -1768,7 +1780,10 @@
             "endCoordinate",
             "zCoordinate",
             "level",
-            "offset"
+            "offset",
+            "slantAngle",
+            "arcAngle",
+            "verticalCurveHeight"
         ]
     },
     "SlabDetails": {

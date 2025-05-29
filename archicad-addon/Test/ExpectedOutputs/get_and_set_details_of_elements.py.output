@@ -2809,7 +2809,10 @@ Response:
                     "y": 2
                 },
                 "level": 0,
-                "offset": 0
+                "offset": 0,
+                "slantAngle": 0,
+                "arcAngle": 0,
+                "verticalCurveHeight": 0
             }
         },
         {
@@ -2829,7 +2832,10 @@ Response:
                     "y": 1.5
                 },
                 "level": 0,
-                "offset": 0
+                "offset": 0,
+                "slantAngle": 0,
+                "arcAngle": 0,
+                "verticalCurveHeight": 0
             }
         },
         {
@@ -12257,7 +12263,10 @@ Response:
                     "y": 2
                 },
                 "level": 0,
-                "offset": 0
+                "offset": 0,
+                "slantAngle": 0,
+                "arcAngle": 0,
+                "verticalCurveHeight": 0
             }
         },
         {
@@ -12277,7 +12286,10 @@ Response:
                     "y": 1.5
                 },
                 "level": 0,
-                "offset": 0
+                "offset": 0,
+                "slantAngle": 0,
+                "arcAngle": 0,
+                "verticalCurveHeight": 0
             }
         },
         {

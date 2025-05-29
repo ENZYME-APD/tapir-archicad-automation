@@ -74,6 +74,33 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public double? ArcAngle;
     }
 
+    public class BeamDetails
+    {
+        [JsonProperty ("zCoordinate")]
+        public double ZCoordinate;
+
+        [JsonProperty ("begCoordinate")]
+        public Point2D BegCoordinate;
+
+        [JsonProperty ("endCoordinate")]
+        public Point2D EndCoordinate;
+
+        [JsonProperty ("level")]
+        public double Level;
+
+        [JsonProperty ("offset")]
+        public double Offset;
+
+        [JsonProperty ("slantAngle")]
+        public double SlantAngle;
+
+        [JsonProperty ("arcAngle")]
+        public double ArcAngle;
+
+        [JsonProperty ("verticalCurveHeight")]
+        public double VerticalCurveHeight;
+    }
+
     public class ColumnDetails
     {
         [JsonProperty ("origin")]
@@ -290,6 +317,111 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.WallDetails;
 
         public override Guid ComponentGuid => new Guid ("2b7b8e37-b293-475f-a333-d6afe4c5ffff");
+    }
+
+    public class GetDetailsOfBeamsComponent : ArchicadAccessorComponent
+    {
+        public GetDetailsOfBeamsComponent ()
+          : base (
+                "Beam Details",
+                "BeamDetails",
+                "Get details of beam elements.",
+                "Elements"
+            )
+        {
+        }
+
+        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get details of.", GH_ParamAccess.list);
+        }
+
+        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("BeamGuids", "BeamGuids", "Element Guids of the found beams.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("Begin coordinate", "BegCoord", "Begin coordinate.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("End coordinate", "EndCoord", "End coordinate.", GH_ParamAccess.list);
+            pManager.AddNumberParameter ("SlantAngle", "SlantAngle", "SlantAngle.", GH_ParamAccess.list);
+            pManager.AddNumberParameter ("ArcAngle", "ArcAngle", "ArcAngle.", GH_ParamAccess.list);
+            pManager.AddNumberParameter ("VerticalCurveHeight", "VerticalCurveHeight", "VerticalCurveHeight.", GH_ParamAccess.list);
+            pManager.AddCurveParameter ("Line", "Line", "Line or curve.", GH_ParamAccess.list);
+        }
+
+        protected override void Solve (IGH_DataAccess DA)
+        {
+            ElementsObj inputElements = ElementsObj.Create (DA, 0);
+            if (inputElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+                return;
+            }
+
+            JObject inputElementsObj = JObject.FromObject (inputElements);
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            List<ElementIdItemObj> beams = new List<ElementIdItemObj> ();
+            List<Point3d> begCoords = new List<Point3d> ();
+            List<Point3d> endCoords = new List<Point3d> ();
+            List<double> slantAngles = new List<double> ();
+            List<double> arcAngles = new List<double> ();
+            List<double> verticalCurveHeights = new List<double> ();
+            List<PolyCurve> curves = new List<PolyCurve> ();
+            DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
+            for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
+                DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Beam") {
+                    continue;
+                }
+                BeamDetails beamDetails = detailsOfElement.Details.ToObject<BeamDetails> ();
+                if (beamDetails == null) {
+                    continue;
+                }
+                beams.Add (new ElementIdItemObj () {
+                    ElementId = inputElements.Elements[i].ElementId
+                });
+                Point3d begPoint3D = new Point3d (beamDetails.BegCoordinate.X, beamDetails.BegCoordinate.Y, beamDetails.ZCoordinate);
+                Point3d endPoint3D = new Point3d (beamDetails.EndCoordinate.X, beamDetails.EndCoordinate.Y, beamDetails.ZCoordinate);
+                begCoords.Add (begPoint3D);
+                if (Math.Abs (beamDetails.SlantAngle) >= Utilities.Convert.Epsilon) {
+                    Vector3d dirV = endPoint3D - begPoint3D;
+                    double delta = Math.Sin (beamDetails.SlantAngle) * dirV.Length;
+                    endPoint3D.Z += delta;
+                }
+                endCoords.Add (endPoint3D);
+                slantAngles.Add (beamDetails.SlantAngle);
+                arcAngles.Add (beamDetails.ArcAngle);
+                verticalCurveHeights.Add (beamDetails.VerticalCurveHeight);
+                List<Arc> arcs = new List<Arc> ();
+                if (Math.Abs (beamDetails.ArcAngle) >= Utilities.Convert.Epsilon) {
+                    arcs.Add (new Arc {
+                        BegIndex = 0,
+                        EndIndex = 1,
+                        arcAngle = beamDetails.ArcAngle
+                    });
+                }
+                curves.Add (Utilities.Convert.ToPolyCurve (
+                    new List<Point2D> { beamDetails.BegCoordinate, beamDetails.EndCoordinate },
+                    arcs,
+                    beamDetails.ZCoordinate,
+                    beamDetails.SlantAngle,
+                    beamDetails.VerticalCurveHeight));
+            }
+
+            DA.SetDataList (0, beams);
+            DA.SetDataList (1, begCoords);
+            DA.SetDataList (2, endCoords);
+            DA.SetDataList (3, slantAngles);
+            DA.SetDataList (4, arcAngles);
+            DA.SetDataList (5, verticalCurveHeights);
+            DA.SetDataList (6, curves);
+        }
+
+        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.BeamDetails;
+
+        public override Guid ComponentGuid => new Guid ("6e0deaaa-a9b0-4c30-9bc0-f2a1ef299c5d");
     }
 
     public class GetDetailsOfColumnsComponent : ArchicadAccessorComponent
