@@ -41,6 +41,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         [JsonProperty ("y")]
         public double Y;
     }
+    public class Arc
+    {
+        [JsonProperty ("begIndex")]
+        public int BegIndex;
+
+        [JsonProperty ("endIndex")]
+        public int EndIndex;
+
+        [JsonProperty ("arcAngle")]
+        public double arcAngle;
+    }
 
     public class WallDetails
     {
@@ -58,18 +69,27 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         [JsonProperty ("height")]
         public double Height;
+
+        [JsonProperty ("arcAngle", NullValueHandling = NullValueHandling.Ignore)]
+        public double? ArcAngle;
     }
 
     public class ColumnDetails
     {
         [JsonProperty ("origin")]
         public Point2D OrigoCoordinate;
+
+        [JsonProperty ("zCoordinate")]
+        public double ZCoordinate;
     }
 
     public class HoleDetails
     {
         [JsonProperty ("polygonOutline")]
         public List<Point2D> PolygonCoordinates;
+
+        [JsonProperty ("polygonArcs", NullValueHandling = NullValueHandling.Ignore)]
+        public List<Arc> PolygonArcs;
     }
 
     public class SlabDetails
@@ -80,6 +100,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         [JsonProperty ("polygonOutline")]
         public List<Point2D> PolygonCoordinates;
 
+        [JsonProperty ("polygonArcs", NullValueHandling = NullValueHandling.Ignore)]
+        public List<Arc> PolygonArcs;
+
         [JsonProperty ("holes")]
         public List<HoleDetails> Holes;
     }
@@ -88,6 +111,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         [JsonProperty ("coordinates")]
         public List<Point2D> Coordinates;
+
+        [JsonProperty ("arcs", NullValueHandling = NullValueHandling.Ignore)]
+        public List<Arc> Arcs;
+
+        [JsonProperty ("zCoordinate")]
+        public double ZCoordinate;
     }
 
     public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
@@ -191,6 +220,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddPointParameter ("Begin coordinate", "BegCoord", "Begin coordinate.", GH_ParamAccess.list);
             pManager.AddPointParameter ("End coordinate", "EndCoord", "End coordinate.", GH_ParamAccess.list);
             pManager.AddNumberParameter ("Height", "Height", "Height.", GH_ParamAccess.list);
+            pManager.AddNumberParameter ("ArcAngle", "ArcAngle", "ArcAngle.", GH_ParamAccess.list);
+            pManager.AddCurveParameter ("Line", "Line", "Line or curve.", GH_ParamAccess.list);
         }
 
         protected override void Solve (IGH_DataAccess DA)
@@ -212,6 +243,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             List<Point3d> begCoords = new List<Point3d> ();
             List<Point3d> endCoords = new List<Point3d> ();
             List<double> heights = new List<double> ();
+            List<double> arcAngles = new List<double> ();
+            List<PolyCurve> curves = new List<PolyCurve> ();
             DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
             for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
                 DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
@@ -231,12 +264,27 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 begCoords.Add (new Point3d (wallDetails.BegCoordinate.X, wallDetails.BegCoordinate.Y, wallDetails.ZCoordinate));
                 endCoords.Add (new Point3d (wallDetails.EndCoordinate.X, wallDetails.EndCoordinate.Y, wallDetails.ZCoordinate));
                 heights.Add (wallDetails.Height);
+                arcAngles.Add (wallDetails.ArcAngle.Value);
+                List<Arc> arcs = new List<Arc> ();
+                if (wallDetails.ArcAngle.HasValue && Math.Abs (wallDetails.ArcAngle.Value) >= Utilities.Convert.Epsilon) {
+                    arcs.Add (new Arc {
+                        BegIndex = 0,
+                        EndIndex = 1,
+                        arcAngle = wallDetails.ArcAngle.Value
+                    });
+                }
+                curves.Add (Utilities.Convert.ToPolyCurve (
+                    new List<Point2D> { wallDetails.BegCoordinate, wallDetails.EndCoordinate },
+                    arcs,
+                    wallDetails.ZCoordinate));
             }
 
             DA.SetDataList (0, walls);
             DA.SetDataList (1, begCoords);
             DA.SetDataList (2, endCoords);
             DA.SetDataList (3, heights);
+            DA.SetDataList (4, arcAngles);
+            DA.SetDataList (5, curves);
         }
 
         protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.WallDetails;
@@ -283,7 +331,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             List<ElementIdItemObj> columns = new List<ElementIdItemObj> ();
-            List<Point2d> origoCoords = new List<Point2d> ();
+            List<Point3d> origoCoords = new List<Point3d> ();
             DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
             for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
                 DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
@@ -297,7 +345,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 columns.Add (new ElementIdItemObj () {
                     ElementId = inputElements.Elements[i].ElementId
                 });
-                origoCoords.Add (new Point2d (columnDetails.OrigoCoordinate.X, columnDetails.OrigoCoordinate.Y));
+                origoCoords.Add (new Point3d (columnDetails.OrigoCoordinate.X, columnDetails.OrigoCoordinate.Y, columnDetails.ZCoordinate));
             }
 
             DA.SetDataList (0, columns);
@@ -349,8 +397,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             List<ElementIdItemObj> slabs = new List<ElementIdItemObj> ();
-            List<Polyline> polygons = new List<Polyline> ();
-            DataTree<Polyline> holePolygonsTree = new DataTree<Polyline> ();
+            List<PolyCurve> polygons = new List<PolyCurve> ();
+            DataTree<PolyCurve> holePolygonsTree = new DataTree<PolyCurve> ();
             DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
             for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
                 DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
@@ -364,11 +412,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 slabs.Add (new ElementIdItemObj () {
                     ElementId = inputElements.Elements[i].ElementId
                 });
-                polygons.Add (Utilities.Convert.ToPolygon (slabDetails.PolygonCoordinates, slabDetails.ZCoordinate));
+                polygons.Add (Utilities.Convert.ToPolyCurve (slabDetails.PolygonCoordinates, slabDetails.PolygonArcs, slabDetails.ZCoordinate));
 
-                List<Polyline> holePolygons = new List<Polyline> ();
+                List<PolyCurve> holePolygons = new List<PolyCurve> ();
                 foreach (HoleDetails holeDetail in slabDetails.Holes) {
-                    holePolygons.Add (Utilities.Convert.ToPolygon (holeDetail.PolygonCoordinates, slabDetails.ZCoordinate));
+                    holePolygons.Add (Utilities.Convert.ToPolyCurve (holeDetail.PolygonCoordinates, holeDetail.PolygonArcs, slabDetails.ZCoordinate));
                 }
                 holePolygonsTree.AddRange (holePolygons, new GH_Path (slabs.Count));
             }
@@ -422,7 +470,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             List<ElementIdItemObj> polylines = new List<ElementIdItemObj> ();
-            List<Polyline> rhinoPolylines = new List<Polyline> ();
+            List<PolyCurve> rhinoPolylines = new List<PolyCurve> ();
             DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
             for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
                 DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
@@ -436,7 +484,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 polylines.Add (new ElementIdItemObj () {
                     ElementId = inputElements.Elements[i].ElementId
                 });
-                rhinoPolylines.Add (Utilities.Convert.ToPolyline (polylineDetails.Coordinates));
+                rhinoPolylines.Add (Utilities.Convert.ToPolyCurve (polylineDetails.Coordinates, polylineDetails.Arcs, polylineDetails.ZCoordinate));
             }
 
             DA.SetDataList (0, polylines);

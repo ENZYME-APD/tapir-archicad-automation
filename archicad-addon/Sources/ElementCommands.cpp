@@ -432,8 +432,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             } break;
 
             case API_PolyLineID: {
-                constexpr bool isPolyline = true;
-                AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "coordinates", "arcs", isPolyline);
+                AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "coordinates", "arcs");
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
             default:

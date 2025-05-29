@@ -124,7 +124,7 @@ struct PolygonData {
 };
 
 std::vector<PolygonData>
-static GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool isPolyline = false)
+static GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
 {
     API_ElementMemo memo = {};
     if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon) != NoError) {
@@ -135,18 +135,16 @@ static GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool isPolyline = fa
     std::vector<std::pair<GS::Int32, GS::Int32>> startEndIndices;
     startEndIndices.reserve (nPolys);
     std::vector<PolygonData> polygons (nPolys);
+    auto startIndex = 1;
     for (GSIndex iPoly = 0; iPoly < nPolys; ++iPoly) {
-        const auto startIndex = (*memo.pends)[iPoly] + 1;
         auto endIndex = (*memo.pends)[iPoly + 1];
-        if (isPolyline) {
-            endIndex++;
-        }
         startEndIndices.emplace_back (startIndex, endIndex);
         std::vector<API_Coord>& coords = polygons[iPoly].coords;
-        coords.reserve (endIndex - startIndex);
-        for (GSIndex iCoord = startIndex; iCoord < endIndex; ++iCoord) {
+        coords.reserve (endIndex - startIndex + 1);
+        for (GSIndex iCoord = startIndex; iCoord <= endIndex; ++iCoord) {
             coords.push_back ((*memo.coords)[iCoord]);
         }
+        startIndex = endIndex + 1;
     }
 
     const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (API_PolyArc);
@@ -155,21 +153,23 @@ static GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool isPolyline = fa
         GSIndex iPoly = 0;
         for (; iPoly < nPolys; ++iPoly) {
             const auto& startEndPair = startEndIndices[iPoly];
-            if (arc.begIndex >= startEndPair.first && arc.endIndex < startEndPair.second) {
+            if (arc.begIndex >= startEndPair.first && arc.endIndex <= startEndPair.second) {
+                arc.begIndex -= startEndPair.first - 1;
+                arc.endIndex -= startEndPair.first - 1;
                 break;
             }
         }
-        polygons[iPoly].arcs.push_back ((*memo.parcs)[iArc]);
+        polygons[iPoly].arcs.push_back (arc);
     }
 
     return polygons;
 }
 
-void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, bool isPolyline)
+void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName)
 {
     const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
 
-    const auto polygons = GetPolygonsFromMemoCoords (elemGuid, isPolyline);
+    const auto polygons = GetPolygonsFromMemoCoords (elemGuid);
     if (polygons.empty ()) {
         return;
     }

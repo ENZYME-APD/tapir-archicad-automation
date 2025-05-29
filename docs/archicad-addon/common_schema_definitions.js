@@ -1963,10 +1963,14 @@ var gSchemaDefinitions = {
                 "items": {
                     "$ref": "#/PolyArc"
                 }
+            },
+            "zCoordinate": {
+                "type": "number"
             }
         },
         "required": [
-            "coordinates"
+            "coordinates",
+            "zCoordinate"
         ]
     },
     "NotYetSupportedElementTypeDetails": {
