@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Grasshopper.Kernel.Types;
 using Rhino.Collections;
 using Rhino.Geometry;
@@ -62,7 +63,7 @@ namespace TapirGrasshopperPlugin.Utilities
             return origo;
         }
 
-        static public PolyCurve ToPolyCurve (List<Point2D> points, List<Components.ElementsComponents.Arc> arcs, double zCoordinate)
+        static public PolyCurve ToPolyCurve (List<Point2D> points, List<Components.ElementsComponents.Arc> arcs, double zCoordinate, double? slantAngle = null, double? verticalCurveHeight = null)
         {
             PolyCurve polyCurve = new PolyCurve ();
             int iArc = 0;
@@ -71,24 +72,40 @@ namespace TapirGrasshopperPlugin.Utilities
                 Point2d endPoint2D = new Point2d (points[i + 1].X, points[i + 1].Y);
                 Point3d begPoint3D = new Point3d (begPoint2D.X, begPoint2D.Y, zCoordinate);
                 Point3d endPoint3D = new Point3d (endPoint2D.X, endPoint2D.Y, zCoordinate);
+                if (slantAngle.HasValue && Math.Abs (slantAngle.Value) >= Epsilon) {
+                    Vector3d dirV = endPoint3D - begPoint3D;
+                    double delta = Math.Sin (slantAngle.Value) * dirV.Length;
+                    endPoint3D.Z += delta;
+                }
+
                 if (arcs != null && iArc < arcs.Count && arcs[iArc].BegIndex == i) {
                     double arcAngle = arcs[iArc].arcAngle;
                     Point2d arcOrigo = GetArcOrigo (begPoint2D, endPoint2D, arcAngle);
                     double radius = new Point2d (arcOrigo.X, arcOrigo.Y).DistanceTo (new Point2d (begPoint2D.X, begPoint2D.Y));
                     Point3d arcOrigo3D = new Point3d (arcOrigo.X, arcOrigo.Y, zCoordinate);
                     Vector2d dirV = endPoint2D - begPoint2D;
-                    Vector2d normalV2D;
+                    Vector3d normalV3D;
                     if (arcAngle < 0.0) {
-                        normalV2D = new Vector2d (-dirV.Y, dirV.X);
+                        normalV3D = new Vector3d (-dirV.Y, dirV.X, 0);
                     } else {
-                        normalV2D = new Vector2d (dirV.Y, -dirV.X);
+                        normalV3D = new Vector3d (dirV.Y, -dirV.X, 0);
                     }
-                    Vector3d normalV3D = new Vector3d (normalV2D.X, normalV2D.Y, 0);
                     normalV3D.Unitize ();
                     Point3d interiorPoint3D = arcOrigo3D + normalV3D * radius;
                     Rhino.Geometry.Arc arc = new Rhino.Geometry.Arc (begPoint3D, interiorPoint3D, endPoint3D);
                     polyCurve.Append (arc);
                     iArc++;
+                } else if (verticalCurveHeight.HasValue && Math.Abs (verticalCurveHeight.Value) >= Epsilon) {
+                    Point3d midPoint = new Point3d ((begPoint3D.X + endPoint3D.X) / 2, (begPoint3D.Y + endPoint3D.Y) / 2, (begPoint3D.Z + endPoint3D.Z) / 2);
+                    Vector2d dirV = endPoint2D - begPoint2D;
+                    Vector3d normalV3D = new Vector3d (-dirV.Y, dirV.X, 0);
+                    normalV3D.Unitize ();
+                    Point3d interiorPoint3D = midPoint + normalV3D * verticalCurveHeight.Value;
+                    Rhino.Geometry.Arc arc = new Rhino.Geometry.Arc (begPoint3D, interiorPoint3D, endPoint3D);
+                    Vector3d axis = endPoint3D - begPoint3D;
+                    axis.Unitize ();
+                    arc.Transform (Transform.Rotation (Math.PI / 2, axis, midPoint));
+                    polyCurve.Append (arc);
                 } else {
                     polyCurve.Append (new Line (new Point3d (begPoint2D.X, begPoint2D.Y, zCoordinate), new Point3d (endPoint2D.X, endPoint2D.Y, zCoordinate)));
                 }

@@ -1742,6 +1742,50 @@ var gSchemaDefinitions = {
             "offset"
         ]
     },
+    "BeamDetails": {
+        "type": "object",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "endCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "zCoordinate": {
+                "type": "number"
+            },
+            "level": {
+                "type": "number",
+                "description": "base height of the beam relative to the floor level"
+            },
+            "offset": {
+                "type": "number",
+                "description": "beam ref.line offset from the center"
+            },
+            "slantAngle": {
+                "type": "number",
+                "description": "The slant angle of the beam in radians."
+            },
+            "arcAngle": {
+                "type": "number",
+                "description": "The arc angle of the (horizontally) curved beam in radians."
+            },
+            "verticalCurveHeight": {
+                "type": "number",
+                "description": "The height of the vertical curve of the beam."
+            }
+        },
+        "required": [
+            "begCoordinate",
+            "endCoordinate",
+            "zCoordinate",
+            "level",
+            "offset",
+            "slantAngle",
+            "arcAngle",
+            "verticalCurveHeight"
+        ]
+    },
     "SlabDetails": {
         "type": "object",
         "properties": {
@@ -1816,6 +1860,9 @@ var gSchemaDefinitions = {
             "origin": {
                 "$ref": "#/2DCoordinate"
             },
+            "zCoordinate": {
+                "type": "number"
+            },
             "height": {
                 "type": "number",
                 "description": "height relative to bottom"
@@ -1827,6 +1874,7 @@ var gSchemaDefinitions = {
         },
         "required": [
             "origin",
+            "zCoordinate",
             "height",
             "bottomOffset"
         ]
@@ -1956,6 +2004,9 @@ var gSchemaDefinitions = {
         "oneOf": [
             {
                 "$ref": "#/WallDetails"
+            },
+            {
+                "$ref": "#/BeamDetails"
             },
             {
                 "$ref": "#/SlabDetails"

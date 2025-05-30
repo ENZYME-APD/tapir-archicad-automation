@@ -367,6 +367,17 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("offset", elem.wall.offset);
                 break;
 
+            case API_BeamID:
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.beam.level, stories));
+                typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.beam.begC));
+                typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.beam.endC));
+                typeSpecificDetails.Add ("level", elem.beam.level);
+                typeSpecificDetails.Add ("offset", elem.beam.offset);
+                typeSpecificDetails.Add ("slantAngle", elem.beam.slantAngle);
+                typeSpecificDetails.Add ("arcAngle", elem.beam.curveAngle);
+                typeSpecificDetails.Add ("verticalCurveHeight", elem.beam.verticalCurveHeight);
+                break;
+
             case API_SlabID:
                 typeSpecificDetails.Add ("thickness", elem.slab.thickness);
                 typeSpecificDetails.Add ("level", elem.slab.level);
@@ -377,6 +388,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_ColumnID:
                 typeSpecificDetails.Add ("origin", Create2DCoordinateObjectState (elem.column.origoPos));
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.column.bottomOffset, stories));
                 typeSpecificDetails.Add ("height", elem.column.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.column.bottomOffset);
                 break;
