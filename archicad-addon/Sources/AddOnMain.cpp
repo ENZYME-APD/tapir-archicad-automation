@@ -376,6 +376,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.4",
             "Sets the view settings of navigator items"
         );
+        err |= RegisterCommand<GetView2DTransformationsCommand> (
+            navigatorCommands, "1.1.7",
+            "Get zoom and rotation of 2D views"
+        );
         AddCommandGroup (navigatorCommands);
     }
 

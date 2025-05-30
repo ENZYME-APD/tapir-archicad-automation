@@ -1,5 +1,8 @@
 #include "NavigatorCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Transformation2D.hpp"
+#include "Matrix2.hpp"
+#include "TM.h"
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -481,6 +484,159 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         }
 
         executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+}
+
+GetView2DTransformationsCommand::GetView2DTransformationsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetView2DTransformationsCommand::GetName () const
+{
+    return "GetView2DTransformations";
+}
+
+GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                 "$ref": "#/Databases"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "transformations": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "description": "The transformation parameters or an error.",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "zoom": {
+                                "type": "object",
+                                "description": "The actual zoom parameters, rectangular region of the model.",
+                                "properties": {
+                                    "xMin": {
+                                        "type": "number",
+                                        "description": "The minimum X value of the zoom box."
+                                    },
+                                    "yMin": {
+                                        "type": "number",
+                                        "description": "The minimum Y value of the zoom box."
+                                    },
+                                    "xMax": {
+                                        "type": "number",
+                                        "description": "The maximum X value of the zoom box."
+                                    },
+                                    "yMax": {
+                                        "type": "number",
+                                        "description": "The maximum Y value of the zoom box."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "xMin",
+                                    "yMin",
+                                    "xMax",
+                                    "yMax"
+                                ]
+                            },
+                            "rotation": {
+                                "type": "double",
+                                "description": "The orientation in radian."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "zoom",
+                            "rotation"
+                        ]
+                    },
+                    {
+                        "$ref": "#/ErrorItem"
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "transformations"
+    ]
+})";
+}
+
+template <typename ListProxyType>
+static GSErrCode GetTransformationFromCurrentDatabase (ListProxyType& transformationsListProxy)
+{
+    API_Box     zoomBox = {};
+    API_Tranmat tranmat = {};
+    GSErrCode err = ACAPI_View_GetZoom (&zoomBox, &tranmat);
+    if (err != NoError) {
+        return err;
+    }
+
+	Vector2D vec2D1 (tranmat.tmx[0], tranmat.tmx[4]);
+	Vector2D vec2D2 (tranmat.tmx[1], tranmat.tmx[5]);
+	Vector2D offset (tranmat.tmx[3], tranmat.tmx[7]);
+	Geometry::Matrix22 matrix;
+	Geometry::Matrix22::ColVectorsMatrix (vec2D1, vec2D2, matrix);
+	Geometry::Transformation2D trafo;
+	trafo.SetMatrix (matrix);
+	trafo.SetOffset (offset);
+
+    double tranAngle = 0;
+    Geometry::TranAngle (trafo, &tranAngle);
+
+    transformationsListProxy (
+        GS::ObjectState (
+            "zoom", GS::ObjectState (
+                "xMin", zoomBox.xMin,
+                "yMin", zoomBox.yMin,
+                "xMax", zoomBox.xMax,
+                "yMax", zoomBox.yMax),
+            "rotation", tranAngle));
+
+    return err;
+}
+
+GS::ObjectState GetView2DTransformationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    const auto& transformations = response.AddList<GS::ObjectState> ("transformations");
+
+    GS::Array<GS::ObjectState> databases;
+    if (!parameters.Get ("databases", databases)) {
+        GetTransformationFromCurrentDatabase (transformations);
+    } else {
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+        auto action = [&]() -> GSErrCode {
+            return GetTransformationFromCurrentDatabase (transformations);
+        };
+        auto actionSuccess = [&]() -> void {};
+        auto actionFailure = [&](GSErrCode err, const GS::UniString& errMsg) -> void {
+            transformations (CreateErrorResponse (err, errMsg));
+        };
+
+        GSErrCode err = ExecuteActionForEachDatabase (databaseIds, action, actionSuccess, actionFailure);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
+        }
     }
 
     return response;
