@@ -35,17 +35,22 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  400  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  500  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
 /* [  2] */ PopupControl              28   3 260  22    80  3
 /* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
 /* [  4] */ IconButton               316   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
 /* [  5] */ IconButton               344   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
 /* [  6] */ IconButton               372   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
+/* [  7] */ PopupControl             400   3 100  22    80  3
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
 1    ""        TapirButton
 2    ""        ScriptSelection
 3    ""        RunButton
+4    ""        OpenButton
+5    ""        AddButton
+6    ""        DelButton
+7    ""        PythonSelection
 }

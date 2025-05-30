@@ -26,17 +26,6 @@ static UShort GetConnectionPort ()
     return portNumber;
 }
 
-static bool IsValidLocation (const IO::Location& location)
-{
-    if (location.IsEmpty ()) {
-        return false;
-    }
-
-    bool exists = false;
-    GSErrCode err = IO::fileSystem.Contains (location, &exists);
-    return err == NoError && exists;
-}
-
 static IO::Location SaveBuiltInScript (const IO::RelativeLocation& relLoc, const GS::UniString& content)
 {
     IO::Location fileLoc;
@@ -125,61 +114,6 @@ static std::map<GS::UniString, GS::UniString> GetFilesFromGitHubInRelativeLocati
     return files;
 }
 
-static GS::UniString GetShell ()
-{
-#if defined (macintosh)
-    return "/bin/bash";
-#else
-    IO::Location systemLoc;
-    GS::UniString shellPath;
-    IO::fileSystem.GetSpecialLocation (IO::FileSystem::System, &systemLoc);
-    systemLoc.AppendToLocal (IO::Name ("cmd.exe"));
-    systemLoc.ToPath (&shellPath);
-    return shellPath;
-#endif
-}
-
-static GS::UniString RunShell (const GS::Array<GS::UniString>& args)
-{
-    constexpr bool redirectStandardOutput = true;
-    constexpr bool redirectStandardInput = false;
-    constexpr bool redirectStandardError = true;
-    GS::Process process = GS::Process::Create (GetShell (), args, GS::Process::CreateFlags::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
-    process.GetExitCode ();
-    return GS::IBinaryChannelUtilities::ReadUniStringAsUTF8 (
-            process.GetStandardOutputChannel (),
-            GS::GetBinIProtocolX (),
-            GS::IBinaryChannelUtilities::StringSerializationType::NotTerminated);
-}
-
-static GS::UniString GetPythonExePath ()
-{
-    constexpr const char* PythonCommand = "python";
-    GS::Array<GS::UniString> args;
-    args.Push ("-c");
-#if defined(macintosh)
-    args.Push (GS::UniString::Printf ("PATH=\"/usr/local/bin:$PATH\"; source ~/.bash_profile; %s %s",
-        PythonCommand, "-c \"import sys;print(sys.executable)\""));
-#else
-    args.Append ({"/C", PythonCommand, "-c", "import sys;print(sys.executable)"});
-#endif
-
-    GS::UniString output = RunShell (args);
-#if defined (macintosh)
-    output.ReplaceAll ("\n", "");
-#else
-    output.ReplaceAll ("\r\n", "");
-#endif
-
-    if (!IsValidLocation (IO::Location (output))) {
-        return GS::EmptyUniString;
-    }
-
-    ACAPI_WriteReport ("Tapir found python executable: %T", false, output.ToPrintf ());
-
-    return output;
-}
-
 TapirPalette::TapirPalette ()
     : DG::Palette (ACAPI_GetOwnResModule (), ID_PALETTE, ACAPI_GetOwnResModule (), paletteGuid)
     , tapirButton (GetReference (), 1)
@@ -188,11 +122,13 @@ TapirPalette::TapirPalette ()
     , openScriptButton (GetReference (), 4)
     , addScriptButton (GetReference (), 5)
     , delScriptButton (GetReference (), 6)
+    , pythonVersionsPopUp (GetReference (), 7)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
     LoadScriptsToPopUp ();
+    LoadPythonVersionsToPopUp ();
 
     BeginEventProcessing ();
 }
@@ -329,20 +265,30 @@ bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
 
 void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 {
-    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (ev.GetSource () == &scriptSelectionPopUp) {
+        const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
 
-    if (selectedItem == scriptSelectionPopUp.GetItemCount ()) {
-        LoadScriptsToPopUp ();
+        if (selectedItem == scriptSelectionPopUp.GetItemCount ()) {
+            LoadScriptsToPopUp ();
 
-        if (!scriptSelectionPopUp.IsSeparator (ev.GetPreviousSelection ()) &&
-            ev.GetPreviousSelection () < scriptSelectionPopUp.GetItemCount ()) {
-            scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
-        } else {
-            scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+            if (!scriptSelectionPopUp.IsSeparator (ev.GetPreviousSelection ()) &&
+                ev.GetPreviousSelection () < scriptSelectionPopUp.GetItemCount ()) {
+                scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
+            } else {
+                scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+            }
+        }
+
+        SetDeleteScriptButtonStatus ();
+    } else if (ev.GetSource () == &pythonVersionsPopUp) {
+        if (GetPythonExeMap ().empty ()) {
+            if (pythonVersionsPopUp.GetSelectedItem () == DG::PopUp::TopItem) {
+                OpenWebpage ("https://www.python.org/downloads/");
+            } else {
+                LoadPythonVersionsToPopUp ();
+            }
         }
     }
-
-    SetDeleteScriptButtonStatus ();
 }
 
 GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID messageID, GS::IntPtr param)
@@ -392,8 +338,10 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
 
 void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
 {
+    const GS::UniString& pythonExePath = GetSelectedPythonExe ();
     if (pythonExePath.IsEmpty ()) {
-        WriteReport (DG_ERROR, "Python is missing.\nPlease install python!");
+        DGAlert (DG_ERROR, "Tapir Python Executor", "Python is missing.", "Go to official python website to install python!", "OK");
+        OpenWebpage ("https://www.python.org/downloads/");
         return;
     }
 
@@ -570,8 +518,39 @@ void TapirPalette::LoadScriptsToPopUp ()
 
     scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
     SetDeleteScriptButtonStatus ();
+}
 
-    pythonExePath = GetPythonExePath ();
+void TapirPalette::LoadPythonVersionsToPopUp ()
+{
+    pythonVersionsPopUp.DeleteItem (DG_ALL_ITEMS);
+
+    FindAllPythonExePath ();
+
+    const auto& pythonExeMap = GetPythonExeMap ();
+    if (pythonExeMap.empty ()) {
+        pythonVersionsPopUp.AppendItem ();
+        pythonVersionsPopUp.SetItemText (DG::PopUp::BottomItem, "Install Python");
+        pythonVersionsPopUp.AppendItem ();
+        pythonVersionsPopUp.SetItemText (DG::PopUp::BottomItem, "Reload Python");
+    } else {
+        for (const auto& kv : pythonExeMap) {
+            pythonVersionsPopUp.AppendItem ();
+            pythonVersionsPopUp.SetItemText (DG::PopUp::BottomItem, kv.first);
+            pythonVersionsPopUp.SetItemObjectData (DG::PopUp::BottomItem, GS::NewRef<GS::UniString> (kv.second));
+        }
+    }
+
+    pythonVersionsPopUp.SelectItem (DG::PopUp::TopItem);
+}
+
+const GS::UniString& TapirPalette::GetSelectedPythonExe () const
+{
+    auto ref = GS::DynamicCast<GS::UniString> (pythonVersionsPopUp.GetItemObjectData (pythonVersionsPopUp.GetSelectedItem ()));
+    if (ref == nullptr) {
+        return GS::EmptyUniString;
+    }
+
+    return *ref;
 }
 
 #define PREFERENCES_VERSION 10
