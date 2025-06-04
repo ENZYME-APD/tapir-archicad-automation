@@ -81,6 +81,36 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ],
     "highlightedColors": [
@@ -176,6 +206,42 @@ Parameters:
         ],
         [
             195,
+            50,
+            50,
+            255
+        ],
+        [
+            225,
+            50,
+            50,
+            255
+        ],
+        [
+            0,
+            50,
+            50,
+            255
+        ],
+        [
+            30,
+            50,
+            50,
+            255
+        ],
+        [
+            60,
+            50,
+            50,
+            255
+        ],
+        [
+            90,
+            50,
+            50,
+            255
+        ],
+        [
+            120,
             50,
             50,
             255

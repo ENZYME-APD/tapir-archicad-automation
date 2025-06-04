@@ -1277,7 +1277,8 @@ var gCommands = [{
                         "description": "The 2D coordinates of the edge of the slab.",
                         "items": {
                             "$ref": "#/2DCoordinate"
-                        }
+                        },
+                        "minItems": 3
                     },
                     "polygonArcs": {
                         "type": "array",
@@ -1298,7 +1299,8 @@ var gCommands = [{
                                     "description": "The 2D coordinates of the edge of the hole.",
                                     "items": {
                                         "$ref": "#/2DCoordinate"
-                                    }
+                                    },
+                                    "minItems": 3
                                 },
                                 "polygonArcs": {
                                     "type": "array",
@@ -1341,6 +1343,139 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "CreateZones",
+                "version": "1.1.8",
+                "description": "Creates Zone elements based on the given parameters.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "zonesData": {
+            "type": "array",
+            "description": "Array of data to create Zones.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Zone.",
+                "properties" : {
+                    "floorIndex": {
+                        "type": "number"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description" : "Name of the zone."
+                    },
+                    "numberStr": {
+                        "type": "string",
+                        "description" : "Zone number."	
+                    },
+                    "categoryAttributeId": {
+                        "$ref": "#/AttributeId",
+                        "description" : "The identifier of the zone category attribute."	
+                    },
+                    "stampPosition": {
+                        "$ref": "#/2DCoordinate",
+                        "description" : "Position of the origin of the zone stamp."
+                    },
+                    "geometry": {
+                        "type": "object",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "description": "Automatic zone placement.",
+                                "properties": {
+                                    "referencePosition": {
+                                        "$ref": "#/2DCoordinate",
+                                        "description" : "Reference point to automatically find zone."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "referencePosition"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "description": "Manual zone placement.",
+                                "properties": {
+                                    "polygonCoordinates": { 
+                                        "type": "array",
+                                        "description": "The 2D coordinates of the edge of the zone.",
+                                        "items": {
+                                            "$ref": "#/2DCoordinate"
+                                        },
+                                        "minItems": 3
+                                    },
+                                    "polygonArcs": {
+                                        "type": "array",
+                                        "description": "Polygon outline arcs of the zone.",
+                                        "items": {
+                                            "$ref": "#/PolyArc"
+                                        }
+                                    },
+                                    "holes" : {
+                                        "type": "array",
+                                        "description": "Array of parameters of holes.",
+                                        "items": {
+                                            "type": "object",
+                                            "description" : "The parameters of the hole.",
+                                            "properties" : {
+                                                "polygonCoordinates": { 
+                                                    "type": "array",
+                                                    "description": "The 2D coordinates of the edge of the hole.",
+                                                    "items": {
+                                                        "$ref": "#/2DCoordinate"
+                                                    },
+                                                    "minItems": 3
+                                                },
+                                                "polygonArcs": {
+                                                    "type": "array",
+                                                    "description": "Polygon outline arcs of the hole.",
+                                                    "items": {
+                                                        "$ref": "#/PolyArc"
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "polygonCoordinates"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "polygonCoordinates"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "numberStr",
+                    "geometry"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "zonesData"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
                 "name": "CreatePolylines",
                 "version": "1.1.5",
                 "description": "Creates Polyline elements based on the given parameters.",
@@ -1363,7 +1498,8 @@ var gCommands = [{
                         "description": "The 2D coordinates of the polyline.",
                         "items": {
                             "$ref": "#/2DCoordinate"
-                        }
+                        },
+                        "minItems": 2
                     },
                     "arcs": { 
                         "type": "array",

@@ -81,6 +81,36 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -91,6 +121,10 @@ Response:
         {},
         {},
         {},
+        {},
+        {},
+        {},
+        {},
         {
             "columnSegments": [
                 {
@@ -137,6 +171,8 @@ Response:
                 }
             ]
         },
+        {},
+        {},
         {},
         {},
         {},
@@ -722,6 +758,36 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ],
     "classificationSystemIds": [
@@ -735,6 +801,78 @@ Parameters:
 Response:
 {
     "elementClassifications": [
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "classificationIds": [
+                {
+                    "classificationSystemId": {
+                        "guid": "<GUID>"
+                    },
+                    "classificationItemId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
         {
             "classificationIds": [
                 {

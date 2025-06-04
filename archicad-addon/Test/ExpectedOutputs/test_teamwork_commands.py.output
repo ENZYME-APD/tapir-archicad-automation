@@ -25,6 +25,26 @@ Response:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -48,6 +68,26 @@ Command: ReserveElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -123,12 +163,64 @@ Parameters:
                 "y": 1.0,
                 "z": 0.0
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
         }
     ]
 }
 Response:
 {
     "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
         {
             "success": true
         },
@@ -147,6 +239,26 @@ Command: ReleaseElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
