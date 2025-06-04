@@ -450,6 +450,32 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
     return API_ZombieElemID;
 }
 
+API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index)
+{
+    API_Attribute attr = {};
+    attr.header.typeID = typeID;
+    attr.header.index = index;
+
+    if (ACAPI_Attribute_Get (&attr) != NoError) {
+        return APINULLGuid;
+    }
+
+    return attr.header.guid;
+}
+
+API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid)
+{
+    API_Attribute attr = {};
+    attr.header.typeID = typeID;
+    attr.header.guid = guid;
+
+    if (ACAPI_Attribute_Get (&attr) != NoError) {
+        return ACAPI_CreateAttributeIndex (-1);
+    }
+
+    return attr.header.index;
+}
+
 GSErrCode ExecuteActionForEachDatabase (
     const GS::Array<API_Guid>& databaseIds,
     const std::function<GSErrCode ()>& action,
