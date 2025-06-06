@@ -2517,7 +2517,7 @@ var gCommands = [{
     "properties": {
         "modelViewOptions": {
             "type": "array",
-            "item": {
+            "items": {
                 "type": "object",
                 "description": "Represents the model view options.",
                 "properties": {
@@ -2558,7 +2558,7 @@ var gCommands = [{
     "properties": {
         "viewSettings": {
             "type": "array",
-            "item": {
+            "items": {
                 "type": "object",
                 "description": "The settings of a navigator view or an error.",
                 "oneOf": [
@@ -2640,7 +2640,7 @@ var gCommands = [{
     "properties": {
         "transformations": {
             "type": "array",
-            "item": {
+            "items": {
                 "type": "object",
                 "description": "The transformation parameters or an error.",
                 "oneOf": [

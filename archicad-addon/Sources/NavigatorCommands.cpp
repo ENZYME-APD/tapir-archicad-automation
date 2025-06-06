@@ -228,7 +228,7 @@ GS::Optional<GS::UniString> GetModelViewOptionsCommand::GetResponseSchema () con
     "properties": {
         "modelViewOptions": {
             "type": "array",
-            "item": {
+            "items": {
                 "type": "object",
                 "description": "Represents the model view options.",
                 "properties": {
@@ -321,7 +321,7 @@ GS::Optional<GS::UniString> GetViewSettingsCommand::GetResponseSchema () const
     "properties": {
         "viewSettings": {
             "type": "array",
-            "item": {
+            "items": {
                 "type": "object",
                 "description": "The settings of a navigator view or an error.",
                 "oneOf": [
@@ -519,7 +519,7 @@ GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetResponseSchema (
     "properties": {
         "transformations": {
             "type": "array",
-            "item": {
+            "items": {
                 "type": "object",
                 "description": "The transformation parameters or an error.",
                 "oneOf": [
