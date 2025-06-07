@@ -1673,6 +1673,71 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": []
     },
+    "ViewSettingsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/ViewSettings"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ViewTransformations": {
+        "type": "object",
+        "properties": {
+            "zoom": {
+                "type": "object",
+                "description": "The actual zoom parameters, rectangular region of the model.",
+                "properties": {
+                    "xMin": {
+                        "type": "number",
+                        "description": "The minimum X value of the zoom box."
+                    },
+                    "yMin": {
+                        "type": "number",
+                        "description": "The minimum Y value of the zoom box."
+                    },
+                    "xMax": {
+                        "type": "number",
+                        "description": "The maximum X value of the zoom box."
+                    },
+                    "yMax": {
+                        "type": "number",
+                        "description": "The maximum Y value of the zoom box."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "xMin",
+                    "yMin",
+                    "xMax",
+                    "yMax"
+                ]
+            },
+            "rotation": {
+                "type": "double",
+                "description": "The orientation in radian."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoom",
+            "rotation"
+        ]
+    },
+    "ViewTransformationsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/ViewTransformations"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "WallDetails": {
         "type": "object",
         "properties": {
@@ -1988,6 +2053,87 @@ var gSchemaDefinitions = {
             "zCoordinate"
         ]
     },
+    "ZoneDetails": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description" : "Name of the zone."
+            },
+            "numberStr": {
+                "type": "string",
+                "description" : "Zone number."	
+            },
+            "categoryAttributeId": {
+                "$ref": "#/AttributeId",
+                "description" : "The identifier of the zone category attribute."	
+            },
+            "stampPosition": {
+                "$ref": "#/2DCoordinate",
+                "description" : "Position of the origin of the zone stamp."
+            },
+            "isManual": {
+                "type": "boolean",
+                "description" : "Is the coordinates of the zone manually placed?"
+            },
+            "polygonCoordinates": { 
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the zone.",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the zone.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes" : {
+                "type": "array",
+                "description": "Array of parameters of holes.",
+                "items": {
+                    "type": "object",
+                    "description" : "The parameters of the hole.",
+                    "properties" : {
+                        "polygonCoordinates": { 
+                            "type": "array",
+                            "description": "The 2D coordinates of the edge of the hole.",
+                            "items": {
+                                "$ref": "#/2DCoordinate"
+                            },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "Polygon outline arcs of the hole.",
+                            "items": {
+                                "$ref": "#/PolyArc"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "polygonCoordinates"
+                    ]
+                }
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "required": [
+            "name",
+            "numberStr",
+            "categoryAttributeId",
+            "stampPosition",
+            "isManual",
+            "polygonCoordinates",
+            "zCoordinate"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -2022,6 +2168,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/PolylineDetails"
+            },
+            {
+                "$ref": "#/ZoneDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"

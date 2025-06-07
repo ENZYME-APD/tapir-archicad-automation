@@ -146,6 +146,36 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public double ZCoordinate;
     }
 
+    public class ZoneDetails
+    {
+        [JsonProperty ("name")]
+        public string Name;
+
+        [JsonProperty ("numberStr")]
+        public string NumberStr;
+
+        [JsonProperty ("categoryAttributeId")]
+        public AttributeIdObj CategoryAttributeId;
+
+        [JsonProperty ("stampPosition")]
+        public Point2D StampPosition;
+
+        [JsonProperty ("isManual")]
+        public bool IsManual;
+
+        [JsonProperty ("zCoordinate")]
+        public double ZCoordinate;
+
+        [JsonProperty ("polygonOutline")]
+        public List<Point2D> PolygonCoordinates;
+
+        [JsonProperty ("polygonArcs", NullValueHandling = NullValueHandling.Ignore)]
+        public List<Arc> PolygonArcs;
+
+        [JsonProperty ("holes")]
+        public List<HoleDetails> Holes;
+    }
+
     public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
     {
         public GetDetailsOfElementsComponent ()
@@ -626,5 +656,99 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PolylineDetails;
 
         public override Guid ComponentGuid => new Guid ("b96c3b7e-303d-44f2-af22-6fd07ade11fc");
+    }
+
+    public class GetDetailsOfZonesComponent : ArchicadAccessorComponent
+    {
+        public GetDetailsOfZonesComponent ()
+          : base (
+                "Zone Details",
+                "ZoneDetails",
+                "Get details of slab elements.",
+                "Elements"
+            )
+        {
+        }
+
+        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get details of.", GH_ParamAccess.list);
+        }
+
+        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        {
+            pManager.AddGenericParameter ("ZoneGuids", "ZoneGuids", "Element Guids of the found zones.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("Names", "Names", "Names of zones.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("Numbers", "Numbers", "Numbers of zones.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("CategoryAttributeIds", "CategoryAttributeIds", "Ids of zone category attributes.", GH_ParamAccess.list);
+            pManager.AddPointParameter ("StampPositions", "StampPositions", "Position of zone stamps.", GH_ParamAccess.list);
+            pManager.AddBooleanParameter ("IsManual", "IsManual", "Is the coordinates of the zone manually placed?", GH_ParamAccess.list);
+            pManager.AddCurveParameter ("Polygon outlines", "Polygons", "The outline polygons of the zones.", GH_ParamAccess.list);
+            pManager.AddCurveParameter ("Holes", "HolePolygons", "The outline polygons of the holes in the zones.", GH_ParamAccess.tree);
+        }
+
+        protected override void Solve (IGH_DataAccess DA)
+        {
+            ElementsObj inputElements = ElementsObj.Create (DA, 0);
+            if (inputElements == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+                return;
+            }
+
+            JObject inputElementsObj = JObject.FromObject (inputElements);
+            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            if (!response.Succeeded) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+                return;
+            }
+
+            List<ElementIdItemObj> zones = new List<ElementIdItemObj> ();
+            List<string> names = new List<string> ();
+            List<string> numberStrs = new List<string> ();
+            List<AttributeIdObj> categoryAttributeIds = new List<AttributeIdObj> ();
+            List<Point3d> stampPositions = new List<Point3d> ();
+            List<bool> isManuals = new List<bool> ();
+            List<PolyCurve> polygons = new List<PolyCurve> ();
+            DataTree<PolyCurve> holePolygonsTree = new DataTree<PolyCurve> ();
+            DetailsOfElementsObj detailsOfElements = response.Result.ToObject<DetailsOfElementsObj> ();
+            for (int i = 0; i < detailsOfElements.DetailsOfElements.Count; i++) {
+                DetailsOfElementObj detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Zone") {
+                    continue;
+                }
+                ZoneDetails zoneDetails = detailsOfElement.Details.ToObject<ZoneDetails> ();
+                if (zoneDetails == null) {
+                    continue;
+                }
+                zones.Add (new ElementIdItemObj () {
+                    ElementId = inputElements.Elements[i].ElementId
+                });
+                names.Add (zoneDetails.Name);
+                numberStrs.Add (zoneDetails.NumberStr);
+                categoryAttributeIds.Add (zoneDetails.CategoryAttributeId);
+                stampPositions.Add (new Point3d (zoneDetails.StampPosition.X, zoneDetails.StampPosition.Y, zoneDetails.ZCoordinate));
+                isManuals.Add (zoneDetails.IsManual);
+                polygons.Add (Utilities.Convert.ToPolyCurve (zoneDetails.PolygonCoordinates, zoneDetails.PolygonArcs, zoneDetails.ZCoordinate));
+
+                List<PolyCurve> holePolygons = new List<PolyCurve> ();
+                foreach (HoleDetails holeDetail in zoneDetails.Holes) {
+                    holePolygons.Add (Utilities.Convert.ToPolyCurve (holeDetail.PolygonCoordinates, holeDetail.PolygonArcs, zoneDetails.ZCoordinate));
+                }
+                holePolygonsTree.AddRange (holePolygons, new GH_Path (zones.Count));
+            }
+
+            DA.SetDataList (0, zones);
+            DA.SetDataList (1, names);
+            DA.SetDataList (2, numberStrs);
+            DA.SetDataList (3, categoryAttributeIds);
+            DA.SetDataList (4, stampPositions);
+            DA.SetDataList (5, isManuals);
+            DA.SetDataList (6, polygons);
+            DA.SetDataTree (7, holePolygonsTree);
+        }
+
+        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ZoneDetails;
+
+        public override Guid ComponentGuid => new Guid ("65b5952f-fc7d-4d9e-9742-9be32ac3c5d1");
     }
 }

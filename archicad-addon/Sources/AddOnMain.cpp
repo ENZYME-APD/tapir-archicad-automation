@@ -234,6 +234,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.3",
             "Creates Slab elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateZonesCommand> (
+            elementCommands, "1.1.8",
+            "Creates Zone elements based on the given parameters."
+        );
         err |= RegisterCommand<CreatePolylinesCommand> (
             elementCommands, "1.1.5",
             "Creates Polyline elements based on the given parameters."

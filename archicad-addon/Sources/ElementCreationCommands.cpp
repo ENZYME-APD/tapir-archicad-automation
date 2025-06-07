@@ -174,7 +174,8 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "description": "The 2D coordinates of the edge of the slab.",
                         "items": {
                             "$ref": "#/2DCoordinate"
-                        }
+                        },
+                        "minItems": 3
                     },
                     "polygonArcs": {
                         "type": "array",
@@ -195,7 +196,8 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                                     "description": "The 2D coordinates of the edge of the hole.",
                                     "items": {
                                         "$ref": "#/2DCoordinate"
-                                    }
+                                    },
+                                    "minItems": 3
                                 },
                                 "polygonArcs": {
                                     "type": "array",
@@ -245,23 +247,32 @@ static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arc
 
 static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
                            const GS::Array<GS::ObjectState>& arcs,
-                           const API_OverriddenAttribute&	 sideMat,
                            Int32& 							 iCoord,
                            Int32& 							 iPends,
-                           API_ElementMemo& 				 memo)
+                           API_ElementMemo& 				 memo,
+                           const API_EdgeTrimID*             edgeTrimSideType = nullptr,
+                           const API_OverriddenAttribute*	 sideMat = nullptr)
 {
     Int32 iStart = iCoord;
     for (const GS::ObjectState& coord : coords) {
         (*memo.coords)[iCoord] = Get2DCoordinateFromObjectState (coord);
-        (*memo.edgeTrims)[iCoord].sideType = APIEdgeTrim_Vertical; // Only vertical trim is supported yet by my code
-        memo.sideMaterials[iCoord] = sideMat;
+        if (edgeTrimSideType != nullptr) {
+            (*memo.edgeTrims)[iCoord].sideType = *edgeTrimSideType;
+        }
+        if (sideMat != nullptr) {
+            memo.sideMaterials[iCoord] = *sideMat;
+        }
         ++iCoord;
     }
     (*memo.coords)[iCoord] = (*memo.coords)[iStart];
     (*memo.pends)[iPends++] = iCoord;
-    (*memo.edgeTrims)[iCoord].sideType = (*memo.edgeTrims)[iStart].sideType;
-    (*memo.edgeTrims)[iCoord].sideAngle = (*memo.edgeTrims)[iStart].sideAngle;
-    memo.sideMaterials[iCoord] = memo.sideMaterials[iStart];
+    if (edgeTrimSideType != nullptr) {
+        (*memo.edgeTrims)[iCoord].sideType = (*memo.edgeTrims)[iStart].sideType;
+        (*memo.edgeTrims)[iCoord].sideAngle = (*memo.edgeTrims)[iStart].sideAngle;
+    }
+    if (sideMat != nullptr) {
+        memo.sideMaterials[iCoord] = memo.sideMaterials[iStart];
+    }
     ++iCoord;
 
     const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs);
@@ -315,12 +326,14 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
 
     Int32 iCoord = 1;
     Int32 iPends = 1;
+    const API_EdgeTrimID edgeTrimSideType = APIEdgeTrim_Vertical; // Only vertical trim is supported yet by my code
     AddPolyToMemo(polygonCoordinates,
                   polygonArcs,
-                  element.slab.sideMat,
                   iCoord,
                   iPends,
-                  memo);
+                  memo,
+                  &edgeTrimSideType,
+                  &element.slab.sideMat);
 
     for (const GS::ObjectState& hole : holes) {
         if (!hole.Contains ("polygonCoordinates")) {
@@ -336,10 +349,233 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
 
         AddPolyToMemo(holePolygonCoordinates,
                       holePolygonArcs,
-                      element.slab.sideMat,
+                      iCoord,
+                      iPends,
+                      memo,
+                      &edgeTrimSideType,
+                      &element.slab.sideMat);
+    }
+
+    return {};
+}
+
+CreateZonesCommand::CreateZonesCommand () :
+    CreateElementsCommandBase ("CreateZones", API_ZoneID, "zonesData")
+{
+}
+
+GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "zonesData": {
+            "type": "array",
+            "description": "Array of data to create Zones.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Zone.",
+                "properties" : {
+                    "floorIndex": {
+                        "type": "number"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description" : "Name of the zone."
+                    },
+                    "numberStr": {
+                        "type": "string",
+                        "description" : "Zone number."	
+                    },
+                    "categoryAttributeId": {
+                        "$ref": "#/AttributeId",
+                        "description" : "The identifier of the zone category attribute."	
+                    },
+                    "stampPosition": {
+                        "$ref": "#/2DCoordinate",
+                        "description" : "Position of the origin of the zone stamp."
+                    },
+                    "geometry": {
+                        "type": "object",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "description": "Automatic zone placement.",
+                                "properties": {
+                                    "referencePosition": {
+                                        "$ref": "#/2DCoordinate",
+                                        "description" : "Reference point to automatically find zone."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "referencePosition"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "description": "Manual zone placement.",
+                                "properties": {
+                                    "polygonCoordinates": { 
+                                        "type": "array",
+                                        "description": "The 2D coordinates of the edge of the zone.",
+                                        "items": {
+                                            "$ref": "#/2DCoordinate"
+                                        },
+                                        "minItems": 3
+                                    },
+                                    "polygonArcs": {
+                                        "type": "array",
+                                        "description": "Polygon outline arcs of the zone.",
+                                        "items": {
+                                            "$ref": "#/PolyArc"
+                                        }
+                                    },
+                                    "holes" : {
+                                        "type": "array",
+                                        "description": "Array of parameters of holes.",
+                                        "items": {
+                                            "type": "object",
+                                            "description" : "The parameters of the hole.",
+                                            "properties" : {
+                                                "polygonCoordinates": { 
+                                                    "type": "array",
+                                                    "description": "The 2D coordinates of the edge of the hole.",
+                                                    "items": {
+                                                        "$ref": "#/2DCoordinate"
+                                                    },
+                                                    "minItems": 3
+                                                },
+                                                "polygonArcs": {
+                                                    "type": "array",
+                                                    "description": "Polygon outline arcs of the hole.",
+                                                    "items": {
+                                                        "$ref": "#/PolyArc"
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "polygonCoordinates"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "polygonCoordinates"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "numberStr",
+                    "geometry"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "zonesData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorIndex", element.header.floorInd);
+
+    const API_Guid categoryAttrGuid = GetGuidFromArrayItem ("categoryAttributeId", parameters);
+    if (categoryAttrGuid != APINULLGuid) {
+        element.zone.catInd = GetAttributeIndexFromGuid (API_ZoneCatID, categoryAttrGuid);
+    }
+
+    GS::UniString name;
+    parameters.Get ("name", name);
+    GS::UniString noStr;
+    parameters.Get ("numberStr", noStr);
+    GS::snuprintf (element.zone.roomName, sizeof (element.zone.roomName), name.ToUStr ());
+    GS::snuprintf (element.zone.roomNoStr, sizeof (element.zone.roomNoStr), noStr.ToUStr ());
+
+    GS::ObjectState geometry;
+    parameters.Get ("geometry", geometry);
+    GS::ObjectState referencePosition;
+    if (geometry.Get ("referencePosition", referencePosition)) {
+        element.zone.manual = false;
+
+        element.zone.refPos = Get2DCoordinateFromObjectState (referencePosition);
+
+        GS::ObjectState stampPosition;
+        element.zone.pos = geometry.Get ("stampPosition", stampPosition) ? Get2DCoordinateFromObjectState (stampPosition) : element.zone.refPos;
+    } else {
+        element.zone.manual = true;
+
+        GS::Array<GS::ObjectState> polygonCoordinates;
+        GS::Array<GS::ObjectState> polygonArcs;
+        GS::Array<GS::ObjectState> holes;
+        geometry.Get ("polygonCoordinates", polygonCoordinates);
+        geometry.Get ("polygonArcs", polygonArcs);
+        geometry.Get ("holes", holes);
+        if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
+            polygonCoordinates.Pop ();
+        }
+        element.zone.poly.nCoords	= polygonCoordinates.GetSize() + 1;
+        element.zone.poly.nSubPolys	= 1;
+        element.zone.poly.nArcs		= polygonArcs.GetSize ();
+
+        for (const GS::ObjectState& hole : holes) {
+            if (!hole.Contains ("polygonCoordinates")) {
+                continue;
+            }
+            GS::Array<GS::ObjectState> holePolygonCoordinates;
+            GS::Array<GS::ObjectState> holePolygonArcs;
+            hole.Get ("polygonCoordinates", holePolygonCoordinates);
+            hole.Get ("polygonArcs", holePolygonArcs);
+            if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
+                holePolygonCoordinates.Pop ();
+            }
+            element.zone.poly.nCoords += holePolygonCoordinates.GetSize() + 1;
+            ++element.zone.poly.nSubPolys;
+            element.zone.poly.nArcs += holePolygonArcs.GetSize ();
+        }
+
+        memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.zone.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+        memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.zone.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.zone.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+
+        Int32 iCoord = 1;
+        Int32 iPends = 1;
+        AddPolyToMemo(polygonCoordinates,
+                      polygonArcs,
                       iCoord,
                       iPends,
                       memo);
+
+        for (const GS::ObjectState& hole : holes) {
+            if (!hole.Contains ("polygonCoordinates")) {
+                continue;
+            }
+            GS::Array<GS::ObjectState> holePolygonCoordinates;
+            GS::Array<GS::ObjectState> holePolygonArcs;
+            hole.Get ("polygonCoordinates", holePolygonCoordinates);
+            hole.Get ("polygonArcs", holePolygonArcs);
+            if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
+                holePolygonCoordinates.Pop ();
+            }
+
+            AddPolyToMemo(holePolygonCoordinates,
+                          holePolygonArcs,
+                          iCoord,
+                          iPends,
+                          memo);
+        }
+
+        GS::ObjectState stampPosition;
+        element.zone.pos = geometry.Get ("stampPosition", stampPosition) ? Get2DCoordinateFromObjectState (stampPosition) : (*memo.coords)[1];
     }
 
     return {};
@@ -371,7 +607,8 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "description": "The 2D coordinates of the polyline.",
                         "items": {
                             "$ref": "#/2DCoordinate"
-                        }
+                        },
+                        "minItems": 2
                     },
                     "arcs": { 
                         "type": "array",

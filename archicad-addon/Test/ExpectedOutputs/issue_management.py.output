@@ -102,6 +102,26 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ],
     "type": "Creation"
@@ -198,6 +218,26 @@ Parameters:
 Response:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -385,6 +425,26 @@ Response:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -505,13 +565,13 @@ Response:
             "issueId": {
                 "guid": "<GUID>"
             },
-            "name": "Just a sample issue #2",
+            "name": "Just a sample issue",
             "parentIssueId": {
                 "guid": "<GUID>"
             },
             "creaTime": <TIME>,
             "modiTime": <TIME>,
-            "tagText": "python #2",
+            "tagText": "python",
             "tagTextElementId": {
                 "guid": "<GUID>"
             },
@@ -521,13 +581,13 @@ Response:
             "issueId": {
                 "guid": "<GUID>"
             },
-            "name": "Just a sample issue",
+            "name": "Just a sample issue #2",
             "parentIssueId": {
                 "guid": "<GUID>"
             },
             "creaTime": <TIME>,
             "modiTime": <TIME>,
-            "tagText": "python",
+            "tagText": "python #2",
             "tagTextElementId": {
                 "guid": "<GUID>"
             },

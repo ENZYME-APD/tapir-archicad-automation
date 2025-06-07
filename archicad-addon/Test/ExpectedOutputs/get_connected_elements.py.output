@@ -1308,6 +1308,56 @@ Response:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -1315,6 +1365,56 @@ Command: GetConnectedElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -3408,6 +3508,36 @@ Response:
         },
         {
             "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
         }
     ]
 }
@@ -3415,6 +3545,56 @@ Command: GetConnectedElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -5508,6 +5688,36 @@ Response:
         },
         {
             "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
         }
     ]
 }
@@ -5515,6 +5725,56 @@ Command: GetConnectedElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -7287,6 +7547,48 @@ Response:
         },
         {
             "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": []
+        },
+        {
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
         },
         {
             "elements": []
