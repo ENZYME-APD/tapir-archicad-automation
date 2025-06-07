@@ -31,6 +31,26 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -49,6 +69,62 @@ Response:
                         }
                     }
                 },
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
+                {
+                    "elementComponentId": {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        },
+                        "componentId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "elementComponents": [
                 {
                     "elementComponentId": {
                         "elementId": {
@@ -157,6 +233,46 @@ Command: API.GetPropertyValuesOfElementComponents
 Parameters:
 {
     "elementComponents": [
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "elementComponentId": {
+                "elementId": {
+                    "guid": "<GUID>"
+                },
+                "componentId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
         {
             "elementComponentId": {
                 "elementId": {
@@ -400,6 +516,106 @@ Response:
                     "propertyValue": {
                         "type": "string",
                         "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.3
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 4.844974117
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.3
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 5.556966513
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.3
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 3.811802312
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
+                        "value": "GENERIC - STRUCTURAL"
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "length",
+                        "status": "normal",
+                        "value": 0.3
+                    }
+                },
+                {
+                    "propertyValue": {
+                        "type": "area",
+                        "status": "normal",
+                        "value": 2.424767229
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "type": "string",
+                        "status": "normal",
                         "value": "GENERIC - INTERNAL CLADDING"
                     }
                 },
@@ -564,6 +780,26 @@ Parameters:
                         "classificationItemId": {
                             "guid": "<GUID>"
                         }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
                     }
                 ],
                 "group": {
@@ -584,6 +820,26 @@ Parameters:
                     }
                 },
                 "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
                     {
                         "classificationItemId": {
                             "guid": "<GUID>"
@@ -662,6 +918,26 @@ Parameters:
                         "classificationItemId": {
                             "guid": "<GUID>"
                         }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
                     }
                 ],
                 "group": {
@@ -682,6 +958,26 @@ Parameters:
                     }
                 },
                 "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
                     {
                         "classificationItemId": {
                             "guid": "<GUID>"
@@ -760,6 +1056,26 @@ Parameters:
                         "classificationItemId": {
                             "guid": "<GUID>"
                         }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
                     }
                 ],
                 "group": {
@@ -809,6 +1125,26 @@ Parameters:
                         "classificationItemId": {
                             "guid": "<GUID>"
                         }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
                     }
                 ],
                 "group": {
@@ -829,6 +1165,26 @@ Parameters:
                     }
                 },
                 "availability": [
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "classificationItemId": {
+                            "guid": "<GUID>"
+                        }
+                    },
                     {
                         "classificationItemId": {
                             "guid": "<GUID>"
@@ -1168,6 +1524,214 @@ Parameters:
             "propertyValue": {
                 "type": "integer",
                 "status": "normal",
+                "value": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.3"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "4.844974117"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.3"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "5.556966513"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.3"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "3.811802312"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
+                "value": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "GENERIC - STRUCTURAL"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "0.3"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "string",
+                "status": "normal",
+                "value": "2.424767229"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "type": "integer",
+                "status": "normal",
                 "value": 2
             }
         },
@@ -1443,10 +2007,58 @@ Response:
         },
         {
             "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
         }
     ]
 }
-The below properties were successfully created and set for 6 element(s).
+The below properties were successfully created and set for 10 element(s).
 
 Skins (by Tapir)/Skin number
 Skins (by Tapir)/Skin#1 Building Material Name

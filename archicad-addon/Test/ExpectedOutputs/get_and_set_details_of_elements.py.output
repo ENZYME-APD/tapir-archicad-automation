@@ -1308,6 +1308,56 @@ Response:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -1315,6 +1365,56 @@ Command: GetDetailsOfElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -2754,6 +2854,98 @@ Response:
                 "endCoordinate": {
                     "x": 5.212474801,
                     "y": 1.273521209
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 003",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 5.863901967,
+                    "y": 0.272771563
+                },
+                "endCoordinate": {
+                    "x": 7.27215771,
+                    "y": 0.272771563
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 004",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 1.570796327,
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 7.27215771,
+                    "y": 0.272771563
+                },
+                "endCoordinate": {
+                    "x": 7.27215771,
+                    "y": 1.681027306
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 005",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 7.27215771,
+                    "y": 1.681027306
+                },
+                "endCoordinate": {
+                    "x": 5.863901967,
+                    "y": 1.681027306
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 006",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 5.863901967,
+                    "y": 1.681027306
+                },
+                "endCoordinate": {
+                    "x": 5.863901967,
+                    "y": 0.272771563
                 },
                 "height": 3,
                 "bottomOffset": 0,
@@ -5812,6 +6004,48 @@ Response:
             }
         },
         {
+            "type": "Object",
+            "floorIndex": 0,
+            "layerIndex": 36,
+            "drawIndex": 10,
+            "id": "ZON - 001",
+            "details": {
+                "libPart": {
+                    "name": "Zone Stamp 02 26",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Object",
+            "floorIndex": 0,
+            "layerIndex": 36,
+            "drawIndex": 10,
+            "id": "ZON - 002",
+            "details": {
+                "libPart": {
+                    "name": "Zone Stamp 02 26",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
             "type": "Slab",
             "floorIndex": 0,
             "layerIndex": 33,
@@ -5950,6 +6184,185 @@ Response:
             "id": "",
             "details": {
                 "error": "Not yet supported element type"
+            }
+        },
+        {
+            "type": "Label",
+            "floorIndex": 0,
+            "layerIndex": 29,
+            "drawIndex": 10,
+            "id": "",
+            "details": {
+                "libPart": {
+                    "name": "",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Label",
+            "floorIndex": 0,
+            "layerIndex": 29,
+            "drawIndex": 10,
+            "id": "",
+            "details": {
+                "libPart": {
+                    "name": "",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Zone",
+            "floorIndex": 0,
+            "layerIndex": 36,
+            "drawIndex": 6,
+            "id": "ZON - 001",
+            "details": {
+                "name": "Zone",
+                "numberStr": "01",
+                "categoryAttributeId": {
+                    "guid": "<GUID>"
+                },
+                "stampPosition": {
+                    "x": 6.014296819,
+                    "y": 2.421236571
+                },
+                "isManual": true,
+                "zCoordinate": 0,
+                "polygonOutline": [
+                    {
+                        "x": 5.743478407,
+                        "y": 2.128752686
+                    },
+                    {
+                        "x": 6.47468812,
+                        "y": 2.128752686
+                    },
+                    {
+                        "x": 6.47468812,
+                        "y": 2.859962399
+                    },
+                    {
+                        "x": 5.743478407,
+                        "y": 2.859962399
+                    },
+                    {
+                        "x": 5.743478407,
+                        "y": 2.128752686
+                    }
+                ],
+                "holes": [
+                    {
+                        "polygonOutline": [
+                            {
+                                "x": 6.151489222,
+                                "y": 2.210213775
+                            },
+                            {
+                                "x": 6.151489222,
+                                "y": 2.490108237
+                            },
+                            {
+                                "x": 6.431383684,
+                                "y": 2.490108237
+                            },
+                            {
+                                "x": 6.431383684,
+                                "y": 2.210213775
+                            },
+                            {
+                                "x": 6.151489222,
+                                "y": 2.210213775
+                            }
+                        ],
+                        "polygonArcs": [
+                            {
+                                "begIndex": 3,
+                                "endIndex": 4,
+                                "arcAngle": -2.419579233
+                            }
+                        ]
+                    }
+                ],
+                "polygonArcs": [
+                    {
+                        "begIndex": 0,
+                        "endIndex": 1,
+                        "arcAngle": 3.141592654
+                    },
+                    {
+                        "begIndex": 1,
+                        "endIndex": 2,
+                        "arcAngle": 1.570796327
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Zone",
+            "floorIndex": 0,
+            "layerIndex": 36,
+            "drawIndex": 6,
+            "id": "ZON - 002",
+            "details": {
+                "name": "Zone",
+                "numberStr": "02",
+                "categoryAttributeId": {
+                    "guid": "<GUID>"
+                },
+                "stampPosition": {
+                    "x": 6.589801649,
+                    "y": 0.890879072
+                },
+                "isManual": false,
+                "zCoordinate": 0,
+                "polygonOutline": [
+                    {
+                        "x": 6.163901967,
+                        "y": 1.381027306
+                    },
+                    {
+                        "x": 6.163901967,
+                        "y": 0.572771563
+                    },
+                    {
+                        "x": 7.134422344,
+                        "y": 0.572771563
+                    },
+                    {
+                        "x": 7.134422344,
+                        "y": 1.381027306
+                    },
+                    {
+                        "x": 6.163901967,
+                        "y": 1.381027306
+                    }
+                ],
+                "holes": [],
+                "polygonArcs": [
+                    {
+                        "begIndex": 2,
+                        "endIndex": 3,
+                        "arcAngle": 1.239473999
+                    }
+                ]
             }
         },
         {
@@ -7138,6 +7551,82 @@ Parameters:
                     "endCoordinate": {
                         "x": 5.512474801,
                         "y": 1.973521209
+                    }
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 34,
+                "floorIndex": 1,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 6.263901967000001,
+                        "y": 0.8727715629999999
+                    },
+                    "endCoordinate": {
+                        "x": 7.57215771,
+                        "y": 0.972771563
+                    }
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 34,
+                "floorIndex": 1,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 7.6721577100000005,
+                        "y": 0.8727715629999999
+                    },
+                    "endCoordinate": {
+                        "x": 7.57215771,
+                        "y": 2.381027306
+                    }
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 34,
+                "floorIndex": 1,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 7.6721577100000005,
+                        "y": 2.281027306
+                    },
+                    "endCoordinate": {
+                        "x": 6.163901967,
+                        "y": 2.381027306
+                    }
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 34,
+                "floorIndex": 1,
+                "typeSpecificDetails": {
+                    "begCoordinate": {
+                        "x": 6.263901967000001,
+                        "y": 2.281027306
+                    },
+                    "endCoordinate": {
+                        "x": 6.163901967,
+                        "y": 0.972771563
                     }
                 }
             }
@@ -8461,6 +8950,24 @@ Parameters:
                 "guid": "<GUID>"
             },
             "details": {
+                "layerIndex": 37,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 37,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
                 "layerIndex": 34,
                 "floorIndex": 1
             }
@@ -8489,6 +8996,42 @@ Parameters:
             },
             "details": {
                 "layerIndex": 56,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 30,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 30,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 37,
+                "floorIndex": 1
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "details": {
+                "layerIndex": 37,
                 "floorIndex": 1
             }
         },
@@ -9503,6 +10046,18 @@ Response:
             "success": true
         },
         {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
             "error": {
                 "code": -2130312313,
                 "message": "Failed to change element"
@@ -10346,6 +10901,32 @@ Response:
                 "message": "Failed to change element"
             },
             "success": false
+        },
+        {
+            "success": true
+        },
+        {
+            "error": {
+                "code": -2130312313,
+                "message": "Failed to change element"
+            },
+            "success": false
+        },
+        {
+            "error": {
+                "code": -2130312313,
+                "message": "Failed to change element"
+            },
+            "success": false
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
         },
         {
             "success": true
@@ -12073,6 +12654,56 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -12208,6 +12839,98 @@ Response:
                 "endCoordinate": {
                     "x": 5.212474801,
                     "y": 1.273521209
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 1,
+            "layerIndex": 34,
+            "drawIndex": 7,
+            "id": "SW - 003",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "zCoordinate": 3,
+                "begCoordinate": {
+                    "x": 6.263901967,
+                    "y": 0.872771563
+                },
+                "endCoordinate": {
+                    "x": 7.57215771,
+                    "y": 0.972771563
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 1,
+            "layerIndex": 34,
+            "drawIndex": 7,
+            "id": "SW - 004",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 1.570796327,
+                "zCoordinate": 3,
+                "begCoordinate": {
+                    "x": 7.67215771,
+                    "y": 0.872771563
+                },
+                "endCoordinate": {
+                    "x": 7.57215771,
+                    "y": 2.381027306
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 1,
+            "layerIndex": 34,
+            "drawIndex": 7,
+            "id": "SW - 005",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "zCoordinate": 3,
+                "begCoordinate": {
+                    "x": 7.67215771,
+                    "y": 2.281027306
+                },
+                "endCoordinate": {
+                    "x": 6.163901967,
+                    "y": 2.381027306
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 1,
+            "layerIndex": 34,
+            "drawIndex": 7,
+            "id": "SW - 006",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "zCoordinate": 3,
+                "begCoordinate": {
+                    "x": 6.263901967,
+                    "y": 2.281027306
+                },
+                "endCoordinate": {
+                    "x": 6.163901967,
+                    "y": 0.972771563
                 },
                 "height": 3,
                 "bottomOffset": 0,
@@ -15266,6 +15989,48 @@ Response:
             }
         },
         {
+            "type": "Object",
+            "floorIndex": 1,
+            "layerIndex": 37,
+            "drawIndex": 10,
+            "id": "ZON - 001",
+            "details": {
+                "libPart": {
+                    "name": "Zone Stamp 02 26",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Object",
+            "floorIndex": 1,
+            "layerIndex": 37,
+            "drawIndex": 10,
+            "id": "ZON - 002",
+            "details": {
+                "libPart": {
+                    "name": "Zone Stamp 02 26",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
             "type": "Slab",
             "floorIndex": 1,
             "layerIndex": 34,
@@ -15404,6 +16169,185 @@ Response:
             "id": "",
             "details": {
                 "error": "Not yet supported element type"
+            }
+        },
+        {
+            "type": "Label",
+            "floorIndex": 0,
+            "layerIndex": 30,
+            "drawIndex": 10,
+            "id": "",
+            "details": {
+                "libPart": {
+                    "name": "",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Label",
+            "floorIndex": 0,
+            "layerIndex": 30,
+            "drawIndex": 10,
+            "id": "",
+            "details": {
+                "libPart": {
+                    "name": "",
+                    "parentUnID": {
+                        "guid": "<GUID>"
+                    },
+                    "ownUnID": {
+                        "guid": "<GUID>"
+                    }
+                },
+                "ownerElementId": {
+                    "guid": "<GUID>"
+                }
+            }
+        },
+        {
+            "type": "Zone",
+            "floorIndex": 1,
+            "layerIndex": 37,
+            "drawIndex": 6,
+            "id": "ZON - 001",
+            "details": {
+                "name": "Zone",
+                "numberStr": "01",
+                "categoryAttributeId": {
+                    "guid": "<GUID>"
+                },
+                "stampPosition": {
+                    "x": 6.014296819,
+                    "y": 2.421236571
+                },
+                "isManual": true,
+                "zCoordinate": 3,
+                "polygonOutline": [
+                    {
+                        "x": 5.743478407,
+                        "y": 2.128752686
+                    },
+                    {
+                        "x": 6.47468812,
+                        "y": 2.128752686
+                    },
+                    {
+                        "x": 6.47468812,
+                        "y": 2.859962399
+                    },
+                    {
+                        "x": 5.743478407,
+                        "y": 2.859962399
+                    },
+                    {
+                        "x": 5.743478407,
+                        "y": 2.128752686
+                    }
+                ],
+                "holes": [
+                    {
+                        "polygonOutline": [
+                            {
+                                "x": 6.151489222,
+                                "y": 2.210213775
+                            },
+                            {
+                                "x": 6.151489222,
+                                "y": 2.490108237
+                            },
+                            {
+                                "x": 6.431383684,
+                                "y": 2.490108237
+                            },
+                            {
+                                "x": 6.431383684,
+                                "y": 2.210213775
+                            },
+                            {
+                                "x": 6.151489222,
+                                "y": 2.210213775
+                            }
+                        ],
+                        "polygonArcs": [
+                            {
+                                "begIndex": 3,
+                                "endIndex": 4,
+                                "arcAngle": -2.419579233
+                            }
+                        ]
+                    }
+                ],
+                "polygonArcs": [
+                    {
+                        "begIndex": 0,
+                        "endIndex": 1,
+                        "arcAngle": 3.141592654
+                    },
+                    {
+                        "begIndex": 1,
+                        "endIndex": 2,
+                        "arcAngle": 1.570796327
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Zone",
+            "floorIndex": 1,
+            "layerIndex": 37,
+            "drawIndex": 6,
+            "id": "ZON - 002",
+            "details": {
+                "name": "Zone",
+                "numberStr": "02",
+                "categoryAttributeId": {
+                    "guid": "<GUID>"
+                },
+                "stampPosition": {
+                    "x": 6.589801649,
+                    "y": 0.890879072
+                },
+                "isManual": false,
+                "zCoordinate": 3,
+                "polygonOutline": [
+                    {
+                        "x": 6.163901967,
+                        "y": 1.381027306
+                    },
+                    {
+                        "x": 6.163901967,
+                        "y": 0.572771563
+                    },
+                    {
+                        "x": 7.134422344,
+                        "y": 0.572771563
+                    },
+                    {
+                        "x": 7.134422344,
+                        "y": 1.381027306
+                    },
+                    {
+                        "x": 6.163901967,
+                        "y": 1.381027306
+                    }
+                ],
+                "holes": [],
+                "polygonArcs": [
+                    {
+                        "begIndex": 2,
+                        "endIndex": 3,
+                        "arcAngle": 1.239473999
+                    }
+                ]
             }
         },
         {
