@@ -200,7 +200,7 @@ GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::Obje
             continue;
         }
 
-        API_Guid databaseGuid = navigatorItem.db.databaseUnId.elemSetId;
+        const API_Guid databaseGuid = DatabaseIdResolver::Instance ().GetIdOfDatabase (navigatorItem.db);
 
         if (databaseGuid == APINULLGuid) {
             databases (CreateErrorResponse (APIERR_BADPARS, "Navigator item {navigatorItem.itemType} has no associated database"));

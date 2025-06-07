@@ -4,6 +4,7 @@
 #include "ACAPinc.h"
 
 #include "ObjectState.hpp"
+#include "BiHashTable.hpp"
 
 #include <map>
 
@@ -75,6 +76,20 @@ GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories
 double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
+
+class DatabaseIdResolver {
+public:
+    static const DatabaseIdResolver& Instance ();
+
+    API_Guid         GetIdOfDatabase(const API_DatabaseInfo& database) const;
+    API_DatabaseInfo GetDatabaseWithId(const API_Guid& id) const;
+
+private:
+    DatabaseIdResolver();
+    DatabaseIdResolver(const DatabaseIdResolver&) = delete;
+
+    GS::BiHashTable<API_WindowTypeID, API_Guid> databaseTypeToIdTable;
+};
 
 GSErrCode ExecuteActionForEachDatabase (
     const GS::Array<API_Guid>& databaseIds,

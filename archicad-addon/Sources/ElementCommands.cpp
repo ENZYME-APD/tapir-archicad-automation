@@ -86,7 +86,7 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema (
                 "minItems": 1
             },
             "databases": {
-                 "$ref": "#/Databases"
+                "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -122,7 +122,7 @@ GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parame
 
     GS::Array<GS::ObjectState> databases;
     bool databasesParameterExists = parameters.Get ("databases", databases);
-    if (!databasesParameterExists) {
+    if (!databasesParameterExists || databases.IsEmpty ()) {
         GetElementsFromCurrentDatabase (parameters, elements);
     }
     else {
@@ -167,7 +167,7 @@ GS::Optional<GS::UniString> GetAllElementsCommand::GetInputParametersSchema () c
                 "minItems": 1
             },
             "databases": {
-                 "$ref": "#/Databases"
+                "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,

@@ -450,6 +450,40 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
     return API_ZombieElemID;
 }
 
+
+const DatabaseIdResolver& DatabaseIdResolver::Instance ()
+{
+    static DatabaseIdResolver instance;
+    return instance;
+}
+
+API_Guid DatabaseIdResolver::GetIdOfDatabase (const API_DatabaseInfo& database) const
+{
+    if (databaseTypeToIdTable.ContainsLeftKey (database.typeID)) {
+        return databaseTypeToIdTable.GetRight (database.typeID);
+    }
+    return database.databaseUnId.elemSetId;
+}
+
+API_DatabaseInfo DatabaseIdResolver::GetDatabaseWithId (const API_Guid& id) const
+{
+    API_DatabaseInfo db = {};
+    if (databaseTypeToIdTable.ContainsRightKey (id)) {
+        db.typeID = databaseTypeToIdTable.GetLeft (id);
+    } else {
+        db.databaseUnId.elemSetId = id;
+    }
+    return db;
+}
+
+DatabaseIdResolver::DatabaseIdResolver ()
+    : databaseTypeToIdTable ({
+        {APIWind_FloorPlanID, APIGuidFromString ("d5d16dd4-093f-4674-895d-410d634d8c7e")},
+        {APIWind_3DModelID, APIGuidFromString ("f6a45617-c97c-44c8-9b98-25dbf98c35f3")}
+    })
+{
+}
+
 GSErrCode ExecuteActionForEachDatabase (
     const GS::Array<API_Guid>& databaseIds,
     const std::function<GSErrCode ()>& action,
@@ -462,8 +496,7 @@ GSErrCode ExecuteActionForEachDatabase (
         return err;
     }
     for (const API_Guid databaseId : databaseIds) {
-        API_DatabaseInfo targetDbInfo = {};
-        targetDbInfo.databaseUnId.elemSetId = databaseId;
+        API_DatabaseInfo targetDbInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (databaseId);
         err = ACAPI_Window_GetDatabaseInfo (&targetDbInfo);
         if (err != NoError) {
             actionFailure (err, "Failed to get database info");
