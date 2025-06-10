@@ -229,7 +229,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
 })";
 }
 
-static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs)
+static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs, Int32 iStart)
 {
     GS::Array<API_PolyArc> polyArcs;
     for (const GS::ObjectState& arc : arcs) {
@@ -237,8 +237,8 @@ static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arc
         if (arc.Get ("begIndex", polyArc.begIndex) &&
             arc.Get ("endIndex", polyArc.endIndex) &&
             arc.Get ("arcAngle", polyArc.arcAngle)) {
-            polyArc.begIndex++;
-            polyArc.endIndex++;
+            polyArc.begIndex += iStart;
+            polyArc.endIndex += iStart;
             polyArcs.Push (polyArc);
         }
     }
@@ -247,11 +247,12 @@ static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arc
 
 static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
                            const GS::Array<GS::ObjectState>& arcs,
-                           Int32& 							 iCoord,
-                           Int32& 							 iPends,
-                           API_ElementMemo& 				 memo,
+                           Int32&                            iCoord,
+                           Int32&                            iArc,
+                           Int32&                            iPends,
+                           API_ElementMemo&                  memo,
                            const API_EdgeTrimID*             edgeTrimSideType = nullptr,
-                           const API_OverriddenAttribute*	 sideMat = nullptr)
+                           const API_OverriddenAttribute*    sideMat = nullptr)
 {
     Int32 iStart = iCoord;
     for (const GS::ObjectState& coord : coords) {
@@ -275,8 +276,7 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
     }
     ++iCoord;
 
-    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs);
-    Int32 iArc = 0;
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, iStart);
     for (const API_PolyArc& a : polyArcs) {
         (*memo.parcs)[iArc++] = a;
     }
@@ -325,11 +325,13 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.slab.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
 
     Int32 iCoord = 1;
+    Int32 iArc = 0;
     Int32 iPends = 1;
     const API_EdgeTrimID edgeTrimSideType = APIEdgeTrim_Vertical; // Only vertical trim is supported yet by my code
     AddPolyToMemo(polygonCoordinates,
                   polygonArcs,
                   iCoord,
+                  iArc,
                   iPends,
                   memo,
                   &edgeTrimSideType,
@@ -350,6 +352,7 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
         AddPolyToMemo(holePolygonCoordinates,
                       holePolygonArcs,
                       iCoord,
+                      iArc,
                       iPends,
                       memo,
                       &edgeTrimSideType,
@@ -548,10 +551,12 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.zone.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
 
         Int32 iCoord = 1;
+        Int32 iArc = 0;
         Int32 iPends = 1;
         AddPolyToMemo(polygonCoordinates,
                       polygonArcs,
                       iCoord,
+                      iArc,
                       iPends,
                       memo);
 
@@ -570,6 +575,7 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
             AddPolyToMemo(holePolygonCoordinates,
                           holePolygonArcs,
                           iCoord,
+                          iArc,
                           iPends,
                           memo);
         }
@@ -637,7 +643,7 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coordinates,
                            API_Polygon&                      poly,
                            API_ElementMemo& 				 memo)
 {
-    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs);
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
     poly.nCoords	= coordinates.GetSize();
     poly.nSubPolys	= 1;
     poly.nArcs		= polyArcs.GetSize ();

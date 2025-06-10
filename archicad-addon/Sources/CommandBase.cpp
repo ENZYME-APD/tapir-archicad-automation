@@ -97,7 +97,7 @@ bool   IsSame2DCoordinate (const GS::ObjectState& o1, const GS::ObjectState& o2)
 {
     API_Coord c1 = Get2DCoordinateFromObjectState (o1);
     API_Coord c2 = Get2DCoordinateFromObjectState (o2);
-    return std::abs (c1.x - c2.x) < EPS && std::abs (c1.y - c2.y);
+    return std::abs (c1.x - c2.x) < EPS && std::abs (c1.y - c2.y) < EPS;
 }
 
 API_Coord Get2DCoordinateFromObjectState (const GS::ObjectState& objectState)
