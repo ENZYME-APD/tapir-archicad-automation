@@ -97,7 +97,7 @@ namespace TapirGrasshopperPlugin.Data
 
         public override string ToString ()
         {
-            return Id.ToString ();
+            return Id?.ToString ();
         }
 
         public override bool Equals (object other)

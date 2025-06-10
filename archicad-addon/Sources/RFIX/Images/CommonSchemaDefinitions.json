@@ -1673,6 +1673,71 @@
         "additionalProperties": false,
         "required": []
     },
+    "ViewSettingsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/ViewSettings"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ViewTransformations": {
+        "type": "object",
+        "properties": {
+            "zoom": {
+                "type": "object",
+                "description": "The actual zoom parameters, rectangular region of the model.",
+                "properties": {
+                    "xMin": {
+                        "type": "number",
+                        "description": "The minimum X value of the zoom box."
+                    },
+                    "yMin": {
+                        "type": "number",
+                        "description": "The minimum Y value of the zoom box."
+                    },
+                    "xMax": {
+                        "type": "number",
+                        "description": "The maximum X value of the zoom box."
+                    },
+                    "yMax": {
+                        "type": "number",
+                        "description": "The maximum Y value of the zoom box."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "xMin",
+                    "yMin",
+                    "xMax",
+                    "yMax"
+                ]
+            },
+            "rotation": {
+                "type": "double",
+                "description": "The orientation in radian."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoom",
+            "rotation"
+        ]
+    },
+    "ViewTransformationsOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/ViewTransformations"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "WallDetails": {
         "type": "object",
         "properties": {

@@ -467,7 +467,7 @@ var gCommands = [{
                 "minItems": 1
             },
             "databases": {
-                 "$ref": "#/Databases"
+                "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -505,7 +505,7 @@ var gCommands = [{
                 "minItems": 1
             },
             "databases": {
-                 "$ref": "#/Databases"
+                "$ref": "#/Databases"
             }
         },
         "additionalProperties": false,
@@ -2695,16 +2695,7 @@ var gCommands = [{
         "viewSettings": {
             "type": "array",
             "items": {
-                "type": "object",
-                "description": "The settings of a navigator view or an error.",
-                "oneOf": [
-                    {
-                        "$ref": "#/ViewSettings"
-                    },
-                    {
-                        "$ref": "#/ErrorItem"
-                    }
-                ]
+                "$ref": "#/ViewSettingsOrError"
             }
         }
     },
@@ -2777,56 +2768,7 @@ var gCommands = [{
         "transformations": {
             "type": "array",
             "items": {
-                "type": "object",
-                "description": "The transformation parameters or an error.",
-                "oneOf": [
-                    {
-                        "type": "object",
-                        "properties": {
-                            "zoom": {
-                                "type": "object",
-                                "description": "The actual zoom parameters, rectangular region of the model.",
-                                "properties": {
-                                    "xMin": {
-                                        "type": "number",
-                                        "description": "The minimum X value of the zoom box."
-                                    },
-                                    "yMin": {
-                                        "type": "number",
-                                        "description": "The minimum Y value of the zoom box."
-                                    },
-                                    "xMax": {
-                                        "type": "number",
-                                        "description": "The maximum X value of the zoom box."
-                                    },
-                                    "yMax": {
-                                        "type": "number",
-                                        "description": "The maximum Y value of the zoom box."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "xMin",
-                                    "yMin",
-                                    "xMax",
-                                    "yMax"
-                                ]
-                            },
-                            "rotation": {
-                                "type": "double",
-                                "description": "The orientation in radian."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "zoom",
-                            "rotation"
-                        ]
-                    },
-                    {
-                        "$ref": "#/ErrorItem"
-                    }
-                ]
+                "$ref": "#/ViewTransformationsOrError"
             }
         }
     },

@@ -4,6 +4,7 @@
 #include "ACAPinc.h"
 
 #include "ObjectState.hpp"
+#include "BiHashTable.hpp"
 
 #include <map>
 
@@ -78,6 +79,20 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
 
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index);
 API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid);
+
+class DatabaseIdResolver {
+public:
+    static const DatabaseIdResolver& Instance ();
+
+    API_Guid         GetIdOfDatabase(const API_DatabaseInfo& database) const;
+    API_DatabaseInfo GetDatabaseWithId(const API_Guid& id) const;
+
+private:
+    DatabaseIdResolver();
+    DatabaseIdResolver(const DatabaseIdResolver&) = delete;
+
+    GS::BiHashTable<API_WindowTypeID, API_Guid> databaseTypeToIdTable;
+};
 
 GSErrCode ExecuteActionForEachDatabase (
     const GS::Array<API_Guid>& databaseIds,

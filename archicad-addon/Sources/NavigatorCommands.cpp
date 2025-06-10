@@ -200,7 +200,7 @@ GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::Obje
             continue;
         }
 
-        API_Guid databaseGuid = navigatorItem.db.databaseUnId.elemSetId;
+        const API_Guid databaseGuid = DatabaseIdResolver::Instance ().GetIdOfDatabase (navigatorItem.db);
 
         if (databaseGuid == APINULLGuid) {
             databases (CreateErrorResponse (APIERR_BADPARS, "Navigator item {navigatorItem.itemType} has no associated database"));
@@ -322,16 +322,7 @@ GS::Optional<GS::UniString> GetViewSettingsCommand::GetResponseSchema () const
         "viewSettings": {
             "type": "array",
             "items": {
-                "type": "object",
-                "description": "The settings of a navigator view or an error.",
-                "oneOf": [
-                    {
-                        "$ref": "#/ViewSettings"
-                    },
-                    {
-                        "$ref": "#/ErrorItem"
-                    }
-                ]
+                "$ref": "#/ViewSettingsOrError"
             }
         }
     },
@@ -520,56 +511,7 @@ GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetResponseSchema (
         "transformations": {
             "type": "array",
             "items": {
-                "type": "object",
-                "description": "The transformation parameters or an error.",
-                "oneOf": [
-                    {
-                        "type": "object",
-                        "properties": {
-                            "zoom": {
-                                "type": "object",
-                                "description": "The actual zoom parameters, rectangular region of the model.",
-                                "properties": {
-                                    "xMin": {
-                                        "type": "number",
-                                        "description": "The minimum X value of the zoom box."
-                                    },
-                                    "yMin": {
-                                        "type": "number",
-                                        "description": "The minimum Y value of the zoom box."
-                                    },
-                                    "xMax": {
-                                        "type": "number",
-                                        "description": "The maximum X value of the zoom box."
-                                    },
-                                    "yMax": {
-                                        "type": "number",
-                                        "description": "The maximum Y value of the zoom box."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "xMin",
-                                    "yMin",
-                                    "xMax",
-                                    "yMax"
-                                ]
-                            },
-                            "rotation": {
-                                "type": "double",
-                                "description": "The orientation in radian."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "zoom",
-                            "rotation"
-                        ]
-                    },
-                    {
-                        "$ref": "#/ErrorItem"
-                    }
-                ]
+                "$ref": "#/ViewTransformationsOrError"
             }
         }
     },

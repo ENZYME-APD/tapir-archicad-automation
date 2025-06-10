@@ -22,6 +22,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             get => filters;
             set => filters = AcceptElementFilters (value);
         }
+
+        [JsonProperty ("databases", NullValueHandling = NullValueHandling.Ignore)]
+        public List<DatabaseIdItemObj> Databases;
     }
 
 
@@ -40,7 +43,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
             pManager.AddTextParameter ("Type", "Type", "Element type.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Filter", "Filter", "Element filter.", GH_ParamAccess.list, @default: new List<string> { ElementFilter.NoFilter.ToString () });
+            pManager.AddTextParameter ("Filter", "Filter", "Element filter.", GH_ParamAccess.list, @default: new List<string> { });
+            pManager.AddGenericParameter ("Databases", "Databases", "Databases to find elements.", GH_ParamAccess.list);
+
+            Params.Input[2].Optional = true;
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -67,9 +73,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            DatabasesObj databases = DatabasesObj.Create (DA, 2);
+
             ElementsByTypeObj elementsByType = new ElementsByTypeObj () {
                 ElementType = elemType,
-                Filters = filters
+                Filters = filters is null || filters.Count == 0 ? null : filters,
+                Databases = databases is null || databases.Databases.Count == 0 ? null : databases.Databases
             };
             JObject elementyByTypeObj = JObject.FromObject (elementsByType);
             CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetElementsByType", elementyByTypeObj);
