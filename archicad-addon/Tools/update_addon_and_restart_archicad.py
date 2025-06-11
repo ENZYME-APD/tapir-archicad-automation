@@ -3,6 +3,7 @@ import platform
 import urllib.request
 import json
 import os
+import time
 
 def IsUsingMacOS ():
     return platform.system () == 'Darwin'
@@ -45,6 +46,7 @@ def main():
     downloadedFile, headers = urllib.request.urlretrieve (args.downloadUrl)
 
     archicadLocation = QuitArchicad (host, port)
+    time.sleep (10)  # Give Archicad some time to quit
 
     if downloadedFile.endswith ('.zip'):
         from zipfile import ZipFile
