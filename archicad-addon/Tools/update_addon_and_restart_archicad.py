@@ -6,6 +6,7 @@ import os
 import time
 import shutil
 import zipfile
+import subprocess
 
 def IsUsingMacOS ():
     return platform.system () == 'Darwin'
@@ -63,7 +64,7 @@ def main():
                 raise
             time.sleep(1)
 
-    os.spawnl (os.P_NOWAIT, archicadLocation)
+    subprocess.Popen ([archicadLocation], shell=True)
 
 if __name__ == '__main__':
     main()
