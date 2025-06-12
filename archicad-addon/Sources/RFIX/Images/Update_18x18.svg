@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg style="enable-background:new 0 0 18 18;" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+  <style type="text/css">
+	.st0{fill:none;stroke:#06A647;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+</style>
+  <circle class="st0" cx="9" cy="9" r="8.5"/>
+  <polyline class="st0" points="11.5 6.5 9.5 4.5 11.5 2.5" transform="matrix(-1, 0, 0, -1, 21, 9)"/>
+  <path class="st0" d="M 11 4.5 C 11 6.7 9 8.5 6.5 8.5 L 4.5 8.5" transform="matrix(-1, 0, 0, -1, 15.499999, 13)"/>
+  <polyline class="st0" points="6.5 11.5 8.5 13.5 6.5 15.5" transform="matrix(-1, 0, 0, -1, 15, 27.000001)"/>
+  <path class="st0" d="M 7 13.5 C 7 11.3 9 9.5 11.5 9.5 L 13.5 9.5" transform="matrix(-1, 0, 0, -1, 20.499999, 22.999999)"/>
+</svg>

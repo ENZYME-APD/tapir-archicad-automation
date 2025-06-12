@@ -1,5 +1,6 @@
 #include "TapirPalette.hpp"
 #include "ResourceIds.hpp"
+#include "VersionChecker.hpp"
 #include "HTTP/Client/ClientConnection.hpp"
 #include "HTTP/Client/Request.hpp"
 #include "HTTP/Client/Response.hpp"
@@ -12,6 +13,7 @@
 #include "FileSystem.hpp"
 #include "Folder.hpp"
 #include "MessageLoopExecutor.hpp"
+#include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
 
 #include <map>
@@ -49,7 +51,7 @@ static IO::Location SaveBuiltInScript (const IO::RelativeLocation& relLoc, const
     return fileLoc;
 }
 
-static GS::UniString DownloadFile (const GS::UniString& fileDownloadUrl)
+static GS::UniString DownloadFileContent (const GS::UniString& fileDownloadUrl)
 {
     IO::URI::URI connectionUrl (fileDownloadUrl);
     HTTP::Client::ClientConnection clientConnection (connectionUrl);
@@ -129,6 +131,8 @@ TapirPalette::TapirPalette ()
 
     LoadScriptsToPopUp ();
     LoadPythonVersionsToPopUp ();
+
+    SetRunButtonIcon ();
 
     BeginEventProcessing ();
 }
@@ -224,13 +228,17 @@ static void OpenFileInExplorer (GS::Ref<IO::Location> fileRef)
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &runScriptButton) {
-        if (runScriptButton.GetIcon ().GetResourceId () == ID_RUN_BUTTON_ICON) {
+        if (IsProcessRunning ()) {
+            process.Kill ();
+        } else {
+            if (UpdateAddOn ()) {
+                return;
+            }
+
             GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
             if (fileRef != nullptr) {
                 ExecuteScript (*fileRef);
             }
-        } else {
-            process.Kill ();
         }
     } else if (ev.GetSource () == &tapirButton) {
         OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation");
@@ -336,7 +344,7 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
                     GSGuid2APIGuid (paletteGuid));
 }
 
-void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
+void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Array<GS::UniString>& additionalArgv)
 {
     const GS::UniString& pythonExePath = GetSelectedPythonExe ();
     if (pythonExePath.IsEmpty ()) {
@@ -353,13 +361,11 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
         GS::Process& process;
         
         class IconUpdateTask : public GS::Runnable {
-            short resId;
         public:
-            explicit IconUpdateTask (short _resId) : resId(_resId)
-            {}
+            IconUpdateTask () = default;
             virtual void Run ()
             {
-                TapirPalette::Instance ().runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
+                TapirPalette::Instance ().SetRunButtonIcon ();
             }
         };
         class OutputUpdateTask : public GS::Runnable {
@@ -405,7 +411,7 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
         }
         virtual void Run () override final
         {
-            GS::MessageLoopExecutor ().Execute (new IconUpdateTask (ID_KILL_BUTTON_ICON));
+            GS::MessageLoopExecutor ().Execute (new IconUpdateTask ());
 
             const GS::Timeout Timeout = {0, 0, 0, 10 /*ms*/};
             while (!process.WaitFor (Timeout)) {
@@ -415,8 +421,10 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
             const int exitCode = process.GetExitCode ();
             ReadFromChannels ();
 
-            GS::MessageLoopExecutor ().Execute (new IconUpdateTask (ID_RUN_BUTTON_ICON));
+            GS::MessageLoopExecutor ().Execute (new IconUpdateTask ());
             GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
+
+            process = {}; // Reset the process to an invalid state
         }
     };
 
@@ -431,6 +439,9 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation)
         } else {
             command = filePath;
             argv = {"--port", GS::ValueToUniString (GetConnectionPort ())};
+        }
+        if (additionalArgv.GetSize () > 0) {
+            argv.Append (additionalArgv);
         }
 
         constexpr bool redirectStandardOutput = true;
@@ -468,7 +479,7 @@ void TapirPalette::AddBuiltInScriptsFromGithub ()
 {
     for (auto kv : GetFilesFromGitHubInRelativeLocation ("builtin-scripts")) {
         const IO::RelativeLocation relLoc (kv.first);
-        const IO::Location fileLoc = SaveBuiltInScript (relLoc, DownloadFile (kv.second));
+        const IO::Location fileLoc = SaveBuiltInScript (relLoc, DownloadFileContent (kv.second));
         if (relLoc.GetLength () == 2) {
             AddScriptToPopUp (fileLoc, DG::PopUp::BottomItem);
         }
@@ -541,6 +552,72 @@ void TapirPalette::LoadPythonVersionsToPopUp ()
     }
 
     pythonVersionsPopUp.SelectItem (DG::PopUp::TopItem);
+}
+
+void TapirPalette::SetRunButtonIcon ()
+{
+    short resId = ID_RUN_BUTTON_ICON;
+    if (IsProcessRunning ()) {
+        resId = ID_KILL_BUTTON_ICON;
+    } else if (VersionChecker::IsUsingLatestVersion ()) {
+        resId = ID_RUN_BUTTON_ICON;
+    } else {
+        resId = ID_RUNWITHUPDATE_BUTTON_ICON;
+    }
+    runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
+}
+
+bool TapirPalette::UpdateAddOn ()
+{
+    if (VersionChecker::IsUsingLatestVersion ()) {
+        return false;
+    }
+
+    short response = DGAlert (DG_WARNING,
+        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
+        GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT1, ACAPI_GetOwnResModule ()), 
+                               ADDON_VERSION, VersionChecker::LatestVersion ().ToPrintf ()),
+        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT2, ACAPI_GetOwnResModule ()),
+        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON1, ACAPI_GetOwnResModule ()),
+        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON2, ACAPI_GetOwnResModule ()));
+
+    if (response != DG_OK) {
+        return false;
+    }
+
+    constexpr const char* fileName = "update_addon_and_restart_archicad.py";
+    const GS::UniString url = "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/AutoUpdate-AddOn/archicad-addon/Tools/" + GS::UniString (fileName);
+    const GS::UniString content = DownloadFileContent (url);
+    if (content.GetLength () < 10) {
+        response = DGAlert (DG_ERROR, "Tapir Update", "Failed to download the update script.", "Please check your internet connection and try again.", "OK", "Cancel");
+
+        if (response != DG_OK) {
+            return false;
+        }
+
+        return UpdateAddOn ();
+    }
+    const IO::Location fileLoc = SaveBuiltInScript (IO::RelativeLocation (fileName), DownloadFileContent (url));
+
+    IO::Location addOnLocation;
+    ACAPI_GetOwnLocation (&addOnLocation);
+    GS::UniString addOnLocationStr;
+    addOnLocation.ToPath (&addOnLocationStr);
+
+    GS::UniString filePath;
+    fileLoc.ToPath (&filePath);
+
+    const GS::UniString& pythonExePath = GetSelectedPythonExe ();
+    const GS::Array<GS::UniString> argv = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ()), "--downloadUrl", VersionChecker::LatestVersionDownloadUrl (), "--addOnLocation", addOnLocationStr};
+
+    constexpr bool redirectStandardOutput = false;
+    constexpr bool redirectStandardInput = false;
+    constexpr bool redirectStandardError = false;
+    process = GS::Process::Create (pythonExePath, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+
+    SetRunButtonIcon ();
+
+    return true;
 }
 
 const GS::UniString& TapirPalette::GetSelectedPythonExe () const

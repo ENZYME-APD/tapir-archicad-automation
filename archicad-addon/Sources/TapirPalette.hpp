@@ -23,6 +23,8 @@ public:
     void Show ();
     void Hide ();
 
+    bool UpdateAddOn ();
+
     static GSErrCode RegisterPaletteControlCallBack ();
 
 private:
@@ -40,7 +42,7 @@ private:
     bool hasAddedScript = false;
 
     void SetMenuItemCheckedState (bool);
-    void ExecuteScript (const IO::Location& fileLocation);
+    void ExecuteScript (const IO::Location& fileLocation, const GS::Array<GS::UniString>& additionalArgv = {});
     bool AddScriptToPopUp (const IO::Location& fileLocation, short index = DG::PopUp::TopItem);
     void AddBuiltInScriptsFromGithub ();
     void AddScriptsFromCustomScriptsFolder ();
@@ -53,6 +55,10 @@ private:
     void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
+    void SetRunButtonIcon ();
+    bool IsProcessRunning () {
+        return process.IsValid ();
+    }
 
     const GS::UniString& GetSelectedPythonExe () const;
 

@@ -96,7 +96,7 @@ def get_unique_navigator_items_from_tree(
             get_unique_navigator_items_from_tree(children, guid_navitem_map, navitem_types)
 
 
-def partial_deepcopy[T](node: dict[str, T], keys_to_omit: Container[str]) -> dict[str, T]:
+def partial_deepcopy(node: dict, keys_to_omit: Container[str]) -> dict:
     return {
         key: deepcopy(value) if isinstance(value, dict) else value
         for key, value in node.items()
