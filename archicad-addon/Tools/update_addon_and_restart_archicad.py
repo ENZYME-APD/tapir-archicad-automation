@@ -4,6 +4,8 @@ import urllib.request
 import json
 import os
 import time
+import shutil
+import zipfile
 
 def IsUsingMacOS ():
     return platform.system () == 'Darwin'
@@ -46,17 +48,22 @@ def main():
     downloadedFile, headers = urllib.request.urlretrieve (args.downloadUrl)
 
     archicadLocation = QuitArchicad (host, port)
-    time.sleep (10)  # Give Archicad some time to quit
 
-    if downloadedFile.endswith ('.zip'):
-        from zipfile import ZipFile
-        with ZipFile (downloadedFile, 'r') as zip_ref:
-            zip_ref.extractall (args.addOnLocation)
-    else:
-        from shutil import copyfile
-        copyfile (downloadedFile, args.addOnLocation)
+    maxRetries = 20
+    for attempt in range(maxRetries):
+        try:
+            if downloadedFile.endswith ('.zip'):
+                with zipfile.ZipFile (downloadedFile, 'r') as zip_ref:
+                    zip_ref.extractall (os.path.dirname (args.addOnLocation))
+            else:
+                shutil.copyfile(downloadedFile, args.addOnLocation)
+            break
+        except Exception as e:
+            if attempt == maxRetries - 1:
+                raise
+            time.sleep(1)
 
-    os.system (archicadLocation)
+    os.spawnl (os.P_NOWAIT, archicadLocation)
 
 if __name__ == '__main__':
     main()
