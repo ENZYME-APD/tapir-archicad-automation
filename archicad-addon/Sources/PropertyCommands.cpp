@@ -552,7 +552,9 @@ GS::ObjectState GetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
             const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
             API_Property propertyValue;
-            GSErrCode err = ACAPI_Attribute_GetPropertyValue (attGuid, propertyGuid, propertyValue);
+            API_Attr_Head attrHead = {};
+            attrHead.guid = attGuid;
+            GSErrCode err = ACAPI_Attribute_GetPropertyValue (attrHead, propertyGuid, propertyValue);
 
             if (err != NoError) {
                 propertyValues (CreateErrorResponse (err, "Failed to get property value"));
@@ -705,7 +707,9 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
                     continue;
                 }
 
-                err = ACAPI_Attribute_SetProperty (attGuid, propertyValue);
+                API_Attr_Head attrHead = {};
+                attrHead.guid = attGuid;
+                err = ACAPI_Attribute_SetProperty (attrHead, propertyValue);
 
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
