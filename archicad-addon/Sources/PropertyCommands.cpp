@@ -691,7 +691,7 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
             GS::Array<API_Property> propertyValues;
 
             API_Attr_Head attrHead = {};
-            attrHead.guid = attGUid;
+            attrHead.guid = attGuid;
             GSErrCode err = ACAPI_Attribute_GetPropertyValuesByGuid (attrHead, properties, propertyValues);
 
             for (API_Property& propertyValue : propertyValues) {
