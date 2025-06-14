@@ -277,11 +277,11 @@ GSErrCode Initialize (void)
             "Sets the property values of elements. It works for subelements of hierarchal elements also."
         );
         err |= RegisterCommand<GetPropertyValuesOfAttributesCommand> (
-            propertyCommands, "1.0.6",
+            propertyCommands, "1.1.8",
             "Returns the property values of the attributes for the given property."
         );
         err |= RegisterCommand<SetPropertyValuesOfAttributesCommand> (
-            propertyCommands, "1.0.6",
+            propertyCommands, "1.1.8",
             "Sets the property values of attributes."
         );
         err |= RegisterCommand<CreatePropertyGroupsCommand> (
