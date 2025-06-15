@@ -1751,6 +1751,67 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "GetPropertyValuesOfAttributes",
+                "version": "1.1.8",
+                "description": "Returns the property values of the attributes for the given property.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds",
+            "properties"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyValuesForAttributes": {
+                "$ref": "#/PropertyValuesOrErrorArray",
+                "description": "List of property value lists. The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValuesForAttributes"
+        ]
+    }
+            },{
+                "name": "SetPropertyValuesOfAttributes",
+                "version": "1.1.8",
+                "description": "Sets the property values of attributes.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "attributePropertyValues": {
+                "$ref": "#/AttributePropertyValues"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributePropertyValues"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
                 "name": "CreatePropertyGroups",
                 "version": "1.0.7",
                 "description": "Creates Property Groups based on the given parameters.",

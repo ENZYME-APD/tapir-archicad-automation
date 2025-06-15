@@ -463,6 +463,19 @@ API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex in
     return attr.header.guid;
 }
 
+API_Attr_Head GetAttributeHeadFromGuid (API_Guid guid)
+{
+    API_Attr_Head attrHead = {};
+    attrHead.guid = guid;
+
+    if (ACAPI_Attribute_Search (&attrHead) != NoError) {
+        attrHead.typeID = API_ZombieAttrID;
+        attrHead.index = ACAPI_CreateAttributeIndex (-1);
+    }
+
+    return attrHead;
+}
+
 API_AttributeIndex GetAttributeIndexFromGuid (API_AttrTypeID typeID, API_Guid guid)
 {
     API_Attribute attr = {};

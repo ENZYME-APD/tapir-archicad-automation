@@ -1,0 +1,3318 @@
+Command: GetAttributesByType
+Parameters:
+{
+    "attributeType": "BuildingMaterial"
+}
+Response:
+{
+    "attributes": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 1,
+            "name": "Brick"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 2,
+            "name": "Brick - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 3,
+            "name": "Brick - Finish"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 4,
+            "name": "Masonry Block - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 5,
+            "name": "Masonry Block - Filler"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 6,
+            "name": "Concrete"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 7,
+            "name": "Concrete - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 8,
+            "name": "Concrete Block - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 9,
+            "name": "Concrete Block - Filler"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 10,
+            "name": "Reinforced Concrete - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 11,
+            "name": "Reinforced Concrete - Prefab"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 12,
+            "name": "Insulation - Fiber Hard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 13,
+            "name": "Insulation - Fiber Soft"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 14,
+            "name": "Insulation - Mineral Hard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 15,
+            "name": "Insulation - Mineral Soft"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 16,
+            "name": "Insulation - Plastic Hard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 17,
+            "name": "Insulation - Plastic Soft"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 18,
+            "name": "Insulation - Thermal Break"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 19,
+            "name": "Fire Proofing"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 20,
+            "name": "Membrane - Vapor Barrier"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 21,
+            "name": "Membrane - Waterproof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 22,
+            "name": "Membrane - Rainproof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 23,
+            "name": "Timber - Roof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 24,
+            "name": "Timber - Floor"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 25,
+            "name": "Plywood"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 26,
+            "name": "Fiberboard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 27,
+            "name": "Tile - Roof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 28,
+            "name": "Tile - Floor"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 29,
+            "name": "Plaster - Lime Sand"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 30,
+            "name": "Plaster - Gypsum"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 31,
+            "name": "Gypsum Plasterboard"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 32,
+            "name": "Gypsum Plasterboard - Waterproof"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 33,
+            "name": "Aluminium"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 34,
+            "name": "Iron"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 35,
+            "name": "Steel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 36,
+            "name": "Steel - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 37,
+            "name": "Steel - Stainless"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 38,
+            "name": "Titanium Zinc"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 39,
+            "name": "Stone - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 40,
+            "name": "Stone - Finish"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 41,
+            "name": "Plastic - Solid"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 42,
+            "name": "Air Space"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 43,
+            "name": "Air Space - Frame"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 44,
+            "name": "Gravel"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 45,
+            "name": "Glass"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 46,
+            "name": "Soil"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 47,
+            "name": "Water"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 48,
+            "name": "Sand"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 49,
+            "name": "Timber - Structural"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 50,
+            "name": "Tile - Wall"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 51,
+            "name": "GENERIC - EXTERNAL CLADDING"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 52,
+            "name": "GENERIC - EXTERNAL FILLER"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 53,
+            "name": "GENERIC - EXTERNAL MEMBRANE"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 54,
+            "name": "GENERIC - PREFABRICATED"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 56,
+            "name": "GENERIC - ENVIRONMENT"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 57,
+            "name": "GENERIC - INTERNAL FILLER"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 58,
+            "name": "GENERIC - INSULATION"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 59,
+            "name": "GENERIC - STRUCTURAL"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 60,
+            "name": "GENERIC - INTERNAL CLADDING"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 55,
+            "name": "New Building Material 1"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 61,
+            "name": "New Building Material 2"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 62,
+            "name": "New Building Material 3"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 63,
+            "name": "New Building Material 4"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 64,
+            "name": "New Building Material 5"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 65,
+            "name": "New Building Material 6"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 66,
+            "name": "New Building Material 7"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 67,
+            "name": "New Building Material 8"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 68,
+            "name": "New Building Material 9"
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "index": 69,
+            "name": "New Building Material 10"
+        }
+    ]
+}
+Command: GetPropertyValuesOfAttributes
+Parameters:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "properties": [
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "propertyValuesForAttributes": [
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": ""
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: SetPropertyValuesOfAttributes
+Parameters:
+{
+    "attributePropertyValues": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            },
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyValue": {
+                "value": "New "
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: GetPropertyValuesOfAttributes
+Parameters:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "properties": [
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "propertyValuesForAttributes": [
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "propertyValue": {
+                        "value": "New "
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        },
+        {
+            "propertyValues": [
+                {
+                    "error": {
+                        "code": -2130312908,
+                        "message": "Not available or not evaluated property"
+                    }
+                }
+            ]
+        }
+    ]
+}

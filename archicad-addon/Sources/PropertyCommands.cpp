@@ -472,6 +472,263 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     return response;
 }
 
+GetPropertyValuesOfAttributesCommand::GetPropertyValuesOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPropertyValuesOfAttributesCommand::GetName () const
+{
+    return "GetPropertyValuesOfAttributes";
+}
+
+GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds",
+            "properties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyValuesForAttributes": {
+                "$ref": "#/PropertyValuesOrErrorArray",
+                "description": "List of property value lists. The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValuesForAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    parameters.Get ("attributeIds", attributeIds);
+
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    GS::ObjectState response;
+    const auto& propertyValuesForAttributes = response.AddList<GS::ObjectState> ("propertyValuesForAttributes");
+
+    for (const GS::ObjectState& attribute : attributeIds) {
+        const GS::ObjectState* attributeId = attribute.Get ("attributeId");
+        if (attributeId == nullptr) {
+            propertyValuesForAttributes (CreateErrorResponse (APIERR_BADPARS, "attributeId is missing"));
+            continue;
+        }
+
+        const API_Guid attGuid = GetGuidFromObjectState (*attributeId);
+
+        GS::ObjectState propertyValuesForAttribute;
+        const auto& propertyValues = propertyValuesForAttribute.AddList<GS::ObjectState> ("propertyValues");
+
+        for (const GS::ObjectState& property : properties) {
+            const GS::ObjectState* propertyId = property.Get ("propertyId");
+            if (propertyId == nullptr) {
+                propertyValues (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+                continue;
+            }
+
+            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+
+            API_Property propertyValue;
+            API_Attr_Head attrHead = GetAttributeHeadFromGuid (attGuid);
+            GSErrCode err = ACAPI_Attribute_GetPropertyValue (attrHead, propertyGuid, propertyValue);
+
+            if (err != NoError) {
+                propertyValues (CreateErrorResponse (err, "Failed to get property value"));
+                continue;
+            }
+
+            if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
+                propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
+                continue;
+            }
+
+            GS::UniString propertyValueString;
+            err = ACAPI_Property_GetPropertyValueString (propertyValue, &propertyValueString);
+
+            if (err != NoError) {
+                propertyValues (CreateErrorResponse (err, "Failed to get property value as string"));
+                continue;
+            }
+
+            propertyValues (GS::ObjectState ("propertyValue", GS::ObjectState ("value", propertyValueString)));
+        }
+
+        propertyValuesForAttributes (propertyValuesForAttribute);
+    }
+
+    return response;
+}
+
+SetPropertyValuesOfAttributesCommand::SetPropertyValuesOfAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetPropertyValuesOfAttributesCommand::GetName () const
+{
+    return "SetPropertyValuesOfAttributes";
+}
+
+GS::Optional<GS::UniString> SetPropertyValuesOfAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributePropertyValues": {
+                "$ref": "#/AttributePropertyValues"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributePropertyValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetPropertyValuesOfAttributesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributePropertyValues;
+    parameters.Get ("attributePropertyValues", attributePropertyValues);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    GS::Array<GS::ObjectState> results (attributePropertyValues.GetSize ());
+    GS::HashTable<GS::Pair<API_Guid, API_Guid>, GSIndex> resultIndices;
+    GS::HashTable<API_Guid, GS::Array<API_Guid>> propertiesForAttributes;
+    GS::HashTable<GS::Pair<API_Guid, API_Guid>, GS::UniString> propertyValuesForAttributes;
+
+    PropertyConversionUtils conversionUtils;
+
+    for (const GS::ObjectState& attributePropertyValue : attributePropertyValues) {
+        const GS::ObjectState* attributeId = attributePropertyValue.Get ("attributeId");
+        if (attributeId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "attributeId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* propertyId = attributePropertyValue.Get ("propertyId");
+        if (propertyId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* propertyValue = attributePropertyValue.Get ("propertyValue");
+        if (propertyValue == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyValue is missing"));
+            continue;
+        }
+
+        GS::UniString propertyValueDisplayString;
+        if (!propertyValue->Get ("value", propertyValueDisplayString)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "value is missing from propertyValue"));
+            continue;
+        }
+
+        const API_Guid attGuid = GetGuidFromObjectState (*attributeId);
+        const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+
+        GS::Array<API_Guid>* properties;
+        propertiesForAttributes.Add (attGuid, {}, &properties);
+        properties->Push (propertyGuid);
+
+        const auto guidPair = GS::NewPair (attGuid, propertyGuid);
+        propertyValuesForAttributes.Add (guidPair, propertyValueDisplayString);
+        resultIndices.Add (guidPair, results.GetSize ());
+        results.PushNew ();
+    }
+
+    ACAPI_CallUndoableCommand ("SetPropertyValuesOfAttributesCommand", [&]() -> GSErrCode {
+        for (const auto& kv : propertiesForAttributes) {
+#ifdef ServerMainVers_2800
+            const API_Guid& attGuid = kv.key;
+            const GS::Array<API_Guid>& properties = kv.value;
+#else
+            const API_Guid& attGuid = *kv.key;
+            const GS::Array<API_Guid>& properties = *kv.value;
+#endif
+
+            GS::Array<API_Property> propertyValues;
+
+            API_Attr_Head attrHead = GetAttributeHeadFromGuid (attGuid);
+            GSErrCode err = ACAPI_Attribute_GetPropertyValuesByGuid (attrHead, properties, propertyValues);
+
+            for (API_Property& propertyValue : propertyValues) {
+                const auto guidPair = GS::NewPair (attGuid, propertyValue.definition.guid);
+                auto& result = results[resultIndices[guidPair]];
+
+                if (err != NoError) {
+                    result = CreateFailedExecutionResult (err, "Failed to get property values for attribute");
+                    continue;
+                }
+
+                err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
+
+                if (err != NoError) {
+                    result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
+                    continue;
+                }
+
+                err = ACAPI_Attribute_SetProperty (attrHead, propertyValue);
+
+                if (err != NoError) {
+                    result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
+                    continue;
+                }
+
+                result = CreateSuccessfulExecutionResult ();
+            }
+        }
+
+        return NoError;
+    });
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+}
+
 CreatePropertyGroupsCommand::CreatePropertyGroupsCommand () :
     CommandBase (CommonSchema::Used)
 {
