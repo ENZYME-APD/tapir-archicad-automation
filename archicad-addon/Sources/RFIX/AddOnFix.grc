@@ -33,6 +33,14 @@
     "Del"
 }
 
+'GICN' ID_UPDATE_ICON "Update" {
+    "Update"
+}
+
+'GICN' ID_RUNWITHUPDATE_BUTTON_ICON "RunWithUpdate" {
+    "RunWithUpdate"
+}
+
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
 }

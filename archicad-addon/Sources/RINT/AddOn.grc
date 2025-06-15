@@ -8,7 +8,7 @@
 
 'STR#' ID_ADDON_MENU "Add-On Menu" {
 /* [   ] */        "Tapir"
-/* [  1] */        "About Tapir...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+/* [  1] */        "About Tapir...^E3^ES^EE^EI^ED^EL^EW^ET^EM^32503"
 }
 
 'STR#' ID_ADDON_MENU_FOR_PALETTE "Add-On Menu" {
@@ -16,9 +16,25 @@
 /* [  1] */        "Tapir Palette^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
+'STR#' ID_ADDON_MENU_FOR_UPDATE "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Check for Updates...^E3^ES^EE^EI^ED^EL^EW^ET^EM^32510"
+}
+
 'STR#' ID_PALETTE_STRINGS "Tapir Palette Strings" {
 /* [  1] */ "Select Python Scripts"
 /* [  2] */ "Add"
+}
+
+'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
+/* [  1] */ "Tapir Update"
+/* [  2] */ "You are using Tapir version %s. A new version %T is available."
+/* [  3] */ "Would you like to update to the latest version for the best experience?"
+/* [  4] */ "Update and Restart Archicad"
+/* [  5] */ "Continue with this version"
+/* [  6] */ "Tapir Update"
+/* [  7] */ "You are using the latest Tapir version %s."
+/* [  8] */ "OK"
 }
 
 'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {

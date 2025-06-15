@@ -10,6 +10,7 @@
 
 #include "AboutDialog.hpp"
 #include "TapirPalette.hpp"
+#include "VersionChecker.hpp"
 
 #include "ApplicationCommands.hpp"
 #include "ProjectCommands.hpp"
@@ -71,6 +72,22 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     break;
             }
             break;
+        case ID_ADDON_MENU_FOR_UPDATE:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_UPDATE:
+                    {
+                        if (!VersionChecker::IsUsingLatestVersion ()) {
+                            TapirPalette::Instance ().UpdateAddOn ();
+                        } else {
+                            DGAlert (DG_INFORMATION,
+                                RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
+                                GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION),
+                                RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON, ACAPI_GetOwnResModule ()));
+                        }
+                    }
+                    break;
+            }
+            break;
     }
 
     return NoError;
@@ -81,6 +98,7 @@ API_AddonType CheckEnvironment (API_EnvirParams* envir)
     RSGetIndString (&envir->addOnInfo.name, ID_ADDON_INFO, ID_ADDON_INFO_NAME, ACAPI_GetOwnResModule ());
     RSGetIndString (&envir->addOnInfo.description, ID_ADDON_INFO, ID_ADDON_INFO_DESC, ACAPI_GetOwnResModule ());
     envir->addOnInfo.description += GS::UniString (" ") + ADDON_VERSION;
+    VersionChecker::CreateInstance (envir->serverInfo.mainVersion);
     return APIAddon_Preload;
 }
 
@@ -89,6 +107,7 @@ GSErrCode RegisterInterface (void)
     GSErrCode err = NoError;
 
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_PALETTE, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_UPDATE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
 
     return err;
@@ -99,6 +118,7 @@ GSErrCode Initialize (void)
     GSErrCode err = NoError;
 
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_PALETTE, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_UPDATE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
 	err |= TapirPalette::RegisterPaletteControlCallBack ();
 
