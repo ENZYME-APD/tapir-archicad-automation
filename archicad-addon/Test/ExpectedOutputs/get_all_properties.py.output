@@ -20931,6 +20931,18 @@ Response:
             "propertyValueType": "String",
             "propertyMeasureType": "Default",
             "propertyIsEditable": true
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "Custom",
+            "propertyGroupName": "Tapir Group",
+            "propertyName": "Tapir Custom",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "String",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": true
         }
     ]
 }
