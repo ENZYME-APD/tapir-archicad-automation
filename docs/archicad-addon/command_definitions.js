@@ -3198,6 +3198,125 @@ var gCommands = [{
     }
             }]
         },{
+            "name": "Revision Management Commands",
+            "commands": [{
+                "name": "GetRevisionIssues",
+                "version": "1.1.9",
+                "description": "Retrieves all issues.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "revisionIssues": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/RevisionIssue"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionIssues"
+        ]
+    }
+            },{
+                "name": "GetRevisionChanges",
+                "version": "1.1.9",
+                "description": "Retrieves all changes.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "revisionChanges": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/RevisionChange"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionChanges"
+        ]
+    }
+            },{
+                "name": "GetDocumentRevisions",
+                "version": "1.1.9",
+                "description": "Retrieves all document revisions.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "documentRevisions": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DocumentRevision"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "documentRevisions"
+        ]
+    }
+            },{
+                "name": "GetCurrentRevisionChangesOfLayouts",
+                "version": "1.1.9",
+                "description": "Retrieves all changes belong to the last revision of the given layouts.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "layoutDatabaseIds": {
+                "$ref": "#/Databases"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layoutDatabaseIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "currentRevisionChangesOfLayouts": {
+                "$ref": "#/RevisionChangesOfEntities"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "currentRevisionChangesOfLayouts"
+        ]
+    }
+            },{
+                "name": "GetRevisionChangesOfElements",
+                "version": "1.1.9",
+                "description": "Retrieves the changes belong to the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "revisionChangesOfElements": {
+                "$ref": "#/RevisionChangesOfEntities"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionChangesOfElements"
+        ]
+    }
+            }]
+        },{
             "name": "Developer Commands",
             "commands": [{
                 "name": "GenerateDocumentation",
