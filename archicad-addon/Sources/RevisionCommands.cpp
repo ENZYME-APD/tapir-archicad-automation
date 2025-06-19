@@ -53,7 +53,7 @@ GS::ObjectState GetRevisionIssuesCommand::Execute (const GS::ObjectState& /*para
             "markersVisibleSinceIndex", issue.visibleMarkersInIssues,
             "isIssued", issue.issued);
         GS::Array<API_RVMDocumentRevision> documentRevisions;
-        ACAPI_Revision_GetRVMIssueDocumentRevisions (&issue.guid, &documentRevisions);
+        ACAPI_Revision_GetRVMIssueDocumentRevisions ((void*)&issue.guid, &documentRevisions);
         if (!documentRevisions.IsEmpty ()) {
             const auto& drs = issueData.AddList<GS::ObjectState> ("documentRevisions");
             for (auto& kv : documentRevisions) {
@@ -118,7 +118,7 @@ static GS::ObjectState RVMChangeToOS (const API_RVMChange& change)
         "isIssued", change.issued,
         "isArchived", change.archived);
     API_RVMIssue firstIssue = {};
-    ACAPI_Revision_GetRVMChangeFirstIssue (&change.id, &firstIssue);
+    ACAPI_Revision_GetRVMChangeFirstIssue ((void*)&change.id, &firstIssue);
     if (firstIssue.guid != APINULLGuid) {
         changeData.Add ("firstRevisionIssueId", CreateGuidObjectState (firstIssue.guid));
     }
@@ -207,7 +207,7 @@ GS::ObjectState GetDocumentRevisionsCommand::Execute (const GS::ObjectState& /*p
         documentRevisionData.Add ("ownerUser", ownerUser);
         documentRevisionData.Add ("status", documentRevision.status == API_RVMDocumentRevisionStatusActual ? "Actual" : "Issued");
         GS::Array<API_RVMChange> changes;
-        ACAPI_Revision_GetRVMDocumentRevisionChanges (&documentRevision.guid, &changes);
+        ACAPI_Revision_GetRVMDocumentRevisionChanges ((void*)&documentRevision.guid, &changes);
         if (!changes.IsEmpty ()) {
             const auto& c = documentRevisionData.AddList<GS::ObjectState> ("changes");
             for (auto& kv : changes) {
@@ -300,7 +300,7 @@ GS::ObjectState GetCurrentRevisionChangesOfLayoutsCommand::Execute (const GS::Ob
         API_DatabaseUnId dbUnId;
         dbUnId.elemSetId = databaseId;
         GS::Array<API_RVMChange> changeList;
-        GSErrCode err = ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges (&dbUnId, &changeList);
+        GSErrCode err = ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges ((void*)&dbUnId, &changeList);
         if (err != NoError) {
             currentRevisionChangesOfLayouts (CreateErrorResponse (err, "Failed to retrive changes of layout."));
             continue;
@@ -372,14 +372,14 @@ GS::ObjectState GetRevisionChangesOfElementsCommand::Execute (const GS::ObjectSt
 
     for (const API_Guid& elemId : elementIds) {
         GS::Array<GS::UniString> changeIds;
-        GSErrCode err = ACAPI_Revision_GetRVMElemChangeIds (&elemId, &changeIds);
+        GSErrCode err = ACAPI_Revision_GetRVMElemChangeIds ((void*)&elemId, &changeIds);
         if (err != NoError) {
             revisionChangesOfElements (CreateErrorResponse (err, "Failed to retrive changes of elements."));
             continue;
         }
 
         GS::Array<API_RVMChange> changeList;
-        ACAPI_Revision_GetRVMChangesFromChangeIds (&changeIds, &changeList);
+        ACAPI_Revision_GetRVMChangesFromChangeIds ((void*)&changeIds, &changeList);
 
         GS::ObjectState os;
         const auto& revisionChanges = os.AddList<GS::ObjectState> ("revisionChanges");
