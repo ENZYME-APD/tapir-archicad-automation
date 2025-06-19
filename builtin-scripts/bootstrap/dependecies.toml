@@ -1,0 +1,7 @@
+[UnusedViewCleaner]
+multiconn_archicad.version = "0.3.1"
+multiconn_archicad.url = "https://github.com/SzamosiMate/multiconn_archicad/releases/latest/download/multiconn_archicad-0.3.1-py3-none-any.whl"
+
+
+[AutomaticNumberingBasedOnPolyline]
+archicad.version = "28.3000"
