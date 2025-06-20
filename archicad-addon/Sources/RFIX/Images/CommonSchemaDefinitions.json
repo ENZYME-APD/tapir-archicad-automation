@@ -1668,6 +1668,18 @@
             "layerCombination": {
                 "type": "string",
                 "description": "The name of the layer combination. If empty, the view has custom layer combination."
+            },
+            "dimensionStyle": {
+                "type": "string",
+                "description": "The name of the dimension style. If empty, the view has custom dimension style."
+            },
+            "penSetName": {
+                "type": "string",
+                "description": "The name of the pen set. If empty, the view has custom pen set."
+            },
+            "graphicOverrideCombination": {
+                "type": "string",
+                "description": "The name of the graphic override combination. If empty, the view has custom graphic override combination."
             }
         },
         "additionalProperties": false,

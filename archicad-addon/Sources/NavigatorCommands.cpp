@@ -360,7 +360,10 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
 
         viewSettings (GS::ObjectState (
             "modelViewOptions", navigatorView.modelViewOptName,
-            "layerCombination", navigatorView.layerCombination));
+            "layerCombination", navigatorView.layerCombination,
+            "dimensionStyle", navigatorView.dimName,
+            "penSetName", navigatorView.penSetName,
+            "graphicOverrideCombination", navigatorView.overrideCombination));
     }
 
     return response;
@@ -460,13 +463,12 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             continue;
         }
 
-        GS::UniString name;
-        if (viewSettingsOS->Get ("modelViewOptions", name)) {
-            CHTruncate (name.ToCStr ().Get (), navigatorView.modelViewOptName, sizeof (navigatorView.modelViewOptName));
-        }
-        if (viewSettingsOS->Get ("layerCombination", name)) {
-            CHTruncate (name.ToCStr ().Get (), navigatorView.layerCombination, sizeof (navigatorView.layerCombination));
-        }
+        SetCharProperty (viewSettingsOS, "modelViewOptions", navigatorView.modelViewOptName);
+        SetCharProperty (viewSettingsOS, "layerCombination", navigatorView.layerCombination);
+        SetCharProperty (viewSettingsOS, "dimensionStyle", navigatorView.dimName);
+        SetCharProperty (viewSettingsOS, "penSetName", navigatorView.penSetName);
+        SetUCharProperty (viewSettingsOS, "graphicOverrideCombination", navigatorView.overrideCombination);
+
 
         err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
         if (err != NoError) {
