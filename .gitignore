@@ -137,3 +137,4 @@ grasshopper-plugin/src/components/
 grasshopper-plugin/src/test.py
 .vscode
 .lck
+/.vs
