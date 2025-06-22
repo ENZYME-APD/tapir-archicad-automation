@@ -1,3 +1,13 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "multiconn-archicad",
+# ]
+#
+# [tool.uv.sources]
+# multiconn-archicad = { url = "https://github.com/SzamosiMate/multiconn_archicad/releases/latest/download/multiconn_archicad-0.3.1-py3-none-any.whl" }
+# ///
+
 from typing import Optional,  Callable
 from multiconn_archicad import MultiConn, ConnHeader, CoreCommands
 
