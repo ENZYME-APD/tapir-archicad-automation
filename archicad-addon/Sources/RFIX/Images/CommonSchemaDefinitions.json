@@ -2176,5 +2176,269 @@
                 "$ref": "#/NotYetSupportedElementTypeDetails"
             }
         ]
+    },
+    "RevisionIssueId": {
+        "type": "object",
+        "description": "The identifier of a revision issue.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "DocumentRevisionId": {
+        "type": "object",
+        "description": "The identifier of a document revision.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "RevisionCustomSchemeData": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "customSchemeKey": {
+                    "$ref": "#/Guid"
+                },
+                "customSchemeValue": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "customSchemeKey",
+                "customSchemeValue"
+            ]
+        }
+    },
+    "RevisionIssue": {
+        "type": "object",
+        "properties": {
+            "revisionIssueId": {
+                "$ref": "#/RevisionIssueId"
+            },
+            "id": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "issueTime": {
+                "type": "string"
+            },
+            "issuedByUser": {
+                "type": "string"
+            },
+            "overrideRevisionIDOfAllIncludedLayouts": {
+                "type": "boolean"
+            },
+            "createNewRevisionInAllIncludedLayouts": {
+                "type": "boolean"
+            },
+            "markersVisibleSinceIndex": {
+                "type": "integer"
+            },
+            "isIssued": {
+                "type": "boolean"
+            },
+            "documentRevisions": {
+                "type": "array",
+                "description": "All document revisions belong to the given issue.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "revisionId": {
+                            "$ref": "#/DocumentRevisionId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "revisionId"
+                    ]
+                }
+            },
+            "customSchemeData": {
+                "$ref": "#/RevisionCustomSchemeData"
+            }
+        },
+        "required": [
+            "revisionIssueId",
+            "id",
+            "description",
+            "issueTime",
+            "issuedByUser",
+            "overrideRevisionIDOfAllIncludedLayouts",
+            "createNewRevisionInAllIncludedLayouts",
+            "isIssued"
+        ]
+    },
+    "RevisionChange": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "lastModifiedTime": {
+                "type": "string"
+            },
+            "modifiedByUser": {
+                "type": "string"
+            },
+            "isIssued": {
+                "type": "boolean"
+            },
+            "firstRevisionIssueId": {
+                "$ref": "#/RevisionIssueId",
+                "description": "The identifier of the first issue in which the given change is issued."
+            },
+            "isArchived": {
+                "type": "boolean"
+            },
+            "customSchemeData": {
+                "$ref": "#/RevisionCustomSchemeData"
+            }
+        },
+        "required": [
+            "id",
+            "description",
+            "lastModifiedTime",
+            "modifiedByUser",
+            "isIssued",
+            "isArchived"
+        ]
+    },
+    "LayoutInfo": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "masterLayoutName": {
+                "type": "string"
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "subsetId": {
+                "type": "string"
+            },
+            "subsetName": {
+                "type": "string"
+            },
+            "ownerUser": {
+                "type": "string"
+            },
+            "customSchemeData": {
+                "$ref": "#/RevisionCustomSchemeData"
+            }
+        },
+        "required": [
+            "id",
+            "databaseId",
+            "name",
+            "masterLayoutName",
+            "width",
+            "height",
+            "subsetId",
+            "subsetName",
+            "ownerUser"
+        ]
+    },
+    "DocumentRevision": {
+        "type": "object",
+        "properties": {
+            "revisionId": {
+                "$ref": "#/DocumentRevisionId"
+            },
+            "id": {
+                "type": "string"
+            },
+            "finalId": {
+                "type": "string"
+            },
+            "ownerUser": {
+                "type": "string"
+            },
+            "status": {
+                "type": "string",
+                "enum": [
+                    "Actual",
+                    "Issued"
+                ]
+            },
+            "changes": {
+                "type": "array",
+                "description": "All changes belong to the given document revision.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "id"
+                    ]
+                }
+            },
+            "layoutInfo": {
+                "$ref": "#/LayoutInfo"
+            }
+        },
+        "required": [
+            "revisionId",
+            "id",
+            "finalId",
+            "ownerUser",
+            "status",
+            "layoutInfo"
+        ]
+    },
+    "RevisionChangesOfEntities": {
+        "type": "object",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "revisionChanges": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/RevisionChange"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "revisionChanges"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 }

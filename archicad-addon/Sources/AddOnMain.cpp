@@ -26,6 +26,7 @@
 #include "FavoritesCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NavigatorCommands.hpp"
+#include "RevisionCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -456,6 +457,31 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ImportIssuesFromBCFCommand> (
             issueCommands, "1.0.6",
             "Imports issues from the specified BCF file."
+        );
+        AddCommandGroup (issueCommands);
+    }
+
+    { // Revision Management Commands
+        CommandGroup issueCommands ("Revision Management Commands");
+        err |= RegisterCommand<GetRevisionIssuesCommand> (
+            issueCommands, "1.1.9",
+            "Retrieves all issues."
+        );
+        err |= RegisterCommand<GetRevisionChangesCommand> (
+            issueCommands, "1.1.9",
+            "Retrieves all changes."
+        );
+        err |= RegisterCommand<GetDocumentRevisionsCommand> (
+            issueCommands, "1.1.9",
+            "Retrieves all document revisions."
+        );
+        err |= RegisterCommand<GetCurrentRevisionChangesOfLayoutsCommand> (
+            issueCommands, "1.1.9",
+            "Retrieves all changes belong to the last revision of the given layouts."
+        );
+        err |= RegisterCommand<GetRevisionChangesOfElementsCommand> (
+            issueCommands, "1.1.9",
+            "Retrieves the changes belong to the given elements."
         );
         AddCommandGroup (issueCommands);
     }
