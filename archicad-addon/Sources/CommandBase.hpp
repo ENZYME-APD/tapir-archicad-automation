@@ -115,7 +115,10 @@ void SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::u
 {
     GS::UniString propertyValue;
     if (os->Get (propertyKey, propertyValue)) {
-        const GS::uchar_t* sourceString = propertyValue.ToUStr ();
+
+        const auto ustrObject = propertyValue.ToUStr ();
+        const GS::uchar_t* sourceString = ustrObject;
+
         GS::ucsncpy (targetProperty, sourceString, N);
         targetProperty[N - 1] = 0;
     }
