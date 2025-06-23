@@ -497,12 +497,8 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         element.zone.catInd = GetAttributeIndexFromGuid (API_ZoneCatID, categoryAttrGuid);
     }
 
-    GS::UniString name;
-    parameters.Get ("name", name);
-    GS::UniString noStr;
-    parameters.Get ("numberStr", noStr);
-    GS::snuprintf (element.zone.roomName, sizeof (element.zone.roomName), name.ToUStr ());
-    GS::snuprintf (element.zone.roomNoStr, sizeof (element.zone.roomNoStr), noStr.ToUStr ());
+    SetUCharProperty (&parameters, "name", element.zone.roomName);
+    SetUCharProperty (&parameters, "numberStr", element.zone.roomNoStr);
 
     GS::ObjectState geometry;
     parameters.Get ("geometry", geometry);
