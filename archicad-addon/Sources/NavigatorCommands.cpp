@@ -358,12 +358,14 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             continue;
         }
 
+        GS::UniString graphicOverrideCombinationName (navigatorView.overrideCombination);
+
         viewSettings (GS::ObjectState (
             "modelViewOptions", navigatorView.modelViewOptName,
             "layerCombination", navigatorView.layerCombination,
             "dimensionStyle", navigatorView.dimName,
             "penSetName", navigatorView.penSetName,
-            "graphicOverrideCombination", navigatorView.overrideCombination));
+            "graphicOverrideCombination", graphicOverrideCombinationName));
     }
 
     return response;
