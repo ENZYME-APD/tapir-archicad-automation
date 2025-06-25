@@ -1584,6 +1584,130 @@ var gCommands = [{
             "elements"
         ]
     }
+            },{
+                "name": "CreateMeshes",
+                "version": "1.1.9",
+                "description": "Creates Mesh elements based on the given parameters.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "meshesData": {
+            "type": "array",
+            "description": "Array of data to create Meshes.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Mesh.",
+                "properties" : {
+                    "floorIndex": {
+                        "type": "integer"
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "The Z reference level of coordinates."
+                    },
+                    "skirtType": {
+                        "type": "string",
+                        "description": "The type of the skirt structure.",
+                        "enum": [
+                            "SurfaceOnlyWithoutSkirt",
+                            "WithSkirt",
+                            "SolidBodyWithSkirt"
+                        ]
+                    },
+                    "skirtLevel": {
+                        "type": "number",
+                        "description": "The height of the skirt."
+                    },
+                    "polygonCoordinates": { 
+                        "type": "array",
+                        "description": "The 3D coordinates of the outline polygon of the mesh.",
+                        "items": {
+                            "$ref": "#/3DCoordinate"
+                        },
+                        "minItems": 3
+                    },
+                    "polygonArcs": {
+                        "type": "array",
+                        "description": "Polygon outline arcs of the mesh.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "holes" : {
+                        "type": "array",
+                        "description": "Array of parameters of holes.",
+                        "items": {
+                            "type": "object",
+                            "description" : "The parameters of the hole.",
+                            "properties" : {
+                                "polygonCoordinates": { 
+                                    "type": "array",
+                                    "description": "The 3D coordinates of the polygon of the hole.",
+                                    "items": {
+                                        "$ref": "#/3DCoordinate"
+                                    },
+                                    "minItems": 3
+                                },
+                                "polygonArcs": {
+                                    "type": "array",
+                                    "description": "Polygon outline arcs of the hole.",
+                                    "items": {
+                                        "$ref": "#/PolyArc"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "polygonCoordinates"
+                            ]
+                        }
+                    },
+                    "sublines": {
+                        "type": "array",
+                        "description": "The leveling sublines inside the polygon of the mesh.",
+                        "items": {
+                            "type": "object",
+                            "properties" : {
+                                "coordinates": { 
+                                    "type": "array",
+                                    "description": "The 3D coordinates of the leveling subline of the mesh.",
+                                    "items": {
+                                        "$ref": "#/3DCoordinate"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "coordinates"
+                            ]
+                        },
+                        "minItems": 1
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "polygonCoordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "meshesData"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
             }]
         },{
             "name": "Favorites Commands",
