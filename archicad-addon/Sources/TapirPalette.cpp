@@ -1,4 +1,5 @@
 #include "TapirPalette.hpp"
+#include "UvManager.hpp" 
 #include "ResourceIds.hpp"
 #include "VersionChecker.hpp"
 #include "HTTP/Client/ClientConnection.hpp"
@@ -124,13 +125,11 @@ TapirPalette::TapirPalette ()
     , openScriptButton (GetReference (), 4)
     , addScriptButton (GetReference (), 5)
     , delScriptButton (GetReference (), 6)
-    , pythonVersionsPopUp (GetReference (), 7)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
     LoadScriptsToPopUp ();
-    LoadPythonVersionsToPopUp ();
 
     SetRunButtonIcon ();
 
@@ -288,14 +287,6 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
         }
 
         SetDeleteScriptButtonStatus ();
-    } else if (ev.GetSource () == &pythonVersionsPopUp) {
-        if (GetPythonExeMap ().empty ()) {
-            if (pythonVersionsPopUp.GetSelectedItem () == DG::PopUp::TopItem) {
-                OpenWebpage ("https://www.python.org/downloads/");
-            } else {
-                LoadPythonVersionsToPopUp ();
-            }
-        }
     }
 }
 
@@ -346,12 +337,6 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
 
 void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Array<GS::UniString>& additionalArgv)
 {
-    const GS::UniString& pythonExePath = GetSelectedPythonExe ();
-    if (pythonExePath.IsEmpty ()) {
-        DGAlert (DG_ERROR, "Tapir Python Executor", "Python is missing.", "Go to official python website to install python!", "OK");
-        OpenWebpage ("https://www.python.org/downloads/");
-        return;
-    }
 
     GS::UniString filePath;
     fileLocation.ToPath (&filePath);
@@ -359,7 +344,7 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
     class UIUpdaterThread : public GS::Runnable
     {
         GS::Process& process;
-        
+
         class IconUpdateTask : public GS::Runnable {
         public:
             IconUpdateTask () = default;
@@ -391,7 +376,6 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
             }
 
             const GS::USize uSize = static_cast<GS::USize> (channel.GetAvailable ());
-
             std::unique_ptr<char> buffer;
             buffer.reset (new char[uSize + 1]);
 
@@ -429,13 +413,18 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
     };
 
     try {
-        WriteReport (DG_INFORMATION, "Executing %T", filePath.ToPrintf ());
+        WriteReport (DG_INFORMATION, "Executing %T with uv", filePath.ToPrintf ());
 
         GS::UniString command;
         GS::Array<GS::UniString> argv;
         if (filePath.EndsWith (".py")) {
-            command = pythonExePath;
-            argv = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
+            const GS::UniString uvCommand = uvManager.GetUvExecutableCommand ();
+            if (uvCommand.IsEmpty ()) {
+                // An alert was already shown to the user inside the manager, so we just exit.
+                return;
+            }
+            command = uvCommand;
+            argv = {"run", "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
         } else {
             command = filePath;
             argv = {"--port", GS::ValueToUniString (GetConnectionPort ())};
@@ -448,8 +437,8 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
         constexpr bool redirectStandardInput = false;
         constexpr bool redirectStandardError = true;
         process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
-	    if (!process.IsValid ()) {
-            WriteReport (DG_ERROR, "Python is missing.\nPlease install python!");
+        if (!process.IsValid ()) {
+            WriteReport (DG_ERROR, "Failed to start uv process. Ensure it is installed and executable.");
         }
 
         executor.Execute (new UIUpdaterThread (process));
@@ -531,29 +520,6 @@ void TapirPalette::LoadScriptsToPopUp ()
     SetDeleteScriptButtonStatus ();
 }
 
-void TapirPalette::LoadPythonVersionsToPopUp ()
-{
-    pythonVersionsPopUp.DeleteItem (DG_ALL_ITEMS);
-
-    FindAllPythonExePath ();
-
-    const auto& pythonExeMap = GetPythonExeMap ();
-    if (pythonExeMap.empty ()) {
-        pythonVersionsPopUp.AppendItem ();
-        pythonVersionsPopUp.SetItemText (DG::PopUp::BottomItem, "Install Python");
-        pythonVersionsPopUp.AppendItem ();
-        pythonVersionsPopUp.SetItemText (DG::PopUp::BottomItem, "Reload Python");
-    } else {
-        for (const auto& kv : pythonExeMap) {
-            pythonVersionsPopUp.AppendItem ();
-            pythonVersionsPopUp.SetItemText (DG::PopUp::BottomItem, kv.first);
-            pythonVersionsPopUp.SetItemObjectData (DG::PopUp::BottomItem, GS::NewRef<GS::UniString> (kv.second));
-        }
-    }
-
-    pythonVersionsPopUp.SelectItem (DG::PopUp::TopItem);
-}
-
 void TapirPalette::SetRunButtonIcon ()
 {
     short resId = ID_RUN_BUTTON_ICON;
@@ -575,13 +541,19 @@ bool TapirPalette::UpdateAddOn ()
 
     short response = DGAlert (DG_WARNING,
         RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
-        GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT1, ACAPI_GetOwnResModule ()), 
-                               ADDON_VERSION, VersionChecker::LatestVersion ().ToPrintf ()),
+        GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT1, ACAPI_GetOwnResModule ()),
+            ADDON_VERSION, VersionChecker::LatestVersion ().ToPrintf ()),
         RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT2, ACAPI_GetOwnResModule ()),
         RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON1, ACAPI_GetOwnResModule ()),
         RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON2, ACAPI_GetOwnResModule ()));
 
     if (response != DG_OK) {
+        return false;
+    }
+
+    const GS::UniString uvCommand = uvManager.GetUvExecutableCommand ();
+    if (uvCommand.IsEmpty ()) {
+        DGAlert (DG_ERROR, "Update Failed", "The update process requires 'uv' to be installed.", "Please install 'uv' and try again.", "OK");
         return false;
     }
 
@@ -597,7 +569,7 @@ bool TapirPalette::UpdateAddOn ()
 
         return UpdateAddOn ();
     }
-    const IO::Location fileLoc = SaveBuiltInScript (IO::RelativeLocation (fileName), DownloadFileContent (url));
+    const IO::Location fileLoc = SaveBuiltInScript (IO::RelativeLocation (fileName), content);
 
     IO::Location addOnLocation;
     ACAPI_GetOwnLocation (&addOnLocation);
@@ -607,27 +579,16 @@ bool TapirPalette::UpdateAddOn ()
     GS::UniString filePath;
     fileLoc.ToPath (&filePath);
 
-    const GS::UniString& pythonExePath = GetSelectedPythonExe ();
-    const GS::Array<GS::UniString> argv = {"-X", "utf8=1", filePath, "--port", GS::ValueToUniString (GetConnectionPort ()), "--downloadUrl", VersionChecker::LatestVersionDownloadUrl (), "--addOnLocation", addOnLocationStr};
+    const GS::Array<GS::UniString> argv = { "run", "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ()), "--downloadUrl", VersionChecker::LatestVersionDownloadUrl (), "--addOnLocation", addOnLocationStr};
 
     constexpr bool redirectStandardOutput = false;
     constexpr bool redirectStandardInput = false;
     constexpr bool redirectStandardError = false;
-    process = GS::Process::Create (pythonExePath, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+    process = GS::Process::Create (uvCommand, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
 
     SetRunButtonIcon ();
 
     return true;
-}
-
-const GS::UniString& TapirPalette::GetSelectedPythonExe () const
-{
-    auto ref = GS::DynamicCast<GS::UniString> (pythonVersionsPopUp.GetItemObjectData (pythonVersionsPopUp.GetSelectedItem ()));
-    if (ref == nullptr) {
-        return GS::EmptyUniString;
-    }
-
-    return *ref;
 }
 
 #define PREFERENCES_VERSION 10
@@ -649,6 +610,17 @@ void TapirPalette::SaveScriptsToPreferences ()
     }
     auto cStr = preferencesStr.ToCStr ();
     ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
+}
+
+bool TapirPalette::IsValidLocation (const IO::Location& location)
+{
+    if (location.IsEmpty ()) {
+        return false;
+    }
+
+    bool exists = false;
+    GSErrCode err = IO::fileSystem.Contains (location, &exists);
+    return err == NoError && exists;
 }
 
 void TapirPalette::AddScriptsFromPreferences ()
