@@ -17,6 +17,9 @@ viewSettings = aclib.RunTapirCommand('GetViewSettings', {'navigatorItemIds': vie
 
 modelViewOptions = aclib.RunTapirCommand('GetModelViewOptions')['modelViewOptions']
 layerCombinations = aclib.RunTapirCommand('GetAttributesByType', {'attributeType': 'LayerCombination'})['attributes']
+dimensionStyle = "US Architect"
+penSetName = "11 Archicad 9"
+graphicalOverrideCombination = 'Cardboard Model'
 
 navigatorItemIdsWithViewSettings = []
 for i in range(len(viewSettings)):
@@ -26,6 +29,12 @@ for i in range(len(viewSettings)):
         newViewSettings['modelViewOptions'] = modelViewOptions[i % len(modelViewOptions)]['name']
     if 'layerCombination' in oldViewSettings:
         newViewSettings['layerCombination'] = layerCombinations[i % len(layerCombinations)]['name']
+    if 'dimensionStyle' in oldViewSettings:
+        newViewSettings['dimensionStyle'] = dimensionStyle
+    if 'penSetName' in oldViewSettings:
+        newViewSettings['penSetName'] = penSetName
+    if 'graphicalOverrideCombination' in oldViewSettings:
+        newViewSettings['graphicalOverrideCombination'] = graphicalOverrideCombination
     if newViewSettings:
         navigatorItemIdsWithViewSettings.append({
                 'navigatorItemId': views[i]['navigatorItemId'],

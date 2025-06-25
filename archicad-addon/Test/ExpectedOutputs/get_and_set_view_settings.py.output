@@ -60,23 +60,38 @@ Response:
         },
         {
             "modelViewOptions": "01 Site",
-            "layerCombination": "01 Site"
+            "layerCombination": "01 Site",
+            "dimensionStyle": "Plain Meter",
+            "penSetName": "02 Site 500",
+            "graphicOverrideCombination": "Site Plan"
         },
         {
             "modelViewOptions": "03 Building Plans",
-            "layerCombination": "02 Drafting"
+            "layerCombination": "02 Drafting",
+            "dimensionStyle": "Plain Meter",
+            "penSetName": "03 Architectural 100",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "modelViewOptions": "03 Building Plans",
-            "layerCombination": "02 Drafting"
+            "layerCombination": "02 Drafting",
+            "dimensionStyle": "Plain Meter",
+            "penSetName": "03 Architectural 100",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "modelViewOptions": "03 Building Plans",
-            "layerCombination": "02 Drafting"
+            "layerCombination": "02 Drafting",
+            "dimensionStyle": "Plain Meter",
+            "penSetName": "03 Architectural 100",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "modelViewOptions": "03 Building Plans",
-            "layerCombination": "02 Drafting"
+            "layerCombination": "02 Drafting",
+            "dimensionStyle": "Plain Meter",
+            "penSetName": "03 Architectural 100",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "error": {
@@ -86,7 +101,10 @@ Response:
         },
         {
             "modelViewOptions": "02 Drafting",
-            "layerCombination": "02 Drafting"
+            "layerCombination": "02 Drafting",
+            "dimensionStyle": "Plain Millimeter",
+            "penSetName": "03 Architectural 100",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "error": {
@@ -206,7 +224,9 @@ Parameters:
             },
             "viewSettings": {
                 "modelViewOptions": "02 Drafting",
-                "layerCombination": "06 Plans - Mechanical"
+                "layerCombination": "06 Plans - Mechanical",
+                "dimensionStyle": "US Architect",
+                "penSetName": "11 Archicad 9"
             }
         },
         {
@@ -215,7 +235,9 @@ Parameters:
             },
             "viewSettings": {
                 "modelViewOptions": "03 Building Plans",
-                "layerCombination": "07 Plans - Structural"
+                "layerCombination": "07 Plans - Structural",
+                "dimensionStyle": "US Architect",
+                "penSetName": "11 Archicad 9"
             }
         },
         {
@@ -224,7 +246,9 @@ Parameters:
             },
             "viewSettings": {
                 "modelViewOptions": "04 Ceiling Plans",
-                "layerCombination": "09 Layouting"
+                "layerCombination": "09 Layouting",
+                "dimensionStyle": "US Architect",
+                "penSetName": "11 Archicad 9"
             }
         },
         {
@@ -233,7 +257,9 @@ Parameters:
             },
             "viewSettings": {
                 "modelViewOptions": "01 Site",
-                "layerCombination": "01 Site"
+                "layerCombination": "01 Site",
+                "dimensionStyle": "US Architect",
+                "penSetName": "11 Archicad 9"
             }
         },
         {
@@ -242,7 +268,9 @@ Parameters:
             },
             "viewSettings": {
                 "modelViewOptions": "02 Drafting",
-                "layerCombination": "04 Plans - Approval"
+                "layerCombination": "04 Plans - Approval",
+                "dimensionStyle": "US Architect",
+                "penSetName": "11 Archicad 9"
             }
         },
         {
@@ -251,7 +279,9 @@ Parameters:
             },
             "viewSettings": {
                 "modelViewOptions": "04 Ceiling Plans",
-                "layerCombination": "05 Plans - Detailed"
+                "layerCombination": "05 Plans - Detailed",
+                "dimensionStyle": "US Architect",
+                "penSetName": "11 Archicad 9"
             }
         }
     ]
@@ -341,23 +371,38 @@ Response:
         },
         {
             "modelViewOptions": "02 Drafting",
-            "layerCombination": "06 Plans - Mechanical"
+            "layerCombination": "06 Plans - Mechanical",
+            "dimensionStyle": "US Architect",
+            "penSetName": "11 Archicad 9",
+            "graphicOverrideCombination": "Site Plan"
         },
         {
             "modelViewOptions": "03 Building Plans",
-            "layerCombination": "07 Plans - Structural"
+            "layerCombination": "07 Plans - Structural",
+            "dimensionStyle": "US Architect",
+            "penSetName": "11 Archicad 9",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "modelViewOptions": "04 Ceiling Plans",
-            "layerCombination": "09 Layouting"
+            "layerCombination": "09 Layouting",
+            "dimensionStyle": "US Architect",
+            "penSetName": "11 Archicad 9",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "modelViewOptions": "01 Site",
-            "layerCombination": "01 Site"
+            "layerCombination": "01 Site",
+            "dimensionStyle": "US Architect",
+            "penSetName": "11 Archicad 9",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "modelViewOptions": "02 Drafting",
-            "layerCombination": "04 Plans - Approval"
+            "layerCombination": "04 Plans - Approval",
+            "dimensionStyle": "US Architect",
+            "penSetName": "11 Archicad 9",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "error": {
@@ -367,7 +412,10 @@ Response:
         },
         {
             "modelViewOptions": "04 Ceiling Plans",
-            "layerCombination": "05 Plans - Detailed"
+            "layerCombination": "05 Plans - Detailed",
+            "dimensionStyle": "Plain Millimeter",
+            "penSetName": "11 Archicad 9",
+            "graphicOverrideCombination": "No Overrides"
         },
         {
             "error": {

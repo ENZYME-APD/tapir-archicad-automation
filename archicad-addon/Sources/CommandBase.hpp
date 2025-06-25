@@ -100,3 +100,26 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<GSErrCode ()>& action,
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
+
+template<std::size_t N>
+void SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
+{
+    GS::UniString propertyValue;
+    if (os->Get (propertyKey, propertyValue)) {
+        CHTruncate (propertyValue.ToCStr ().Get (), targetProperty, N);
+    }
+};
+
+template<std::size_t N>
+void SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::uchar_t (&targetProperty)[N])
+{
+    GS::UniString propertyValue;
+    if (os->Get (propertyKey, propertyValue)) {
+
+        const auto ustrObject = propertyValue.ToUStr ();
+        const GS::uchar_t* sourceString = ustrObject;
+
+        GS::ucsncpy (targetProperty, sourceString, N);
+        targetProperty[N - 1] = 0;
+    }
+}
