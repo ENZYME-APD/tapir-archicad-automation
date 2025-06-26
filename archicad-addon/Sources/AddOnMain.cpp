@@ -83,6 +83,7 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                             DGAlert (DG_INFORMATION,
                                 RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
                                 GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION),
+                                GS::EmptyUniString,
                                 RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON, ACAPI_GetOwnResModule ()));
                         }
                     }
@@ -266,6 +267,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateObjectsCommand> (
             elementCommands, "1.0.3",
             "Creates Object elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateMeshesCommand> (
+            elementCommands, "1.1.9",
+            "Creates Mesh elements based on the given parameters."
         );
         AddCommandGroup (elementCommands);
     }

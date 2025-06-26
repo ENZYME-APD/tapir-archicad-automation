@@ -263,6 +263,9 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
         if (sideMat != nullptr) {
             memo.sideMaterials[iCoord] = *sideMat;
         }
+        if (memo.meshPolyZ != nullptr) {
+            coord.Get ("z", (*memo.meshPolyZ)[iCoord]);
+        }
         ++iCoord;
     }
     (*memo.coords)[iCoord] = (*memo.coords)[iStart];
@@ -836,6 +839,239 @@ GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (A
         element.object.yRatio = dimensions.y;
         GS::ObjectState os (ParameterValueFieldName, dimensions.z);
         ChangeParams(memo.params, {{"ZZYZX", os}});
+    }
+
+    return {};
+}
+
+CreateMeshesCommand::CreateMeshesCommand () :
+    CreateElementsCommandBase ("CreateMeshes", API_MeshID, "meshesData")
+{}
+
+GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "meshesData": {
+            "type": "array",
+            "description": "Array of data to create Meshes.",
+            "items": {
+                "type": "object",
+                "description" : "The parameters of the new Mesh.",
+                "properties" : {
+                    "floorIndex": {
+                        "type": "integer"
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "The Z reference level of coordinates."
+                    },
+                    "skirtType": {
+                        "type": "string",
+                        "description": "The type of the skirt structure.",
+                        "enum": [
+                            "SurfaceOnlyWithoutSkirt",
+                            "WithSkirt",
+                            "SolidBodyWithSkirt"
+                        ]
+                    },
+                    "skirtLevel": {
+                        "type": "number",
+                        "description": "The height of the skirt."
+                    },
+                    "polygonCoordinates": { 
+                        "type": "array",
+                        "description": "The 3D coordinates of the outline polygon of the mesh.",
+                        "items": {
+                            "$ref": "#/3DCoordinate"
+                        },
+                        "minItems": 3
+                    },
+                    "polygonArcs": {
+                        "type": "array",
+                        "description": "Polygon outline arcs of the mesh.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "holes" : {
+                        "type": "array",
+                        "description": "Array of parameters of holes.",
+                        "items": {
+                            "type": "object",
+                            "description" : "The parameters of the hole.",
+                            "properties" : {
+                                "polygonCoordinates": { 
+                                    "type": "array",
+                                    "description": "The 3D coordinates of the polygon of the hole.",
+                                    "items": {
+                                        "$ref": "#/3DCoordinate"
+                                    },
+                                    "minItems": 3
+                                },
+                                "polygonArcs": {
+                                    "type": "array",
+                                    "description": "Polygon outline arcs of the hole.",
+                                    "items": {
+                                        "$ref": "#/PolyArc"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "polygonCoordinates"
+                            ]
+                        }
+                    },
+                    "sublines": {
+                        "type": "array",
+                        "description": "The leveling sublines inside the polygon of the mesh.",
+                        "items": {
+                            "type": "object",
+                            "properties" : {
+                                "coordinates": { 
+                                    "type": "array",
+                                    "description": "The 3D coordinates of the leveling subline of the mesh.",
+                                    "items": {
+                                        "$ref": "#/3DCoordinate"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "coordinates"
+                            ]
+                        },
+                        "minItems": 1
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "polygonCoordinates"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "meshesData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorIndex", element.header.floorInd);
+    parameters.Get ("level", element.mesh.level);
+    parameters.Get ("skirtLevel", element.mesh.skirtLevel);
+    GS::UniString skirtType;
+    parameters.Get ("skirtType", skirtType);
+    if (skirtType == "SurfaceOnlyWithoutSkirt") {
+        element.mesh.skirt = 3;
+    } else if (skirtType == "WithSkirt") {
+        element.mesh.skirt = 2;
+    } else if (skirtType == "SolidBodyWithSkirt") {
+        element.mesh.skirt = 1;
+    }
+
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    GS::Array<GS::ObjectState> polygonArcs;
+    GS::Array<GS::ObjectState> holes;
+    parameters.Get ("polygonCoordinates", polygonCoordinates);
+    parameters.Get ("polygonArcs", polygonArcs);
+    parameters.Get ("holes", holes);
+    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
+        polygonCoordinates.Pop ();
+    }
+    element.mesh.poly.nCoords = polygonCoordinates.GetSize () + 1;
+    element.mesh.poly.nSubPolys = 1;
+    element.mesh.poly.nArcs = polygonArcs.GetSize ();
+
+    for (const GS::ObjectState& hole : holes) {
+        if (!hole.Contains ("polygonCoordinates")) {
+            continue;
+        }
+        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        hole.Get ("polygonCoordinates", holePolygonCoordinates);
+        hole.Get ("polygonArcs", holePolygonArcs);
+        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
+            holePolygonCoordinates.Pop ();
+        }
+        element.mesh.poly.nCoords += holePolygonCoordinates.GetSize () + 1;
+        ++element.mesh.poly.nSubPolys;
+        element.mesh.poly.nArcs += holePolygonArcs.GetSize ();
+    }
+
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.mesh.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.meshPolyZ = reinterpret_cast<double**> (BMAllocateHandle ((element.mesh.poly.nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0));
+    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.mesh.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.mesh.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+
+    Int32 iCoord = 1;
+    Int32 iArc = 0;
+    Int32 iPends = 1;
+    AddPolyToMemo (polygonCoordinates,
+                    polygonArcs,
+                    iCoord,
+                    iArc,
+                    iPends,
+                    memo);
+
+    for (const GS::ObjectState& hole : holes) {
+        if (!hole.Contains ("polygonCoordinates")) {
+            continue;
+        }
+        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        hole.Get ("polygonCoordinates", holePolygonCoordinates);
+        hole.Get ("polygonArcs", holePolygonArcs);
+        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
+            holePolygonCoordinates.Pop ();
+        }
+
+        AddPolyToMemo (holePolygonCoordinates,
+                        holePolygonArcs,
+                        iCoord,
+                        iArc,
+                        iPends,
+                        memo);
+    }
+
+    GS::Array<GS::ObjectState> sublines;
+    parameters.Get ("sublines", sublines);
+    element.mesh.levelLines.nSubLines = 0;
+    element.mesh.levelLines.nCoords = 0;
+    for (const GS::ObjectState& subline : sublines) {
+        GS::Array<GS::ObjectState> coordinates;
+        subline.Get ("coordinates", coordinates);
+        if (coordinates.IsEmpty ()) {
+            continue;
+        }
+
+        ++element.mesh.levelLines.nSubLines;
+        element.mesh.levelLines.nCoords += coordinates.GetSize ();
+    }
+
+    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (BMAllocateHandle (element.mesh.levelLines.nCoords * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0));
+    memo.meshLevelEnds = reinterpret_cast<Int32**> (BMAllocateHandle (element.mesh.levelLines.nSubLines * sizeof (Int32), ALLOCATE_CLEAR, 0));
+
+    Int32 vertexID = 0;
+    Int32 lineID = 0;
+    for (const GS::ObjectState& subline : sublines) {
+        GS::Array<GS::ObjectState> coordinates;
+        subline.Get ("coordinates", coordinates);
+        if (coordinates.IsEmpty ()) {
+            continue;
+        }
+
+        for (const GS::ObjectState& coord : coordinates) {
+            API_MeshLevelCoord& meshLevelCoord = (*memo.meshLevelCoords)[vertexID];
+            meshLevelCoord.c = Get3DCoordinateFromObjectState (coord);
+            meshLevelCoord.vertexID = vertexID++;
+        }
+        (*memo.meshLevelEnds)[lineID++] = vertexID;
     }
 
     return {};
