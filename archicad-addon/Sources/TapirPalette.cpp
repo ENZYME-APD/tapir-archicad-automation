@@ -190,6 +190,18 @@ void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool*
     *accepted = true;
 }
 
+void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
+{
+    auto itemToSelect = AddScriptsFromPreferences ();
+    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+        itemToSelect = scriptSelectionPopUp.GetSelectedItem ();
+        if (scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+            itemToSelect = DG::PopUp::TopItem;
+        }
+    }
+    scriptSelectionPopUp.SelectItem (itemToSelect);
+}
+
 static void OpenWebpage (const GS::UniString& webpage)
 {
     const GS::UniString command = GS::UniString::Printf (
@@ -287,6 +299,7 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
             }
         }
 
+        SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
     } else if (ev.GetSource () == &pythonVersionsPopUp) {
         if (GetPythonExeMap ().empty ()) {
@@ -520,14 +533,18 @@ void TapirPalette::LoadScriptsToPopUp ()
     hasAddedScript = false;
 
     AddScriptsFromCustomScriptsFolder ();
-    AddScriptsFromPreferences ();
+    auto itemToSelect = AddScriptsFromPreferences ();
     AddBuiltInScriptsFromGithub ();
 
     scriptSelectionPopUp.AppendSeparator ();
     scriptSelectionPopUp.AppendItem ();
     scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload scripts...");
 
-    scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+        itemToSelect = DG::PopUp::TopItem;
+    }
+    scriptSelectionPopUp.SelectItem (itemToSelect);
+
     SetDeleteScriptButtonStatus ();
 }
 
@@ -647,24 +664,35 @@ void TapirPalette::SaveScriptsToPreferences ()
             preferencesStr += pathStr + '\n';
         }
     }
+    preferencesStr += GS::ValueToUniString (scriptSelectionPopUp.GetSelectedItem ());
     auto cStr = preferencesStr.ToCStr ();
     ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
 }
 
-void TapirPalette::AddScriptsFromPreferences ()
+short TapirPalette::AddScriptsFromPreferences ()
 {
+    if (hasAddedScript) {
+        while (!scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
+            scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
+        }
+    }
+
     Int32 version;
     GSSize nBytes;
 
     ACAPI_GetPreferences (&version, &nBytes, nullptr);
     if (version != PREFERENCES_VERSION || nBytes <= 0) {
-        return;
+        return DG::PopUp::TopItem;
     }
 
     std::unique_ptr<char> data(new char[nBytes]);
     ACAPI_GetPreferences (&version, &nBytes, data.get ());
     GS::Array<GS::UniString> scriptPathArray;
     GS::UniString (data.get ()).Split ("\n", GS::UniString::SkipEmptyParts, &scriptPathArray);
+    short selectedItemBeforeClose = -1;
+    if (GS::UniStringToValue<short> (scriptPathArray.GetLast (), selectedItemBeforeClose, GS::ToValueMode::Strict)) {
+        scriptPathArray.DeleteLast();
+    }
     for (auto&& scriptPath : scriptPathArray) {
         IO::Location ownScript (scriptPath);
         if (!IsValidLocation (ownScript)) {
@@ -676,6 +704,7 @@ void TapirPalette::AddScriptsFromPreferences ()
         }
         AddScriptToPopUp (ownScript);
     }
+    return selectedItemBeforeClose;
 }
 
 bool TapirPalette::AddNewScript ()
@@ -720,6 +749,9 @@ void TapirPalette::DeleteScriptFromPopUp ()
     if (scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
         scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
         hasAddedScript = false;
+    }
+    if (scriptSelectionPopUp.IsSeparator (scriptSelectionPopUp.GetSelectedItem ())) {
+        scriptSelectionPopUp.SelectItem (scriptSelectionPopUp.GetSelectedItem () - 1);
     }
 
     SaveScriptsToPreferences ();

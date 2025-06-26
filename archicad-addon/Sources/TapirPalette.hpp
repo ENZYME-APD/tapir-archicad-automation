@@ -50,7 +50,7 @@ private:
     void LoadPythonVersionsToPopUp ();
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();
-    void AddScriptsFromPreferences ();
+    short AddScriptsFromPreferences ();
     bool AddNewScript ();
     void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
@@ -66,6 +66,7 @@ private:
     void WriteReport (short type, const GS::UniString& format, Args&&... args);
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
+	virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
 	virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
 	virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
 
