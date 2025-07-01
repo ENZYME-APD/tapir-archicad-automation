@@ -229,6 +229,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         paramOwner.guid = elemGuid;
 
         API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
         const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars);
         if (err != NoError) {
             const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());

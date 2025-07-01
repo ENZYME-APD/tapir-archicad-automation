@@ -1,6 +1,5 @@
 #include "ElementCreationCommands.hpp"
 #include "ObjectState.hpp"
-#include "OnExit.hpp"
 #include "MigrationHelper.hpp"
 
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
