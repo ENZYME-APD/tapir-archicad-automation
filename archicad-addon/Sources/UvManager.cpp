@@ -106,9 +106,12 @@ bool UvManager::AttemptAutomaticInstallation ()
         }
     } else {
         ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "ERROR: uv installer script failed with exit code: %d", false, result);
-        DGAlert (DG_ERROR, "Installation Failed",
+        short response = DGAlert (DG_ERROR, "Installation Failed",
                 "The automatic installation failed. Please check the Report window for details.\n\n"
-                "You can try installing it manually from the official website.", "", "OK");
+                "You can try installing it manually from the official website.", "", "Go to uv website", "OK");
+        if (response == 1) { // "Go to uv website"
+            OpenWebpage ("https://docs.astral.sh/uv/getting-started/installation/");
+        }
         return false;
     }
 }
@@ -140,9 +143,9 @@ GS::UniString UvManager::GetUvExecutableCommand ()
     short response = DGAlert (DG_INFORMATION, "Dependency Missing: 'uv'",
         "'uv' is required to run Python scripts but it was not found on your system.",
         "How would you like to proceed?",
-        "Install for Me", "Open Instructions", "Cancel");
+        "Install for me", "Open Instructions", "Cancel");
 
-    if (response == 1) { // "Install for Me"
+    if (response == 1) { // "Install for me"
         if (AttemptAutomaticInstallation ()) {
             return "uv";
         }
