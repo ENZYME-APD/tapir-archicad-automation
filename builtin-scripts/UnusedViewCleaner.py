@@ -12,8 +12,8 @@ from typing import Optional,  Callable
 from multiconn_archicad import MultiConn, ConnHeader, CoreCommands
 
 from utilities.tk_utils import show_popup
-from utilities.navigator_utils import get_unique_navigator_items_from_tree, merge_paths, get_path_to_navitem, Guid, NavigatorItem, NavigatorItemWrapper, NavigatorItemId, NavigatorTreeIdWrapper, VIEW_NAVITEM_TYPES
-from utilities.teamwork_utils import TeamworkReserve
+from utilities.navigator_utils import (get_unique_navigator_items_from_tree, merge_paths, get_path_to_navitem, Guid,
+                                       NavigatorItem, NavigatorItemWrapper, NavigatorItemId, NavigatorTreeIdWrapper, VIEW_NAVITEM_TYPES)
 
 class UnusedViewCleaner:
     """
@@ -137,12 +137,11 @@ class UnusedViewCleaner:
         return new_folder_navitem_id["createdFolderNavigatorItemId"]
 
     def process_view_node(self, parent_guid: Guid, view_node: NavigatorItemWrapper) -> None:
-        with TeamworkReserve(self.conn_header, [view_node["navigatorItem"]["navigatorItemId"]]):
-            self.core.post_command(
-                command="API.MoveNavigatorItem",
-                parameters={"navigatorItemIdToMove": view_node["navigatorItem"]["navigatorItemId"],
-                            "parentNavigatorItemId": parent_guid}
-            )
+        self.core.post_command(
+            command="API.MoveNavigatorItem",
+            parameters={"navigatorItemIdToMove": view_node["navigatorItem"]["navigatorItemId"],
+                        "parentNavigatorItemId": parent_guid}
+        )
         self.moved_views += 1
         return None
 
@@ -158,14 +157,13 @@ class UnusedViewCleaner:
         number_of_source_navitems = len(clone_folder_source["navigatorItems"][0]["builtInContainerNavigatorItem"]["contentIds"])
         number_of_unused_navitems = len(undefined_node["navigatorItem"]["children"])
         if number_of_source_navitems == number_of_unused_navitems: # all views are unused
-            with TeamworkReserve(self.conn_header, [undefined_node["navigatorItem"]["navigatorItemId"]]):
-                self.core.post_command(
-                    command="API.MoveNavigatorItem",
-                    parameters={
-                        "navigatorItemIdToMove": undefined_node["navigatorItem"]["navigatorItemId"],
-                        "parentNavigatorItemId": parent_guid,
-                    },
-                )
+            self.core.post_command(
+                command="API.MoveNavigatorItem",
+                parameters={
+                    "navigatorItemIdToMove": undefined_node["navigatorItem"]["navigatorItemId"],
+                    "parentNavigatorItemId": parent_guid,
+                },
+            )
             self.moved_views += number_of_unused_navitems
         return None
 
