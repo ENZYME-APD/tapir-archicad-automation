@@ -1,0 +1,350 @@
+Command: GetRevisionIssues
+Parameters:
+{}
+Response:
+{
+    "revisionIssues": [
+        {
+            "revisionIssueId": {
+                "guid": "6111F6D6-B0F2-4084-8683-58D2048C7B13"
+            },
+            "id": "01",
+            "description": "Transmittal Set A",
+            "issueTime": "6/19/2025 6:05:31 PM",
+            "issuedByUser": "loran",
+            "overrideRevisionIDOfAllIncludedLayouts": false,
+            "createNewRevisionInAllIncludedLayouts": true,
+            "markersVisibleSinceIndex": 0,
+            "isIssued": true,
+            "documentRevisions": [
+                {
+                    "revisionId": {
+                        "guid": "B4728068-3CD9-482C-ACDA-B55479CC26AC"
+                    }
+                },
+                {
+                    "revisionId": {
+                        "guid": "7871FED8-424C-469C-8EB4-7F95C97EED88"
+                    }
+                },
+                {
+                    "revisionId": {
+                        "guid": "15759F44-1F90-4B15-8C28-D5A7B95B1272"
+                    }
+                },
+                {
+                    "revisionId": {
+                        "guid": "A07DE345-02AD-4E2F-AD23-4B01A1575BC8"
+                    }
+                }
+            ]
+        },
+        {
+            "revisionIssueId": {
+                "guid": "DDD3999A-B34E-4C45-A1CC-9BF5E3018446"
+            },
+            "id": "02",
+            "description": "Transmittal Set B",
+            "issueTime": "6/19/2025 6:05:54 PM",
+            "issuedByUser": "",
+            "overrideRevisionIDOfAllIncludedLayouts": false,
+            "createNewRevisionInAllIncludedLayouts": false,
+            "markersVisibleSinceIndex": 0,
+            "isIssued": false,
+            "documentRevisions": [
+                {
+                    "revisionId": {
+                        "guid": "93A5A6BA-EEC1-2ABB-0497-FA8814F40C41"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: GetRevisionChanges
+Parameters:
+{}
+Response:
+{
+    "revisionChanges": [
+        {
+            "id": "Ch-01",
+            "description": "Change A",
+            "lastModifiedTime": "6/19/2025 6:04:56 PM",
+            "modifiedByUser": "loran",
+            "isIssued": true,
+            "isArchived": false,
+            "firstRevisionIssueId": {
+                "guid": "6111F6D6-B0F2-4084-8683-58D2048C7B13"
+            }
+        },
+        {
+            "id": "Ch-02",
+            "description": "Change B",
+            "lastModifiedTime": "6/19/2025 6:06:06 PM",
+            "modifiedByUser": "loran",
+            "isIssued": false,
+            "isArchived": false
+        },
+        {
+            "id": "Ch-03",
+            "description": "Change C",
+            "lastModifiedTime": "6/19/2025 6:06:38 PM",
+            "modifiedByUser": "loran",
+            "isIssued": false,
+            "isArchived": false
+        }
+    ]
+}
+Command: GetDocumentRevisions
+Parameters:
+{}
+Response:
+{
+    "documentRevisions": [
+        {
+            "revisionId": {
+                "guid": "B4728068-3CD9-482C-ACDA-B55479CC26AC"
+            },
+            "id": "01",
+            "finalId": "01",
+            "ownerUser": "",
+            "status": "Issued",
+            "layoutInfo": {
+                "id": "",
+                "databaseId": {
+                    "guid": "9680B516-0E89-4F67-A45E-3E55F4B07C7F"
+                },
+                "name": "Sheet Index",
+                "masterLayoutName": "A4 Portrait",
+                "width": 210,
+                "height": 297,
+                "subsetId": "",
+                "subsetName": "",
+                "ownerUser": ""
+            }
+        },
+        {
+            "revisionId": {
+                "guid": "7871FED8-424C-469C-8EB4-7F95C97EED88"
+            },
+            "id": "01",
+            "finalId": "01",
+            "ownerUser": "",
+            "status": "Issued",
+            "changes": [
+                {
+                    "id": "Ch-01"
+                }
+            ],
+            "layoutInfo": {
+                "id": "A.01.1",
+                "databaseId": {
+                    "guid": "56F93136-6071-437A-9481-0B2A441EAB9C"
+                },
+                "name": "Ground Floor",
+                "masterLayoutName": "A2 Landscape",
+                "width": 594,
+                "height": 420,
+                "subsetId": "A.01",
+                "subsetName": "Floor Plans",
+                "ownerUser": ""
+            }
+        },
+        {
+            "revisionId": {
+                "guid": "15759F44-1F90-4B15-8C28-D5A7B95B1272"
+            },
+            "id": "01",
+            "finalId": "01",
+            "ownerUser": "",
+            "status": "Issued",
+            "layoutInfo": {
+                "id": "A.01.2",
+                "databaseId": {
+                    "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+                },
+                "name": "1. Story",
+                "masterLayoutName": "A2 Landscape",
+                "width": 594,
+                "height": 420,
+                "subsetId": "A.01",
+                "subsetName": "Floor Plans",
+                "ownerUser": ""
+            }
+        },
+        {
+            "revisionId": {
+                "guid": "A07DE345-02AD-4E2F-AD23-4B01A1575BC8"
+            },
+            "id": "01",
+            "finalId": "01",
+            "ownerUser": "",
+            "status": "Issued",
+            "layoutInfo": {
+                "id": "A.01.3",
+                "databaseId": {
+                    "guid": "33349F27-4369-40D3-8BC6-2DC58CE5D0C5"
+                },
+                "name": "2. Story",
+                "masterLayoutName": "A2 Landscape",
+                "width": 594,
+                "height": 420,
+                "subsetId": "A.01",
+                "subsetName": "Floor Plans",
+                "ownerUser": ""
+            }
+        },
+        {
+            "revisionId": {
+                "guid": "93A5A6BA-EEC1-2ABB-0497-FA8814F40C41"
+            },
+            "id": "02",
+            "finalId": "02 - WIP",
+            "ownerUser": "",
+            "status": "Actual",
+            "changes": [
+                {
+                    "id": "Ch-02"
+                }
+            ],
+            "layoutInfo": {
+                "id": "A.01.2",
+                "databaseId": {
+                    "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+                },
+                "name": "1. Story",
+                "masterLayoutName": "A2 Landscape",
+                "width": 594,
+                "height": 420,
+                "subsetId": "A.01",
+                "subsetName": "Floor Plans",
+                "ownerUser": ""
+            }
+        }
+    ]
+}
+Command: GetDatabaseIdFromNavigatorItemId
+Parameters:
+{
+    "navigatorItemIds": [
+        {
+            "navigatorItemId": {
+                "guid": "D2455EAB-4075-48B1-A94D-83AF0543E341"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "BA224EA8-D8C0-46D5-948A-F8B19AD1B3FB"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "8A9367C8-708D-4023-8D94-B20651047F17"
+            }
+        },
+        {
+            "navigatorItemId": {
+                "guid": "348A3031-0328-42CB-A47B-61C7E16F5276"
+            }
+        }
+    ]
+}
+Response:
+{
+    "databases": [
+        {
+            "databaseId": {
+                "guid": "9680B516-0E89-4F67-A45E-3E55F4B07C7F"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "56F93136-6071-437A-9481-0B2A441EAB9C"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "33349F27-4369-40D3-8BC6-2DC58CE5D0C5"
+            }
+        }
+    ]
+}
+Command: GetCurrentRevisionChangesOfLayouts
+Parameters:
+{
+    "layoutDatabaseIds": [
+        {
+            "databaseId": {
+                "guid": "9680B516-0E89-4F67-A45E-3E55F4B07C7F"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "56F93136-6071-437A-9481-0B2A441EAB9C"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+            }
+        },
+        {
+            "databaseId": {
+                "guid": "33349F27-4369-40D3-8BC6-2DC58CE5D0C5"
+            }
+        }
+    ]
+}
+Response:
+{
+    "currentRevisionChangesOfLayouts": [
+        {
+            "revisionChanges": []
+        },
+        {
+            "revisionChanges": [
+                {
+                    "id": "Ch-01",
+                    "description": "Change A",
+                    "lastModifiedTime": "6/19/2025 6:04:56 PM",
+                    "modifiedByUser": "loran",
+                    "isIssued": true,
+                    "isArchived": false,
+                    "firstRevisionIssueId": {
+                        "guid": "6111F6D6-B0F2-4084-8683-58D2048C7B13"
+                    }
+                }
+            ]
+        },
+        {
+            "revisionChanges": [
+                {
+                    "id": "Ch-02",
+                    "description": "Change B",
+                    "lastModifiedTime": "6/19/2025 6:06:06 PM",
+                    "modifiedByUser": "loran",
+                    "isIssued": false,
+                    "isArchived": false
+                }
+            ]
+        },
+        {
+            "revisionChanges": [
+                {
+                    "id": "Ch-03",
+                    "description": "Change C",
+                    "lastModifiedTime": "6/19/2025 6:06:38 PM",
+                    "modifiedByUser": "loran",
+                    "isIssued": false,
+                    "isArchived": false
+                }
+            ]
+        }
+    ]
+}

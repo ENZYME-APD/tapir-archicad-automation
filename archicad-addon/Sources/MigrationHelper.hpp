@@ -50,6 +50,16 @@
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
 #define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
 
+#define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
+#define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
+#define ACAPI_Revision_GetRVMDocumentRevisions(par1) ACAPI_Database (APIDb_GetRVMDocumentRevisionsID, par1)
+#define ACAPI_Revision_GetRVMIssueDocumentRevisions(par1, par2) ACAPI_Database (APIDb_GetRVMIssueDocumentRevisionsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMDocumentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMDocumentRevisionChangesID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMChangeFirstIssue(par1, par2) ACAPI_Database (APIDb_GetRVMChangeFirstIssueID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMLayoutCurrentRevisionChangesID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMElemChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMElemChangeIdsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMChangesFromChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMChangesFromChangeIdsID, (void*)par1, par2)
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;

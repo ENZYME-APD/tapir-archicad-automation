@@ -1,4 +1,6 @@
-from mu
+from typing import Optional, Any
+from multiconn_archicad import ConnHeader, TeamworkProjectID, CoreCommands
+from utilities.navigator_utils import Guid
 
 class TeamworkReserve:
     def __init__(self, conn_header: ConnHeader, elements: list[Guid]):

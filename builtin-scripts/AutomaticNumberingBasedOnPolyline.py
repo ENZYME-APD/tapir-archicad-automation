@@ -1,3 +1,10 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "archicad",
+# ]
+# ///
+
 ##############################################
 # SCRIPT AUTOMATIC NUMBERING BASED ON POLYLINE
 # For ARCHICAD 27 with Python 3.X and Tapir addon
