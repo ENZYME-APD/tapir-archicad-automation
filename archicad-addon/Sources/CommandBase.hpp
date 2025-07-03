@@ -2,10 +2,12 @@
 
 #include "APIEnvir.h"
 #include "ACAPinc.h"
+#include "OnExit.hpp"
 
 #include "ObjectState.hpp"
 #include "BiHashTable.hpp"
 
+#include <vector>
 #include <map>
 
 enum class CommonSchema
@@ -44,10 +46,14 @@ inline API_Guid GetGuidFromAttributesArrayItem (const GS::ObjectState& os)      
 inline API_Guid GetGuidFromIssuesArrayItem (const GS::ObjectState& os)          { return GetGuidFromArrayItem ("issueId", os); }
 inline API_Guid GetGuidFromNavigatorItemIdArrayItem (const GS::ObjectState& os) { return GetGuidFromArrayItem ("navigatorItemId", os); }
 inline API_Guid GetGuidFromDatabaseArrayItem (const GS::ObjectState& os)        { return GetGuidFromArrayItem ("databaseId", os); }
+bool   IsSame2DCoordinate (const API_Coord& c1, const API_Coord& c2);
+bool   IsSame3DCoordinate (const API_Coord3D& c1, const API_Coord3D& c2);
 bool   IsSame2DCoordinate (const GS::ObjectState& o1, const GS::ObjectState& o2);
+bool   IsSame3DCoordinate (const GS::ObjectState& o1, const GS::ObjectState& o2);
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
+GS::ObjectState Create3DCoordinateObjectState (const API_Coord3D& c);
 GS::ObjectState CreatePolyArcObjectState (const API_PolyArc& a);
 inline GS::ObjectState CreateGuidObjectState (const API_Guid& guid) { return GS::ObjectState ("guid", APIGuidToString (guid)); }
 inline GS::ObjectState CreateGuidObjectState (const GS::Guid& guid) { return GS::ObjectState ("guid", guid.ToUniString()); }
@@ -57,6 +63,11 @@ inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { ret
 inline GS::ObjectState CreateIssueIdObjectState (const API_Guid& guid)     { return CreateIdObjectState ("issueId", guid); }
 inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { return CreateIdObjectState ("databaseId", guid); }
 
+struct PolygonData {
+    std::vector<API_Coord>   coords;
+    std::vector<API_PolyArc> arcs;
+};
+std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid);
 void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName = {});
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName);
 
@@ -100,3 +111,26 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<GSErrCode ()>& action,
     const std::function<void ()>& actionSuccess,
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
+
+template<std::size_t N>
+void SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
+{
+    GS::UniString propertyValue;
+    if (os->Get (propertyKey, propertyValue)) {
+        CHTruncate (propertyValue.ToCStr ().Get (), targetProperty, N);
+    }
+};
+
+template<std::size_t N>
+void SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::uchar_t (&targetProperty)[N])
+{
+    GS::UniString propertyValue;
+    if (os->Get (propertyKey, propertyValue)) {
+
+        const auto ustrObject = propertyValue.ToUStr ();
+        const GS::uchar_t* sourceString = ustrObject;
+
+        GS::ucsncpy (targetProperty, sourceString, N);
+        targetProperty[N - 1] = 0;
+    }
+}

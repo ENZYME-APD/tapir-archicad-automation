@@ -1668,6 +1668,18 @@
             "layerCombination": {
                 "type": "string",
                 "description": "The name of the layer combination. If empty, the view has custom layer combination."
+            },
+            "dimensionStyle": {
+                "type": "string",
+                "description": "The name of the dimension style. If empty, the view has custom dimension style."
+            },
+            "penSetName": {
+                "type": "string",
+                "description": "The name of the pen set. If empty, the view has custom pen set."
+            },
+            "graphicOverrideCombination": {
+                "type": "string",
+                "description": "The name of the graphic override combination. If empty, the view has custom graphic override combination."
             }
         },
         "additionalProperties": false,
@@ -2134,6 +2146,188 @@
             "zCoordinate"
         ]
     },
+    "CurtainWallDetails": {
+        "type": "object",
+        "properties": {
+            "height": {
+                "type": "number"
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle of the curtain wall in radians."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate"
+        ]
+    },
+    "CurtainWallSegmentDetails": {
+        "type": "object",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/3DCoordinate"
+            },
+            "endCoordinate": {
+                "$ref": "#/3DCoordinate"
+            },
+            "extrusionVector": {
+                "$ref": "#/3DCoordinate"
+            },
+            "gridOrigin": {
+                "$ref": "#/3DCoordinate"
+            },
+            "gridAngle": {
+                "type": "number",
+                "description": "The angle of the grid in radians."
+            },
+            "arcOrigin": {
+                "$ref": "#/3DCoordinate"
+            },
+            "isNegativeArc": {
+                "type": "boolean",
+                "description": "Indicates if the arc is negative."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate",
+            "endCoordinate",
+            "extrusionVector",
+            "gridOrigin",
+            "gridAngle"
+        ]
+    },
+    "CurtainWallPanelDetails": {
+        "type": "object",
+        "properties": {
+            "polygonCoordinates": { 
+                "type": "array",
+                "description": "The 3D coordinates of the panel polygon.",
+                "items": {
+                    "$ref": "#/3DCoordinate"
+                },
+                "minItems": 3
+            },
+            "isHidden": {
+                "type": "boolean",
+                "description": "Indicates if the panel is hidden (deleted panels remain in the database)."
+            },
+            "segmentIndex": {
+                "type": "number",
+                "description": "The index of the curtain wall segment to which this panel belongs."
+            },
+            "className": {
+                "type": "string"
+            },
+            "frames": { 
+                "type": "array",
+                "description": "The surrounding frames.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates",
+            "isHidden",
+            "segmentIndex",
+            "className",
+            "frames"
+        ]
+    },
+    "CurtainWallFrameDetails": {
+        "type": "object",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/3DCoordinate"
+            },
+            "endCoordinate": {
+                "$ref": "#/3DCoordinate"
+            },
+            "orientationVector": {
+                "$ref": "#/3DCoordinate"
+            },
+            "panelConnectionHole": {
+                "type": "object",
+                "description": "The parameters of the panel connection hole.",
+                "properties": {
+                    "d": {
+                        "type": "number",
+                        "description": "Depth of the panel connection hole."
+                    },
+                    "w": {
+                        "type": "number",
+                        "description": "Width of the panel connection hole."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "d",
+                    "w"
+                ]
+            },
+            "frameContour": {
+                "type": "object",
+                "description": "The parameters of the frame contour.",
+                "properties": {
+                    "a1": {
+                        "type": "number",
+                        "description": "Width1 of the frame contour."
+                    },
+                    "a2": {
+                        "type": "number",
+                        "description": "Width2 of the frame contour."
+                    },
+                    "b1": {
+                        "type": "number",
+                        "description": "Length1 of the frame contour."
+                    },
+                    "b2": {
+                        "type": "number",
+                        "description": "Length2 of the frame contour."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "a1",
+                    "a2",
+                    "b1",
+                    "b2"
+                ]
+            },
+            "segmentIndex": {
+                "type": "number",
+                "description": "The index of the curtain wall segment to which this frame belongs."
+            },
+            "className": {
+                "type": "string"
+            },
+            "type": {
+                "type": "string",
+                "enum" : [
+                    "Deleted",
+                    "Division",
+                    "Corner",
+                    "Boundary",
+                    "Custom"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate",
+            "endCoordinate",
+            "orientationVector",
+            "panelConnectionHole",
+            "frameContour",
+            "segmentIndex",
+            "className",
+            "type"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -2171,6 +2365,18 @@
             },
             {
                 "$ref": "#/ZoneDetails"
+            },
+            {
+                "$ref": "#/CurtainWallDetails"
+            },
+            {
+                "$ref": "#/CurtainWallSegmentDetails"
+            },
+            {
+                "$ref": "#/CurtainWallPanelDetails"
+            },
+            {
+                "$ref": "#/CurtainWallFrameDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"

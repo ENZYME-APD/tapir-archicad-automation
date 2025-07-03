@@ -6,7 +6,7 @@ Response:
     "revisionIssues": [
         {
             "revisionIssueId": {
-                "guid": "6111F6D6-B0F2-4084-8683-58D2048C7B13"
+                "guid": "<GUID>"
             },
             "id": "01",
             "description": "Transmittal Set A",
@@ -19,29 +19,29 @@ Response:
             "documentRevisions": [
                 {
                     "revisionId": {
-                        "guid": "B4728068-3CD9-482C-ACDA-B55479CC26AC"
+                        "guid": "<GUID>"
                     }
                 },
                 {
                     "revisionId": {
-                        "guid": "7871FED8-424C-469C-8EB4-7F95C97EED88"
+                        "guid": "<GUID>"
                     }
                 },
                 {
                     "revisionId": {
-                        "guid": "15759F44-1F90-4B15-8C28-D5A7B95B1272"
+                        "guid": "<GUID>"
                     }
                 },
                 {
                     "revisionId": {
-                        "guid": "A07DE345-02AD-4E2F-AD23-4B01A1575BC8"
+                        "guid": "<GUID>"
                     }
                 }
             ]
         },
         {
             "revisionIssueId": {
-                "guid": "DDD3999A-B34E-4C45-A1CC-9BF5E3018446"
+                "guid": "<GUID>"
             },
             "id": "02",
             "description": "Transmittal Set B",
@@ -54,7 +54,7 @@ Response:
             "documentRevisions": [
                 {
                     "revisionId": {
-                        "guid": "93A5A6BA-EEC1-2ABB-0497-FA8814F40C41"
+                        "guid": "<GUID>"
                     }
                 }
             ]
@@ -75,7 +75,7 @@ Response:
             "isIssued": true,
             "isArchived": false,
             "firstRevisionIssueId": {
-                "guid": "6111F6D6-B0F2-4084-8683-58D2048C7B13"
+                "guid": "<GUID>"
             }
         },
         {
@@ -104,7 +104,7 @@ Response:
     "documentRevisions": [
         {
             "revisionId": {
-                "guid": "B4728068-3CD9-482C-ACDA-B55479CC26AC"
+                "guid": "<GUID>"
             },
             "id": "01",
             "finalId": "01",
@@ -113,7 +113,7 @@ Response:
             "layoutInfo": {
                 "id": "",
                 "databaseId": {
-                    "guid": "9680B516-0E89-4F67-A45E-3E55F4B07C7F"
+                    "guid": "<GUID>"
                 },
                 "name": "Sheet Index",
                 "masterLayoutName": "A4 Portrait",
@@ -126,7 +126,7 @@ Response:
         },
         {
             "revisionId": {
-                "guid": "7871FED8-424C-469C-8EB4-7F95C97EED88"
+                "guid": "<GUID>"
             },
             "id": "01",
             "finalId": "01",
@@ -140,7 +140,7 @@ Response:
             "layoutInfo": {
                 "id": "A.01.1",
                 "databaseId": {
-                    "guid": "56F93136-6071-437A-9481-0B2A441EAB9C"
+                    "guid": "<GUID>"
                 },
                 "name": "Ground Floor",
                 "masterLayoutName": "A2 Landscape",
@@ -153,7 +153,7 @@ Response:
         },
         {
             "revisionId": {
-                "guid": "15759F44-1F90-4B15-8C28-D5A7B95B1272"
+                "guid": "<GUID>"
             },
             "id": "01",
             "finalId": "01",
@@ -162,7 +162,7 @@ Response:
             "layoutInfo": {
                 "id": "A.01.2",
                 "databaseId": {
-                    "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+                    "guid": "<GUID>"
                 },
                 "name": "1. Story",
                 "masterLayoutName": "A2 Landscape",
@@ -175,7 +175,7 @@ Response:
         },
         {
             "revisionId": {
-                "guid": "A07DE345-02AD-4E2F-AD23-4B01A1575BC8"
+                "guid": "<GUID>"
             },
             "id": "01",
             "finalId": "01",
@@ -184,7 +184,7 @@ Response:
             "layoutInfo": {
                 "id": "A.01.3",
                 "databaseId": {
-                    "guid": "33349F27-4369-40D3-8BC6-2DC58CE5D0C5"
+                    "guid": "<GUID>"
                 },
                 "name": "2. Story",
                 "masterLayoutName": "A2 Landscape",
@@ -197,7 +197,7 @@ Response:
         },
         {
             "revisionId": {
-                "guid": "93A5A6BA-EEC1-2ABB-0497-FA8814F40C41"
+                "guid": "<GUID>"
             },
             "id": "02",
             "finalId": "02 - WIP",
@@ -211,7 +211,7 @@ Response:
             "layoutInfo": {
                 "id": "A.01.2",
                 "databaseId": {
-                    "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+                    "guid": "<GUID>"
                 },
                 "name": "1. Story",
                 "masterLayoutName": "A2 Landscape",
@@ -230,22 +230,22 @@ Parameters:
     "navigatorItemIds": [
         {
             "navigatorItemId": {
-                "guid": "D2455EAB-4075-48B1-A94D-83AF0543E341"
+                "guid": "<GUID>"
             }
         },
         {
             "navigatorItemId": {
-                "guid": "BA224EA8-D8C0-46D5-948A-F8B19AD1B3FB"
+                "guid": "<GUID>"
             }
         },
         {
             "navigatorItemId": {
-                "guid": "8A9367C8-708D-4023-8D94-B20651047F17"
+                "guid": "<GUID>"
             }
         },
         {
             "navigatorItemId": {
-                "guid": "348A3031-0328-42CB-A47B-61C7E16F5276"
+                "guid": "<GUID>"
             }
         }
     ]
@@ -255,22 +255,22 @@ Response:
     "databases": [
         {
             "databaseId": {
-                "guid": "9680B516-0E89-4F67-A45E-3E55F4B07C7F"
+                "guid": "<GUID>"
             }
         },
         {
             "databaseId": {
-                "guid": "56F93136-6071-437A-9481-0B2A441EAB9C"
+                "guid": "<GUID>"
             }
         },
         {
             "databaseId": {
-                "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+                "guid": "<GUID>"
             }
         },
         {
             "databaseId": {
-                "guid": "33349F27-4369-40D3-8BC6-2DC58CE5D0C5"
+                "guid": "<GUID>"
             }
         }
     ]
@@ -281,22 +281,22 @@ Parameters:
     "layoutDatabaseIds": [
         {
             "databaseId": {
-                "guid": "9680B516-0E89-4F67-A45E-3E55F4B07C7F"
+                "guid": "<GUID>"
             }
         },
         {
             "databaseId": {
-                "guid": "56F93136-6071-437A-9481-0B2A441EAB9C"
+                "guid": "<GUID>"
             }
         },
         {
             "databaseId": {
-                "guid": "D906B991-8C75-4147-B3E4-7D3DEE71C1B2"
+                "guid": "<GUID>"
             }
         },
         {
             "databaseId": {
-                "guid": "33349F27-4369-40D3-8BC6-2DC58CE5D0C5"
+                "guid": "<GUID>"
             }
         }
     ]
@@ -317,7 +317,7 @@ Response:
                     "isIssued": true,
                     "isArchived": false,
                     "firstRevisionIssueId": {
-                        "guid": "6111F6D6-B0F2-4084-8683-58D2048C7B13"
+                        "guid": "<GUID>"
                     }
                 }
             ]

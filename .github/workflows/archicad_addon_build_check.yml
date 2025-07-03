@@ -16,14 +16,14 @@ jobs:
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip
           - acVersion: 28
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip
-    runs-on: [ windows-2019 ]
+    runs-on: [ windows-2025 ]
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v4
     - name: Download Development Kit
       run: python archicad-addon/Tools/download_and_unzip.py ${{ matrix.params.devKitUrl }} archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}
     - name: Generate Project
-      run: cmake -B archicad-addon/Build -G "Visual Studio 16 2019" -A "x64" -T "v142" -DAC_VERSION=${{ matrix.params.acVersion }} -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}/Support" archicad-addon
+      run: cmake -B archicad-addon/Build -G "Visual Studio 17 2022" -A "x64" -T "v142" -DAC_VERSION=${{ matrix.params.acVersion }} -DAC_API_DEVKIT_DIR="archicad-addon/Build/DevKits/AC${{ matrix.params.acVersion }}/Support" archicad-addon
     - name: Build Debug
       run: cmake --build archicad-addon/Build --config Debug
     - name: Build RelWithDebInfo

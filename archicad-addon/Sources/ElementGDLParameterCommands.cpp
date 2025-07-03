@@ -229,6 +229,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         paramOwner.guid = elemGuid;
 
         API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
         const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars);
         if (err != NoError) {
             const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
@@ -406,16 +407,14 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
                         API_ChangeParamType changeParam = {};
                         for (const GS::ObjectState& parameter : parameters) {
-                            GS::String parameterName;
-                            parameter.Get ("name", parameterName);
+                            SetCharProperty (&parameter, "name", changeParam.name);
 
-                            if (!gdlParametersTypeDictionary.ContainsKey (parameterName)) {
-                                errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                            if (!gdlParametersTypeDictionary.ContainsKey (changeParam.name)) {
+                                errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
                                 err = APIERR_BADPARS;
                                 break;
                             }
 
-                            CHTruncate (parameterName.ToCStr (), changeParam.name, sizeof (changeParam.name));
                             if (parameter.Contains ("index1")) {
                                 parameter.Get ("index1", changeParam.ind1);
                                 if (parameter.Contains ("index2")) {
@@ -423,7 +422,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 }
                             }
 
-                            switch (gdlParametersTypeDictionary[parameterName]) {
+                            switch (gdlParametersTypeDictionary[changeParam.name]) {
                                 case APIParT_Integer:
                                 case APIParT_PenCol:
                                 case APIParT_LineTyp:
@@ -458,7 +457,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
                             err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
                             if (err != NoError) {
-                                errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", parameterName.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                                errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
                                 break;
                             }
 

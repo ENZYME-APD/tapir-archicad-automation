@@ -6420,7 +6420,8 @@ Response:
             "drawIndex": 7,
             "id": "CW-001",
             "details": {
-                "error": "Not yet supported element type"
+                "height": 3,
+                "angle": 90
             }
         },
         {
@@ -6430,7 +6431,27 @@ Response:
             "drawIndex": 7,
             "id": "",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "extrusionVector": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "gridOrigin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "gridAngle": 0
             }
         },
         {
@@ -6440,7 +6461,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-001",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6450,7 +6498,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-010",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6460,7 +6535,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-002",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6470,7 +6572,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-003",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6480,7 +6609,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Mll-001",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.04,
+                    "a2": 0.04,
+                    "b1": 0.05,
+                    "b2": 0.2
+                },
+                "segmentIndex": 0,
+                "className": "Mullion Frame",
+                "type": "Custom"
             }
         },
         {
@@ -6490,7 +6646,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-001",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -6500,7 +6683,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-009",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6510,7 +6720,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-002",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -6520,7 +6757,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-004",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6530,7 +6794,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Mll-002",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.04,
+                    "a2": 0.04,
+                    "b1": 0.05,
+                    "b2": 0.2
+                },
+                "segmentIndex": 0,
+                "className": "Mullion Frame",
+                "type": "Custom"
             }
         },
         {
@@ -6540,7 +6831,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-003",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -6550,7 +6868,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-007",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6560,7 +6905,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-008",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6570,7 +6942,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-004",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -6580,7 +6979,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-005",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6590,7 +7016,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-006",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -6600,7 +7053,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Mll-003",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.04,
+                    "a2": 0.04,
+                    "b1": 0.05,
+                    "b2": 0.2
+                },
+                "segmentIndex": 0,
+                "className": "Mullion Frame",
+                "type": "Custom"
             }
         },
         {
@@ -6610,7 +7090,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-001",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -6620,7 +7151,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-002",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -6630,7 +7212,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Main-001",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0.9
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Main Panel"
             }
         },
         {
@@ -6640,7 +7273,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-003",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -6650,7 +7334,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-004",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 2.4
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -6660,7 +7395,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-005",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -16405,7 +17191,8 @@ Response:
             "drawIndex": 7,
             "id": "CW-001",
             "details": {
-                "error": "Not yet supported element type"
+                "height": 3,
+                "angle": 90
             }
         },
         {
@@ -16415,7 +17202,27 @@ Response:
             "drawIndex": 7,
             "id": "",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "extrusionVector": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "gridOrigin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "gridAngle": 0
             }
         },
         {
@@ -16425,7 +17232,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-021",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16435,7 +17269,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-030",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16445,7 +17306,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-022",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16455,7 +17343,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-023",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16465,7 +17380,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Mll-004",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.04,
+                    "a2": 0.04,
+                    "b1": 0.05,
+                    "b2": 0.2
+                },
+                "segmentIndex": 0,
+                "className": "Mullion Frame",
+                "type": "Custom"
             }
         },
         {
@@ -16475,7 +17417,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-005",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -16485,7 +17454,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-029",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16495,7 +17491,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-005",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -16505,7 +17528,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-024",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16515,7 +17565,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Mll-004",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 0.9
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.04,
+                    "a2": 0.04,
+                    "b1": 0.05,
+                    "b2": 0.2
+                },
+                "segmentIndex": 0,
+                "className": "Mullion Frame",
+                "type": "Custom"
             }
         },
         {
@@ -16525,7 +17602,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-005",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -16535,7 +17639,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-027",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16545,7 +17676,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-028",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 0,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16555,7 +17713,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Trs-005",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.025,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.03,
+                    "a2": 0.03,
+                    "b1": -0.01,
+                    "b2": 0.11
+                },
+                "segmentIndex": 0,
+                "className": "Transom Frame",
+                "type": "Custom"
             }
         },
         {
@@ -16565,7 +17750,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-025",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16575,7 +17787,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Bnd-026",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "endCoordinate": {
+                    "x": 1.2,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.05,
+                    "a2": 0.05,
+                    "b1": 0.05,
+                    "b2": 0.25
+                },
+                "segmentIndex": 0,
+                "className": "Boundary Frame",
+                "type": "Boundary"
             }
         },
         {
@@ -16585,7 +17824,34 @@ Response:
             "drawIndex": 7,
             "id": "Frame-Mll-004",
             "details": {
-                "error": "Not yet supported element type"
+                "begCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 2.4
+                },
+                "endCoordinate": {
+                    "x": 0.9,
+                    "y": 2.75,
+                    "z": 3
+                },
+                "orientationVector": {
+                    "x": 0,
+                    "y": -1,
+                    "z": 0
+                },
+                "panelConnectionHole": {
+                    "d": 0.03,
+                    "w": 0.02
+                },
+                "frameContour": {
+                    "a1": 0.04,
+                    "a2": 0.04,
+                    "b1": 0.05,
+                    "b2": 0.2
+                },
+                "segmentIndex": 0,
+                "className": "Mullion Frame",
+                "type": "Custom"
             }
         },
         {
@@ -16595,7 +17861,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-006",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -16605,7 +17922,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-006",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 0
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -16615,7 +17983,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Main-002",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 0.9
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Main Panel"
             }
         },
         {
@@ -16625,7 +18044,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-006",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 0.9
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 0.9
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -16635,7 +18105,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-006",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0,
+                        "y": 2.75,
+                        "z": 2.4
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
@@ -16645,7 +18166,58 @@ Response:
             "drawIndex": 7,
             "id": "Panel-Dist-006",
             "details": {
-                "error": "Not yet supported element type"
+                "polygonCoordinates": [
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 2.4
+                    },
+                    {
+                        "x": 1.2,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 3
+                    },
+                    {
+                        "x": 0.9,
+                        "y": 2.75,
+                        "z": 2.4
+                    }
+                ],
+                "frames": [
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    },
+                    {
+                        "elementId": {
+                            "guid": "<GUID>"
+                        }
+                    }
+                ],
+                "isHidden": false,
+                "segmentIndex": 0,
+                "className": "Distinct Panel"
             }
         },
         {
