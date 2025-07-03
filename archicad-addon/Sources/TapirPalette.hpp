@@ -5,14 +5,13 @@
 #include "DGModule.hpp"
 #include "ThreadedExecutor.hpp"
 #include "Process.hpp"
-#include "PythonFinder.hpp"
+#include "UvManager.hpp"
 
 class TapirPalette final : public DG::Palette,
-                           public DG::PanelObserver,
-                           public DG::ButtonItemObserver,
-                           public DG::PopUpObserver,
-                           public DG::CompoundItemObserver,
-                           public PythonFinder
+    public DG::PanelObserver,
+    public DG::ButtonItemObserver,
+    public DG::PopUpObserver,
+    public DG::CompoundItemObserver
 {
 public:
     virtual ~TapirPalette ();
@@ -34,12 +33,12 @@ private:
     DG::IconButton openScriptButton;
     DG::IconButton addScriptButton;
     DG::IconButton delScriptButton;
-    DG::PopUp      pythonVersionsPopUp;
 
     GS::Process process;
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
+    UvManager uvManager;
 
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const IO::Location& fileLocation, const GS::Array<GS::UniString>& additionalArgv = {});
@@ -47,9 +46,9 @@ private:
     void AddBuiltInScriptsFromGithub ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
-    void LoadPythonVersionsToPopUp ();
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();
+    bool IsValidLocation (const IO::Location& location);
     short AddScriptsFromPreferences ();
     bool AddNewScript ();
     void DeleteScriptFromPopUp ();
@@ -60,15 +59,14 @@ private:
         return process.IsValid ();
     }
 
-    const GS::UniString& GetSelectedPythonExe () const;
 
     template<typename... Args>
     void WriteReport (short type, const GS::UniString& format, Args&&... args);
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
-	virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
-	virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
-	virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
+    virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
+    virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
+    virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
 
     static GSErrCode PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param);
 
@@ -84,9 +82,9 @@ void TapirPalette::WriteReport (short type, const GS::UniString& format, Args&&.
     GS::UniString typeStr;
     switch (type) {
         case DG_ERROR: {
-            typeStr = "ERROR: ";
-            DGAlert (DG_ERROR, "Tapir Script Execution", "Error", GS::UniString::Printf (format, std::forward<Args> (args)...), "OK");
-        } break;
+                typeStr = "ERROR: ";
+                DGAlert (DG_ERROR, "Tapir Script Execution", "Error", GS::UniString::Printf (format, std::forward<Args> (args)...), "OK");
+            } break;
         case DG_WARNING:
             typeStr = "WARNING: ";
             break;

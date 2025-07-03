@@ -1,3 +1,10 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "archicad",
+# ]
+# ///
+
 ##############################################
 # SCRIPT AUTOMATIC NUMBERING BASED ON POLYLINE
 # For ARCHICAD 27 with Python 3.X and Tapir addon
@@ -6,11 +13,11 @@
 # Created by Mathias Jonathan
 ###############################################
 
-import tkinter as tk
-from tkinter import messagebox, simpledialog
 from archicad import ACConnection
 import aclib
 import math
+
+from utilities.tk_utils import show_string_input_dialog, show_popup
 
 # Establish connection with ArchiCAD
 conn = ACConnection.connect()
@@ -20,27 +27,6 @@ assert conn
 acc = conn.commands
 act = conn.types
 acu = conn.utilities
-
-# Function to show a popup message
-def show_popup(message, title="Script Message", message_type="error"):
-    root = tk.Tk()
-    root.withdraw()  # Hide the main window
-    print(message)
-    if message_type == "error":
-        messagebox.showerror(title, message)
-    elif message_type == "info":
-        messagebox.showinfo(title, message)
-    elif message_type == "warning":
-        messagebox.showwarning(title, message)
-    root.destroy()
-
-# Function to show an input dialog
-def show_input_dialog(prompt, title="Input Needed", default="1"):
-    root = tk.Tk()
-    root.withdraw()  # Hide the main window
-    response = simpledialog.askstring(title, prompt, initialvalue=default)
-    root.destroy()
-    return response
 
 ################################
 # CONFIGURATION PARAMETERS
@@ -181,7 +167,7 @@ if len(polyline_points) < 2:
 
 # Ask user for starting number
 try:
-    starting_number = show_input_dialog(
+    starting_number = show_string_input_dialog(
         "Enter the starting number for the first element:", "Numbering Configuration", "1")
     if starting_number is None:  # User clicked Cancel
         print("Script cancelled by user")
