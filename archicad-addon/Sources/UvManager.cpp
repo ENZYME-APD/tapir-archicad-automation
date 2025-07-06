@@ -111,7 +111,10 @@ static GS::UniString FindValidUvExecutablePath ()
     GS::Array<IO::Location> searchDirs;
     IO::Location homeDir;
     if (IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserHome, &homeDir) == NoError) {
-        searchDirs.Push (homeDir.GetAppended (IO::Name (".cargo")).GetAppended (IO::Name ("bin")));
+        IO::Location cargoPath = homeDir;
+        cargoPath.AppendToLocal (IO::Name (".cargo"));
+        cargoPath.AppendToLocal (IO::Name ("bin"));
+        searchDirs.Push (cargoPath);
     }
     searchDirs.Push (IO::Location ("/opt/homebrew/bin")); // Apple Silicon Homebrew
     searchDirs.Push (IO::Location ("/usr/local/bin"));    // Intel Homebrew / other
