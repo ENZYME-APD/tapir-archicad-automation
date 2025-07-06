@@ -4,6 +4,8 @@
 #include "StringConversion.hpp"
 #include "DGModule.hpp"
 #include "IBinaryChannelUtilities.hpp"
+#include "FileSystem.hpp"
+#include "Folder.hpp"
 #include <vector>
 #include <string>
 #include <regex>
@@ -25,19 +27,15 @@ static void OpenWebpage (const GS::UniString& webpage)
 static std::vector<int> ParseVersionString (const GS::UniString& versionOutput)
 {
     std::vector<int> versionParts;
-
-    static const std::regex versionRegex (R"(\d+(\.\d+)*)"); // "0.7.13"
+    static const std::regex versionRegex (R"(\d+(\.\d+)*)"); // e.g., "0.7.13"
     std::smatch match;
 
-    // We convert the GS::UniString to a standard C-style string for the regex engine
     const std::string versionStdString = versionOutput.ToCStr ().Get ();
 
     if (std::regex_search (versionStdString, match, versionRegex)) {
         GS::UniString versionToken (match[0].str ().c_str ());
-
         GS::Array<GS::UniString> parts;
         versionToken.Split (".", &parts);
-
         for (const auto& part : parts) {
             try {
                 versionParts.push_back (std::stoi (part.ToCStr ().Get ()));
@@ -46,38 +44,125 @@ static std::vector<int> ParseVersionString (const GS::UniString& versionOutput)
             }
         }
     }
-
     return versionParts;
 }
 
-GS::UniString UvManager::GetUvVersionString ()
+
+static GS::UniString GetVersionFromExecutable (const GS::UniString& executablePath)
 {
     try {
-        GS::Process versionProcess = GS::Process::Create ("uv", { "--version" }, GS::Process::CreateNoWindow, true, false, true);
-        if (!versionProcess.IsValid ()) {
-            return GS::EmptyUniString;
-        }
-
+        GS::Process versionProcess = GS::Process::Create (executablePath, { "--version" }, GS::Process::CreateNoWindow, true, false, true);
+        if (!versionProcess.IsValid ()) { return GS::EmptyUniString; }
         versionProcess.WaitFor ();
-
-        if (versionProcess.GetExitCode () != 0) {
-            return GS::EmptyUniString;
-        }
+        if (versionProcess.GetExitCode () != 0) { return GS::EmptyUniString; }
 
         GS::IBinaryChannel& channel = versionProcess.GetStandardOutputChannel ();
-        GS::UniString versionOutput;
-
+        GS::UniString output;
         if (channel.GetAvailable () > 0) {
             const GS::USize uSize = static_cast<GS::USize>(channel.GetAvailable ());
             std::unique_ptr<char[]> buffer (new char[uSize]);
             channel.Read (buffer.get (), uSize);
-            versionOutput = GS::UniString (buffer.get (), uSize, CC_UTF8);
+            output = GS::UniString (buffer.get (), uSize, CC_UTF8);
         }
-
-        return versionOutput;
+        return output;
     } catch (...) {
         return GS::EmptyUniString;
     }
+}
+
+static bool IsVersionSufficient (const std::vector<int>& version)
+{
+    if (version.empty ()) {
+        return false;
+    }
+    // Version > 0.x.x is always sufficient
+    if (version[0] > 0) {
+        return true;
+    }
+    // Version 0.y.z requires y >= 7
+    if (version[0] == 0 && version.size () > 1 && version[1] >= 7) {
+        return true;
+    }
+    return false;
+}
+
+
+static GS::UniString GetValidPathIfSufficient (const GS::UniString& executablePath)
+{
+    GS::UniString versionOutput = GetVersionFromExecutable (executablePath);
+    if (versionOutput.IsEmpty ()) {
+        return GS::EmptyUniString;
+    }
+
+    if (IsVersionSufficient (ParseVersionString (versionOutput))) {
+        ACAPI_WriteReport ("Tapir found a valid 'uv' executable at: %T (Version: %T)", false, executablePath.ToPrintf (), versionOutput.ToPrintf ());
+        return executablePath;
+    } else {
+        ACAPI_WriteReport ("Tapir found an outdated 'uv' at: %T (Version: %T). Ignoring.", false, executablePath.ToPrintf (), versionOutput.ToPrintf ());
+        return GS::EmptyUniString;
+    }
+}
+
+static GS::UniString FindValidUvExecutablePath ()
+{
+    GS::Array<GS::UniString> pathsToTest;
+
+#ifndef WINDOWS
+    GS::Array<IO::Location> searchDirs;
+    IO::Location homeDir;
+    if (IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserHome, &homeDir) == NoError) {
+        searchDirs.Push (homeDir.GetAppended (IO::Name (".cargo")).GetAppended (IO::Name ("bin")));
+    }
+    searchDirs.Push (IO::Location ("/opt/homebrew/bin")); // Apple Silicon Homebrew
+    searchDirs.Push (IO::Location ("/usr/local/bin"));    // Intel Homebrew / other
+    searchDirs.Push (IO::Location ("/usr/bin"));
+
+    for (const auto& dir : searchDirs) {
+        IO::Location uvExecutableLoc (dir, IO::Name ("uv"));
+        bool exists = false;
+        if (IO::fileSystem.Contains (uvExecutableLoc, &exists) == NoError && exists) {
+            GS::UniString fullPath;
+            uvExecutableLoc.ToPath (&fullPath);
+            pathsToTest.Push (fullPath);
+        }
+    }
+#endif
+
+    pathsToTest.Push ("uv");
+
+    // Iterate and test each path until a valid one is found
+    for (const auto& path : pathsToTest) {
+        GS::UniString validPath = GetValidPathIfSufficient (path);
+        if (!validPath.IsEmpty ()) {
+            return validPath;
+        }
+    }
+
+    ACAPI_WriteReport ("Tapir could not find a 'uv' installation with version 0.7.0 or newer.", true);
+    return GS::EmptyUniString;
+}
+
+GS::UniString UvManager::GetUvExecutablePath ()
+{
+    GS::UniString uvPath = FindValidUvExecutablePath ();
+    if (!uvPath.IsEmpty ()) {
+        return uvPath;
+    }
+
+    short response = DGAlert (DG_INFORMATION, "Dependency Missing: 'uv'",
+        "'uv' (version 0.7.0 or newer) is required to run Python scripts but it was not found on your system.",
+        "How would you like to proceed?",
+        "Install for me", "Open Instructions", "Cancel");
+
+    if (response == 1) { // "Install for me"
+        if (AttemptAutomaticInstallation ()) {
+            return FindValidUvExecutablePath ();
+        }
+    } else if (response == 2) { // "Open Instructions"
+        OpenWebpage ("https://docs.astral.sh/uv/getting-started/installation/");
+    }
+
+    return GS::EmptyUniString;
 }
 
 bool UvManager::AttemptAutomaticInstallation ()
@@ -90,12 +175,11 @@ bool UvManager::AttemptAutomaticInstallation ()
     const GS::UniString command = "curl -LsSf https://astral.sh/uv/install.sh | sh";
 #endif
 
-    // Using system() will open a terminal/console window so the user can see the installer's progress.
     int result = system (command.ToCStr ().Get ());
 
     if (result == 0) {
         ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "INFO: uv installer script finished successfully.", false);
-        if (!GetUvVersionString ().IsEmpty ()) {
+        if (!FindValidUvExecutablePath ().IsEmpty ()) {
             DGAlert (DG_INFORMATION, "Installation Successful", "'uv' has been installed and is ready to use.", "", "OK");
             return true;
         } else {
@@ -114,45 +198,4 @@ bool UvManager::AttemptAutomaticInstallation ()
         }
         return false;
     }
-}
-
-GS::UniString UvManager::GetUvExecutableCommand ()
-{
-    GS::UniString versionOutput = GetUvVersionString ();
-
-    if (!versionOutput.IsEmpty ()) {
-        std::vector<int> version = ParseVersionString (versionOutput);
-
-        // We require at least version 0.7.0
-        if (!version.empty () && (version[0] > 0 || (version[0] == 0 && version.size () > 1 && version[1] >= 7))) {
-            return "uv";
-        }
-
-        versionOutput.Trim ();
-        short res = DGAlert (DG_WARNING, "Unsupported 'uv' Version",
-            GS::UniString::Printf ("An old version of 'uv' (%T) was found. Tapir requires version 0.7.0 or newer to support all script features.\n\n"
-                "It's highly recommended to uninstall the old version and let Tapir install the latest one.", versionOutput.ToPrintf ()),
-            "Continue Anyway", "Cancel");
-
-        if (res == 2) { // User chose Cancel
-            return GS::EmptyUniString;
-        }
-        return "uv"; // User chose to continue anyway.
-    }
-
-    short response = DGAlert (DG_INFORMATION, "Dependency Missing: 'uv'",
-        "'uv' is required to run Python scripts but it was not found on your system.",
-        "How would you like to proceed?",
-        "Install for me", "Open Instructions", "Cancel");
-
-    if (response == 1) { // "Install for me"
-        if (AttemptAutomaticInstallation ()) {
-            return "uv";
-        }
-    } else if (response == 2) { // "Open Instructions"
-        OpenWebpage ("https://docs.astral.sh/uv/getting-started/installation/");
-    }
-
-    // Return empty if user cancelled or installation failed
-    return GS::EmptyUniString;
 }

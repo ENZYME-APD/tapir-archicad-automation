@@ -431,7 +431,7 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
         GS::UniString command;
         GS::Array<GS::UniString> argv;
         if (filePath.EndsWith (".py")) {
-            const GS::UniString uvCommand = uvManager.GetUvExecutableCommand ();
+            const GS::UniString uvCommand = uvManager.GetUvExecutablePath ();
             if (uvCommand.IsEmpty ()) {
                 // An alert was already shown to the user inside the manager, so we just exit.
                 return;
@@ -568,7 +568,7 @@ bool TapirPalette::UpdateAddOn ()
         return false;
     }
 
-    const GS::UniString uvCommand = uvManager.GetUvExecutableCommand ();
+    const GS::UniString uvCommand = uvManager.GetUvExecutablePath ();
     if (uvCommand.IsEmpty ()) {
         DGAlert (DG_ERROR, "Update Failed", "The update process requires 'uv' to be installed.", "Please install 'uv' and try again.", "OK");
         return false;
