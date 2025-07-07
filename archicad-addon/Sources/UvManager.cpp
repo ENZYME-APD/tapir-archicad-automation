@@ -111,6 +111,13 @@ static GS::UniString FindValidUvExecutablePath ()
     GS::Array<IO::Location> searchDirs;
     IO::Location homeDir;
     if (IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserHome, &homeDir) == NoError) {
+        //default install path for uv v0.5.0 ++ (~/.local/bin)
+        IO::Location localBinPath = homeDir;
+        localBinPath.AppendToLocal (IO::Name (".local"));
+        localBinPath.AppendToLocal (IO::Name ("bin"));
+        searchDirs.Push (localBinPath);
+
+        //legacy uv install path + Rust/Cargo tool path 
         IO::Location cargoPath = homeDir;
         cargoPath.AppendToLocal (IO::Name (".cargo"));
         cargoPath.AppendToLocal (IO::Name ("bin"));
@@ -133,7 +140,6 @@ static GS::UniString FindValidUvExecutablePath ()
 
     pathsToTest.Push ("uv");
 
-    // Iterate and test each path until a valid one is found
     for (const auto& path : pathsToTest) {
         GS::UniString validPath = GetValidPathIfSufficient (path);
         if (!validPath.IsEmpty ()) {
