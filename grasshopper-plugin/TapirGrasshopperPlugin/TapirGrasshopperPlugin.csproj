@@ -16,7 +16,7 @@
   
   <PropertyGroup>
     <!-- Specifies information for Assembly and Yak -->
-    <Version>1.1.10</Version>
+    <Version>1.2.0</Version>
     <Title>Tapir</Title>
     <Company>Enzyme APD</Company>
     <Description>Grasshopper components to access Archicad via JSON interface.</Description>
