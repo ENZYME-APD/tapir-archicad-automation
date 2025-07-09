@@ -7,9 +7,9 @@ class UvManager
 public:
     UvManager () = default;
 
-    GS::UniString GetUvExecutableCommand ();
+    GS::UniString GetUvExecutablePath ();
+
 
 private:
-    GS::UniString GetUvVersionString ();
     bool AttemptAutomaticInstallation ();
 };

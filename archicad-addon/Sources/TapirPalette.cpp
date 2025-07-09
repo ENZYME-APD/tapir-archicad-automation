@@ -378,6 +378,26 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
             }
         };
 
+        void ProcessStderrBlock (const GS::UniString& stderrContent)
+        {
+            if (stderrContent.IsEmpty ()) {
+                return;
+            }
+
+            GS::UniString lowerContent = stderrContent;
+            lowerContent.ToLowerCase ();
+
+            if (lowerContent.Contains ("error:") || lowerContent.Contains ("failed") || lowerContent.Contains ("traceback (most recent call last)")) {
+                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_ERROR, stderrContent));
+                return;
+            }
+            if (lowerContent.Contains ("warning:")) {
+                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_WARNING, stderrContent));
+                return;
+            }
+            GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stderrContent));
+        }
+
     public:
         explicit UIUpdaterThread (GS::Process& p) : process(p)
         {
@@ -398,9 +418,8 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
         void ReadFromChannels ()
         {
             const GS::UniString stdError = ReadFromChannel (process.GetStandardErrorChannel ());
-            if (!stdError.IsEmpty ()) {
-                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_ERROR, stdError));
-            }
+            ProcessStderrBlock (stdError);
+
             const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
             if (!stdOutput.IsEmpty ()) {
                 GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stdOutput));
@@ -431,7 +450,7 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
         GS::UniString command;
         GS::Array<GS::UniString> argv;
         if (filePath.EndsWith (".py")) {
-            const GS::UniString uvCommand = uvManager.GetUvExecutableCommand ();
+            const GS::UniString uvCommand = uvManager.GetUvExecutablePath ();
             if (uvCommand.IsEmpty ()) {
                 // An alert was already shown to the user inside the manager, so we just exit.
                 return;
@@ -568,7 +587,7 @@ bool TapirPalette::UpdateAddOn ()
         return false;
     }
 
-    const GS::UniString uvCommand = uvManager.GetUvExecutableCommand ();
+    const GS::UniString uvCommand = uvManager.GetUvExecutablePath ();
     if (uvCommand.IsEmpty ()) {
         DGAlert (DG_ERROR, "Update Failed", "The update process requires 'uv' to be installed.", "Please install 'uv' and try again.", "OK");
         return false;
