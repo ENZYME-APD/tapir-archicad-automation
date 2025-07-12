@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Definitions.hpp"
 #include "UniString.hpp"
 
