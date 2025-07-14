@@ -5,6 +5,7 @@
 #include "DGModule.hpp"
 #include "ThreadedExecutor.hpp"
 #include "Process.hpp"
+#include "Config.hpp"
 #include "UvManager.hpp"
 
 class TapirPalette final : public DG::Palette,
@@ -27,6 +28,19 @@ public:
     static GSErrCode RegisterPaletteControlCallBack ();
 
 private:
+    struct PopUpItemData : public GS::Object
+    {
+        IO::Location fileLocation;
+        const GS::UniString repoRelLoc;
+        const Config::Repository* repo = nullptr;
+
+        explicit PopUpItemData (
+            const IO::Location& _fileLocation,
+            const GS::UniString& _repoRelLoc = GS::EmptyUniString,
+            const Config::Repository* _repo = nullptr)
+            : fileLocation(_fileLocation), repoRelLoc(_repoRelLoc), repo(_repo) {}
+    };
+
     DG::IconButton tapirButton;
     DG::PopUp      scriptSelectionPopUp;
     DG::IconButton runScriptButton;
@@ -42,8 +56,8 @@ private:
 
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const IO::Location& fileLocation, const GS::Array<GS::UniString>& additionalArgv = {});
-    bool AddScriptToPopUp (const IO::Location& fileLocation, short index = DG::PopUp::TopItem);
-    void AddBuiltInScriptsFromGithub ();
+    bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
+    void AddScriptsFromRepositories ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
