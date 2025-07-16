@@ -122,3 +122,25 @@ div.frame
 }
 
 }
+
+.footer
+{
+    margin: 40px auto 0;
+    padding: 0 20px;
+    max-width: 920px;
+    hr
+    {
+        border-width: 0.5px;
+        color: #c6c6c6;
+    }
+    a.icon
+    {
+        display: block;
+        max-width: 28px;
+        margin: 20px auto;
+        svg
+        {
+            width: 100%;
+        }
+    }
+}
