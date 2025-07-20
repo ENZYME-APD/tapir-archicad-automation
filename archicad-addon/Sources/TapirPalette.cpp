@@ -260,7 +260,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 
             GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
             if (popUpItemData != nullptr) {
-                ExecuteScript (popUpItemData->fileLocation);
+                ExecuteScript (*popUpItemData);
             }
         }
     } else if (ev.GetSource () == &tapirButton) {
@@ -360,10 +360,10 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
                     GSGuid2APIGuid (paletteGuid));
 }
 
-void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Array<GS::UniString>& additionalArgv)
+void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 {
     GS::UniString filePath;
-    fileLocation.ToPath (&filePath);
+    popUpItemData.fileLocation.ToPath (&filePath);
 
     class UIUpdaterThread : public GS::Runnable
     {
@@ -467,12 +467,12 @@ void TapirPalette::ExecuteScript (const IO::Location& fileLocation, const GS::Ar
             }
             command = uvCommand;
             argv = {"run", "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
+            if (!popUpItemData.repo->token.IsEmpty ()) {
+                argv.Append ({"--token", popUpItemData.repo->token});
+            }
         } else {
             command = filePath;
             argv = {"--port", GS::ValueToUniString (GetConnectionPort ())};
-        }
-        if (additionalArgv.GetSize () > 0) {
-            argv.Append (additionalArgv);
         }
 
         constexpr bool redirectStandardOutput = true;
