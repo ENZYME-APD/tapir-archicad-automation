@@ -396,8 +396,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 return;
             }
 
-            GS::UniString lowerContent = stderrContent;
-            lowerContent.ToLowerCase ();
+            const GS::UniString lowerContent = stderrContent.ToLowerCase ();
 
             if (lowerContent.Contains ("error:") || lowerContent.Contains ("failed") || lowerContent.Contains ("traceback (most recent call last)")) {
                 GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_ERROR, stderrContent));

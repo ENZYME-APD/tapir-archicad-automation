@@ -1,4 +1,5 @@
 #include "UvManager.hpp"
+#include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "Process.hpp"
 #include "StringConversion.hpp"
