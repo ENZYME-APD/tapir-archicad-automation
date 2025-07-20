@@ -29,11 +29,17 @@ static UShort GetConnectionPort ()
     return portNumber;
 }
 
-static IO::Location SaveBuiltInScript (const IO::RelativeLocation& relLoc, const GS::UniString& content)
+static IO::Location GetTapirTemporaryFolder ()
 {
-    IO::Location fileLoc;
-    IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &fileLoc);
-    fileLoc.AppendToLocal (IO::Name ("Tapir"));
+    IO::Location tempFolder;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &tempFolder);
+    tempFolder.AppendToLocal (IO::Name ("Tapir"));
+    return tempFolder;
+}
+
+static IO::Location SaveBuiltInScript (const IO::Location& baseFolderLoc, const IO::RelativeLocation& relLoc, const GS::UniString& content)
+{
+    IO::Location fileLoc = baseFolderLoc;
     fileLoc.AppendToLocal (relLoc);
 
     IO::Location folderToCreate = fileLoc;
@@ -511,6 +517,9 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
 
 void TapirPalette::AddScriptsFromRepositories ()
 {
+    IO::Location tapirTempFolder = GetTapirTemporaryFolder ();
+    IO::fileSystem.Delete (tapirTempFolder);
+
     const auto& repositories = Config::Instance ().Repositories ();
     for (auto& repo : repositories) {
         IO::RelativeLocation repoRelativeLoc (repo.repoOwner);
@@ -528,7 +537,7 @@ void TapirPalette::AddScriptsFromRepositories ()
             const auto content = DownloadFileContent (kv.second, headers);
             IO::RelativeLocation relLoc = repoRelativeLoc;
             relLoc.Append (IO::RelativeLocation (kv.first));
-            const IO::Location fileLoc = SaveBuiltInScript (relLoc, content);
+            const IO::Location fileLoc = SaveBuiltInScript (tapirTempFolder, relLoc, content);
             if (relLoc.GetLength () == (1 + repoFolderRelativeLoc.GetLength ())) {
                 ACAPI_WriteReport ("Found script: " + repo.repoOwner + "/" + repo.repoName + "/" + kv.first, false);
                 AddScriptToPopUp (GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo), DG::PopUp::BottomItem);
@@ -635,7 +644,7 @@ bool TapirPalette::UpdateAddOn ()
 
         return UpdateAddOn ();
     }
-    const IO::Location fileLoc = SaveBuiltInScript (IO::RelativeLocation (fileName), content);
+    const IO::Location fileLoc = SaveBuiltInScript (GetTapirTemporaryFolder (), IO::RelativeLocation (fileName), content);
 
     IO::Location addOnLocation;
     ACAPI_GetOwnLocation (&addOnLocation);
