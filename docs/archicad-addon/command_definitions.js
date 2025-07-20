@@ -1606,13 +1606,7 @@ var gCommands = [{
                         "description": "The Z reference level of coordinates."
                     },
                     "skirtType": {
-                        "type": "string",
-                        "description": "The type of the skirt structure.",
-                        "enum": [
-                            "SurfaceOnlyWithoutSkirt",
-                            "WithSkirt",
-                            "SolidBodyWithSkirt"
-                        ]
+                        "$ref": "#/MeshSkirtType"
                     },
                     "skirtLevel": {
                         "type": "number",

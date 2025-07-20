@@ -111,6 +111,11 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ],
     "highlightedColors": [
@@ -242,6 +247,12 @@ Parameters:
         ],
         [
             120,
+            50,
+            50,
+            255
+        ],
+        [
+            150,
             50,
             50,
             255
