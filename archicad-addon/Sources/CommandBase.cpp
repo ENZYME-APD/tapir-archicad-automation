@@ -134,11 +134,12 @@ GS::ObjectState CreatePolyArcObjectState (const API_PolyArc& a)
     return GS::ObjectState ("begIndex", a.begIndex - 1, "endIndex", a.endIndex - 1, "arcAngle", a.arcAngle);
 }
 
-std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
+std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool includeZCoords)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon) != NoError || memo.coords == nullptr) {
+    const UInt64 mask = includeZCoords ? APIMemoMask_Polygon | APIMemoMask_MeshPolyZ : APIMemoMask_Polygon;
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, mask) != NoError || memo.coords == nullptr) {
         return {};
     }
 
@@ -158,6 +159,13 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid)
         coords.reserve (endIndex - startIndex + 1);
         for (GSIndex iCoord = startIndex; iCoord <= endIndex; ++iCoord) {
             coords.push_back ((*memo.coords)[iCoord]);
+        }
+        if (includeZCoords) {
+            std::vector<double>& zCoords = polygons[iPoly].zCoords;
+            zCoords.reserve (endIndex - startIndex + 1);
+            for (GSIndex iCoord = startIndex; iCoord <= endIndex; ++iCoord) {
+                zCoords.push_back ((*memo.meshPolyZ)[iCoord]);
+            }
         }
         startIndex = endIndex + 1;
     }
@@ -202,18 +210,28 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
     }
 }
 
-void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName)
+void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords)
 {
     const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
     const auto& holes = os.AddList<GS::ObjectState> (holesArrayFieldName);
 
-    const auto polygons = GetPolygonsFromMemoCoords (elemGuid);
+    const auto polygons = GetPolygonsFromMemoCoords (elemGuid, includeZCoords);
     if (polygons.empty ()) {
         return;
     }
 
-    for (const auto& coord : polygons[0].coords) {
-        coords (Create2DCoordinateObjectState (coord));
+    if (includeZCoords) {
+        for (size_t i = 0; i < polygons[0].coords.size (); ++i) {
+            coords (Create3DCoordinateObjectState (API_Coord3D {
+                polygons[0].coords[i].x,
+                polygons[0].coords[i].y,
+                polygons[0].zCoords[i]
+            }));
+        }
+    } else {
+        for (const auto& coord : polygons[0].coords) {
+            coords (Create2DCoordinateObjectState (coord));
+        }
     }
 
     if (arcsFieldName.HasValue () && !polygons[0].arcs.empty ()) {
@@ -227,8 +245,18 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
     for (size_t i = 1; i < polygons.size (); ++i) {
         GS::ObjectState hole;
         const auto& holeCoords = hole.AddList<GS::ObjectState> (holeCoordsFieldName);
-        for (const auto& coord : polygons[i].coords) {
-            holeCoords (Create2DCoordinateObjectState (coord));
+        if (includeZCoords) {
+            for (size_t i = 0; i < polygons[i].coords.size (); ++i) {
+                holeCoords (Create3DCoordinateObjectState (API_Coord3D {
+                    polygons[i].coords[i].x,
+                    polygons[i].coords[i].y,
+                    polygons[i].zCoords[i]
+                }));
+            }
+        } else {
+            for (const auto& coord : polygons[i].coords) {
+                holeCoords (Create2DCoordinateObjectState (coord));
+            }
         }
 
         if (holeArcsFieldName.HasValue () && !polygons[i].arcs.empty ()) {

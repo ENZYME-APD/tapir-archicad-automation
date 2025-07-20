@@ -596,6 +596,40 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.cwFrame.classID == APICWFrameClass_Division ? "Division" : "Custom");
             } break;
 
+            case API_MeshID: {
+                typeSpecificDetails.Add ("level", elem.mesh.level);
+                if (elem.mesh.skirt == 3) {
+                    typeSpecificDetails.Add ("skirtType", "SurfaceOnlyWithoutSkirt");
+                } else if (elem.mesh.skirt == 2) {
+                    typeSpecificDetails.Add ("skirtType", "WithSkirt");
+                } else {
+                    typeSpecificDetails.Add ("skirtType", "SolidBodyWithSkirt");
+                }
+                typeSpecificDetails.Add ("skirtLevel", elem.mesh.skirtLevel);
+                constexpr bool includeZCoords = true;
+                AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonCoordinates", "polygonArcs", "holes", "polygonCoordinates", "polygonArcs", includeZCoords);
+                if (elem.mesh.levelLines.nSubLines > 0) {
+                    API_ElementMemo memo = {};
+                    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+                    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_MeshLevel) == NoError && memo.meshLevelCoords != nullptr && memo.meshLevelEnds != nullptr) {
+                        const auto& sublines = typeSpecificDetails.AddList<GS::ObjectState> ("sublines");
+                        const GSSize nSublines = BMhGetSize (reinterpret_cast<GSHandle> (memo.meshLevelEnds)) / sizeof (Int32);
+                        Int32 iCoord = 0;
+                        for (Int32 i = 0; i < nSublines; ++i) {
+                            GS::ObjectState subline;
+                            const auto& coordinates = subline.AddList<GS::ObjectState> ("coordinates");
+
+                            const Int32 nCoords = (*memo.meshLevelEnds)[i];
+                            for (Int32 j = 0; j < nCoords; ++j) {
+                                const API_MeshLevelCoord& coord = (*memo.meshLevelCoords)[iCoord++];
+                                coordinates (Create3DCoordinateObjectState (coord.c));
+                            }
+                            sublines (subline);
+                        }
+                    }
+                }
+            } break;
+
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
                 break;
