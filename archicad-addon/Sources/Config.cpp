@@ -5,6 +5,32 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 
+Config::Repository Config::Repository::FromOS (const GS::ObjectState& os) {
+    Repository repo;
+    os.Get ("displayName", repo.displayName);
+    os.Get ("repoOwner", repo.repoOwner);
+    os.Get ("repoName", repo.repoName);
+    os.Get ("relativeLoc", repo.relativeLoc);
+    os.Get ("token", repo.token);
+    os.Get ("excludeFromDownloadPattern", repo.excludeFromDownloadPattern);
+    os.Get ("includePattern", repo.includePattern);
+    os.Get ("excludePattern", repo.excludePattern);
+    return repo;
+}
+
+GS::ObjectState Config::Repository::ToOS () const {
+    return {
+        "displayName", displayName,
+        "repoOwner", repoOwner,
+        "repoName", repoName,
+        "relativeLoc", relativeLoc,
+        "token", token,
+        "excludeFromDownloadPattern", excludeFromDownloadPattern,
+        "includePattern", includePattern,
+        "excludePattern", excludePattern
+    };
+}
+
 Config& Config::Instance ()
 {
     static Config instance;
@@ -32,8 +58,7 @@ void Config::GetDefaults ()
         "Tapir",
         "ENZYME-APD",
         "tapir-archicad-automation",
-        "builtin-scripts",
-        ""
+        "builtin-scripts"
     });
     askUpdatingAddOnBeforeEachExecution = false;
 }
@@ -58,13 +83,7 @@ void Config::LoadFromFile (IO::File& file)
 
     repositories.clear ();
     for (auto& repoOS : repositoriesArray) {
-        repositories.emplace_back ();
-        Config::Repository& repo = repositories.back ();
-        repoOS.Get ("displayName", repo.displayName);
-        repoOS.Get ("repoOwner", repo.repoOwner);
-        repoOS.Get ("repoName", repo.repoName);
-        repoOS.Get ("relativeLoc", repo.relativeLoc);
-        repoOS.Get ("token", repo.token);
+        repositories.push_back (Config::Repository::FromOS (repoOS));
     }
 
     os.Get ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
@@ -75,13 +94,7 @@ void Config::SaveToFile (IO::File& file) const
     GS::ObjectState os;
     const auto& repositoriesArray = os.AddList<GS::ObjectState> ("repositories");
     for (auto& repo : repositories) {
-        GS::ObjectState repoOS (
-            "repoOwner", repo.repoOwner,
-            "repoName", repo.repoName,
-            "relativeLoc", repo.relativeLoc,
-            "token", repo.token);
-        if (!repo.displayName.IsEmpty()) repoOS.Add ("displayName", repo.displayName);
-        repositoriesArray (repoOS);
+        repositoriesArray (repo.ToOS ());
     }
 
     os.Add ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);

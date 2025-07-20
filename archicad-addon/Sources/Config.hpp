@@ -11,11 +11,37 @@ class Config
 {
 public:
     struct Repository {
+        Repository () = default;
+        Repository (
+            const GS::UniString& _displayName,
+            const GS::UniString& _repoOwner,
+            const GS::UniString& _repoName,
+            const GS::UniString& _relativeLoc = GS::EmptyUniString,
+            const GS::UniString& _token = GS::EmptyUniString,
+            const GS::UniString& _excludeFromDownloadPattern = GS::EmptyUniString,
+            const GS::UniString& _includePattern = GS::EmptyUniString,
+            const GS::UniString& _excludePattern = GS::EmptyUniString)
+            : displayName(_displayName)
+            , repoOwner(_repoOwner)
+            , repoName(_repoName)
+            , relativeLoc(_relativeLoc)
+            , token(_token)
+            , excludeFromDownloadPattern(_excludeFromDownloadPattern)
+            , includePattern(_includePattern)
+            , excludePattern(_excludePattern)
+        {}
+
         GS::UniString displayName;
         GS::UniString repoOwner;
         GS::UniString repoName;
         GS::UniString relativeLoc;
         GS::UniString token;
+        GS::UniString excludeFromDownloadPattern;
+        GS::UniString includePattern;
+        GS::UniString excludePattern;
+
+        GS::ObjectState ToOS () const;
+        static Repository FromOS (const GS::ObjectState& os);
     };
 
 public:

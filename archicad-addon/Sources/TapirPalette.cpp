@@ -18,6 +18,7 @@
 #include "MigrationHelper.hpp"
 
 #include <map>
+#include <regex>
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
@@ -522,6 +523,10 @@ void TapirPalette::AddScriptsFromRepositories ()
 
     const auto& repositories = Config::Instance ().Repositories ();
     for (auto& repo : repositories) {
+        const std::unique_ptr<std::regex> excludeFromDownloadRegex = repo.excludeFromDownloadPattern.IsEmpty () ? nullptr : std::make_unique<std::regex> (repo.excludeFromDownloadPattern.ToCStr ().Get ());
+        const std::unique_ptr<std::regex> excludeRegex = repo.excludePattern.IsEmpty () ? nullptr : std::make_unique<std::regex> (repo.excludePattern.ToCStr ().Get ());
+        const std::unique_ptr<std::regex> includeRegex = repo.includePattern.IsEmpty () ? nullptr : std::make_unique<std::regex> (repo.includePattern.ToCStr ().Get ());
+
         IO::RelativeLocation repoRelativeLoc (repo.repoOwner);
         repoRelativeLoc.Append (IO::Name (repo.repoName));
         IO::RelativeLocation repoFolderRelativeLoc (repoRelativeLoc);
@@ -534,14 +539,36 @@ void TapirPalette::AddScriptsFromRepositories ()
         }
         ACAPI_WriteReport ("Tapir is downloading content from GitHub repository: " + repo.repoOwner + "/" + repo.repoName, false);
         for (auto kv : GetFilesFromGitHubInRelativeLocation (repo)) {
+            const GS::UniString repoLoc = repo.repoOwner + "/" + repo.repoName + "/" + kv.first;
+            if (excludeFromDownloadRegex && std::regex_match (repoLoc.ToCStr ().Get (), *excludeFromDownloadRegex)) {
+                ACAPI_WriteReport ("Skipping download of " + repoLoc + " due to exclude pattern", false);
+                continue;
+            }
             const auto content = DownloadFileContent (kv.second, headers);
             IO::RelativeLocation relLoc = repoRelativeLoc;
             relLoc.Append (IO::RelativeLocation (kv.first));
             const IO::Location fileLoc = SaveBuiltInScript (tapirTempFolder, relLoc, content);
-            if (relLoc.GetLength () == (1 + repoFolderRelativeLoc.GetLength ())) {
-                ACAPI_WriteReport ("Found script: " + repo.repoOwner + "/" + repo.repoName + "/" + kv.first, false);
-                AddScriptToPopUp (GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo), DG::PopUp::BottomItem);
+            ACAPI_WriteReport ("Downloaded " + repoLoc, false);
+            if (excludeRegex) {
+                if (std::regex_match (kv.first.ToCStr ().Get (), *excludeRegex)) {
+                    ACAPI_WriteReport ("Skipping use of " + repoLoc + " due to exclude pattern", false);
+                    continue;
+                }
+            } else if (includeRegex) {
+                if (!std::regex_match (kv.first.ToCStr ().Get (), *includeRegex)) {
+                    ACAPI_WriteReport ("Skipping use of " + repoLoc + " due to include pattern", false);
+                    continue;
+                }
+            } else {
+                IO::Name fileName;
+                if (relLoc.GetLength () != (1 + repoFolderRelativeLoc.GetLength ()) ||
+                    fileLoc.GetLastLocalName (&fileName) != NoError ||
+                    fileName.GetExtension ().ToLowerCase () != "py") {
+                    continue;
+                }
             }
+            ACAPI_WriteReport ("Added to the popup: " + repoLoc, false);
+            AddScriptToPopUp (GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo), DG::PopUp::BottomItem);
         }
     }
 }
