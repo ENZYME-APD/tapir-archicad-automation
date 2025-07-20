@@ -620,8 +620,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             const auto& coordinates = subline.AddList<GS::ObjectState> ("coordinates");
 
                             const Int32 nCoords = (*memo.meshLevelEnds)[i];
-                            for (Int32 j = 0; j < nCoords; ++j) {
-                                const API_MeshLevelCoord& coord = (*memo.meshLevelCoords)[iCoord++];
+                            for (; iCoord < nCoords; ++iCoord) {
+                                const API_MeshLevelCoord& coord = (*memo.meshLevelCoords)[iCoord];
                                 coordinates (Create3DCoordinateObjectState (coord.c));
                             }
                             sublines (subline);
