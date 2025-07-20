@@ -35,6 +35,7 @@ void Config::GetDefaults ()
         "builtin-scripts",
         ""
     });
+    askUpdatingAddOnBeforeEachExecution = false;
 }
 
 void Config::LoadFromFile (IO::File& file)
@@ -65,6 +66,8 @@ void Config::LoadFromFile (IO::File& file)
         repoOS.Get ("relativeLoc", repo.relativeLoc);
         repoOS.Get ("token", repo.token);
     }
+
+    os.Get ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
 }
 
 void Config::SaveToFile (IO::File& file) const
@@ -80,6 +83,8 @@ void Config::SaveToFile (IO::File& file) const
         if (!repo.displayName.IsEmpty()) repoOS.Add ("displayName", repo.displayName);
         repositoriesArray (repoOS);
     }
+
+    os.Add ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
 
     constexpr bool prettyPrint = true;
     file.Open (IO::File::OpenMode::WriteEmptyMode);

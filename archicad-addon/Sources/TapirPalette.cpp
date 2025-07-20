@@ -254,7 +254,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         if (IsProcessRunning ()) {
             process.Kill ();
         } else {
-            if (UpdateAddOn ()) {
+            if (Config::Instance().AskUpdatingAddOnBeforeEachExecution () && UpdateAddOn ()) {
                 return;
             }
 

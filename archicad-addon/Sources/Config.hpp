@@ -22,6 +22,7 @@ public:
     static Config& Instance ();
 
     const std::vector<Repository>& Repositories () const { return repositories; }
+    bool AskUpdatingAddOnBeforeEachExecution () const { return askUpdatingAddOnBeforeEachExecution; }
 
 private:
     Config ();
@@ -33,8 +34,8 @@ private:
     static bool IsFileNewer (const IO::File& file, GSTime& timestamp);
 
 private:
-
     std::unique_ptr<IO::File> configFilePtr;
     GSTime configFileTimestamp = 0;
     std::vector<Repository> repositories;
+    bool askUpdatingAddOnBeforeEachExecution;
 };
