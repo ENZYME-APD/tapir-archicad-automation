@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
             pManager.AddTextParameter ("Type", "Type", "Element type.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Filter", "Filter", "Element filter.", GH_ParamAccess.list, @default: new List<string> { });
+            pManager.AddTextParameter ("Filter", "Filter", "Element filter.", GH_ParamAccess.list, @default: new List<string> { ElementFilter.NoFilter.ToString () });
             pManager.AddGenericParameter ("Databases", "Databases", "Databases to find elements.", GH_ParamAccess.list);
 
             Params.Input[2].Optional = true;

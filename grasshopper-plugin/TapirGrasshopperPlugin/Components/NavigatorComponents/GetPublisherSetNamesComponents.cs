@@ -36,11 +36,6 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            List<string> filters = new List<string> ();
-            if (!DA.GetDataList (0, filters)) {
-                return;
-            }
-
             CommandResponse response = SendArchicadCommand ("GetPublisherSetNames", null);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
