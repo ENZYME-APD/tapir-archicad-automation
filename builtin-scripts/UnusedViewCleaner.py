@@ -5,7 +5,7 @@
 # ]
 #
 # [tool.uv.sources]
-# multiconn-archicad = { url = "https://github.com/SzamosiMate/multiconn_archicad/releases/latest/download/multiconn_archicad-0.3.1-py3-none-any.whl" }
+# multiconn-archicad = { url = "https://github.com/SzamosiMate/multiconn_archicad/releases/download/v0.3.3/multiconn_archicad-0.3.3-py3-none-any.whl" }
 # ///
 
 from typing import Optional,  Callable
