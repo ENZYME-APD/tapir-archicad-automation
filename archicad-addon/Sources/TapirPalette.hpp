@@ -55,7 +55,7 @@ private:
     UvManager uvManager;
 
     void SetMenuItemCheckedState (bool);
-    void ExecuteScript (const IO::Location& fileLocation, const GS::Array<GS::UniString>& additionalArgv = {});
+    void ExecuteScript (const PopUpItemData& popUpItemData);
     bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
     void AddScriptsFromRepositories ();
     void AddScriptsFromCustomScriptsFolder ();
