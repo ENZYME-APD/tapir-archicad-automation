@@ -234,6 +234,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         if (err != NoError) {
             const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
             elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
+            continue;
         }
 
         const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
@@ -322,7 +323,7 @@ GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetInputParameter
                         "$ref": "#/ElementId"
                     },
                     "gdlParameters": {
-                        "$ref": "#/GDLParameterList"
+                        "$ref": "#/GDLParameterArray"
                     }
                 },
                 "additionalProperties": false,
@@ -402,62 +403,22 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     }
 
                     for (const GS::ObjectState& elemGdlParametersItem : elemGdlParameters) {
-                        GS::Array<GS::ObjectState> parameters;
-                        elemGdlParametersItem.Get ("parameters", parameters);
-
                         API_ChangeParamType changeParam = {};
-                        for (const GS::ObjectState& parameter : parameters) {
-                            SetCharProperty (&parameter, "name", changeParam.name);
-
-                            if (!gdlParametersTypeDictionary.ContainsKey (changeParam.name)) {
-                                errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
-                                err = APIERR_BADPARS;
-                                break;
-                            }
-
-                            if (parameter.Contains ("index1")) {
-                                parameter.Get ("index1", changeParam.ind1);
-                                if (parameter.Contains ("index2")) {
-                                    parameter.Get ("index2", changeParam.ind2);
+                        GS::Array<GS::ObjectState> parameters;
+                        if (elemGdlParametersItem.Get ("parameters", parameters)) {
+                            // Legacy mode: old schema had nested list for parameters
+                            for (const GS::ObjectState& parameter : parameters) {
+                                err = SetOneGDLParameter (parameter, elemGuid, changeParam, gdlParametersTypeDictionary, errMessage);
+                                if (err != NoError) {
+                                    break;
                                 }
-                            }
 
-                            switch (gdlParametersTypeDictionary[changeParam.name]) {
-                                case APIParT_Integer:
-                                case APIParT_PenCol:
-                                case APIParT_LineTyp:
-                                case APIParT_Mater:
-                                case APIParT_FillPat:
-                                case APIParT_BuildingMaterial:
-                                case APIParT_Profile:
-                                    SetParamValueInteger (changeParam, parameter);
-                                    break;
-                                case APIParT_ColRGB:
-                                case APIParT_Intens:
-                                case APIParT_Length:
-                                case APIParT_RealNum:
-                                case APIParT_Angle:
-                                    SetParamValueDouble (changeParam, parameter);
-                                    break;
-                                case APIParT_LightSw:
-                                    SetParamValueOnOff (changeParam, parameter);
-                                    break;
-                                case APIParT_Boolean:
-                                    SetParamValueBool (changeParam, parameter);
-                                    break;
-                                case APIParT_CString:
-                                case APIParT_Title:
-                                    SetParamValueString (changeParam, parameter);
-                                    break;
-                                default:
-                                case APIParT_Dictionary:
-                                    // Not supported by the Archicad API yet
-                                    break;
+                                ACAPI_DisposeAddParHdl (&getParams.params);
+                                ACAPI_LibraryPart_GetActParameters (&getParams);
                             }
-
-                            err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+                        } else {
+                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, changeParam, gdlParametersTypeDictionary, errMessage);
                             if (err != NoError) {
-                                errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
                                 break;
                             }
 
@@ -525,4 +486,62 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     });
 
     return response;
+}
+
+GSErrCode SetGDLParametersOfElementsCommand::SetOneGDLParameter (const GS::ObjectState& parameter, const API_Guid& elemGuid, API_ChangeParamType& changeParam, const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary, GS::UniString& errMessage) const
+{
+    SetCharProperty (&parameter, "name", changeParam.name);
+
+    if (!gdlParametersTypeDictionary.ContainsKey (changeParam.name)) {
+        errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    }
+
+    if (parameter.Contains ("index1")) {
+        parameter.Get ("index1", changeParam.ind1);
+        if (parameter.Contains ("index2")) {
+            parameter.Get ("index2", changeParam.ind2);
+        }
+    }
+
+    switch (gdlParametersTypeDictionary[changeParam.name]) {
+        case APIParT_Integer:
+        case APIParT_PenCol:
+        case APIParT_LineTyp:
+        case APIParT_Mater:
+        case APIParT_FillPat:
+        case APIParT_BuildingMaterial:
+        case APIParT_Profile:
+            SetParamValueInteger (changeParam, parameter);
+            break;
+        case APIParT_ColRGB:
+        case APIParT_Intens:
+        case APIParT_Length:
+        case APIParT_RealNum:
+        case APIParT_Angle:
+            SetParamValueDouble (changeParam, parameter);
+            break;
+        case APIParT_LightSw:
+            SetParamValueOnOff (changeParam, parameter);
+            break;
+        case APIParT_Boolean:
+            SetParamValueBool (changeParam, parameter);
+            break;
+        case APIParT_CString:
+        case APIParT_Title:
+            SetParamValueString (changeParam, parameter);
+            break;
+        default:
+        case APIParT_Dictionary:
+            // Not supported by the Archicad API yet
+            break;
+    }
+
+    GSErrCode err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        return err;
+    }
+
+    return err;
 }
