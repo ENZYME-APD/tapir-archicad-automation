@@ -66,10 +66,11 @@ inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { ret
 struct PolygonData {
     std::vector<API_Coord>   coords;
     std::vector<API_PolyArc> arcs;
+    std::vector<double>      zCoords;
 };
-std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid);
+std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bool includeZCoords = false);
 void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName = {});
-void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName);
+void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 
 struct Story {
     Story (short _index, double _level)

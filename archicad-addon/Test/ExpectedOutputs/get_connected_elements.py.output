@@ -1358,6 +1358,11 @@ Response:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ]
 }
@@ -1365,6 +1370,11 @@ Command: GetConnectedElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -3538,6 +3548,9 @@ Response:
         },
         {
             "elements": []
+        },
+        {
+            "elements": []
         }
     ]
 }
@@ -3545,6 +3558,11 @@ Command: GetConnectedElements
 Parameters:
 {
     "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -5718,6 +5736,9 @@ Response:
         },
         {
             "elements": []
+        },
+        {
+            "elements": []
         }
     ]
 }
@@ -7079,6 +7100,11 @@ Parameters:
             "elementId": {
                 "guid": "<GUID>"
             }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
         }
     ],
     "connectedElementType": "Label"
@@ -7086,6 +7112,9 @@ Parameters:
 Response:
 {
     "connectedElements": [
+        {
+            "elements": []
+        },
         {
             "elements": []
         },
