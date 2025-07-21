@@ -12,6 +12,8 @@ port = 19723 if 'port' not in args else args.port
 def RunCommand (command, parameters = None, debug = False):
     if parameters is None:
         parameters = {}
+    if not isinstance(parameters, dict):
+        print ('Error:\nCommand parameters must be a dictionary. The given parameters:\n{}'.format (JsonDumpDictionary (parameters)))
 
     if debug:
         print ('Command: ' + command)
