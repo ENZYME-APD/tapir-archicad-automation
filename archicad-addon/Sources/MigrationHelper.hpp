@@ -304,6 +304,18 @@ inline GSErrCode TAPIR_MarkUp_GetAttachedElements (API_Guid issueId, API_MarkUpC
     return err;
 }
 
+#ifdef ServerMainVers_2600
+inline API_ElemTypeID GetElemTypeId (const API_ElemType& elemType)
+{
+    return elemType.typeID;
+}
+#endif
+
+inline API_ElemTypeID GetElemTypeId (const API_ElemTypeID& elemType)
+{
+    return elemType;
+}
+
 inline API_ElemTypeID GetElemTypeId (const API_Elem_Head& elemHead)
 {
 #ifdef ServerMainVers_2600

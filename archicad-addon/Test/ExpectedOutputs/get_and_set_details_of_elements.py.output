@@ -3058,7 +3058,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.08,
+                    "y": 0.25,
+                    "z": 3
+                },
+                "angle": 0
             }
         },
         {
@@ -3079,7 +3091,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3100,7 +3124,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3121,7 +3157,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3142,7 +3190,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3163,7 +3223,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3184,7 +3256,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWall",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3205,7 +3289,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWall",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 2,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3226,7 +3322,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -3247,7 +3355,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.0064,
+                    "y": 0.0625,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -3268,7 +3388,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.000384,
+                    "y": 0.00625,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -3289,7 +3421,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.000384,
+                    "y": 0.00625,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -3310,7 +3454,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 1.5
+                },
+                "angle": 0
             }
         },
         {
@@ -3331,7 +3487,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.0064,
+                    "y": 0.0625,
+                    "z": 1.5
+                },
+                "angle": 0
             }
         },
         {
@@ -3352,7 +3520,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.000384,
+                    "y": 0.00625,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -3373,7 +3553,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -3394,7 +3586,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.000384,
+                    "y": 0.00625,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -3415,7 +3619,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -3436,7 +3652,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -3457,7 +3685,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.0064,
+                    "y": 0.0625,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -3478,7 +3718,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3499,7 +3751,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3520,7 +3784,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3541,7 +3817,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3562,7 +3850,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3583,7 +3883,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3604,7 +3916,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -3625,7 +3949,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 1.5
+                },
+                "angle": 0
             }
         },
         {
@@ -3646,7 +3982,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -3667,7 +4015,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -3688,7 +4048,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0.00064,
+                    "y": 0.01875,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -3709,7 +4081,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3730,7 +4114,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3751,7 +4147,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3772,7 +4180,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3793,7 +4213,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3814,7 +4246,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3835,7 +4279,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3856,7 +4312,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3877,7 +4345,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3898,7 +4378,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3919,7 +4411,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3940,7 +4444,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3961,7 +4477,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -3982,7 +4510,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprail",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4003,7 +4543,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4024,7 +4576,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4045,7 +4609,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4066,7 +4642,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4087,7 +4675,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4108,7 +4708,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4129,7 +4741,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4150,7 +4774,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4171,7 +4807,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4192,7 +4840,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4213,7 +4873,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4234,7 +4906,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 1,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4255,7 +4939,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.1,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4276,7 +4972,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.2,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4297,7 +5005,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.3,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4318,7 +5038,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.4,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4339,7 +5071,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.5,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4360,7 +5104,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.6,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4381,7 +5137,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.7,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4402,7 +5170,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.8,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4423,7 +5203,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.9,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4444,7 +5236,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4465,7 +5269,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4486,7 +5302,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 1.078,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4507,7 +5335,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 1.156,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4528,7 +5368,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4549,7 +5401,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 1.234,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4570,7 +5434,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4591,7 +5467,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4612,7 +5500,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4633,7 +5533,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprailEnd",
+                "origin": {
+                    "x": 1.234,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4654,7 +5566,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrailEnd",
+                "origin": {
+                    "x": 1.234,
+                    "y": 4.05,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -4675,7 +5599,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4696,7 +5632,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4717,7 +5665,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4738,7 +5698,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4759,7 +5731,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4780,7 +5764,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4801,7 +5797,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4822,7 +5830,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4843,7 +5863,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4864,7 +5896,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4885,7 +5929,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4906,7 +5962,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4927,7 +5995,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4948,7 +6028,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4969,7 +6061,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -4990,7 +6094,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -5011,7 +6127,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -5032,7 +6160,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -5053,7 +6193,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -5074,7 +6226,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.225
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5095,7 +6259,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.25
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5116,7 +6292,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0.3,
+                    "y": 5,
+                    "z": 0.375
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5137,7 +6325,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0.3,
+                    "y": 5,
+                    "z": 0.4
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5158,7 +6358,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0.6,
+                    "y": 5,
+                    "z": 0.525
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5179,7 +6391,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0.6,
+                    "y": 5,
+                    "z": 0.55
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5200,7 +6424,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0.9,
+                    "y": 5,
+                    "z": 0.675
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5221,7 +6457,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0.9,
+                    "y": 5,
+                    "z": 0.7
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5242,7 +6490,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 1.2,
+                    "y": 5,
+                    "z": 0.825
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5263,7 +6523,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 1.2,
+                    "y": 5,
+                    "z": 0.85
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5284,7 +6556,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 1.5,
+                    "y": 5,
+                    "z": 0.975
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5305,7 +6589,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 1.5,
+                    "y": 5,
+                    "z": 1
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5326,7 +6622,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 1.8,
+                    "y": 5,
+                    "z": 1.125
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5347,7 +6655,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 1.8,
+                    "y": 5,
+                    "z": 1.15
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5368,7 +6688,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 2.1,
+                    "y": 5,
+                    "z": 1.275
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5389,7 +6721,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 2.1,
+                    "y": 5,
+                    "z": 1.3
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5410,7 +6754,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 2.4,
+                    "y": 5,
+                    "z": 1.425
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5431,7 +6787,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 2.4,
+                    "y": 5,
+                    "z": 1.45
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5452,7 +6820,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 2.7,
+                    "y": 5,
+                    "z": 1.575
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5473,7 +6853,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 2.7,
+                    "y": 5,
+                    "z": 1.6
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5494,7 +6886,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3,
+                    "y": 5,
+                    "z": 1.725
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5515,7 +6919,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3,
+                    "y": 5,
+                    "z": 1.75
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5536,7 +6952,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3.3,
+                    "y": 5,
+                    "z": 1.875
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5557,7 +6985,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3.3,
+                    "y": 5,
+                    "z": 1.9
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5578,7 +7018,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3.6,
+                    "y": 5,
+                    "z": 2.025
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5599,7 +7051,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3.6,
+                    "y": 5,
+                    "z": 2.05
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5620,7 +7084,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3.9,
+                    "y": 5,
+                    "z": 2.175
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5641,7 +7117,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3.9,
+                    "y": 5,
+                    "z": 2.2
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5662,7 +7150,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 4.2,
+                    "y": 5,
+                    "z": 2.325
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5683,7 +7183,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 4.2,
+                    "y": 5,
+                    "z": 2.35
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5704,7 +7216,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 4.5,
+                    "y": 5,
+                    "z": 2.475
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5725,7 +7249,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 4.5,
+                    "y": 5,
+                    "z": 2.5
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5746,7 +7282,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 4.8,
+                    "y": 5,
+                    "z": 2.625
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5767,7 +7315,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 4.8,
+                    "y": 5,
+                    "z": 2.65
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5788,7 +7348,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 5.1,
+                    "y": 5,
+                    "z": 2.775
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5809,7 +7381,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 5.1,
+                    "y": 5,
+                    "z": 2.8
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5830,7 +7414,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 5.4,
+                    "y": 5,
+                    "z": 2.925
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5851,7 +7447,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 5.4,
+                    "y": 5,
+                    "z": 2.95
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5872,7 +7480,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 5.7,
+                    "y": 5,
+                    "z": 3.075
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5893,7 +7513,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 5.7,
+                    "y": 5,
+                    "z": 3.1
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5914,7 +7546,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.25
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5935,7 +7579,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.25
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -5953,7 +7609,18 @@ Response:
                     "ownUnID": {
                         "guid": "<GUID>"
                     }
-                }
+                },
+                "origin": {
+                    "x": 2.65,
+                    "y": 0,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.7,
+                    "y": 0.6,
+                    "z": 0.8
+                },
+                "angle": 0
             }
         },
         {
@@ -5971,7 +7638,18 @@ Response:
                     "ownUnID": {
                         "guid": "<GUID>"
                     }
-                }
+                },
+                "origin": {
+                    "x": 4.5,
+                    "y": 0,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.45,
+                    "y": 0.4,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -5989,7 +7667,18 @@ Response:
                     "ownUnID": {
                         "guid": "<GUID>"
                     }
-                }
+                },
+                "origin": {
+                    "x": 2.65,
+                    "y": 1.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.7,
+                    "y": 0.6,
+                    "z": 0.8
+                },
+                "angle": 0
             }
         },
         {
@@ -6010,7 +7699,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Detail",
+                "origin": {
+                    "x": 2.484761378,
+                    "y": 2.622139298,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 0
+                },
+                "angle": 0
             }
         },
         {
@@ -6031,7 +7732,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone",
+                "origin": {
+                    "x": 6.014296819,
+                    "y": 2.421236571,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 0
+                },
+                "angle": 0
             }
         },
         {
@@ -6052,7 +7765,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone",
+                "origin": {
+                    "x": 6.589801649,
+                    "y": 0.890879072,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 0
+                },
+                "angle": 0
             }
         },
         {
@@ -6490,7 +8215,8 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone"
             }
         },
         {
@@ -6511,7 +8237,8 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone"
             }
         },
         {
@@ -14122,7 +15849,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.08,
+                    "y": 0.25,
+                    "z": 3
+                },
+                "angle": 0
             }
         },
         {
@@ -14143,7 +15882,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14164,7 +15915,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14185,7 +15948,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14206,7 +15981,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14227,7 +16014,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14248,7 +16047,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWall",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14269,7 +16080,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWall",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 2,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14290,7 +16113,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -14311,7 +16146,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.08,
+                    "y": 0.25,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -14332,7 +16179,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.06,
+                    "y": 0.1,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -14353,7 +16212,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.06,
+                    "y": 0.1,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -14374,7 +16245,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 1.5
+                },
+                "angle": 0
             }
         },
         {
@@ -14395,7 +16278,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.08,
+                    "y": 0.25,
+                    "z": 1.5
+                },
+                "angle": 0
             }
         },
         {
@@ -14416,7 +16311,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.06,
+                    "y": 0.1,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -14437,7 +16344,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -14458,7 +16377,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.06,
+                    "y": 0.1,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -14479,7 +16410,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -14500,7 +16443,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -14521,7 +16476,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.08,
+                    "y": 0.25,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -14542,7 +16509,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14563,7 +16542,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14584,7 +16575,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14605,7 +16608,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14626,7 +16641,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14647,7 +16674,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14668,7 +16707,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -14689,7 +16740,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 1.5
+                },
+                "angle": 0
             }
         },
         {
@@ -14710,7 +16773,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -14731,7 +16806,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.3
+                },
+                "angle": 0
             }
         },
         {
@@ -14752,7 +16839,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "CurtainWallFrame",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0.9
+                },
+                "angle": 0
             }
         },
         {
@@ -14773,7 +16872,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14794,7 +16905,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14815,7 +16938,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14836,7 +16971,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14857,7 +17004,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14878,7 +17037,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14899,7 +17070,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14920,7 +17103,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14941,7 +17136,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14962,7 +17169,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -14983,7 +17202,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15004,7 +17235,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15025,7 +17268,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15046,7 +17301,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprail",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15067,7 +17334,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15088,7 +17367,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15109,7 +17400,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15130,7 +17433,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15151,7 +17466,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15172,7 +17499,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15193,7 +17532,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15214,7 +17565,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRail",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15235,7 +17598,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrail",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15256,7 +17631,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15277,7 +17664,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15298,7 +17697,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 1,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15319,7 +17730,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.1,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15340,7 +17763,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.2,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15361,7 +17796,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.3,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15382,7 +17829,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.4,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15403,7 +17862,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.5,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15424,7 +17895,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.6,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15445,7 +17928,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.7,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15466,7 +17961,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.8,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15487,7 +17994,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 0.9,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15508,7 +18027,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPanel",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15529,7 +18060,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingInnerPost",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15550,7 +18093,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 1.078,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15571,7 +18126,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingBaluster",
+                "origin": {
+                    "x": 1.156,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15592,7 +18159,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15613,7 +18192,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingPost",
+                "origin": {
+                    "x": 1.234,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15634,7 +18225,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15655,7 +18258,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15676,7 +18291,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15697,7 +18324,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingToprailEnd",
+                "origin": {
+                    "x": 1.234,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15718,7 +18357,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingHandrailEnd",
+                "origin": {
+                    "x": 1.234,
+                    "y": 4.05,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -15739,7 +18390,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "RailingRailEnd",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15760,7 +18423,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15781,7 +18456,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15802,7 +18489,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15823,7 +18522,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15844,7 +18555,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15865,7 +18588,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15886,7 +18621,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15907,7 +18654,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15928,7 +18687,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15949,7 +18720,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Stair",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 4,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15970,7 +18753,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -15991,7 +18786,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -16012,7 +18819,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -16033,7 +18852,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 0
             }
         },
         {
@@ -16054,7 +18885,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -16075,7 +18918,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -16096,7 +18951,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -16117,7 +18984,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.1,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 0
             }
         },
         {
@@ -16138,7 +19017,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.225
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16159,7 +19050,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.25
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16180,7 +19083,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0.3,
+                    "y": 5,
+                    "z": 0.375
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16201,7 +19116,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0.3,
+                    "y": 5,
+                    "z": 0.4
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16222,7 +19149,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0.6,
+                    "y": 5,
+                    "z": 0.525
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16243,7 +19182,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0.6,
+                    "y": 5,
+                    "z": 0.55
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16264,7 +19215,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 0.9,
+                    "y": 5,
+                    "z": 0.675
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16285,7 +19248,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 0.9,
+                    "y": 5,
+                    "z": 0.7
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16306,7 +19281,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 1.2,
+                    "y": 5,
+                    "z": 0.825
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16327,7 +19314,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 1.2,
+                    "y": 5,
+                    "z": 0.85
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16348,7 +19347,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 1.5,
+                    "y": 5,
+                    "z": 0.975
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16369,7 +19380,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 1.5,
+                    "y": 5,
+                    "z": 1
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16390,7 +19413,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 1.8,
+                    "y": 5,
+                    "z": 1.125
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16411,7 +19446,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 1.8,
+                    "y": 5,
+                    "z": 1.15
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16432,7 +19479,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 2.1,
+                    "y": 5,
+                    "z": 1.275
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16453,7 +19512,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 2.1,
+                    "y": 5,
+                    "z": 1.3
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16474,7 +19545,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 2.4,
+                    "y": 5,
+                    "z": 1.425
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16495,7 +19578,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 2.4,
+                    "y": 5,
+                    "z": 1.45
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16516,7 +19611,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 2.7,
+                    "y": 5,
+                    "z": 1.575
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16537,7 +19644,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 2.7,
+                    "y": 5,
+                    "z": 1.6
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16558,7 +19677,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3,
+                    "y": 5,
+                    "z": 1.725
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16579,7 +19710,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3,
+                    "y": 5,
+                    "z": 1.75
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16600,7 +19743,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3.3,
+                    "y": 5,
+                    "z": 1.875
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16621,7 +19776,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3.3,
+                    "y": 5,
+                    "z": 1.9
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16642,7 +19809,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3.6,
+                    "y": 5,
+                    "z": 2.025
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16663,7 +19842,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3.6,
+                    "y": 5,
+                    "z": 2.05
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16684,7 +19875,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 3.9,
+                    "y": 5,
+                    "z": 2.175
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16705,7 +19908,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 3.9,
+                    "y": 5,
+                    "z": 2.2
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16726,7 +19941,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 4.2,
+                    "y": 5,
+                    "z": 2.325
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16747,7 +19974,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 4.2,
+                    "y": 5,
+                    "z": 2.35
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16768,7 +20007,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 4.5,
+                    "y": 5,
+                    "z": 2.475
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16789,7 +20040,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 4.5,
+                    "y": 5,
+                    "z": 2.5
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16810,7 +20073,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 4.8,
+                    "y": 5,
+                    "z": 2.625
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16831,7 +20106,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 4.8,
+                    "y": 5,
+                    "z": 2.65
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16852,7 +20139,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 5.1,
+                    "y": 5,
+                    "z": 2.775
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16873,7 +20172,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 5.1,
+                    "y": 5,
+                    "z": 2.8
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16894,7 +20205,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 5.4,
+                    "y": 5,
+                    "z": 2.925
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16915,7 +20238,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 5.4,
+                    "y": 5,
+                    "z": 2.95
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16936,7 +20271,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Riser",
+                "origin": {
+                    "x": 5.7,
+                    "y": 5,
+                    "z": 3.075
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16957,7 +20304,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Tread",
+                "origin": {
+                    "x": 5.7,
+                    "y": 5,
+                    "z": 3.1
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16978,7 +20337,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.25
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -16999,7 +20370,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "StairStructure",
+                "origin": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0.25
+                },
+                "dimensions": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0.1
+                },
+                "angle": 4.71238898
             }
         },
         {
@@ -17017,7 +20400,18 @@ Response:
                     "ownUnID": {
                         "guid": "<GUID>"
                     }
-                }
+                },
+                "origin": {
+                    "x": 2.65,
+                    "y": 0,
+                    "z": 3.1
+                },
+                "dimensions": {
+                    "x": 0.7,
+                    "y": 0.6,
+                    "z": 0.8
+                },
+                "angle": 0
             }
         },
         {
@@ -17035,7 +20429,18 @@ Response:
                     "ownUnID": {
                         "guid": "<GUID>"
                     }
-                }
+                },
+                "origin": {
+                    "x": 4.5,
+                    "y": 0,
+                    "z": 3.1
+                },
+                "dimensions": {
+                    "x": 0.45,
+                    "y": 0.4,
+                    "z": 0.6
+                },
+                "angle": 0
             }
         },
         {
@@ -17053,7 +20458,18 @@ Response:
                     "ownUnID": {
                         "guid": "<GUID>"
                     }
-                }
+                },
+                "origin": {
+                    "x": 2.65,
+                    "y": 1.5,
+                    "z": 0.1
+                },
+                "dimensions": {
+                    "x": 0.7,
+                    "y": 0.6,
+                    "z": 0.8
+                },
+                "angle": 0
             }
         },
         {
@@ -17074,7 +20490,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Detail",
+                "origin": {
+                    "x": 2.484761378,
+                    "y": 2.622139298,
+                    "z": 0
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 0
+                },
+                "angle": 0
             }
         },
         {
@@ -17095,7 +20523,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone",
+                "origin": {
+                    "x": 6.014296819,
+                    "y": 2.421236571,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 0
+                },
+                "angle": 0
             }
         },
         {
@@ -17116,7 +20556,19 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone",
+                "origin": {
+                    "x": 6.589801649,
+                    "y": 0.890879072,
+                    "z": 3
+                },
+                "dimensions": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 0
+                },
+                "angle": 0
             }
         },
         {
@@ -17554,7 +21006,8 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone"
             }
         },
         {
@@ -17575,7 +21028,8 @@ Response:
                 },
                 "ownerElementId": {
                     "guid": "<GUID>"
-                }
+                },
+                "ownerElementType": "Zone"
             }
         },
         {

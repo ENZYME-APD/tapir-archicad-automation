@@ -2037,10 +2037,32 @@ var gSchemaDefinitions = {
             },
             "ownerElementId": {
                 "$ref": "#/ElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
             }
         },
         "required": [
             "libPart"
+        ]
+    },
+    "ObjectDetails": {
+        "$ref": "#/LibPartBasedElementDetails",
+        "properties": {
+            "origin": {
+                "$ref": "#/3DCoordinate"
+            },
+            "dimensions": {
+                "$ref": "#/3DCoordinate"
+            },
+            "angle": {
+                "type": "double"
+            }
+        },
+        "required": [
+            "origin",
+            "dimensions",
+            "angle"
         ]
     },
     "PolylineDetails": {
