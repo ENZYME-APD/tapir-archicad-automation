@@ -1186,14 +1186,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 10,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1203,14 +1199,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 33,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 33,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1220,14 +1212,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 10,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1237,14 +1225,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 10,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1254,14 +1238,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 33,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 33,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1271,14 +1251,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 10,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1288,14 +1264,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 10,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1305,14 +1277,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 33,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 33,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         },
@@ -1322,14 +1290,10 @@ Parameters:
             },
             "gdlParameters": [
                 {
-                    "parameters": [
-                        {
-                            "name": "gs_cont_pen",
-                            "index": 10,
-                            "type": "PenColor",
-                            "value": 95
-                        }
-                    ]
+                    "name": "gs_cont_pen",
+                    "index": 10,
+                    "type": "PenColor",
+                    "value": 95
                 }
             ]
         }

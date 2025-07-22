@@ -112,16 +112,19 @@
             "location"
         ]
     },
+    "GDLParameterArray": {
+        "type": "array",
+        "description": "The list of GDL parameters.",
+        "items": {
+            "$ref": "#/GDLParameterDetails"
+        }
+    },
     "GDLParameterList": {
         "type": "object",
         "description": "The list of GDL parameters.",
         "properties": {
             "parameters": {
-                "type": "array",
-                "description": "The list of GDL parameters.",
-                "items": {
-                    "$ref": "#/GDLParameterDetails"
-                }
+                "$ref": "#/GDLParameterArray"
             }
         },
         "required": [

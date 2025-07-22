@@ -1102,7 +1102,7 @@ var gCommands = [{
                         "$ref": "#/ElementId"
                     },
                     "gdlParameters": {
-                        "$ref": "#/GDLParameterList"
+                        "$ref": "#/GDLParameterArray"
                     }
                 },
                 "additionalProperties": false,

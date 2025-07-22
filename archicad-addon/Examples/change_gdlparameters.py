@@ -16,11 +16,7 @@ for i in range(len(elements)):
                 changedGDLParameters.append({
                     'elementId' : elements[i]['elementId'],
                     'gdlParameters' : [
-                        {
-                            'parameters' : [
-                                details
-                            ]
-                        }
+                        details
                     ]
                 })
 
