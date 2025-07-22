@@ -710,8 +710,7 @@ GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () co
                     "additionalProperties": false,
                     "required" : [
                         "libraryPartName",
-                        "coordinates",
-                        "dimensions"
+                        "coordinates"
                     ]
                 }
             }
