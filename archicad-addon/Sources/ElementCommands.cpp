@@ -253,7 +253,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
     })";
 }
 
-static void AddLibPartBasedElementDetails (GS::ObjectState& os, const API_Guid& owner, Int32 libInd)
+static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
 {
     API_LibPart	lp = {};
     lp.index = libInd;
@@ -265,6 +265,13 @@ static void AddLibPartBasedElementDetails (GS::ObjectState& os, const API_Guid& 
 
     if (owner != APINULLGuid) {
         os.Add ("ownerElementId", CreateGuidObjectState (owner));
+        if (ownerType == API_ZombieElemID) {
+            API_Elem_Head elemHead = {};
+            elemHead.guid = owner;
+            ACAPI_Element_GetHeader (&elemHead);
+            ownerType = GetElemTypeId (elemHead);
+        }
+        os.Add ("ownerElementType", GetElementTypeNonLocalizedName (ownerType));
     }
 }
 
@@ -437,17 +444,39 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_DoorID:
             case API_WindowID:
-                AddLibPartBasedElementDetails (typeSpecificDetails, elem.window.owner, elem.window.openingBase.libInd);
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.window.openingBase.libInd, elem.window.owner);
                 break;
 
             case API_LabelID:
-                AddLibPartBasedElementDetails (typeSpecificDetails, elem.label.parent, elem.label.labelClass == APILblClass_Symbol ? elem.label.u.symbol.libInd : -1);
+                AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
                 break;
 
             case API_ObjectID:
-            case API_LampID:
-                AddLibPartBasedElementDetails (typeSpecificDetails, elem.object.owner, elem.object.libInd);
-                break;
+            case API_LampID: {
+#ifdef ServerMainVers_2600
+                auto ownerType = elem.object.ownerType;
+#else
+                auto ownerType = elem.object.ownerID;
+#endif
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.object.libInd, elem.object.owner, GetElemTypeId (ownerType));
+                typeSpecificDetails.Add ("origin", Create3DCoordinateObjectState ({elem.object.pos.x, elem.object.pos.y, GetZPos (elem.header.floorInd, elem.object.level, stories)}));
+                double zDimension = 0.0;
+                API_ElementMemo objectMemo = {};
+                const GS::OnExit objectMemoGuard ([&objectMemo] () { ACAPI_DisposeElemMemoHdls (&objectMemo); });
+                ACAPI_Element_GetMemo(elem.header.guid, &objectMemo, APIMemoMask_AddPars);
+                const GSSize nParams = BMGetHandleSize ((GSHandle) objectMemo.params) / sizeof (API_AddParType);
+                for (GSIndex ii = 0; ii < nParams; ++ii) {
+                    API_AddParType& actParam = (*objectMemo.params)[ii];
+
+                    const GS::String name(actParam.name);
+                    if (name == "ZZYZX") {
+                        zDimension = actParam.value.real;
+                        break;
+                    }
+                }
+                typeSpecificDetails.Add ("dimensions", Create3DCoordinateObjectState ({elem.object.xRatio, elem.object.yRatio, zDimension}));
+                typeSpecificDetails.Add ("angle", elem.object.angle);
+            } break;
 
             case API_DetailID:
             case API_WorksheetID: {

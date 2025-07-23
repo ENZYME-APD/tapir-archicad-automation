@@ -1561,8 +1561,7 @@ var gCommands = [{
                     "additionalProperties": false,
                     "required" : [
                         "libraryPartName",
-                        "coordinates",
-                        "dimensions"
+                        "coordinates"
                     ]
                 }
             }
