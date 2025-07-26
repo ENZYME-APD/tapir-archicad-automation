@@ -51,7 +51,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
         }
 
-        public override void OnCapsuleButtonPressed ()
+        public override void OnCapsuleButtonPressed (int buttonIndex)
         {
             OpenWebsite (WebsiteURL);
         }

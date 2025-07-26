@@ -1,11 +1,15 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Utilities;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.General
 {
     public class ConnectArchicadComponent : ArchicadAccessorComponent
     {
+        private const int RefreshAllButtonIndex = 0;
+        private const int ExecuteAllButtonIndex = 1;
+
         public ConnectArchicadComponent ()
           : base (
                 "Connect Archicad",
@@ -14,13 +18,22 @@ namespace TapirGrasshopperPlugin.Components.General
                 "General"
             )
         {
-            CapsuleButtonText = "Refresh All";
+            CapsuleButtonTexts = new List<string> () {
+                "Refresh All",
+                "Execute All"
+            };
+        }
+
+        public override void CreateAttributes ()
+        {
+            this.m_attributes = new ButtonAttributes (this, 2);
         }
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
             pManager.AddIntegerParameter ("Port", "Port", "Port number", GH_ParamAccess.item, @default: ConnectionSettings.Port);
             pManager.AddBooleanParameter ("Allow Automatic Refresh", "Auto Refresh", "Allow Automatic Refresh", GH_ParamAccess.item, @default: AutoRefresh);
+            pManager.AddBooleanParameter ("Allow Automatic Execution", "Auto Execute", "Allow Automatic Execution", GH_ParamAccess.item, @default: AutoExecute);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -44,24 +57,37 @@ namespace TapirGrasshopperPlugin.Components.General
                 return;
             }
 
+            if (!DA.GetData (2, ref AutoExecute)) {
+                return;
+            }
+
             ConnectionSettings.Port = portNumber;
             CommandResponse response = SendArchicadCommand ("IsAlive", null);
             DA.SetData (0, response.Succeeded);
         }
 
-        public override void OnCapsuleButtonPressed ()
+        public override void OnCapsuleButtonPressed (int buttonIndex)
         {
-            ManualRefreshRequested = true;
-            try {
+            if (buttonIndex == RefreshAllButtonIndex) {
                 GH_Document doc = OnPingDocument ();
                 if (doc != null) {
                     foreach (IGH_DocumentObject obj in doc.Objects)
                         if (obj is ArchicadAccessorComponent archicadAccessor) {
+                            archicadAccessor.ManualRefreshRequested = true;
                             archicadAccessor.ExpireSolution (true);
+                            archicadAccessor.ManualRefreshRequested = false;
                         }
                 }
-            } finally {
-                ManualRefreshRequested = false;
+            } else if (buttonIndex == ExecuteAllButtonIndex) {
+                GH_Document doc = OnPingDocument ();
+                if (doc != null) {
+                    foreach (IGH_DocumentObject obj in doc.Objects)
+                        if (obj is ArchicadExecutorComponent archicadExecutor) {
+                            archicadExecutor.ManualExecuteRequested = true;
+                            archicadExecutor.ExpireSolution (true);
+                            archicadExecutor.ManualExecuteRequested = false;
+                        }
+                }
             }
         }
 

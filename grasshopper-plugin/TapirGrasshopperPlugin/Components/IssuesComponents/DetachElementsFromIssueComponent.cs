@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public class DetachElementsFromIssueComponent : ArchicadAccessorComponent
+    public class DetachElementsFromIssueComponent : ArchicadExecutorComponent
     {
         public class ParametersOfDetachElements
         {

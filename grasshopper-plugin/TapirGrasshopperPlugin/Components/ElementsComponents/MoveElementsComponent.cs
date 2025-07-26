@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public List<ElementWithMoveParameters> ElementsWithMoveParameters;
     }
 
-    public class MoveElementsComponent : ArchicadAccessorComponent
+    public class MoveElementsComponent : ArchicadExecutorComponent
     {
         public MoveElementsComponent ()
           : base (

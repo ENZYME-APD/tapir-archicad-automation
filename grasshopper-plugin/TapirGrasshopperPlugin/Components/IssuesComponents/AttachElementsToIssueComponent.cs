@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public class AttachElementsToIssueComponent : ArchicadAccessorComponent
+    public class AttachElementsToIssueComponent : ArchicadExecutorComponent
     {
         public class ParametersOfAttachElements
         {

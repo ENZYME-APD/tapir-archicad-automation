@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public class AddCommentToIssueComponent : ArchicadAccessorComponent
+    public class AddCommentToIssueComponent : ArchicadExecutorComponent
     {
         public class ParametersOfNewComment
         {

@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public List<TypedElementWithDetailsObj<T>> ElementsWithDetails;
     }
 
-    public class SetDetailsOfWallsComponent : ArchicadAccessorComponent
+    public class SetDetailsOfWallsComponent : ArchicadExecutorComponent
     {
         public SetDetailsOfWallsComponent ()
           : base (

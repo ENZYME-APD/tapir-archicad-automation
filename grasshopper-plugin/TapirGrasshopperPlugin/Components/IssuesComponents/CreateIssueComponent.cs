@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public class CreateIssueComponent : ArchicadAccessorComponent
+    public class CreateIssueComponent : ArchicadExecutorComponent
     {
         public class ParametersOfNewIssue
         {

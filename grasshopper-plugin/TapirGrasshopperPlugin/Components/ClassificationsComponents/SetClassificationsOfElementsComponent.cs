@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
-    public class SetClassificationsOfElementsComponent : ArchicadAccessorComponent
+    public class SetClassificationsOfElementsComponent : ArchicadExecutorComponent
     {
         public SetClassificationsOfElementsComponent ()
           : base (
