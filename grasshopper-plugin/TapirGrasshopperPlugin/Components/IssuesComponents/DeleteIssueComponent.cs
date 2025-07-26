@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public class DeleteIssueComponent : ArchicadAccessorComponent
+    public class DeleteIssueComponent : ArchicadExecutorComponent
     {
         public class ParametersOfDelete
         {

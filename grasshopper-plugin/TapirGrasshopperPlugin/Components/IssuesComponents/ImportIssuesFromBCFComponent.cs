@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public class ImportIssuesFromBCFComponent : ArchicadAccessorComponent
+    public class ImportIssuesFromBCFComponent : ArchicadExecutorComponent
     {
         public class ParametersOfImport
         {

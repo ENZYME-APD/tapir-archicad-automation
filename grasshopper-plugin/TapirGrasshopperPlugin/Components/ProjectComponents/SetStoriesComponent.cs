@@ -9,7 +9,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
-    public class SetStoriesComponent : ArchicadAccessorComponent
+    public class SetStoriesComponent : ArchicadExecutorComponent
     {
         public SetStoriesComponent ()
           : base (
