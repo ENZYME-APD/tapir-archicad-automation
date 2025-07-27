@@ -748,6 +748,34 @@ var gSchemaDefinitions = {
             "$ref": "#/ElementPropertyValue"
         }
     },
+    "AttributePropertyValue": {
+        "type": "object",
+        "description": "A property value with the identifiers of the property and its owner attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "propertyId",
+            "propertyValue"
+        ]
+    },
+    "AttributePropertyValues": {
+        "type": "array",
+        "description": "A list of attribute property values.",
+        "items": {
+            "$ref": "#/AttributePropertyValue"
+        }
+    },
     "PropertyType": {
         "type": "string",
         "enum": [
