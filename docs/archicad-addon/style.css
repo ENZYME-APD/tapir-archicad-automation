@@ -43,7 +43,7 @@ div.title {
 
 details.command_container {
     margin: 1.0em 0;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--light-gray);
     border-radius: 5px;
 }
 
@@ -102,7 +102,7 @@ div.scheme_container {
 
 code.language-python.hljs {
     background: transparent;
-    border: 1px dotted #dddddd;
+    border: 1px dotted var(--light-gray);
 }
 
 @media only screen and (max-width: 1000px) {
