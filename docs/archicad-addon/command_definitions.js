@@ -1054,6 +1054,25 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "DeleteElements",
+                "version": "1.2.1",
+                "description": "Deletes elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "GetGDLParametersOfElements",
                 "version": "1.0.8",
                 "description": "Gets all the GDL parameters (name, type, value) of the given elements.",
