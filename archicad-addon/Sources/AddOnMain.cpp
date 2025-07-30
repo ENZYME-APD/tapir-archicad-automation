@@ -232,6 +232,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.2",
             "Moves elements with a given vector."
         );
+        err |= RegisterCommand<DeleteElementsCommand> (
+            elementCommands, "1.2.1",
+            "Deletes elements."
+        );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
             elementCommands, "1.0.8",
             "Gets all the GDL parameters (name, type, value) of the given elements."

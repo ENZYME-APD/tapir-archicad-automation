@@ -1795,3 +1795,54 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
 
     return response;
 }
+
+DeleteElementsCommand::DeleteElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteElementsCommand::GetName () const
+{
+    return "DeleteElements";
+}
+
+GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GSErrCode err = NoError;
+
+    ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
+        err = ACAPI_Element_Delete (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem));
+
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to delete elements.");
+}
