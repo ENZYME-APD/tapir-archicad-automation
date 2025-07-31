@@ -1,8 +1,21 @@
+@charset "UTF-8";
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+}
+
 :root {
     --text-color: #141414;
     --background: #fafafa;
-    --light-gray: #dddddd;
-    --dark-gray: #5d5d5d;
+    --gray-10: #ececec;
+    --gray-30: #dddddd;
+    --gray-70: #5d5d5d;
 }
 
 html,
@@ -11,6 +24,7 @@ body {
     background: var(--background);
     font-size: 16px;
     font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
     scroll-behavior: smooth;
     margin: 0px;
     padding: 0px;
@@ -21,7 +35,7 @@ p {
 }
 
 div.header {
-    box-shadow: 0px 0px 10px var(--light-gray);
+    box-shadow: 0px 0px 10px var(--gray-30);
     margin-bottom: 30px;
 }
 
@@ -43,12 +57,12 @@ div.title {
 
 details.command_container {
     margin: 1.0em 0;
-    border: 1px solid var(--light-gray);
+    border: 1px solid var(--gray-30);
     border-radius: 5px;
 }
 
 details ::marker {
-    color: var(--dark-gray);
+    color: var(--gray-70);
 }
 
 div.group_name {
@@ -63,19 +77,22 @@ summary.command_header {
     text-overflow: ellipsis;
     overflow: hidden;
     cursor: pointer;
+    transition: background 0.1s;
+
+    &:hover {
+        background: var(--gray-30);
+    }
 }
 
 details[open] summary.command_header {
-    background: var(--light-gray);
+    background: var(--gray-10);
     border-bottom-right-radius: 0px;
     border-bottom-left-radius: 0px;
 }
 
-div.command_header:hover {
-    background: #f6f6f6;
+details summary.command_header:hover {
+    background: var(--gray-30);
 }
-
-span.command_name {}
 
 span.command_version {
     color: #aaaaaa;
@@ -87,8 +104,6 @@ div.command_content {
     padding-left: 1.0em;
     margin: 1.0em 0.5em;
 }
-
-div.command_description {}
 
 div.scheme_title {
     font-weight: bold;
@@ -102,7 +117,7 @@ div.scheme_container {
 
 code.language-python.hljs {
     background: transparent;
-    border: 1px dotted var(--light-gray);
+    border: 1px dotted var(--gray-30);
 }
 
 @media only screen and (max-width: 1000px) {
@@ -133,6 +148,8 @@ code.language-python.hljs {
         margin: 20px auto;
 
         svg {
+            display: block;
+            max-width: 100%;
             width: 100%;
         }
     }
