@@ -378,46 +378,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "object",
                         "oneOf": [
                             {
-                                "type": "object",
-                                "description": "Automatic zone placement.",
-                                "properties": {
-                                    "referencePosition": {
-                                        "$ref": "#/2DCoordinate",
-                                        "description" : "Reference point to automatically find zone."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "referencePosition"
-                                ]
+                                "$ref": "#/AutomaticZoneGeometry"
                             },
                             {
-                                "type": "object",
-                                "description": "Manual zone placement.",
-                                "properties": {
-                                    "polygonCoordinates": { 
-                                        "type": "array",
-                                        "description": "The 2D coordinates of the edge of the zone.",
-                                        "items": {
-                                            "$ref": "#/2DCoordinate"
-                                        },
-                                        "minItems": 3
-                                    },
-                                    "polygonArcs": {
-                                        "type": "array",
-                                        "description": "Polygon outline arcs of the zone.",
-                                        "items": {
-                                            "$ref": "#/PolyArc"
-                                        }
-                                    },
-                                    "holes" : {
-                                        "$ref": "#/Holes2D"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "polygonCoordinates"
-                                ]
+                                "$ref": "#/ManualZoneGeometry"
                             }
                         ]
                     }
