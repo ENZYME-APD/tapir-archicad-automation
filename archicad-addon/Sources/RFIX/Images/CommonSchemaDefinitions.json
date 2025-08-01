@@ -1781,6 +1781,70 @@
             }
         ]
     },
+    "Hole2D": {
+        "type": "object",
+        "description": "A 2D hole in an element defined by closed polylines",
+        "properties": {
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "Holes2D": {
+        "type": "array",
+        "description": "A list of 2D holes in an element defined by closed polylines",
+        "items": {
+            "$ref": "#/Hole2D"
+        }
+    },
+    "Hole3D": {
+        "type": "object",
+        "description": "A 3D hole in an element defined by closed polylines",
+        "properties": {
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the polygon of the hole.",
+                "items": {
+                    "$ref": "#/3DCoordinate"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "Holes3D": {
+        "type": "array",
+        "description": "A list of 3D holes in an element defined by closed polylines",
+        "items": {
+            "$ref": "#/Hole3D"
+        }
+    },
     "WallDetails": {
         "type": "object",
         "properties": {
@@ -1927,30 +1991,7 @@
                 }
             },
             "holes": {
-                "type": "array",
-                "description": "Holes of the slab.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "polygonOutline": {
-                            "type": "array",
-                            "description": "Polygon outline of the hole.",
-                            "items": {
-                                "$ref": "#/2DCoordinate"
-                            }
-                        },
-                        "polygonArcs": {
-                            "type": "array",
-                            "description": "Polygon outline arcs of the hole.",
-                            "items": {
-                                "$ref": "#/PolyArc"
-                            }
-                        }
-                    },
-                    "required": [
-                        "polygonOutline"
-                    ]
-                }
+                "$ref": "#/Holes2D"
             }
         },
         "required": [
@@ -2157,33 +2198,7 @@
                 }
             },
             "holes": {
-                "type": "array",
-                "description": "Array of parameters of holes.",
-                "items": {
-                    "type": "object",
-                    "description": "The parameters of the hole.",
-                    "properties": {
-                        "polygonCoordinates": {
-                            "type": "array",
-                            "description": "The 2D coordinates of the edge of the hole.",
-                            "items": {
-                                "$ref": "#/2DCoordinate"
-                            },
-                            "minItems": 3
-                        },
-                        "polygonArcs": {
-                            "type": "array",
-                            "description": "Polygon outline arcs of the hole.",
-                            "items": {
-                                "$ref": "#/PolyArc"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "polygonCoordinates"
-                    ]
-                }
+                "$ref": "#/Holes2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -2420,33 +2435,7 @@
                 }
             },
             "holes": {
-                "type": "array",
-                "description": "Array of parameters of holes.",
-                "items": {
-                    "type": "object",
-                    "description": "The parameters of the hole.",
-                    "properties": {
-                        "polygonCoordinates": {
-                            "type": "array",
-                            "description": "The 3D coordinates of the polygon of the hole.",
-                            "items": {
-                                "$ref": "#/3DCoordinate"
-                            },
-                            "minItems": 3
-                        },
-                        "polygonArcs": {
-                            "type": "array",
-                            "description": "Polygon outline arcs of the hole.",
-                            "items": {
-                                "$ref": "#/PolyArc"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "polygonCoordinates"
-                    ]
-                }
+                "$ref": "#/Holes3D"
             },
             "sublines": {
                 "type": "array",
