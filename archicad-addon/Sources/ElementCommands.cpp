@@ -710,41 +710,7 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetInputParametersSchem
                                     "type": "number"
                                 },
                                 "typeSpecificDetails": {
-                                    "type": "object",
-                                    "oneOf": [
-                                        {
-                                            "title": "WallDetails",
-                                            "properties": {
-                                                "begCoordinate": {
-                                                    "$ref": "#/2DCoordinate"
-                                                },
-                                                "endCoordinate": {
-                                                    "$ref": "#/2DCoordinate"
-                                                },
-                                                "height": {
-                                                    "type": "number",
-                                                    "description": "height relative to bottom"
-                                                },
-                                                "bottomOffset": {
-                                                    "type": "number",
-                                                    "description": "base level of the wall relative to the floor level"
-                                                },
-                                                "offset": {
-                                                    "type": "number",
-                                                    "description": "wall's base line's offset from ref. line"
-                                                },
-                                                "begThickness": {
-                                                    "type": "number",
-                                                    "description": "Thickness at the beginning in case of trapezoid wall"
-                                                },
-                                                "endThickness": {
-                                                    "type": "number",
-                                                    "description": "Thickness at the end in case of trapezoid wall"
-                                                }
-                                            },
-                                            "required": []
-                                        }
-                                    ]
+                                    "$ref": "#/TypeSpecificSettings"
                                 }
                             },
                             "required": []

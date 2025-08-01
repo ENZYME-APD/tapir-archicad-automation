@@ -2479,6 +2479,7 @@
         ]
     },
     "TypeSpecificDetails": {
+        "description": "Represents the complete type-specific details of an element. Used as output from GET requests",
         "type": "object",
         "oneOf": [
             {
@@ -2876,7 +2877,7 @@
             "referencePosition"
         ]
     },
-    "ManualZoneGeometry":{
+    "ManualZoneGeometry": {
         "type": "object",
         "description": "Manual zone placement.",
         "properties": {
@@ -2903,5 +2904,48 @@
         "required": [
             "polygonCoordinates"
         ]
+    },
+    "WallSettings": {
+        "type": "object",
+        "description": "Settings for modifying a wall.",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "endCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "height": {
+                "type": "number",
+                "description": "height relative to bottom"
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "base level of the wall relative to the floor level"
+            },
+            "offset": {
+                "type": "number",
+                "description": "wall's base line's offset from ref. line"
+            },
+            "begThickness": {
+                "type": "number",
+                "description": "Thickness at the beginning in case of trapezoid wall"
+            },
+            "endThickness": {
+                "type": "number",
+                "description": "Thickness at the end in case of trapezoid wall"
+            }
+        },
+        "required": []
+    },
+    "TypeSpecificSettings": {
+        "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/WallSettings"
+            }
+        ]
     }
+
 }
