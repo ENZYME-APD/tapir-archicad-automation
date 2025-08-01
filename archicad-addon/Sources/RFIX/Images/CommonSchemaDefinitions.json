@@ -1760,7 +1760,7 @@
                 ]
             },
             "rotation": {
-                "type": "double",
+                "type": "number",
                 "description": "The orientation in radian."
             }
         },
@@ -2084,7 +2084,7 @@
                 "$ref": "#/3DCoordinate"
             },
             "angle": {
-                "type": "double"
+                "type": "number"
             }
         },
         "required": [
