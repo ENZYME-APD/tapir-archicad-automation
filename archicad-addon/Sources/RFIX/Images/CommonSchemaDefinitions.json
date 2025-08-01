@@ -1786,11 +1786,11 @@
         "properties": {
             "geometryType": {
                 "type": "string",
-                    "enum": [
+                "enum": [
                     "Straight",
                     "Trapezoid",
                     "Polygonal"
-                    ]
+                ]
             },
             "begCoordinate": {
                 "$ref": "#/2DCoordinate"
@@ -2102,7 +2102,7 @@
                     "$ref": "#/2DCoordinate"
                 }
             },
-            "arcs": { 
+            "arcs": {
                 "type": "array",
                 "description": "The arcs of the polyline.",
                 "items": {
@@ -2123,25 +2123,25 @@
         "properties": {
             "name": {
                 "type": "string",
-                "description" : "Name of the zone."
+                "description": "Name of the zone."
             },
             "numberStr": {
                 "type": "string",
-                "description" : "Zone number."	
+                "description": "Zone number."
             },
             "categoryAttributeId": {
                 "$ref": "#/AttributeId",
-                "description" : "The identifier of the zone category attribute."	
+                "description": "The identifier of the zone category attribute."
             },
             "stampPosition": {
                 "$ref": "#/2DCoordinate",
-                "description" : "Position of the origin of the zone stamp."
+                "description": "Position of the origin of the zone stamp."
             },
             "isManual": {
                 "type": "boolean",
-                "description" : "Is the coordinates of the zone manually placed?"
+                "description": "Is the coordinates of the zone manually placed?"
             },
-            "polygonCoordinates": { 
+            "polygonCoordinates": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
@@ -2156,14 +2156,14 @@
                     "$ref": "#/PolyArc"
                 }
             },
-            "holes" : {
+            "holes": {
                 "type": "array",
                 "description": "Array of parameters of holes.",
                 "items": {
                     "type": "object",
-                    "description" : "The parameters of the hole.",
-                    "properties" : {
-                        "polygonCoordinates": { 
+                    "description": "The parameters of the hole.",
+                    "properties": {
+                        "polygonCoordinates": {
                             "type": "array",
                             "description": "The 2D coordinates of the edge of the hole.",
                             "items": {
@@ -2180,7 +2180,7 @@
                         }
                     },
                     "additionalProperties": false,
-                    "required" : [
+                    "required": [
                         "polygonCoordinates"
                     ]
                 }
@@ -2254,7 +2254,7 @@
     "CurtainWallPanelDetails": {
         "type": "object",
         "properties": {
-            "polygonCoordinates": { 
+            "polygonCoordinates": {
                 "type": "array",
                 "description": "The 3D coordinates of the panel polygon.",
                 "items": {
@@ -2273,7 +2273,7 @@
             "className": {
                 "type": "string"
             },
-            "frames": { 
+            "frames": {
                 "type": "array",
                 "description": "The surrounding frames.",
                 "items": {
@@ -2360,7 +2360,7 @@
             },
             "type": {
                 "type": "string",
-                "enum" : [
+                "enum": [
                     "Deleted",
                     "Division",
                     "Corner",
@@ -2392,7 +2392,7 @@
     },
     "MeshDetails": {
         "type": "object",
-        "properties" : {
+        "properties": {
             "level": {
                 "type": "number",
                 "description": "The Z reference level of coordinates."
@@ -2404,7 +2404,7 @@
                 "type": "number",
                 "description": "The height of the skirt."
             },
-            "polygonCoordinates": { 
+            "polygonCoordinates": {
                 "type": "array",
                 "description": "The 3D coordinates of the outline polygon of the mesh.",
                 "items": {
@@ -2419,14 +2419,14 @@
                     "$ref": "#/PolyArc"
                 }
             },
-            "holes" : {
+            "holes": {
                 "type": "array",
                 "description": "Array of parameters of holes.",
                 "items": {
                     "type": "object",
-                    "description" : "The parameters of the hole.",
-                    "properties" : {
-                        "polygonCoordinates": { 
+                    "description": "The parameters of the hole.",
+                    "properties": {
+                        "polygonCoordinates": {
                             "type": "array",
                             "description": "The 3D coordinates of the polygon of the hole.",
                             "items": {
@@ -2453,8 +2453,8 @@
                 "description": "The leveling sublines inside the polygon of the mesh.",
                 "items": {
                     "type": "object",
-                    "properties" : {
-                        "coordinates": { 
+                    "properties": {
+                        "coordinates": {
                             "type": "array",
                             "description": "The 3D coordinates of the leveling subline of the mesh.",
                             "items": {
@@ -2799,5 +2799,78 @@
                 "$ref": "#/ErrorItem"
             }
         ]
+    },
+    "StoryParameters": {
+        "type": "object",
+        "description": "Represents all parameters of a single project story, including its unique identifiers. Used in API responses.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The story index."
+            },
+            "floorId": {
+                "type": "integer",
+                "description": "Unique ID of the story."
+            },
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Story level lines should appear on sections and elevations."
+            },
+            "level": {
+                "type": "number",
+                "description": "The story level."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the story."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "floorId",
+            "dispOnSections",
+            "level",
+            "name"
+        ]
+    },
+    "StoriesParameters": {
+        "type": "array",
+        "description": "A list of project stories, each with their complete parameters.",
+        "items": {
+            "$ref": "#/StoryParameters"
+        }
+
+    },
+    "StorySettings": {
+        "type": "object",
+        "description": "Contains the configurable settings for creating or modifying a story. Used as input in API requests.",
+        "properties": {
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Story level lines should appear on sections and elevations."
+            },
+            "level": {
+                "type": "number",
+                "description": "The story level."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the story."
+            }
+        },
+        "additionalProperties": true,
+        "required": [
+            "dispOnSections",
+            "level",
+            "name"
+        ]
+    },
+    "StoriesSettings": {
+        "type": "array",
+        "description": "A list of story settings, used as input for creating or modifying multiple stories.",
+        "items": {
+            "$ref": "#/StorySettings"
+        }
     }
 }
