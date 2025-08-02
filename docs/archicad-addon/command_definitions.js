@@ -1203,7 +1203,7 @@ var gCommands = [{
                         "type": "array",
                         "description": "The 2D coordinates of the edge of the slab.",
                         "items": {
-                            "$ref": "#/2DCoordinate"
+                            "$ref": "#/Coordinate2D"
                         },
                         "minItems": 3
                     },
@@ -1273,7 +1273,7 @@ var gCommands = [{
                         "description" : "The identifier of the zone category attribute."	
                     },
                     "stampPosition": {
-                        "$ref": "#/2DCoordinate",
+                        "$ref": "#/Coordinate2D",
                         "description" : "Position of the origin of the zone stamp."
                     },
                     "geometry": {
@@ -1336,7 +1336,7 @@ var gCommands = [{
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
                         "items": {
-                            "$ref": "#/2DCoordinate"
+                            "$ref": "#/Coordinate2D"
                         },
                         "minItems": 2
                     },
@@ -1391,10 +1391,10 @@ var gCommands = [{
                             "description" : "The name of the library part to use."	
                         },
                         "coordinates": {
-                            "$ref": "#/3DCoordinate"
+                            "$ref": "#/Coordinate3D"
                         },
                         "dimensions": {
-                            "$ref": "#/3DDimensions"
+                            "$ref": "#/Dimensions3D"
                         }
                     },
                     "additionalProperties": false,
@@ -1454,7 +1454,7 @@ var gCommands = [{
                         "type": "array",
                         "description": "The 3D coordinates of the outline polygon of the mesh.",
                         "items": {
-                            "$ref": "#/3DCoordinate"
+                            "$ref": "#/Coordinate3D"
                         },
                         "minItems": 3
                     },
@@ -1478,7 +1478,7 @@ var gCommands = [{
                                     "type": "array",
                                     "description": "The 3D coordinates of the leveling subline of the mesh.",
                                     "items": {
-                                        "$ref": "#/3DCoordinate"
+                                        "$ref": "#/Coordinate3D"
                                     }
                                 }
                             },
@@ -1752,28 +1752,7 @@ var gCommands = [{
                 "type": "array",
                 "description": "The parameters of the new property groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroup": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyGroup"
-                    ]
+                    "$ref": "#/PropertyGroupArrayItem"
                 }
             }
         },
@@ -1789,16 +1768,7 @@ var gCommands = [{
                 "type": "array",
                 "description": "The identifiers of the created property groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroupId": {
-                            "$ref": "#/PropertyGroupId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyGroupId"
-                    ]
+                    "$ref": "#/PropertyGroupIdArrayItem"
                 }
             }
         },
@@ -1818,16 +1788,7 @@ var gCommands = [{
                 "type": "array",
                 "description": "The identifiers of property groups to delete.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroupId": {
-                            "$ref": "#/PropertyGroupId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyGroupId"
-                    ]
+                    "$ref": "#/PropertyGroupIdArrayItem"
                 }
             }
         },
@@ -1859,96 +1820,7 @@ var gCommands = [{
                 "type": "array",
                 "description": "The parameters of the new properties.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyDefinition": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
-                                },
-                                "type": {
-                                    "$ref": "#/PropertyDataType"
-                                },
-                                "isEditable": {
-                                    "type": "boolean"
-                                },
-                                "defaultValue": {
-                                    "$ref": "#/PropertyDefaultValue"
-                                },
-                                "possibleEnumValues": {
-                                    "type": "array",
-                                    "description": "The possible enum values of the property when the property type is enumeration.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "enumValue": {
-                                                "type": "object",
-                                                "description": "The description of an enumeration value.",
-                                                "properties": {
-                                                    "enumValueId": {
-                                                        "$ref": "#/EnumValueId"
-                                                    },
-                                                    "displayValue": {
-                                                        "type": "string",
-                                                        "description": "Displayed value of the enumeration."
-                                                    },
-                                                    "nonLocalizedValue": {
-                                                        "type": "string",
-                                                        "description": "Nonlocalized value of the enumeration if there is one."
-                                                    }
-                                                },
-                                                "required": [
-                                                    "displayValue"
-                                                ]
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "enumValue"
-                                        ]
-                                    }
-                                },
-                                "availability": {
-                                    "type": "array",
-                                    "description": "The identifiers of classification items the new property is available for.",    
-                                    "items": {
-                                        "$ref": "#/ClassificationItemIdArrayItem"
-                                    }
-                                },
-                                "group": {
-                                    "type": "object",
-                                    "description": "The property group defined by name or id. If both fields exists the id will be used.",
-                                    "properties": {
-                                        "propertyGroupId": {
-                                            "$ref": "#/PropertyGroupId"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": []
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name",
-                                "description",
-                                "type",
-                                "isEditable",
-                                "availability",
-                                "group"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyDefinition"
-                    ]
+                    "$ref" : "#/PropertyDefinitionArrayItem"
                 }
             }
         },
