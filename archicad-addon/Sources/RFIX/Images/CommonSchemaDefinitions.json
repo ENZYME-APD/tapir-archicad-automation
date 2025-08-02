@@ -2571,6 +2571,26 @@
             ]
         }
     },
+    "DocumentRevisionReference": {
+        "type": "object",
+        "description": "A reference to a document revision belonging to the current issue",
+        "properties": {
+            "revisionId": {
+                "$ref": "#/DocumentRevisionId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionId"
+        ]
+    },
+    "DocumentRevisionReferences": {
+        "type": "array",
+        "description": "All document revisions belong to the current issue.",
+        "items": {
+            "$ref": "#/DocumentRevisionReference"
+        }
+    },
     "RevisionIssue": {
         "type": "object",
         "properties": {
@@ -2602,20 +2622,7 @@
                 "type": "boolean"
             },
             "documentRevisions": {
-                "type": "array",
-                "description": "All document revisions belong to the given issue.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "revisionId": {
-                            "$ref": "#/DocumentRevisionId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "revisionId"
-                    ]
-                }
+                "$ref": "#/DocumentRevisionReferences"
             },
             "customSchemeData": {
                 "$ref": "#/RevisionCustomSchemeData"
