@@ -776,7 +776,7 @@
             "$ref": "#/AttributePropertyValue"
         }
     },
-    "PropertyType": {
+    "PropertyDataType": {
         "type": "string",
         "enum": [
             "number",
@@ -941,7 +941,7 @@
         "description": "A userUndefined value means that there is no actual number/string/etc. value, but the user deliberately set an Undefined value: this is a valid value, too.",
         "properties": {
             "type": {
-                "$ref": "#/PropertyType"
+                "$ref": "#/PropertyDataType"
             },
             "status": {
                 "type": "string",
@@ -956,7 +956,7 @@
         "description": "A notAvailable value means that the property is not available for the property owner (and therefore it has no property value for it).",
         "properties": {
             "type": {
-                "$ref": "#/PropertyType"
+                "$ref": "#/PropertyDataType"
             },
             "status": {
                 "type": "string",
