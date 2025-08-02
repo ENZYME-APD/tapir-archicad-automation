@@ -542,6 +542,7 @@
     },
     "PropertyIdArrayItem": {
         "type": "object",
+        "description": "A wrapper containing the property values.",
         "properties": {
             "propertyId": {
                 "$ref": "#/PropertyId"
@@ -641,19 +642,24 @@
             "value"
         ]
     },
+    "PropertyValueArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the property value.",
+        "properties": {
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "propertyValue" ]
+    },
     "PropertyValueOrErrorItem": {
         "type": "object",
         "description": "A property value or an error",
         "oneOf": [
             {
                 "title": "propertyValue",
-                "properties": {
-                    "propertyValue": {
-                        "$ref": "#/PropertyValue"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "propertyValue" ]
+                "$ref": "#/PropertyValueArrayItem"
             },
             {
                 "title": "error",
@@ -668,19 +674,23 @@
             "$ref": "#/PropertyValueOrErrorItem"
         }
     },
+    "PropertyValuesItem": {
+        "description": "A wrapper containing the property values.",
+        "properties": {
+            "propertyValues": {
+                "$ref": "#/PropertyValues"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "propertyValues" ]
+    },
     "PropertyValuesOrError": {
         "type": "object",
         "description": "A list of property values or an error.",
         "oneOf": [
             {
                 "title": "propertyValues",
-                "properties": {
-                    "propertyValues": {
-                        "$ref": "#/PropertyValues"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "propertyValues" ]
+                "$ref": "#/ErrorItem"
             },
             {
                 "title": "error",
@@ -700,13 +710,7 @@
         "description": "A propertyId or an error.",
         "oneOf": [
             {
-                "properties": {
-                    "propertyId": {
-                        "$ref": "#/PropertyId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "propertyId" ]
+                "$ref": "#/PropertyIdArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -1449,19 +1453,24 @@
             "classificationSystemId"
         ]
     },
+    "ClassificationIdArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the classification identifier.",
+        "properties": {
+            "classificationId": {
+                "$ref": "#/ClassificationId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationId" ]
+    },
     "ClassificationIdOrError": {
         "type": "object",
         "description": "A classification identifier or an error.",
         "oneOf": [
             {
-                "title": "classificationId",
-                "properties": {
-                    "classificationId": {
-                        "$ref": "#/ClassificationId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "classificationId" ]
+                "title": "ClassificationIdArrayItem",
+                "$ref": "#/ErrorItem"
             },
             {
                 "title": "error",
@@ -1476,19 +1485,23 @@
             "$ref": "#/ClassificationIdOrError"
         }
     },
+    "ElementClassificationItemArray": {
+        "description": "A wrapper containing a list of element classification identifiers or errors.",
+        "properties": {
+            "classificationIds": {
+                "$ref": "#/ClassificationIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationIds" ]
+    },
     "ElementClassificationOrError": {
         "type": "object",
         "description": "Element classification identifiers or errors.",
         "oneOf": [
             {
-                "title": "classificationIds",
-                "properties": {
-                    "classificationIds": {
-                        "$ref": "#/ClassificationIdsOrErrors"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "classificationIds" ]
+                "title": "elementClassificationItem",
+                "$ref": "#/ElementClassificationItemArray"
             },
             {
                 "title": "error",
@@ -1566,19 +1579,26 @@
             "zMax"
         ]
     },
+    "BoundingBox3DArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing a 3D bounding box.",
+        "properties": {
+            "boundingBox3D": {
+                "$ref": "#/BoundingBox3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBox3D"
+        ]
+    },
     "BoundingBox3DOrError": {
         "type": "object",
         "description": "A 3D bounding box or an error.",
         "oneOf": [
             {
                 "title": "boundingBox3D",
-                "properties": {
-                    "boundingBox3D": {
-                        "$ref": "#/BoundingBox3D"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "boundingBox3D" ]
+                "$ref": "#/BoundingBox3DArrayItem"
             },
             {
                 "title": "error",
@@ -2774,23 +2794,24 @@
             "layoutInfo"
         ]
     },
+    "RevisionChangeArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing revision changes",
+        "properties": {
+            "revisionChange": {
+                "$ref": "#/RevisionChange"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionChange"
+        ]
+    },
     "RevisionChangesOfEntities": {
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "revisionChanges": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/RevisionChange"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "revisionChanges"
-                ]
+                "$ref": "#/RevisionChangeArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
