@@ -748,28 +748,7 @@ GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "The parameters of the new property groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroup": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyGroup"
-                    ]
+                    "$ref": "#/PropertyGroupArrayItem"
                 }
             }
         },
@@ -789,16 +768,7 @@ GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetResponseSchema () co
                 "type": "array",
                 "description": "The identifiers of the created property groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroupId": {
-                            "$ref": "#/PropertyGroupId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyGroupId"
-                    ]
+                    "$ref": "#/PropertyGroupIdArrayItem"
                 }
             }
         },
@@ -866,16 +836,7 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "The identifiers of property groups to delete.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyGroupId": {
-                            "$ref": "#/PropertyGroupId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyGroupId"
-                    ]
+                    "$ref": "#/PropertyGroupIdArrayItem"
                 }
             }
         },
@@ -952,96 +913,7 @@ GS::Optional<GS::UniString> CreatePropertyDefinitionsCommand::GetInputParameters
                 "type": "array",
                 "description": "The parameters of the new properties.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyDefinition": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
-                                },
-                                "type": {
-                                    "$ref": "#/PropertyDataType"
-                                },
-                                "isEditable": {
-                                    "type": "boolean"
-                                },
-                                "defaultValue": {
-                                    "$ref": "#/PropertyDefaultValue"
-                                },
-                                "possibleEnumValues": {
-                                    "type": "array",
-                                    "description": "The possible enum values of the property when the property type is enumeration.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "enumValue": {
-                                                "type": "object",
-                                                "description": "The description of an enumeration value.",
-                                                "properties": {
-                                                    "enumValueId": {
-                                                        "$ref": "#/EnumValueId"
-                                                    },
-                                                    "displayValue": {
-                                                        "type": "string",
-                                                        "description": "Displayed value of the enumeration."
-                                                    },
-                                                    "nonLocalizedValue": {
-                                                        "type": "string",
-                                                        "description": "Nonlocalized value of the enumeration if there is one."
-                                                    }
-                                                },
-                                                "required": [
-                                                    "displayValue"
-                                                ]
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "enumValue"
-                                        ]
-                                    }
-                                },
-                                "availability": {
-                                    "type": "array",
-                                    "description": "The identifiers of classification items the new property is available for.",    
-                                    "items": {
-                                        "$ref": "#/ClassificationItemIdArrayItem"
-                                    }
-                                },
-                                "group": {
-                                    "type": "object",
-                                    "description": "The property group defined by name or id. If both fields exists the id will be used.",
-                                    "properties": {
-                                        "propertyGroupId": {
-                                            "$ref": "#/PropertyGroupId"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": []
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name",
-                                "description",
-                                "type",
-                                "isEditable",
-                                "availability",
-                                "group"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyDefinition"
-                    ]
+                    "$ref" : "#/PropertyDefinitionArrayItem"
                 }
             }
         },

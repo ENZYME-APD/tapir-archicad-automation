@@ -540,9 +540,22 @@
             "guid"
         ]
     },
+    "PropertyGroupIdArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the property group identifier.",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId"
+        ]
+    },
     "PropertyIdArrayItem": {
         "type": "object",
-        "description": "A wrapper containing the property values.",
+        "description": "A wrapper containing the property identifier.",
         "properties": {
             "propertyId": {
                 "$ref": "#/PropertyId"
@@ -658,11 +671,9 @@
         "description": "A property value or an error",
         "oneOf": [
             {
-                "title": "propertyValue",
                 "$ref": "#/PropertyValueArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -674,7 +685,7 @@
             "$ref": "#/PropertyValueOrErrorItem"
         }
     },
-    "PropertyValuesItem": {
+    "PropertyValuesArrayItem": {
         "description": "A wrapper containing the property values.",
         "properties": {
             "propertyValues": {
@@ -689,11 +700,9 @@
         "description": "A list of property values or an error.",
         "oneOf": [
             {
-                "title": "propertyValues",
-                "$ref": "#/ErrorItem"
+                "$ref": "#/PropertyValuesArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -1469,11 +1478,9 @@
         "description": "A classification identifier or an error.",
         "oneOf": [
             {
-                "title": "ClassificationIdArrayItem",
-                "$ref": "#/ErrorItem"
+                "$ref": "#/ClassificationIdArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -1500,11 +1507,9 @@
         "description": "Element classification identifiers or errors.",
         "oneOf": [
             {
-                "title": "elementClassificationItem",
                 "$ref": "#/ElementClassificationItemArray"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -1597,11 +1602,9 @@
         "description": "A 3D bounding box or an error.",
         "oneOf": [
             {
-                "title": "boundingBox3D",
                 "$ref": "#/BoundingBox3DArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -2794,12 +2797,15 @@
             "layoutInfo"
         ]
     },
-    "RevisionChangeArrayItem": {
+    "RevisionChangesArrayItem": {
         "type": "object",
-        "description": "A wrapper containing revision changes",
+        "description": "A wrapper containing an array of revision changes",
         "properties": {
-            "revisionChange": {
-                "$ref": "#/RevisionChange"
+            "revisionChanges": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/RevisionChange"
+                }
             }
         },
         "additionalProperties": false,
@@ -2811,7 +2817,7 @@
         "type": "object",
         "oneOf": [
             {
-                "$ref": "#/RevisionChangeArrayItem"
+                "$ref": "#/RevisionChangesArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -2974,6 +2980,140 @@
                 "$ref": "#/WallSettings"
             }
         ]
-    }
+    },
+    "PropertyGroup": {
+        "description": "Represents a property group.",
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "PropertyGroupArrayItem": {
+        "description": "A wrapper containing a property group",
+        "type": "object",
+        "properties": {
+            "propertyGroup": {
+                "$ref": "#/PropertyGroup"
+            },
+            "additionalProperties": false,
+            "required": [
+                "propertyGroup"
+            ]
 
+        }
+    },
+    "PropertyDefinition": {
+        "type": "object",
+        "properties": {
+            "propertyDefinition": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "$ref": "#/PropertyDataType"
+                    },
+                    "isEditable": {
+                        "type": "boolean"
+                    },
+                    "defaultValue": {
+                        "$ref": "#/PropertyDefaultValue"
+                    },
+                    "possibleEnumValues": {
+                        "type": "array",
+                        "description": "The possible enum values of the property when the property type is enumeration.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "enumValue": {
+                                    "type": "object",
+                                    "description": "The description of an enumeration value.",
+                                    "properties": {
+                                        "enumValueId": {
+                                            "$ref": "#/EnumValueId"
+                                        },
+                                        "displayValue": {
+                                            "type": "string",
+                                            "description": "Displayed value of the enumeration."
+                                        },
+                                        "nonLocalizedValue": {
+                                            "type": "string",
+                                            "description": "Nonlocalized value of the enumeration if there is one."
+                                        }
+                                    },
+                                    "required": [
+                                        "displayValue"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "enumValue"
+                            ]
+                        }
+                    },
+                    "availability": {
+                        "type": "array",
+                        "description": "The identifiers of classification items the new property is available for.",
+                        "items": {
+                            "$ref": "#/ClassificationItemIdArrayItem"
+                        }
+                    },
+                    "group": {
+                        "type": "object",
+                        "description": "The property group defined by name or id. If both fields exists the id will be used.",
+                        "properties": {
+                            "propertyGroupId": {
+                                "$ref": "#/PropertyGroupId"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": []
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "description",
+                    "type",
+                    "isEditable",
+                    "availability",
+                    "group"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinition"
+        ]
+    },
+    "PropertyDefinitionArrayItem": {
+        "description": "A wrapper containing a property definition",
+        "type": "object",
+        "properties": {
+            "propertyDefinition": {
+                "$ref": "#/PropertyDefinition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinition"
+        ]
+    }
 }
