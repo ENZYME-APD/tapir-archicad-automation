@@ -1,145 +1,160 @@
-html, body
-{
-	color: #000000;
-	background: #fafafa;
-	font-size: 16px;
-	font-family: Arial, Helvetica, sans-serif;
-	scroll-behavior: smooth;
-	margin: 0px;
-	padding: 0px;
+@charset "UTF-8";
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
-p
-{
+* {
+    margin: 0;
+}
+
+:root {
+    --text-color: #141414;
+    --background: #fafafa;
+    --gray-10: #ececec;
+    --gray-30: #dddddd;
+    --gray-70: #5d5d5d;
+}
+
+html,
+body {
+    color: var(--text-color);
+    background: var(--background);
+    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+    margin: 0px;
+    padding: 0px;
+}
+
+p {
     line-height: 1.5em;
 }
 
-div.header
-{
-    box-shadow: 0px 0px 10px #dddddd;
+div.header {
+    box-shadow: 0px 0px 10px var(--gray-30);
     margin-bottom: 30px;
 }
 
-div.header_frame
-{
-	padding: 25px;
-	width: 920px;
-	margin: 0px auto;
+div.header_frame {
+    padding: 25px;
+    width: 920px;
+    margin: 0px auto;
 }
 
-div.frame
-{
-	padding: 0px 20px;
-	width: 920px;
-	margin: 0px auto;
+div.frame {
+    padding: 0px 20px;
+    width: 920px;
+    margin: 0px auto;
 }
 
-div.title
-{
+div.title {
     font-size: 1.6em;
 }
 
-div.command_container
-{
+details.command_container {
     margin: 1.0em 0;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--gray-30);
     border-radius: 5px;
 }
 
-div.group_name
-{
+details ::marker {
+    color: var(--gray-70);
+}
+
+div.group_name {
     font-size: 1.4em;
     margin-top: 2.0em;
 }
 
-div.command_header
-{
+summary.command_header {
     padding: 0.5em 0.6em;
     border-radius: 5px;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;	
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
     cursor: pointer;
+    transition: background 0.1s;
+
+    &:hover {
+        background: var(--gray-30);
+    }
 }
 
-div.command_header:hover
-{
-    background: #f6f6f6;
+details[open] summary.command_header {
+    background: var(--gray-10);
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
 }
 
-span.command_name
-{
-    
+details summary.command_header:hover {
+    background: var(--gray-30);
 }
 
-span.command_version
-{
+span.command_name {
+    display: inline-block;
+}
+
+span.command_version {
     color: #aaaaaa;
     font-size: 0.6em;
     margin-left: 0.6em;
+    display: inline-block;
 }
 
-div.command_content
-{
+div.command_content {
     padding-left: 1.0em;
     margin: 1.0em 0.5em;
 }
 
-div.command_description
-{
-    
-}
-
-div.scheme_title
-{
+div.scheme_title {
     font-weight: bold;
     margin-top: 1.0em;
     margin-bottom: 0.5em;
 }
 
-div.scheme_container
-{
+div.scheme_container {
     overflow: auto;
 }
 
-code.language-python.hljs
-{
+code.language-python.hljs {
     background: transparent;
-    border: 1px dotted #dddddd;
+    border: 1px dotted var(--gray-30);
 }
 
-@media only screen and (max-width: 1000px)
-{
+@media only screen and (max-width: 1000px) {
 
-div.header_frame
-{
-	width: auto;
-}
+    div.header_frame {
+        width: auto;
+    }
 
-div.frame
-{
-	width: auto;
-}
+    div.frame {
+        width: auto;
+    }
 
 }
 
-.footer
-{
+.footer {
     margin: 40px auto 0;
     padding: 0 20px;
     max-width: 920px;
-    hr
-    {
+
+    hr {
         border-width: 0.5px;
         color: #c6c6c6;
     }
-    a.icon
-    {
+
+    a.icon {
         display: block;
         max-width: 28px;
         margin: 20px auto;
-        svg
-        {
+
+        svg {
+            display: block;
+            max-width: 100%;
             width: 100%;
         }
     }
