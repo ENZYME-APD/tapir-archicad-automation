@@ -184,34 +184,8 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         }
                     },
                     "holes" : {
-                        "type": "array",
-                        "description": "Array of parameters of holes.",
-                        "items": {
-                            "type": "object",
-                            "description" : "The parameters of the hole.",
-                            "properties" : {
-                                "polygonCoordinates": { 
-                                    "type": "array",
-                                    "description": "The 2D coordinates of the edge of the hole.",
-                                    "items": {
-                                        "$ref": "#/2DCoordinate"
-                                    },
-                                    "minItems": 3
-                                },
-                                "polygonArcs": {
-                                    "type": "array",
-                                    "description": "Polygon outline arcs of the hole.",
-                                    "items": {
-                                        "$ref": "#/PolyArc"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required" : [
-                                "polygonCoordinates"
-                            ]
-                        }
-                    }
+                        "$ref": "#/Holes2D"
+                    }    
                 },
                 "additionalProperties": false,
                 "required" : [
@@ -404,72 +378,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "object",
                         "oneOf": [
                             {
-                                "type": "object",
-                                "description": "Automatic zone placement.",
-                                "properties": {
-                                    "referencePosition": {
-                                        "$ref": "#/2DCoordinate",
-                                        "description" : "Reference point to automatically find zone."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "referencePosition"
-                                ]
+                                "$ref": "#/AutomaticZoneGeometry"
                             },
                             {
-                                "type": "object",
-                                "description": "Manual zone placement.",
-                                "properties": {
-                                    "polygonCoordinates": { 
-                                        "type": "array",
-                                        "description": "The 2D coordinates of the edge of the zone.",
-                                        "items": {
-                                            "$ref": "#/2DCoordinate"
-                                        },
-                                        "minItems": 3
-                                    },
-                                    "polygonArcs": {
-                                        "type": "array",
-                                        "description": "Polygon outline arcs of the zone.",
-                                        "items": {
-                                            "$ref": "#/PolyArc"
-                                        }
-                                    },
-                                    "holes" : {
-                                        "type": "array",
-                                        "description": "Array of parameters of holes.",
-                                        "items": {
-                                            "type": "object",
-                                            "description" : "The parameters of the hole.",
-                                            "properties" : {
-                                                "polygonCoordinates": { 
-                                                    "type": "array",
-                                                    "description": "The 2D coordinates of the edge of the hole.",
-                                                    "items": {
-                                                        "$ref": "#/2DCoordinate"
-                                                    },
-                                                    "minItems": 3
-                                                },
-                                                "polygonArcs": {
-                                                    "type": "array",
-                                                    "description": "Polygon outline arcs of the hole.",
-                                                    "items": {
-                                                        "$ref": "#/PolyArc"
-                                                    }
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "polygonCoordinates"
-                                            ]
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "polygonCoordinates"
-                                ]
+                                "$ref": "#/ManualZoneGeometry"
                             }
                         ]
                     }
@@ -888,33 +800,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         }
                     },
                     "holes" : {
-                        "type": "array",
-                        "description": "Array of parameters of holes.",
-                        "items": {
-                            "type": "object",
-                            "description" : "The parameters of the hole.",
-                            "properties" : {
-                                "polygonCoordinates": { 
-                                    "type": "array",
-                                    "description": "The 3D coordinates of the polygon of the hole.",
-                                    "items": {
-                                        "$ref": "#/3DCoordinate"
-                                    },
-                                    "minItems": 3
-                                },
-                                "polygonArcs": {
-                                    "type": "array",
-                                    "description": "Polygon outline arcs of the hole.",
-                                    "items": {
-                                        "$ref": "#/PolyArc"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "polygonCoordinates"
-                            ]
-                        }
+                        "$ref": "#/Holes3D"
                     },
                     "sublines": {
                         "type": "array",

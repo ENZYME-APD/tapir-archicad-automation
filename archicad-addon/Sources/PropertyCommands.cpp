@@ -964,7 +964,7 @@ GS::Optional<GS::UniString> CreatePropertyDefinitionsCommand::GetInputParameters
                                     "type": "string"
                                 },
                                 "type": {
-                                    "$ref": "#/PropertyType"
+                                    "$ref": "#/PropertyDataType"
                                 },
                                 "isEditable": {
                                     "type": "boolean"

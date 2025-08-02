@@ -323,41 +323,7 @@ GS::Optional<GS::UniString> GetStoriesCommand::GetResponseSchema () const
                 "description": "Floor indices above ground-floor level may start with 1 instead of 0."
             },
             "stories": {
-                "type": "array",
-                "description": "A list of project stories.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The story index."
-                        },
-                        "floorId": {
-                            "type": "integer",
-                            "description": "Unique ID of the story."
-                        },
-                        "dispOnSections": {
-                            "type": "boolean",
-                            "description": "Story level lines should appear on sections and elevations."
-                        },
-                        "level": {
-                            "type": "number",
-                            "description": "The story level."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the story."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "index",
-                        "floorId",
-                        "dispOnSections",
-                        "level",
-                        "name"
-                    ]
-                }
+                "$ref": "#/StoriesParameters"
             }
         },
         "additionalProperties": false,
@@ -425,31 +391,7 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
         "type": "object",
         "properties": {
             "stories": {
-                "type": "array",
-                "description": "A list of project stories.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "dispOnSections": {
-                            "type": "boolean",
-                            "description": "Story level lines should appear on sections and elevations."
-                        },
-                        "level": {
-                            "type": "number",
-                            "description": "The story level."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the story."
-                        }
-                    },
-                    "additionalProperties": true,
-                    "required": [
-                        "dispOnSections",
-                        "level",
-                        "name"
-                    ]
-                }
+                "$ref": "#/StoriesSettings"
             }
         },
         "additionalProperties": true,

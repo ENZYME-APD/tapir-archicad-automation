@@ -776,7 +776,7 @@
             "$ref": "#/AttributePropertyValue"
         }
     },
-    "PropertyType": {
+    "PropertyDataType": {
         "type": "string",
         "enum": [
             "number",
@@ -941,7 +941,7 @@
         "description": "A userUndefined value means that there is no actual number/string/etc. value, but the user deliberately set an Undefined value: this is a valid value, too.",
         "properties": {
             "type": {
-                "$ref": "#/PropertyType"
+                "$ref": "#/PropertyDataType"
             },
             "status": {
                 "type": "string",
@@ -956,7 +956,7 @@
         "description": "A notAvailable value means that the property is not available for the property owner (and therefore it has no property value for it).",
         "properties": {
             "type": {
-                "$ref": "#/PropertyType"
+                "$ref": "#/PropertyDataType"
             },
             "status": {
                 "type": "string",
@@ -1760,7 +1760,7 @@
                 ]
             },
             "rotation": {
-                "type": "double",
+                "type": "number",
                 "description": "The orientation in radian."
             }
         },
@@ -1781,16 +1781,80 @@
             }
         ]
     },
+    "Hole2D": {
+        "type": "object",
+        "description": "A 2D hole in an element defined by closed polylines",
+        "properties": {
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "Holes2D": {
+        "type": "array",
+        "description": "A list of 2D holes in an element defined by closed polylines",
+        "items": {
+            "$ref": "#/Hole2D"
+        }
+    },
+    "Hole3D": {
+        "type": "object",
+        "description": "A 3D hole in an element defined by closed polylines",
+        "properties": {
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the polygon of the hole.",
+                "items": {
+                    "$ref": "#/3DCoordinate"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "Holes3D": {
+        "type": "array",
+        "description": "A list of 3D holes in an element defined by closed polylines",
+        "items": {
+            "$ref": "#/Hole3D"
+        }
+    },
     "WallDetails": {
         "type": "object",
         "properties": {
             "geometryType": {
                 "type": "string",
-                    "enum": [
+                "enum": [
                     "Straight",
                     "Trapezoid",
                     "Polygonal"
-                    ]
+                ]
             },
             "begCoordinate": {
                 "$ref": "#/2DCoordinate"
@@ -1927,30 +1991,7 @@
                 }
             },
             "holes": {
-                "type": "array",
-                "description": "Holes of the slab.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "polygonOutline": {
-                            "type": "array",
-                            "description": "Polygon outline of the hole.",
-                            "items": {
-                                "$ref": "#/2DCoordinate"
-                            }
-                        },
-                        "polygonArcs": {
-                            "type": "array",
-                            "description": "Polygon outline arcs of the hole.",
-                            "items": {
-                                "$ref": "#/PolyArc"
-                            }
-                        }
-                    },
-                    "required": [
-                        "polygonOutline"
-                    ]
-                }
+                "$ref": "#/Holes2D"
             }
         },
         "required": [
@@ -2084,7 +2125,7 @@
                 "$ref": "#/3DCoordinate"
             },
             "angle": {
-                "type": "double"
+                "type": "number"
             }
         },
         "required": [
@@ -2102,7 +2143,7 @@
                     "$ref": "#/2DCoordinate"
                 }
             },
-            "arcs": { 
+            "arcs": {
                 "type": "array",
                 "description": "The arcs of the polyline.",
                 "items": {
@@ -2123,25 +2164,25 @@
         "properties": {
             "name": {
                 "type": "string",
-                "description" : "Name of the zone."
+                "description": "Name of the zone."
             },
             "numberStr": {
                 "type": "string",
-                "description" : "Zone number."	
+                "description": "Zone number."
             },
             "categoryAttributeId": {
                 "$ref": "#/AttributeId",
-                "description" : "The identifier of the zone category attribute."	
+                "description": "The identifier of the zone category attribute."
             },
             "stampPosition": {
                 "$ref": "#/2DCoordinate",
-                "description" : "Position of the origin of the zone stamp."
+                "description": "Position of the origin of the zone stamp."
             },
             "isManual": {
                 "type": "boolean",
-                "description" : "Is the coordinates of the zone manually placed?"
+                "description": "Is the coordinates of the zone manually placed?"
             },
-            "polygonCoordinates": { 
+            "polygonCoordinates": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
@@ -2156,34 +2197,8 @@
                     "$ref": "#/PolyArc"
                 }
             },
-            "holes" : {
-                "type": "array",
-                "description": "Array of parameters of holes.",
-                "items": {
-                    "type": "object",
-                    "description" : "The parameters of the hole.",
-                    "properties" : {
-                        "polygonCoordinates": { 
-                            "type": "array",
-                            "description": "The 2D coordinates of the edge of the hole.",
-                            "items": {
-                                "$ref": "#/2DCoordinate"
-                            },
-                            "minItems": 3
-                        },
-                        "polygonArcs": {
-                            "type": "array",
-                            "description": "Polygon outline arcs of the hole.",
-                            "items": {
-                                "$ref": "#/PolyArc"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required" : [
-                        "polygonCoordinates"
-                    ]
-                }
+            "holes": {
+                "$ref": "#/Holes2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -2254,7 +2269,7 @@
     "CurtainWallPanelDetails": {
         "type": "object",
         "properties": {
-            "polygonCoordinates": { 
+            "polygonCoordinates": {
                 "type": "array",
                 "description": "The 3D coordinates of the panel polygon.",
                 "items": {
@@ -2273,7 +2288,7 @@
             "className": {
                 "type": "string"
             },
-            "frames": { 
+            "frames": {
                 "type": "array",
                 "description": "The surrounding frames.",
                 "items": {
@@ -2360,7 +2375,7 @@
             },
             "type": {
                 "type": "string",
-                "enum" : [
+                "enum": [
                     "Deleted",
                     "Division",
                     "Corner",
@@ -2392,7 +2407,7 @@
     },
     "MeshDetails": {
         "type": "object",
-        "properties" : {
+        "properties": {
             "level": {
                 "type": "number",
                 "description": "The Z reference level of coordinates."
@@ -2404,7 +2419,7 @@
                 "type": "number",
                 "description": "The height of the skirt."
             },
-            "polygonCoordinates": { 
+            "polygonCoordinates": {
                 "type": "array",
                 "description": "The 3D coordinates of the outline polygon of the mesh.",
                 "items": {
@@ -2419,42 +2434,16 @@
                     "$ref": "#/PolyArc"
                 }
             },
-            "holes" : {
-                "type": "array",
-                "description": "Array of parameters of holes.",
-                "items": {
-                    "type": "object",
-                    "description" : "The parameters of the hole.",
-                    "properties" : {
-                        "polygonCoordinates": { 
-                            "type": "array",
-                            "description": "The 3D coordinates of the polygon of the hole.",
-                            "items": {
-                                "$ref": "#/3DCoordinate"
-                            },
-                            "minItems": 3
-                        },
-                        "polygonArcs": {
-                            "type": "array",
-                            "description": "Polygon outline arcs of the hole.",
-                            "items": {
-                                "$ref": "#/PolyArc"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "polygonCoordinates"
-                    ]
-                }
+            "holes": {
+                "$ref": "#/Holes3D"
             },
             "sublines": {
                 "type": "array",
                 "description": "The leveling sublines inside the polygon of the mesh.",
                 "items": {
                     "type": "object",
-                    "properties" : {
-                        "coordinates": { 
+                    "properties": {
+                        "coordinates": {
                             "type": "array",
                             "description": "The 3D coordinates of the leveling subline of the mesh.",
                             "items": {
@@ -2490,6 +2479,7 @@
         ]
     },
     "TypeSpecificDetails": {
+        "description": "Represents the complete type-specific details of an element. Used as output from GET requests",
         "type": "object",
         "oneOf": [
             {
@@ -2799,5 +2789,163 @@
                 "$ref": "#/ErrorItem"
             }
         ]
+    },
+    "StoryParameters": {
+        "type": "object",
+        "description": "Represents all parameters of a single project story, including its unique identifiers. Used in API responses.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The story index."
+            },
+            "floorId": {
+                "type": "integer",
+                "description": "Unique ID of the story."
+            },
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Story level lines should appear on sections and elevations."
+            },
+            "level": {
+                "type": "number",
+                "description": "The story level."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the story."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "floorId",
+            "dispOnSections",
+            "level",
+            "name"
+        ]
+    },
+    "StoriesParameters": {
+        "type": "array",
+        "description": "A list of project stories, each with their complete parameters.",
+        "items": {
+            "$ref": "#/StoryParameters"
+        }
+
+    },
+    "StorySettings": {
+        "type": "object",
+        "description": "Contains the configurable settings for creating or modifying a story. Used as input in API requests.",
+        "properties": {
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Story level lines should appear on sections and elevations."
+            },
+            "level": {
+                "type": "number",
+                "description": "The story level."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the story."
+            }
+        },
+        "additionalProperties": true,
+        "required": [
+            "dispOnSections",
+            "level",
+            "name"
+        ]
+    },
+    "StoriesSettings": {
+        "type": "array",
+        "description": "A list of story settings, used as input for creating or modifying multiple stories.",
+        "items": {
+            "$ref": "#/StorySettings"
+        }
+    },
+    "AutomaticZoneGeometry": {
+        "type": "object",
+        "description": "Automatic zone placement.",
+        "properties": {
+            "referencePosition": {
+                "$ref": "#/2DCoordinate",
+                "description": "Reference point to automatically find zone."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referencePosition"
+        ]
+    },
+    "ManualZoneGeometry": {
+        "type": "object",
+        "description": "Manual zone placement.",
+        "properties": {
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the zone.",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the zone.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "WallSettings": {
+        "type": "object",
+        "description": "Settings for modifying a wall.",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "endCoordinate": {
+                "$ref": "#/2DCoordinate"
+            },
+            "height": {
+                "type": "number",
+                "description": "height relative to bottom"
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "base level of the wall relative to the floor level"
+            },
+            "offset": {
+                "type": "number",
+                "description": "wall's base line's offset from ref. line"
+            },
+            "begThickness": {
+                "type": "number",
+                "description": "Thickness at the beginning in case of trapezoid wall"
+            },
+            "endThickness": {
+                "type": "number",
+                "description": "Thickness at the end in case of trapezoid wall"
+            }
+        },
+        "required": []
+    },
+    "TypeSpecificSettings": {
+        "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/WallSettings"
+            }
+        ]
     }
+
 }
