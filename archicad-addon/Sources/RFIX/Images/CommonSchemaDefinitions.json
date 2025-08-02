@@ -190,7 +190,7 @@
             "arcAngle"
         ]
     },
-    "2DCoordinate": {
+    "Coordinate2D": {
         "type": "object",
         "description": "2D coordinate.",
         "properties": {
@@ -209,7 +209,7 @@
             "y"
         ]
     },
-    "3DCoordinate": {
+    "Coordinate3D": {
         "type": "object",
         "description": "3D coordinate.",
         "properties": {
@@ -233,7 +233,7 @@
             "z"
         ]
     },
-    "3DDimensions": {
+    "Dimensions3D": {
         "type": "object",
         "description": "Dimensions in 3D.",
         "properties": {
@@ -1812,7 +1812,7 @@
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the hole.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
             },
@@ -1844,7 +1844,7 @@
                 "type": "array",
                 "description": "The 3D coordinates of the polygon of the hole.",
                 "items": {
-                    "$ref": "#/3DCoordinate"
+                    "$ref": "#/Coordinate3D"
                 },
                 "minItems": 3
             },
@@ -1880,10 +1880,10 @@
                 ]
             },
             "begCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "endCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -1916,7 +1916,7 @@
                 "type": "array",
                 "description": "Polygon outline in case of polygonal wall",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "polygonArcs": {
@@ -1941,10 +1941,10 @@
         "type": "object",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "endCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -2003,7 +2003,7 @@
                 "type": "array",
                 "description": "Polygon outline of the slab.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "polygonArcs": {
@@ -2030,7 +2030,7 @@
         "type": "object",
         "properties": {
             "origin": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -2055,7 +2055,7 @@
         "type": "object",
         "properties": {
             "basePoint": {
-                "$ref": "#/2DCoordinate",
+                "$ref": "#/Coordinate2D",
                 "description": "Coordinate of the base point"
             },
             "angle": {
@@ -2086,7 +2086,7 @@
                 "type": "array",
                 "description": "The clip polygon of the detail/worksheet",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "linkData": {
@@ -2142,10 +2142,10 @@
         "$ref": "#/LibPartBasedElementDetails",
         "properties": {
             "origin": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "dimensions": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "angle": {
                 "type": "number"
@@ -2163,7 +2163,7 @@
             "coordinates": {
                 "type": "array",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "arcs": {
@@ -2198,7 +2198,7 @@
                 "description": "The identifier of the zone category attribute."
             },
             "stampPosition": {
-                "$ref": "#/2DCoordinate",
+                "$ref": "#/Coordinate2D",
                 "description": "Position of the origin of the zone stamp."
             },
             "isManual": {
@@ -2209,7 +2209,7 @@
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
             },
@@ -2257,23 +2257,23 @@
         "type": "object",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "endCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "extrusionVector": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "gridOrigin": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "gridAngle": {
                 "type": "number",
                 "description": "The angle of the grid in radians."
             },
             "arcOrigin": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "isNegativeArc": {
                 "type": "boolean",
@@ -2296,7 +2296,7 @@
                 "type": "array",
                 "description": "The 3D coordinates of the panel polygon.",
                 "items": {
-                    "$ref": "#/3DCoordinate"
+                    "$ref": "#/Coordinate3D"
                 },
                 "minItems": 3
             },
@@ -2333,13 +2333,13 @@
         "type": "object",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "endCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "orientationVector": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "panelConnectionHole": {
                 "type": "object",
@@ -2446,7 +2446,7 @@
                 "type": "array",
                 "description": "The 3D coordinates of the outline polygon of the mesh.",
                 "items": {
-                    "$ref": "#/3DCoordinate"
+                    "$ref": "#/Coordinate3D"
                 },
                 "minItems": 3
             },
@@ -2470,7 +2470,7 @@
                             "type": "array",
                             "description": "The 3D coordinates of the leveling subline of the mesh.",
                             "items": {
-                                "$ref": "#/3DCoordinate"
+                                "$ref": "#/Coordinate3D"
                             }
                         }
                     },
@@ -2902,7 +2902,7 @@
         "description": "Automatic zone placement.",
         "properties": {
             "referencePosition": {
-                "$ref": "#/2DCoordinate",
+                "$ref": "#/Coordinate2D",
                 "description": "Reference point to automatically find zone."
             }
         },
@@ -2919,7 +2919,7 @@
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
             },
@@ -2944,10 +2944,10 @@
         "description": "Settings for modifying a wall.",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "endCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "height": {
                 "type": "number",
