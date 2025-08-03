@@ -3003,13 +3003,12 @@ var gSchemaDefinitions = {
         "properties": {
             "propertyGroup": {
                 "$ref": "#/PropertyGroup"
-            },
-            "additionalProperties": false,
-            "required": [
-                "propertyGroup"
-            ]
-
-        }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroup"
+        ]
     },
     "PropertyDefinition": {
         "type": "object",
