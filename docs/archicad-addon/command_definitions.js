@@ -1852,16 +1852,7 @@ var gCommands = [{
                 "type": "array",
                 "description": "The identifiers of properties to delete.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyId": {
-                            "$ref": "#/PropertyId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyId"
-                    ]
+                    "$ref": "#/PropertyIdArrayItem"
                 }
             }
         },
