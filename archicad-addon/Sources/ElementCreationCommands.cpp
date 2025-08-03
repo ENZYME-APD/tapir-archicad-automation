@@ -172,7 +172,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "type": "array",
                         "description": "The 2D coordinates of the edge of the slab.",
                         "items": {
-                            "$ref": "#/2DCoordinate"
+                            "$ref": "#/Coordinate2D"
                         },
                         "minItems": 3
                     },
@@ -371,7 +371,7 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "description" : "The identifier of the zone category attribute."	
                     },
                     "stampPosition": {
-                        "$ref": "#/2DCoordinate",
+                        "$ref": "#/Coordinate2D",
                         "description" : "Position of the origin of the zone stamp."
                     },
                     "geometry": {
@@ -522,7 +522,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
                         "items": {
-                            "$ref": "#/2DCoordinate"
+                            "$ref": "#/Coordinate2D"
                         },
                         "minItems": 2
                     },
@@ -613,10 +613,10 @@ GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () co
                             "description" : "The name of the library part to use."	
                         },
                         "coordinates": {
-                            "$ref": "#/3DCoordinate"
+                            "$ref": "#/Coordinate3D"
                         },
                         "dimensions": {
-                            "$ref": "#/3DDimensions"
+                            "$ref": "#/Dimensions3D"
                         }
                     },
                     "additionalProperties": false,
@@ -788,7 +788,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "array",
                         "description": "The 3D coordinates of the outline polygon of the mesh.",
                         "items": {
-                            "$ref": "#/3DCoordinate"
+                            "$ref": "#/Coordinate3D"
                         },
                         "minItems": 3
                     },
@@ -812,7 +812,7 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                                     "type": "array",
                                     "description": "The 3D coordinates of the leveling subline of the mesh.",
                                     "items": {
-                                        "$ref": "#/3DCoordinate"
+                                        "$ref": "#/Coordinate3D"
                                     }
                                 }
                             },

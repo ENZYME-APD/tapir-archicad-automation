@@ -190,7 +190,7 @@
             "arcAngle"
         ]
     },
-    "2DCoordinate": {
+    "Coordinate2D": {
         "type": "object",
         "description": "2D coordinate.",
         "properties": {
@@ -209,7 +209,7 @@
             "y"
         ]
     },
-    "3DCoordinate": {
+    "Coordinate3D": {
         "type": "object",
         "description": "3D coordinate.",
         "properties": {
@@ -233,7 +233,7 @@
             "z"
         ]
     },
-    "3DDimensions": {
+    "Dimensions3D": {
         "type": "object",
         "description": "Dimensions in 3D.",
         "properties": {
@@ -514,19 +514,6 @@
             "Unknown"
         ]
     },
-    "PropertyId": {
-        "type": "object",
-        "description": "The identifier of a property.",
-        "properties": {
-            "guid": {
-                "$ref": "#/Guid"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "guid"
-        ]
-    },
     "PropertyGroupId": {
         "type": "object",
         "description": "The identifier of a property group.",
@@ -540,8 +527,35 @@
             "guid"
         ]
     },
+    "PropertyGroupIdArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the property group identifier.",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroupId"
+        ]
+    },
+    "PropertyId": {
+        "type": "object",
+        "description": "The identifier of a property.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
     "PropertyIdArrayItem": {
         "type": "object",
+        "description": "A wrapper containing the property identifier.",
         "properties": {
             "propertyId": {
                 "$ref": "#/PropertyId"
@@ -641,22 +655,25 @@
             "value"
         ]
     },
+    "PropertyValueArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the property value.",
+        "properties": {
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "propertyValue" ]
+    },
     "PropertyValueOrErrorItem": {
         "type": "object",
         "description": "A property value or an error",
         "oneOf": [
             {
-                "title": "propertyValue",
-                "properties": {
-                    "propertyValue": {
-                        "$ref": "#/PropertyValue"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "propertyValue" ]
+                "$ref": "#/PropertyValueArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -668,22 +685,24 @@
             "$ref": "#/PropertyValueOrErrorItem"
         }
     },
+    "PropertyValuesArrayItem": {
+        "description": "A wrapper containing the property values.",
+        "properties": {
+            "propertyValues": {
+                "$ref": "#/PropertyValues"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "propertyValues" ]
+    },
     "PropertyValuesOrError": {
         "type": "object",
         "description": "A list of property values or an error.",
         "oneOf": [
             {
-                "title": "propertyValues",
-                "properties": {
-                    "propertyValues": {
-                        "$ref": "#/PropertyValues"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "propertyValues" ]
+                "$ref": "#/PropertyValuesArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -700,13 +719,7 @@
         "description": "A propertyId or an error.",
         "oneOf": [
             {
-                "properties": {
-                    "propertyId": {
-                        "$ref": "#/PropertyId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "propertyId" ]
+                "$ref": "#/PropertyIdArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -847,18 +860,22 @@
             }
         ]
     },
+    "EnumValueIdArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the identifier of a property enumeration value.",
+        "properties": {
+            "enumValueId": {
+                "$ref": "#/EnumValueId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "enumValueId" ]
+    },
     "EnumValueIds": {
         "type": "array",
         "description": "A list of enumeration identifiers.",
         "items": {
-            "type": "object",
-            "properties": {
-                "enumValueId": {
-                    "$ref": "#/EnumValueId"
-                }
-            },
-            "additionalProperties": false,
-            "required": [ "enumValueId" ]
+            "$ref": "#/EnumValueIdArrayItem"
         }
     },
     "NormalOrUserUndefinedPropertyValue": {
@@ -1449,22 +1466,25 @@
             "classificationSystemId"
         ]
     },
+    "ClassificationIdArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the classification identifier.",
+        "properties": {
+            "classificationId": {
+                "$ref": "#/ClassificationId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationId" ]
+    },
     "ClassificationIdOrError": {
         "type": "object",
         "description": "A classification identifier or an error.",
         "oneOf": [
             {
-                "title": "classificationId",
-                "properties": {
-                    "classificationId": {
-                        "$ref": "#/ClassificationId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "classificationId" ]
+                "$ref": "#/ClassificationIdArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -1476,22 +1496,24 @@
             "$ref": "#/ClassificationIdOrError"
         }
     },
+    "ElementClassificationItemArray": {
+        "description": "A wrapper containing a list of element classification identifiers or errors.",
+        "properties": {
+            "classificationIds": {
+                "$ref": "#/ClassificationIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationIds" ]
+    },
     "ElementClassificationOrError": {
         "type": "object",
         "description": "Element classification identifiers or errors.",
         "oneOf": [
             {
-                "title": "classificationIds",
-                "properties": {
-                    "classificationIds": {
-                        "$ref": "#/ClassificationIdsOrErrors"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "classificationIds" ]
+                "$ref": "#/ElementClassificationItemArray"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -1566,22 +1588,27 @@
             "zMax"
         ]
     },
+    "BoundingBox3DArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing a 3D bounding box.",
+        "properties": {
+            "boundingBox3D": {
+                "$ref": "#/BoundingBox3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "boundingBox3D"
+        ]
+    },
     "BoundingBox3DOrError": {
         "type": "object",
         "description": "A 3D bounding box or an error.",
         "oneOf": [
             {
-                "title": "boundingBox3D",
-                "properties": {
-                    "boundingBox3D": {
-                        "$ref": "#/BoundingBox3D"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [ "boundingBox3D" ]
+                "$ref": "#/BoundingBox3DArrayItem"
             },
             {
-                "title": "error",
                 "$ref": "#/ErrorItem"
             }
         ]
@@ -1789,7 +1816,7 @@
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the hole.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
             },
@@ -1821,7 +1848,7 @@
                 "type": "array",
                 "description": "The 3D coordinates of the polygon of the hole.",
                 "items": {
-                    "$ref": "#/3DCoordinate"
+                    "$ref": "#/Coordinate3D"
                 },
                 "minItems": 3
             },
@@ -1857,10 +1884,10 @@
                 ]
             },
             "begCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "endCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -1893,7 +1920,7 @@
                 "type": "array",
                 "description": "Polygon outline in case of polygonal wall",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "polygonArcs": {
@@ -1918,10 +1945,10 @@
         "type": "object",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "endCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -1980,7 +2007,7 @@
                 "type": "array",
                 "description": "Polygon outline of the slab.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "polygonArcs": {
@@ -2007,7 +2034,7 @@
         "type": "object",
         "properties": {
             "origin": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "zCoordinate": {
                 "type": "number"
@@ -2032,7 +2059,7 @@
         "type": "object",
         "properties": {
             "basePoint": {
-                "$ref": "#/2DCoordinate",
+                "$ref": "#/Coordinate2D",
                 "description": "Coordinate of the base point"
             },
             "angle": {
@@ -2063,7 +2090,7 @@
                 "type": "array",
                 "description": "The clip polygon of the detail/worksheet",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "linkData": {
@@ -2119,10 +2146,10 @@
         "$ref": "#/LibPartBasedElementDetails",
         "properties": {
             "origin": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "dimensions": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "angle": {
                 "type": "number"
@@ -2140,7 +2167,7 @@
             "coordinates": {
                 "type": "array",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "arcs": {
@@ -2175,7 +2202,7 @@
                 "description": "The identifier of the zone category attribute."
             },
             "stampPosition": {
-                "$ref": "#/2DCoordinate",
+                "$ref": "#/Coordinate2D",
                 "description": "Position of the origin of the zone stamp."
             },
             "isManual": {
@@ -2186,7 +2213,7 @@
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
             },
@@ -2234,23 +2261,23 @@
         "type": "object",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "endCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "extrusionVector": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "gridOrigin": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "gridAngle": {
                 "type": "number",
                 "description": "The angle of the grid in radians."
             },
             "arcOrigin": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "isNegativeArc": {
                 "type": "boolean",
@@ -2273,7 +2300,7 @@
                 "type": "array",
                 "description": "The 3D coordinates of the panel polygon.",
                 "items": {
-                    "$ref": "#/3DCoordinate"
+                    "$ref": "#/Coordinate3D"
                 },
                 "minItems": 3
             },
@@ -2310,13 +2337,13 @@
         "type": "object",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "endCoordinate": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "orientationVector": {
-                "$ref": "#/3DCoordinate"
+                "$ref": "#/Coordinate3D"
             },
             "panelConnectionHole": {
                 "type": "object",
@@ -2423,7 +2450,7 @@
                 "type": "array",
                 "description": "The 3D coordinates of the outline polygon of the mesh.",
                 "items": {
-                    "$ref": "#/3DCoordinate"
+                    "$ref": "#/Coordinate3D"
                 },
                 "minItems": 3
             },
@@ -2447,7 +2474,7 @@
                             "type": "array",
                             "description": "The 3D coordinates of the leveling subline of the mesh.",
                             "items": {
-                                "$ref": "#/3DCoordinate"
+                                "$ref": "#/Coordinate3D"
                             }
                         }
                     },
@@ -2571,6 +2598,26 @@
             ]
         }
     },
+    "DocumentRevisionReference": {
+        "type": "object",
+        "description": "A reference to a document revision belonging to the current issue",
+        "properties": {
+            "revisionId": {
+                "$ref": "#/DocumentRevisionId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionId"
+        ]
+    },
+    "DocumentRevisionReferences": {
+        "type": "array",
+        "description": "All document revisions belong to the current issue.",
+        "items": {
+            "$ref": "#/DocumentRevisionReference"
+        }
+    },
     "RevisionIssue": {
         "type": "object",
         "properties": {
@@ -2602,20 +2649,7 @@
                 "type": "boolean"
             },
             "documentRevisions": {
-                "type": "array",
-                "description": "All document revisions belong to the given issue.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "revisionId": {
-                            "$ref": "#/DocumentRevisionId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "revisionId"
-                    ]
-                }
+                "$ref": "#/DocumentRevisionReferences"
             },
             "customSchemeData": {
                 "$ref": "#/RevisionCustomSchemeData"
@@ -2767,23 +2801,27 @@
             "layoutInfo"
         ]
     },
+    "RevisionChangesArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing an array of revision changes",
+        "properties": {
+            "revisionChanges": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/RevisionChange"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "revisionChange"
+        ]
+    },
     "RevisionChangesOfEntities": {
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "revisionChanges": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/RevisionChange"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "revisionChanges"
-                ]
+                "$ref": "#/RevisionChangesArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -2868,7 +2906,7 @@
         "description": "Automatic zone placement.",
         "properties": {
             "referencePosition": {
-                "$ref": "#/2DCoordinate",
+                "$ref": "#/Coordinate2D",
                 "description": "Reference point to automatically find zone."
             }
         },
@@ -2885,7 +2923,7 @@
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
             },
@@ -2910,10 +2948,10 @@
         "description": "Settings for modifying a wall.",
         "properties": {
             "begCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "endCoordinate": {
-                "$ref": "#/2DCoordinate"
+                "$ref": "#/Coordinate2D"
             },
             "height": {
                 "type": "number",
@@ -2946,6 +2984,131 @@
                 "$ref": "#/WallSettings"
             }
         ]
-    }
+    },
+    "PropertyGroup": {
+        "description": "Represents a property group.",
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "PropertyGroupArrayItem": {
+        "description": "A wrapper containing a property group",
+        "type": "object",
+        "properties": {
+            "propertyGroup": {
+                "$ref": "#/PropertyGroup"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyGroup"
+        ]
+    },
+    "PropertyDefinition": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "type": {
+                "$ref": "#/PropertyDataType"
+            },
+            "isEditable": {
+                "type": "boolean"
+            },
+            "defaultValue": {
+                "$ref": "#/PropertyDefaultValue"
+            },
+            "possibleEnumValues": {
+                "type": "array",
+                "description": "The possible enum values of the property when the property type is enumeration.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "enumValue": {
+                            "type": "object",
+                            "description": "The description of an enumeration value.",
+                            "properties": {
+                                "enumValueId": {
+                                    "$ref": "#/EnumValueId"
+                                },
+                                "displayValue": {
+                                    "type": "string",
+                                    "description": "Displayed value of the enumeration."
+                                },
+                                "nonLocalizedValue": {
+                                    "type": "string",
+                                    "description": "Nonlocalized value of the enumeration if there is one."
+                                }
+                            },
+                            "required": [
+                                "displayValue"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "enumValue"
+                    ]
+                }
+            },
+            "availability": {
+                "type": "array",
+                "description": "The identifiers of classification items the new property is available for.",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "group": {
+                "type": "object",
+                "description": "The property group defined by name or id. If both fields exists the id will be used.",
+                "properties": {
+                    "propertyGroupId": {
+                        "$ref": "#/PropertyGroupId"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": []
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "description",
+            "type",
+            "isEditable",
+            "availability",
+            "group"
+        ]
 
+    },
+    "PropertyDefinitionArrayItem": {
+        "description": "A wrapper containing a property definition",
+        "type": "object",
+        "properties": {
+            "propertyDefinition": {
+                "$ref": "#/PropertyDefinition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinition"
+        ]
+    }
 }
