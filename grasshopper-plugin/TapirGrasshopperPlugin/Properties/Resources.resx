@@ -277,4 +277,52 @@
   <data name="SlabDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SlabDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="BeamDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BeamDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateViewMapFolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateViewMapFolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteNavigatorItems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteNavigatorItems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FindNavigatorItem" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\FindNavigatorItem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetStories" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetStories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MoveNavigatorItem" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MoveNavigatorItem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NavigatorTree" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NavigatorTree.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NavigatorTreeTypeValueList" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NavigatorTreeTypeValueList.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PolylineDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PolylineDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ProjectInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ProjectInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ProjectLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ProjectLocation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PublisherSetNames" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PublisherSetNames.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RenameNavigatorItem" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RenameNavigatorItem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetStories" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetStories.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ZoneDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ZoneDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

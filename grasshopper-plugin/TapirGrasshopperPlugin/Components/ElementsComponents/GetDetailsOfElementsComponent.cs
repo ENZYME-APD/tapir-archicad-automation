@@ -449,7 +449,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataList (6, curves);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.BeamDetails;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.BeamDetails;
 
         public override Guid ComponentGuid => new Guid ("6e0deaaa-a9b0-4c30-9bc0-f2a1ef299c5d");
     }
@@ -653,7 +653,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataList (1, rhinoPolylines);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PolylineDetails;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PolylineDetails;
 
         public override Guid ComponentGuid => new Guid ("b96c3b7e-303d-44f2-af22-6fd07ade11fc");
     }
@@ -747,7 +747,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             DA.SetDataTree (7, holePolygonsTree);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ZoneDetails;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ZoneDetails;
 
         public override Guid ComponentGuid => new Guid ("65b5952f-fc7d-4d9e-9742-9be32ac3c5d1");
     }

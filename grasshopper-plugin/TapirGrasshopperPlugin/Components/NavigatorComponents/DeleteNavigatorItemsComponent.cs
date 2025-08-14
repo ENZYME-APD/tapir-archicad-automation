@@ -45,7 +45,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.DeleteNavigatorItems;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.DeleteNavigatorItems;
 
         public override Guid ComponentGuid => new Guid ("b4ff32b4-91ac-405d-96ed-1938aec11eb3");
     }

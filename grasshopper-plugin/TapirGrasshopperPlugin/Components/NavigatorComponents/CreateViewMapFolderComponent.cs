@@ -87,7 +87,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             DA.SetData (0, createdFolderNavigatorItemId);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.CreateViewMapFolder;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.CreateViewMapFolder;
 
         public override Guid ComponentGuid => new Guid ("4de02e9a-55c3-4d23-9f96-bb5f73d50f0e");
     }
