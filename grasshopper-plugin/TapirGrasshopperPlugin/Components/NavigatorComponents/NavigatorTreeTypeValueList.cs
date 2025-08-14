@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             ExpireSolution (true);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.NavigatorTreeTypeValueList;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.NavigatorTreeTypeValueList;
 
         public override Guid ComponentGuid => new Guid ("71f27bd1-bffb-4870-b5a7-cdc0bde25ddb");
     }

@@ -45,7 +45,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             DA.SetDataList (0, obj.PublisherSetNames);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PublisherSetNames;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PublisherSetNames;
 
         public override Guid ComponentGuid => new Guid ("446d3bca-f817-4c90-b163-44da5197e707");
     }

@@ -251,7 +251,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             DA.SetDataTree (6, GetDatabaseIdTreeFromNavigatorItemIdTree (navigatorItemIdTree));
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.NavigatorTree;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.NavigatorTree;
 
         public override Guid ComponentGuid => new Guid ("b0173d9e-483d-4d8e-a0ac-606673c8c094");
     }

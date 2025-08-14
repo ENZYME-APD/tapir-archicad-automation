@@ -141,7 +141,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             DA.SetDataList (6, GetDatabaseIdsFromNavigatorItemIds (navigatorItemIdList));
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.FindNavigatorItem;
+        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.FindNavigatorItem;
 
         public override Guid ComponentGuid => new Guid ("d9162ee8-0d28-4dca-9c6f-19a0cceace23");
     }
