@@ -282,7 +282,7 @@ GSErrCode Initialize (void)
     { // Favorites Commands
         CommandGroup favoritesCommands ("Favorites Commands");
         err |= RegisterCommand<GetFavoritesByTypeCommand> (
-            favoritesCommands, "1.2.1",
+            favoritesCommands, "1.2.2",
             "Returns a list of the names of all favorites with the given element type"
         );
         err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
