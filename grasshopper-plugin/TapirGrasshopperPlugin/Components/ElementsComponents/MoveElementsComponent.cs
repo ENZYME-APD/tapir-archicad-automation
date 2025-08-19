@@ -57,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to move.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element ids to move.", GH_ParamAccess.list);
             pManager.AddVectorParameter ("Moving 3D Vectors", "MoveVectors", "The 3D vectors to move elements (input only 1 vector to move all elements with the same vector).", GH_ParamAccess.list);
             pManager.AddBooleanParameter ("Move copies", "MoveCopies", "Move copies of the elements.", GH_ParamAccess.item, @default: false);
         }
@@ -70,7 +70,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             ElementsObj elements = ElementsObj.Create (DA, 0);
             if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 
@@ -80,7 +80,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             if (moveVectors.Count != 1 && moveVectors.Count != elements.Elements.Count) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The size of the input MoveVectors must be 1 or equal to the size of the input ElementIds.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The size of the input MoveVectors must be 1 or equal to the size of the input ElementGuids.");
                 return;
             }
 
