@@ -38,6 +38,26 @@ Response:
         }
     ]
 }
+Command: GetFavoritesByType
+Parameters:
+{
+    "elementType": "Column"
+}
+Response:
+{
+    "favorites": [
+        "ColumnFromPython",
+        "Precast Column with Drop Panel",
+        "Column - Rectangular Reinforced Concrete",
+        "Steel Segmented Column",
+        "External Column",
+        "Round Column",
+        "Precast Sleeve Foundation",
+        "Generic Column",
+        "Precast Column with Corbel",
+        "Column - Steel"
+    ]
+}
 Command: ApplyFavoritesToElementDefaults
 Parameters:
 {
