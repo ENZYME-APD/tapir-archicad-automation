@@ -281,6 +281,10 @@ GSErrCode Initialize (void)
 
     { // Favorites Commands
         CommandGroup favoritesCommands ("Favorites Commands");
+        err |= RegisterCommand<GetFavoritesByTypeCommand> (
+            favoritesCommands, "1.2.1",
+            "Returns a list of the names of all favorites with the given element type"
+        );
         err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
             favoritesCommands, "1.1.2",
             "Apply the given favorites to element defaults."

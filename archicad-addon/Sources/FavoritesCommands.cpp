@@ -1,6 +1,69 @@
 #include "FavoritesCommands.hpp"
 #include "MigrationHelper.hpp"
 
+
+GetFavoritesByTypeCommand::GetFavoritesByTypeCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetFavoritesByTypeCommand::GetName () const
+{
+    return "GetFavoritesByType";
+}
+
+GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": "#/Favorites"
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState GetFavoritesByTypeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{   
+    API_ElemTypeID elemType = API_ZombieElemID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+    }
+
+    GS::Array< GS::UniString > names;
+
+    GSErrCode err = ACAPI_Favorite_GetNum (elemType, nullptr, nullptr, &names);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve favorites of the given type.");
+    }
+
+    GS::ObjectState response;
+    const auto& favorites = response.AddList<GS::UniString> ("favorites");
+    for (const GS::UniString& favoriteName : names) {
+        favorites (favoriteName);
+    }
+    return response;
+}
+
 ApplyFavoritesToElementDefaultsCommand::ApplyFavoritesToElementDefaultsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -16,14 +79,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementDefaultsCommand::GetInputPara
     return R"({
         "type": "object",
         "properties": {
-            "favorites": {
-                "type": "array",
-                "description": "The favorites to apply.",
-                "items": {
-                    "type": "string",
-                    "description": "The name of a favorite."
-                }
-            }
+            "favorites": "#/Favorites"
         },
         "additionalProperties": false,
         "required": [
