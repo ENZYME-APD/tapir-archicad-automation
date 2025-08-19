@@ -50,8 +50,12 @@ GS::ObjectState GetFavoritesByTypeCommand::Execute (const GS::ObjectState& param
     }
 
     GS::Array< GS::UniString > names;
-
+#ifdef ServerMainVers_2600
     GSErrCode err = ACAPI_Favorite_GetNum (elemType, nullptr, nullptr, &names);
+#else
+    API_ElemVariationID variation = APIVarId_Generic;
+    GSErrCode err = ACAPI_Favorite_GetNum (elemType, variation, nullptr, nullptr, &names);
+#endif
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to retrieve favorites of the given type.");
     }
