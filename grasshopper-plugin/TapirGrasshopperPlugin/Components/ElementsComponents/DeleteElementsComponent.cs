@@ -27,7 +27,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids to delete.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element ids to delete.", GH_ParamAccess.list);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
@@ -38,7 +38,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             ElementsObj elements = ElementsObj.Create (DA, 0);
             if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 
