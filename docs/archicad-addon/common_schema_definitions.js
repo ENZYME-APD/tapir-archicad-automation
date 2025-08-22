@@ -3110,5 +3110,13 @@ var gSchemaDefinitions = {
         "required": [
             "propertyDefinition"
         ]
+    },
+    "Favorites": {
+        "type": "array",
+        "description": "A list of favorite names",
+        "items": {
+            "type": "string",
+            "description": "The name of a favorite."
+        }
     }
 };

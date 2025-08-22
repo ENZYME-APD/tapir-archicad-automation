@@ -16,6 +16,11 @@ aclib.RunTapirCommand (
     })
 
 aclib.RunTapirCommand (
+    'GetFavoritesByType', {
+        'elementType': 'Column'
+    })
+
+aclib.RunTapirCommand (
     'ApplyFavoritesToElementDefaults', {
         'favorites': ['ColumnFromPython']
     })

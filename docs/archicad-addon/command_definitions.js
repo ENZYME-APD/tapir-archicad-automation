@@ -1518,20 +1518,39 @@ var gCommands = [{
         },{
             "name": "Favorites Commands",
             "commands": [{
+                "name": "GetFavoritesByType",
+                "version": "1.2.1",
+                "description": "Returns a list of the names of all favorites with the given element type",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "favorites": "#/Favorites"
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    }
+            },{
                 "name": "ApplyFavoritesToElementDefaults",
                 "version": "1.1.2",
                 "description": "Apply the given favorites to element defaults.",
                 "inputScheme": {
         "type": "object",
         "properties": {
-            "favorites": {
-                "type": "array",
-                "description": "The favorites to apply.",
-                "items": {
-                    "type": "string",
-                    "description": "The name of a favorite."
-                }
-            }
+            "favorites": "#/Favorites"
         },
         "additionalProperties": false,
         "required": [
