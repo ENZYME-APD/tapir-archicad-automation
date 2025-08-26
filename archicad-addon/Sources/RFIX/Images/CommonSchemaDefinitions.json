@@ -127,6 +127,7 @@
                 "$ref": "#/GDLParameterArray"
             }
         },
+        "additionalProperties": false,
         "required": [
             "parameters"
         ]
@@ -159,7 +160,7 @@
                 "description": "The value of the parameter."
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "index",
             "type",
@@ -650,7 +651,7 @@
                 "type": "string"
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "value"
         ]
@@ -1931,6 +1932,7 @@
                 }
             }
         },
+        "additionalProperties": false,
         "required": [
             "geometryType",
             "begCoordinate",
@@ -1974,6 +1976,7 @@
                 "description": "The height of the vertical curve of the beam."
             }
         },
+        "additionalProperties": false,
         "required": [
             "begCoordinate",
             "endCoordinate",
@@ -2021,6 +2024,7 @@
                 "$ref": "#/Holes2D"
             }
         },
+        "additionalProperties": false,
         "required": [
             "thickness",
             "level",
@@ -2048,6 +2052,7 @@
                 "description": "base level of the column relative to the floor level"
             }
         },
+        "additionalProperties": false,
         "required": [
             "origin",
             "zCoordinate",
@@ -2110,9 +2115,11 @@
                         "description": "Guid of the referred view point. Only if the marker refers to a view point."
                     }
                 },
+                "additionalProperties": false,
                 "required": []
             }
         },
+        "additionalProperties": false,
         "required": [
             "basePoint",
             "angle",
@@ -2138,6 +2145,7 @@
                 "$ref": "#/ElementType"
             }
         },
+        "additionalProperties": false,
         "required": [
             "libPart"
         ]
@@ -2155,6 +2163,7 @@
                 "type": "number"
             }
         },
+        "additionalProperties": false,
         "required": [
             "origin",
             "dimensions",
@@ -2181,6 +2190,7 @@
                 "type": "number"
             }
         },
+        "additionalProperties": false,
         "required": [
             "coordinates",
             "zCoordinate"
@@ -2231,6 +2241,7 @@
                 "type": "number"
             }
         },
+        "additionalProperties": false,
         "required": [
             "name",
             "numberStr",
@@ -2501,6 +2512,7 @@
                 "type": "string"
             }
         },
+        "additionalProperties": false,
         "required": [
             "error"
         ]
@@ -2655,6 +2667,7 @@
                 "$ref": "#/RevisionCustomSchemeData"
             }
         },
+        "additionalProperties": false,
         "required": [
             "revisionIssueId",
             "id",
@@ -2695,6 +2708,7 @@
                 "$ref": "#/RevisionCustomSchemeData"
             }
         },
+        "additionalProperties": false,
         "required": [
             "id",
             "description",
@@ -2738,6 +2752,7 @@
                 "$ref": "#/RevisionCustomSchemeData"
             }
         },
+        "additionalProperties": false,
         "required": [
             "id",
             "databaseId",
@@ -2792,6 +2807,7 @@
                 "$ref": "#/LayoutInfo"
             }
         },
+        "additionalProperties": false,
         "required": [
             "revisionId",
             "id",
@@ -2887,7 +2903,7 @@
                 "description": "The name of the story."
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "dispOnSections",
             "level",
@@ -2974,6 +2990,7 @@
                 "description": "Thickness at the end in case of trapezoid wall"
             }
         },
+        "additionalProperties": false,
         "required": []
     },
     "TypeSpecificSettings": {
@@ -3054,6 +3071,7 @@
                                     "description": "Nonlocalized value of the enumeration if there is one."
                                 }
                             },
+                            "additionalProperties": false,
                             "required": [
                                 "displayValue"
                             ]

@@ -212,7 +212,7 @@ var gCommands = [{
                 "$ref": "#/StoriesSettings"
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "stories"
         ]
@@ -581,6 +581,7 @@ var gCommands = [{
                             "$ref": "#/TypeSpecificDetails"
                         }
                     },
+                    "additionalProperties": false,
                     "required": [
                         "type",
                         "id",
@@ -630,6 +631,7 @@ var gCommands = [{
                                     "$ref": "#/TypeSpecificSettings"
                                 }
                             },
+                            "additionalProperties": false,
                             "required": []
                         }
                     },
@@ -1519,7 +1521,7 @@ var gCommands = [{
             "name": "Favorites Commands",
             "commands": [{
                 "name": "GetFavoritesByType",
-                "version": "1.2.1",
+                "version": "1.2.2",
                 "description": "Returns a list of the names of all favorites with the given element type",
                 "inputScheme": {
         "type": "object",
@@ -2944,7 +2946,7 @@ var gCommands = [{
                 "$ref": "#/Elements"
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "elements"
         ]

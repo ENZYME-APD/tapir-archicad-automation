@@ -674,7 +674,7 @@ GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetResponseSchema
                 "$ref": "#/Elements"
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "elements"
         ]
