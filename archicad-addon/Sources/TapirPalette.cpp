@@ -287,8 +287,8 @@ bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
             continue;
         }
 
-        GS::Ref<IO::Location> fileRef = GS::DynamicCast<IO::Location> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (fileRef != nullptr && *fileRef == fileLocation) {
+        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
+        if (popUpItemData != nullptr && popUpItemData->fileLocation == fileLocation) {
             return true;
         }
     }
@@ -467,7 +467,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             }
             command = uvCommand;
             argv = {"run", "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
-            if (!popUpItemData.repo->token.IsEmpty ()) {
+            if (popUpItemData.repo != nullptr && !popUpItemData.repo->token.IsEmpty ()) {
                 argv.Append ({"--token", popUpItemData.repo->token});
             }
         } else {
