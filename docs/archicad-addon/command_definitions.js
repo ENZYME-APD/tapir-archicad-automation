@@ -1519,7 +1519,7 @@ var gCommands = [{
             "name": "Favorites Commands",
             "commands": [{
                 "name": "GetFavoritesByType",
-                "version": "1.2.1",
+                "version": "1.2.2",
                 "description": "Returns a list of the names of all favorites with the given element type",
                 "inputScheme": {
         "type": "object",
