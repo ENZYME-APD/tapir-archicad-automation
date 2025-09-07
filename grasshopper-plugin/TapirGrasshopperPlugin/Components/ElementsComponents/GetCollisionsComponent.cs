@@ -81,9 +81,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
             pManager.AddIntegerParameter ("IndexOfElementFromGroup1", "IndexFromGroup1", "The index of Element with detected collision from group1.", GH_ParamAccess.list);
-            pManager.AddIntegerParameter ("ElementGuidFromGroup1", "ElementGuid1", "Element id from the group1.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuidFromGroup1", "ElementGuid1", "Element id from the group1.", GH_ParamAccess.list);
             pManager.AddIntegerParameter ("IndexOfElementFromGroup2", "IndexFromGroup2", "The index of Element with detected collision from group2.", GH_ParamAccess.list);
-            pManager.AddIntegerParameter ("ElementGuidFromGroup2", "ElementGuid2", "Element id from the group2.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuidFromGroup2", "ElementGuid2", "Element id from the group2.", GH_ParamAccess.list);
             pManager.AddBooleanParameter ("HasBodyCollision", "HasBodyCollision", "The element has body collision.", GH_ParamAccess.list);
             pManager.AddBooleanParameter ("HasClearenceCollision", "HasClearenceCollision", "The element has clearance collision.", GH_ParamAccess.list);
         }
@@ -96,24 +96,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            ElementsObj inputElementsGroup2 = ElementsObj.Create (DA, 0);
+            ElementsObj inputElementsGroup2 = ElementsObj.Create (DA, 1);
             if (inputElementsGroup2 == null) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementsGroup2 failed to collect data.");
                 return;
             }
 
             double volumeTolerance = 0.001;
-            if (!DA.GetData (1, ref volumeTolerance)) {
+            if (!DA.GetData (2, ref volumeTolerance)) {
                 return;
             }
 
             bool performSurfaceCheck = false;
-            if (!DA.GetData (2, ref performSurfaceCheck)) {
+            if (!DA.GetData (3, ref performSurfaceCheck)) {
                 return;
             }
 
             double surfaceTolerance = 0.001;
-            if (!DA.GetData (3, ref surfaceTolerance)) {
+            if (!DA.GetData (4, ref surfaceTolerance)) {
                 return;
             }
 
