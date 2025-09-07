@@ -226,7 +226,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetCollisionsCommand> (
             elementCommands, "1.2.2",
-            "Detect collisions between elements."
+            "Detect collisions between the given two groups of elements."
         );
         err |= RegisterCommand<HighlightElementsCommand> (
             elementCommands, "1.0.3",

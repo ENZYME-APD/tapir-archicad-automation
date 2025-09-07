@@ -25,8 +25,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetCollisionsParameters
     {
-        [JsonProperty ("elements")]
-        public List<ElementIdItemObj> Elements;
+        [JsonProperty ("elementsGroup1")]
+        public List<ElementIdItemObj> ElementsGroup1;
+
+        [JsonProperty ("elementsGroup2")]
+        public List<ElementIdItemObj> ElementsGroup2;
 
         [JsonProperty ("settings")]
         public CollisionDetectionSettings Settings;
@@ -68,7 +71,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element ids to check collisions.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementsGroup1", "ElementsGroup1", "The first group of Elements to check collisions with the second group.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementsGroup2", "ElementsGroup2", "The second group of Elements to check collisions with the first group.", GH_ParamAccess.list);
             pManager.AddNumberParameter ("VolumeTolerance", "VolumeTolerance", "Intersection body volume greater then this value will be considered as a collision.", GH_ParamAccess.item, @default: 0.001);
             pManager.AddBooleanParameter ("PerformSurfaceCheck", "PerformSurfaceCheck", "Enables surface collision check. If disabled the surfaceTolerance value will be ignored.", GH_ParamAccess.item, @default: false);
             pManager.AddNumberParameter ("SurfaceTolerance", "SurfaceTolerance", "Intersection body surface area greater then this value will be considered as a collision.", GH_ParamAccess.item, @default: 0.001);
@@ -76,17 +80,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Elements with detected collisions.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Elements with detected collisions.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter ("IndexOfElementFromGroup1", "IndexFromGroup1", "The index of Element with detected collision from group1.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter ("ElementGuidFromGroup1", "ElementGuid1", "Element id from the group1.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter ("IndexOfElementFromGroup2", "IndexFromGroup2", "The index of Element with detected collision from group2.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter ("ElementGuidFromGroup2", "ElementGuid2", "Element id from the group2.", GH_ParamAccess.list);
             pManager.AddBooleanParameter ("HasBodyCollision", "HasBodyCollision", "The element has body collision.", GH_ParamAccess.list);
             pManager.AddBooleanParameter ("HasClearenceCollision", "HasClearenceCollision", "The element has clearance collision.", GH_ParamAccess.list);
         }
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            ElementsObj inputElements = ElementsObj.Create (DA, 0);
-            if (inputElements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            ElementsObj inputElementsGroup1 = ElementsObj.Create (DA, 0);
+            if (inputElementsGroup1 == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementsGroup1 failed to collect data.");
+                return;
+            }
+
+            ElementsObj inputElementsGroup2 = ElementsObj.Create (DA, 0);
+            if (inputElementsGroup2 == null) {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementsGroup2 failed to collect data.");
                 return;
             }
 
@@ -106,7 +118,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             GetCollisionsParameters parameters = new GetCollisionsParameters () {
-                Elements = inputElements.Elements,
+                ElementsGroup1 = inputElementsGroup1.Elements,
+                ElementsGroup2 = inputElementsGroup2.Elements,
                 Settings = new CollisionDetectionSettings {
                     VolumeTolerance = volumeTolerance,
                     PerformSurfaceCheck = performSurfaceCheck,
@@ -120,21 +133,27 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            List<int> elementIndex1s = new List<int> ();
             List<ElementIdItemObj> elementId1s = new List<ElementIdItemObj> ();
+            List<int> elementIndex2s = new List<int> ();
             List<ElementIdItemObj> elementId2s = new List<ElementIdItemObj> ();
             List<bool> hasBodyCollisions = new List<bool> ();
             List<bool> hasClearenceCollisions = new List<bool> ();
             CollisionsOutput collisions = response.Result.ToObject<CollisionsOutput> ();
             foreach (Collision c in collisions.Collisions) {
+                elementIndex1s.Add (inputElementsGroup1.Elements.FindIndex (e => e.ElementId.Equals (c.ElementId1)));
                 elementId1s.Add (new ElementIdItemObj { ElementId = c.ElementId1 });
+                elementIndex2s.Add (inputElementsGroup2.Elements.FindIndex (e => e.ElementId.Equals (c.ElementId2)));
                 elementId2s.Add (new ElementIdItemObj { ElementId = c.ElementId2 });
                 hasBodyCollisions.Add (c.HasBodyCollision);
                 hasClearenceCollisions.Add (c.HasClearenceCollision);
             }
-            DA.SetDataList (0, elementId1s);
-            DA.SetDataList (1, elementId2s);
-            DA.SetDataList (2, hasBodyCollisions);
-            DA.SetDataList (3, hasClearenceCollisions);
+            DA.SetDataList (0, elementIndex1s);
+            DA.SetDataList (1, elementId1s);
+            DA.SetDataList (2, elementIndex2s);
+            DA.SetDataList (3, elementId2s);
+            DA.SetDataList (4, hasBodyCollisions);
+            DA.SetDataList (5, hasClearenceCollisions);
         }
 
         // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.Collisions;

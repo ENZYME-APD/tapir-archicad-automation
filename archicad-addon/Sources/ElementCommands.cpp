@@ -1338,7 +1338,10 @@ GS::Optional<GS::UniString> GetCollisionsCommand::GetInputParametersSchema () co
     return R"({
         "type": "object",
         "properties": {
-            "elements": {
+            "elementsGroup1": {
+                "$ref": "#/Elements"
+            },
+            "elementsGroup2": {
                 "$ref": "#/Elements"
             },
             "settings": {
@@ -1367,7 +1370,8 @@ GS::Optional<GS::UniString> GetCollisionsCommand::GetInputParametersSchema () co
         },
         "additionalProperties": false,
         "required": [
-            "elements"
+            "elementsGroup1",
+            "elementsGroup2"
         ]
     })";
 }
@@ -1414,8 +1418,10 @@ GS::Optional<GS::UniString> GetCollisionsCommand::GetResponseSchema () const
 
 GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elements;
-    parameters.Get ("elements", elements);
+    GS::Array<GS::ObjectState> elementsGroup1;
+    parameters.Get ("elementsGroup1", elementsGroup1);
+    GS::Array<GS::ObjectState> elementsGroup2;
+    parameters.Get ("elementsGroup2", elementsGroup2);
 
     API_CollisionDetectionSettings collisionSettings = {};
 	collisionSettings.volumeTolerance = 0.001;
@@ -1428,9 +1434,10 @@ GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters
         settings.Get ("surfaceTolerance", collisionSettings.surfaceTolerance);
     }
 
-    const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    const GS::Array<API_Guid> elemIds1 = elementsGroup1.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    const GS::Array<API_Guid> elemIds2 = elementsGroup2.Transform<API_Guid> (GetGuidFromElementsArrayItem);
     GS::Array<GS::Pair<API_CollisionElem, API_CollisionElem>> resultArray;
-    GSErrCode err = ACAPI_Element_GetCollisions (elemIds, elemIds, resultArray, collisionSettings);
+    GSErrCode err = ACAPI_Element_GetCollisions (elemIds1, elemIds2, resultArray, collisionSettings);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to perform collision detection.");
     }
