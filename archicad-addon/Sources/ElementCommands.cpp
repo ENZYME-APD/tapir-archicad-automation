@@ -367,7 +367,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
         detailsOfElement.Add ("floorIndex", elem.header.floorInd);
         detailsOfElement.Add ("layerIndex", GetAttributeIndex (elem.header.layer));
-        detailsOfElement.Add ("drawIndex", elem.header.drwIndex);
+        detailsOfElement.Add ("drawIndex", static_cast<short> (elem.header.drwIndex));
 
         {
             API_ElementMemo memo = {};
@@ -788,7 +788,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 elem.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
-            if (details->Get ("drawIndex", elem.header.drwIndex)) {
+            short drwIndex;
+            if (details->Get ("drawIndex", drwIndex)) {
+                elem.header.drwIndex = static_cast<char> (drwIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
             }
 

@@ -622,7 +622,9 @@ GS::ObjectState OpenProjectCommand::Execute (const GS::ObjectState& parameters, 
 
     openPars.libGiven = false;
     openPars.useStoredLib = true;
+#ifndef ServerMainVers_2900
     openPars.enableSaveAlert = false;
+#endif
     openPars.file = &projectLocation;
 
     const GSErrCode err = ACAPI_ProjectOperation_Open (&openPars);
