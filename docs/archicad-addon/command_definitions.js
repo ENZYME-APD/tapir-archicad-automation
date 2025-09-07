@@ -212,7 +212,7 @@ var gCommands = [{
                 "$ref": "#/StoriesSettings"
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "stories"
         ]
@@ -581,6 +581,7 @@ var gCommands = [{
                             "$ref": "#/TypeSpecificDetails"
                         }
                     },
+                    "additionalProperties": false,
                     "required": [
                         "type",
                         "id",
@@ -630,6 +631,7 @@ var gCommands = [{
                                     "$ref": "#/TypeSpecificSettings"
                                 }
                             },
+                            "additionalProperties": false,
                             "required": []
                         }
                     },
@@ -3019,7 +3021,7 @@ var gCommands = [{
                 "$ref": "#/Elements"
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "elements"
         ]

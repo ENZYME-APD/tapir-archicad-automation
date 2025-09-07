@@ -394,7 +394,7 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
                 "$ref": "#/StoriesSettings"
             }
         },
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
             "stories"
         ]
