@@ -1327,6 +1327,139 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+GetCollisionsCommand::GetCollisionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCollisionsCommand::GetName () const
+{
+    return "GetCollisions";
+}
+
+GS::Optional<GS::UniString> GetCollisionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsGroup1": {
+                "$ref": "#/Elements"
+            },
+            "elementsGroup2": {
+                "$ref": "#/Elements"
+            },
+            "settings": {
+                "type": "object",
+                "properties": {
+                    "volumeTolerance": {
+                        "type": "number",
+                        "description": "Intersection body volume greater then this value will be considered as a collision. Default value is 0.001."
+                    },
+                    "performSurfaceCheck": {
+                        "type": "boolean",
+                        "description": "Enables surface collision check. If disabled the surfaceTolerance value will be ignored. By default it's false."
+                    },
+                    "surfaceTolerance": {
+                        "type": "number",
+                        "description": "Intersection body surface area greater then this value will be considered as a collision. Default value is 0.001."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "volumeTolerance",
+                    "performSurfaceCheck",
+                    "surfaceTolerance"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsGroup1",
+            "elementsGroup2"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetCollisionsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "collisions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId1": {
+                            "$ref": "#/ElementId"
+                        },
+                        "elementId2": {
+                            "$ref": "#/ElementId"
+                        },
+                        "hasBodyCollision": {
+                            "type": "boolean"
+                        },
+                        "hasClearenceCollision": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId1",
+                        "elementId2",
+                        "hasBodyCollision",
+                        "hasClearenceCollision"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "collisions"
+        ]
+    })";
+}
+
+GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsGroup1;
+    parameters.Get ("elementsGroup1", elementsGroup1);
+    GS::Array<GS::ObjectState> elementsGroup2;
+    parameters.Get ("elementsGroup2", elementsGroup2);
+
+    API_CollisionDetectionSettings collisionSettings = {};
+	collisionSettings.volumeTolerance = 0.001;
+	collisionSettings.performSurfaceCheck = false;
+	collisionSettings.surfaceTolerance = 0.001;
+    GS::ObjectState settings;
+    if (parameters.Get ("settings", settings)) {
+        settings.Get ("volumeTolerance", collisionSettings.volumeTolerance);
+        settings.Get ("performSurfaceCheck", collisionSettings.performSurfaceCheck);
+        settings.Get ("surfaceTolerance", collisionSettings.surfaceTolerance);
+    }
+
+    const GS::Array<API_Guid> elemIds1 = elementsGroup1.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    const GS::Array<API_Guid> elemIds2 = elementsGroup2.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+    GS::Array<GS::Pair<API_CollisionElem, API_CollisionElem>> resultArray;
+    GSErrCode err = ACAPI_Element_GetCollisions (elemIds1, elemIds2, resultArray, collisionSettings);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to perform collision detection.");
+    }
+
+    GS::ObjectState response;
+    const auto& collisions = response.AddList<GS::ObjectState> ("collisions");
+
+    for (const auto& collisionElement : resultArray) {
+        collisions (GS::ObjectState (
+            "elementId1", CreateGuidObjectState (collisionElement.first.collidedElemGuid),
+            "elementId2", CreateGuidObjectState (collisionElement.second.collidedElemGuid),
+            "hasBodyCollision", collisionElement.first.hasBodyCollision,
+            "hasClearenceCollision", collisionElement.second.hasClearenceCollision));
+    }
+
+    return response;
+}
+
 MoveElementsCommand::MoveElementsCommand () :
     CommandBase (CommonSchema::Used)
 {

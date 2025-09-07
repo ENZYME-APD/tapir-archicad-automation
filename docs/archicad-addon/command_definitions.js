@@ -848,6 +848,81 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "GetCollisions",
+                "version": "1.2.2",
+                "description": "Detect collisions between elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "settings": {
+                "type": "object",
+                "properties": {
+                    "volumeTolerance": {
+                        "type": "number",
+                        "description": "Intersection body volume greater then this value will be considered as a collision. Default value is 0.001."
+                    },
+                    "performSurfaceCheck": {
+                        "type": "boolean",
+                        "description": "Enables surface collision check. If disabled the surfaceTolerance value will be ignored. By default it's false."
+                    },
+                    "surfaceTolerance": {
+                        "type": "number",
+                        "description": "Intersection body surface area greater then this value will be considered as a collision. Default value is 0.001."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "volumeTolerance",
+                    "performSurfaceCheck",
+                    "surfaceTolerance"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "collisions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId1": {
+                            "$ref": "#/ElementId"
+                        },
+                        "elementId2": {
+                            "$ref": "#/ElementId"
+                        },
+                        "hasBodyCollision": {
+                            "type": "boolean"
+                        },
+                        "hasClearenceCollision": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId1",
+                        "elementId2",
+                        "hasBodyCollision",
+                        "hasClearenceCollision"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "collisions"
+        ]
+    }
+            },{
                 "name": "HighlightElements",
                 "version": "1.0.3",
                 "description": "Highlights the elements given in the elements array. In case of empty elements array removes all previously set highlights.",

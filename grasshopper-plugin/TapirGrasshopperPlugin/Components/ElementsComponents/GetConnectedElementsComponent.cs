@@ -40,13 +40,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementIds", "ElementIds", "Element ids of hierarchical elements to get subelements of.", GH_ParamAccess.list);
+            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element ids of hierarchical elements to get subelements of.", GH_ParamAccess.list);
             pManager.AddTextParameter ("ConnectedElemType", "ConnectedElemType", "Type of connected elements.", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ConnectedElementIds", "ConnectedElementIds", "Connected Elements with the given type.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter ("ConnectedElementGuids", "ConnectedElementGuids", "Connected Elements with the given type.", GH_ParamAccess.tree);
         }
 
         public override void AddedToDocument (GH_Document document)
@@ -60,7 +60,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             ElementsObj inputElements = ElementsObj.Create (DA, 0);
             if (inputElements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementIds failed to collect data.");
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
                 return;
             }
 
