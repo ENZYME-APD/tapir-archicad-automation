@@ -271,6 +271,19 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
     }
 }
 
+bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs)
+{
+    if (!holeOs.Get ("polygonCoordinates", outCoords) && !holeOs.Get ("polygonOutline", outCoords)) { //support legacy polygonCoordinates key
+        return false;
+    }
+    holeOs.Get ("polygonArcs", outArcs);
+
+    if (!outCoords.IsEmpty () && IsSame2DCoordinate (outCoords.GetFirst (), outCoords.GetLast ())) {
+        outCoords.Pop ();
+    }
+    return true;
+}
+
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
 {
     return GS::ObjectState (idFieldName, CreateGuidObjectState (guid));

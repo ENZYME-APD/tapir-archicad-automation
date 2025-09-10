@@ -1,5 +1,11 @@
 import aclib
 
+def alternate_hole_outline_key():
+    while True:
+        yield "polygonCoordinates" #legacy key
+        yield "polygonOutline"
+
+alternating_hole_outline_key = alternate_hole_outline_key()
 nX = 5
 nY = 6
 width = 10
@@ -26,7 +32,7 @@ aclib.RunTapirCommand(
                 ],
                 'holes': [
                         {
-                        'polygonCoordinates': [
+                        f'{next(alternating_hole_outline_key)}': [
                         {'x': width/2 + x,   'y': height/2 + y,    'z': x*0.2 + y*0.1 },
                         {'x': width/4 + x, 'y': height/2 + y,    'z': x*0.2 + y*0.1 },
                         {'x': width/4 + x, 'y': height/4 + y, 'z': x*0.2 + y*0.1 },
