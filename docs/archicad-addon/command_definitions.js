@@ -850,11 +850,14 @@ var gCommands = [{
             },{
                 "name": "GetCollisions",
                 "version": "1.2.2",
-                "description": "Detect collisions between elements.",
+                "description": "Detect collisions between the given two groups of elements.",
                 "inputScheme": {
         "type": "object",
         "properties": {
-            "elements": {
+            "elementsGroup1": {
+                "$ref": "#/Elements"
+            },
+            "elementsGroup2": {
                 "$ref": "#/Elements"
             },
             "settings": {
@@ -883,7 +886,8 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [
-            "elements"
+            "elementsGroup1",
+            "elementsGroup2"
         ]
     },
                 "outputScheme": {
