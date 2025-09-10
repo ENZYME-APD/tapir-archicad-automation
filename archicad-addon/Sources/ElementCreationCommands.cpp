@@ -278,20 +278,13 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.slab.poly.nArcs		= polygonArcs.GetSize ();
 
     for (const GS::ObjectState& hole : holes) {
-        if (!hole.Contains ("polygonCoordinates")) {
-            continue;
-        }
-        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonOutline;
         GS::Array<GS::ObjectState> holePolygonArcs;
-        hole.Get ("polygonCoordinates", holePolygonCoordinates);
-        hole.Get ("polygonArcs", holePolygonArcs);
-        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
-            holePolygonCoordinates.Pop ();
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            element.slab.poly.nCoords += holePolygonOutline.GetSize () + 1;
+            ++element.slab.poly.nSubPolys;
+            element.slab.poly.nArcs += holePolygonArcs.GetSize ();
         }
-
-        element.slab.poly.nCoords += holePolygonCoordinates.GetSize() + 1;
-        ++element.slab.poly.nSubPolys;
-        element.slab.poly.nArcs += holePolygonArcs.GetSize ();
     }
 
     memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
@@ -314,25 +307,18 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
                   &element.slab.sideMat);
 
     for (const GS::ObjectState& hole : holes) {
-        if (!hole.Contains ("polygonCoordinates")) {
-            continue;
-        }
-        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonOutline;
         GS::Array<GS::ObjectState> holePolygonArcs;
-        hole.Get ("polygonCoordinates", holePolygonCoordinates);
-        hole.Get ("polygonArcs", holePolygonArcs);
-        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
-            holePolygonCoordinates.Pop ();
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            AddPolyToMemo (holePolygonOutline,
+                          holePolygonArcs,
+                          iCoord,
+                          iArc,
+                          iPends,
+                          memo,
+                          &edgeTrimSideType,
+                          &element.slab.sideMat);
         }
-
-        AddPolyToMemo(holePolygonCoordinates,
-                      holePolygonArcs,
-                      iCoord,
-                      iArc,
-                      iPends,
-                      memo,
-                      &edgeTrimSideType,
-                      &element.slab.sideMat);
     }
 
     return {};
@@ -441,19 +427,13 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         element.zone.poly.nArcs		= polygonArcs.GetSize ();
 
         for (const GS::ObjectState& hole : holes) {
-            if (!hole.Contains ("polygonCoordinates")) {
-                continue;
-            }
-            GS::Array<GS::ObjectState> holePolygonCoordinates;
+            GS::Array<GS::ObjectState> holePolygonOutline;
             GS::Array<GS::ObjectState> holePolygonArcs;
-            hole.Get ("polygonCoordinates", holePolygonCoordinates);
-            hole.Get ("polygonArcs", holePolygonArcs);
-            if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
-                holePolygonCoordinates.Pop ();
+            if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+                element.zone.poly.nCoords += holePolygonOutline.GetSize () + 1;
+                ++element.zone.poly.nSubPolys;
+                element.zone.poly.nArcs += holePolygonArcs.GetSize ();
             }
-            element.zone.poly.nCoords += holePolygonCoordinates.GetSize() + 1;
-            ++element.zone.poly.nSubPolys;
-            element.zone.poly.nArcs += holePolygonArcs.GetSize ();
         }
 
         memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.zone.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
@@ -471,23 +451,16 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
                       memo);
 
         for (const GS::ObjectState& hole : holes) {
-            if (!hole.Contains ("polygonCoordinates")) {
-                continue;
-            }
-            GS::Array<GS::ObjectState> holePolygonCoordinates;
+            GS::Array<GS::ObjectState> holePolygonOutline;
             GS::Array<GS::ObjectState> holePolygonArcs;
-            hole.Get ("polygonCoordinates", holePolygonCoordinates);
-            hole.Get ("polygonArcs", holePolygonArcs);
-            if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
-                holePolygonCoordinates.Pop ();
+            if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+                AddPolyToMemo (holePolygonOutline,
+                              holePolygonArcs,
+                              iCoord,
+                              iArc,
+                              iPends,
+                              memo);
             }
-
-            AddPolyToMemo(holePolygonCoordinates,
-                          holePolygonArcs,
-                          iCoord,
-                          iArc,
-                          iPends,
-                          memo);
         }
 
         GS::ObjectState stampPosition;
@@ -867,19 +840,13 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     element.mesh.poly.nArcs = polygonArcs.GetSize ();
 
     for (const GS::ObjectState& hole : holes) {
-        if (!hole.Contains ("polygonCoordinates")) {
-            continue;
-        }
-        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonOutline;
         GS::Array<GS::ObjectState> holePolygonArcs;
-        hole.Get ("polygonCoordinates", holePolygonCoordinates);
-        hole.Get ("polygonArcs", holePolygonArcs);
-        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
-            holePolygonCoordinates.Pop ();
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            element.mesh.poly.nCoords += holePolygonOutline.GetSize () + 1;
+            ++element.mesh.poly.nSubPolys;
+            element.mesh.poly.nArcs += holePolygonArcs.GetSize ();
         }
-        element.mesh.poly.nCoords += holePolygonCoordinates.GetSize () + 1;
-        ++element.mesh.poly.nSubPolys;
-        element.mesh.poly.nArcs += holePolygonArcs.GetSize ();
     }
 
     memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.mesh.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
@@ -891,30 +858,23 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     Int32 iArc = 0;
     Int32 iPends = 1;
     AddPolyToMemo (polygonCoordinates,
-                    polygonArcs,
-                    iCoord,
-                    iArc,
-                    iPends,
-                    memo);
+                   polygonArcs,
+                   iCoord,
+                   iArc,
+                   iPends,
+                   memo);
 
     for (const GS::ObjectState& hole : holes) {
-        if (!hole.Contains ("polygonCoordinates")) {
-            continue;
-        }
-        GS::Array<GS::ObjectState> holePolygonCoordinates;
+        GS::Array<GS::ObjectState> holePolygonOutline;
         GS::Array<GS::ObjectState> holePolygonArcs;
-        hole.Get ("polygonCoordinates", holePolygonCoordinates);
-        hole.Get ("polygonArcs", holePolygonArcs);
-        if (IsSame2DCoordinate (holePolygonCoordinates.GetFirst (), holePolygonCoordinates.GetLast ())) {
-            holePolygonCoordinates.Pop ();
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            AddPolyToMemo (holePolygonOutline,
+                           holePolygonArcs,
+                           iCoord,
+                           iArc,
+                           iPends,
+                           memo);
         }
-
-        AddPolyToMemo (holePolygonCoordinates,
-                        holePolygonArcs,
-                        iCoord,
-                        iArc,
-                        iPends,
-                        memo);
     }
 
     GS::Array<GS::ObjectState> sublines;
