@@ -32,7 +32,9 @@ GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetResponseSchema () cons
     return R"({
         "type": "object",
         "properties": {
-            "favorites": "#/Favorites"
+            "favorites": {
+              "$ref": "#/$defs/Favorites"
+            }
         },
         "additionalProperties": false,
         "required": [
@@ -83,7 +85,9 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementDefaultsCommand::GetInputPara
     return R"({
         "type": "object",
         "properties": {
-            "favorites": "#/Favorites"
+            "favorites": {
+              "$ref": "#/$defs/Favorites"
+            }
         },
         "additionalProperties": false,
         "required": [
