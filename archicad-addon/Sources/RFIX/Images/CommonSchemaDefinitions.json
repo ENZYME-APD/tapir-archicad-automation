@@ -1813,7 +1813,7 @@
         "type": "object",
         "description": "A 2D hole in an element defined by closed polylines",
         "properties": {
-            "polygonCoordinates": {
+            "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the hole.",
                 "items": {
