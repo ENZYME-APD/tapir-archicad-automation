@@ -1617,7 +1617,9 @@ var gCommands = [{
                 "outputScheme": {
         "type": "object",
         "properties": {
-            "favorites": "#/Favorites"
+            "favorites": {
+              "$ref": "#/$defs/Favorites"
+            }
         },
         "additionalProperties": false,
         "required": [
@@ -1631,7 +1633,9 @@ var gCommands = [{
                 "inputScheme": {
         "type": "object",
         "properties": {
-            "favorites": "#/Favorites"
+            "favorites": {
+              "$ref": "#/$defs/Favorites"
+            }
         },
         "additionalProperties": false,
         "required": [
