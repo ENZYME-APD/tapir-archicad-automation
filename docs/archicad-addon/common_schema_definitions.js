@@ -31,6 +31,20 @@ var gSchemaDefinitions = {
             "guid"
         ]
     },
+    "SurfaceType": {
+        "type": "string",
+        "description": "The type of a surface material.",
+        "enum": [
+            "General",
+            "Simple",
+            "Matte",
+            "Metal",
+            "Plastic",
+            "Glass",
+            "Glowing",
+            "Constant"
+        ]
+    },
     "AttributeType": {
         "type": "string",
         "description": "The type of an attribute.",
@@ -256,6 +270,44 @@ var gSchemaDefinitions = {
             "x",
             "y",
             "z"
+        ]
+    },
+    "ColorRGB": {
+        "type": "object",
+        "description": "RGB color.",
+        "properties": {
+            "red": {
+                "type": "number",
+                "description": "Red value between 0.0 and 1.0"
+            },
+            "green": {
+                "type": "number",
+                "description": "Green value between 0.0 and 1.0"
+            },
+            "blue": {
+                "type": "number",
+                "description": "Blue value between 0.0 and 1.0"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "red",
+            "green",
+            "blue"
+        ]
+    },
+    "Texture": {
+        "type": "object",
+        "description": "Texture parameters",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The filename of the texture in the library (without extension)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
         ]
     },
     "Error": {
