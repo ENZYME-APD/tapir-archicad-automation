@@ -2297,6 +2297,110 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "CreateSurfaces",
+                "version": "1.2.2",
+                "description": "Creates Surface attributes based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "surfaceDataArray": {
+                "type": "array",
+                "description" : "Array of data to create new surfaces.",
+                "items": {
+                    "type": "object",
+                    "description": "Data to create a surface.",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name."
+                        },
+                        "materialType": {
+                            "$ref": "#/SurfaceType"
+                        },
+                        "ambientReflection": {
+                            "type": "number",
+                            "description": "Ambient percentage [0..100]."
+                        },
+                        "diffuseReflection": {
+                            "type": "number",
+                            "description": "Diffuse percentage [0..100]."
+                        },
+                        "specularReflection": {
+                            "type": "number",
+                            "description": "Specular percentage [0..100]."
+                        },
+                        "transparency": {
+                            "type": "number",
+                            "description": "Transparency percentage [0..100]."
+                        },
+                        "shine": {
+                            "type": "number",
+                            "description": "The shininess factor multiplied by 100 [0..10000]."
+                        },
+                        "transparencyAttenuation": {
+                            "type": "number",
+                            "description": "Transparency attenuation multiplied by 100 [0..10000]."
+                        },
+                        "emissionAttenuation": {
+                            "type": "number",
+                            "description": "Emission attenuation multiplied by 100 [0..10000]."
+                        },
+                        "surfaceColor": {
+                            "$ref": "#/ColorRGB"
+                        },
+                        "specularColor": {
+                            "$ref": "#/ColorRGB"
+                        },
+                        "emissionColor": {
+                            "$ref": "#/ColorRGB"
+                        },
+                        "fillId": {
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "texture": {
+                            "$ref": "#/Texture"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "name",
+                        "materialType",
+                        "ambientReflection",
+                        "diffuseReflection",
+                        "specularReflection",
+                        "transparency",
+                        "shine",
+                        "transparencyAttenuation",
+                        "emissionAttenuation",
+                        "surfaceColor",
+                        "specularColor",
+                        "emissionColor"
+                    ]
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Overwrite the Surface if exists with the same name. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "surfaceDataArray"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    }
+            },{
                 "name": "GetBuildingMaterialPhysicalProperties",
                 "version": "0.1.3",
                 "description": "Retrieves the physical properties of the given Building Materials.",
@@ -2424,6 +2528,53 @@ var gCommands = [{
                 "inputScheme": null,
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "AddFilesToEmbeddedLibrary",
+                "version": "1.2.2",
+                "description": "Adds the given files into the embedded library.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "files": {
+                "type": "array",
+                "description": "A list of files",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "inputPath": {
+                            "type": "string",
+                            "description": "The path to the input file."
+                        },
+                        "outputPath": {
+                            "type": "string",
+                            "description": "The relative path to the new file inside embedded library."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "inputPath",
+                        "outputPath"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "files"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
     }
             }]
         },{

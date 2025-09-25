@@ -53,6 +53,14 @@ public:
     virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
 };
 
+class CreateSurfacesCommand : public CreateAttributesCommandBase
+{
+public:
+    CreateSurfacesCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
+};
+
 class CreateCompositesCommand : public CommandBase
 {
 public:

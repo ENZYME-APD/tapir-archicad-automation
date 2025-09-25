@@ -1,0 +1,775 @@
+Command: AddFilesToEmbeddedLibrary
+Parameters:
+{
+    "files": [
+        {
+            "inputPath": "<PATH>MyPicture.jpg",
+            "outputPath": "TexturesCreatedByTapir\\New Texture 1.jpg"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: CreateSurfaces
+Parameters:
+{
+    "surfaceDataArray": [
+        {
+            "name": "New Surface 1",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 1"
+            }
+        },
+        {
+            "name": "New Surface 2",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 2"
+            }
+        },
+        {
+            "name": "New Surface 3",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 3"
+            }
+        },
+        {
+            "name": "New Surface 4",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 4"
+            }
+        },
+        {
+            "name": "New Surface 5",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 5"
+            }
+        },
+        {
+            "name": "New Surface 6",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 6"
+            }
+        },
+        {
+            "name": "New Surface 7",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 7"
+            }
+        },
+        {
+            "name": "New Surface 8",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 8"
+            }
+        },
+        {
+            "name": "New Surface 9",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 9"
+            }
+        },
+        {
+            "name": "New Surface 10",
+            "materialType": "General",
+            "ambientReflection": 77,
+            "diffuseReflection": 73,
+            "specularReflection": 0,
+            "transparency": 0,
+            "shine": 0,
+            "transparencyAttenuation": 0,
+            "emissionAttenuation": 0,
+            "surfaceColor": {
+                "red": 0.337254902,
+                "green": 0.662745098,
+                "blue": 0.180392157
+            },
+            "specularColor": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "emissionColor": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "texture": {
+                "name": "New Texture 10"
+            }
+        }
+    ],
+    "overwriteExisting": true
+}
+Response:
+{
+    "attributeIds": [
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "attributeId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+New surfaces:
+{
+    "attributes": [
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 1",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 1"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 2",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 2"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 3",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 3"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 4",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 4"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 5",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 5"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 6",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 6"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 7",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 7"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 8",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 8"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 9",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 9"
+                }
+            }
+        },
+        {
+            "surfaceAttribute": {
+                "attributeId": {
+                    "guid": "<GUID>"
+                },
+                "name": "New Surface 10",
+                "materialType": "General",
+                "ambientReflection": 77,
+                "diffuseReflection": 73,
+                "specularReflection": 0,
+                "transparencyAttenuation": 0,
+                "emissionAttenuation": 0,
+                "surfaceColor": {
+                    "red": 0.337254902,
+                    "green": 0.662729839,
+                    "blue": 0.180392157
+                },
+                "specularColor": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1
+                },
+                "emissionColor": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "fillId": {
+                    "error": {
+                        "code": 6100,
+                        "message": "Attribute is missing"
+                    }
+                },
+                "transparency": 0,
+                "shine": 0,
+                "texture": {
+                    "name": "New Texture 10"
+                }
+            }
+        }
+    ]
+}

@@ -298,6 +298,27 @@ API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)
     return coordinate;
 }
 
+API_RGBColor GetColorFromObjectState (const GS::ObjectState& objectState)
+{
+    API_RGBColor color = {};
+    objectState.Get ("red", color.f_red);
+    objectState.Get ("green", color.f_green);
+    objectState.Get ("blue", color.f_blue);
+    return color;
+}
+
+bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, API_RGBColor& outColor)
+{
+    GS::ObjectState colorOS;
+    if (!objectState.Get (fieldName, colorOS)) {
+        return false;
+    }
+
+    outColor = GetColorFromObjectState(colorOS);
+
+    return true;
+}
+
 Stories GetStories ()
 {
     Stories stories;

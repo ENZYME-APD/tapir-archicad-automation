@@ -1,6 +1,126 @@
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
+#include "Folder.hpp"
+#include "File.hpp"
+#include "FileSystem.hpp"
+
+AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String AddFilesToEmbeddedLibraryCommand::GetName () const
+{
+    return "AddFilesToEmbeddedLibrary";
+}
+
+GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "files": {
+                "type": "array",
+                "description": "A list of files",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "inputPath": {
+                            "type": "string",
+                            "description": "The path to the input file."
+                        },
+                        "outputPath": {
+                            "type": "string",
+                            "description": "The relative path to the new file inside embedded library."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "inputPath",
+                        "outputPath"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "files"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+	auto folderId = API_SpecFolderID::API_EmbeddedProjectLibraryFolderID;
+
+	IO::Location embeddedLibraryFolder;
+
+	if (ACAPI_ProjectSettings_GetSpecFolder (&folderId, &embeddedLibraryFolder) != NoError || IO::Folder (embeddedLibraryFolder).GetStatus () != NoError) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get embedded library folder.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    GS::Array<GS::ObjectState> files;
+    parameters.Get ("files", files);
+
+    for (const GS::ObjectState& file : files) {
+        GS::UniString inputPath;
+        GS::UniString outputPath;
+        if (!file.Get ("inputPath", inputPath) || !file.Get ("outputPath", outputPath) || inputPath.IsEmpty () || outputPath.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing inputPath or outputPath parameters."));
+            continue;
+        }
+
+        IO::File inputFile (IO::Location (inputPath), IO::File::OnNotFound::Fail);
+        if (inputFile.GetStatus () != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to read file on the given inputPath."));
+            continue;
+        }
+
+		IO::Location outputFileLoc = embeddedLibraryFolder;
+		outputFileLoc.AppendToLocal (IO::RelativeLocation (outputPath));
+        IO::Location outputFolder = outputFileLoc;
+        if (outputFolder.DeleteLastLocalName () != NoError ||
+            IO::fileSystem.CreateFolderTree (outputFolder) != NoError ||
+            IO::fileSystem.Copy (inputFile.GetLocation (), outputFileLoc) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The given outputPath is not a valid relative path."));
+            continue;
+        }
+
+        API_LibPart libPart = {};
+
+        libPart.typeID = APILib_PictID;
+        libPart.location = &outputFileLoc;
+
+        GSErrCode err = ACAPI_LibraryPart_Register (&libPart);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to add the file to the library."));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+}
 
 GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
 {

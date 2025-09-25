@@ -52,6 +52,8 @@ bool   IsSame2DCoordinate (const GS::ObjectState& o1, const GS::ObjectState& o2)
 bool   IsSame3DCoordinate (const GS::ObjectState& o1, const GS::ObjectState& o2);
 API_Coord   Get2DCoordinateFromObjectState (const GS::ObjectState& objectState);
 API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState);
+API_RGBColor GetColorFromObjectState (const GS::ObjectState& objectState);
+bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, API_RGBColor& outColor);
 GS::ObjectState Create2DCoordinateObjectState (const API_Coord& c);
 GS::ObjectState Create3DCoordinateObjectState (const API_Coord3D& c);
 GS::ObjectState CreatePolyArcObjectState (const API_PolyArc& a);
