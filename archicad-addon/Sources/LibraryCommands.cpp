@@ -1,6 +1,180 @@
 #include "LibraryCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
+#include "Folder.hpp"
+#include "File.hpp"
+#include "FileSystem.hpp"
+
+AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String AddFilesToEmbeddedLibraryCommand::GetName () const
+{
+    return "AddFilesToEmbeddedLibrary";
+}
+
+GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "files": {
+                "type": "array",
+                "description": "A list of files",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "inputPath": {
+                            "type": "string",
+                            "description": "The path to the input file."
+                        },
+                        "outputPath": {
+                            "type": "string",
+                            "description": "The relative path to the new file inside embedded library."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "The type of the library part. By default 'Pict'.",
+                            "enum": [
+                                "Window",
+                                "Door",
+                                "Object",
+                                "Lamp",
+                                "Room",
+                                "Property",
+                                "PlanSign",
+                                "Label",
+                                "Macro",
+                                "Pict",
+                                "ListScheme",
+                                "Skylight",
+                                "OpeningSymbol"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "inputPath",
+                        "outputPath"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "files"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+	auto folderId = API_SpecFolderID::API_EmbeddedProjectLibraryFolderID;
+
+	IO::Location embeddedLibraryFolder;
+
+	if (ACAPI_ProjectSettings_GetSpecFolder (&folderId, &embeddedLibraryFolder) != NoError || IO::Folder (embeddedLibraryFolder).GetStatus () != NoError) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get embedded library folder.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    GS::Array<GS::ObjectState> files;
+    parameters.Get ("files", files);
+
+    for (const GS::ObjectState& file : files) {
+        GS::UniString inputPath;
+        GS::UniString outputPath;
+        if (!file.Get ("inputPath", inputPath) || !file.Get ("outputPath", outputPath) || inputPath.IsEmpty () || outputPath.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing inputPath or outputPath parameters."));
+            continue;
+        }
+
+        IO::File inputFile (IO::Location (inputPath), IO::File::OnNotFound::Fail);
+        if (inputFile.GetStatus () != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to read file on the given inputPath."));
+            continue;
+        }
+
+		IO::Location outputFileLoc = embeddedLibraryFolder;
+		outputFileLoc.AppendToLocal (IO::RelativeLocation (outputPath));
+        IO::Location outputFolder = outputFileLoc;
+        if (outputFolder.DeleteLastLocalName () != NoError ||
+            IO::fileSystem.CreateFolderTree (outputFolder) != NoError ||
+            IO::fileSystem.Copy (inputFile.GetLocation (), outputFileLoc) != NoError) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The given outputPath is not a valid relative path."));
+            continue;
+        }
+
+        API_LibPart libPart = {};
+
+        libPart.typeID = APILib_PictID;
+
+        GS::UniString typeStr;
+        if (file.Get ("type", typeStr)) {
+            if (typeStr == "Window") {
+                libPart.typeID = APILib_WindowID;
+            } else if (typeStr == "Door") {
+                libPart.typeID = APILib_DoorID;
+            } else if (typeStr == "Object") {
+                libPart.typeID = APILib_ObjectID;
+            } else if (typeStr == "Lamp") {
+                libPart.typeID = APILib_LampID;
+            } else if (typeStr == "Room") {
+                libPart.typeID = APILib_RoomID;
+            } else if (typeStr == "Property") {
+                libPart.typeID = APILib_PropertyID;
+            } else if (typeStr == "PlanSign") {
+                libPart.typeID = APILib_PlanSignID;
+            } else if (typeStr == "Label") {
+                libPart.typeID = APILib_LabelID;
+            } else if (typeStr == "Macro") {
+                libPart.typeID = APILib_MacroID;
+            } else if (typeStr == "Pict") {
+                libPart.typeID = APILib_PictID;
+            } else if (typeStr == "ListScheme") {
+                libPart.typeID = APILib_ListSchemeID;
+            } else if (typeStr == "Skylight") {
+                libPart.typeID = APILib_SkylightID;
+            } else if (typeStr == "OpeningSymbol") {
+                libPart.typeID = APILib_OpeningSymbolID;
+            } else {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Unknown library part type."));
+                continue;
+            }
+        }
+
+        libPart.location = &outputFileLoc;
+
+        GSErrCode err = ACAPI_LibraryPart_Register (&libPart);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to add the file to the library."));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+}
 
 GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
 {

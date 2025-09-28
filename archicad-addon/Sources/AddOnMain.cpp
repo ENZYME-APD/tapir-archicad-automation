@@ -359,6 +359,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.0.2",
             "Creates Composite attributes based on the given parameters."
         );
+        err |= RegisterCommand<CreateSurfacesCommand> (
+            attributeCommands, "1.2.2",
+            "Creates Surface attributes based on the given parameters."
+        );
         err |= RegisterCommand<GetBuildingMaterialPhysicalPropertiesCommand> (
             attributeCommands, "0.1.3",
             "Retrieves the physical properties of the given Building Materials."
@@ -375,6 +379,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ReloadLibrariesCommand> (
             libraryCommands, "1.0.0",
             "Executes the reload libraries command."
+        );
+        err |= RegisterCommand<AddFilesToEmbeddedLibraryCommand> (
+            libraryCommands, "1.2.2",
+            "Adds the given files into the embedded library."
         );
         AddCommandGroup (libraryCommands);
     }
