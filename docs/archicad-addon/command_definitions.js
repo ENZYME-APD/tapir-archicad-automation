@@ -2549,6 +2549,25 @@ var gCommands = [{
                         "outputPath": {
                             "type": "string",
                             "description": "The relative path to the new file inside embedded library."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "The type of the library part. By default 'Pict'.",
+                            "enum": [
+                                "Window",
+                                "Door",
+                                "Object",
+                                "Lamp",
+                                "Room",
+                                "Property",
+                                "PlanSign",
+                                "Label",
+                                "Macro",
+                                "Pict",
+                                "ListScheme",
+                                "Skylight",
+                                "OpeningSymbol"
+                            ]
                         }
                     },
                     "additionalProperties": false,

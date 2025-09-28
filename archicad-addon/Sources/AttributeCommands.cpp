@@ -732,6 +732,59 @@ void CreateSurfacesCommand::SetTypeSpecificParameters (API_Attribute& attribute,
     if (parameters.Get ("texture", textureObj)) {
         attribute.material.texture.status |= APITxtr_LinkMat;
         SetUCharProperty(&textureObj, "name", attribute.material.texture.texName);
+
+        double rotationAngle;
+        if (textureObj.Get ("rotationAngle", rotationAngle)) {
+            attribute.material.texture.rotAng = rotationAngle;
+        }
+        double xSize;
+        if (textureObj.Get ("xSize", xSize)) {
+            attribute.material.texture.xSize = xSize;
+        }
+        double ySize;
+        if (textureObj.Get ("ySize", ySize)) {
+            attribute.material.texture.ySize = ySize;
+        }
+        bool fillRectangle;
+        if (textureObj.Get ("FillRectangle", fillRectangle) && fillRectangle) {
+            attribute.material.texture.status |= APITxtr_FillRectNatur;
+        }
+        bool fitPicture;
+        if (textureObj.Get ("FitPicture", fitPicture) && fitPicture) {
+            attribute.material.texture.status |= APITxtr_FitPictNatur;
+        }
+        bool mirrorX;
+        if (textureObj.Get ("mirrorX", mirrorX) && mirrorX) {
+            attribute.material.texture.status |= APITxtr_MirrorX;
+        }
+        bool mirrorY;
+        if (textureObj.Get ("mirrorY", mirrorY) && mirrorY) {
+            attribute.material.texture.status |= APITxtr_MirrorY;
+        }
+        bool useAlphaChannel;
+        if (textureObj.Get ("useAlphaChannel", useAlphaChannel) && useAlphaChannel) {
+            attribute.material.texture.status |= APITxtr_UseAlpha;
+        }
+        bool alphaChannelChangesTransparency;
+        if (textureObj.Get ("alphaChannelChangesTransparency", alphaChannelChangesTransparency) && alphaChannelChangesTransparency) {
+            attribute.material.texture.status |= APITxtr_TransPattern;
+        }
+        bool alphaChannelChangesSurfaceColor;
+        if (textureObj.Get ("alphaChannelChangesSurfaceColor", alphaChannelChangesSurfaceColor) && alphaChannelChangesSurfaceColor) {
+            attribute.material.texture.status |= APITxtr_SurfacePattern;
+        }
+        bool alphaChannelChangesAmbientColor;
+        if (textureObj.Get ("alphaChannelChangesAmbientColor", alphaChannelChangesAmbientColor) && alphaChannelChangesAmbientColor) {
+            attribute.material.texture.status |= APITxtr_AmbientPattern;
+        }
+        bool alphaChannelChangesSpecularColor;
+        if (textureObj.Get ("alphaChannelChangesSpecularColor", alphaChannelChangesSpecularColor) && alphaChannelChangesSpecularColor) {
+            attribute.material.texture.status |= APITxtr_SpecularPattern;
+        }
+        bool alphaChannelChangesDiffuseColor;
+        if (textureObj.Get ("alphaChannelChangesDiffuseColor", alphaChannelChangesDiffuseColor) && alphaChannelChangesDiffuseColor) {
+            attribute.material.texture.status |= APITxtr_DiffusePattern;
+        }
     }
 }
 

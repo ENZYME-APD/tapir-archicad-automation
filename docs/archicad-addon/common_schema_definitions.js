@@ -303,6 +303,58 @@ var gSchemaDefinitions = {
             "name": {
                 "type": "string",
                 "description": "The filename of the texture in the library (without extension)."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Rotation angle in radians."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "X size of the picture in model space, by default 1."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "Y size of the picture in model space, by default 1."
+            },
+            "FillRectangle": {
+                "type": "boolean",
+                "description": "True, if fit the rectangle with the picture in a central position, using the natural aspect ratio of the picture."
+            },
+            "FitPicture": {
+                "type": "boolean",
+                "description": "True, if fit the picture in the middle of the rectangle, using the natural aspect ratio of the picture."
+            },
+            "mirrorX": {
+                "type": "boolean",
+                "description": "True, if the texture is mirrored in X direction."
+            },
+            "mirrorY": {
+                "type": "boolean",
+                "description": "True, if the texture is mirrored in Y direction."
+            },
+            "useAlphaChannel": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture is used."
+            },
+            "alphaChannelChangesTransparency": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the transparency."
+            },
+            "alphaChannelChangesSurfaceColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the surface color."
+            },
+            "alphaChannelChangesAmbientColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the ambient color."
+            },
+            "alphaChannelChangesSpecularColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the specular color."
+            },
+            "alphaChannelChangesDiffuseColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the diffuse color."
             }
         },
         "additionalProperties": false,

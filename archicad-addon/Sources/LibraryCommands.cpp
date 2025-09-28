@@ -32,6 +32,25 @@ GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetInputParameters
                         "outputPath": {
                             "type": "string",
                             "description": "The relative path to the new file inside embedded library."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "The type of the library part. By default 'Pict'.",
+                            "enum": [
+                                "Window",
+                                "Door",
+                                "Object",
+                                "Lamp",
+                                "Room",
+                                "Property",
+                                "PlanSign",
+                                "Label",
+                                "Macro",
+                                "Pict",
+                                "ListScheme",
+                                "Skylight",
+                                "OpeningSymbol"
+                            ]
                         }
                     },
                     "additionalProperties": false,
@@ -108,6 +127,41 @@ GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState
         API_LibPart libPart = {};
 
         libPart.typeID = APILib_PictID;
+
+        GS::UniString typeStr;
+        if (file.Get ("type", typeStr)) {
+            if (typeStr == "Window") {
+                libPart.typeID = APILib_WindowID;
+            } else if (typeStr == "Door") {
+                libPart.typeID = APILib_DoorID;
+            } else if (typeStr == "Object") {
+                libPart.typeID = APILib_ObjectID;
+            } else if (typeStr == "Lamp") {
+                libPart.typeID = APILib_LampID;
+            } else if (typeStr == "Room") {
+                libPart.typeID = APILib_RoomID;
+            } else if (typeStr == "Property") {
+                libPart.typeID = APILib_PropertyID;
+            } else if (typeStr == "PlanSign") {
+                libPart.typeID = APILib_PlanSignID;
+            } else if (typeStr == "Label") {
+                libPart.typeID = APILib_LabelID;
+            } else if (typeStr == "Macro") {
+                libPart.typeID = APILib_MacroID;
+            } else if (typeStr == "Pict") {
+                libPart.typeID = APILib_PictID;
+            } else if (typeStr == "ListScheme") {
+                libPart.typeID = APILib_ListSchemeID;
+            } else if (typeStr == "Skylight") {
+                libPart.typeID = APILib_SkylightID;
+            } else if (typeStr == "OpeningSymbol") {
+                libPart.typeID = APILib_OpeningSymbolID;
+            } else {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Unknown library part type."));
+                continue;
+            }
+        }
+
         libPart.location = &outputFileLoc;
 
         GSErrCode err = ACAPI_LibraryPart_Register (&libPart);
