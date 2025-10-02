@@ -1,5 +1,5 @@
 name: Tapir
-version: 1.2.2
+version: 1.2.3
 authors:
 - Enzyme APD
 description: Grasshopper components for connecting to Archicad. The Tapir Archicad Add-On must be installed for full functionality. It can be downloaded from the given URL.

@@ -271,6 +271,19 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
     }
 }
 
+bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs)
+{
+    if (!holeOs.Get ("polygonCoordinates", outCoords) && !holeOs.Get ("polygonOutline", outCoords)) { //support legacy polygonCoordinates key
+        return false;
+    }
+    holeOs.Get ("polygonArcs", outArcs);
+
+    if (!outCoords.IsEmpty () && IsSame2DCoordinate (outCoords.GetFirst (), outCoords.GetLast ())) {
+        outCoords.Pop ();
+    }
+    return true;
+}
+
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
 {
     return GS::ObjectState (idFieldName, CreateGuidObjectState (guid));
@@ -283,6 +296,27 @@ API_Coord3D Get3DCoordinateFromObjectState (const GS::ObjectState& objectState)
     objectState.Get ("y", coordinate.y);
     objectState.Get ("z", coordinate.z);
     return coordinate;
+}
+
+API_RGBColor GetColorFromObjectState (const GS::ObjectState& objectState)
+{
+    API_RGBColor color = {};
+    objectState.Get ("red", color.f_red);
+    objectState.Get ("green", color.f_green);
+    objectState.Get ("blue", color.f_blue);
+    return color;
+}
+
+bool GetColor (const GS::ObjectState& objectState, const GS::String& fieldName, API_RGBColor& outColor)
+{
+    GS::ObjectState colorOS;
+    if (!objectState.Get (fieldName, colorOS)) {
+        return false;
+    }
+
+    outColor = GetColorFromObjectState(colorOS);
+
+    return true;
 }
 
 Stories GetStories ()

@@ -1381,7 +1381,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 5.0,
                             "y": 16.0,
@@ -2785,7 +2785,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 5.0,
                             "y": 38.0,
@@ -4189,7 +4189,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 5.0,
                             "y": 60.0,
@@ -5593,7 +5593,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 16.0,
                             "y": 16.0,
@@ -6997,7 +6997,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 16.0,
                             "y": 38.0,
@@ -8401,7 +8401,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 16.0,
                             "y": 60.0,
@@ -9805,7 +9805,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 27.0,
                             "y": 16.0,
@@ -11209,7 +11209,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 27.0,
                             "y": 38.0,
@@ -12613,7 +12613,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 27.0,
                             "y": 60.0,
@@ -14017,7 +14017,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 38.0,
                             "y": 16.0,
@@ -15421,7 +15421,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 38.0,
                             "y": 38.0,
@@ -16825,7 +16825,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 38.0,
                             "y": 60.0,
@@ -18229,7 +18229,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 49.0,
                             "y": 16.0,
@@ -19633,7 +19633,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 49.0,
                             "y": 38.0,
@@ -21037,7 +21037,7 @@ Parameters:
             ],
             "holes": [
                 {
-                    "polygonCoordinates": [
+                    "polygonOutline": [
                         {
                             "x": 49.0,
                             "y": 60.0,

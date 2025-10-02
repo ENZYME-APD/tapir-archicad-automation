@@ -562,6 +562,232 @@ void CreateLayersCommand::SetTypeSpecificParameters (API_Attribute& attribute, c
     }
 }
 
+CreateSurfacesCommand::CreateSurfacesCommand () :
+    CreateAttributesCommandBase ("CreateSurfaces", API_MaterialID, "surfaceDataArray")
+{
+}
+
+GS::Optional<GS::UniString> CreateSurfacesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "surfaceDataArray": {
+                "type": "array",
+                "description" : "Array of data to create new surfaces.",
+                "items": {
+                    "type": "object",
+                    "description": "Data to create a surface.",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name."
+                        },
+                        "materialType": {
+                            "$ref": "#/SurfaceType"
+                        },
+                        "ambientReflection": {
+                            "type": "number",
+                            "description": "Ambient percentage [0..100]."
+                        },
+                        "diffuseReflection": {
+                            "type": "number",
+                            "description": "Diffuse percentage [0..100]."
+                        },
+                        "specularReflection": {
+                            "type": "number",
+                            "description": "Specular percentage [0..100]."
+                        },
+                        "transparency": {
+                            "type": "number",
+                            "description": "Transparency percentage [0..100]."
+                        },
+                        "shine": {
+                            "type": "number",
+                            "description": "The shininess factor multiplied by 100 [0..10000]."
+                        },
+                        "transparencyAttenuation": {
+                            "type": "number",
+                            "description": "Transparency attenuation multiplied by 100 [0..10000]."
+                        },
+                        "emissionAttenuation": {
+                            "type": "number",
+                            "description": "Emission attenuation multiplied by 100 [0..10000]."
+                        },
+                        "surfaceColor": {
+                            "$ref": "#/ColorRGB"
+                        },
+                        "specularColor": {
+                            "$ref": "#/ColorRGB"
+                        },
+                        "emissionColor": {
+                            "$ref": "#/ColorRGB"
+                        },
+                        "fillId": {
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "texture": {
+                            "$ref": "#/Texture"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "name",
+                        "materialType",
+                        "ambientReflection",
+                        "diffuseReflection",
+                        "specularReflection",
+                        "transparency",
+                        "shine",
+                        "transparencyAttenuation",
+                        "emissionAttenuation",
+                        "surfaceColor",
+                        "specularColor",
+                        "emissionColor"
+                    ]
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Overwrite the Surface if exists with the same name. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "surfaceDataArray"
+        ]
+    })";
+}
+
+void CreateSurfacesCommand::SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const
+{
+    GS::UniString typeStr;
+    if (parameters.Get ("materialType", typeStr)) {
+        if (typeStr == "Matte")
+            attribute.material.mtype = APIMater_MatteID;
+        else if (typeStr == "Metal")
+            attribute.material.mtype = APIMater_MetalID;
+        else if (typeStr == "Plastic")
+            attribute.material.mtype = APIMater_PlasticID;
+        else if (typeStr == "Glass")
+            attribute.material.mtype = APIMater_GlassID;
+        else if (typeStr == "Glowing")
+            attribute.material.mtype = APIMater_GlowingID;
+        else if (typeStr == "Constant")
+            attribute.material.mtype = APIMater_ConstID;
+        else if (typeStr == "Simple")
+            attribute.material.mtype = APIMater_SimpleID;
+        else
+            attribute.material.mtype = APIMater_GeneralID;
+    }
+
+    short ambientReflection;
+    if (parameters.Get ("ambientReflection", ambientReflection)) {
+        attribute.material.ambientPc = ambientReflection;
+    }
+
+    short diffuseReflection;
+    if (parameters.Get ("diffuseReflection", diffuseReflection)) {
+        attribute.material.diffusePc = diffuseReflection;
+    }
+
+    short specularReflection;
+    if (parameters.Get ("specularReflection", specularReflection)) {
+        attribute.material.specularPc = specularReflection;
+    }
+
+    short transparency;
+    if (parameters.Get ("transparency", transparency)) {
+        attribute.material.transpPc = transparency;
+    }
+
+    short shine;
+    if (parameters.Get ("shine", shine)) {
+        attribute.material.shine = shine;
+    }
+
+    short transparencyAttenuation;
+    if (parameters.Get ("transparencyAttenuation", transparencyAttenuation)) {
+        attribute.material.transpAtt = transparencyAttenuation;
+    }
+
+    short emissionAttenuation;
+    if (parameters.Get ("emissionAttenuation", emissionAttenuation)) {
+        attribute.material.emissionAtt = emissionAttenuation;
+    }
+
+    GetColor (parameters, "surfaceColor", attribute.material.surfaceRGB);
+    GetColor (parameters, "specularColor", attribute.material.specularRGB);
+    GetColor (parameters, "emissionColor", attribute.material.emissionRGB);
+
+    GS::ObjectState fillId;
+    if (parameters.Get ("fillId", fillId)) {
+        API_AttributeIndex fillIndex;
+        if (GetAttributeIndexFromAttributeId (fillId, API_FilltypeID, fillIndex)) {
+            attribute.material.ifill = fillIndex;
+        }
+    }
+
+    GS::ObjectState textureObj;
+    if (parameters.Get ("texture", textureObj)) {
+        attribute.material.texture.status |= APITxtr_LinkMat;
+        SetUCharProperty(&textureObj, "name", attribute.material.texture.texName);
+
+        double rotationAngle;
+        if (textureObj.Get ("rotationAngle", rotationAngle)) {
+            attribute.material.texture.rotAng = rotationAngle;
+        }
+        double xSize;
+        if (textureObj.Get ("xSize", xSize)) {
+            attribute.material.texture.xSize = xSize;
+        }
+        double ySize;
+        if (textureObj.Get ("ySize", ySize)) {
+            attribute.material.texture.ySize = ySize;
+        }
+        bool fillRectangle;
+        if (textureObj.Get ("FillRectangle", fillRectangle) && fillRectangle) {
+            attribute.material.texture.status |= APITxtr_FillRectNatur;
+        }
+        bool fitPicture;
+        if (textureObj.Get ("FitPicture", fitPicture) && fitPicture) {
+            attribute.material.texture.status |= APITxtr_FitPictNatur;
+        }
+        bool mirrorX;
+        if (textureObj.Get ("mirrorX", mirrorX) && mirrorX) {
+            attribute.material.texture.status |= APITxtr_MirrorX;
+        }
+        bool mirrorY;
+        if (textureObj.Get ("mirrorY", mirrorY) && mirrorY) {
+            attribute.material.texture.status |= APITxtr_MirrorY;
+        }
+        bool useAlphaChannel;
+        if (textureObj.Get ("useAlphaChannel", useAlphaChannel) && useAlphaChannel) {
+            attribute.material.texture.status |= APITxtr_UseAlpha;
+        }
+        bool alphaChannelChangesTransparency;
+        if (textureObj.Get ("alphaChannelChangesTransparency", alphaChannelChangesTransparency) && alphaChannelChangesTransparency) {
+            attribute.material.texture.status |= APITxtr_TransPattern;
+        }
+        bool alphaChannelChangesSurfaceColor;
+        if (textureObj.Get ("alphaChannelChangesSurfaceColor", alphaChannelChangesSurfaceColor) && alphaChannelChangesSurfaceColor) {
+            attribute.material.texture.status |= APITxtr_SurfacePattern;
+        }
+        bool alphaChannelChangesAmbientColor;
+        if (textureObj.Get ("alphaChannelChangesAmbientColor", alphaChannelChangesAmbientColor) && alphaChannelChangesAmbientColor) {
+            attribute.material.texture.status |= APITxtr_AmbientPattern;
+        }
+        bool alphaChannelChangesSpecularColor;
+        if (textureObj.Get ("alphaChannelChangesSpecularColor", alphaChannelChangesSpecularColor) && alphaChannelChangesSpecularColor) {
+            attribute.material.texture.status |= APITxtr_SpecularPattern;
+        }
+        bool alphaChannelChangesDiffuseColor;
+        if (textureObj.Get ("alphaChannelChangesDiffuseColor", alphaChannelChangesDiffuseColor) && alphaChannelChangesDiffuseColor) {
+            attribute.material.texture.status |= APITxtr_DiffusePattern;
+        }
+    }
+}
+
 CreateCompositesCommand::CreateCompositesCommand () :
     CommandBase (CommonSchema::Used)
 {
