@@ -848,6 +848,70 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "GetZoneBoundaries",
+                "version": "1.2.3",
+                "description": "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "zoneElementId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneElementId"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "zoneBoundaries": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "connectedElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The unique identifier of the connected element."
+                        },
+                        "isExternal": {
+                            "type": "boolean",
+                            "description": "True if the boundary is an external one."
+                        },
+                        "neighbouringZoneElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "Returns the unique identifer of the other Zone the element connects to if the boundary is internal. Please note that this boundary does not represent the boundary of the element with the other Zone."
+                        },
+                        "area": {
+                            "type": "number",
+                            "description": "The area of the polygon of the boundary."
+                        },
+                        "polygonOutline": {
+                            "type": "array",
+                            "description": "The outline polygon of the boundary.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "connectedElementId",
+                        "isExternal",
+                        "neighbouringZoneElementId",
+                        "area",
+                        "polygonOutline"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneBoundaries"
+        ]
+    }
+            },{
                 "name": "GetCollisions",
                 "version": "1.2.2",
                 "description": "Detect collisions between the given two groups of elements.",

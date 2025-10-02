@@ -224,6 +224,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.4",
             "Gets connected elements of the given elements."
         );
+        err |= RegisterCommand<GetZoneBoundariesCommand> (
+            elementCommands, "1.2.3",
+            "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.)."
+        );
         err |= RegisterCommand<GetCollisionsCommand> (
             elementCommands, "1.2.2",
             "Detect collisions between the given two groups of elements."
