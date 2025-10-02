@@ -31,6 +31,20 @@ var gSchemaDefinitions = {
             "guid"
         ]
     },
+    "SurfaceType": {
+        "type": "string",
+        "description": "The type of a surface material.",
+        "enum": [
+            "General",
+            "Simple",
+            "Matte",
+            "Metal",
+            "Plastic",
+            "Glass",
+            "Glowing",
+            "Constant"
+        ]
+    },
     "AttributeType": {
         "type": "string",
         "description": "The type of an attribute.",
@@ -256,6 +270,96 @@ var gSchemaDefinitions = {
             "x",
             "y",
             "z"
+        ]
+    },
+    "ColorRGB": {
+        "type": "object",
+        "description": "RGB color.",
+        "properties": {
+            "red": {
+                "type": "number",
+                "description": "Red value between 0.0 and 1.0"
+            },
+            "green": {
+                "type": "number",
+                "description": "Green value between 0.0 and 1.0"
+            },
+            "blue": {
+                "type": "number",
+                "description": "Blue value between 0.0 and 1.0"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "red",
+            "green",
+            "blue"
+        ]
+    },
+    "Texture": {
+        "type": "object",
+        "description": "Texture parameters",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The filename of the texture in the library (without extension)."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Rotation angle in radians."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "X size of the picture in model space, by default 1."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "Y size of the picture in model space, by default 1."
+            },
+            "FillRectangle": {
+                "type": "boolean",
+                "description": "True, if fit the rectangle with the picture in a central position, using the natural aspect ratio of the picture."
+            },
+            "FitPicture": {
+                "type": "boolean",
+                "description": "True, if fit the picture in the middle of the rectangle, using the natural aspect ratio of the picture."
+            },
+            "mirrorX": {
+                "type": "boolean",
+                "description": "True, if the texture is mirrored in X direction."
+            },
+            "mirrorY": {
+                "type": "boolean",
+                "description": "True, if the texture is mirrored in Y direction."
+            },
+            "useAlphaChannel": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture is used."
+            },
+            "alphaChannelChangesTransparency": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the transparency."
+            },
+            "alphaChannelChangesSurfaceColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the surface color."
+            },
+            "alphaChannelChangesAmbientColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the ambient color."
+            },
+            "alphaChannelChangesSpecularColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the specular color."
+            },
+            "alphaChannelChangesDiffuseColor": {
+                "type": "boolean",
+                "description": "True, if the alpha channel of the texture changes the diffuse color."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
         ]
     },
     "Error": {
@@ -1813,7 +1917,7 @@ var gSchemaDefinitions = {
         "type": "object",
         "description": "A 2D hole in an element defined by closed polylines",
         "properties": {
-            "polygonCoordinates": {
+            "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the hole.",
                 "items": {
