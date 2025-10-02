@@ -1618,7 +1618,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "favorites": {
-              "$ref": "#/$defs/Favorites"
+              "$ref": "#/Favorites"
             }
         },
         "additionalProperties": false,
@@ -1634,7 +1634,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "favorites": {
-              "$ref": "#/$defs/Favorites"
+              "$ref": "#/Favorites"
             }
         },
         "additionalProperties": false,
