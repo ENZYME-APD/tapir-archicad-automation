@@ -41,6 +41,34 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         [JsonProperty ("y")]
         public double Y;
     }
+    public class Point3D
+    {
+        public static Point3D Create (object obj)
+        {
+            if (obj is Point3D) {
+                return obj as Point3D;
+            } else if (obj is Point3d) {
+                Point3d point3D = (Point3d) obj;
+                return new Point3D () {
+                    X = point3D.X,
+                    Y = point3D.Y,
+                    Z = point3D.Z
+                };
+            } else {
+                return null;
+            }
+        }
+
+        [JsonProperty ("x")]
+        public double X;
+
+        [JsonProperty ("y")]
+        public double Y;
+
+        [JsonProperty ("z")]
+        public double Z;
+    }
+
     public class Arc
     {
         [JsonProperty ("begIndex")]

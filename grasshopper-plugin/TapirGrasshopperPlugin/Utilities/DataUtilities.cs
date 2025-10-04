@@ -107,8 +107,20 @@ namespace TapirGrasshopperPlugin.Utilities
                     arc.Transform (Transform.Rotation (Math.PI / 2, axis, midPoint));
                     polyCurve.Append (arc);
                 } else {
-                    polyCurve.Append (new Line (new Point3d (begPoint2D.X, begPoint2D.Y, zCoordinate), new Point3d (endPoint2D.X, endPoint2D.Y, zCoordinate)));
+                    polyCurve.Append (new Line (begPoint3D, endPoint3D));
                 }
+            }
+            return polyCurve;
+        }
+
+        static public PolyCurve ToPolyCurve (List<Point3D> points)
+        {
+            PolyCurve polyCurve = new PolyCurve ();
+            for (int i = 0; i < points.Count - 1; ++i) {
+                Point3d begPoint3D = new Point3d (points[i].X, points[i].Y, points[i].Z);
+                Point3d endPoint3D = new Point3d (points[i + 1].X, points[i + 1].Y, points[i + 1].Z);
+
+                polyCurve.Append (new Line (begPoint3D, endPoint3D));
             }
             return polyCurve;
         }

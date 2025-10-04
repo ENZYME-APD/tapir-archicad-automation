@@ -3,6 +3,11 @@
 #include "GSUnID.hpp"
 #include "Plane.hpp"
 #include "CoordTypedef.hpp"
+#include "ModelEdge.hpp"
+#include "ModelMeshBody.hpp"
+#ifdef ServerMainVers_2800
+#include "ACAPI/ZoneBoundaryQuery.hpp"
+#endif
 
 #include <algorithm>
 
@@ -1325,6 +1330,165 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
     }
 
     return response;
+}
+
+GetZoneBoundariesCommand::GetZoneBoundariesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetZoneBoundariesCommand::GetName () const
+{
+    return "GetZoneBoundaries";
+}
+
+GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zoneElementId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneElementId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zoneBoundaries": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "connectedElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The unique identifier of the connected element."
+                        },
+                        "isExternal": {
+                            "type": "boolean",
+                            "description": "True if the boundary is an external one."
+                        },
+                        "neighbouringZoneElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "Returns the unique identifer of the other Zone the element connects to if the boundary is internal. Please note that this boundary does not represent the boundary of the element with the other Zone."
+                        },
+                        "area": {
+                            "type": "number",
+                            "description": "The area of the polygon of the boundary."
+                        },
+                        "polygonOutline": {
+                            "type": "array",
+                            "description": "The outline polygon of the boundary.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "connectedElementId",
+                        "isExternal",
+                        "neighbouringZoneElementId",
+                        "area",
+                        "polygonOutline"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneBoundaries"
+        ]
+    })";
+}
+
+GS::ObjectState GetZoneBoundariesCommand::Execute (
+    const GS::ObjectState& parameters,
+#ifdef ServerMainVers_2800
+    GS::ProcessControl& processControl) const
+#else
+    GS::ProcessControl& /*processControl*/) const
+#endif
+{
+    const GS::ObjectState* zoneElementId = parameters.Get ("zoneElementId");
+    if (zoneElementId == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "zoneElementId is missing");
+    }
+
+#ifdef ServerMainVers_2800
+	ACAPI::ZoneBoundaryQuery query = ACAPI::CreateZoneBoundaryQuery ();
+
+	ACAPI::Result updateResult = query.Modify (
+		[&] (ACAPI::ZoneBoundaryQuery::Modifier& modifier) -> GSErrCode {
+			ACAPI::Result<void> result = modifier.Update (processControl);
+			return result.IsOk () ? NoError : result.UnwrapErr ().kind;
+		}
+	);
+
+	if (updateResult.IsErr ()) {
+		return CreateErrorResponse (updateResult.UnwrapErr ().kind, "Failed to execute zone boundary query");
+    }
+
+    GS::ObjectState response;
+    const auto& zoneBoundaries = response.AddList<GS::ObjectState> ("zoneBoundaries");
+
+    const API_Guid zoneGuid = GetGuidFromObjectState (*zoneElementId);
+	const ACAPI::Result<std::vector<ACAPI::ZoneBoundary>> boundaries = query.GetZoneBoundaries (zoneGuid);
+
+    if (boundaries.IsErr ()) {
+		return CreateErrorResponse (boundaries.UnwrapErr ().kind, "Failed to get zone boundary");
+    }
+
+	for (const ACAPI::ZoneBoundary& boundary : boundaries.Unwrap ()) {
+        GS::ObjectState boundaryOS;
+        boundaryOS.Add ("connectedElementId", CreateGuidObjectState (boundary.GetElemId ()));
+        boundaryOS.Add ("isExternal", boundary.IsExternal ());
+        boundaryOS.Add ("neighbouringZoneElementId", CreateGuidObjectState (boundary.GetNeighbouringZoneId ()));
+        boundaryOS.Add ("area", boundary.GetArea ());
+
+        const auto& polygonOutline = boundaryOS.AddList<GS::ObjectState> ("polygonOutline");
+        const ModelerAPI::MeshBody& body = boundary.GetBody ();
+        const ModelerAPI::Polygon& poly = boundary.GetPolygon ();
+        {
+            ModelerAPI::Edge edge;
+            ModelerAPI::Vertex vertex;
+            for (Int32 edgeIdx = 1; edgeIdx <= poly.GetEdgeCount (); ++edgeIdx) {
+
+                const Int32 edgeIndex = poly.GetEdgeIndex (edgeIdx);
+
+                if (edgeIndex == 0) {
+                    body.GetVertex (edge.GetVertexIndex2 (), &vertex);
+                    polygonOutline (Create3DCoordinateObjectState (*reinterpret_cast<API_Coord3D*> (&vertex)));
+                    break;
+                }
+                
+                body.GetEdge (edgeIndex, &edge);
+                body.GetVertex (edge.GetVertexIndex1 (), &vertex);
+
+                polygonOutline (Create3DCoordinateObjectState (*reinterpret_cast<API_Coord3D*> (&vertex)));
+
+                if (edgeIdx == poly.GetEdgeCount ()) {
+                    body.GetVertex (edge.GetVertexIndex2 (), &vertex);
+                    polygonOutline (Create3DCoordinateObjectState (*reinterpret_cast<API_Coord3D*> (&vertex)));
+                }
+            }
+        }
+
+        zoneBoundaries (boundaryOS);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in ArchiCAD 28 or later.");
+#endif
 }
 
 GetCollisionsCommand::GetCollisionsCommand () :
