@@ -3063,6 +3063,18 @@
             "polygonCoordinates"
         ]
     },
+    "ZoneCreationGeometry": {
+        "description": "Defines the geometry of a zone. Used as input for creating zones.",
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/AutomaticZoneGeometry"
+            },
+            {
+                "$ref": "#/ManualZoneGeometry"
+            }
+        ]
+    },
     "WallSettings": {
         "type": "object",
         "description": "Settings for modifying a wall.",

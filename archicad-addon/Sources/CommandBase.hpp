@@ -117,16 +117,19 @@ GSErrCode ExecuteActionForEachDatabase (
     const std::function<void (GSErrCode, const GS::UniString&)>& actionFailure);
 
 template<std::size_t N>
-void SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
+bool SetCharProperty (const GS::ObjectState* os, const char* propertyKey, char (&targetProperty)[N])
 {
     GS::UniString propertyValue;
     if (os->Get (propertyKey, propertyValue)) {
         CHTruncate (propertyValue.ToCStr ().Get (), targetProperty, N);
+        return true;
     }
+
+    return false;
 };
 
 template<std::size_t N>
-void SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::uchar_t (&targetProperty)[N])
+bool SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::uchar_t (&targetProperty)[N])
 {
     GS::UniString propertyValue;
     if (os->Get (propertyKey, propertyValue)) {
@@ -136,5 +139,8 @@ void SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::u
 
         GS::ucsncpy (targetProperty, sourceString, N);
         targetProperty[N - 1] = 0;
+        return true;
     }
+
+    return false;
 }

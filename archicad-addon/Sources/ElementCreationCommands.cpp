@@ -361,15 +361,7 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "description" : "Position of the origin of the zone stamp."
                     },
                     "geometry": {
-                        "type": "object",
-                        "oneOf": [
-                            {
-                                "$ref": "#/AutomaticZoneGeometry"
-                            },
-                            {
-                                "$ref": "#/ManualZoneGeometry"
-                            }
-                        ]
+                        "$ref": "#/ZoneCreationGeometry"
                     }
                 },
                 "additionalProperties": false,
@@ -397,26 +389,39 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         element.zone.catInd = GetAttributeIndexFromGuid (API_ZoneCatID, categoryAttrGuid);
     }
 
-    SetUCharProperty (&parameters, "name", element.zone.roomName);
-    SetUCharProperty (&parameters, "numberStr", element.zone.roomNoStr);
+    if (!SetUCharProperty (&parameters, "name", element.zone.roomName)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing name parameter.");
+    }
+
+    if (!SetUCharProperty (&parameters, "numberStr", element.zone.roomNoStr)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing numberStr parameter.");
+    }
 
     GS::ObjectState geometry;
-    parameters.Get ("geometry", geometry);
+    if (!parameters.Get ("geometry", geometry)) {
+        return CreateErrorResponse (APIERR_BADPARS, "geometry parameter is missing.");
+    }
+
+    GS::ObjectState stampPosition;
+    parameters.Get ("stampPosition", stampPosition);
+
     GS::ObjectState referencePosition;
     if (geometry.Get ("referencePosition", referencePosition)) {
         element.zone.manual = false;
 
         element.zone.refPos = Get2DCoordinateFromObjectState (referencePosition);
 
-        GS::ObjectState stampPosition;
-        element.zone.pos = geometry.Get ("stampPosition", stampPosition) ? Get2DCoordinateFromObjectState (stampPosition) : element.zone.refPos;
+        element.zone.pos = stampPosition.IsEmpty() ? element.zone.refPos : Get2DCoordinateFromObjectState (stampPosition);
     } else {
         element.zone.manual = true;
 
         GS::Array<GS::ObjectState> polygonCoordinates;
         GS::Array<GS::ObjectState> polygonArcs;
         GS::Array<GS::ObjectState> holes;
-        geometry.Get ("polygonCoordinates", polygonCoordinates);
+        if (!geometry.Get ("polygonCoordinates", polygonCoordinates)) {
+            return CreateErrorResponse (APIERR_BADPARS, "polygonCoordinates parameter is missing in geometry.");
+        }
+
         geometry.Get ("polygonArcs", polygonArcs);
         geometry.Get ("holes", holes);
         if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
@@ -463,8 +468,7 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
             }
         }
 
-        GS::ObjectState stampPosition;
-        element.zone.pos = geometry.Get ("stampPosition", stampPosition) ? Get2DCoordinateFromObjectState (stampPosition) : (*memo.coords)[1];
+        element.zone.pos = stampPosition.IsEmpty() ? (*memo.coords)[1] : Get2DCoordinateFromObjectState (stampPosition);
     }
 
     return {};
