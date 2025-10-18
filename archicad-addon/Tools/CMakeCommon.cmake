@@ -138,7 +138,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
             DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles} ${AddOnSchemaFiles}
             COMMENT "Compiling resources..."
             COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
-            COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CompileResources.py" "${addOnLanguage}" "${devKitDir}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${ResourceObjectsDir}/${addOnName}.res"
+            COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CompileResources.py" "${addOnLanguage}" "${acVersion}" "${devKitDir}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${ResourceObjectsDir}/${addOnName}.res"
             COMMAND ${CMAKE_COMMAND} -E touch ${ResourceStampFile}
         )
     else ()
@@ -147,7 +147,7 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
             DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles} ${AddOnSchemaFiles}
             COMMENT "Compiling resources..."
             COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
-            COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CompileResources.py" "${addOnLanguage}" "${devKitDir}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${CMAKE_BINARY_DIR}/$<CONFIG>/${addOnName}.bundle/Contents/Resources"
+            COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CompileResources.py" "${addOnLanguage}" "${acVersion}" "${devKitDir}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${CMAKE_BINARY_DIR}/$<CONFIG>/${addOnName}.bundle/Contents/Resources"
             COMMAND ${CMAKE_COMMAND} -E copy "${devKitDir}/Inc/PkgInfo" "${CMAKE_BINARY_DIR}/$<CONFIG>/${addOnName}.bundle/Contents/PkgInfo"
             COMMAND ${CMAKE_COMMAND} -E touch ${ResourceStampFile}
         )
