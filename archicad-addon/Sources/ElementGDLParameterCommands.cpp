@@ -490,18 +490,18 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
 GSErrCode SetGDLParametersOfElementsCommand::SetOneGDLParameter (const GS::ObjectState& parameter, const API_Guid& elemGuid, API_ChangeParamType& changeParam, const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary, GS::UniString& errMessage) const
 {
-    SetCharProperty (&parameter, "name", changeParam.name);
+    if (!SetCharProperty (&parameter, "name", changeParam.name)) {
+        errMessage = "Invalid input: name is missing!";
+        return APIERR_BADPARS;
+    }
 
     if (!gdlParametersTypeDictionary.ContainsKey (changeParam.name)) {
         errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
 
-    if (parameter.Contains ("index1")) {
-        parameter.Get ("index1", changeParam.ind1);
-        if (parameter.Contains ("index2")) {
-            parameter.Get ("index2", changeParam.ind2);
-        }
+    if (parameter.Get ("dimension1", changeParam.ind1)) {
+        parameter.Get ("dimension2", changeParam.ind2);
     }
 
     switch (gdlParametersTypeDictionary[changeParam.name]) {
