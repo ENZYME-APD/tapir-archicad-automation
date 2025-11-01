@@ -284,6 +284,9 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
     bool overwriteExisting = false;
     parameters.Get ("overwriteExisting", overwriteExisting);
 
+    Int32 overwriteExistingByIndex = -1;
+    parameters.Get ("overwriteExistingByIndex", overwriteExistingByIndex);
+
     GS::ObjectState response;
     const auto& attributeIds = response.AddList<GS::ObjectState> ("attributeIds");
 
@@ -295,8 +298,12 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
         data.Get ("name", name);
         attr.header.uniStringNamePtr = &name;
 
+        if (overwriteExistingByIndex >= 0) {
+            attr.header.index = ACAPI_CreateAttributeIndex (overwriteExistingByIndex);
+        } 
+
         bool doesExist = (ACAPI_Attribute_Get (&attr) == NoError);
-        if (doesExist && !overwriteExisting) {
+        if (doesExist && overwriteExistingByIndex < 0 && !overwriteExisting) {
             attributeIds (CreateErrorResponse (APIERR_ATTREXIST, "Already exists."));
             continue;
         }
@@ -406,6 +413,10 @@ GS::Optional<GS::UniString> CreateBuildingMaterialsCommand::GetInputParametersSc
             "overwriteExisting": {
                 "type": "boolean",
                 "description": "Overwrite the Building Material if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Building Material if exists with the given index. If there is no Building Material with the given index, then a new Building Material will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
@@ -526,6 +537,10 @@ GS::Optional<GS::UniString> CreateLayersCommand::GetInputParametersSchema () con
             "overwriteExisting": {
                 "type": "boolean",
                 "description": "Overwrite the Layer if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Layer if exists with the given index. If there is no Layer with the given index, then a new layer will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
@@ -650,6 +665,10 @@ GS::Optional<GS::UniString> CreateSurfacesCommand::GetInputParametersSchema () c
             "overwriteExisting": {
                 "type": "boolean",
                 "description": "Overwrite the Surface if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Surface if exists with the given index. If there is no Surface with the given index, then a new Surface will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
@@ -887,7 +906,11 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description" : "Overwrite the Composite if exists with the same name. The default is false."
+                "description": "Overwrite the Composite if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Composite if exists with the given index. If there is no Composite with the given index, then a new Composite will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
@@ -921,6 +944,9 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
     bool overwriteExisting = false;
     parameters.Get ("overwriteExisting", overwriteExisting);
 
+    Int32 overwriteExistingByIndex = -1;
+    parameters.Get ("overwriteExistingByIndex", overwriteExistingByIndex);
+
     GS::ObjectState response;
     const auto& attributeIds = response.AddList<GS::ObjectState> ("attributeIds");
 
@@ -933,8 +959,12 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
         compositeData.Get ("name", name);
         composite.header.uniStringNamePtr = &name;
 
+        if (overwriteExistingByIndex >= 0) {
+            composite.header.index = ACAPI_CreateAttributeIndex (overwriteExistingByIndex);
+        } 
+
         bool doesExist = (ACAPI_Attribute_Get (&composite) == NoError);
-        if (doesExist && !overwriteExisting) {
+        if (doesExist && overwriteExistingByIndex < 0 && !overwriteExisting) {
             attributeIds (CreateErrorResponse (Error, "Composite already exists."));
             continue;
         }

@@ -1422,15 +1422,7 @@ var gCommands = [{
                         "description" : "Position of the origin of the zone stamp."
                     },
                     "geometry": {
-                        "type": "object",
-                        "oneOf": [
-                            {
-                                "$ref": "#/AutomaticZoneGeometry"
-                            },
-                            {
-                                "$ref": "#/ManualZoneGeometry"
-                            }
-                        ]
+                        "$ref": "#/ZoneCreationGeometry"
                     }
                 },
                 "additionalProperties": false,
@@ -2135,6 +2127,10 @@ var gCommands = [{
             "overwriteExisting": {
                 "type": "boolean",
                 "description": "Overwrite the Layer if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Layer if exists with the given index. If there is no Layer with the given index, then a new layer will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
@@ -2234,6 +2230,10 @@ var gCommands = [{
             "overwriteExisting": {
                 "type": "boolean",
                 "description": "Overwrite the Building Material if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Building Material if exists with the given index. If there is no Building Material with the given index, then a new Building Material will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
@@ -2344,7 +2344,11 @@ var gCommands = [{
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description" : "Overwrite the Composite if exists with the same name. The default is false."
+                "description": "Overwrite the Composite if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Composite if exists with the given index. If there is no Composite with the given index, then a new Composite will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
@@ -2449,6 +2453,10 @@ var gCommands = [{
             "overwriteExisting": {
                 "type": "boolean",
                 "description": "Overwrite the Surface if exists with the same name. The default is false."
+            },
+            "overwriteExistingByIndex": {
+                "type": "integer",
+                "description": "Overwrite the Surface if exists with the given index. If there is no Surface with the given index, then a new Surface will be created and it's not guaranteed that on the given index."
             }
         },
         "additionalProperties": false,
