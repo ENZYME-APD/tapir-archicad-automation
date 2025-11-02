@@ -95,6 +95,95 @@ var gSchemaDefinitions = {
             "guid"
         ]
     },
+    "LayersOfLayerCombination": {
+        "type": "array",
+        "description": "List of Layers included in the Layer Combination.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "attributeId": {
+                    "description": "The identifier of the Layer attribute.",
+                    "$ref": "#/AttributeId"
+                },
+                "isHidden": {
+                    "type": "boolean",
+                    "description": "Visibility of the Layer in the Layer Combination."
+                },
+                "isLocked": {
+                    "type": "boolean",
+                    "description": "Lock state of the Layer in the Layer Combination."
+                },
+                "isWireframe": {
+                    "type": "boolean",
+                    "description": "Is wireframe mode forced for the Layer in the Layer Combination."
+                },
+                "intersectionGroupNr": {
+                    "type": "integer",
+                    "description": "Intersection group of the Layer in the Layer Combination. Elements on layers having the same group will be intersected."
+                }
+            },
+            "additionalProperties": false,
+            "required" : [
+                "attributeId",
+                "isHidden",
+                "isLocked",
+                "isWireframe",
+                "intersectionGroupNr"
+            ]
+        }
+    },
+    "LayerCombinationAttributeDetails": {
+        "type": "object",
+        "description": "The details of the layer combination attribute.",
+        "properties": {
+            "attributeId": {
+                "description": "The identifier of the layer combination attribute.",
+                "$ref": "#/AttributeId"
+            },
+            "attributeIndex": {
+                "type": "integer",
+                "description": "The index identifier of the layer combination attribute."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the layer combination."
+            },
+            "layers": {
+                "$ref": "#/LayersOfLayerCombination"
+            }
+        },
+        "additionalProperties": false,
+        "required" : [
+            "attributeId",
+            "name",
+            "layers"
+        ]
+    },
+    "LayerCombinationAttribute": {
+        "type": "object",
+        "description": "A layer combination attribute.",
+        "properties": {
+            "layerCombination": {
+                "$ref": "#/LayerCombinationAttributeDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required" : [
+            "layerCombination"
+        ]
+    },
+    "LayerCombinationAttributeOrError": {
+        "type": "object",
+        "description": "A layer combination attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/LayerCombinationAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "Guid": {
         "type": "string",
         "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",

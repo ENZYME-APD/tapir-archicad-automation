@@ -353,23 +353,31 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
-            "Creates Layer attributes based on the given parameters."
+            "Creates or overwrites Layer attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateLayerCombinationsCommand> (
+            attributeCommands, "1.2.4",
+            "Creates or overwrites Layer Combination attributes based on the given parameters."
         );
         err |= RegisterCommand<CreateBuildingMaterialsCommand> (
             attributeCommands, "1.0.1",
-            "Creates Building Material attributes based on the given parameters."
+            "Creates or overwrites Building Material attributes based on the given parameters."
         );
         err |= RegisterCommand<CreateCompositesCommand> (
             attributeCommands, "1.0.2",
-            "Creates Composite attributes based on the given parameters."
+            "Creates or overwrites Composite attributes based on the given parameters."
         );
         err |= RegisterCommand<CreateSurfacesCommand> (
             attributeCommands, "1.2.2",
-            "Creates Surface attributes based on the given parameters."
+            "Creates or overwrites Surface attributes based on the given parameters."
         );
         err |= RegisterCommand<GetBuildingMaterialPhysicalPropertiesCommand> (
             attributeCommands, "0.1.3",
             "Retrieves the physical properties of the given Building Materials."
+        );
+        err |= RegisterCommand<GetLayerCombinationsCommand> (
+            attributeCommands, "1.2.4",
+            "Returns the details of layer combination attributes."
         );
         AddCommandGroup (attributeCommands);
     }
