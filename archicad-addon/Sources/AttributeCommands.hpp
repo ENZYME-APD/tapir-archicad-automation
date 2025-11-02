@@ -22,6 +22,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetLayerCombinationsCommand : public CommandBase
+{
+public:
+    GetLayerCombinationsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class CreateAttributesCommandBase : public CommandBase
 {
 public:
@@ -30,7 +40,7 @@ public:
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 protected:
-    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const = 0;
+    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const = 0;
 protected:
     GS::String     commandName;
     API_AttrTypeID attrTypeID;
@@ -42,7 +52,7 @@ class CreateBuildingMaterialsCommand : public CreateAttributesCommandBase
 public:
     CreateBuildingMaterialsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
+    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateLayersCommand : public CreateAttributesCommandBase
@@ -50,7 +60,15 @@ class CreateLayersCommand : public CreateAttributesCommandBase
 public:
     CreateLayersCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
+    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+};
+
+class CreateLayerCombinationsCommand : public CreateAttributesCommandBase
+{
+public:
+    CreateLayerCombinationsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateSurfacesCommand : public CreateAttributesCommandBase
@@ -58,7 +76,7 @@ class CreateSurfacesCommand : public CreateAttributesCommandBase
 public:
     CreateSurfacesCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (API_Attribute& attribute, const GS::ObjectState& parameters) const override;
+    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateCompositesCommand : public CommandBase

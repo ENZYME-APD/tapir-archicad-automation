@@ -1422,15 +1422,7 @@ var gCommands = [{
                         "description" : "Position of the origin of the zone stamp."
                     },
                     "geometry": {
-                        "type": "object",
-                        "oneOf": [
-                            {
-                                "$ref": "#/AutomaticZoneGeometry"
-                            },
-                            {
-                                "$ref": "#/ManualZoneGeometry"
-                            }
-                        ]
+                        "$ref": "#/ZoneCreationGeometry"
                     }
                 },
                 "additionalProperties": false,
@@ -2098,7 +2090,7 @@ var gCommands = [{
             },{
                 "name": "CreateLayers",
                 "version": "1.0.3",
-                "description": "Creates Layer attributes based on the given parameters.",
+                "description": "Creates or overwrites Layer attributes based on the given parameters.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2109,9 +2101,17 @@ var gCommands = [{
                     "type": "object",
                     "description": "Data to create a Layer.",
                     "properties": {
+                        "attributeId": {
+                            "description": "Indentifier of the existing Layer to overwrite, ignored if overwriteExisting is false.",
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "string",
+                            "description": "Index of the existing Layer to overwrite, ignored if overwriteExisting is false."
+                        },
                         "name": {
                             "type": "string",
-                            "description": "Name."
+                            "description": "Name. If overwriteExisting is true, then the existing Layer with the given name will be overwritten."
                         },
                         "isHidden": {
                             "type": "boolean",
@@ -2124,6 +2124,10 @@ var gCommands = [{
                         "isWireframe": {
                             "type": "boolean",
                             "description": "Force the model to wireframe."
+                        },
+                        "intersectionGroupNr": {
+                            "type": "integer",
+                            "description": "Intersection group. Elements on layers having the same group will be intersected."
                         }
                     },
                     "additionalProperties": false,
@@ -2134,7 +2138,7 @@ var gCommands = [{
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description": "Overwrite the Layer if exists with the same name. The default is false."
+                "description": "Overwrite the Layer if exists with the same name, or if index is given with the same index. The default is false."
             }
         },
         "additionalProperties": false,
@@ -2155,9 +2159,68 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "CreateLayerCombinations",
+                "version": "1.2.4",
+                "description": "Creates or overwrites Layer Combination attributes based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "layerCombinationDataArray": {
+                "type": "array",
+                "description" : "Array of data to create new Layer Combinations.",
+                "items": {
+                    "type": "object",
+                    "description": "Data to create a Layer Combination.",
+                    "properties": {
+                        "attributeId": {
+                            "description": "Indentifier of the existing Layer Combination to overwrite, ignored if overwriteExisting is false.",
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "string",
+                            "description": "Index of the existing Layer Combination to overwrite, ignored if overwriteExisting is false."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name. If overwriteExisting is true, then the existing Layer Combination with the given name will be overwritten."
+                        },
+                        "layers": {
+                            "$ref": "#/LayersOfLayerCombination"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "name",
+                        "layers"
+                    ]
+                }
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Overwrite the Layer Combination if exists with the same guid/index/name. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layerCombinationDataArray"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    }
+            },{
                 "name": "CreateBuildingMaterials",
                 "version": "1.0.1",
-                "description": "Creates Building Material attributes based on the given parameters.",
+                "description": "Creates or overwrites Building Material attributes based on the given parameters.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2168,9 +2231,17 @@ var gCommands = [{
                     "type": "object",
                     "description": "Data to create a Building Material.",
                     "properties": {
+                        "attributeId": {
+                            "description": "Indentifier of the existing Building Material to overwrite, ignored if overwriteExisting is false.",
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "string",
+                            "description": "Index of the existing Building Material to overwrite, ignored if overwriteExisting is false."
+                        },
                         "name": {
                             "type": "string",
-                            "description": "Name."
+                            "description": "Name. If overwriteExisting is true, then the existing Building Material with the given name will be overwritten."
                         },
                         "id": {
                             "type": "string",
@@ -2233,7 +2304,7 @@ var gCommands = [{
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description": "Overwrite the Building Material if exists with the same name. The default is false."
+                "description": "Overwrite the Building Material if exists with the same name, or if index is given with the same index. The default is false."
             }
         },
         "additionalProperties": false,
@@ -2256,7 +2327,7 @@ var gCommands = [{
             },{
                 "name": "CreateComposites",
                 "version": "1.0.2",
-                "description": "Creates Composite attributes based on the given parameters.",
+                "description": "Creates or overwrites Composite attributes based on the given parameters.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2267,9 +2338,17 @@ var gCommands = [{
                     "type": "object",
                     "description": "Data to create a Composite.",
                     "properties": {
+                        "attributeId": {
+                            "description": "Indentifier of the existing Composite to overwrite, ignored if overwriteExisting is false.",
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "string",
+                            "description": "Index of the existing Composite to overwrite, ignored if overwriteExisting is false."
+                        },
                         "name": {
                             "type": "string",
-                            "description": "Name."
+                            "description": "Name. If overwriteExisting is true, then the existing Composite with the given name will be overwritten."
                         },
                         "useWith": {
                             "type": "array",
@@ -2344,7 +2423,7 @@ var gCommands = [{
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description" : "Overwrite the Composite if exists with the same name. The default is false."
+                "description": "Overwrite the Composite if exists with the same name, or if index is given with the same index. The default is false."
             }
         },
         "additionalProperties": false,
@@ -2367,7 +2446,7 @@ var gCommands = [{
             },{
                 "name": "CreateSurfaces",
                 "version": "1.2.2",
-                "description": "Creates Surface attributes based on the given parameters.",
+                "description": "Creates or overwrites Surface attributes based on the given parameters.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2378,9 +2457,17 @@ var gCommands = [{
                     "type": "object",
                     "description": "Data to create a surface.",
                     "properties": {
+                        "attributeId": {
+                            "description": "Indentifier of the existing Surface to overwrite, ignored if overwriteExisting is false.",
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "string",
+                            "description": "Index of the existing surface to overwrite, ignored if overwriteExisting is false."
+                        },
                         "name": {
                             "type": "string",
-                            "description": "Name."
+                            "description": "Name. If overwriteExisting is true, then the existing surface with the given name will be overwritten."
                         },
                         "materialType": {
                             "$ref": "#/SurfaceType"
@@ -2448,7 +2535,7 @@ var gCommands = [{
             },
             "overwriteExisting": {
                 "type": "boolean",
-                "description": "Overwrite the Surface if exists with the same name. The default is false."
+                "description": "Overwrite the Surface if exists with the same name, or if index is given with the same index. The default is false."
             }
         },
         "additionalProperties": false,
@@ -2526,6 +2613,38 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "properties"
+        ]
+    }
+            },{
+                "name": "GetLayerCombinations",
+                "version": "1.2.4",
+                "description": "Returns the details of layer combination attributes.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "attributes": {
+                "$ref": "#/AttributeIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "layerCombinations" : {
+                "type": "array",
+                "description" : "A list of layer combinations.",
+                "items": {
+                    "$ref": "#/LayerCombinationAttributeOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layerCombinations"
         ]
     }
             }]
