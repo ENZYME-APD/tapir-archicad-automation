@@ -61,7 +61,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
             }
-            AttributesObj attributes = response.Result.ToObject<AttributesObj> ();
+            AttributeDetailsObj attributes = response.Result.ToObject<AttributeDetailsObj> ();
             List<AttributeIdObj> attributeIds = new List<AttributeIdObj> ();
             List<uint> attributeIndices = new List<uint> ();
             List<string> attributeNames = new List<string> ();
