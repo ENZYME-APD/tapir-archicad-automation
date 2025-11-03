@@ -64,7 +64,7 @@ jobs:
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.MAC.28.3001.zip
           - acVersion: 29
             devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.MAC.29.3000.zip
-    runs-on: [ macos-15 ]
+    runs-on: [ macos-14 ]
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
