@@ -13,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.General
         public ConnectArchicadComponent ()
           : base (
                 "Connect Archicad",
-                "ConnectArchicad",
+                "Connect Archicad",
                 "Connect to Archicad by port number.",
                 "General"
             )
