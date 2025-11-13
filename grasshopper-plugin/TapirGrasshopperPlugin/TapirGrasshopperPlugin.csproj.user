@@ -5,6 +5,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ActiveDebugProfile>Rhino 8 - netfx</ActiveDebugProfile>
+    <ActiveDebugFramework>net48</ActiveDebugFramework>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
