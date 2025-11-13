@@ -56,6 +56,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
             ProjectInfo projectInfo = response.Result.ToObject<ProjectInfo> ();
+
             DA.SetData (0, projectInfo.IsUntitled);
             DA.SetData (1, projectInfo.IsTeamwork);
             DA.SetData (2, projectInfo.ProjectLocation);
