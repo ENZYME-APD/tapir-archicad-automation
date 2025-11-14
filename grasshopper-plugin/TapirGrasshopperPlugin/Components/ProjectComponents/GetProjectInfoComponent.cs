@@ -1,43 +1,18 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.ResponseTypes.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
-    public class ProjectInfo
-    {
-        [JsonProperty ("isUntitled")]
-        public bool IsUntitled { get; set; }
-
-        [JsonProperty ("isTeamwork")]
-        public bool IsTeamwork { get; set; }
-
-        [JsonProperty ("projectLocation")]
-        public string ProjectLocation { get; set; }
-
-        [JsonProperty ("projectPath")]
-        public string ProjectPath { get; set; }
-
-        [JsonProperty ("projectName")]
-        public string ProjectName { get; set; }
-    }
-
     public class GetProjectInfoComponent : ArchicadAccessorComponent
     {
-        public GetProjectInfoComponent ()
-          : base (
-                "Project Details",
-                "ProjectDetails",
-                "Get details of the currently active project.",
-                "Project"
-            )
-        {
-        }
+        public static string CommandName => "GetProjectInfo";
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
-        {
-        }
+        public GetProjectInfoComponent () :
+            base ("Project Details", "ProjectDetails", ProjectInfo.Doc, GroupNames.Project)
+        { }
+
+        protected override void RegisterInputParams (GH_InputParamManager pManager) { }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
@@ -50,12 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            CommandResponse response = SendArchicadAddOnCommand ("GetProjectInfo", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
-            ProjectInfo projectInfo = response.Result.ToObject<ProjectInfo> ();
+            if (!GetResponse (CommandName, null, out ProjectInfo projectInfo)) return;
 
             DA.SetData (0, projectInfo.IsUntitled);
             DA.SetData (1, projectInfo.IsTeamwork);
@@ -64,7 +34,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             DA.SetData (4, projectInfo.ProjectName);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ProjectDetails;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.ProjectDetails;
 
         public override Guid ComponentGuid => new Guid ("d46b6591-cae7-4809-8a3d-9b9b5ed77caf");
     }

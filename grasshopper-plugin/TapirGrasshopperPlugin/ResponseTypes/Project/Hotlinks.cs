@@ -6,7 +6,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Project
 {
     public class HotlinksResponse
     {
-        public static string Doc => "Gets the file system locations (path) of the hotlink modules. " +
+        public static string Doc => "Gets the file system locations (path) of the link modules. " +
             "The hotlinks can have tree hierarchy in the project.";
 
         [JsonProperty ("hotlinks")]
@@ -32,20 +32,20 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Project
 
     public static class HotlinkExtensions
     {
-        public static IEnumerable<string> GetLocationsRecursively(this Hotlinks hotlinks)
+        public static IEnumerable<string> GetLocations(this Hotlinks hotlinks)
         {
-            return hotlinks.SelectMany(hotlink =>
+            return hotlinks.SelectMany(link =>
             {
                 var locations = new List<string> ();
 
-                if (!string.IsNullOrEmpty(hotlink.Location))
+                if (!string.IsNullOrEmpty(link.Location))
                 {
-                    locations.Add (hotlink.Location);
+                    locations.Add (link.Location);
                 }
 
-                if (hotlink.Children != null && hotlink.Children.Any ())
+                if (link.Children != null && link.Children.Any ())
                 {
-                    locations.AddRange(hotlink.Children.GetLocationsRecursively ());
+                    locations.AddRange(link.Children.GetLocations ());
                 }
 
                 return locations;

@@ -10,13 +10,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public static string CommandName => "GetHotlinks";
 
         public GetHotLinksComponent ()
-            : base (
-                nameof (Hotlinks),
-                nameof (Hotlinks),
-                HotlinksResponse.Doc,
-                "Project"
-            )
-        {}
+            : base ( nameof (Hotlinks), nameof (Hotlinks), HotlinksResponse.Doc, GroupNames.Project )
+        { }
 
         protected override void RegisterInputParams (GH_InputParamManager pManager){}
 
@@ -30,12 +25,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             if (!GetResponse(CommandName, null, out HotlinksResponse response)) return;
 
-            DA.SetDataList(0, response.Hotlinks.GetLocationsRecursively());
+            DA.SetDataList(0, response.Hotlinks.GetLocations());
             DA.SetData(1, JsonConvert.SerializeObject(response, Formatting.Indented));
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.ProjectLocation;
-
-        public override Guid ComponentGuid => new Guid("a0b9722f-bc40-4ac3-afbc-d93e21dd8975");
+        public override Guid ComponentGuid => new Guid ("a0b9722f-bc40-4ac3-afbc-d93e21dd8975");
     }
 }

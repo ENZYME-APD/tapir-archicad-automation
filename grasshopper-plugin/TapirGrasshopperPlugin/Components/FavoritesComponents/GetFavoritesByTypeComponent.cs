@@ -1,39 +1,40 @@
-﻿//using Grasshopper.Kernel;
-//using Newtonsoft.Json;
-//using System;
+﻿using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
+using System;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Favorites;
 
-//namespace TapirGrasshopperPlugin.Components.ProjectComponents
-//{
-//    public class GetFavoritesByTypeComponent : ArchicadAccessorComponent
-//    {
-//        public static string CommandName => "GetFavoritesByType";
+namespace TapirGrasshopperPlugin.Components.ProjectComponents
+{
+    public class GetFavoritesByTypeComponent : ArchicadAccessorComponent
+    {
+        public static string CommandName => "GetFavoritesByType";
 
-//        public GetFavoritesByTypeComponent ()
-//            : base (
-//                CommandName,
-//                CommandName,
-//                "Project"
-//            )
-//        { }
+        public GetFavoritesByTypeComponent () :
+            base (CommandName, CommandName, FavoritesResponse.Doc, GroupNames.Favorites)
+        { }
 
-//        protected override void RegisterInputParams (GH_InputParamManager pManager) { }
+        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        {
+            pManager.AddTextParameter ("Type", "Type", "Element type.", GH_ParamAccess.item);
+        }
 
-//        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
-//        {
-//            pManager.AddTextParameter (nameof (Hotlink.Location) + "List", "", "", GH_ParamAccess.list);
-//            pManager.AddTextParameter ("JsonHierarchy", "", "", GH_ParamAccess.item);
-//        }
+        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        {
+            pManager.AddTextParameter (nameof (Favorites), "", "", GH_ParamAccess.list);
+        }
 
-//        protected override void Solve (IGH_DataAccess DA)
-//        {
-//            if (!GetResponse (CommandName, null, out HotlinksResponse response)) return;
+        protected override void Solve (IGH_DataAccess DA)
+        {
+            if (!DA.GetItem (0, out string eType)) return;
 
-//            DA.SetDataList (0, response.Hotlinks.GetLocationsRecursively ());
-//            DA.SetData (1, JsonConvert.SerializeObject (response, Formatting.Indented));
-//        }
+            var jObject = JObject.FromObject (new ElementTypeObject (eType));
 
-//        protected override System.Drawing.Bitmap Icon => Properties.Resources.ProjectLocation;
+            if (!GetResponse (CommandName, jObject, out FavoritesResponse response)) return;
 
-//        public override Guid ComponentGuid => new Guid ("a0b9722f-bc40-4ac3-afbc-d93e21dd8975");
-//    }
-//}
+            DA.SetDataList (0, response.Favorites);
+        }
+
+        public override Guid ComponentGuid => new Guid ("fabe81bd-a365-42a9-a15f-a780283c0510");
+    }
+}
