@@ -55,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
 
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetGDLParametersOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetGDLParametersOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

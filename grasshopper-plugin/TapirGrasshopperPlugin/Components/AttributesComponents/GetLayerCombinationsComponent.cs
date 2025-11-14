@@ -92,7 +92,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             JObject attributesObj = JObject.FromObject (attributes);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetLayerCombinations", attributesObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetLayerCombinations", attributesObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

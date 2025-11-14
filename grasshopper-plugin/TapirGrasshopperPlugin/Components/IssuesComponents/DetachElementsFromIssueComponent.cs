@@ -65,7 +65,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 Elements = elements.Elements
             };
             JObject parameters = JObject.FromObject (parametersOfDetachElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "DetachElementsFromIssue", parameters);
+            CommandResponse response = SendArchicadAddOnCommand ("DetachElementsFromIssue", parameters);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

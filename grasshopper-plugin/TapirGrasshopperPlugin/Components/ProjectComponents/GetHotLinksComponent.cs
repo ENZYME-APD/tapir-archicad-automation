@@ -1,16 +1,19 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json;
 using System;
-using TapirGrasshopperPlugin.ResponseTypes.Properties;
+using TapirGrasshopperPlugin.ResponseTypes.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class GetHotLinksComponent : ArchicadAccessorComponent
     {
+        public static string CommandName => "GetHotlinks";
+
         public GetHotLinksComponent ()
             : base (
-                nameof(Hotlinks),
-                nameof(Hotlinks),
-                "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project.",
+                nameof (Hotlinks),
+                nameof (Hotlinks),
+                HotlinksResponse.Doc,
                 "Project"
             )
         {}
@@ -19,24 +22,20 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         {
-            pManager.AddTextParameter(nameof(Hotlink.Location) + "s", "", "", GH_ParamAccess.list);
+            pManager.AddTextParameter(nameof(Hotlink.Location) + "List", "", "", GH_ParamAccess.list);
+            pManager.AddTextParameter("JsonHierarchy", "", "", GH_ParamAccess.item);
         }
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            var response = SendArchicadAddOnCommand ("TapirCommand", "GetHotlinks", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
+            if (!GetResponse(CommandName, null, out HotlinksResponse response)) return;
 
-            var hResponse = response.Result.ToObject<GetHotlinksResponse> ();
-
-            DA.SetDataList(0, hResponse.Hotlinks.GetLocationsRecursively());
+            DA.SetDataList(0, response.Hotlinks.GetLocationsRecursively());
+            DA.SetData(1, JsonConvert.SerializeObject(response, Formatting.Indented));
         }
 
         protected override System.Drawing.Bitmap Icon => Properties.Resources.ProjectLocation;
 
-        public override Guid ComponentGuid => new Guid ("a0b9722f-bc40-4ac3-afbc-d93e21dd8975");
+        public override Guid ComponentGuid => new Guid("a0b9722f-bc40-4ac3-afbc-d93e21dd8975");
     }
 }

@@ -240,7 +240,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDetailsOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -318,7 +318,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDetailsOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -414,7 +414,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDetailsOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -514,7 +514,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDetailsOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -580,7 +580,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDetailsOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -653,7 +653,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDetailsOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -724,7 +724,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDetailsOfElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDetailsOfElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

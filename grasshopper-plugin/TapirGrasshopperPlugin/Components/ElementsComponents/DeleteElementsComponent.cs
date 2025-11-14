@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject elementsObj = JObject.FromObject (elements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "DeleteElements", elementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("DeleteElements", elementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

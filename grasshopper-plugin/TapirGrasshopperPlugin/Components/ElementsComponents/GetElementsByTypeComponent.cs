@@ -81,7 +81,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 Databases = databases is null || databases.Databases.Count == 0 ? null : databases.Databases
             };
             JObject elementyByTypeObj = JObject.FromObject (elementsByType);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetElementsByType", elementyByTypeObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetElementsByType", elementyByTypeObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

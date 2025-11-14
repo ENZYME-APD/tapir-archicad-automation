@@ -77,7 +77,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 AlignBySurveyPoint = alignBySurveyPoint
             };
             JObject parameters = JObject.FromObject (parametersOfExport);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "ExportIssuesToBCF", parameters);
+            CommandResponse response = SendArchicadAddOnCommand ("ExportIssuesToBCF", parameters);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

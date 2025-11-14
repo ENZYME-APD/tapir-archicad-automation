@@ -127,7 +127,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
             };
             JObject parametersObj = JObject.FromObject (parameters);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetCollisions", parametersObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetCollisions", parametersObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

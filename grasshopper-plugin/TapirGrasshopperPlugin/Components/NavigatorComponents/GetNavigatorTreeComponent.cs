@@ -186,7 +186,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 NavigatorItemIds = allItems
             };
             JObject inputObj = JObject.FromObject (input);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetDatabaseIdFromNavigatorItemId", inputObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetDatabaseIdFromNavigatorItemId", inputObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return databaseIdTree;

@@ -36,7 +36,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
+            CommandResponse response = SendArchicadAddOnCommand ("GetAllProperties", null);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

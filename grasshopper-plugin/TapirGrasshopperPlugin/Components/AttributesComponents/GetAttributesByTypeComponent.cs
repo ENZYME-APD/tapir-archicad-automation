@@ -56,7 +56,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 AttributeType = attrType
             };
             JObject attributesByTypeObj = JObject.FromObject (attributesByType);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAttributesByType", attributesByTypeObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetAttributesByType", attributesByTypeObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

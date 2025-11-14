@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSelectedElements", null);
+            CommandResponse response = SendArchicadAddOnCommand ("GetSelectedElements", null);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

@@ -67,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 Text = text
             };
             JObject parameters = JObject.FromObject (parametersOfNewComment);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "AddCommentToIssue", parameters);
+            CommandResponse response = SendArchicadAddOnCommand ("AddCommentToIssue", parameters);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

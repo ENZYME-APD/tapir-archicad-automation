@@ -78,7 +78,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject filterElementsObj = JObject.FromObject (filterElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "FilterElements", filterElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("FilterElements", filterElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

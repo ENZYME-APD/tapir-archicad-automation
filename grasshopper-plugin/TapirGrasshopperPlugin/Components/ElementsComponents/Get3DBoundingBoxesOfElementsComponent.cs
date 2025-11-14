@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "Get3DBoundingBoxes", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("Get3DBoundingBoxes", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

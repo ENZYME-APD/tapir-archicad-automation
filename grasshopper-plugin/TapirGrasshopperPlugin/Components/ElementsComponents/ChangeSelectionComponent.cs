@@ -68,7 +68,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             if (clearSelection) {
-                CommandResponse responseOfGetSelection = SendArchicadAddOnCommand ("TapirCommand", "GetSelectedElements", null);
+                CommandResponse responseOfGetSelection = SendArchicadAddOnCommand ("GetSelectedElements", null);
                 if (responseOfGetSelection.Succeeded) {
                     ElementsObj selectedElements = responseOfGetSelection.Result.ToObject<ElementsObj> ();
                     uniqueElementsToRemove.UnionWith (selectedElements.Elements);
@@ -84,7 +84,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 RemoveElementsFromSelection = uniqueElementsToRemove.ToList ()
             };
             JObject parametersObj = JObject.FromObject (parameters);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "ChangeSelectionOfElements", parametersObj);
+            CommandResponse response = SendArchicadAddOnCommand ("ChangeSelectionOfElements", parametersObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

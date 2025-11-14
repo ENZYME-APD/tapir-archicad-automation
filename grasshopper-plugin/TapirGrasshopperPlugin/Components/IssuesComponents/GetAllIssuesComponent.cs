@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetIssues", null);
+            CommandResponse response = SendArchicadAddOnCommand ("GetIssues", null);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

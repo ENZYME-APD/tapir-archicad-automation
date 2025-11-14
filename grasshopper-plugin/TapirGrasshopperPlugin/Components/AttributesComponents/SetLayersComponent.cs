@@ -138,7 +138,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             JObject layerDataArrayObj = JObject.FromObject (layerDataArray);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "CreateLayers", layerDataArrayObj);
+            CommandResponse response = SendArchicadAddOnCommand ("CreateLayers", layerDataArrayObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

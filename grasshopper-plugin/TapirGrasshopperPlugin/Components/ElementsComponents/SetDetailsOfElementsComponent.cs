@@ -130,7 +130,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject elementsWithDetailsObj = JObject.FromObject (obj);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "SetDetailsOfElements", elementsWithDetailsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("SetDetailsOfElements", elementsWithDetailsObj);
             ExecutionResultsObj executionResults = response.Result.ToObject<ExecutionResultsObj> ();
             for (int i = 0; i < executionResults.ExecutionResults.Count; i++) {
                 ExecutionResultObj executionResult = executionResults.ExecutionResults[i];

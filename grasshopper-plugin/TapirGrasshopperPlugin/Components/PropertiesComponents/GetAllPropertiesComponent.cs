@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
+            CommandResponse response = SendArchicadAddOnCommand ("GetAllProperties", null);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

@@ -56,7 +56,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 AlignBySurveyPoint = alignBySurveyPoint
             };
             JObject parameters = JObject.FromObject (parametersOfImport);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "ImportIssuesFromBCF", parameters);
+            CommandResponse response = SendArchicadAddOnCommand ("ImportIssuesFromBCF", parameters);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

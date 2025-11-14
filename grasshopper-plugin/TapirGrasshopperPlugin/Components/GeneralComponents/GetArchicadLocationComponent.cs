@@ -34,7 +34,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetArchicadLocation", null);
+            CommandResponse response = SendArchicadAddOnCommand ("GetArchicadLocation", null);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

@@ -127,7 +127,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 Wireframe3D = wireframe3D
             };
             JObject highlightElementsObj = JObject.FromObject (highlightElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "HighlightElements", highlightElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("HighlightElements", highlightElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
@@ -138,7 +138,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             HighlightElementsObj highlightElements = new HighlightElementsObj ();
             JObject highlightElementsObj = JObject.FromObject (highlightElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "HighlightElements", highlightElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("HighlightElements", highlightElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

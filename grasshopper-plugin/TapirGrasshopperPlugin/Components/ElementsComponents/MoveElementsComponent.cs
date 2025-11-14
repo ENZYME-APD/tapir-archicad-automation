@@ -106,7 +106,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 });
             }
             JObject moveElementsParametersObj = JObject.FromObject (moveElementsParameters);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "MoveElements", moveElementsParametersObj);
+            CommandResponse response = SendArchicadAddOnCommand ("MoveElements", moveElementsParametersObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

@@ -49,7 +49,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             protected override void Solve (IGH_DataAccess DA)
             {
-                CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetProjectInfoFields", null);
+                CommandResponse response = SendArchicadAddOnCommand ("GetProjectInfoFields", null);
                 if (!response.Succeeded) {
                     AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                     return;

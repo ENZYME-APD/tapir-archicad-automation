@@ -118,21 +118,70 @@ namespace TapirGrasshopperPlugin.Components
         protected static bool AutoExecute = false;
         public bool ManualExecuteRequested = false;
 
+        private static string CommandNameSpace => "TapirCommand";
+
         public Component (string name, string nickname, string description, string subCategory) :
             base (name, nickname, description, "Tapir", subCategory)
         {
         }
 
-        protected CommandResponse SendArchicadCommand (string commandName, JObject commandParameters)
+        protected CommandResponse SendArchicadCommand(
+            string commandName,
+            JObject commandParameters)
         {
-            ArchicadConnection connection = new ArchicadConnection (ConnectionSettings.Port);
-            return connection.SendCommand (commandName, commandParameters);
+            var connection = new ArchicadConnection(ConnectionSettings.Port);
+            return connection.SendCommand(commandName, commandParameters);
         }
 
-        protected CommandResponse SendArchicadAddOnCommand (string commandNamespace, string commandName, JObject commandParameters)
+        protected CommandResponse SendArchicadAddOnCommand(
+            string commandName, 
+            JObject commandParameters)
         {
-            ArchicadConnection connection = new ArchicadConnection (ConnectionSettings.Port);
-            return connection.SendAddOnCommand (commandNamespace, commandName, commandParameters);
+            var connection = new ArchicadConnection(ConnectionSettings.Port);
+
+            return connection.SendAddOnCommand(
+                CommandNameSpace, 
+                commandName, 
+                commandParameters);
+        }
+
+        protected bool GetArchicadAddonResponse(
+            string commandName,
+            JObject commandParameters,
+            out JObject response)
+        {
+            var cResponse = SendArchicadAddOnCommand(
+                commandName,
+                commandParameters);
+
+            if (!cResponse.Succeeded)
+            {
+                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, cResponse.GetErrorMessage());
+                response = null;
+                return false;
+            }
+
+            response = cResponse.Result;
+            return true;
+        }
+
+        protected bool GetResponse<T>(
+            string commandName,
+            JObject commandParameters,
+            out T response)
+            where T : class
+        {
+            if (!GetArchicadAddonResponse (commandName, commandParameters, out JObject result))
+            {
+                response = null;
+                return false;
+            }
+            else
+            {
+                response = result.ToObject<T> ();
+                return true;
+            }
+
         }
     }
 

@@ -62,7 +62,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSubelementsOfHierarchicalElements", inputElementsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetSubelementsOfHierarchicalElements", inputElementsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

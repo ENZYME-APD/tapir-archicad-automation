@@ -75,7 +75,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             }
 
             JObject storiesObj = JObject.FromObject (stories);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "SetStories", storiesObj);
+            CommandResponse response = SendArchicadAddOnCommand ("SetStories", storiesObj);
             ExecutionResultObj executionResult = response.Result.ToObject<ExecutionResultObj> ();
             if (!executionResult.Success) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, executionResult.Error.Message);

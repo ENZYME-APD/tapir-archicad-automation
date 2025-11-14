@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TapirGrasshopperPlugin.ResponseTypes.Properties
+namespace TapirGrasshopperPlugin.ResponseTypes.Project
 {
-    public class GetHotlinksResponse
+    public class HotlinksResponse
     {
+        public static string Doc => "Gets the file system locations (path) of the hotlink modules. " +
+            "The hotlinks can have tree hierarchy in the project.";
+
         [JsonProperty ("hotlinks")]
         public Hotlinks Hotlinks { get; set; }
     }

@@ -80,7 +80,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             JObject parametersObj = JObject.FromObject (new ZoneBoundaryParameters () {
                 ZoneElementId = inputZone.ElementId
             });
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetZoneBoundaries", parametersObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetZoneBoundaries", parametersObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

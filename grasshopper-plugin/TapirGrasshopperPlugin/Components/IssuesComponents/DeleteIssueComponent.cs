@@ -57,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 AcceptAllElements = acceptAllElements
             };
             JObject parameters = JObject.FromObject (parametersOfDelete);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "DeleteIssue", parameters);
+            CommandResponse response = SendArchicadAddOnCommand ("DeleteIssue", parameters);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

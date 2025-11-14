@@ -51,7 +51,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             };
 
             JObject elementsAndPropertyIdsObj = JObject.FromObject (elementsAndPropertyIds);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetPropertyValuesOfElements", elementsAndPropertyIdsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("GetPropertyValuesOfElements", elementsAndPropertyIdsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;

@@ -88,7 +88,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             JObject elementClassificationsObj = JObject.FromObject (elementClassifications);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "SetClassificationsOfElements", elementClassificationsObj);
+            CommandResponse response = SendArchicadAddOnCommand ("SetClassificationsOfElements", elementClassificationsObj);
             if (!response.Succeeded) {
                 AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
                 return;
