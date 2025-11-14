@@ -29,6 +29,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             DA.SetData(1, JsonConvert.SerializeObject(response, Formatting.Indented));
         }
 
-        public override Guid ComponentGuid => new Guid ("a0b9722f-bc40-4ac3-afbc-d93e21dd8975");
+        public override Guid ComponentGuid => new Guid ("89ae1638-8c9f-481f-8a01-5cdf2ded8071");
     }
 }

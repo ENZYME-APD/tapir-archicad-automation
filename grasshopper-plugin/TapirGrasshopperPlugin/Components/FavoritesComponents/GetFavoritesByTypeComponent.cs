@@ -35,6 +35,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             DA.SetDataList (0, response.Favorites);
         }
 
-        public override Guid ComponentGuid => new Guid ("fabe81bd-a365-42a9-a15f-a780283c0510");
+        public override Guid ComponentGuid => new Guid ("2055b426-9c88-4b49-8ff4-4b03145e5b1c");
     }
 }
