@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Generic
 {
@@ -23,7 +22,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
             }
         }
 
-        public virtual string ResultMessage () => "Success";
+        public virtual string ResultMessage () => "Success.";
     }
 
     public class SuccessfulExecutionResult : ExecutionResultBase
@@ -36,19 +35,5 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
         public Error Error { get; set; }
 
         public override string ResultMessage () => Error.ToString();
-    }
-
-    public class Error
-    {
-        [JsonProperty ("code")]
-        public int Code { get; set; }
-
-        [JsonProperty ("message")]
-        public string Message { get; set; }
-
-        public override string ToString ()
-        {
-            return $"Failure:{Environment.NewLine}Code: {Code}{Environment.NewLine}Message: {Message}";
-        }
     }
 }

@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public static string CommandName => "OpenProject";
 
         public OpenProjectComponent ()
-            : base ( "Open Project", "Open Project", OpenProjectResponse.Doc, GroupNames.Project )
+            : base (CommandName, "Open Project", "Opens the given project.", GroupNames.Project )
         { }
 
         protected override void RegisterInputParams (GH_InputParamManager pManager)

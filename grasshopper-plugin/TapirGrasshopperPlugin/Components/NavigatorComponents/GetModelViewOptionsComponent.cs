@@ -9,8 +9,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
     {
         public static string CommandName => "GetModelViewOptions";
 
-        public GetModelViewOptionsComponent () : base (
-                  nameof (ModelViewOptionsResponse.ModelViewOptions),
+        public GetModelViewOptionsComponent () :
+            base (nameof (ModelViewOptionsResponse.ModelViewOptions),
                   nameof (ModelViewOptionsResponse.ModelViewOptions),
                   ModelViewOptionsResponse.Doc,
                   GroupNames.Navigator )

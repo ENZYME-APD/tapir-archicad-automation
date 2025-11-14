@@ -2,11 +2,6 @@
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Project
 {
-    public class OpenProjectResponse
-    {
-        public static string Doc => "Opens the given project.";
-    }
-
     public class ProjectFilePathObject
     {
         [JsonProperty ("projectFilePath")]
