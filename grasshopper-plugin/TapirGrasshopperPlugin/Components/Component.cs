@@ -13,7 +13,8 @@ namespace TapirGrasshopperPlugin.Components
 {
     public interface IButtonComponent
     {
-        void OnCapsuleButtonPressed (int buttonIndex);
+        void OnCapsuleButtonPressed(
+            int buttonIndex);
 
         List<string> CapsuleButtonTexts { get; set; }
     }
@@ -21,93 +22,139 @@ namespace TapirGrasshopperPlugin.Components
     public class ButtonAttributes : GH_ComponentAttributes
     {
         #region Fields
+
         private List<bool> _isPressed;
         private List<RectangleF> _buttonBounds;
         private int _additionalWidth;
+
         #endregion Fields
 
         #region Constructor
-        public ButtonAttributes (IGH_Component component, int buttonCount = 1, int additionalWidth = 0)
-            : base (component)
+
+        public ButtonAttributes(
+            IGH_Component component,
+            int buttonCount = 1,
+            int additionalWidth = 0)
+            : base(component)
         {
-            _isPressed = new List<bool> (new bool[buttonCount]);
-            _buttonBounds = new List<RectangleF> (new RectangleF[buttonCount]);
+            _isPressed = new List<bool>(new bool[buttonCount]);
+            _buttonBounds = new List<RectangleF>(new RectangleF[buttonCount]);
             _additionalWidth = additionalWidth;
         }
+
         #endregion Constructor
 
         #region Methods
-        protected override void Layout ()
-        {
-            base.Layout ();
 
-            Rectangle componentCapsule = GH_Convert.ToRectangle (this.Bounds);
+        protected override void Layout()
+        {
+            base.Layout();
+
+            var componentCapsule = GH_Convert.ToRectangle(this.Bounds);
             componentCapsule.Width += _additionalWidth;
             componentCapsule.Height += this._buttonBounds.Count * 30;
 
-            for (int i = 0; i < this._buttonBounds.Count; ++i) {
-                Rectangle buttonCapsule = componentCapsule;
+            for (var i = 0; i < this._buttonBounds.Count; ++i)
+            {
+                var buttonCapsule = componentCapsule;
                 buttonCapsule.Y = buttonCapsule.Bottom - (i + 1) * 30;
                 buttonCapsule.Height = 30;
-                buttonCapsule.Inflate (-5, -5);
+                buttonCapsule.Inflate(
+                    -5,
+                    -5);
                 this._buttonBounds[i] = buttonCapsule;
             }
 
             this.Bounds = componentCapsule;
         }
 
-        protected override void Render (GH_Canvas canvas, Graphics graphics, GH_CanvasChannel channel)
+        protected override void Render(
+            GH_Canvas canvas,
+            Graphics graphics,
+            GH_CanvasChannel channel)
         {
-            base.Render (canvas, graphics, channel);
+            base.Render(
+                canvas,
+                graphics,
+                channel);
 
-            if (channel == GH_CanvasChannel.Objects) {
-                if (this.Owner is IButtonComponent buttonComponent) {
-                    for (int i = 0; i < this._buttonBounds.Count; ++i) {
-                        GH_Capsule buttonCapsule = GH_Capsule.CreateTextCapsule (
+            if (channel == GH_CanvasChannel.Objects)
+            {
+                if (this.Owner is IButtonComponent buttonComponent)
+                {
+                    for (var i = 0; i < this._buttonBounds.Count; ++i)
+                    {
+                        var buttonCapsule = GH_Capsule.CreateTextCapsule(
                             box: this._buttonBounds[i],
                             textbox: this._buttonBounds[i],
-                            palette: this._isPressed[i] ? GH_Palette.Grey : GH_Palette.Black,
+                            palette: this._isPressed[i]
+                                ? GH_Palette.Grey
+                                : GH_Palette.Black,
                             text: buttonComponent.CapsuleButtonTexts[i],
                             radius: 5,
                             highlight: 0);
-                        buttonCapsule.Render (graphics, this.Selected, this.Owner.Locked, false);
-                        buttonCapsule.Dispose ();
+                        buttonCapsule.Render(
+                            graphics,
+                            this.Selected,
+                            this.Owner.Locked,
+                            false);
+                        buttonCapsule.Dispose();
                     }
                 }
             }
         }
 
-        public override GH_ObjectResponse RespondToMouseDown (GH_Canvas sender, GH_CanvasMouseEvent e)
+        public override GH_ObjectResponse RespondToMouseDown(
+            GH_Canvas sender,
+            GH_CanvasMouseEvent e)
         {
-            if (e.Button == MouseButtons.Left) {
-                for (int i = 0; i < this._buttonBounds.Count; ++i) {
-                    if (this._buttonBounds[i].Contains (e.CanvasLocation)) {
+            if (e.Button == MouseButtons.Left)
+            {
+                for (var i = 0; i < this._buttonBounds.Count; ++i)
+                {
+                    if (this._buttonBounds[i].Contains(e.CanvasLocation))
+                    {
                         this._isPressed[i] = true;
-                        sender.Refresh ();
+                        sender.Refresh();
 
                         return GH_ObjectResponse.Handled;
                     }
                 }
             }
-            return base.RespondToMouseDown (sender, e);
+
+            return base.RespondToMouseDown(
+                sender,
+                e);
         }
 
-        public override GH_ObjectResponse RespondToMouseUp (GH_Canvas sender, GH_CanvasMouseEvent e)
+        public override GH_ObjectResponse RespondToMouseUp(
+            GH_Canvas sender,
+            GH_CanvasMouseEvent e)
         {
-            if (e.Button == System.Windows.Forms.MouseButtons.Left) {
-                for (int i = 0; i < this._buttonBounds.Count; ++i) {
-                    if (this._buttonBounds[i].Contains (e.CanvasLocation) && this._isPressed[i] == true) {
-                        if (this.Owner is IButtonComponent buttonComponent) {
-                            buttonComponent.OnCapsuleButtonPressed (i);
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                for (var i = 0; i < this._buttonBounds.Count; ++i)
+                {
+                    if (this._buttonBounds[i].Contains(e.CanvasLocation) &&
+                        this._isPressed[i] == true)
+                    {
+                        if (this.Owner is IButtonComponent buttonComponent)
+                        {
+                            buttonComponent.OnCapsuleButtonPressed(i);
                             this._isPressed[i] = false;
-                            sender.Refresh ();
+                            sender.Refresh();
                         }
+
                         return GH_ObjectResponse.Release;
                     }
                 }
             }
-            return base.RespondToMouseUp (sender, e);
+
+            return base.RespondToMouseUp(
+                sender,
+                e);
         }
+
         #endregion Methods
     }
 
@@ -120,8 +167,17 @@ namespace TapirGrasshopperPlugin.Components
 
         private static string CommandNameSpace => "TapirCommand";
 
-        public Component (string name, string nickname, string description, string subCategory) :
-            base (name, nickname, description, "Tapir", subCategory)
+        public Component(
+            string name,
+            string nickname,
+            string description,
+            string subCategory)
+            : base(
+                name,
+                nickname,
+                description,
+                "Tapir",
+                subCategory)
         {
         }
 
@@ -130,18 +186,20 @@ namespace TapirGrasshopperPlugin.Components
             JObject commandParameters)
         {
             var connection = new ArchicadConnection(ConnectionSettings.Port);
-            return connection.SendCommand(commandName, commandParameters);
+            return connection.SendCommand(
+                commandName,
+                commandParameters);
         }
 
         protected CommandResponse SendArchicadAddOnCommand(
-            string commandName, 
+            string commandName,
             JObject commandParameters)
         {
             var connection = new ArchicadConnection(ConnectionSettings.Port);
 
             return connection.SendAddOnCommand(
-                CommandNameSpace, 
-                commandName, 
+                CommandNameSpace,
+                commandName,
                 commandParameters);
         }
 
@@ -156,7 +214,9 @@ namespace TapirGrasshopperPlugin.Components
 
             if (!cResponse.Succeeded)
             {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, cResponse.GetErrorMessage());
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    cResponse.GetErrorMessage());
                 response = null;
                 return false;
             }
@@ -171,146 +231,200 @@ namespace TapirGrasshopperPlugin.Components
             out T response)
             where T : class
         {
-            if (!GetArchicadAddonResponse (commandName, commandParameters, out JObject result))
+            if (!GetArchicadAddonResponse(
+                    commandName,
+                    commandParameters,
+                    out var result))
             {
                 response = null;
                 return false;
             }
             else
             {
-                response = result.ToObject<T> ();
+                response = result.ToObject<T>();
                 return true;
             }
-
         }
     }
 
-    abstract public class ArchicadAccessorComponent : Component, IButtonComponent
+    abstract public class ArchicadAccessorComponent
+        : Component, IButtonComponent
     {
-        public ArchicadAccessorComponent (string name, string nickname, string description, string subCategory) :
-            base (name, nickname, description, subCategory)
+        public ArchicadAccessorComponent(
+            string name,
+            string nickname,
+            string description,
+            string subCategory)
+            : base(
+                name,
+                nickname,
+                description,
+                subCategory)
         {
-            CapsuleButtonTexts = new List<string> () { "Refresh" };
+            CapsuleButtonTexts = new List<string>() { "Refresh" };
         }
 
-        protected override void AppendAdditionalComponentMenuItems (ToolStripDropDown menu)
+        protected override void AppendAdditionalComponentMenuItems(
+            ToolStripDropDown menu)
         {
-            base.AppendAdditionalComponentMenuItems (menu);
-            Menu_AppendItem (menu, "Refresh from Archicad", OnRefreshButtonClicked);
+            base.AppendAdditionalComponentMenuItems(menu);
+            Menu_AppendItem(
+                menu,
+                "Refresh from Archicad",
+                OnRefreshButtonClicked);
         }
 
-        public override void CreateAttributes ()
+        public override void CreateAttributes()
         {
-            this.m_attributes = new ButtonAttributes (this);
+            this.m_attributes = new ButtonAttributes(this);
         }
 
-        public virtual void OnCapsuleButtonPressed (int buttonIndex)
+        public virtual void OnCapsuleButtonPressed(
+            int buttonIndex)
         {
-            ManualRefresh ();
+            ManualRefresh();
         }
 
-        private void OnRefreshButtonClicked (object sender, EventArgs e)
+        private void OnRefreshButtonClicked(
+            object sender,
+            EventArgs e)
         {
-            ManualRefresh ();
+            ManualRefresh();
         }
 
-        public void ManualRefresh ()
+        public void ManualRefresh()
         {
             ManualRefreshRequested = true;
-            try {
-                ExpireSolution (true);
-            } finally {
+            try
+            {
+                ExpireSolution(true);
+            }
+            finally
+            {
                 ManualRefreshRequested = false;
             }
         }
 
-        protected override void ExpireDownStreamObjects ()
+        protected override void ExpireDownStreamObjects()
         {
-            base.ExpireDownStreamObjects ();
+            base.ExpireDownStreamObjects();
 
-            foreach (var input in Params.Input) {
-                if (input is ArchicadAccessorValueList valueList) {
-                    valueList.RefreshItems ();
+            foreach (var input in Params.Input)
+            {
+                if (input is ArchicadAccessorValueList valueList)
+                {
+                    valueList.RefreshItems();
                 }
             }
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void SolveInstance(
+            IGH_DataAccess DA)
         {
-            if (!AutoRefresh && !ManualRefreshRequested) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Remark, "Outdated, waiting for manual refresh");
+            if (!AutoRefresh && !ManualRefreshRequested)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Remark,
+                    "Outdated, waiting for manual refresh");
                 return;
             }
 
-            Solve (DA);
+            Solve(DA);
         }
 
-        protected abstract void Solve (IGH_DataAccess DA);
+        protected abstract void Solve(
+            IGH_DataAccess DA);
 
         public List<string> CapsuleButtonTexts { get; set; }
     }
 
-    abstract public class ArchicadExecutorComponent : Component, IButtonComponent
+    abstract public class ArchicadExecutorComponent
+        : Component, IButtonComponent
     {
-        public ArchicadExecutorComponent (string name, string nickname, string description, string subCategory) :
-            base (name, nickname, description, subCategory)
+        public ArchicadExecutorComponent(
+            string name,
+            string nickname,
+            string description,
+            string subCategory)
+            : base(
+                name,
+                nickname,
+                description,
+                subCategory)
         {
-            CapsuleButtonTexts = new List<string> () { "Execute" };
+            CapsuleButtonTexts = new List<string>() { "Execute" };
         }
 
-        protected override void AppendAdditionalComponentMenuItems (ToolStripDropDown menu)
+        protected override void AppendAdditionalComponentMenuItems(
+            ToolStripDropDown menu)
         {
-            base.AppendAdditionalComponentMenuItems (menu);
-            Menu_AppendItem (menu, "Execute in Archicad", OnExecuteButtonClicked);
+            base.AppendAdditionalComponentMenuItems(menu);
+            Menu_AppendItem(
+                menu,
+                "Execute in Archicad",
+                OnExecuteButtonClicked);
         }
 
-        public override void CreateAttributes ()
+        public override void CreateAttributes()
         {
-            this.m_attributes = new ButtonAttributes (this);
+            this.m_attributes = new ButtonAttributes(this);
         }
 
-        public virtual void OnCapsuleButtonPressed (int buttonIndex)
+        public virtual void OnCapsuleButtonPressed(
+            int buttonIndex)
         {
-            ManualExecute ();
+            ManualExecute();
         }
 
-        private void OnExecuteButtonClicked (object sender, EventArgs e)
+        private void OnExecuteButtonClicked(
+            object sender,
+            EventArgs e)
         {
-            ManualExecute ();
+            ManualExecute();
         }
 
-        public void ManualExecute ()
+        public void ManualExecute()
         {
             ManualExecuteRequested = true;
-            try {
-                ExpireSolution (true);
-            } finally {
+            try
+            {
+                ExpireSolution(true);
+            }
+            finally
+            {
                 ManualExecuteRequested = false;
             }
         }
 
-        protected override void ExpireDownStreamObjects ()
+        protected override void ExpireDownStreamObjects()
         {
-            base.ExpireDownStreamObjects ();
+            base.ExpireDownStreamObjects();
 
-            foreach (var input in Params.Input) {
-                if (input is ArchicadAccessorValueList valueList) {
-                    valueList.RefreshItems ();
+            foreach (var input in Params.Input)
+            {
+                if (input is ArchicadAccessorValueList valueList)
+                {
+                    valueList.RefreshItems();
                 }
             }
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void SolveInstance(
+            IGH_DataAccess DA)
         {
-            if (!AutoExecute && !ManualExecuteRequested) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Remark, "Waiting for manual execution");
+            if (!AutoExecute && !ManualExecuteRequested)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Remark,
+                    "Waiting for manual execution");
                 return;
             }
 
-            Solve (DA);
+            Solve(DA);
         }
 
-        protected abstract void Solve (IGH_DataAccess DA);
+        protected abstract void Solve(
+            IGH_DataAccess DA);
 
         public List<string> CapsuleButtonTexts { get; set; }
     }
@@ -319,20 +433,34 @@ namespace TapirGrasshopperPlugin.Components
     {
         private int _additionalWidth;
 
-        public ButtonComponent (string name, string nickname, string description, string subCategory, string buttonText, int additionalWidth = 0) :
-            base (name, nickname, description, subCategory)
+        public ButtonComponent(
+            string name,
+            string nickname,
+            string description,
+            string subCategory,
+            string buttonText,
+            int additionalWidth = 0)
+            : base(
+                name,
+                nickname,
+                description,
+                subCategory)
         {
-            CapsuleButtonTexts = new List<string> () { buttonText };
+            CapsuleButtonTexts = new List<string>() { buttonText };
             _additionalWidth = additionalWidth;
-            CreateAttributes ();
+            CreateAttributes();
         }
 
-        public override void CreateAttributes ()
+        public override void CreateAttributes()
         {
-            this.m_attributes = new ButtonAttributes (this, 2, _additionalWidth);
+            this.m_attributes = new ButtonAttributes(
+                this,
+                2,
+                _additionalWidth);
         }
 
-        public abstract void OnCapsuleButtonPressed (int buttonIndex);
+        public abstract void OnCapsuleButtonPressed(
+            int buttonIndex);
 
         public List<string> CapsuleButtonTexts { get; set; }
     }

@@ -10,21 +10,29 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public static string CommandName => "GetProjectInfoFields";
 
         public GetProjectInfoFieldsComponent ()
-            : base ("Project Info", "ProjectInfo", "Get project info.", GroupNames.Project)
+            : base ("Project Info", "ProjectInfo", "Get project info.",
+                GroupNames.Project)
         { }
 
         protected override void RegisterInputParams (GH_InputParamManager pManager) { }
 
         protected override void RegisterOutputParams (GH_OutputParamManager pManager)
         { 
-            pManager.AddTextParameter ("Project Info Id", "ProjectInfoId", "Project Info Id.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("Project Info Name", "ProjectInfoName", "Project Info Name.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("Project Info Value", "ProjectInfoValue", "Project Info Value.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("Project Info Id", "ProjectInfoId",
+                "Project Info Id.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("Project Info Name", "ProjectInfoName",
+                "Project Info Name.", GH_ParamAccess.list);
+            pManager.AddTextParameter ("Project Info Value", "ProjectInfoValue",
+                "Project Info Value.", GH_ParamAccess.list);
         }
 
         protected override void Solve (IGH_DataAccess DA)
         {
-            if (!GetResponse (CommandName, null, out ProjectInfoFields projectInfoFields)) return;
+            if (!GetResponse (CommandName, null,
+                    out ProjectInfoFields projectInfoFields))
+            {
+                return;
+            }
 
             var ids = new List<string> ();
             var names = new List<string> ();

@@ -10,89 +10,134 @@ namespace TapirGrasshopperPlugin.Components.General
         private const int RefreshAllButtonIndex = 0;
         private const int ExecuteAllButtonIndex = 1;
 
-        public ConnectArchicadComponent ()
-          : base (
+        public ConnectArchicadComponent()
+            : base(
                 "Connect Archicad",
                 "Connect Archicad",
                 "Connect to Archicad by port number.",
-                "General"
-            )
+                "General")
         {
-            CapsuleButtonTexts = new List<string> () {
-                "Refresh All",
-                "Execute All"
-            };
+            CapsuleButtonTexts =
+                new List<string>() { "Refresh All", "Execute All" };
         }
 
-        public override void CreateAttributes ()
+        public override void CreateAttributes()
         {
-            this.m_attributes = new ButtonAttributes (this, 2);
+            this.m_attributes = new ButtonAttributes(
+                this,
+                2);
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
         {
-            pManager.AddIntegerParameter ("Port", "Port", "Port number", GH_ParamAccess.item, @default: ConnectionSettings.Port);
-            pManager.AddBooleanParameter ("Allow Automatic Refresh", "Auto Refresh", "Allow Automatic Refresh", GH_ParamAccess.item, @default: AutoRefresh);
-            pManager.AddBooleanParameter ("Allow Automatic Execution", "Auto Execute", "Allow Automatic Execution", GH_ParamAccess.item, @default: AutoExecute);
+            pManager.AddIntegerParameter(
+                "Port",
+                "Port",
+                "Port number",
+                GH_ParamAccess.item,
+                @default: ConnectionSettings.Port);
+            pManager.AddBooleanParameter(
+                "Allow Automatic Refresh",
+                "Auto Refresh",
+                "Allow Automatic Refresh",
+                GH_ParamAccess.item,
+                @default: AutoRefresh);
+            pManager.AddBooleanParameter(
+                "Allow Automatic Execution",
+                "Auto Execute",
+                "Allow Automatic Execution",
+                GH_ParamAccess.item,
+                @default: AutoExecute);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
-            pManager.AddTextParameter ("Success", "Success", "Sucessful connection to Archicad.", GH_ParamAccess.item);
+            pManager.AddTextParameter(
+                "Success",
+                "Success",
+                "Sucessful connection to Archicad.",
+                GH_ParamAccess.item);
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void SolveInstance(
+            IGH_DataAccess DA)
         {
-            Solve (DA);
+            Solve(DA);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess DA)
         {
-            int portNumber = 0;
-            if (!DA.GetData (0, ref portNumber)) {
+            var portNumber = 0;
+            if (!DA.GetData(
+                    0,
+                    ref portNumber))
+            {
                 return;
             }
 
-            if (!DA.GetData (1, ref AutoRefresh)) {
+            if (!DA.GetData(
+                    1,
+                    ref AutoRefresh))
+            {
                 return;
             }
 
-            if (!DA.GetData (2, ref AutoExecute)) {
+            if (!DA.GetData(
+                    2,
+                    ref AutoExecute))
+            {
                 return;
             }
 
             ConnectionSettings.Port = portNumber;
-            CommandResponse response = SendArchicadCommand ("IsAlive", null);
-            DA.SetData (0, response.Succeeded);
+            var response = SendArchicadCommand(
+                "IsAlive",
+                null);
+            DA.SetData(
+                0,
+                response.Succeeded);
         }
 
-        public override void OnCapsuleButtonPressed (int buttonIndex)
+        public override void OnCapsuleButtonPressed(
+            int buttonIndex)
         {
-            if (buttonIndex == RefreshAllButtonIndex) {
-                GH_Document doc = OnPingDocument ();
-                if (doc != null) {
-                    foreach (IGH_DocumentObject obj in doc.Objects)
-                        if (obj is ArchicadAccessorComponent archicadAccessor) {
+            if (buttonIndex == RefreshAllButtonIndex)
+            {
+                var doc = OnPingDocument();
+                if (doc != null)
+                {
+                    foreach (var obj in doc.Objects)
+                        if (obj is ArchicadAccessorComponent archicadAccessor)
+                        {
                             archicadAccessor.ManualRefreshRequested = true;
-                            archicadAccessor.ExpireSolution (true);
+                            archicadAccessor.ExpireSolution(true);
                             archicadAccessor.ManualRefreshRequested = false;
                         }
                 }
-            } else if (buttonIndex == ExecuteAllButtonIndex) {
-                GH_Document doc = OnPingDocument ();
-                if (doc != null) {
-                    foreach (IGH_DocumentObject obj in doc.Objects)
-                        if (obj is ArchicadExecutorComponent archicadExecutor) {
+            }
+            else if (buttonIndex == ExecuteAllButtonIndex)
+            {
+                var doc = OnPingDocument();
+                if (doc != null)
+                {
+                    foreach (var obj in doc.Objects)
+                        if (obj is ArchicadExecutorComponent archicadExecutor)
+                        {
                             archicadExecutor.ManualExecuteRequested = true;
-                            archicadExecutor.ExpireSolution (true);
+                            archicadExecutor.ExpireSolution(true);
                             archicadExecutor.ManualExecuteRequested = false;
                         }
                 }
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ConnectArchicad;
+        protected override System.Drawing.Bitmap Icon =>
+            TapirGrasshopperPlugin.Properties.Resources.ConnectArchicad;
 
-        public override Guid ComponentGuid => new Guid ("f99302e6-2cbd-438e-ac63-c90f76f4b7d9");
+        public override Guid ComponentGuid =>
+            new Guid("f99302e6-2cbd-438e-ac63-c90f76f4b7d9");
     }
 }

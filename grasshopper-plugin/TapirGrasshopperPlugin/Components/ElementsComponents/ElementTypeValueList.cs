@@ -1,10 +1,6 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
-using Grasshopper.GUI;
 using System;
-using System.Drawing;
 using System.Windows.Forms;
-using System.Runtime.CompilerServices;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -105,7 +101,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         public ElementTypeValueList (ElementTypeValueListType t) :
-            base ("Element Type", "", "Value List for Archicad Element Types.", "Elements")
+            base ("Element Type", "", "Value List for Archicad Element Types.",
+                "Elements")
         {
             type = t;
         }
@@ -113,8 +110,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public override void AppendAdditionalMenuItems (ToolStripDropDown menu)
         {
             menu.Items.Clear ();
-            GH_DocumentObject.Menu_AppendItem (menu, "MainElements", Menu_MainElementsClicked, enabled: true, @checked: type != ElementTypeValueListType.SubElementsOnly);
-            GH_DocumentObject.Menu_AppendItem (menu, "SubElements", Menu_SubElementsClicked, enabled: true, @checked: type != ElementTypeValueListType.MainElementsOnly);
+            GH_DocumentObject.Menu_AppendItem (menu, "MainElements",
+                Menu_MainElementsClicked, enabled: true,
+                @checked: type != ElementTypeValueListType.SubElementsOnly);
+            GH_DocumentObject.Menu_AppendItem (menu, "SubElements",
+                Menu_SubElementsClicked, enabled: true,
+                @checked: type != ElementTypeValueListType.MainElementsOnly);
         }
 
         private void Menu_MainElementsClicked (object sender, EventArgs e)

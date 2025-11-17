@@ -1,12 +1,4 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
-using Grasshopper.GUI;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+﻿using System;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -21,7 +13,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     public class IssueElementTypeValueList : ValueList
     {
         public IssueElementTypeValueList () :
-            base ("IssueElementType", "", "Value List for Issue Element Types.", "Issues")
+            base ("IssueElementType", "", "Value List for Issue Element Types.",
+                "Issues")
         {
         }
 

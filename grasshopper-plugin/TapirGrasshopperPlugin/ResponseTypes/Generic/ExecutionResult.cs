@@ -1,8 +1,17 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Generic
 {
+    public class ExecutionResultsResponse
+    {
+        public static string Doc => "A list of execution results.";
+
+        [JsonProperty ("executionResults")]
+        public List<ExecutionResultBase> ExecutionResults { get; set; }
+    }
+
     public class ExecutionResultBase
     {
         [JsonProperty ("success")]
@@ -22,7 +31,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
             }
         }
 
-        public virtual string ResultMessage () => "Success.";
+        public virtual string Message () => "Success.";
     }
 
     public class SuccessfulExecutionResult : ExecutionResultBase
@@ -34,6 +43,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
         [JsonProperty ("error")]
         public Error Error { get; set; }
 
-        public override string ResultMessage () => Error.ToString();
+        public override string Message () => Error.ToString();
     }
 }

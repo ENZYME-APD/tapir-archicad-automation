@@ -12,68 +12,99 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public class ParametersOfDetachElements
         {
-            [JsonProperty ("issueId")]
+            [JsonProperty("issueId")]
             public IssueIdObj IssueId;
 
-            [JsonProperty ("elements")]
+            [JsonProperty("elements")]
             public List<ElementIdItemObj> Elements;
         }
 
-        public DetachElementsFromIssueComponent ()
-          : base (
+        public DetachElementsFromIssueComponent()
+            : base(
                 "Detach Elements from an Issue",
                 "DetachElements",
                 "Detach Elements from an Issue.",
-                "Issues"
-            )
+                "Issues")
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("IssueGuid", "IssueGuid", "Issue Guid.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Elements to detach.", GH_ParamAccess.list);
+            pManager.AddGenericParameter(
+                "IssueGuid",
+                "IssueGuid",
+                "Issue Guid.",
+                GH_ParamAccess.item);
+            pManager.AddGenericParameter(
+                "ElementGuids",
+                "ElementGuids",
+                "Elements to detach.",
+                GH_ParamAccess.list);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
         }
 
-        public override void AddedToDocument (GH_Document document)
+        public override void AddedToDocument(
+            GH_Document document)
         {
-            base.AddedToDocument (document);
+            base.AddedToDocument(document);
 
-            new IssueElementTypeValueList ().AddAsSource (this, 2);
+            new IssueElementTypeValueList().AddAsSource(
+                this,
+                2);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess DA)
         {
-            IssueIdObj issueId = IssueIdObj.Create (DA, 0);
-            if (issueId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueGuid failed to collect data.");
+            var issueId = IssueIdObj.Create(
+                DA,
+                0);
+            if (issueId == null)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    "Input IssueGuid failed to collect data.");
                 return;
             }
 
-            ElementsObj elements = ElementsObj.Create (DA, 1);
-            if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            var elements = ElementsObj.Create(
+                DA,
+                1);
+            if (elements == null)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    "Input ElementGuids failed to collect data.");
                 return;
             }
 
-            ParametersOfDetachElements parametersOfDetachElements = new ParametersOfDetachElements {
-                IssueId = issueId,
-                Elements = elements.Elements
+            var parametersOfDetachElements = new ParametersOfDetachElements
+            {
+                IssueId = issueId, Elements = elements.Elements
             };
-            JObject parameters = JObject.FromObject (parametersOfDetachElements);
-            CommandResponse response = SendArchicadAddOnCommand ("DetachElementsFromIssue", parameters);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            var parameters = JObject.FromObject(parametersOfDetachElements);
+            var response = SendArchicadAddOnCommand(
+                "DetachElementsFromIssue",
+                parameters);
+            if (!response.Succeeded)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    response.GetErrorMessage());
                 return;
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.DetachElementsFromAnIssue;
+        protected override System.Drawing.Bitmap Icon =>
+            TapirGrasshopperPlugin.Properties.Resources
+                .DetachElementsFromAnIssue;
 
-        public override Guid ComponentGuid => new Guid ("83189f2c-5a8a-4315-a506-2a30a2737ae6");
+        public override Guid ComponentGuid =>
+            new Guid("83189f2c-5a8a-4315-a506-2a30a2737ae6");
     }
 }

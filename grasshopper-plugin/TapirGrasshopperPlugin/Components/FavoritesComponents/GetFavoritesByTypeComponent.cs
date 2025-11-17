@@ -10,31 +10,61 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
     {
         public static string CommandName => "GetFavoritesByType";
 
-        public GetFavoritesByTypeComponent () :
-            base (CommandName, CommandName, FavoritesResponse.Doc, GroupNames.Favorites)
-        { }
-
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        public GetFavoritesByTypeComponent()
+            : base(
+                CommandName,
+                CommandName,
+                FavoritesResponse.Doc,
+                GroupNames.Favorites)
         {
-            pManager.AddTextParameter ("Type", "Type", "Element type.", GH_ParamAccess.item);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
         {
-            pManager.AddTextParameter (nameof (Favorites), "", "", GH_ParamAccess.list);
+            pManager.AddTextParameter(
+                "Type",
+                "Type",
+                "Element type.",
+                GH_ParamAccess.item);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
-            if (!DA.GetItem (0, out string eType)) return;
-
-            var jObject = JObject.FromObject (new ElementTypeObject (eType));
-
-            if (!GetResponse (CommandName, jObject, out FavoritesResponse response)) return;
-
-            DA.SetDataList (0, response.Favorites);
+            pManager.AddTextParameter(
+                nameof(Favorites),
+                "",
+                "",
+                GH_ParamAccess.list);
         }
 
-        public override Guid ComponentGuid => new Guid ("2055b426-9c88-4b49-8ff4-4b03145e5b1c");
+        protected override void Solve(
+            IGH_DataAccess DA)
+        {
+            if (!DA.GetItem(
+                    0,
+                    out string eType))
+            {
+                return;
+            }
+
+            var jObject = JObject.FromObject(new ElementTypeObject(eType));
+
+            if (!GetResponse(
+                    CommandName,
+                    jObject,
+                    out FavoritesResponse response))
+            {
+                return;
+            }
+
+            DA.SetDataList(
+                0,
+                response.Favorites);
+        }
+
+        public override Guid ComponentGuid =>
+            new Guid("2055b426-9c88-4b49-8ff4-4b03145e5b1c");
     }
 }

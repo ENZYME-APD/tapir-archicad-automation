@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.Components;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 
@@ -8,39 +7,54 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetSelectedElementsComponent : ArchicadAccessorComponent
     {
-        public GetSelectedElementsComponent ()
-          : base (
+        public GetSelectedElementsComponent()
+            : base(
                 "Selected Elems",
                 "SelectedElems",
                 "Get currently selected elements.",
-                "Elements"
-            )
+                "Elements")
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
         {
-
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Currently selected element Guids.", GH_ParamAccess.list);
+            pManager.AddGenericParameter(
+                "ElementGuids",
+                "ElementGuids",
+                "Currently selected element Guids.",
+                GH_ParamAccess.list);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess DA)
         {
-            CommandResponse response = SendArchicadAddOnCommand ("GetSelectedElements", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            var response = SendArchicadAddOnCommand(
+                "GetSelectedElements",
+                null);
+            if (!response.Succeeded)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    response.GetErrorMessage());
                 return;
             }
-            ElementsObj elements = response.Result.ToObject<ElementsObj> ();
-            DA.SetDataList (0, elements.Elements);
+
+            var elements = response.Result.ToObject<ElementsObj>();
+            DA.SetDataList(
+                0,
+                elements.Elements);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SelectedElems;
+        protected override System.Drawing.Bitmap Icon =>
+            TapirGrasshopperPlugin.Properties.Resources.SelectedElems;
 
-        public override Guid ComponentGuid => new Guid ("1949E4B5-4E37-4F35-8C5C-BEA7575AC1C6");
+        public override Guid ComponentGuid =>
+            new Guid("1949E4B5-4E37-4F35-8C5C-BEA7575AC1C6");
     }
 }

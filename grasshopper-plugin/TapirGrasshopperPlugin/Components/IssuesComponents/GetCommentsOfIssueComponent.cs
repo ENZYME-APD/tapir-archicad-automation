@@ -1,8 +1,6 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 
@@ -10,47 +8,71 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class GetCommentsOfIssueComponent : ArchicadAccessorComponent
     {
-        public GetCommentsOfIssueComponent ()
-          : base (
+        public GetCommentsOfIssueComponent()
+            : base(
                 "Get Comments of an Issue",
                 "GetComments",
                 "Get Comments of an Issue.",
-                "Issues"
-            )
+                "Issues")
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("IssueGuid", "IssueGuid", "Issue Guid.", GH_ParamAccess.item);
+            pManager.AddGenericParameter(
+                "IssueGuid",
+                "IssueGuid",
+                "Issue Guid.",
+                GH_ParamAccess.item);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter ("Comments", "Comments", "Comments of the given issue.", GH_ParamAccess.list);
+            pManager.AddGenericParameter(
+                "Comments",
+                "Comments",
+                "Comments of the given issue.",
+                GH_ParamAccess.list);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess DA)
         {
-            IssueIdItemObj issueId = IssueIdItemObj.Create (DA, 0);
-            if (issueId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueGuid failed to collect data.");
+            var issueId = IssueIdItemObj.Create(
+                DA,
+                0);
+            if (issueId == null)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    "Input IssueGuid failed to collect data.");
                 return;
             }
 
-            JObject parameters = JObject.FromObject (issueId);
-            CommandResponse response = SendArchicadAddOnCommand ("GetCommentsFromIssue", parameters);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            var parameters = JObject.FromObject(issueId);
+            var response = SendArchicadAddOnCommand(
+                "GetCommentsFromIssue",
+                parameters);
+            if (!response.Succeeded)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    response.GetErrorMessage());
                 return;
             }
 
-            IssueComments comments = response.Result.ToObject<IssueComments> ();
-            DA.SetDataList (0, comments.Comments);
+            var comments = response.Result.ToObject<IssueComments>();
+            DA.SetDataList(
+                0,
+                comments.Comments);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.GetCommentsOfAnIssue;
+        protected override System.Drawing.Bitmap Icon =>
+            TapirGrasshopperPlugin.Properties.Resources.GetCommentsOfAnIssue;
 
-        public override Guid ComponentGuid => new Guid ("2c122dc0-ef6a-4e98-b35d-943ba30a99ee");
+        public override Guid ComponentGuid =>
+            new Guid("2c122dc0-ef6a-4e98-b35d-943ba30a99ee");
     }
 }

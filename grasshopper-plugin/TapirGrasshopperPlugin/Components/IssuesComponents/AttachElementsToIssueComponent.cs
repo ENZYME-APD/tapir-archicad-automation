@@ -12,78 +12,114 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public class ParametersOfAttachElements
         {
-            [JsonProperty ("issueId")]
+            [JsonProperty("issueId")]
             public IssueIdObj IssueId;
 
-            [JsonProperty ("elements")]
+            [JsonProperty("elements")]
             public List<ElementIdItemObj> Elements;
 
-            [JsonProperty ("type")]
+            [JsonProperty("type")]
             public string Type;
         }
 
-        public AttachElementsToIssueComponent ()
-          : base (
+        public AttachElementsToIssueComponent()
+            : base(
                 "Attach Elements to an Issue",
                 "AttachElements",
                 "Attach Elements to an Issue.",
-                "Issues"
-            )
+                "Issues")
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter ("IssueGuid", "IssueGuid", "Issue Guid.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Elements to attach.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("Type", "Type", "Type of elements.", GH_ParamAccess.item);
+            pManager.AddGenericParameter(
+                "IssueGuid",
+                "IssueGuid",
+                "Issue Guid.",
+                GH_ParamAccess.item);
+            pManager.AddGenericParameter(
+                "ElementGuids",
+                "ElementGuids",
+                "Elements to attach.",
+                GH_ParamAccess.list);
+            pManager.AddGenericParameter(
+                "Type",
+                "Type",
+                "Type of elements.",
+                GH_ParamAccess.item);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
         }
 
-        public override void AddedToDocument (GH_Document document)
+        public override void AddedToDocument(
+            GH_Document document)
         {
-            base.AddedToDocument (document);
+            base.AddedToDocument(document);
 
-            new IssueElementTypeValueList ().AddAsSource (this, 2);
+            new IssueElementTypeValueList().AddAsSource(
+                this,
+                2);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess DA)
         {
-            IssueIdObj issueId = IssueIdObj.Create (DA, 0);
-            if (issueId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueGuid failed to collect data.");
+            var issueId = IssueIdObj.Create(
+                DA,
+                0);
+            if (issueId == null)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    "Input IssueGuid failed to collect data.");
                 return;
             }
 
-            ElementsObj elements = ElementsObj.Create (DA, 1);
-            if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            var elements = ElementsObj.Create(
+                DA,
+                1);
+            if (elements == null)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    "Input ElementGuids failed to collect data.");
                 return;
             }
 
-            string type = "";
-            if (!DA.GetData (2, ref type)) {
+            var type = "";
+            if (!DA.GetData(
+                    2,
+                    ref type))
+            {
                 return;
             }
 
-            ParametersOfAttachElements parametersOfAttachElements = new ParametersOfAttachElements {
-                IssueId = issueId,
-                Elements = elements.Elements,
-                Type = type
+            var parametersOfAttachElements = new ParametersOfAttachElements
+            {
+                IssueId = issueId, Elements = elements.Elements, Type = type
             };
-            JObject parameters = JObject.FromObject (parametersOfAttachElements);
-            CommandResponse response = SendArchicadAddOnCommand ("AttachElementsToIssue", parameters);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            var parameters = JObject.FromObject(parametersOfAttachElements);
+            var response = SendArchicadAddOnCommand(
+                "AttachElementsToIssue",
+                parameters);
+            if (!response.Succeeded)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    response.GetErrorMessage());
                 return;
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.AttachElementsToAnIssue;
+        protected override System.Drawing.Bitmap Icon =>
+            TapirGrasshopperPlugin.Properties.Resources.AttachElementsToAnIssue;
 
-        public override Guid ComponentGuid => new Guid ("15e08be9-913c-4766-93ce-edadc1a261c5");
+        public override Guid ComponentGuid =>
+            new Guid("15e08be9-913c-4766-93ce-edadc1a261c5");
     }
 }

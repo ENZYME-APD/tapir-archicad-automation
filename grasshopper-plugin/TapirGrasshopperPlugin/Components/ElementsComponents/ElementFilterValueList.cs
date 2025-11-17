@@ -1,12 +1,4 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
-using Grasshopper.GUI;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+﻿using System;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -30,7 +22,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     public class ElementFilterValueList : ValueList
     {
         public ElementFilterValueList () :
-            base ("Element Filter", "", "Value List for Archicad Element Filters.", "Elements")
+            base ("Element Filter", "",
+                "Value List for Archicad Element Filters.", "Elements")
         {
         }
 

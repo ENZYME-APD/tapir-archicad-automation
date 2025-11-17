@@ -1,10 +1,4 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
-using Grasshopper.GUI;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Runtime.CompilerServices;
+﻿using System;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -27,7 +21,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
     public class AttributeTypeValueList : ValueList
     {
         public AttributeTypeValueList () :
-            base ("Attribute Type", "", "Value List for Archicad Attribute Types.", "Attributes")
+            base ("Attribute Type", "",
+                "Value List for Archicad Attribute Types.", "Attributes")
         {
         }
 

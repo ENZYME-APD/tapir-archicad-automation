@@ -11,33 +11,63 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
     {
         public static string CommandName => "OpenProject";
 
-        public OpenProjectComponent ()
-            : base (CommandName, "Open Project", "Opens the given project.", GroupNames.Project )
-        { }
-
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        public OpenProjectComponent()
+            : base(
+                CommandName,
+                "Open Project",
+                "Opens the given project.",
+                GroupNames.Project)
         {
-            pManager.AddTextParameter (nameof(ProjectFilePathObject.ProjectFilePath), nameof (ProjectFilePathObject.ProjectFilePath), nameof (ProjectFilePathObject.ProjectFilePath), GH_ParamAccess.item);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
         {
-            pManager.AddTextParameter (nameof (ExecutionResultBase.ResultMessage), "", "", GH_ParamAccess.item);
+            pManager.AddTextParameter(
+                nameof(ProjectFilePathObject.ProjectFilePath),
+                nameof(ProjectFilePathObject.ProjectFilePath),
+                nameof(ProjectFilePathObject.ProjectFilePath),
+                GH_ParamAccess.item);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
-            if (!DA.GetItem (0, out string path)) return;
-
-            var jObject = JObject.FromObject (new ProjectFilePathObject (path));
-
-            if (!GetResponse(CommandName, jObject, out JObject jResponse)) return;
-
-            var result = ExecutionResultBase.Deserialize (jResponse);
-
-            DA.SetData (0, result.ResultMessage ());
+            pManager.AddTextParameter(
+                nameof(ExecutionResultBase.Message),
+                "",
+                "",
+                GH_ParamAccess.item);
         }
 
-        public override Guid ComponentGuid => new Guid ("730b6a52-e30e-4863-82a2-9457b79748c0");
+        protected override void Solve(
+            IGH_DataAccess DA)
+        {
+            if (!DA.GetItem(
+                    0,
+                    out string path))
+            {
+                return;
+            }
+
+            var jObject = JObject.FromObject(new ProjectFilePathObject(path));
+
+            if (!GetResponse(
+                    CommandName,
+                    jObject,
+                    out JObject jResponse))
+            {
+                return;
+            }
+
+            var result = ExecutionResultBase.Deserialize(jResponse);
+
+            DA.SetData(
+                0,
+                result.Message());
+        }
+
+        public override Guid ComponentGuid =>
+            new Guid("730b6a52-e30e-4863-82a2-9457b79748c0");
     }
 }
