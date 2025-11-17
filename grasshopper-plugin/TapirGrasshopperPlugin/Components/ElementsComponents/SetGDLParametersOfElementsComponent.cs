@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public SetGDLParametersOfElementsComponent()
             : base(
-                "Set Element GDL Parameters",
+                "Set Element GDL GdlArray",
                 "...",
                 "...",
                 GroupNames.Element)
