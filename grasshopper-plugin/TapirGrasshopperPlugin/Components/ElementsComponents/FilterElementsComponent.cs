@@ -28,12 +28,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class FilterElementsComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Filter elements.";
+        public override string CommandName => "FilterElements";
+
         public FilterElementsComponent()
             : base(
                 "Filter Elements",
                 "FilterElems",
-                "Filter elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -43,17 +46,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to filter.",
+                "Elements Guids to filter.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "Filter",
                 "Filter",
-                "Element filter.",
+                "Elements filter.",
                 GH_ParamAccess.list,
-                @default: new List<string>()
-                {
-                    ElementFilter.NoFilter.ToString()
-                });
+                new List<string> { ElementFilter.NoFilter.ToString() });
         }
 
         protected override void RegisterOutputParams(
@@ -79,7 +79,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess DA)
         {
-            var inputElements = ElementsObj.Create(
+            ElementsObj inputElements = ElementsObj.Create(
                 DA,
                 0);
             if (inputElements == null)
@@ -90,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var filters = new List<string>();
+            List<string> filters = new();
             if (!DA.GetDataList(
                     1,
                     filters))
@@ -98,7 +98,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var filterElements = new FilterElementsObj()
+            FilterElementsObj filterElements = new()
             {
                 Elements = inputElements.Elements, Filters = filters
             };
@@ -111,28 +111,23 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var filterElementsObj = JObject.FromObject(filterElements);
-            var response = SendArchicadAddOnCommand(
-                "FilterElements",
-                filterElementsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    filterElements,
+                    out ElementsObj elements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var elements = response.Result.ToObject<ElementsObj>();
             DA.SetDataList(
                 0,
                 elements.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.FilterElems;
+            Properties.Resources.FilterElems;
 
         public override Guid ComponentGuid =>
-            new Guid("133ab85c-53f7-466d-8271-31c5518085e2");
+            new("133ab85c-53f7-466d-8271-31c5518085e2");
     }
 }

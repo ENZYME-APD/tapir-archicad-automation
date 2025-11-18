@@ -8,12 +8,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class TreeBranchSelectorComponent : Component
     {
+        public static string Doc =>
+            "Selects a specific branch from a tree structure based on an index.";
+
         public TreeBranchSelectorComponent()
             : base(
                 "Tree Branch Selector",
                 "BranchSel",
-                "Selects a specific branch from a tree structure based on an index",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 
@@ -67,7 +70,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     0,
                     out inputTree))
             {
-                this.Message = "Error: Input tree is required";
+                Message = "Error: Input tree is required";
                 return;
             }
 
@@ -82,7 +85,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 if (totalBranches == 0)
                 {
                     message = "Input tree is empty";
-                    this.Message = message;
+                    Message = message;
                     DA.SetDataList(
                         0,
                         selectedBranch);
@@ -148,7 +151,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 totalBranches);
 
             // Update component message
-            this.Message = message;
+            Message = message;
         }
 
         protected override System.Drawing.Bitmap Icon =>

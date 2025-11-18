@@ -1,3 +1,4 @@
+using Grasshopper;
 using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
@@ -8,17 +9,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class TextFilterComponent : Component
     {
+        public static string Doc =>
+            "Filters a list of strings based on a search string.";
+
         public TextFilterComponent()
             : base(
                 "Filter Contains String",
                 "Filter Contains",
-                "Filters a list of strings based on a search string",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 
         protected override void RegisterInputParams(
-            GH_Component.GH_InputParamManager pManager)
+            GH_InputParamManager pManager)
         {
             pManager.AddTextParameter(
                 "Strings List",
@@ -47,7 +51,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void RegisterOutputParams(
-            GH_Component.GH_OutputParamManager pManager)
+            GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter(
                 "Filtered List",
@@ -89,7 +93,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             {
                 message =
                     "Error: Provide both a strings list and a search string.";
-                this.Message = message;
+                Message = message;
                 DA.SetDataList(
                     0,
                     filteredList);
@@ -112,7 +116,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             {
                 message =
                     "Error: Provide both a strings list and a search string.";
-                this.Message = message;
+                Message = message;
                 DA.SetDataList(
                     0,
                     filteredList);
@@ -245,7 +249,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 pattern);
 
             // Update component message
-            this.Message = message;
+            Message = message;
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -1,19 +1,20 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class DeleteNavigatorItem : ArchicadExecutorComponent
     {
+        public static string Doc => "Deletes items from navigator tree.";
+        public override string CommandName => "DeleteNavigatorItems";
+
         public DeleteNavigatorItem()
             : base(
                 "DeleteNavigatorItems",
                 "DeleteNavigatorItems",
-                "Deletes items from navigator tree.",
-                "Navigator")
+                Doc,
+                GroupNames.Navigator)
         {
         }
 
@@ -33,10 +34,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var navigatorItemIds = NavigatorItemIdsObj.Create(
-                DA,
+                da,
                 0);
             if (navigatorItemIds == null)
             {
@@ -46,21 +47,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var inputObj = JObject.FromObject(navigatorItemIds);
-            var response = SendArchicadCommand(
-                "DeleteNavigatorItems",
-                inputObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            GetResponse(
+                CommandName,
+                navigatorItemIds);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.DeleteNavigatorItems;
+            Properties.Resources.DeleteNavigatorItems;
 
         public override Guid ComponentGuid =>
             new Guid("b4ff32b4-91ac-405d-96ed-1938aec11eb3");

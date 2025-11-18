@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -45,12 +44,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class SetDetailsOfWallsComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Set details of wall elements.";
+        public override string CommandName => "SetDetailsOfElements";
+
         public SetDetailsOfWallsComponent()
             : base(
                 "Set Wall Details",
                 "SetWallDetails",
-                "Set details of wall elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -60,7 +62,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
             pManager.AddPointParameter(
                 "Begin coordinates",
@@ -85,10 +87,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -99,7 +101,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var begCoords = new List<Point3d>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     begCoords))
             {
@@ -110,7 +112,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var endCoords = new List<Point3d>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     2,
                     endCoords))
             {
@@ -121,7 +123,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var heights = new List<double>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     3,
                     heights))
             {
@@ -193,12 +195,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 obj.ElementsWithDetails.Add(elementWithDetails);
             }
 
-            var elementsWithDetailsObj = JObject.FromObject(obj);
-            var response = SendArchicadAddOnCommand(
-                "SetDetailsOfElements",
-                elementsWithDetailsObj);
-            var executionResults =
-                response.Result.ToObject<ExecutionResultsResponse>();
+            if (!GetConvertedResponse(
+                    CommandName,
+                    obj,
+                    out ExecutionResultsResponse executionResults))
+            {
+                return;
+            }
+
             for (var i = 0; i < executionResults.ExecutionResults.Count; i++)
             {
                 var eResult = executionResults.ExecutionResults[i];

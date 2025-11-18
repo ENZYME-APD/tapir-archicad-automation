@@ -1,18 +1,20 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class FindPropertyByName : ArchicadAccessorComponent
     {
+        public static string Doc => "Finds a property by group name and name.";
+        public override string CommandName => "GetAllProperties";
+
         public FindPropertyByName()
             : base(
                 "Property by Name",
                 "PropertyByName",
-                "Finds a property by group name and name.",
-                "Properties")
+                Doc,
+                GroupNames.Properties)
         {
         }
 
@@ -42,35 +44,31 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var propertyGroupName = "";
             var propertyName = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     0,
-                    ref propertyGroupName) || !DA.GetData(
+                    ref propertyGroupName) || !da.GetData(
                     1,
                     ref propertyName))
             {
                 return;
             }
 
-            var response = SendArchicadAddOnCommand(
-                "GetAllProperties",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out AllProperties response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var properties = response.Result.ToObject<AllProperties>();
             PropertyDetailsObj found = null;
             propertyGroupName = propertyGroupName.ToLower();
             propertyName = propertyName.ToLower();
-            foreach (var detail in properties.Properties)
+
+            foreach (var detail in response.Properties)
             {
                 if (detail.PropertyGroupName.ToLower() == propertyGroupName &&
                     detail.PropertyName.ToLower() == propertyName)
@@ -88,14 +86,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
             else
             {
-                DA.SetData(
+                da.SetData(
                     0,
                     found.PropertyId);
             }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.PropertyByName;
+            Properties.Resources.PropertyByName;
 
         public override Guid ComponentGuid =>
             new Guid("9bb30fb5-9a68-4672-b807-4e35b2d27761");

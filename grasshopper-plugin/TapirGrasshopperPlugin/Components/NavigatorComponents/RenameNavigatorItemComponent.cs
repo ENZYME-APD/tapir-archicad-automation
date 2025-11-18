@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -25,12 +24,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
     public class RenameNavigatorItem : ArchicadExecutorComponent
     {
+        public static string Doc => "Renames a navigator item.";
+
+        public override string CommandName => "RenameNavigatorItem";
+
         public RenameNavigatorItem()
             : base(
                 "RenameNavigatorItem",
                 "RenameNavigatorItem",
-                "Renames a navigator item.",
-                "Navigator")
+                Doc,
+                GroupNames.Navigator)
         {
         }
 
@@ -62,10 +65,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var navigatorItemId = NavigatorIdItemObj.Create(
-                DA,
+                da,
                 0);
             if (navigatorItemId == null)
             {
@@ -76,7 +79,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             var newName = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref newName))
             {
@@ -84,7 +87,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             var newId = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     2,
                     ref newId))
             {
@@ -97,21 +100,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 NewName = String.IsNullOrEmpty(newName) ? null : newName,
                 NewId = String.IsNullOrEmpty(newId) ? null : newId
             };
-            var inputObj = JObject.FromObject(input);
-            var response = SendArchicadCommand(
-                "RenameNavigatorItem",
-                inputObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+
+            GetResponse(
+                CommandName,
+                input);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.RenameNavigatorItem;
+            Properties.Resources.RenameNavigatorItem;
 
         public override Guid ComponentGuid =>
             new Guid("6be1cc4e-6645-400f-b632-1fccdae0db4d");

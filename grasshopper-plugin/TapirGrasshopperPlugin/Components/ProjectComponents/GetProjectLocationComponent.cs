@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -73,12 +72,17 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
     public class GetProjectLocationComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Get Geo Location of the currently active project.";
+
+        public override string CommandName => "GetGeoLocation";
+
         public GetProjectLocationComponent()
             : base(
                 "Project Location",
                 "ProjectLocation",
-                "Get Geo Location of the currently active project.",
-                "Project")
+                Doc,
+                GroupNames.Project)
         {
         }
 
@@ -158,59 +162,54 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadAddOnCommand(
-                "GetGeoLocation",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out ProjectLocation response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var projectLocation = response.Result.ToObject<ProjectLocation>();
-            DA.SetData(
+            da.SetData(
                 0,
-                projectLocation.Loc.Longitude);
-            DA.SetData(
+                response.Loc.Longitude);
+            da.SetData(
                 1,
-                projectLocation.Loc.Latitude);
-            DA.SetData(
+                response.Loc.Latitude);
+            da.SetData(
                 2,
-                projectLocation.Loc.Altitude);
-            DA.SetData(
+                response.Loc.Altitude);
+            da.SetData(
                 3,
-                projectLocation.Loc.North);
-            DA.SetData(
+                response.Loc.North);
+            da.SetData(
                 4,
-                projectLocation.Survey.Position.Eastings);
-            DA.SetData(
+                response.Survey.Position.Eastings);
+            da.SetData(
                 5,
-                projectLocation.Survey.Position.Northings);
-            DA.SetData(
+                response.Survey.Position.Northings);
+            da.SetData(
                 6,
-                projectLocation.Survey.Position.Elevation);
-            DA.SetData(
+                response.Survey.Position.Elevation);
+            da.SetData(
                 7,
-                projectLocation.Survey.GeoReferencingParams.CrsName);
-            DA.SetData(
+                response.Survey.GeoReferencingParams.CrsName);
+            da.SetData(
                 8,
-                projectLocation.Survey.GeoReferencingParams.Description);
-            DA.SetData(
+                response.Survey.GeoReferencingParams.Description);
+            da.SetData(
                 9,
-                projectLocation.Survey.GeoReferencingParams.GeodeticDatum);
-            DA.SetData(
+                response.Survey.GeoReferencingParams.GeodeticDatum);
+            da.SetData(
                 10,
-                projectLocation.Survey.GeoReferencingParams.VerticalDatum);
-            DA.SetData(
+                response.Survey.GeoReferencingParams.VerticalDatum);
+            da.SetData(
                 11,
-                projectLocation.Survey.GeoReferencingParams.MapProjection);
-            DA.SetData(
+                response.Survey.GeoReferencingParams.MapProjection);
+            da.SetData(
                 12,
-                projectLocation.Survey.GeoReferencingParams.MapZone);
+                response.Survey.GeoReferencingParams.MapZone);
         }
 
         public override Guid ComponentGuid =>

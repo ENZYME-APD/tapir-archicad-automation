@@ -7,17 +7,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class WallOrientationComponent : Component
     {
+        public static string Doc =>
+            "Calculates the orientation of walls based on start and end points.";
+
         public WallOrientationComponent()
             : base(
                 "Wall Orientation",
                 "WallOrient",
-                "Calculates the orientation of walls based on start and end points",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 
         protected override void RegisterInputParams(
-            GH_Component.GH_InputParamManager pManager)
+            GH_InputParamManager pManager)
         {
             pManager.AddPointParameter(
                 "Start Points",
@@ -39,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void RegisterOutputParams(
-            GH_Component.GH_OutputParamManager pManager)
+            GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "Normal Vectors",
@@ -101,7 +104,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             // Ensure inputs are lists of equal length
             if (startPoints.Count != endPoints.Count)
             {
-                this.AddRuntimeMessage(
+                AddRuntimeMessage(
                     GH_RuntimeMessageLevel.Error,
                     "Start points and end points lists must have the same length");
                 return;
@@ -192,7 +195,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 vectorLines);
 
             // Update component message
-            this.Message = "Wall Orientation\nV1.0";
+            Message = "Wall Orientation\nV1.0";
         }
 
         private (List<double>, Point3d) CalculateNormalVector(

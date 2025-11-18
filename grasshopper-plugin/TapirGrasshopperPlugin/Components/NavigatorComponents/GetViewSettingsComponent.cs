@@ -5,55 +5,77 @@ using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
-namespace TapirGrasshopperPlugin.Components.ProjectComponents
+namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class GetViewSettingsComponent : ArchicadAccessorComponent
     {
-        public static string CommandName => "GetViewSettings";
+        public static string Doc =>
+            "Gets the view settings of navigator items.";
 
-        public GetViewSettingsComponent () :
-            base (nameof(ViewSettings),
-                  nameof (ViewSettings),
-                  ViewSettingsResponse.Doc,
-                  GroupNames.Navigator )
-        { }
+        public override string CommandName => "GetViewSettings";
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        public GetViewSettingsComponent()
+            : base(
+                nameof(ViewSettings),
+                nameof(ViewSettings),
+                Doc,
+                GroupNames.Navigator)
         {
-            pManager.AddGenericParameter ("NavigatorItemIds",
-                "NavigatorItemIds", "Identifier of navigator items to delete.",
+        }
+
+        protected override void RegisterInputParams(
+            GH_InputParamManager pManager)
+        {
+            pManager.AddGenericParameter(
+                "NavigatorItemIds",
+                "NavigatorItemIds",
+                "Identifier of navigator items to delete.",
                 GH_ParamAccess.list);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pManager)
         {
-            pManager.AddTextParameter("Json" + nameof(ViewSettings), "", "",
+            pManager.AddTextParameter(
+                "Json" + nameof(ViewSettings),
+                "",
+                "",
                 GH_ParamAccess.item);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            var ids = NavigatorItemIdsObj.Create (DA, 0);
+            var ids = NavigatorItemIdsObj.Create(
+                da,
+                0);
 
-            if (ids == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error,
+            if (ids == null)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
                     "Input NavigatorItemIds failed to collect data.");
                 return;
             }
 
-            var inputObj = JObject.FromObject (ids);
-
-            if (!GetResponse(CommandName, inputObj, out JObject jObjectResponse))
+            if (!GetConvertedResponse(
+                    CommandName,
+                    ids,
+                    out JObject jResponse))
             {
                 return;
             }
 
-            var response = ViewSettingsResponse.FromResponse(jObjectResponse);
+            var response = ViewSettingsResponse.FromResponse(jResponse);
 
-            DA.SetData(0,
-                JsonConvert.SerializeObject(response, Formatting.Indented));
+            da.SetData(
+                0,
+                JsonConvert.SerializeObject(
+                    response,
+                    Formatting.Indented));
         }
 
-        public override Guid ComponentGuid => new Guid("a0028d54-cab5-4427-9cb7-8b3ef1bb8a49");
+        public override Guid ComponentGuid =>
+            new Guid("a0028d54-cab5-4427-9cb7-8b3ef1bb8a49");
     }
 }

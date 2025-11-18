@@ -8,17 +8,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class MultiListFilterComponent : Component
     {
+        public static string Doc =>
+            "Filters multiple lists based on specified indices";
+
         public MultiListFilterComponent()
             : base(
                 "Multi-List Filter",
                 "MLFilter",
-                "Filters multiple lists based on specified indices",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 
         protected override void RegisterInputParams(
-            GH_Component.GH_InputParamManager pManager)
+            GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "List 1",
@@ -51,7 +54,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void RegisterOutputParams(
-            GH_Component.GH_OutputParamManager pManager)
+            GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "Out 1",
@@ -289,7 +292,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 out4);
 
             // Update component message
-            this.Message = FormatMessage(message);
+            Message = FormatMessage(message);
         }
 
         private string FormatMessage(

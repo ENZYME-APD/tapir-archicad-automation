@@ -3,7 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using Rhino.Geometry;
 
 namespace TapirGrasshopperPlugin.Data
 {
@@ -420,6 +420,21 @@ namespace TapirGrasshopperPlugin.Data
     {
         [JsonProperty("boundingBox3D")]
         public Box3DObj BoundingBox3D;
+
+        public BoundingBox ToRhino()
+        {
+            return new BoundingBox()
+            {
+                Min = new Point3d(
+                    BoundingBox3D.XMin,
+                    BoundingBox3D.YMin,
+                    BoundingBox3D.ZMin),
+                Max = new Point3d(
+                    BoundingBox3D.XMax,
+                    BoundingBox3D.YMax,
+                    BoundingBox3D.ZMax)
+            };
+        }
     }
 
     public class BoundingBoxes3DObj

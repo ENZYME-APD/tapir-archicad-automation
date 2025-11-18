@@ -3,12 +3,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class AddCommentToIssueComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Add Comment to an Issue.";
+        public override string CommandName => "AddCommentToIssue";
+
         public class ParametersOfNewComment
         {
             [JsonProperty("issueId")]
@@ -25,8 +27,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             : base(
                 "Add Comment to an Issue",
                 "AddComment",
-                "Add Comment to an Issue.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -56,10 +58,10 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var issueId = IssueIdObj.Create(
-                DA,
+                da,
                 0);
             if (issueId == null)
             {
@@ -70,7 +72,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var author = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref author))
             {
@@ -78,7 +80,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var text = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     2,
                     ref text))
             {
@@ -89,21 +91,14 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             {
                 IssueId = issueId, Author = author, Text = text
             };
-            var parameters = JObject.FromObject(parametersOfNewComment);
-            var response = SendArchicadAddOnCommand(
-                "AddCommentToIssue",
-                parameters);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+
+            GetResponse(
+                CommandName,
+                parametersOfNewComment);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.AddCommentToAnIssue;
+            Properties.Resources.AddCommentToAnIssue;
 
         public override Guid ComponentGuid =>
             new Guid("459bb412-6a24-41f8-b30c-8dd6c72994c2");

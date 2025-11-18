@@ -1,10 +1,11 @@
-﻿using Grasshopper.Kernel;
+﻿using Eto.Forms;
+using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -16,12 +17,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
     public class GetAttributesByTypeComponent : ArchicadAccessorComponent
     {
+        public override string Doc => "Get all attributes by type";
+        public override string CommandName => "GetAttributesByType";
+
         public GetAttributesByTypeComponent()
             : base(
                 "Attributes By Type",
                 "AttributesByType",
-                "Get all attributes by type.",
-                "Attributes")
+                GroupNames.Attributes)
         {
         }
 
@@ -66,56 +69,48 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var attrType = "";
-            if (!DA.GetData(
+            if (!da.GetItem(
                     0,
-                    ref attrType))
+                    out string attrType))
             {
                 return;
             }
 
-            var attributesByType =
-                new AttributesByTypeObj() { AttributeType = attrType };
-            var attributesByTypeObj = JObject.FromObject(attributesByType);
-            var response = SendArchicadAddOnCommand(
-                "GetAttributesByType",
-                attributesByTypeObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            AttributesByTypeObj attributesByType =
+                new() { AttributeType = attrType };
 
-            var attributes = response.Result.ToObject<AttributeDetailsObj>();
-            var attributeIds = new List<AttributeIdObj>();
-            var attributeIndices = new List<uint>();
-            var attributeNames = new List<string>();
-            foreach (var attributeDetail in attributes.Attributes)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    attributesByType,
+                    out AttributeDetailsObj attributes)) { return; }
+
+            List<AttributeIdObj> attributeIds = new();
+            List<uint> attributeIndices = new();
+            List<string> attributeNames = new();
+            foreach (AttributeDetail attributeDetail in attributes.Attributes)
             {
                 attributeIds.Add(attributeDetail.AttributeId);
                 attributeIndices.Add(attributeDetail.Index);
                 attributeNames.Add(attributeDetail.Name);
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 attributeIds);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 attributeIndices);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 attributeNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.AttributesByType;
+            Properties.Resources.AttributesByType;
 
         public override Guid ComponentGuid =>
-            new Guid("f974c9ec-e3ec-4cf2-a576-b7a8548c9883");
+            new("f974c9ec-e3ec-4cf2-a576-b7a8548c9883");
     }
 }

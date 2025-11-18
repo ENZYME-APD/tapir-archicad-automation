@@ -1,23 +1,24 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class SetClassificationsOfElementsComponent
         : ArchicadExecutorComponent
     {
+        public static string Doc => "Set classifications of elements.";
+        public override string CommandName => "SetClassificationsOfElements";
+
         public SetClassificationsOfElementsComponent()
             : base(
                 "Set Classifications",
                 "SetClassifications",
-                "Set classifications of elements.",
-                "Classifications")
+                Doc,
+                GroupNames.Classifications)
         {
         }
 
@@ -37,7 +38,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to set the classification for.",
+                "Elements Guids to set the classification for.",
                 GH_ParamAccess.list);
         }
 
@@ -57,10 +58,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var classificationSystemId = ClassificationIdObj.Create(
-                DA,
+                da,
                 0);
             if (classificationSystemId == null)
             {
@@ -71,7 +72,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             var inputItemIds = new List<GH_ObjectWrapper>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     inputItemIds))
             {
@@ -89,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             var elements = ElementsObj.Create(
-                DA,
+                da,
                 2);
             if (elements == null)
             {
@@ -136,18 +137,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     elementClassification);
             }
 
-            var elementClassificationsObj =
-                JObject.FromObject(elementClassifications);
-            var response = SendArchicadAddOnCommand(
-                "SetClassificationsOfElements",
-                elementClassificationsObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            GetResponse(
+                CommandName,
+                elementClassifications);
         }
 
         protected override System.Drawing.Bitmap Icon =>

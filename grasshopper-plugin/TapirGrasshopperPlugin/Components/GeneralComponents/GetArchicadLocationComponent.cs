@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
@@ -13,12 +12,16 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
     public class GetArchicadLocationComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Get the location of the running Archicad executable.";
+        public override string CommandName => "GetArchicadLocation";
+
         public GetArchicadLocationComponent()
             : base(
                 "Archicad Location",
                 "ArchicadLocation",
-                "Get the location of the running Archicad executable.",
-                "General")
+                Doc,
+                GroupNames.General)
         {
         }
 
@@ -38,27 +41,22 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadAddOnCommand(
-                "GetArchicadLocation",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out LocationInfo response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var locationInfo = response.Result.ToObject<LocationInfo>();
-            DA.SetData(
+            da.SetData(
                 0,
-                locationInfo.ArchicadLocation);
+                response.ArchicadLocation);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ArchicadLocation;
+            Properties.Resources.ArchicadLocation;
 
         public override Guid ComponentGuid =>
             new Guid("8863e688-7b90-47df-918f-f7a8f27bfa54");

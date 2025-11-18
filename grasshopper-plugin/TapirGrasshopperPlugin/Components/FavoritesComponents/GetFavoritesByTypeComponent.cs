@@ -1,20 +1,21 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Favorites;
 
-namespace TapirGrasshopperPlugin.Components.ProjectComponents
+namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 {
     public class GetFavoritesByTypeComponent : ArchicadAccessorComponent
     {
-        public static string CommandName => "GetFavoritesByType";
+        public static string Doc =>
+            "Returns a list of the names of all favorites with the given element type.";
+        public override string CommandName => "GetFavoritesByType";
 
         public GetFavoritesByTypeComponent()
             : base(
-                CommandName,
-                CommandName,
-                FavoritesResponse.Doc,
+                "Get Favorites by Type",
+                "Get Favorites by Type",
+                Doc,
                 GroupNames.Favorites)
         {
         }
@@ -25,7 +26,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             pManager.AddTextParameter(
                 "Type",
                 "Type",
-                "Element type.",
+                "Elements type.",
                 GH_ParamAccess.item);
         }
 
@@ -40,26 +41,24 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            if (!DA.GetItem(
+            if (!da.GetItem(
                     0,
                     out string eType))
             {
                 return;
             }
 
-            var jObject = JObject.FromObject(new ElementTypeObject(eType));
-
-            if (!GetResponse(
+            if (!GetConvertedResponse(
                     CommandName,
-                    jObject,
+                    new ElementTypeObject(eType),
                     out FavoritesResponse response))
             {
                 return;
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 response.Favorites);
         }

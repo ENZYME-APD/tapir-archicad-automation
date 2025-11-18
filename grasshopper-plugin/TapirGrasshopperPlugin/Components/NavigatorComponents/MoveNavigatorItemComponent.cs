@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -23,12 +22,19 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
     public class MoveNavigatorItem : ArchicadExecutorComponent
     {
+        public static string Doc =>
+            "Moves the given navigator item under the parentNavigatorItemId in the navigator tree. " +
+            "If previousNavigatorItemId is not given then inserts it at the first place under the new parent. " +
+            "If it is given then inserts it after this navigator item.";
+
+        public override string CommandName => "MoveNavigatorItem";
+
         public MoveNavigatorItem()
             : base(
                 "MoveNavigatorItem",
                 "MoveNavigatorItem",
-                "Moves the given navigator item under the parentNavigatorItemId in the navigator tree. If previousNavigatorItemId is not given then inserts it at the first place under the new parent. If it is given then inserts it after this navigator item.",
-                "Navigator")
+                Doc,
+                GroupNames.Navigator)
         {
         }
 
@@ -61,10 +67,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var navigatorItemId = NavigatorIdItemObj.Create(
-                DA,
+                da,
                 0);
             if (navigatorItemId == null)
             {
@@ -75,7 +81,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             var parentNavigatorItemId = NavigatorIdItemObj.Create(
-                DA,
+                da,
                 1);
             if (parentNavigatorItemId == null)
             {
@@ -86,7 +92,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             var previousNavigatorItemId = NavigatorIdItemObj.Create(
-                DA,
+                da,
                 2);
 
             var input = new MoveNavigatorItemInput()
@@ -97,21 +103,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     ? null
                     : previousNavigatorItemId.Id
             };
-            var inputObj = JObject.FromObject(input);
-            var response = SendArchicadCommand(
-                "MoveNavigatorItem",
-                inputObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+
+            GetResponse(
+                CommandName,
+                input);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.MoveNavigatorItem;
+            Properties.Resources.MoveNavigatorItem;
 
         public override Guid ComponentGuid =>
             new Guid("fef582f6-07bd-4ffd-92cd-e41cb0447e2d");

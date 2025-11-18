@@ -7,7 +7,6 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -223,12 +222,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get details of elements.";
+
         public GetDetailsOfElementsComponent()
             : base(
                 "Elem Details",
                 "ElemDetails",
                 "Get details of elements.",
-                "Elements")
+                GroupNames.Elements)
         {
         }
 
@@ -238,7 +239,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
         }
 
@@ -248,12 +249,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids of the found elements.",
+                "Elements Guids of the found elements.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "ElemType",
                 "ElemType",
-                "Element type.",
+                "Elements type.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "ElementID",
@@ -278,11 +279,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
+
             if (inputElements == null)
             {
                 AddRuntimeMessage(
@@ -291,15 +293,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var inputElementsObj = JObject.FromObject(inputElements);
-            var response = SendArchicadAddOnCommand(
-                "GetDetailsOfElements",
-                inputElementsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    inputElements,
+                    out DetailsOfElementsObj detailsOfElements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
@@ -310,8 +308,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var layerIndices = new List<int>();
             var drawIndices = new List<int>();
 
-            var detailsOfElements =
-                response.Result.ToObject<DetailsOfElementsObj>();
             for (var i = 0; i < detailsOfElements.DetailsOfElements.Count; i++)
             {
                 var detailsOfElement = detailsOfElements.DetailsOfElements[i];
@@ -332,31 +328,33 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 drawIndices.Add(detailsOfElement.DrawIndex);
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 validElements);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 elemTypes);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 elementIDs);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 storyIndices);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 layerIndices);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 drawIndices);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ElemDetails;
+            Properties.Resources.ElemDetails;
 
         public override Guid ComponentGuid =>
             new Guid("d1509981-6510-4c09-8727-dba5981109f8");
+
+        public override string CommandName => "GetDetailsOfElements";
     }
 
     public class GetDetailsOfWallsComponent : ArchicadAccessorComponent
@@ -376,7 +374,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
         }
 
@@ -386,7 +384,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "WallGuids",
                 "WallGuids",
-                "Element Guids of the found walls.",
+                "Elements Guids of the found walls.",
                 GH_ParamAccess.list);
             pManager.AddPointParameter(
                 "Begin coordinate",
@@ -533,7 +531,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.WallDetails;
+            Properties.Resources.WallDetails;
 
         public override Guid ComponentGuid =>
             new Guid("2b7b8e37-b293-475f-a333-d6afe4c5ffff");
@@ -556,7 +554,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
         }
 
@@ -566,7 +564,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "BeamGuids",
                 "BeamGuids",
-                "Element Guids of the found beams.",
+                "Elements Guids of the found beams.",
                 GH_ParamAccess.list);
             pManager.AddPointParameter(
                 "Begin coordinate",
@@ -725,7 +723,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.BeamDetails;
+            Properties.Resources.BeamDetails;
 
         public override Guid ComponentGuid =>
             new Guid("6e0deaaa-a9b0-4c30-9bc0-f2a1ef299c5d");
@@ -748,7 +746,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
         }
 
@@ -758,7 +756,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ColumnGuids",
                 "ColumnGuids",
-                "Element Guids of the found columns.",
+                "Elements Guids of the found columns.",
                 GH_ParamAccess.list);
             pManager.AddPointParameter(
                 "Origo coordinate",
@@ -833,7 +831,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ColumnDetails;
+            Properties.Resources.ColumnDetails;
 
         public override Guid ComponentGuid =>
             new Guid("ded49694-9869-4670-af85-645535a7be6a");
@@ -856,7 +854,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
         }
 
@@ -866,7 +864,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "SlabGuids",
                 "SlabGuids",
-                "Element Guids of the found slabs.",
+                "Elements Guids of the found slabs.",
                 GH_ParamAccess.list);
             pManager.AddCurveParameter(
                 "Polygon outlines",
@@ -964,7 +962,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.SlabDetails;
+            Properties.Resources.SlabDetails;
 
         public override Guid ComponentGuid =>
             new Guid("f942eece-cc80-4945-a911-fe548dae4ae8");
@@ -987,7 +985,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
         }
 
@@ -997,7 +995,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "PolylineGuids",
                 "PolylineGuids",
-                "Element Guids of the found polylines.",
+                "Elements Guids of the found polylines.",
                 GH_ParamAccess.list);
             pManager.AddCurveParameter(
                 "Coordinates",
@@ -1072,7 +1070,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.PolylineDetails;
+            Properties.Resources.PolylineDetails;
 
         public override Guid ComponentGuid =>
             new Guid("b96c3b7e-303d-44f2-af22-6fd07ade11fc");
@@ -1095,7 +1093,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get details of.",
+                "Elements Guids to get details of.",
                 GH_ParamAccess.list);
         }
 
@@ -1105,7 +1103,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ZoneGuids",
                 "ZoneGuids",
-                "Element Guids of the found zones.",
+                "Elements Guids of the found zones.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "Names",
@@ -1257,7 +1255,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ZoneDetails;
+            Properties.Resources.ZoneDetails;
 
         public override Guid ComponentGuid =>
             new Guid("65b5952f-fc7d-4d9e-9742-9be32ac3c5d1");

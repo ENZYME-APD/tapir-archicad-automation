@@ -4,7 +4,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -40,12 +39,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
     public class GetLayersComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get the details of layers.";
+        public override string CommandName => "GetLayerAttributes";
+
         public GetLayersComponent()
             : base(
                 "Layers",
                 "Layers",
-                "Get the details of layers.",
-                "Attributes")
+                Doc,
+                GroupNames.Attributes)
         {
         }
 
@@ -90,10 +92,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var attributes = AttributeIdsObj.Create(
-                DA,
+                da,
                 0);
             if (attributes == null)
             {
@@ -104,23 +106,18 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var attributesObj = JObject.FromObject(attributes);
-            var response = SendArchicadCommand(
-                "GetLayerAttributes",
-                attributesObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
 
-            var layers = response.Result.ToObject<LayersObj>();
+            if (!GetConvertedResponse(
+                    CommandName,
+                    attributesObj,
+                    out LayersObj layers)) { return; }
+
             var name = new List<string>();
             var isHidden = new List<bool>();
             var isLocked = new List<bool>();
             var isWireframe = new List<bool>();
             var intersectionGroup = new List<int>();
+
             foreach (var layer in layers.Attributes)
             {
                 name.Add(layer.LayerAttribute.Name);
@@ -130,24 +127,22 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 intersectionGroup.Add(layer.LayerAttribute.IntersectionGroupNr);
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 name);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 isHidden);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 isLocked);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 isWireframe);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 intersectionGroup);
         }
-
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.Layers;
 
         public override Guid ComponentGuid =>
             new Guid("0ffbee62-00a0-4974-9d9b-9bb1da20f6d0");

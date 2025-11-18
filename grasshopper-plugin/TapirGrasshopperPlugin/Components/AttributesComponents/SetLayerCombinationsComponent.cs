@@ -3,6 +3,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Rhino.DocObjects;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -33,12 +34,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
     public class SetLayerCombinationsComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Set the details of layer combinations.";
+        public override string CommandName => "CreateLayerCombinations";
+
         public SetLayerCombinationsComponent()
             : base(
                 "Set Layer Combinations",
                 "SetLayerCombinations",
-                "Set the details of layer combinations.",
-                "Attributes")
+                Doc,
+                GroupNames.Attributes)
         {
         }
 
@@ -88,10 +92,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var attributes = AttributesObj.Create(
-                DA,
+                da,
                 0);
             if (attributes == null)
             {
@@ -102,7 +106,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var names = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     names))
             {
@@ -121,7 +125,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             GH_Structure<IGH_Goo> layerAttributeGuidsInput;
-            if (!DA.GetDataTree(
+            if (!da.GetDataTree(
                     2,
                     out layerAttributeGuidsInput))
             {
@@ -132,7 +136,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             GH_Structure<GH_Boolean> isHiddenLayers;
-            if (!DA.GetDataTree(
+            if (!da.GetDataTree(
                     3,
                     out isHiddenLayers))
             {
@@ -143,7 +147,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             GH_Structure<GH_Boolean> isLockedLayers;
-            if (!DA.GetDataTree(
+            if (!da.GetDataTree(
                     4,
                     out isLockedLayers))
             {
@@ -154,7 +158,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             GH_Structure<GH_Boolean> isWireframeLayers;
-            if (!DA.GetDataTree(
+            if (!da.GetDataTree(
                     5,
                     out isWireframeLayers))
             {
@@ -165,7 +169,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             GH_Structure<GH_Integer> intersectionGroupsOfLayers;
-            if (!DA.GetDataTree(
+            if (!da.GetDataTree(
                     6,
                     out intersectionGroupsOfLayers))
             {
@@ -274,21 +278,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
-            var layerCombinationDataArrayObj =
-                JObject.FromObject(layerCombinationDataArray);
-            var response = SendArchicadAddOnCommand(
-                "CreateLayerCombinations",
-                layerCombinationDataArrayObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            GetResponse(
+                CommandName,
+                layerCombinationDataArray);
         }
-
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SetLayerCombinations;
 
         public override Guid ComponentGuid =>
             new Guid("4993bc97-b15f-4217-972c-b88acef3cc62");

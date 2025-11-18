@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -27,12 +26,17 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
     public class GetStoriesComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Retrieves information about the story structure of the currently loaded project.";
+
+        public override string CommandName => "GetStories";
+
         public GetStoriesComponent()
             : base(
                 "Stories",
                 "Stories",
-                "Retrieves information about the story sructure of the currently loaded project.",
-                "Project")
+                Doc,
+                GroupNames.Project)
         {
         }
 
@@ -67,33 +71,29 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadAddOnCommand(
-                "GetStories",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out StoriesData response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var stories = response.Result.ToObject<StoriesData>();
             var names = new List<string>();
             var elevations = new List<double>();
             var heights = new List<double>();
             var showOnSections = new List<bool>();
-            for (var i = 0; i < stories.Stories.Count; ++i)
+
+            for (var i = 0; i < response.Stories.Count; ++i)
             {
-                names.Add(stories.Stories[i].Name);
-                elevations.Add(stories.Stories[i].Level);
-                if (i < stories.Stories.Count - 1)
+                names.Add(response.Stories[i].Name);
+                elevations.Add(response.Stories[i].Level);
+                if (i < response.Stories.Count - 1)
                 {
                     heights.Add(
-                        stories.Stories[i + 1].Level -
-                        stories.Stories[i].Level);
+                        response.Stories[i + 1].Level -
+                        response.Stories[i].Level);
                 }
                 else if (heights.Count > 0)
                 {
@@ -104,25 +104,28 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     heights.Add(10.0);
                 }
 
-                showOnSections.Add(stories.Stories[i].DispOnSections);
+                showOnSections.Add(response.Stories[i].DispOnSections);
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 names);
-            DA.SetDataList(
+
+            da.SetDataList(
                 1,
                 elevations);
-            DA.SetDataList(
+
+            da.SetDataList(
                 2,
                 heights);
-            DA.SetDataList(
+
+            da.SetDataList(
                 3,
                 showOnSections);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.GetStories;
+            Properties.Resources.GetStories;
 
         public override Guid ComponentGuid =>
             new Guid("c06545cd-ec1b-439a-9c70-0cef732cca9a");

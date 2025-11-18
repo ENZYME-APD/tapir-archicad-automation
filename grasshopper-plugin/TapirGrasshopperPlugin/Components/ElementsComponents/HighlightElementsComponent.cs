@@ -4,7 +4,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 using System.Windows.Forms;
 using System.Drawing;
 
@@ -12,12 +11,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class HighlightElementsComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Highlight Elements.";
+        public override string CommandName => "HighlightElements";
+
         public HighlightElementsComponent()
             : base(
                 "Highlight Elements",
                 "HighlightElems",
-                "Highlight Elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
             Params.ParameterSourcesChanged += OnParameterSourcesChanged;
         }
@@ -122,10 +124,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var enabled = true;
-            if (DA.GetData(
+            if (da.GetData(
                     0,
                     ref enabled) && !enabled)
             {
@@ -134,7 +136,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 1);
             if (inputElements == null)
             {
@@ -145,7 +147,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var highlightedColors = new List<GH_Colour>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     2,
                     highlightedColors))
             {
@@ -162,7 +164,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var nonHighlightedColor = new GH_Colour();
-            if (!DA.GetData(
+            if (!da.GetData(
                     3,
                     ref nonHighlightedColor))
             {
@@ -170,7 +172,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var wireframe3D = false;
-            if (!DA.GetData(
+            if (!da.GetData(
                     4,
                     ref wireframe3D))
             {
@@ -178,7 +180,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var transparency = 0.0;
-            if (!DA.GetData<double>(
+            if (!da.GetData<double>(
                     5,
                     ref transparency))
             {
@@ -208,33 +210,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     System.Convert.ToInt32(transparency * 255.0)),
                 Wireframe3D = wireframe3D
             };
-            var highlightElementsObj = JObject.FromObject(highlightElements);
-            var response = SendArchicadAddOnCommand(
-                "HighlightElements",
-                highlightElementsObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+
+            GetResponse(
+                CommandName,
+                highlightElements);
         }
 
         private void ClearHighlight()
         {
-            var highlightElements = new HighlightElementsObj();
-            var highlightElementsObj = JObject.FromObject(highlightElements);
-            var response = SendArchicadAddOnCommand(
-                "HighlightElements",
-                highlightElementsObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            GetResponse(
+                CommandName,
+                new HighlightElementsObj());
         }
 
         public void OnParameterSourcesChanged(
@@ -251,8 +237,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
         }
 
-        protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.HighlightElems;
+        protected override Bitmap Icon => Properties.Resources.HighlightElems;
 
         public override Guid ComponentGuid =>
             new Guid("9ba098dd-63c5-4126-b4cc-3caa56082c8f");

@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
@@ -11,14 +10,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetGDLParametersOfElementsComponent : ArchicadAccessorComponent
     {
-        public static string CommandName => "GetGDLParametersOfElements";
+        public static string Doc => "Get GDL parameter values of elements.";
+        public override string CommandName => "GetGDLParametersOfElements";
 
         public GetGDLParametersOfElementsComponent()
             : base(
                 "Elem GDL Parameters",
                 "Elem GDL Parameters",
-                "Get GDL parameter values of elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get detailList for.",
+                "Elements Guids to get detailList for.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "ParamName",
@@ -79,11 +79,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            JObject inputElementsObj = JObject.FromObject(inputElements);
-
-            if (!GetResponse(
+            if (!GetConvertedResponse(
                     CommandName,
-                    inputElementsObj,
+                    inputElements,
                     out GDLParametersResponse response))
             {
                 return;

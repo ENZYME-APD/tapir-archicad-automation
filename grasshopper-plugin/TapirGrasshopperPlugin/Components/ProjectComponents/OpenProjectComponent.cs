@@ -9,13 +9,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class OpenProjectComponent : ArchicadAccessorComponent
     {
-        public static string CommandName => "OpenProject";
+        public static string Doc => "Opens the given project.";
+        public override string CommandName => "OpenProject";
 
         public OpenProjectComponent()
             : base(
-                CommandName,
                 "Open Project",
-                "Opens the given project.",
+                "Open Project",
+                Doc,
                 GroupNames.Project)
         {
         }
@@ -41,20 +42,18 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            if (!DA.GetItem(
+            if (!da.GetItem(
                     0,
                     out string path))
             {
                 return;
             }
 
-            var jObject = JObject.FromObject(new ProjectFilePathObject(path));
-
-            if (!GetResponse(
+            if (!GetConvertedResponse(
                     CommandName,
-                    jObject,
+                    new ProjectFilePathObject(path),
                     out JObject jResponse))
             {
                 return;
@@ -62,7 +61,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             var result = ExecutionResultBase.Deserialize(jResponse);
 
-            DA.SetData(
+            da.SetData(
                 0,
                 result.Message());
         }

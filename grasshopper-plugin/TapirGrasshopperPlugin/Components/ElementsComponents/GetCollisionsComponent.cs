@@ -4,7 +4,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -55,12 +54,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetCollisionsComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Detects collisions between elements.";
+        public override string CommandName => "GetCollisions";
+
         public GetCollisionsComponent()
             : base(
                 "Collisions",
                 "Collisions",
-                "Detects collisions between elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -103,22 +105,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddIntegerParameter(
                 "IndexOfElementFromGroup1",
                 "IndexFromGroup1",
-                "The index of Element with detected collision from group1.",
+                "The index of Elements with detected collision from group1.",
                 GH_ParamAccess.list);
             pManager.AddGenericParameter(
                 "ElementGuidFromGroup1",
                 "ElementGuid1",
-                "Element id from the group1.",
+                "Elements id from the group1.",
                 GH_ParamAccess.list);
             pManager.AddIntegerParameter(
                 "IndexOfElementFromGroup2",
                 "IndexFromGroup2",
-                "The index of Element with detected collision from group2.",
+                "The index of Elements with detected collision from group2.",
                 GH_ParamAccess.list);
             pManager.AddGenericParameter(
                 "ElementGuidFromGroup2",
                 "ElementGuid2",
-                "Element id from the group2.",
+                "Elements id from the group2.",
                 GH_ParamAccess.list);
             pManager.AddBooleanParameter(
                 "HasBodyCollision",
@@ -133,10 +135,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElementsGroup1 = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElementsGroup1 == null)
             {
@@ -147,7 +149,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var inputElementsGroup2 = ElementsObj.Create(
-                DA,
+                da,
                 1);
             if (inputElementsGroup2 == null)
             {
@@ -158,7 +160,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var volumeTolerance = 0.001;
-            if (!DA.GetData(
+            if (!da.GetData(
                     2,
                     ref volumeTolerance))
             {
@@ -166,7 +168,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var performSurfaceCheck = false;
-            if (!DA.GetData(
+            if (!da.GetData(
                     3,
                     ref performSurfaceCheck))
             {
@@ -174,7 +176,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var surfaceTolerance = 0.001;
-            if (!DA.GetData(
+            if (!da.GetData(
                     4,
                     ref surfaceTolerance))
             {
@@ -192,15 +194,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     SurfaceTolerance = surfaceTolerance
                 }
             };
-            var parametersObj = JObject.FromObject(parameters);
-            var response = SendArchicadAddOnCommand(
-                "GetCollisions",
-                parametersObj);
-            if (!response.Succeeded)
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    parameters,
+                    out CollisionsOutput collisions))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
@@ -210,7 +209,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var elementId2s = new List<ElementIdItemObj>();
             var hasBodyCollisions = new List<bool>();
             var hasClearenceCollisions = new List<bool>();
-            var collisions = response.Result.ToObject<CollisionsOutput>();
+
             foreach (var c in collisions.Collisions)
             {
                 elementIndex1s.Add(
@@ -227,22 +226,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 hasClearenceCollisions.Add(c.HasClearenceCollision);
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 elementIndex1s);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 elementId1s);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 elementIndex2s);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 elementId2s);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 hasBodyCollisions);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 hasClearenceCollisions);
         }

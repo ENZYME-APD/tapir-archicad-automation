@@ -9,12 +9,16 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class GetAllClassificationsComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Get all Classifications in the given Classification System.";
+        public override string CommandName => "GetAllClassificationSystems";
+
         public GetAllClassificationsComponent()
             : base(
                 "All Classifications in the given Classification System.",
                 "AllClassifications",
-                "Get all Classifications in the given Classification System.",
-                "Classifications")
+                Doc,
+                GroupNames.Classifications)
         {
         }
 
@@ -68,10 +72,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 List<ClassificationItemObj> tree,
                 string pathToRoot)
         {
-            var list = new List<Tuple<ClassificationItemDetailsObj, string>>();
-            foreach (var item in tree)
+            List<Tuple<ClassificationItemDetailsObj, string>> list = new();
+            foreach (ClassificationItemObj item in tree)
             {
-                var path = pathToRoot + '/' + item.ClassificationItem.Id;
+                string path = pathToRoot + '/' + item.ClassificationItem.Id;
                 list.Add(
                     new Tuple<ClassificationItemDetailsObj, string>(
                         item.ClassificationItem,
@@ -89,68 +93,67 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadCommand(
-                "GetAllClassificationSystems",
-                null);
-            if (!response.Succeeded)
+            Dictionary<ClassificationSystemDetailsObj,
+                    List<Tuple<ClassificationItemDetailsObj, string>>>
+                itemsPerSystems = new();
+
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    null,
+                    out AllClassificationSystems classificationSystems))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var itemsPerSystems =
-                new Dictionary<ClassificationSystemDetailsObj,
-                    List<Tuple<ClassificationItemDetailsObj, string>>>();
-            var classificationSystems =
-                response.Result.ToObject<AllClassificationSystems>();
-            foreach (var system in classificationSystems.ClassificationSystems)
+
+            foreach (ClassificationSystemDetailsObj system in
+                     classificationSystems.ClassificationSystems)
             {
-                var classificationSystem = new ClassificationSystemObj()
+                ClassificationSystemObj classificationSystem = new()
                 {
                     ClassificationSystemId = system.ClassificationSystemId
                 };
 
-                var classificationSystemObj =
+                JObject classificationSystemObj =
                     JObject.FromObject(classificationSystem);
-                response = SendArchicadCommand(
-                    "GetAllClassificationsInSystem",
-                    classificationSystemObj);
-                if (!response.Succeeded)
-                {
-                    AddRuntimeMessage(
-                        GH_RuntimeMessageLevel.Error,
-                        response.GetErrorMessage());
-                    return;
-                }
 
-                var classificationItemsInSystem = response.Result
-                    .ToObject<AllClassificationItemsInSystem>();
-                var itemsInSystem = GetAllClassificationItemFromTree(
-                    classificationItemsInSystem.ClassificationItems,
-                    system.ToString());
+                if (!GetConvertedResponse(
+                        CommandName,
+                        classificationSystemObj,
+                        out AllClassificationItemsInSystem
+                            classificationItemsInSystem)) { return; }
+
+                List<Tuple<ClassificationItemDetailsObj, string>>
+                    itemsInSystem = GetAllClassificationItemFromTree(
+                        classificationItemsInSystem.ClassificationItems,
+                        system.ToString());
+
                 itemsPerSystems.Add(
                     system,
                     itemsInSystem);
             }
 
-            var systemIds = new List<string>();
-            var systemNamesAndVersions = new List<string>();
-            var itemIds = new List<string>();
-            var itemDisplayIds = new List<string>();
-            var itemNames = new List<string>();
-            var itemFullDisplayIds = new List<string>();
-            var itemPaths = new List<string>();
-            foreach (var itemsInSystem in itemsPerSystems)
+            List<string> systemIds = new();
+            List<string> systemNamesAndVersions = new();
+            List<string> itemIds = new();
+            List<string> itemDisplayIds = new();
+            List<string> itemNames = new();
+            List<string> itemFullDisplayIds = new();
+            List<string> itemPaths = new();
+            foreach (KeyValuePair<ClassificationSystemDetailsObj,
+                             List<Tuple<ClassificationItemDetailsObj, string>>>
+                         itemsInSystem in itemsPerSystems)
             {
-                var system = itemsInSystem.Key;
-                foreach (var itemDetailAndPath in itemsInSystem.Value)
+                ClassificationSystemDetailsObj system = itemsInSystem.Key;
+                foreach (Tuple<ClassificationItemDetailsObj, string>
+                             itemDetailAndPath in itemsInSystem.Value)
                 {
-                    var itemDetail = itemDetailAndPath.Item1;
-                    var itemPath = itemDetailAndPath.Item2;
+                    ClassificationItemDetailsObj itemDetail =
+                        itemDetailAndPath.Item1;
+                    string itemPath = itemDetailAndPath.Item2;
 
                     systemIds.Add(system.ClassificationSystemId.Guid);
                     systemNamesAndVersions.Add(system.ToString());
@@ -165,33 +168,33 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 }
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 systemIds);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 systemNamesAndVersions);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 itemIds);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 itemDisplayIds);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 itemFullDisplayIds);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 itemNames);
-            DA.SetDataList(
+            da.SetDataList(
                 6,
                 itemPaths);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.AllClassifications;
+            Properties.Resources.AllClassifications;
 
         public override Guid ComponentGuid =>
-            new Guid("46a81cf1-e043-4cb7-b587-c2a6d3349bd8");
+            new("46a81cf1-e043-4cb7-b587-c2a6d3349bd8");
     }
 }

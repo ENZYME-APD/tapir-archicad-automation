@@ -6,7 +6,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -27,12 +26,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetConnectedElementsComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Gets the connected elements of the given elements.";
+
+        public override string CommandName => "GetConnectedElements";
+
         public GetConnectedElementsComponent()
             : base(
                 "Connected Elements",
                 "ConnectedElems",
-                "Gets the connected elements of the given elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -42,7 +46,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element ids of hierarchical elements to get subelements of.",
+                "Elements ids of hierarchical elements to get subelements of.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "ConnectedElemType",
@@ -73,10 +77,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -87,7 +91,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var elemType = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref elemType))
             {
@@ -99,21 +103,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 Elements = inputElements.Elements,
                 ConnectedElementType = elemType
             };
-            var parametersObj = JObject.FromObject(parameters);
-            var response = SendArchicadAddOnCommand(
-                "GetConnectedElements",
-                parametersObj);
-            if (!response.Succeeded)
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    parameters,
+                    out ConnectedElementsObj connectedElementsObj))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var connectedElementsObj =
-                response.Result.ToObject<ConnectedElementsObj>();
             var connectedElementsTree = new DataTree<ElementIdItemObj>();
+
             for (var i = 0;
                  i < connectedElementsObj.ConnectedElements.Count;
                  i++)
@@ -125,13 +125,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new GH_Path(i));
             }
 
-            DA.SetDataTree(
+            da.SetDataTree(
                 0,
                 connectedElementsTree);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ConnectedElements;
+            Properties.Resources.ConnectedElements;
 
         public override Guid ComponentGuid =>
             new Guid("f857d496-6c7f-4b15-928a-d900a85dea32");

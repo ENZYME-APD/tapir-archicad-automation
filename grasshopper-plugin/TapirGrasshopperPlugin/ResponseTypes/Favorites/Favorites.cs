@@ -5,9 +5,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Favorites
 {
     public class FavoritesResponse
     {
-        public static string Doc =>
-            "Returns a list of the names of all favorites with the given element type.";
-
         [JsonProperty("favorites")]
         public Favorites Favorites { get; set; }
     }

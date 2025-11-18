@@ -2,18 +2,20 @@
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class DeleteElementsComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Delete elements";
+        public override string CommandName => "DeleteElements";
+
         public DeleteElementsComponent()
             : base(
                 "Delete Elements",
                 "DeleteElements",
-                "Delete elements",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -23,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element ids to delete.",
+                "Elements ids to delete.",
                 GH_ParamAccess.list);
         }
 
@@ -33,10 +35,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var elements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (elements == null)
             {
@@ -47,19 +49,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var elementsObj = JObject.FromObject(elements);
-            var response = SendArchicadAddOnCommand(
-                "DeleteElements",
-                elementsObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
 
-            var executionResult =
-                response.Result.ToObject<ExecutionResultObj>();
+            if (!GetConvertedResponse(
+                    CommandName,
+                    elementsObj,
+                    out ExecutionResultObj executionResult)) { return; }
+
             if (!executionResult.Success)
             {
                 AddRuntimeMessage(
@@ -69,7 +64,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.DeleteElements;
+            Properties.Resources.DeleteElements;
 
         public override Guid ComponentGuid =>
             new Guid("9880138a-731a-40f6-a820-aa47923a872f");

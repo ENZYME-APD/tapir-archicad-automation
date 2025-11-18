@@ -5,7 +5,6 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -41,12 +40,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class MoveElementsComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Move elements";
+        public override string CommandName => "MoveElements";
+
         public MoveElementsComponent()
             : base(
                 "Move Elements",
                 "MoveElements",
-                "Move elements",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -56,7 +58,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element ids to move.",
+                "Elements ids to move.",
                 GH_ParamAccess.list);
             pManager.AddVectorParameter(
                 "Moving 3D Vectors",
@@ -77,10 +79,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var elements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (elements == null)
             {
@@ -91,7 +93,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var moveVectors = new List<Vector3d>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     moveVectors))
             {
@@ -108,7 +110,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var copy = false;
-            if (!DA.GetData(
+            if (!da.GetData(
                     2,
                     ref copy))
             {
@@ -138,23 +140,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            var moveElementsParametersObj =
-                JObject.FromObject(moveElementsParameters);
-            var response = SendArchicadAddOnCommand(
-                "MoveElements",
-                moveElementsParametersObj);
-
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            GetResponse(
+                CommandName,
+                moveElementsParameters);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.MoveElements;
+            Properties.Resources.MoveElements;
 
         public override Guid ComponentGuid =>
             new Guid("e37db5dc-9ac6-42e6-836c-3c2b04b15d95");

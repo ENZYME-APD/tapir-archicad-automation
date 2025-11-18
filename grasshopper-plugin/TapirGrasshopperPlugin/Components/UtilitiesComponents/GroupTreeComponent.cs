@@ -9,17 +9,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class GroupTreeComponent : Component
     {
+        public static string Doc =>
+            "Groups data items into a tree structure based on values";
+
         public GroupTreeComponent()
             : base(
                 "Group to Tree",
                 "GroupTree",
-                "Groups data items into a tree structure based on values",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 
         protected override void RegisterInputParams(
-            GH_Component.GH_InputParamManager pManager)
+            GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "Data List",
@@ -34,7 +37,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void RegisterOutputParams(
-            GH_Component.GH_OutputParamManager pManager)
+            GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "Output Tree",
@@ -67,8 +70,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     0,
                     dataList) || dataList.Count == 0)
             {
-                this.Message =
-                    "Error: Both data list and values list are required";
+                Message = "Error: Both data list and values list are required";
                 DA.SetDataTree(
                     0,
                     outputTree);
@@ -86,8 +88,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     1,
                     valuesList) || valuesList.Count == 0)
             {
-                this.Message =
-                    "Error: Both data list and values list are required";
+                Message = "Error: Both data list and values list are required";
                 DA.SetDataTree(
                     0,
                     outputTree);
@@ -103,7 +104,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             // Validate lists have same length
             if (dataList.Count != valuesList.Count)
             {
-                this.Message =
+                Message =
                     $"Error: Lists have different lengths. Data: {dataList.Count}, Values: {valuesList.Count}";
                 DA.SetDataTree(
                     0,
@@ -200,7 +201,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 branchCounts);
 
             // Update component message
-            this.Message = message;
+            Message = message;
         }
 
         private List<string> WrapText(

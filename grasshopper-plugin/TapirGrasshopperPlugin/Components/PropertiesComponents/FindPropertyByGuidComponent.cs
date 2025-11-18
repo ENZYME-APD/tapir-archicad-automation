@@ -1,18 +1,20 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class FindPropertyByGuidComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Finds a property by guid.";
+        public override string CommandName => "GetAllProperties";
+
         public FindPropertyByGuidComponent()
             : base(
                 "Property by Guid",
                 "PropertyByGuid",
-                "Finds a property by guid.",
-                "Properties")
+                Doc,
+                GroupNames.Properties)
         {
         }
 
@@ -37,31 +39,27 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var propertyGuid = "";
-            if (!DA.GetData(
+            string propertyGuid = "";
+            if (!da.GetData(
                     0,
                     ref propertyGuid))
             {
                 return;
             }
 
-            var response = SendArchicadAddOnCommand(
-                "GetAllProperties",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out AllProperties response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var properties = response.Result.ToObject<AllProperties>();
             PropertyDetailsObj found = null;
             propertyGuid = propertyGuid.ToLower();
-            foreach (var detail in properties.Properties)
+
+            foreach (PropertyDetailsObj detail in response.Properties)
             {
                 if (detail.PropertyId.Guid.ToLower() == propertyGuid)
                 {
@@ -78,16 +76,16 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
             else
             {
-                DA.SetData(
+                da.SetData(
                     0,
                     found.PropertyId);
             }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.PropertyByGuid;
+            Properties.Resources.PropertyByGuid;
 
         public override Guid ComponentGuid =>
-            new Guid("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
+            new("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
     }
 }

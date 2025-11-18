@@ -1,18 +1,20 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetSelectedElementsComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get currently selected elements.";
+        public override string CommandName => "GetSelectedElements";
+
         public GetSelectedElementsComponent()
             : base(
                 "Selected Elems",
                 "SelectedElems",
-                "Get currently selected elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -32,27 +34,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadAddOnCommand(
-                "GetSelectedElements",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out ElementsObj elements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var elements = response.Result.ToObject<ElementsObj>();
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 elements.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.SelectedElems;
+            Properties.Resources.SelectedElems;
 
         public override Guid ComponentGuid =>
             new Guid("1949E4B5-4E37-4F35-8C5C-BEA7575AC1C6");

@@ -88,10 +88,10 @@ namespace TapirGrasshopperPlugin.Components
             Attributes.Pivot = new PointF(
                 component.Attributes.Pivot.X +
                 component.Params.Input[inputIndex].Attributes.InputGrip.X -
-                this.Attributes.Bounds.Width * GH_GraphicsUtil.UiScale - 40.0f,
+                Attributes.Bounds.Width * GH_GraphicsUtil.UiScale - 40.0f,
                 component.Attributes.Pivot.Y +
                 component.Params.Input[inputIndex].Attributes.InputGrip.Y -
-                this.Attributes.Bounds.Height / 2.0f);
+                Attributes.Bounds.Height / 2.0f);
             component.Params.Input[inputIndex].AddSource(this);
             ExpireSolution(true);
         }
@@ -99,6 +99,8 @@ namespace TapirGrasshopperPlugin.Components
 
     abstract public class ArchicadAccessorValueList : ValueList
     {
+        public abstract string CommandName { get; }
+
         public ArchicadAccessorValueList(
             string name,
             string nickname,

@@ -1,22 +1,21 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
-using Rhino.Geometry;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class Get3DBoundingBoxesOfElementsComponent
         : ArchicadAccessorComponent
     {
+        public static string Doc => "Get 3D bounding boxes of elements.";
+
         public Get3DBoundingBoxesOfElementsComponent()
             : base(
                 "Elem 3D Bounding Boxes",
                 "Elem3DBoxes",
-                "Get 3D bounding boxes of elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -26,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get the bounding box of.",
+                "Elements Guids to get the bounding box of.",
                 GH_ParamAccess.list);
         }
 
@@ -41,11 +40,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
+
             if (inputElements == null)
             {
                 AddRuntimeMessage(
@@ -54,45 +54,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var inputElementsObj = JObject.FromObject(inputElements);
-            var response = SendArchicadAddOnCommand(
-                "Get3DBoundingBoxes",
-                inputElementsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    inputElements,
+                    out BoundingBoxes3DObj boxObject))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var boundingBoxes = response.Result.ToObject<BoundingBoxes3DObj>();
-            var boundingBoxesValue = new List<BoundingBox>();
-            foreach (var boundingBox in boundingBoxes.BoundingBoxes3D)
-            {
-                var box = new BoundingBox()
-                {
-                    Min = new Point3d(
-                        boundingBox.BoundingBox3D.XMin,
-                        boundingBox.BoundingBox3D.YMin,
-                        boundingBox.BoundingBox3D.ZMin),
-                    Max = new Point3d(
-                        boundingBox.BoundingBox3D.XMax,
-                        boundingBox.BoundingBox3D.YMax,
-                        boundingBox.BoundingBox3D.ZMax)
-                };
-                boundingBoxesValue.Add(box);
-            }
-
-            DA.SetDataList(
+            da.SetDataList(
                 0,
-                boundingBoxesValue);
+                boxObject.BoundingBoxes3D.Select(x => x.ToRhino()));
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.Elems3DBoxes;
+            Properties.Resources.Elems3DBoxes;
 
         public override Guid ComponentGuid =>
             new Guid("2044841d-a1af-40c5-ab9d-291187261d69");
+
+        public override string CommandName => "Get3DBoundingBoxes";
     }
 }

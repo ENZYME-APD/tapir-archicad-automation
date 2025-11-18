@@ -2,18 +2,20 @@ using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class GetCommentsOfIssueComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get Comments of an Issue.";
+        public override string CommandName => "GetCommentsFromIssue";
+
         public GetCommentsOfIssueComponent()
             : base(
                 "Get Comments of an Issue",
                 "GetComments",
-                "Get Comments of an Issue.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -38,11 +40,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var issueId = IssueIdItemObj.Create(
-                DA,
+                da,
                 0);
+
             if (issueId == null)
             {
                 AddRuntimeMessage(
@@ -51,26 +54,21 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var parameters = JObject.FromObject(issueId);
-            var response = SendArchicadAddOnCommand(
-                "GetCommentsFromIssue",
-                parameters);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    issueId,
+                    out IssueComments response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var comments = response.Result.ToObject<IssueComments>();
-            DA.SetDataList(
+            da.SetDataList(
                 0,
-                comments.Comments);
+                response.Comments);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.GetCommentsOfAnIssue;
+            Properties.Resources.GetCommentsOfAnIssue;
 
         public override Guid ComponentGuid =>
             new Guid("2c122dc0-ef6a-4e98-b35d-943ba30a99ee");

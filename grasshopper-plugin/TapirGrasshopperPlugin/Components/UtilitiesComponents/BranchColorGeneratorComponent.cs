@@ -9,6 +9,9 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class BranchColorGeneratorComponent : Component
     {
+        public static string Doc =>
+            "Generates colors for branches in a data tree";
+
         public static Dictionary<int, string> ModeMap =
             new Dictionary<int, string>
             {
@@ -19,13 +22,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             : base(
                 "Branch Color Generator",
                 "BranchColorGen",
-                "Generates colors for branches in a data tree",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 
         protected override void RegisterInputParams(
-            GH_Component.GH_InputParamManager pManager)
+            GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "Tree",
@@ -67,7 +70,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void RegisterOutputParams(
-            GH_Component.GH_OutputParamManager pManager)
+            GH_OutputParamManager pManager)
         {
             pManager.AddColourParameter(
                 "Generated Colors",
@@ -93,7 +96,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     0,
                     out tree) || tree.Branches.Count == 0)
             {
-                this.Message = message;
+                Message = message;
                 return;
             }
 
@@ -253,7 +256,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 inputTree);
 
             // Update component message
-            this.Message = message;
+            Message = message;
         }
 
         private Color RandomColor(
@@ -465,7 +468,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             return colorsList;
         }
 
-        protected override System.Drawing.Bitmap Icon =>
+        protected override Bitmap Icon =>
             Properties.Resources.BranchColorGenerator;
 
         public override Guid ComponentGuid =>

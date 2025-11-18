@@ -2,12 +2,14 @@ using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class ImportIssuesFromBCFComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Import Issues from BCF.";
+        public override string CommandName => "ImportIssuesFromBCF";
+
         public class ParametersOfImport
         {
             [JsonProperty("importPath")]
@@ -21,8 +23,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             : base(
                 "Import Issues from BCF",
                 "ImportFromBCF",
-                "Import Issues from BCF.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -48,10 +50,10 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var filePath = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     0,
                     ref filePath))
             {
@@ -59,33 +61,26 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var alignBySurveyPoint = true;
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref alignBySurveyPoint))
             {
                 return;
             }
 
-            var parametersOfImport = new ParametersOfImport
+            var parameters = new ParametersOfImport
             {
                 ImportPath = filePath,
                 AlignBySurveyPoint = alignBySurveyPoint
             };
-            var parameters = JObject.FromObject(parametersOfImport);
-            var response = SendArchicadAddOnCommand(
-                "ImportIssuesFromBCF",
+
+            GetResponse(
+                CommandName,
                 parameters);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ImportIssuesFromBCF;
+            Properties.Resources.ImportIssuesFromBCF;
 
         public override Guid ComponentGuid =>
             new Guid("4cf3e832-dca0-4a6b-997b-aa593be9d293");

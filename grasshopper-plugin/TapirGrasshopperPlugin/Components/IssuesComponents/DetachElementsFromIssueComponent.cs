@@ -1,15 +1,16 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class DetachElementsFromIssueComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Detach Elements from an Issue.";
+        public override string CommandName => "DetachElementsFromIssue";
+
         public class ParametersOfDetachElements
         {
             [JsonProperty("issueId")]
@@ -23,8 +24,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             : base(
                 "Detach Elements from an Issue",
                 "DetachElements",
-                "Detach Elements from an Issue.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -59,10 +60,10 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var issueId = IssueIdObj.Create(
-                DA,
+                da,
                 0);
             if (issueId == null)
             {
@@ -73,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var elements = ElementsObj.Create(
-                DA,
+                da,
                 1);
             if (elements == null)
             {
@@ -83,26 +84,18 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var parametersOfDetachElements = new ParametersOfDetachElements
+            var parameters = new ParametersOfDetachElements
             {
                 IssueId = issueId, Elements = elements.Elements
             };
-            var parameters = JObject.FromObject(parametersOfDetachElements);
-            var response = SendArchicadAddOnCommand(
-                "DetachElementsFromIssue",
+
+            GetResponse(
+                CommandName,
                 parameters);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources
-                .DetachElementsFromAnIssue;
+            Properties.Resources.DetachElementsFromAnIssue;
 
         public override Guid ComponentGuid =>
             new Guid("83189f2c-5a8a-4315-a506-2a30a2737ae6");

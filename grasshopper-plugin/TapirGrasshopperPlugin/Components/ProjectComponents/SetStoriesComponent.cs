@@ -1,20 +1,22 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class SetStoriesComponent : ArchicadExecutorComponent
     {
+        public static string Doc =>
+            "Sets the story structure of the currently loaded project.";
+
+        public override string CommandName => "SetStories";
+
         public SetStoriesComponent()
             : base(
                 "SetStories",
                 "SetStories",
-                "Sets the story sructure of the currently loaded project.",
-                "Project")
+                Doc,
+                GroupNames.Project)
         {
         }
 
@@ -45,10 +47,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var names = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     0,
                     names))
             {
@@ -59,7 +61,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             }
 
             var elevations = new List<double>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     elevations))
             {
@@ -78,7 +80,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             }
 
             var showOnSections = new List<bool>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     2,
                     showOnSections))
             {
@@ -111,22 +113,13 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     });
             }
 
-            var storiesObj = JObject.FromObject(stories);
-            var response = SendArchicadAddOnCommand(
-                "SetStories",
-                storiesObj);
-            var executionResult =
-                response.Result.ToObject<ExecutionResultObj>();
-            if (!executionResult.Success)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    executionResult.Error.Message);
-            }
+            GetResponse(
+                CommandName,
+                stories);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.SetStories;
+            Properties.Resources.SetStories;
 
         public override Guid ComponentGuid =>
             new Guid("95ce8c3c-4525-4f60-bc1b-871beddc6f38");

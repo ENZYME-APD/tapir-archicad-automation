@@ -40,12 +40,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
     public class SetLayersComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Set the details of layers.";
+        public override string CommandName => "CreateLayers";
+
         public SetLayersComponent()
             : base(
                 "Set Layers",
                 "SetLayers",
-                "Set the details of layers.",
-                "Attributes")
+                Doc,
+                GroupNames.Attributes)
         {
         }
 
@@ -90,10 +93,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var attributes = AttributesObj.Create(
-                DA,
+                da,
                 0);
             if (attributes == null)
             {
@@ -104,7 +107,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var names = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     names))
             {
@@ -123,7 +126,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var isHiddenLayers = new List<bool>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     2,
                     isHiddenLayers))
             {
@@ -134,7 +137,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var isLockedLayers = new List<bool>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     3,
                     isLockedLayers))
             {
@@ -145,7 +148,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var isWireframeLayers = new List<bool>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     4,
                     isWireframeLayers))
             {
@@ -156,7 +159,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var intersectionGroupsOfLayers = new List<int>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     5,
                     intersectionGroupsOfLayers))
             {
@@ -215,17 +218,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
-            var layerDataArrayObj = JObject.FromObject(layerDataArray);
-            var response = SendArchicadAddOnCommand(
-                "CreateLayers",
-                layerDataArrayObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            GetResponse(
+                CommandName,
+                layerDataArray);
         }
 
         // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SetLayers;

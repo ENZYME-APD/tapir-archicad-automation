@@ -2,18 +2,20 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class GetAllIssuesComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get all issues.";
+        public override string CommandName => "GetIssues";
+
         public GetAllIssuesComponent()
             : base(
                 "All Issues",
                 "AllIssues",
-                "Get all issues.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -38,38 +40,34 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadAddOnCommand(
-                "GetIssues",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out AllIssues response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var issues = response.Result.ToObject<AllIssues>();
             var issueIds = new List<IssueIdObj>();
             var issueNames = new List<string>();
-            foreach (var detail in issues.Issues)
+
+            foreach (var detail in response.Issues)
             {
                 issueIds.Add(detail.IssueId);
                 issueNames.Add(detail.Name);
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 issueIds);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 issueNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.AllIssues;
+            Properties.Resources.AllIssues;
 
         public override Guid ComponentGuid =>
             new Guid("5453804e-8983-4743-926d-a78b46fcecc1");

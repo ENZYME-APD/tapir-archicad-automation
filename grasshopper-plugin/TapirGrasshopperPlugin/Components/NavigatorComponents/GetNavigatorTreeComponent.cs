@@ -6,7 +6,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -170,12 +169,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
     public class GetNavigatorTreeComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get the tree structure of the navigator.";
+
+        public override string CommandName => "GetNavigatorItemTree";
+
         public GetNavigatorTreeComponent()
             : base(
                 "Navigator Tree",
                 "NavigatorTree",
-                "Get the tree structure of the navigator.",
-                "Navigator")
+                Doc,
+                GroupNames.Navigator)
         {
         }
 
@@ -269,24 +272,18 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 {
                     NavigatorItemIds = allItems
                 };
-            var inputObj = JObject.FromObject(input);
-            var response = SendArchicadAddOnCommand(
-                "GetDatabaseIdFromNavigatorItemId",
-                inputObj);
-            if (!response.Succeeded)
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    input,
+                    out GetDatabaseIdFromNavigatorItemIdOutput response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return databaseIdTree;
             }
 
-            var output = response.Result
-                .ToObject<GetDatabaseIdFromNavigatorItemIdOutput>();
-
-            for (var i = 0; i < output.Databases.Count; i++)
+            for (var i = 0; i < response.Databases.Count; i++)
             {
-                var item = output.Databases[i];
+                var item = response.Databases[i];
                 databaseIdTree.Add(
                     item,
                     branches[i]);

@@ -9,7 +9,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
 {
     public class ViewSettingsResponse
     {
-        public static string Doc => "Gets the view settings of navigator items.";
 
         [JsonProperty ("viewSettings")]
         public List<ViewSettingsOrError> ViewSettings { get; set; }

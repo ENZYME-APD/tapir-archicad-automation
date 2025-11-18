@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -37,12 +36,17 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
     public class CreateViewMapFolder : ArchicadExecutorComponent
     {
+        public static string Doc =>
+            "Creates a view folder item at the given position in the navigator tree.";
+
+        public override string CommandName => "CreateViewMapFolder";
+
         public CreateViewMapFolder()
             : base(
                 "CreateViewMapFolder",
                 "CreateViewMapFolder",
-                "Creates a view folder item at the given position in the navigator tree.",
-                "Navigator")
+                Doc,
+                GroupNames.Navigator)
         {
         }
 
@@ -80,10 +84,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var name = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     0,
                     ref name))
             {
@@ -91,10 +95,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             var parentNavigatorItemId = NavigatorIdItemObj.Create(
-                DA,
+                da,
                 1);
             var previousNavigatorItemId = NavigatorIdItemObj.Create(
-                DA,
+                da,
                 2);
 
             var input = new CreateViewMapFolderInput()
@@ -108,30 +112,27 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     ? null
                     : previousNavigatorItemId.Id
             };
-            var inputObj = JObject.FromObject(input);
-            var response = SendArchicadCommand(
-                "CreateViewMapFolder",
-                inputObj);
-            if (!response.Succeeded)
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    input,
+                    out CreateViewMapFolderOutput response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var createdFolderNavigatorItemId = new NavigatorIdItemObj()
+            var createdId = new NavigatorIdItemObj()
             {
-                Id = response.Result.ToObject<CreateViewMapFolderOutput>()
-                    .CreatedFolderNavigatorItemId
+                Id = response.CreatedFolderNavigatorItemId
             };
-            DA.SetData(
+
+            da.SetData(
                 0,
-                createdFolderNavigatorItemId);
+                createdId);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.CreateViewMapFolder;
+            Properties.Resources.CreateViewMapFolder;
 
         public override Guid ComponentGuid =>
             new Guid("4de02e9a-55c3-4d23-9f96-bb5f73d50f0e");

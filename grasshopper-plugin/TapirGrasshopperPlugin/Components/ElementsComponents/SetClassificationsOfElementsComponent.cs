@@ -11,14 +11,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     public class SetClassificationsOfElementsComponent
         : ArchicadAccessorComponent
     {
-        public static string CommandName => "SetClassificationsOfElements";
+        public static string Doc =>
+            "Sets the classifications of elements. " +
+            "In order to set the classification of an element to unclassified, " +
+            "omit the classificationItemId field. " +
+            "It works for subelements of hierarchal elements also.";
+
+        public override string CommandName => "SetClassificationsOfElements";
 
         public SetClassificationsOfElementsComponent()
             : base(
-                "Set Element Classifications",
+                "Set Elements Classifications",
                 "...",
-                "...",
-                GroupNames.Element)
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -51,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var jObject = JObject.FromObject(jsonElements);
 
-            if (!GetResponse(
+            if (!GetConvertedResponse(
                     CommandName,
                     jObject,
                     out ExecutionResultsResponse response))

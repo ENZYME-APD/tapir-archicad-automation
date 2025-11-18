@@ -1,22 +1,23 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class GetPropertyValuesOfElementsComponent
         : ArchicadAccessorComponent
     {
+        public static string Doc => "Get property values of elements.";
+        public override string CommandName => "GetPropertyValuesOfElements";
+
         public GetPropertyValuesOfElementsComponent()
             : base(
                 "Get Property Values",
                 "GetPropertyValues",
-                "Get property values of elements.",
-                "Properties")
+                Doc,
+                GroupNames.Properties)
         {
         }
 
@@ -31,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to get the value for.",
+                "Elements Guids to get the value for.",
                 GH_ParamAccess.list);
         }
 
@@ -41,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids the property is available for.",
+                "Elements Guids the property is available for.",
                 GH_ParamAccess.tree);
             pManager.AddTextParameter(
                 "Values",
@@ -51,11 +52,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var properties = PropertiesObj.Create(
-                DA,
+                da,
                 0);
+
             if (properties == null)
             {
                 AddRuntimeMessage(
@@ -65,8 +67,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
             var elements = ElementsObj.Create(
-                DA,
+                da,
                 1);
+
             if (elements == null)
             {
                 AddRuntimeMessage(
@@ -81,31 +84,23 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 PropertyIds = properties.Properties
             };
 
-            var elementsAndPropertyIdsObj =
-                JObject.FromObject(elementsAndPropertyIds);
-            var response = SendArchicadAddOnCommand(
-                "GetPropertyValuesOfElements",
-                elementsAndPropertyIdsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    elementsAndPropertyIds,
+                    out PropertyValuesForElements response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var propertyValuesForElements =
-                response.Result.ToObject<PropertyValuesForElements>();
             var elementIds = new DataTree<ElementIdItemObj>();
             var values = new DataTree<string>();
+
             for (var elementIndex = 0;
-                 elementIndex < propertyValuesForElements.PropertyValuesOrErrors
-                     .Count;
+                 elementIndex < response.PropertyValuesOrErrors.Count;
                  elementIndex++)
             {
                 var propertyValuesOrError =
-                    propertyValuesForElements.PropertyValuesOrErrors[
-                        elementIndex];
+                    response.PropertyValuesOrErrors[elementIndex];
                 if (propertyValuesOrError.PropertyValuesOrErrors == null)
                 {
                     continue;
@@ -133,10 +128,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 }
             }
 
-            DA.SetDataTree(
+            da.SetDataTree(
                 0,
                 elementIds);
-            DA.SetDataTree(
+            da.SetDataTree(
                 1,
                 values);
         }

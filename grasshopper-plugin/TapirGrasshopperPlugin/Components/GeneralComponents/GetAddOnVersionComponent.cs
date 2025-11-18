@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
@@ -13,12 +12,15 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
     public class GetAddOnVersionComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get Tapir Add-On version.";
+        public override string CommandName => "GetAddOnVersion";
+
         public GetAddOnVersionComponent()
             : base(
                 "Tapir Version",
-                "TapirVersion",
-                "Get Tapir Add-On version.",
-                "General")
+                "Tapir Version",
+                Doc,
+                GroupNames.General)
         {
         }
 
@@ -38,27 +40,22 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadAddOnCommand(
-                "GetAddOnVersion",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out VersionInfo response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var versionInfo = response.Result.ToObject<VersionInfo>();
-            DA.SetData(
+            da.SetData(
                 0,
-                versionInfo.Version);
+                response.Version);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.TapirVersion;
+            Properties.Resources.TapirVersion;
 
         public override Guid ComponentGuid =>
             new Guid("de017e94-ea0e-4947-bbf1-7c7d60e5e016");

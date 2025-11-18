@@ -4,7 +4,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Project
 {
     public class ProjectInfo
     {
-        public static string Doc => "Get details of the currently active project.";
 
         [JsonProperty ("isUntitled")]
         public bool IsUntitled { get; set; }

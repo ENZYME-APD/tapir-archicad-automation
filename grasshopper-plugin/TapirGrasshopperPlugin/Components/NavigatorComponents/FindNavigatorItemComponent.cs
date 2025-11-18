@@ -5,18 +5,22 @@ using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class FindNavigatorItemComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Finds a navigator item.";
+
+        public override string CommandName =>
+            "GetDatabaseIdFromNavigatorItemId";
+
         public FindNavigatorItemComponent()
             : base(
                 "FindNavigatorItem",
                 "FindNavigatorItem",
-                "Finds a navigator item.",
-                "Navigator")
+                Doc,
+                GroupNames.Navigator)
         {
         }
 
@@ -152,19 +156,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             };
 
-            var navigatorTreeIdObj = JObject.FromObject(navigatorTreeId);
-            var response = SendArchicadCommand(
-                "GetNavigatorItemTree",
-                navigatorTreeIdObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    navigatorTreeId,
+                    out NavigatorTreeObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var navigatorTreeObj = response.Result.ToObject<NavigatorTreeObj>();
             var navigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
             var navigatorItemPrefixTree = new DataTree<string>();
             var navigatorItemNameTree = new DataTree<string>();
@@ -172,7 +171,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             var navigatorItemTypeTree = new DataTree<string>();
             var sourceNavigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
 
-            navigatorTreeObj.GetItems(
+            response.GetItems(
                 navigatorItemIdTree,
                 navigatorItemPrefixTree,
                 navigatorItemNameTree,

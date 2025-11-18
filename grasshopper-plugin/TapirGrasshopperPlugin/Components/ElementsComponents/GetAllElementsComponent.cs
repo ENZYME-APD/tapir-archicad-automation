@@ -31,12 +31,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetAllElementsComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get all elements.";
+        public override string CommandName => "GetAllElements";
+
         public GetAllElementsComponent()
             : base(
                 "All Elements",
                 "AllElems",
-                "Get all elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -46,7 +49,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddTextParameter(
                 "Filter",
                 "Filter",
-                "Element filter.",
+                "Elements filter.",
                 GH_ParamAccess.list,
                 @default: new List<string>
                 {
@@ -72,10 +75,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var filters = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     0,
                     filters))
             {
@@ -83,7 +86,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var databases = DatabasesObj.Create(
-                DA,
+                da,
                 1);
 
             var elementFilters = new ElementFiltersObj()
@@ -94,26 +97,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         ? null
                         : databases.Databases
             };
-            var elementFiltersObj = JObject.FromObject(elementFilters);
-            var response = SendArchicadAddOnCommand(
-                "GetAllElements",
-                elementFiltersObj);
-            if (!response.Succeeded)
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    elementFilters,
+                    out ElementsObj elements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var elements = response.Result.ToObject<ElementsObj>();
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 elements.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.AllElems;
+            Properties.Resources.AllElems;
 
         public override Guid ComponentGuid =>
             new Guid("61085af7-4f11-49be-bd97-00effddf90af");

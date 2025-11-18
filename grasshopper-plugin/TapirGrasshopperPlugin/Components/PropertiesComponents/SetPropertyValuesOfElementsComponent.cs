@@ -1,21 +1,22 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class SetPropertyValuesOfElementsComponent
         : ArchicadExecutorComponent
     {
+        public static string Doc => "Set property values of elements.";
+        public override string CommandName => "SetPropertyValuesOfElements";
+
         public SetPropertyValuesOfElementsComponent()
             : base(
                 "Set Property Values",
                 "SetPropertyValues",
-                "Set property values of elements.",
-                "Properties")
+                Doc,
+                GroupNames.Properties)
         {
         }
 
@@ -30,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids to set the value for.",
+                "Elements Guids to set the value for.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "Values",
@@ -45,10 +46,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var propertyId = PropertyIdObj.Create(
-                DA,
+                da,
                 0);
             if (propertyId == null)
             {
@@ -59,7 +60,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
             var elements = ElementsObj.Create(
-                DA,
+                da,
                 1);
             if (elements == null)
             {
@@ -70,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
             var values = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     2,
                     values))
             {
@@ -87,6 +88,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
             var elemPropertyValues = new ElementPropertyValuesObj();
+
             elemPropertyValues.ElementPropertyValues =
                 new List<ElementPropertyValueObj>();
 
@@ -107,17 +109,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 elemPropertyValues.ElementPropertyValues.Add(elemPropertyValue);
             }
 
-            var elemPropertyValuesObj = JObject.FromObject(elemPropertyValues);
-            var response = SendArchicadAddOnCommand(
-                "SetPropertyValuesOfElements",
-                elemPropertyValuesObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            GetResponse(
+                CommandName,
+                elemPropertyValues);
         }
 
         protected override System.Drawing.Bitmap Icon =>

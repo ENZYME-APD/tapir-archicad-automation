@@ -3,12 +3,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class CreateIssueComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Create an issue.";
+        public override string CommandName => "CreateIssue";
+
         public class ParametersOfNewIssue
         {
             [JsonProperty("name")]
@@ -19,8 +21,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             : base(
                 "Create Issue",
                 "CreateIssue",
-                "Create an issue.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -45,10 +47,10 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var name = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     0,
                     ref name))
             {
@@ -56,26 +58,22 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var parametersOfNewIssue = new ParametersOfNewIssue { Name = name };
-            var parameters = JObject.FromObject(parametersOfNewIssue);
-            var response = SendArchicadAddOnCommand(
-                "CreateIssue",
-                parameters);
-            if (!response.Succeeded)
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    parametersOfNewIssue,
+                    out IssueIdItemObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var newIssue = response.Result.ToObject<IssueIdItemObj>();
-            DA.SetData(
+            da.SetData(
                 0,
-                newIssue.IssueId);
+                response.IssueId);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.CreateIssue;
+            Properties.Resources.CreateIssue;
 
         public override Guid ComponentGuid =>
             new Guid("fdd43474-b0de-4354-8856-c1dc0b07195f");

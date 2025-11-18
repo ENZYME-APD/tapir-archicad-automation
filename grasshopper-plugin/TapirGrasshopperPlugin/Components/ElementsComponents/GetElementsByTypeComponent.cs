@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -34,12 +33,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetElementsByTypeComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get all elements by type.";
+        public override string CommandName => "GetElementsByType";
+
         public GetElementsByTypeComponent()
             : base(
                 "Elems By Type",
                 "ElemsByType",
-                "Get all elements by type.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -49,12 +51,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddTextParameter(
                 "Type",
                 "Type",
-                "Element type.",
+                "Elements type.",
                 GH_ParamAccess.item);
             pManager.AddTextParameter(
                 "Filter",
                 "Filter",
-                "Element filter.",
+                "Elements filter.",
                 GH_ParamAccess.list,
                 @default: new List<string>
                 {
@@ -90,10 +92,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var elemType = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     0,
                     ref elemType))
             {
@@ -101,7 +103,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var filters = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     filters))
             {
@@ -109,7 +111,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var databases = DatabasesObj.Create(
-                DA,
+                da,
                 2);
 
             var elementsByType = new ElementsByTypeObj()
@@ -122,28 +124,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         ? null
                         : databases.Databases
             };
-            var elementyByTypeObj = JObject.FromObject(elementsByType);
 
-            var response = SendArchicadAddOnCommand(
-                "GetElementsByType",
-                elementyByTypeObj);
-
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    elementsByType,
+                    out ElementsObj elements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var elements = response.Result.ToObject<ElementsObj>();
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 elements.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ElemsByType;
+            Properties.Resources.ElemsByType;
 
         public override Guid ComponentGuid =>
             new Guid("8075031e-b38d-4f3b-8e5c-8e740d13a091");

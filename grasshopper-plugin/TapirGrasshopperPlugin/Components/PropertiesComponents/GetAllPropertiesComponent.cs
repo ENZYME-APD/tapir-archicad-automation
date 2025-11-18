@@ -8,12 +8,16 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class GetAllPropertiesComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get all properties.";
+
+        public override string CommandName => "GetAllProperties";
+
         public GetAllPropertiesComponent()
             : base(
                 "All Properties",
                 "AllProperties",
-                "Get all properties.",
-                "Properties")
+                Doc,
+                GroupNames.Properties)
         {
         }
 
@@ -48,25 +52,21 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadAddOnCommand(
-                "GetAllProperties",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out AllProperties response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var properties = response.Result.ToObject<AllProperties>();
             var propertyIds = new List<PropertyIdObj>();
             var propertyGroupNames = new List<string>();
             var propertyNames = new List<string>();
             var fullNames = new List<string>();
-            foreach (var detail in properties.Properties)
+
+            foreach (var detail in response.Properties)
             {
                 propertyIds.Add(detail.PropertyId);
                 propertyGroupNames.Add(detail.PropertyGroupName);
@@ -77,22 +77,22 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                         detail.PropertyName));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 propertyIds);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 propertyGroupNames);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 propertyNames);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 fullNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.AllProperties;
+            Properties.Resources.AllProperties;
 
         public override Guid ComponentGuid =>
             new Guid("79f924e4-5b26-4efe-bfaf-0e82f9bb3821");

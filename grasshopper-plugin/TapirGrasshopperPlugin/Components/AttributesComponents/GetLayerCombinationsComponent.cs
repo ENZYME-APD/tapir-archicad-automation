@@ -6,7 +6,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -57,12 +56,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
     public class GetLayerCombinationsComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get the details of layer combinations.";
+        public override string CommandName => "GetLayerCombinations";
+
         public GetLayerCombinationsComponent()
             : base(
-                "Layer Combinations",
-                "LayerCombinations",
-                "Get the details of layer combinations.",
-                "Attributes")
+                "Layer combinations",
+                "Layer combinations",
+                Doc,
+                GroupNames.Attributes)
         {
         }
 
@@ -112,10 +114,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var attributes = AttributesObj.Create(
-                DA,
+                da,
                 0);
             if (attributes == null)
             {
@@ -125,26 +127,18 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            var attributesObj = JObject.FromObject(attributes);
-            var response = SendArchicadAddOnCommand(
-                "GetLayerCombinations",
-                attributesObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            if (!GetConvertedResponse(
+                    CommandName,
+                    attributes,
+                    out LayerCombinationsObj layerCombinations)) { return; }
 
-            var layerCombinations =
-                response.Result.ToObject<LayerCombinationsObj>();
             var attributeNames = new List<string>();
             var layerAttributeIds = new DataTree<AttributeIdItemObj>();
             var isHiddenLayers = new DataTree<bool>();
             var isLockedLayers = new DataTree<bool>();
             var isWireframeLayers = new DataTree<bool>();
             var intersectionGroupsOfLayers = new DataTree<int>();
+
             for (var i = 0; i < layerCombinations.LayerCombinations.Count; i++)
             {
                 var layerCombination = layerCombinations.LayerCombinations[i];
@@ -154,6 +148,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 var isLockeds = new List<bool>();
                 var isWireframes = new List<bool>();
                 var intersectionGroups = new List<int>();
+
                 foreach (var layer in layerCombination.LayerCombination.Layers)
                 {
                     layerIds.Add(
@@ -184,27 +179,25 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     new GH_Path(i));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 attributeNames);
-            DA.SetDataTree(
+            da.SetDataTree(
                 1,
                 layerAttributeIds);
-            DA.SetDataTree(
+            da.SetDataTree(
                 2,
                 isHiddenLayers);
-            DA.SetDataTree(
+            da.SetDataTree(
                 3,
                 isLockedLayers);
-            DA.SetDataTree(
+            da.SetDataTree(
                 4,
                 isWireframeLayers);
-            DA.SetDataTree(
+            da.SetDataTree(
                 5,
                 intersectionGroupsOfLayers);
         }
-
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.LayerCombinations;
 
         public override Guid ComponentGuid =>
             new Guid("a4cebe10-f489-4cd6-a174-45b158a33365");

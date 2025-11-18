@@ -1,7 +1,5 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
-using TapirGrasshopperPlugin.Utilities;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
@@ -9,12 +7,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class FindClassificationItemByIdComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Finds a Classification Item by id in the given Classification System.";
+
+        public override string CommandName => "GetAllClassificationsInSystem";
+
         public FindClassificationItemByIdComponent()
             : base(
                 "Find Classification Item By Id",
                 "ClassificationById",
-                "Finds a Classification Item by id in the given Classification System.",
-                "Classifications")
+                Doc,
+                GroupNames.Classifications)
         {
         }
 
@@ -81,10 +84,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var classificationSystemId = ClassificationIdObj.Create(
-                DA,
+                da,
                 0);
             if (classificationSystemId == null)
             {
@@ -95,7 +98,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             var ClassificationItemId = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref ClassificationItemId))
             {
@@ -107,21 +110,13 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 ClassificationSystemId = classificationSystemId
             };
 
-            var classificationSystemObj =
-                JObject.FromObject(classificationSystem);
-            var response = SendArchicadCommand(
-                "GetAllClassificationsInSystem",
-                classificationSystemObj);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
+            if (!GetConvertedResponse(
+                    CommandName,
+                    classificationSystem,
+                    out AllClassificationItemsInSystem
+                        classificationItemsInSystem)) { return; }
 
-            var classificationItemsInSystem = response.Result
-                .ToObject<AllClassificationItemsInSystem>();
+
             ClassificationItemId = ClassificationItemId.ToLower();
             var found = FindClassificationItemInTree(
                 classificationItemsInSystem.ClassificationItems,
@@ -135,14 +130,14 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
             else
             {
-                DA.SetData(
+                da.SetData(
                     0,
                     found.ClassificationItemId);
             }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ClassificationById;
+            Properties.Resources.ClassificationById;
 
         public override Guid ComponentGuid =>
             new Guid("46026689-054d-4164-9d35-ac56150cd733");

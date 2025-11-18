@@ -1,32 +1,30 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
+﻿using Grasshopper.Kernel.Special;
 using System;
-using TapirGrasshopperPlugin.Utilities;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class ClassificationSystemValueList : ArchicadAccessorValueList
     {
+        public static string Doc => "Value List for Classification Systems.";
+        public override string CommandName => "GetAllClassificationSystems";
+
         public ClassificationSystemValueList()
             : base(
                 "Classification Systems",
                 "",
-                "Value List for Classification Systems.",
-                "Classifications")
+                Doc,
+                GroupNames.Classifications)
         {
         }
 
         public override void RefreshItems()
         {
-            var response = SendArchicadCommand(
-                "GetAllClassificationSystems",
-                null);
-            if (!response.Succeeded)
+            if (!GetAndConvertResponse(
+                    CommandName,
+                    null,
+                    out AllClassificationSystems classificationSystems))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
@@ -34,8 +32,6 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             ListItems.Clear();
 
-            var classificationSystems =
-                response.Result.ToObject<AllClassificationSystems>();
             foreach (var system in classificationSystems.ClassificationSystems)
             {
                 var item = new GH_ValueListItem(
@@ -56,8 +52,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources
-                .ClassificationSystemsValueList;
+            Properties.Resources.ClassificationSystemsValueList;
 
         public override Guid ComponentGuid =>
             new Guid("a4206a77-3e1e-42e1-b220-dbd7aafdf8f5");

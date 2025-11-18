@@ -4,12 +4,14 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class ExportIssuesToBCFComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Export Issues to BCF.";
+        public override string CommandName => "ExportIssuesToBCF";
+
         public class ParametersOfExport
         {
             [JsonProperty("issues")]
@@ -29,8 +31,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             : base(
                 "Export Issues to BCF",
                 "ExportToBCF",
-                "Export Issues to BCF.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -104,28 +106,21 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var parametersOfExport = new ParametersOfExport
+            var parameters = new ParametersOfExport
             {
                 Issues = issues.Issues,
                 ExportPath = exportedFilePath,
                 UseExternalId = useExternalId,
                 AlignBySurveyPoint = alignBySurveyPoint
             };
-            var parameters = JObject.FromObject(parametersOfExport);
-            var response = SendArchicadAddOnCommand(
-                "ExportIssuesToBCF",
+
+            GetResponse(
+                CommandName,
                 parameters);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.ExportIssuesToBCF;
+            Properties.Resources.ExportIssuesToBCF;
 
         public override Guid ComponentGuid =>
             new Guid("541081dc-ab2d-4bde-8e56-175070da4f21");

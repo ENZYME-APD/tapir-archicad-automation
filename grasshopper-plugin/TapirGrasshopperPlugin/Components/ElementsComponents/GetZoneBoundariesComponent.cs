@@ -4,7 +4,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 using Rhino.Geometry;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -41,12 +40,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetZoneBoundariesComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).";
+
+        public override string CommandName => "GetZoneBoundaries";
+
         public GetZoneBoundariesComponent()
             : base(
                 "ZoneBoundaries",
                 "ZoneBoundaries",
-                "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -104,19 +108,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var parametersObj = JObject.FromObject(
-                new ZoneBoundaryParameters()
-                {
-                    ZoneElementId = inputZone.ElementId
-                });
-            var response = SendArchicadAddOnCommand(
-                "GetZoneBoundaries",
-                parametersObj);
-            if (!response.Succeeded)
+            var parameters = new ZoneBoundaryParameters()
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
+                ZoneElementId = inputZone.ElementId
+            };
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    parameters,
+                    out ZoneBoundariesOutput zoneBoundaries))
+            {
                 return;
             }
 
@@ -125,9 +126,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var neighbouringZones = new List<ElementIdItemObj>();
             var areas = new List<double>();
             var polygons = new List<PolyCurve>();
-            var ZoneBoundaries =
-                response.Result.ToObject<ZoneBoundariesOutput>();
-            foreach (var zb in ZoneBoundaries.ZoneBoundaries)
+
+            foreach (var zb in zoneBoundaries.ZoneBoundaries)
             {
                 connectedElements.Add(
                     new ElementIdItemObj()

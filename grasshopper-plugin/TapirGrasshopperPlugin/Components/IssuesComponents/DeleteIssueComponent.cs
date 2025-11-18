@@ -3,12 +3,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class DeleteIssueComponent : ArchicadExecutorComponent
     {
+        public static string Doc => "Delete Issue.";
+        public override string CommandName => "DeleteIssue";
+
         public class ParametersOfDelete
         {
             [JsonProperty("issueId")]
@@ -22,8 +24,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             : base(
                 "Delete Issue",
                 "DeleteIssue",
-                "Delete Issue.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -49,10 +51,10 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var issueId = IssueIdObj.Create(
-                DA,
+                da,
                 0);
             if (issueId == null)
             {
@@ -63,32 +65,25 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var acceptAllElements = true;
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref acceptAllElements))
             {
                 return;
             }
 
-            var parametersOfDelete = new ParametersOfDelete
+            var parameters = new ParametersOfDelete
             {
                 IssueId = issueId, AcceptAllElements = acceptAllElements
             };
-            var parameters = JObject.FromObject(parametersOfDelete);
-            var response = SendArchicadAddOnCommand(
-                "DeleteIssue",
+
+            GetResponse(
+                CommandName,
                 parameters);
-            if (!response.Succeeded)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return;
-            }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.DeleteIssue;
+            Properties.Resources.DeleteIssue;
 
         public override Guid ComponentGuid =>
             new Guid("6cc670ea-6c05-408a-9041-3e7cd94a6f84");

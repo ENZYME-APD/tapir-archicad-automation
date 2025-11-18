@@ -7,13 +7,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class GetModelViewOptionsComponent : ArchicadAccessorComponent
     {
-        public static string CommandName => "GetModelViewOptions";
+        public static string Doc => "Gets all model view options.";
+
+        public override string CommandName => "GetModelViewOptions";
 
         public GetModelViewOptionsComponent()
             : base(
                 nameof(ModelViewOptionsResponse.ModelViewOptions),
                 nameof(ModelViewOptionsResponse.ModelViewOptions),
-                ModelViewOptionsResponse.Doc,
+                Doc,
                 GroupNames.Navigator)
         {
         }
@@ -36,9 +38,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!GetResponse(
+            if (!GetConvertedResponse(
                     CommandName,
-                    null,
                     out ModelViewOptionsResponse response))
             {
                 return;

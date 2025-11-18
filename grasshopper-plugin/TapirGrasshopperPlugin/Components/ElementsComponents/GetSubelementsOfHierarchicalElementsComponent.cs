@@ -6,7 +6,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -19,12 +18,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     public class GetSubelementsOfHierarchicalElementsComponent
         : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Gets the subelements of the given hierarchical elements.";
+
+        public override string CommandName =>
+            "GetSubelementsOfHierarchicalElements";
+
         public GetSubelementsOfHierarchicalElementsComponent()
             : base(
                 "Subelements",
                 "Subelems",
-                "Gets the subelements of the given hierarchical elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -34,7 +39,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids of hierarchical elements to get subelements of.",
+                "Elements Guids of hierarchical elements to get subelements of.",
                 GH_ParamAccess.list);
             pManager.AddTextParameter(
                 "SubelemType",
@@ -49,7 +54,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             pManager.AddGenericParameter(
                 "ElementGuids",
                 "ElementGuids",
-                "Element Guids of the found hierarchical elements which has subelements with the given type.",
+                "Elements Guids of the found hierarchical elements which has subelements with the given type.",
                 GH_ParamAccess.list);
             pManager.AddGenericParameter(
                 "SubelementGuids",
@@ -70,10 +75,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -84,28 +89,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var subelemType = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref subelemType))
             {
                 return;
             }
 
-            var inputElementsObj = JObject.FromObject(inputElements);
-            var response = SendArchicadAddOnCommand(
-                "GetSubelementsOfHierarchicalElements",
-                inputElementsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    inputElements,
+                    out SubelementsObj subElementsObj))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
             var hierarchicalElements = new List<ElementIdItemObj>();
             var subelementsOfHierarchicals = new DataTree<ElementIdItemObj>();
-            var subElementsObj = response.Result.ToObject<SubelementsObj>();
+
             for (var i = 0; i < subElementsObj.Subelements.Count; i++)
             {
                 List<ElementIdItemObj> subelements = null;
@@ -247,16 +248,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new GH_Path(i));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 hierarchicalElements);
-            DA.SetDataTree(
+            da.SetDataTree(
                 1,
                 subelementsOfHierarchicals);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.Subelems;
+            Properties.Resources.Subelems;
 
         public override Guid ComponentGuid =>
             new Guid("c0e93009-a0b6-4d24-9963-ef6c2e2535ed");

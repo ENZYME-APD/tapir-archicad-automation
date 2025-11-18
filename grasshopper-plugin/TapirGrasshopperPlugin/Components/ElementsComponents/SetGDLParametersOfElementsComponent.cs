@@ -11,14 +11,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class SetGDLParametersOfElementsComponent : ArchicadAccessorComponent
     {
-        public static string CommandName => "SetGDLParametersOfElements";
+        public static string Doc => "Sets the given GDL parameters of the given elements.";
+        public override string CommandName => "SetGDLParametersOfElements";
 
         public SetGDLParametersOfElementsComponent()
             : base(
-                "Set Element GDL GdlArray",
+                "Set Elements GDL GdlArray",
                 "...",
-                "...",
-                GroupNames.Element)
+                Doc,
+                GroupNames.Elements)
         {
         }
 
@@ -49,11 +50,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     0,
                     out List<string> jsonElements)) { return; }
 
-            var jObject = JObject.FromObject(jsonElements);
-
-            if (!GetResponse(
+            if (!GetConvertedResponse(
                     CommandName,
-                    jObject,
+                    jsonElements,
                     out ExecutionResultsResponse response))
             {
                 return;

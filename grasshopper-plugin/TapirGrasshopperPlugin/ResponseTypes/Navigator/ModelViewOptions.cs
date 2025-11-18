@@ -5,8 +5,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
 {
     public class ModelViewOptionsResponse
     {
-        public static string Doc => "Gets all model view options.";
-
         [JsonProperty("modelViewOptions")]
         public List<ModelViewOption> ModelViewOptions { get; set; }
     }

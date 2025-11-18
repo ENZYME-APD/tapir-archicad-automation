@@ -8,12 +8,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class SnapPointsToGridComponent : Component
     {
+        public static string Doc =>
+            "Snap points to an axis-aligned grid.";
+
         public SnapPointsToGridComponent()
             : base(
                 "Snap Points",
                 "SnapPt",
-                "Snap points to an axis-aligned grid.",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 

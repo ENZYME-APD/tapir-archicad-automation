@@ -6,6 +6,9 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class TapirOpenDatabaseComponent : ButtonComponent
     {
+        public static string Doc =>
+            "Opens a specified URL in the default browser.";
+
         static public string WebsiteURL =
             "https://app.teable.io/invite?invitationId=invgOX6hmfzc7LrBfsM&invitationCode=8dc6c46ad990e79239f36e071dc1264fc378581b86c109b268d6ca9cdc6fa544";
 
@@ -13,21 +16,21 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             : base(
                 "Open Website Button",
                 "Prop_DB",
-                "Opens a specified URL in the default browser",
-                "Utilities",
+                Doc,
+                GroupNames.Utilities,
                 "Open Database",
                 80)
         {
         }
 
         protected override void RegisterInputParams(
-            GH_Component.GH_InputParamManager pManager)
+            GH_InputParamManager pManager)
         {
             // No inputs
         }
 
         protected override void RegisterOutputParams(
-            GH_Component.GH_OutputParamManager pManager)
+            GH_OutputParamManager pManager)
         {
             // No outputs
         }
@@ -36,7 +39,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             IGH_DataAccess DA)
         {
             // Update component message
-            this.Message = "Properties GUID\nV1.0";
+            Message = "Properties GUID\nV1.0";
         }
 
         private void OpenWebsite(
@@ -52,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
             catch (Exception ex)
             {
-                this.AddRuntimeMessage(
+                AddRuntimeMessage(
                     GH_RuntimeMessageLevel.Error,
                     $"Failed to open URL: {ex.Message}");
             }

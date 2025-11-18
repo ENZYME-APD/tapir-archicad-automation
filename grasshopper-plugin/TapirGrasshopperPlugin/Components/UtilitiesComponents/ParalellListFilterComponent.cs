@@ -9,17 +9,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class ParalellListFilterComponent : Component
     {
+        public static string Doc =>
+            "Filters two parallel lists based on values in the primary list";
+
         public ParalellListFilterComponent()
             : base(
                 "Parallel List Filter",
                 "PLFilter",
-                "Filters two parallel lists based on values in the primary list",
-                "Utilities")
+                Doc,
+                GroupNames.Utilities)
         {
         }
 
         protected override void RegisterInputParams(
-            GH_Component.GH_InputParamManager pManager)
+            GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "Primary List",
@@ -45,7 +48,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void RegisterOutputParams(
-            GH_Component.GH_OutputParamManager pManager)
+            GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter(
                 "Filtered Primary",
@@ -73,7 +76,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     0,
                     primaryList))
             {
-                this.Message = "Waiting for all inputs to be provided.";
+                Message = "Waiting for all inputs to be provided.";
                 return;
             }
 
@@ -82,7 +85,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     1,
                     secondaryList))
             {
-                this.Message = "Waiting for all inputs to be provided.";
+                Message = "Waiting for all inputs to be provided.";
                 return;
             }
 
@@ -91,7 +94,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     2,
                     searchValues))
             {
-                this.Message = "Waiting for all inputs to be provided.";
+                Message = "Waiting for all inputs to be provided.";
                 return;
             }
 
@@ -129,7 +132,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 pattern);
 
             // Update component message
-            this.Message = message;
+            Message = message;
         }
 
         private (GH_Structure<IGH_Goo> filteredPrimary, GH_Structure<IGH_Goo>

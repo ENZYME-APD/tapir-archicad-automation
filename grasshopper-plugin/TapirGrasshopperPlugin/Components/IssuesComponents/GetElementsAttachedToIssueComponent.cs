@@ -3,12 +3,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class GetElementsAttachedToIssueComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get Elements Attached to an Issue.";
+        public override string CommandName => "GetElementsAttachedToIssue";
+
         public class ParametersOfGetAttachedElements
         {
             [JsonProperty("issueId")]
@@ -22,8 +24,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             : base(
                 "Get Elements Attached to an Issue",
                 "GetAttachedElements",
-                "Get Elements Attached to an Issue.",
-                "Issues")
+                Doc,
+                GroupNames.Issues)
         {
         }
 
@@ -63,10 +65,10 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var issueId = IssueIdObj.Create(
-                DA,
+                da,
                 0);
             if (issueId == null)
             {
@@ -77,40 +79,34 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var type = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref type))
             {
                 return;
             }
 
-            var parametersOfGetAttachedElements =
+            var parameters =
                 new ParametersOfGetAttachedElements
                 {
                     IssueId = issueId, Type = type
                 };
-            var parameters =
-                JObject.FromObject(parametersOfGetAttachedElements);
-            var response = SendArchicadAddOnCommand(
-                "GetElementsAttachedToIssue",
-                parameters);
-            if (!response.Succeeded)
+
+            if (!GetConvertedResponse(
+                    CommandName,
+                    parameters,
+                    out ElementsObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var elements = response.Result.ToObject<ElementsObj>();
-            DA.SetDataList(
+            da.SetDataList(
                 0,
-                elements.Elements);
+                response.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources
-                .GetElementsAttachedToAnIssue;
+            Properties.Resources.GetElementsAttachedToAnIssue;
 
         public override Guid ComponentGuid =>
             new Guid("097b773b-3cd4-43a5-a41d-1fb57bc3e2e2");

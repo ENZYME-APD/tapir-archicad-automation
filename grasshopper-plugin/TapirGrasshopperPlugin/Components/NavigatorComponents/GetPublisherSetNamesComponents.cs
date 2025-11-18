@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -14,12 +13,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
     public class GetPublisherSetNames : ArchicadAccessorComponent
     {
+        public static string Doc => "Get names of the publisher sets.";
+
+        public override string CommandName => "GetPublisherSetNames";
+
         public GetPublisherSetNames()
             : base(
                 "PublisherSetNames",
                 "PublisherSetNames",
-                "Get names of the publisher sets.",
-                "Navigator")
+                Doc,
+                GroupNames.Navigator)
         {
         }
 
@@ -39,27 +42,22 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var response = SendArchicadCommand(
-                "GetPublisherSetNames",
-                null);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    out PublisherSetNamesObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
-            var obj = response.Result.ToObject<PublisherSetNamesObj>();
-            DA.SetDataList(
+            da.SetDataList(
                 0,
-                obj.PublisherSetNames);
+                response.PublisherSetNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            TapirGrasshopperPlugin.Properties.Resources.PublisherSetNames;
+            Properties.Resources.PublisherSetNames;
 
         public override Guid ComponentGuid =>
             new Guid("446d3bca-f817-4c90-b163-44da5197e707");

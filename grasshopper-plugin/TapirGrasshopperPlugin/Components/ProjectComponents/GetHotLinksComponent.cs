@@ -7,19 +7,23 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class GetHotLinksComponent : ArchicadAccessorComponent
     {
+        public static string Doc =>
+            "Gets the file system locations (path) of the link modules. " +
+            "The hotlinks can have tree hierarchy in the project.";
+
+        public override string CommandName => "GetHotlinks";
+
         public GetHotLinksComponent()
             : base(
                 nameof(Hotlinks),
                 nameof(Hotlinks),
-                HotlinksResponse.Doc,
+                Doc,
                 GroupNames.Project)
         {
         }
 
-        public static string CommandName => "GetHotlinks";
-
         public override Guid ComponentGuid =>
-            new Guid("89ae1638-8c9f-481f-8a01-5cdf2ded8071");
+            new("89ae1638-8c9f-481f-8a01-5cdf2ded8071");
 
         protected override void RegisterInputParams(
             GH_InputParamManager pManager)
@@ -44,14 +48,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!GetResponse(
+            if (!GetConvertedResponse(
                     CommandName,
-                    null,
                     out HotlinksResponse response)) { return; }
 
             da.SetDataList(
                 0,
                 response.Hotlinks.GetLocations());
+
             da.SetData(
                 1,
                 JsonConvert.SerializeObject(
