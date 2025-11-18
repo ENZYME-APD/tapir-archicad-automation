@@ -21,14 +21,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 nameof(ProjectFilePathObject.ProjectFilePath),
-                nameof(ProjectFilePathObject.ProjectFilePath),
-                nameof(ProjectFilePathObject.ProjectFilePath),
-                GH_ParamAccess.item);
+                nameof(ProjectFilePathObject.ProjectFilePath));
         }
 
         protected override void RegisterOutputParams(

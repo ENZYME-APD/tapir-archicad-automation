@@ -1,6 +1,5 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -36,43 +35,32 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
-                "IssueGuids",
-                "IssueGuids",
-                "Issues to export.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+            AddGenerics(
+                "IssueGuid",
+                "Issues to export.");
+
+            AddText(
                 "ExportedFilePath",
-                "ExportedFilePath",
-                "Path to the output BCF file.",
-                GH_ParamAccess.item);
-            pManager.AddBooleanParameter(
-                "UseExternalId",
+                "Path to the output BCF file.");
+
+            AddBoolean(
                 "UseExternalId",
                 "Use external IFC ID or Archicad IFC ID as referenced in BCF topics.",
-                GH_ParamAccess.item,
-                @default: true);
-            pManager.AddBooleanParameter(
-                "AlignBySurveyPoint",
+                true);
+
+            AddBoolean(
                 "AlignBySurveyPoint",
                 "Align BCF views by Archicad Survey Point or Archicad Project Origin.",
-                GH_ParamAccess.item,
-                @default: true);
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+                true);
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var issues = IssuesObj.Create(
-                DA,
+                da,
                 0);
             if (issues == null)
             {
@@ -83,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var exportedFilePath = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref exportedFilePath))
             {
@@ -91,7 +79,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var useExternalId = true;
-            if (!DA.GetData(
+            if (!da.GetData(
                     2,
                     ref useExternalId))
             {
@@ -99,7 +87,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             var alignBySurveyPoint = true;
-            if (!DA.GetData(
+            if (!da.GetData(
                     3,
                     ref alignBySurveyPoint))
             {

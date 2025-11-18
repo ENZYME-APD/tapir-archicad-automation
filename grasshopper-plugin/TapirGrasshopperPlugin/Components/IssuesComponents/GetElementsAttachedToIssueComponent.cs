@@ -1,6 +1,5 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
 
@@ -29,19 +28,15 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGeneric(
                 "IssueGuid",
-                "IssueGuid",
-                "Issue Guid.",
-                GH_ParamAccess.item);
-            pManager.AddGenericParameter(
+                "Issue Guid.");
+
+            AddGeneric(
                 "Type",
-                "Type",
-                "Type of elements.",
-                GH_ParamAccess.item);
+                "Type of elements.");
         }
 
         protected override void RegisterOutputParams(

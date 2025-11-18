@@ -222,6 +222,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetDetailsOfElementsComponent : ArchicadAccessorComponent
     {
+        public override string CommandName => "GetDetailsOfElements";
+
         public static string Doc => "Get details of elements.";
 
         public GetDetailsOfElementsComponent()
@@ -233,14 +235,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get details of.");
         }
 
         protected override void RegisterOutputParams(
@@ -353,12 +352,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public override Guid ComponentGuid =>
             new Guid("d1509981-6510-4c09-8727-dba5981109f8");
-
-        public override string CommandName => "GetDetailsOfElements";
     }
 
     public class GetDetailsOfWallsComponent : ArchicadAccessorComponent
     {
+        public override string CommandName => "GetDetailsOfElements";
+
         public GetDetailsOfWallsComponent()
             : base(
                 "Wall Details",
@@ -368,14 +367,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get details of.");
         }
 
         protected override void RegisterOutputParams(
@@ -414,10 +410,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -510,22 +506,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         wallDetails.ZCoordinate));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 walls);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 begCoords);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 endCoords);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 heights);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 arcAngles);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 curves);
         }
@@ -539,6 +535,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetDetailsOfBeamsComponent : ArchicadAccessorComponent
     {
+        public override string CommandName => "GetDetailsOfElements";
+
         public GetDetailsOfBeamsComponent()
             : base(
                 "Beam Details",
@@ -548,15 +546,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get details of.");
         }
+
 
         protected override void RegisterOutputParams(
             GH_OutputParamManager pManager)
@@ -599,10 +595,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -699,25 +695,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         beamDetails.VerticalCurveHeight));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 beams);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 begCoords);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 endCoords);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 slantAngles);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 arcAngles);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 verticalCurveHeights);
-            DA.SetDataList(
+            da.SetDataList(
                 6,
                 curves);
         }
@@ -731,6 +727,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetDetailsOfColumnsComponent : ArchicadAccessorComponent
     {
+        public override string CommandName => "GetDetailsOfElements";
+
         public GetDetailsOfColumnsComponent()
             : base(
                 "Column Details",
@@ -740,14 +738,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get details of.");
         }
 
         protected override void RegisterOutputParams(
@@ -766,10 +761,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -822,10 +817,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         columnDetails.ZCoordinate));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 columns);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 origoCoords);
         }
@@ -839,6 +834,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetDetailsOfSlabsComponent : ArchicadAccessorComponent
     {
+        public override string CommandName => "GetDetailsOfElements";
+
         public GetDetailsOfSlabsComponent()
             : base(
                 "Slab Details",
@@ -848,14 +845,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get details of.");
         }
 
         protected override void RegisterOutputParams(
@@ -879,10 +873,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -892,26 +886,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var inputElementsObj = JObject.FromObject(inputElements);
-            var response = SendArchicadAddOnCommand(
-                "GetDetailsOfElements",
-                inputElementsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    inputElements,
+                    out DetailsOfElementsObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
             var slabs = new List<ElementIdItemObj>();
             var polygons = new List<PolyCurve>();
             var holePolygonsTree = new DataTree<PolyCurve>();
-            var detailsOfElements =
-                response.Result.ToObject<DetailsOfElementsObj>();
-            for (var i = 0; i < detailsOfElements.DetailsOfElements.Count; i++)
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
-                var detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                var detailsOfElement = response.DetailsOfElements[i];
                 if (detailsOfElement.Type != "Slab")
                 {
                     continue;
@@ -950,13 +939,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new GH_Path(slabs.Count));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 slabs);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 polygons);
-            DA.SetDataTree(
+            da.SetDataTree(
                 2,
                 holePolygonsTree);
         }
@@ -979,14 +968,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get details of.");
         }
 
         protected override void RegisterOutputParams(
@@ -1005,10 +991,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -1018,25 +1004,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var inputElementsObj = JObject.FromObject(inputElements);
-            var response = SendArchicadAddOnCommand(
-                "GetDetailsOfElements",
-                inputElementsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    inputElements,
+                    out DetailsOfElementsObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
             var polylines = new List<ElementIdItemObj>();
             var rhinoPolylines = new List<PolyCurve>();
-            var detailsOfElements =
-                response.Result.ToObject<DetailsOfElementsObj>();
-            for (var i = 0; i < detailsOfElements.DetailsOfElements.Count; i++)
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
-                var detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                var detailsOfElement = response.DetailsOfElements[i];
                 if (detailsOfElement.Type != "PolyLine")
                 {
                     continue;
@@ -1061,10 +1042,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         polylineDetails.ZCoordinate));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 polylines);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 rhinoPolylines);
         }
@@ -1074,27 +1055,29 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public override Guid ComponentGuid =>
             new Guid("b96c3b7e-303d-44f2-af22-6fd07ade11fc");
+
+        public override string CommandName => "GetDetailsOfElements";
     }
 
     public class GetDetailsOfZonesComponent : ArchicadAccessorComponent
     {
+        public static string Doc => "Get details of slab elements.";
+        public override string CommandName => "GetDetailsOfElements";
+
         public GetDetailsOfZonesComponent()
             : base(
                 "Zone Details",
                 "ZoneDetails",
-                "Get details of slab elements.",
-                "Elements")
+                Doc,
+                GroupNames.Elements)
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get details of.");
         }
 
         protected override void RegisterOutputParams(
@@ -1143,10 +1126,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -1156,15 +1139,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var inputElementsObj = JObject.FromObject(inputElements);
-            var response = SendArchicadAddOnCommand(
-                "GetDetailsOfElements",
-                inputElementsObj);
-            if (!response.Succeeded)
+            if (!GetConvertedResponse(
+                    CommandName,
+                    inputElements,
+                    out DetailsOfElementsObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
                 return;
             }
 
@@ -1176,11 +1155,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var isManuals = new List<bool>();
             var polygons = new List<PolyCurve>();
             var holePolygonsTree = new DataTree<PolyCurve>();
-            var detailsOfElements =
-                response.Result.ToObject<DetailsOfElementsObj>();
-            for (var i = 0; i < detailsOfElements.DetailsOfElements.Count; i++)
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
-                var detailsOfElement = detailsOfElements.DetailsOfElements[i];
+                var detailsOfElement = response.DetailsOfElements[i];
                 if (detailsOfElement.Type != "Zone")
                 {
                     continue;
@@ -1214,6 +1192,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         zoneDetails.ZCoordinate));
 
                 var holePolygons = new List<PolyCurve>();
+
                 foreach (var holeDetail in zoneDetails.Holes)
                 {
                     holePolygons.Add(
@@ -1228,28 +1207,28 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new GH_Path(zones.Count));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 zones);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 names);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 numberStrs);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 categoryAttributeIds);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 stampPositions);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 isManuals);
-            DA.SetDataList(
+            da.SetDataList(
                 6,
                 polygons);
-            DA.SetDataTree(
+            da.SetDataTree(
                 7,
                 holePolygonsTree);
         }

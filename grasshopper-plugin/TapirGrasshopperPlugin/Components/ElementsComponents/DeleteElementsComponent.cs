@@ -19,19 +19,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements ids to delete.",
-                GH_ParamAccess.list);
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+                "Elements ids to delete.");
         }
 
         protected override void Solve(

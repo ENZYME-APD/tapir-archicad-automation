@@ -19,19 +19,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddPointParameter(
+            AddPoints(
                 "Points",
-                "P",
-                "List of points to snap.",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
+                "List of points to snap.");
+
+            AddNumber(
                 "Grid size",
-                "G",
                 "Size of the grid.",
-                GH_ParamAccess.item,
                 1.0);
         }
 

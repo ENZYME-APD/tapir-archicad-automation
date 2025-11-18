@@ -25,11 +25,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public override Guid ComponentGuid =>
             new("89ae1638-8c9f-481f-8a01-5cdf2ded8071");
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
-        {
-        }
-
         protected override void RegisterOutputParams(
             GH_OutputParamManager pManager)
         {

@@ -2,12 +2,9 @@
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Rhino.DocObjects;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -46,49 +43,36 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "AttributeGuids",
-                "AttributeGuids",
-                "List of layer combination attribute Guids.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
-                "Name",
-                "Name",
-                "List of the names of the layer combinations.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
-                "LayerAttributeGuids",
-                "LayerAttributeGuids",
-                "Tree of identifiers of the layers to be included in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddBooleanParameter(
-                "IsHiddenLayers",
-                "IsHiddenLayers",
-                "Tree of visibility of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddBooleanParameter(
-                "IsLockedLayers",
-                "IsLockedLayers",
-                "Tree of lock states of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddBooleanParameter(
-                "IsWireframeLayers",
-                "IsWireframeLayers",
-                "Tree of wireframe modes of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddIntegerParameter(
-                "IntersectionGroupsOfLayers",
-                "IntersectionGroupsOfLayers",
-                "Tree of intersection groups of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
-        }
+                "List of layer combination attribute Guids.");
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+            AddTexts(
+                "Name",
+                "List of the names of the layer combinations.");
+
+            AddGenericTree(
+                "LayerAttributeGuids",
+                "Tree of identifiers of the layers to be included in the layer combinations.");
+
+            AddBooleanTree(
+                "IsHiddenLayers",
+                "Tree of visibility of the layers in the layer combinations.");
+
+            AddBooleanTree(
+                "IsLockedLayers",
+                "Tree of lock states of the layers in the layer combinations.");
+
+
+            AddBooleanTree(
+                "IsWireframeLayers",
+                "Tree of wireframe modes of the layers in the layer combinations.");
+
+            AddIntegerTree(
+                "IntersectionGroupsOfLayers",
+                "Tree of intersection groups of the layers in the layer combinations.");
         }
 
         protected override void Solve(

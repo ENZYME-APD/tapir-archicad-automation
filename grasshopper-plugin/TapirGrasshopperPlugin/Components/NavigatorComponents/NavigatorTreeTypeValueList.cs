@@ -1,6 +1,4 @@
-﻿using Eto.Forms;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {

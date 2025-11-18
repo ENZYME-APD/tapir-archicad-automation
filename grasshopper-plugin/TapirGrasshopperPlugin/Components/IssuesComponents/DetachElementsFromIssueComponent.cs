@@ -29,24 +29,15 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGeneric(
                 "IssueGuid",
-                "IssueGuid",
-                "Issue Guid.",
-                GH_ParamAccess.item);
-            pManager.AddGenericParameter(
-                "ElementGuids",
-                "ElementGuids",
-                "Elements to detach.",
-                GH_ParamAccess.list);
-        }
+                "Issue Guid.");
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+            AddGenerics(
+                "ElementGuids",
+                "Elements to detach.");
         }
 
         public override void AddedToDocument(

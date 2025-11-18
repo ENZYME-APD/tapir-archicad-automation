@@ -24,25 +24,20 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "TreeType",
-                "TreeType",
-                "The type of a navigator item tree.",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
-                "PublisherSetName",
+                "The type of a navigator item tree.");
+
+            AddText(
                 "PublisherSetName",
                 "The name of the publisher set.",
-                GH_ParamAccess.item,
-                @default: "");
-            pManager.AddTextParameter(
+                "");
+
+            AddText(
                 "PathRegex",
-                "PathRegex",
-                "The regular expression pattern for the path of the navigator item.",
-                GH_ParamAccess.item);
+                "The regular expression pattern for the path of the navigator item.");
         }
 
         protected override void RegisterOutputParams(

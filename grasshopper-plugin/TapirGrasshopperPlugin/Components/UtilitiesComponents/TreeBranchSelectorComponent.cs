@@ -20,21 +20,18 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenericTree(
                 "Input Tree",
-                "T",
-                "Tree structure to select from",
-                GH_ParamAccess.tree);
-            pManager.AddIntegerParameter(
+                "Tree structure to select from");
+
+            AddInteger(
                 "Path Index",
-                "I",
                 "Integer for branch selection",
-                GH_ParamAccess.item,
                 0);
         }
+
 
         protected override void RegisterOutputParams(
             GH_OutputParamManager pManager)

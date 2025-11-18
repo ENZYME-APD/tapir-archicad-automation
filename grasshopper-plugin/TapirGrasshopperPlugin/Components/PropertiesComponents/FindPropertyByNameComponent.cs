@@ -18,19 +18,15 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "Group name",
-                "GroupName",
-                "Property group name to find.",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Property group name to find.");
+
+            AddText(
                 "Property name",
-                "PropertyName",
-                "Property name to find.",
-                GH_ParamAccess.item);
+                "Property name to find.");
         }
 
         protected override void RegisterOutputParams(

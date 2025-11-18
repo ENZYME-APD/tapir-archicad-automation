@@ -2,7 +2,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -33,19 +32,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids of hierarchical elements to get subelements of.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Elements Guids of hierarchical elements to get subelements of.");
+
+            AddText(
                 "SubelemType",
-                "SubelemType",
-                "Type of subelements.",
-                GH_ParamAccess.item);
+                "Type of subelements.");
         }
 
         protected override void RegisterOutputParams(

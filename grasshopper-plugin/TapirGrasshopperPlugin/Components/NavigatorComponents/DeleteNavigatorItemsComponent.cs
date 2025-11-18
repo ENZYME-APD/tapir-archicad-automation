@@ -18,19 +18,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "NavigatorItemIds",
-                "NavigatorItemIds",
-                "Identifier of navigator items to delete.",
-                GH_ParamAccess.list);
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+                "Identifier of navigator items to delete.");
         }
 
         protected override void Solve(

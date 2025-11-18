@@ -1,6 +1,5 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
 
@@ -29,25 +28,16 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGeneric(
                 "IssueGuid",
-                "IssueGuid",
-                "Issue to delete.",
-                GH_ParamAccess.item);
-            pManager.AddBooleanParameter(
-                "AcceptAllElements",
+                "Issue to delete.");
+
+            AddBoolean(
                 "AcceptAllElements",
                 "Accept all new/deleted Elements.",
-                GH_ParamAccess.item,
-                @default: true);
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+                true);
         }
 
         protected override void Solve(

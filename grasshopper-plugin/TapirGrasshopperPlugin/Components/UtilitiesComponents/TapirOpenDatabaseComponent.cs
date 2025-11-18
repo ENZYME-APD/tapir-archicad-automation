@@ -23,20 +23,8 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
-        {
-            // No inputs
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
-            // No outputs
-        }
-
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             // Update component message
             Message = "Properties GUID\nV1.0";

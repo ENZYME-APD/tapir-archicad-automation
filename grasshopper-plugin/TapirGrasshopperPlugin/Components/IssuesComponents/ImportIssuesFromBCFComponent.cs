@@ -1,6 +1,5 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
@@ -28,25 +27,16 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "FilePath",
-                "FilePath",
-                "Path to the input BCF file.",
-                GH_ParamAccess.item);
-            pManager.AddBooleanParameter(
-                "AlignBySurveyPoint",
+                "Path to the input BCF file.");
+
+            AddBoolean(
                 "AlignBySurveyPoint",
                 "Align BCF views by Archicad Survey Point or Archicad Project Origin.",
-                GH_ParamAccess.item,
-                @default: true);
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+                true);
         }
 
         protected override void Solve(

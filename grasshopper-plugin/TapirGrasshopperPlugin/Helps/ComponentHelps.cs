@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Components;
 
 namespace TapirGrasshopperPlugin.Helps
 {

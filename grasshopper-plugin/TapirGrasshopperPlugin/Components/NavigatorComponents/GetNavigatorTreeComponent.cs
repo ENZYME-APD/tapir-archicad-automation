@@ -198,6 +198,18 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "");
         }
 
+        protected override void AddInputs()
+        {
+            AddText(
+                "TreeType",
+                "The type of a navigator item tree.");
+
+            AddText(
+                "PublisherSetName",
+                "The name of the publisher set.",
+                "");
+        }
+
         protected override void RegisterOutputParams(
             GH_OutputParamManager pManager)
         {

@@ -18,14 +18,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "PropertyGuid",
-                "PropertyGuid",
-                "Property guid to find.",
-                GH_ParamAccess.item);
+                "Property guid to find.");
         }
 
         protected override void RegisterOutputParams(

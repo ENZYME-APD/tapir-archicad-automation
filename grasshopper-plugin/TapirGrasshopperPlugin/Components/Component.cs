@@ -165,6 +165,26 @@ namespace TapirGrasshopperPlugin.Components
 
         private static string CommandNameSpace => "TapirCommand";
 
+        protected GH_InputParamManager inManager;
+        protected GH_OutputParamManager outManager;
+
+        protected override void RegisterInputParams(
+            GH_InputParamManager pm)
+        {
+            inManager = pm;
+            AddInputs();
+        }
+
+        protected override void RegisterOutputParams(
+            GH_OutputParamManager pm)
+        {
+            outManager = pm;
+            AddOutputs();
+        }
+
+        protected virtual void AddInputs() { }
+        protected virtual void AddOutputs() { }
+
         public Component(
             string name,
             string nickname,
@@ -177,6 +197,210 @@ namespace TapirGrasshopperPlugin.Components
                 "Tapir",
                 subCategory)
         {
+        }
+
+        public void AddGeneric(
+            string name,
+            string description)
+        {
+            inManager.AddGenericParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item);
+        }
+
+        public void AddGenerics(
+            string name,
+            string description)
+        {
+            inManager.AddGenericParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
+        public void AddGenericTree(
+            string name,
+            string description)
+        {
+            inManager.AddGenericParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
+        }
+
+
+        public void AddVectors(
+            string name,
+            string description)
+        {
+            inManager.AddVectorParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
+        public void AddPoints(
+            string name,
+            string description)
+        {
+            inManager.AddPointParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
+        public void AddNumber(
+            string name,
+            string description,
+            double defaultValue)
+        {
+            inManager.AddNumberParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item,
+                defaultValue);
+        }
+
+        public void AddNumbers(
+            string name,
+            string description)
+        {
+            inManager.AddNumberParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
+        public void AddBoolean(
+            string name,
+            string description,
+            bool defaultValue = false)
+        {
+            inManager.AddBooleanParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item,
+                defaultValue);
+        }
+
+        public void AddBooleans(
+            string name,
+            string description,
+            List<bool> defaultValues = null)
+        {
+            inManager.AddBooleanParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list,
+                defaultValues);
+        }
+
+        public void AddBooleanTree(
+            string name,
+            string description)
+        {
+            inManager.AddBooleanParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
+        }
+
+        public void AddInteger(
+            string name,
+            string description,
+            int defaultValue)
+        {
+            inManager.AddIntegerParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item,
+                defaultValue);
+        }
+
+        public void AddIntegers(
+            string name,
+            string description)
+        {
+            inManager.AddIntegerParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
+        public void AddIntegerTree(
+            string name,
+            string description)
+        {
+            inManager.AddIntegerParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
+        }
+
+        public void AddText(
+            string name,
+            string description,
+            string defaultValue = null)
+        {
+            inManager.AddTextParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item,
+                defaultValue);
+        }
+
+        public void AddColor(
+            string name,
+            string description,
+            Color defaultValue)
+        {
+            inManager.AddColourParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item,
+                defaultValue);
+        }
+
+        public void AddColors(
+            string name,
+            string description,
+            Color defaultValue)
+        {
+            inManager.AddColourParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list,
+                defaultValue);
+        }
+
+        public void AddTexts(
+            string name,
+            string description,
+            IEnumerable<string> defaultValues = null)
+        {
+            inManager.AddTextParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list,
+                defaultValues);
         }
 
         protected CommandResponse SendArchicadCommand(

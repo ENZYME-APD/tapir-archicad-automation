@@ -22,29 +22,19 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGeneric(
                 "ClassificationSystemGuid",
-                "ClsSystemGuid",
-                "The Guid of a classification system.",
-                GH_ParamAccess.item);
-            pManager.AddGenericParameter(
-                "ClassificationItemGuids",
-                "ClsItemGuids",
-                "The Guids of classification items to assign for the given elements.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
-                "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to set the classification for.",
-                GH_ParamAccess.list);
-        }
+                "The Guid of a classification system.");
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+            AddGenerics(
+                "ClassificationItemGuids",
+                "The Guids of classification items to assign for the given elements.");
+
+            AddGenerics(
+                "ElementGuids",
+                "Elements Guids to set the classification for.");
         }
 
         public override void AddedToDocument(

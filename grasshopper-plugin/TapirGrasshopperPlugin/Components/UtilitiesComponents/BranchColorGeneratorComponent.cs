@@ -27,46 +27,38 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenericTree(
                 "Tree",
-                "Tree",
-                "A Grasshopper DataTree with multiple branches",
-                GH_ParamAccess.tree);
-            pManager.AddColourParameter(
+                "A Grasshopper DataTree with multiple branches");
+
+            AddColor(
                 "Starting Color",
-                "SColor",
-                "Starting color for gradient or base color for complementary mode",
-                GH_ParamAccess.item);
-            pManager[1].Optional = true;
-            pManager.AddColourParameter(
+                "Starting color for gradient or base color for complementary mode");
+
+            AddColor(
                 "End Color",
-                "EColor",
-                "Ending color for gradient mode",
-                GH_ParamAccess.item);
-            pManager[2].Optional = true;
-            pManager.AddIntegerParameter(
+                "Ending color for gradient mode");
+
+            AddInteger(
                 "Seed",
-                "Seed",
-                "Seed value for random color generation",
-                GH_ParamAccess.item);
-            pManager[3].Optional = true;
-            pManager.AddBooleanParameter(
+                "Seed value for random color generation");
+
+            AddBoolean(
                 "Flatten",
-                "Flatten",
-                "Whether outputs are flattened",
-                GH_ParamAccess.item,
-                false);
-            pManager[4].Optional = true;
-            pManager.AddTextParameter(
-                "Mode",
+                "Whether outputs are flattened");
+
+            AddText(
                 "Mode",
                 "Color generation mode: 'gradient', 'complementary', or 'random'",
-                GH_ParamAccess.item,
                 "random");
-            pManager[5].Optional = true;
+
+            Params.Input[1].Optional = true;
+            Params.Input[2].Optional = true;
+            Params.Input[3].Optional = true;
+            Params.Input[4].Optional = true;
+            Params.Input[5].Optional = true;
         }
 
         protected override void RegisterOutputParams(

@@ -21,29 +21,23 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "Primary List",
-                "P",
-                "Primary list for filtering",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Primary list for filtering");
+
+            AddGenerics(
                 "Secondary List",
-                "S",
-                "Secondary list that gets filtered in parallel",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Secondary list that gets filtered in parallel");
+
+            AddGenerics(
                 "Search Values",
-                "V",
-                "Search values for filtering",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Search values for filtering");
+
+            AddText(
                 "Filter Mode",
-                "M",
                 "Filter mode (equals, notFound, greater, smaller, range, closest, group_equals, group_unique)",
-                GH_ParamAccess.item,
                 "equals");
         }
 

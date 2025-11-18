@@ -1,7 +1,5 @@
-﻿using Eto.Forms;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -17,25 +15,23 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
     public class GetAttributesByTypeComponent : ArchicadAccessorComponent
     {
-        public override string Doc => "Get all attributes by type";
+        public static string Doc => "Get all attributes by type";
         public override string CommandName => "GetAttributesByType";
 
         public GetAttributesByTypeComponent()
             : base(
                 "Attributes By Type",
                 "AttributesByType",
+                Doc,
                 GroupNames.Attributes)
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "Type",
-                "Type",
-                "Attribute type.",
-                GH_ParamAccess.item);
+                "Attribute type.");
         }
 
         protected override void RegisterOutputParams(

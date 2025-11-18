@@ -20,37 +20,31 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "List 1",
-                "L1",
-                "First list to filter",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "First list to filter.");
+
+            AddGenerics(
                 "List 2",
-                "L2",
-                "Second list to filter",
-                GH_ParamAccess.list);
-            pManager[1].Optional = true;
-            pManager.AddGenericParameter(
+                "Second list to filter.");
+
+            AddGenerics(
                 "List 3",
-                "L3",
-                "Third list to filter",
-                GH_ParamAccess.list);
-            pManager[2].Optional = true;
-            pManager.AddGenericParameter(
+                "Third list to filter.");
+
+            AddGenerics(
                 "List 4",
-                "L4",
-                "Fourth list to filter",
-                GH_ParamAccess.list);
-            pManager[3].Optional = true;
-            pManager.AddIntegerParameter(
+                "Fourth list to filter.");
+
+            AddIntegers(
                 "Index",
-                "I",
-                "Index or indices to extract from lists",
-                GH_ParamAccess.list);
+                "Index or indices to extract from lists");
+
+            Params.Input[1].Optional = true;
+            Params.Input[2].Optional = true;
+            Params.Input[3].Optional = true;
         }
 
         protected override void RegisterOutputParams(

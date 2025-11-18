@@ -19,11 +19,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
-        {
-        }
-
         protected override void RegisterOutputParams(
             GH_OutputParamManager pManager)
         {

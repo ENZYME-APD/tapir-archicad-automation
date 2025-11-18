@@ -23,16 +23,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void RegisterInputParams(
             GH_InputParamManager pManager)
         {
-            pManager.AddTextParameter(
-                "Story Name",
-                "StoryName",
-                "Name of the story.",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
-                "Story Elevation",
-                "StoryElevation",
-                "Elevation of the story.",
-                GH_ParamAccess.list);
             pManager.AddBooleanParameter(
                 "Show on Sections",
                 "ShowOnSections",
@@ -41,9 +31,20 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 @default: new List<bool>() { true });
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddInputs()
         {
+            AddTexts(
+                "Story Name",
+                "Name of the story.");
+
+            AddNumbers(
+                "Story Elevation",
+                "Elevation of the story.");
+
+            AddBooleans(
+                "Show On Sections",
+                "Show Story on Sections.",
+                new List<bool> { true });
         }
 
         protected override void Solve(

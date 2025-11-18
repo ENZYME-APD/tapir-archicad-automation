@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
 
@@ -38,32 +37,24 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
-                "NavigatorItemId",
-                "NavigatorItemId",
-                "Identifier of a navigator item to move.",
-                GH_ParamAccess.item);
-            pManager.AddGenericParameter(
+            AddGeneric(
+                "NavigatorItemIds",
+                "Identifier of navigator items to move.");
+
+            AddGeneric(
                 "ParentNavigatorItemId",
-                "ParentNavigatorItemId",
-                "Moves the given navigator item under the parentNavigatorItemId in the navigator tree.",
-                GH_ParamAccess.item);
-            pManager.AddGenericParameter(
+                "Moves the given navigator item under the parentNavigatorItemId in the navigator tree.");
+
+
+            AddGeneric(
                 "PreviousNavigatorItemId",
-                "PreviousNavigatorItemId",
-                "Moves the given navigator item after this navigator item. If it's not given then moves it at the first place under the new parent.",
-                GH_ParamAccess.item);
+                "Moves the given navigator item after this navigator item. " +
+                "If it's not given then moves it at the first place under the new parent.");
 
             Params.Input[1].Optional = true;
             Params.Input[2].Optional = true;
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
         }
 
         protected override void Solve(

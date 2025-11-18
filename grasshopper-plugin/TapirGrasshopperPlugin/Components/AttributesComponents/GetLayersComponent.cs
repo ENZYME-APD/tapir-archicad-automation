@@ -51,14 +51,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "AttributeGuids",
-                "AttributeGuids",
-                "List of layer attribute Guids.",
-                GH_ParamAccess.list);
+                "List of layer attribute Guids.");
         }
 
         protected override void RegisterOutputParams(

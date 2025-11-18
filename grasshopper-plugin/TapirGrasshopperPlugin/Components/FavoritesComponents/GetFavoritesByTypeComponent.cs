@@ -21,14 +21,11 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "Type",
-                "Type",
-                "Elements type.",
-                GH_ParamAccess.item);
+                "Elements type.");
         }
 
         protected override void RegisterOutputParams(

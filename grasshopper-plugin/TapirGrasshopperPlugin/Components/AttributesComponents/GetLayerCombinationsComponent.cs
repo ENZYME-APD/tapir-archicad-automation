@@ -2,7 +2,6 @@
 using Grasshopper.Kernel.Data;
 using Grasshopper;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -68,14 +67,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "AttributeGuids",
-                "AttributeGuids",
-                "List of layer combination attribute Guids.",
-                GH_ParamAccess.list);
+                "List of layer combination attribute Guids.");
         }
 
         protected override void RegisterOutputParams(

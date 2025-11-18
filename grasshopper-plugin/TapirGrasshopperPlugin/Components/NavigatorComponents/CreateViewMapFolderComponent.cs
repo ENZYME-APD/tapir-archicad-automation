@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
 
@@ -50,24 +49,21 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "Name",
-                "Name",
-                "Name of the new folder.",
-                GH_ParamAccess.item);
-            pManager.AddGenericParameter(
+                "Name of the new folder.");
+
+            AddGeneric(
                 "ParentNavigatorItemId",
-                "ParentNavigatorItemId",
-                "The newly created folder will be placed under this parent item. If this parameter is not given the folder will be created as the first item in the View Map list.",
-                GH_ParamAccess.item);
-            pManager.AddGenericParameter(
+                "The newly created folder will be placed under this parent item. " +
+                "If this parameter is not given the folder will be created as the first item in the View Map list.");
+
+            AddGeneric(
                 "PreviousNavigatorItemId",
-                "PreviousNavigatorItemId",
-                "The newly created folder will be placed after this sibling item. If this parameter is not given the folder will be created as the first item under the parent.",
-                GH_ParamAccess.item);
+                "The newly created folder will be placed after this sibling item. " +
+                "If this parameter is not given the folder will be created as the first item under the parent.");
 
             Params.Input[1].Optional = true;
             Params.Input[2].Optional = true;

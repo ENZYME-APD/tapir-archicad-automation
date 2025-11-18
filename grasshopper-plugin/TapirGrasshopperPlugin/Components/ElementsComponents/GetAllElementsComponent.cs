@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -43,26 +42,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
-                "Filter",
+            AddTexts(
                 "Filter",
                 "Elements filter.",
-                GH_ParamAccess.list,
-                @default: new List<string>
-                {
-                    ElementFilter.NoFilter.ToString()
-                });
-            pManager.AddGenericParameter(
+                new List<string> { ElementFilter.NoFilter.ToString() });
+
+            AddGenerics(
                 "Databases",
-                "Databases",
-                "Databases to find elements.",
-                GH_ParamAccess.list);
+                "Databases to find elements.");
 
             Params.Input[1].Optional = true;
         }
+
 
         protected override void RegisterOutputParams(
             GH_OutputParamManager pManager)

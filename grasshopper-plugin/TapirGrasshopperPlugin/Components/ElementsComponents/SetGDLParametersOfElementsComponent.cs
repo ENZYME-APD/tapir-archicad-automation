@@ -1,5 +1,4 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,14 +24,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
-                nameof(GDLParametersResponse),
-                nameof(GDLParametersResponse),
-                nameof(GDLParametersResponse),
-                GH_ParamAccess.list);
+            AddTexts(
+                "...",
+                "...");
         }
 
         protected override void RegisterOutputParams(

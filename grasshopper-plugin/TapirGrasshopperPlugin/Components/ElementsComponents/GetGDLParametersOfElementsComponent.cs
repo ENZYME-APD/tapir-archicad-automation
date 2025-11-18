@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
@@ -22,19 +23,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get detailList for.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Elements Guids to get detailList for.");
+
+            AddText(
                 "ParamName",
-                "ParamName",
-                "Parameter name to find.",
-                GH_ParamAccess.item);
+                "Parameter name to find.");
         }
 
         protected override void RegisterOutputParams(

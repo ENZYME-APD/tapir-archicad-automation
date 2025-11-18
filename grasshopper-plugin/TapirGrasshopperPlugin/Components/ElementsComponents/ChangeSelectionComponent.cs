@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,33 +31,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementsToAdd",
-                "ElementsToAdd",
-                "Elements to add to selection.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Elements to add to selection.");
+
+            AddGenerics(
                 "ElementsToRemove",
-                "ElementsToRemove",
-                "Elements to remove from selection.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "Elements to remove from selection.");
+
+            AddBoolean(
                 "ClearSelection",
-                "ClearSelection",
-                "Remove all Elements from selection (before adding the given elements to selection).",
-                GH_ParamAccess.item,
-                false);
+                "Remove all Elements from selection (before adding the given elements to selection).");
 
             Params.Input[0].Optional = true;
             Params.Input[1].Optional = true;
-        }
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
         }
 
         protected override void Solve(

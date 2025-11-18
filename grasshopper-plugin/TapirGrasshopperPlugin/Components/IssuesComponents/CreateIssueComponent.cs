@@ -1,21 +1,21 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
+    public class ParametersOfNewIssue
+    {
+        [JsonProperty("name")]
+        public string Name;
+    }
+
     public class CreateIssueComponent : ArchicadExecutorComponent
     {
         public static string Doc => "Create an issue.";
         public override string CommandName => "CreateIssue";
-
-        public class ParametersOfNewIssue
-        {
-            [JsonProperty("name")]
-            public string Name;
-        }
 
         public CreateIssueComponent()
             : base(
@@ -26,14 +26,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
+            AddText(
                 "Name",
-                "Name",
-                "Name",
-                GH_ParamAccess.item);
+                "Name");
         }
 
         protected override void RegisterOutputParams(
@@ -49,19 +46,16 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var name = "";
-            if (!da.GetData(
-                    0,
-                    ref name))
+            if (!da.GetItem(
+                    1,
+                    out string name))
             {
                 return;
             }
 
-            var parametersOfNewIssue = new ParametersOfNewIssue { Name = name };
-
             if (!GetConvertedResponse(
                     CommandName,
-                    parametersOfNewIssue,
+                    new ParametersOfNewIssue { Name = name },
                     out IssueIdItemObj response))
             {
                 return;

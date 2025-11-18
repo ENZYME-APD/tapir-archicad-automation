@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
 
@@ -19,14 +20,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get the bounding box of.",
-                GH_ParamAccess.list);
+                "Elements Guids to get the bounding box of.");
         }
 
         protected override void RegisterOutputParams(

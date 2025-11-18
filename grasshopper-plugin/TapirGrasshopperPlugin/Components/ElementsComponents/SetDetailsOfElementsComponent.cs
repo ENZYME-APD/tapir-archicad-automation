@@ -1,9 +1,10 @@
-﻿using Grasshopper.Kernel;
+﻿using Eto.Forms;
+using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
@@ -56,30 +57,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids to get details of.",
-                GH_ParamAccess.list);
-            pManager.AddPointParameter(
+                "Elements Guids to get details of.");
+
+            AddPoints(
                 "Begin coordinates",
-                "BegCoords",
-                "Begin coordinates.",
-                GH_ParamAccess.list);
-            pManager.AddPointParameter(
+                "Begin coordinates.");
+
+            AddPoints(
                 "End coordinates",
-                "EndCoords",
-                "End coordinates.",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
+                "End coordinates.");
+
+            AddNumbers(
                 "Height",
-                "Height",
-                "Height.",
-                GH_ParamAccess.list);
+                "Height.");
         }
+
 
         protected override void RegisterOutputParams(
             GH_OutputParamManager pManager)

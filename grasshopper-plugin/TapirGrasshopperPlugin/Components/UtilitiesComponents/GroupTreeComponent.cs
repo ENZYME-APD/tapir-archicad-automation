@@ -21,19 +21,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "Data List",
-                "Data",
-                "List of data items to group",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "List of data items to group");
+
+            AddGenerics(
                 "Values List",
-                "Values",
-                "List of values to group by",
-                GH_ParamAccess.list);
+                "List of values to group by");
         }
 
         protected override void RegisterOutputParams(
@@ -57,7 +53,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             // Initialize outputs
             var outputTree = new GH_Structure<IGH_Goo>();
@@ -66,36 +62,36 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
             // Get inputs
             var dataList = new List<IGH_Goo>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     0,
                     dataList) || dataList.Count == 0)
             {
                 Message = "Error: Both data list and values list are required";
-                DA.SetDataTree(
+                da.SetDataTree(
                     0,
                     outputTree);
-                DA.SetDataList(
+                da.SetDataList(
                     1,
                     uniqueValues);
-                DA.SetDataList(
+                da.SetDataList(
                     2,
                     branchCounts);
                 return;
             }
 
             var valuesList = new List<IGH_Goo>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     valuesList) || valuesList.Count == 0)
             {
                 Message = "Error: Both data list and values list are required";
-                DA.SetDataTree(
+                da.SetDataTree(
                     0,
                     outputTree);
-                DA.SetDataList(
+                da.SetDataList(
                     1,
                     uniqueValues);
-                DA.SetDataList(
+                da.SetDataList(
                     2,
                     branchCounts);
                 return;
@@ -106,13 +102,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             {
                 Message =
                     $"Error: Lists have different lengths. Data: {dataList.Count}, Values: {valuesList.Count}";
-                DA.SetDataTree(
+                da.SetDataTree(
                     0,
                     outputTree);
-                DA.SetDataList(
+                da.SetDataList(
                     1,
                     uniqueValues);
-                DA.SetDataList(
+                da.SetDataList(
                     2,
                     branchCounts);
                 return;
@@ -190,13 +186,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             // Set outputs
-            DA.SetDataTree(
+            da.SetDataTree(
                 0,
                 outputTree);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 uniqueValues);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 branchCounts);
 

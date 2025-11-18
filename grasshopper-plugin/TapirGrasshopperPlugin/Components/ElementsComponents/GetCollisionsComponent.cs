@@ -1,9 +1,9 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -66,37 +66,30 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementsGroup1",
-                "ElementsGroup1",
-                "The first group of Elements to check collisions with the second group.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "The first group of Elements to check collisions with the second group.");
+
+            AddGenerics(
                 "ElementsGroup2",
-                "ElementsGroup2",
-                "The second group of Elements to check collisions with the first group.",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
-                "VolumeTolerance",
+                "The second group of Elements to check collisions with the first group.");
+
+            AddNumber(
                 "VolumeTolerance",
                 "Intersection body volume greater then this value will be considered as a collision.",
-                GH_ParamAccess.item,
-                @default: 0.001);
-            pManager.AddBooleanParameter(
+                Tolerances.Main);
+
+            AddBoolean(
                 "PerformSurfaceCheck",
-                "PerformSurfaceCheck",
-                "Enables surface collision check. If disabled the surfaceTolerance value will be ignored.",
-                GH_ParamAccess.item,
-                @default: false);
-            pManager.AddNumberParameter(
-                "SurfaceTolerance",
+                "Enables surface collision check. If disabled the surfaceTolerance value will be ignored.");
+
+
+            AddNumber(
                 "SurfaceTolerance",
                 "Intersection body surface area greater then this value will be considered as a collision.",
-                GH_ParamAccess.item,
-                @default: 0.001);
+                Tolerances.Main);
         }
 
         protected override void RegisterOutputParams(

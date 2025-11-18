@@ -31,27 +31,22 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 2);
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddIntegerParameter(
+            AddInteger(
                 "Port",
-                "Port",
-                "Port number",
-                GH_ParamAccess.item,
-                @default: ConnectionSettings.Port);
-            pManager.AddBooleanParameter(
+                "Port number.",
+                ConnectionSettings.Port);
+
+            AddBoolean(
                 "Allow Automatic Refresh",
-                "Auto Refresh",
                 "Allow Automatic Refresh",
-                GH_ParamAccess.item,
-                @default: AutoRefresh);
-            pManager.AddBooleanParameter(
+                AutoRefresh);
+
+            AddBoolean(
                 "Allow Automatic Execution",
-                "Auto Execute",
                 "Allow Automatic Execution",
-                GH_ParamAccess.item,
-                @default: AutoExecute);
+                AutoExecute);
         }
 
         protected override void RegisterOutputParams(

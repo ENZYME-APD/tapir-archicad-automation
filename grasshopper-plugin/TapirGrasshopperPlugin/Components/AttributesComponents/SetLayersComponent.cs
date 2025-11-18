@@ -1,10 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -46,50 +44,37 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public SetLayersComponent()
             : base(
                 "Set Layers",
-                "SetLayers",
+                "Set Layers",
                 Doc,
                 GroupNames.Attributes)
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "AttributeGuids",
-                "AttributeGuids",
-                "List of layer attribute Guids.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
-                "Name",
-                "Name",
-                "Name of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
-                "IsHidden",
-                "IsHidden",
-                "Visibility of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
-                "IsLocked",
-                "IsLocked",
-                "Lock states of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
-                "IsWireframe",
-                "IsWireframe",
-                "Wireframe flag of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddIntegerParameter(
-                "IntersectionGroup",
-                "IntersectionGroup",
-                "Intersection group of the layer.",
-                GH_ParamAccess.list);
-        }
+                "List of layer attribute Guids.");
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+            AddTexts(
+                "Name",
+                "Name of the layer.");
+
+            AddBooleans(
+                "IsHidden",
+                "Visibility of the layer.");
+
+            AddBooleans(
+                "IsLocked",
+                "Lock states of the layer.");
+
+            AddBooleans(
+                "IsWireframe",
+                "Wireframe flag of the layer.");
+
+            AddIntegers(
+                "IntersectionGroup",
+                "Intersection group of the layer.");
         }
 
         protected override void Solve(

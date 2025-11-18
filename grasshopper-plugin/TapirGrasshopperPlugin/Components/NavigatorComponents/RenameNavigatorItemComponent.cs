@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
 
@@ -37,31 +36,21 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
-                "NavigatorItemId",
-                "NavigatorItemId",
-                "Identifier of a navigator item to rename.",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
-                "New Name",
-                "NewName",
-                "New name for the navigator item.",
-                GH_ParamAccess.item,
-                @default: "");
-            pManager.AddTextParameter(
-                "New Id",
-                "NewId",
-                "New id for the navigator item.",
-                GH_ParamAccess.item,
-                @default: "");
-        }
+            AddGeneric(
+                "NavigatorItemIds",
+                "Identifier of navigator items to rename.");
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
+            AddText(
+                "New Name",
+                "New name for the navigator item.",
+                "");
+
+            AddText(
+                "New Id",
+                "New id for the navigator item.",
+                "");
         }
 
         protected override void Solve(

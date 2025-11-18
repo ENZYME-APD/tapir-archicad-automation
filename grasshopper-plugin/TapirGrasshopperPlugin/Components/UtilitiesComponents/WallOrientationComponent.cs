@@ -19,26 +19,22 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddPointParameter(
+            AddPoints(
                 "Start Points",
-                "S",
-                "Start point(s) of wall segment(s)",
-                GH_ParamAccess.list);
-            pManager.AddPointParameter(
+                "Start point(s) of wall segment(s)");
+
+            AddPoints(
                 "End Points",
-                "E",
-                "End point(s) of wall segment(s)",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
+                "End point(s) of wall segment(s)");
+
+            AddNumber(
                 "North Rotation",
-                "N",
                 "Rotation angle for north direction",
-                GH_ParamAccess.item,
                 0.0);
-            pManager[2].Optional = true;
+
+            Params.Input[2].Optional = true;
         }
 
         protected override void RegisterOutputParams(

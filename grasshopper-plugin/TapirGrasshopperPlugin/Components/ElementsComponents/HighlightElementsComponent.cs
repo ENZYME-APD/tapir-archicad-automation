@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
@@ -78,44 +77,36 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddBooleanParameter(
-                "Enable",
+            AddBoolean(
                 "Enable",
                 "Enable highlight.",
-                GH_ParamAccess.item,
-                @default: true);
-            pManager.AddGenericParameter(
+                true);
+
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements to highlight.",
-                GH_ParamAccess.list);
-            pManager.AddColourParameter(
+                "Elements to highlight.");
+
+            AddColors(
                 "HighligtedColors",
-                "Colors",
                 "Colors for the elements.",
-                GH_ParamAccess.list,
-                @default: Color.Blue);
-            pManager.AddColourParameter(
+                Color.Blue);
+
+            AddColor(
                 "NonHighligtedColor",
-                "NHColor",
                 "Color for the non-highlighted elements.",
-                GH_ParamAccess.item,
-                @default: Color.White);
-            pManager.AddBooleanParameter(
+                Color.White);
+
+            AddBoolean(
                 "NonHighligtedWireframe",
-                "NHWire3D",
                 "Switch non-highlighted elements in the 3D window to wireframe",
-                GH_ParamAccess.item,
-                @default: true);
-            pManager.AddNumberParameter(
-                "Transparency",
+                true);
+
+            AddNumber(
                 "Transparency",
                 "Sets the transparency of the highlight (0.0: opaque, 1.0: transparent).",
-                GH_ParamAccess.item,
-                @default: 0.5);
+                0.5);
         }
 
         protected override void RegisterOutputParams(

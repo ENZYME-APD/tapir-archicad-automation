@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -52,25 +51,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter(
+            AddGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements ids to move.",
-                GH_ParamAccess.list);
-            pManager.AddVectorParameter(
+                "Elements ids to move.");
+
+            AddVectors(
                 "Moving 3D Vectors",
-                "MoveVectors",
-                "The 3D vectors to move elements (input only 1 vector to move all elements with the same vector).",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "The 3D vectors to move elements (input only 1 vector to move all elements with the same vector).");
+
+            AddBoolean(
                 "Move copies",
-                "MoveCopies",
-                "Move copies of the elements.",
-                GH_ParamAccess.item,
-                @default: false);
+                "Move copies of the elements.");
         }
 
         protected override void RegisterOutputParams(
