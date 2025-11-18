@@ -4,20 +4,19 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Project
 {
     public class ProjectInfo
     {
-
-        [JsonProperty ("isUntitled")]
+        [JsonProperty("isUntitled")]
         public bool IsUntitled { get; set; }
 
-        [JsonProperty ("isTeamwork")]
+        [JsonProperty("isTeamwork")]
         public bool IsTeamwork { get; set; }
 
-        [JsonProperty ("projectLocation")]
+        [JsonProperty("projectLocation")]
         public string ProjectLocation { get; set; }
 
-        [JsonProperty ("projectPath")]
+        [JsonProperty("projectPath")]
         public string ProjectPath { get; set; }
 
-        [JsonProperty ("projectName")]
+        [JsonProperty("projectName")]
         public string ProjectName { get; set; }
     }
 }

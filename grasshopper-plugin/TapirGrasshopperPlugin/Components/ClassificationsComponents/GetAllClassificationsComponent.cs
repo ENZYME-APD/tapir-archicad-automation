@@ -11,6 +11,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
     {
         public static string Doc =>
             "Get all Classifications in the given Classification System.";
+
         public override string CommandName => "GetAllClassificationSystems";
 
         public GetAllClassificationsComponent()

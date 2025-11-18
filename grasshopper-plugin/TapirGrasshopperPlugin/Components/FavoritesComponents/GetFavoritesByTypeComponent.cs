@@ -9,6 +9,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
     {
         public static string Doc =>
             "Returns a list of the names of all favorites with the given element type.";
+
         public override string CommandName => "GetFavoritesByType";
 
         public GetFavoritesByTypeComponent()

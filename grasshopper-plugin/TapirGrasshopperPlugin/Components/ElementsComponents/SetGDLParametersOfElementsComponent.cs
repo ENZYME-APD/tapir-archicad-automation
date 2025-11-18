@@ -11,7 +11,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class SetGDLParametersOfElementsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Sets the given GDL parameters of the given elements.";
+        public static string Doc =>
+            "Sets the given GDL parameters of the given elements.";
+
         public override string CommandName => "SetGDLParametersOfElements";
 
         public SetGDLParametersOfElementsComponent()

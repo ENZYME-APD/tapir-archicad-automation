@@ -14,6 +14,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
     {
         public static string Doc =>
             "Get the location of the running Archicad executable.";
+
         public override string CommandName => "GetArchicadLocation";
 
         public GetArchicadLocationComponent()

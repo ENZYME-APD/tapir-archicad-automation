@@ -11,6 +11,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
 
     public class ModelViewOption
     {
-        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
     }
 }
