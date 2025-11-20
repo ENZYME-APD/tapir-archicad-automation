@@ -30,11 +30,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            AddGeneric(
+            InGeneric(
                 "IssueGuid",
                 "Issue to delete.");
 
-            AddBoolean(
+            InBoolean(
                 "AcceptAllElements",
                 "Accept all new/deleted Elements.",
                 true);

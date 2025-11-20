@@ -37,20 +37,20 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "IssueGuid",
                 "Issues to export.");
 
-            AddText(
+            InText(
                 "ExportedFilePath",
                 "Path to the output BCF file.");
 
-            AddBoolean(
+            InBoolean(
                 "UseExternalId",
                 "Use external IFC ID or Archicad IFC ID as referenced in BCF topics.",
                 true);
 
-            AddBoolean(
+            InBoolean(
                 "AlignBySurveyPoint",
                 "Align BCF views by Archicad Survey Point or Archicad Project Origin.",
                 true);

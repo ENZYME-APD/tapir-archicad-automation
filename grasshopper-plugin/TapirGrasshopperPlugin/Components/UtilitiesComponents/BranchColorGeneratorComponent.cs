@@ -29,27 +29,27 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddInputs()
         {
-            AddGenericTree(
+            InGenericTree(
                 "Tree",
                 "A Grasshopper DataTree with multiple branches");
 
-            AddColor(
+            InColor(
                 "Starting Color",
                 "Starting color for gradient or base color for complementary mode");
 
-            AddColor(
+            InColor(
                 "End Color",
                 "Ending color for gradient mode");
 
-            AddInteger(
+            InInteger(
                 "Seed",
                 "Seed value for random color generation");
 
-            AddBoolean(
+            InBoolean(
                 "Flatten",
                 "Whether outputs are flattened");
 
-            AddText(
+            InText(
                 "Mode",
                 "Color generation mode: 'gradient', 'complementary', or 'random'",
                 "random");

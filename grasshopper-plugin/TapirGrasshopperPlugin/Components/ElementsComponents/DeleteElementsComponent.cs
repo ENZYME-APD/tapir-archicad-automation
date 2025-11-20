@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements ids to delete.");
         }

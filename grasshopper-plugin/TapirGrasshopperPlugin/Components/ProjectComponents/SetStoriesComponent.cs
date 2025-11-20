@@ -33,15 +33,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void AddInputs()
         {
-            AddTexts(
+            InTexts(
                 "Story Name",
                 "Name of the story.");
 
-            AddNumbers(
+            InNumbers(
                 "Story Elevation",
                 "Elevation of the story.");
 
-            AddBooleans(
+            InBooleans(
                 "Show On Sections",
                 "Show Story on Sections.",
                 new List<bool> { true });

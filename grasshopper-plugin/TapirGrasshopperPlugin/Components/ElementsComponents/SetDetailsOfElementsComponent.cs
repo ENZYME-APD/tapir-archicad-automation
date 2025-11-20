@@ -59,19 +59,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements Guids to get details of.");
 
-            AddPoints(
+            InPoints(
                 "Begin coordinates",
                 "Begin coordinates.");
 
-            AddPoints(
+            InPoints(
                 "End coordinates",
                 "End coordinates.");
 
-            AddNumbers(
+            InNumbers(
                 "Height",
                 "Height.");
         }

@@ -23,11 +23,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "PropertyGuids",
                 "The property Guids to get the value for.");
 
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements Guids to get the value for.");
         }

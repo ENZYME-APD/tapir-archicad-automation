@@ -23,19 +23,19 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "Primary List",
                 "Primary list for filtering");
 
-            AddGenerics(
+            InGenerics(
                 "Secondary List",
                 "Secondary list that gets filtered in parallel");
 
-            AddGenerics(
+            InGenerics(
                 "Search Values",
                 "Search values for filtering");
 
-            AddText(
+            InText(
                 "Filter Mode",
                 "Filter mode (equals, notFound, greater, smaller, range, closest, group_equals, group_unique)",
                 "equals");

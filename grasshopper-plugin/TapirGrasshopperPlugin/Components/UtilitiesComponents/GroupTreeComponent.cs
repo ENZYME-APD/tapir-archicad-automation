@@ -23,11 +23,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "Data List",
                 "List of data items to group");
 
-            AddGenerics(
+            InGenerics(
                 "Values List",
                 "List of values to group by");
         }

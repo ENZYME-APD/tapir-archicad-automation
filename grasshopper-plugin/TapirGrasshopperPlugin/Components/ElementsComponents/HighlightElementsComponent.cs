@@ -79,31 +79,31 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddBoolean(
+            InBoolean(
                 "Enable",
                 "Enable highlight.",
                 true);
 
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements to highlight.");
 
-            AddColors(
+            InColors(
                 "HighligtedColors",
                 "Colors for the elements.",
                 Color.Blue);
 
-            AddColor(
+            InColor(
                 "NonHighligtedColor",
                 "Color for the non-highlighted elements.",
                 Color.White);
 
-            AddBoolean(
+            InBoolean(
                 "NonHighligtedWireframe",
                 "Switch non-highlighted elements in the 3D window to wireframe",
                 true);
 
-            AddNumber(
+            InNumber(
                 "Transparency",
                 "Sets the transparency of the highlight (0.0: opaque, 1.0: transparent).",
                 0.5);

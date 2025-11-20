@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "Name",
                 "Name");
         }

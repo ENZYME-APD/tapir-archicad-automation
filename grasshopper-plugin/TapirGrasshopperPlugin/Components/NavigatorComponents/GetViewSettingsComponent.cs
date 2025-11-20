@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "NavigatorItemIds",
                 "Identifier of navigator items to delete.");
         }

@@ -45,32 +45,32 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "AttributeGuids",
                 "List of layer combination attribute Guids.");
 
-            AddTexts(
+            InTexts(
                 "Name",
                 "List of the names of the layer combinations.");
 
-            AddGenericTree(
+            InGenericTree(
                 "LayerAttributeGuids",
                 "Tree of identifiers of the layers to be included in the layer combinations.");
 
-            AddBooleanTree(
+            InBooleanTree(
                 "IsHiddenLayers",
                 "Tree of visibility of the layers in the layer combinations.");
 
-            AddBooleanTree(
+            InBooleanTree(
                 "IsLockedLayers",
                 "Tree of lock states of the layers in the layer combinations.");
 
 
-            AddBooleanTree(
+            InBooleanTree(
                 "IsWireframeLayers",
                 "Tree of wireframe modes of the layers in the layer combinations.");
 
-            AddIntegerTree(
+            InIntegerTree(
                 "IntersectionGroupsOfLayers",
                 "Tree of intersection groups of the layers in the layer combinations.");
         }

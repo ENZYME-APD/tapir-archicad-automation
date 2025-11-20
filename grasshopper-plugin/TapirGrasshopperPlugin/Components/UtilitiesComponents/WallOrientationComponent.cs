@@ -21,15 +21,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddInputs()
         {
-            AddPoints(
+            InPoints(
                 "Start Points",
                 "Start point(s) of wall segment(s)");
 
-            AddPoints(
+            InPoints(
                 "End Points",
                 "End point(s) of wall segment(s)");
 
-            AddNumber(
+            InNumber(
                 "North Rotation",
                 "Rotation angle for north direction",
                 0.0);

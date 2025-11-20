@@ -68,25 +68,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementsGroup1",
                 "The first group of Elements to check collisions with the second group.");
 
-            AddGenerics(
+            InGenerics(
                 "ElementsGroup2",
                 "The second group of Elements to check collisions with the first group.");
 
-            AddNumber(
+            InNumber(
                 "VolumeTolerance",
                 "Intersection body volume greater then this value will be considered as a collision.",
                 Tolerances.Main);
 
-            AddBoolean(
+            InBoolean(
                 "PerformSurfaceCheck",
                 "Enables surface collision check. If disabled the surfaceTolerance value will be ignored.");
 
 
-            AddNumber(
+            InNumber(
                 "SurfaceTolerance",
                 "Intersection body surface area greater then this value will be considered as a collision.",
                 Tolerances.Main);

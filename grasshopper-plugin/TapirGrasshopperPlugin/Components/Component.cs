@@ -50,13 +50,13 @@ namespace TapirGrasshopperPlugin.Components
         {
             base.Layout();
 
-            Rectangle componentCapsule = GH_Convert.ToRectangle(Bounds);
+            var componentCapsule = GH_Convert.ToRectangle(Bounds);
             componentCapsule.Width += _additionalWidth;
             componentCapsule.Height += _buttonBounds.Count * 30;
 
-            for (int i = 0; i < _buttonBounds.Count; ++i)
+            for (var i = 0; i < _buttonBounds.Count; ++i)
             {
-                Rectangle buttonCapsule = componentCapsule;
+                var buttonCapsule = componentCapsule;
                 buttonCapsule.Y = buttonCapsule.Bottom - ((i + 1) * 30);
                 buttonCapsule.Height = 30;
                 buttonCapsule.Inflate(
@@ -82,9 +82,9 @@ namespace TapirGrasshopperPlugin.Components
             {
                 if (Owner is IButtonComponent buttonComponent)
                 {
-                    for (int i = 0; i < _buttonBounds.Count; ++i)
+                    for (var i = 0; i < _buttonBounds.Count; ++i)
                     {
-                        GH_Capsule buttonCapsule = GH_Capsule.CreateTextCapsule(
+                        var buttonCapsule = GH_Capsule.CreateTextCapsule(
                             _buttonBounds[i],
                             _buttonBounds[i],
                             _isPressed[i] ? GH_Palette.Grey : GH_Palette.Black,
@@ -108,7 +108,7 @@ namespace TapirGrasshopperPlugin.Components
         {
             if (e.Button == MouseButtons.Left)
             {
-                for (int i = 0; i < _buttonBounds.Count; ++i)
+                for (var i = 0; i < _buttonBounds.Count; ++i)
                 {
                     if (_buttonBounds[i].Contains(e.CanvasLocation))
                     {
@@ -131,7 +131,7 @@ namespace TapirGrasshopperPlugin.Components
         {
             if (e.Button == MouseButtons.Left)
             {
-                for (int i = 0; i < _buttonBounds.Count; ++i)
+                for (var i = 0; i < _buttonBounds.Count; ++i)
                 {
                     if (_buttonBounds[i].Contains(e.CanvasLocation) &&
                         _isPressed[i] == true)
@@ -199,7 +199,7 @@ namespace TapirGrasshopperPlugin.Components
         {
         }
 
-        public void AddGeneric(
+        public void InGeneric(
             string name,
             string description)
         {
@@ -210,7 +210,18 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.item);
         }
 
-        public void AddGenerics(
+        public void OutGenerics(
+            string name,
+            string description)
+        {
+            outManager.AddGenericParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item);
+        }
+
+        public void InGenerics(
             string name,
             string description)
         {
@@ -221,7 +232,7 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
-        public void AddGenericTree(
+        public void InGenericTree(
             string name,
             string description)
         {
@@ -232,8 +243,18 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.tree);
         }
 
+        public void OutGenericTree(
+            string name,
+            string description)
+        {
+            outManager.AddGenericParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
+        }
 
-        public void AddVectors(
+        public void InVectors(
             string name,
             string description)
         {
@@ -244,7 +265,7 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
-        public void AddPoints(
+        public void InPoints(
             string name,
             string description)
         {
@@ -255,7 +276,7 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
-        public void AddNumber(
+        public void InNumber(
             string name,
             string description,
             double defaultValue)
@@ -268,7 +289,7 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
-        public void AddNumbers(
+        public void InNumbers(
             string name,
             string description)
         {
@@ -279,7 +300,7 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
-        public void AddBoolean(
+        public void InBoolean(
             string name,
             string description,
             bool defaultValue = false)
@@ -292,7 +313,7 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
-        public void AddBooleans(
+        public void InBooleans(
             string name,
             string description,
             List<bool> defaultValues = null)
@@ -305,7 +326,7 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValues);
         }
 
-        public void AddBooleanTree(
+        public void InBooleanTree(
             string name,
             string description)
         {
@@ -316,7 +337,18 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.tree);
         }
 
-        public void AddInteger(
+        public void OutBooleanTree(
+            string name,
+            string description)
+        {
+            outManager.AddBooleanParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
+        }
+
+        public void InInteger(
             string name,
             string description,
             int defaultValue)
@@ -329,7 +361,7 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
-        public void AddIntegers(
+        public void InIntegers(
             string name,
             string description)
         {
@@ -340,7 +372,7 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
-        public void AddIntegerTree(
+        public void InIntegerTree(
             string name,
             string description)
         {
@@ -351,7 +383,20 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.tree);
         }
 
-        public void AddText(
+
+        public void OutIntegerTree(
+            string name,
+            string description)
+        {
+            outManager.AddIntegerParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
+        }
+
+
+        public void InText(
             string name,
             string description,
             string defaultValue = null)
@@ -364,7 +409,18 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
-        public void AddColor(
+        public void OutTexts(
+            string name,
+            string description)
+        {
+            outManager.AddTextParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
+        public void InColor(
             string name,
             string description,
             Color defaultValue)
@@ -377,7 +433,7 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
-        public void AddColors(
+        public void InColors(
             string name,
             string description,
             Color defaultValue)
@@ -390,7 +446,7 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
-        public void AddTexts(
+        public void InTexts(
             string name,
             string description,
             IEnumerable<string> defaultValues = null)
@@ -407,7 +463,7 @@ namespace TapirGrasshopperPlugin.Components
             string commandName,
             JObject commandParameters)
         {
-            ArchicadConnection connection = new(ConnectionSettings.Port);
+            var connection = new ArchicadConnection(ConnectionSettings.Port);
             return connection.SendCommand(
                 commandName,
                 commandParameters);
@@ -417,7 +473,7 @@ namespace TapirGrasshopperPlugin.Components
             string commandName,
             JObject commandParameters)
         {
-            ArchicadConnection connection = new(ConnectionSettings.Port);
+            var connection = new ArchicadConnection(ConnectionSettings.Port);
 
             return connection.SendAddOnCommand(
                 CommandNameSpace,
@@ -430,7 +486,7 @@ namespace TapirGrasshopperPlugin.Components
             JObject commandParameters,
             out JObject response)
         {
-            CommandResponse cResponse = SendArchicadAddOnCommand(
+            var cResponse = SendArchicadAddOnCommand(
                 commandName,
                 commandParameters);
 
@@ -454,7 +510,7 @@ namespace TapirGrasshopperPlugin.Components
             return GetArchicadAddonResponse(
                 commandName,
                 JObject.FromObject(commandParameters),
-                out JObject result);
+                out var result);
         }
 
         protected bool GetConvertedResponse<T>(
@@ -465,7 +521,7 @@ namespace TapirGrasshopperPlugin.Components
             if (GetArchicadAddonResponse(
                     commandName,
                     null,
-                    out JObject result))
+                    out var result))
             {
                 response = result.ToObject<T>();
                 return true;
@@ -484,7 +540,7 @@ namespace TapirGrasshopperPlugin.Components
             if (GetArchicadAddonResponse(
                     commandName,
                     JObject.FromObject(commandParameters),
-                    out JObject result))
+                    out var result))
             {
                 response = result.ToObject<T>();
                 return true;
@@ -559,7 +615,7 @@ namespace TapirGrasshopperPlugin.Components
         {
             base.ExpireDownStreamObjects();
 
-            foreach (IGH_Param input in Params.Input)
+            foreach (var input in Params.Input)
             {
                 if (input is ArchicadAccessorValueList valueList)
                 {
@@ -652,7 +708,7 @@ namespace TapirGrasshopperPlugin.Components
         {
             base.ExpireDownStreamObjects();
 
-            foreach (IGH_Param input in Params.Input)
+            foreach (var input in Params.Input)
             {
                 if (input is ArchicadAccessorValueList valueList)
                 {

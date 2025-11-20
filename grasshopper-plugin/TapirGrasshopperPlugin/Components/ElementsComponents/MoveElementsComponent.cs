@@ -53,15 +53,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements ids to move.");
 
-            AddVectors(
+            InVectors(
                 "Moving 3D Vectors",
                 "The 3D vectors to move elements (input only 1 vector to move all elements with the same vector).");
 
-            AddBoolean(
+            InBoolean(
                 "Move copies",
                 "Move copies of the elements.");
         }

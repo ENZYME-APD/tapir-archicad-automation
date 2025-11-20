@@ -20,11 +20,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "Group name",
                 "Property group name to find.");
 
-            AddText(
+            InText(
                 "Property name",
                 "Property name to find.");
         }

@@ -55,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGeneric(
+            InGeneric(
                 "ZoneElementGuid",
                 "The identifier of a zone.");
         }

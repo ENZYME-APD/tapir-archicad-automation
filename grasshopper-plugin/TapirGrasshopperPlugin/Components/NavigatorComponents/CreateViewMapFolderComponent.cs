@@ -51,16 +51,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "Name",
                 "Name of the new folder.");
 
-            AddGeneric(
+            InGeneric(
                 "ParentNavigatorItemId",
                 "The newly created folder will be placed under this parent item. " +
                 "If this parameter is not given the folder will be created as the first item in the View Map list.");
 
-            AddGeneric(
+            InGeneric(
                 "PreviousNavigatorItemId",
                 "The newly created folder will be placed after this sibling item. " +
                 "If this parameter is not given the folder will be created as the first item under the parent.");

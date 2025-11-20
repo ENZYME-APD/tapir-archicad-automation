@@ -23,7 +23,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 nameof(ProjectFilePathObject.ProjectFilePath),
                 nameof(ProjectFilePathObject.ProjectFilePath));
         }

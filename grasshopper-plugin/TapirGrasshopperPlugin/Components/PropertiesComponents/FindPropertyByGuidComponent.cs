@@ -20,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "PropertyGuid",
                 "Property guid to find.");
         }
@@ -38,7 +38,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            string propertyGuid = "";
+            var propertyGuid = "";
             if (!da.GetData(
                     0,
                     ref propertyGuid))
@@ -56,7 +56,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             PropertyDetailsObj found = null;
             propertyGuid = propertyGuid.ToLower();
 
-            foreach (PropertyDetailsObj detail in response.Properties)
+            foreach (var detail in response.Properties)
             {
                 if (detail.PropertyId.Guid.ToLower() == propertyGuid)
                 {

@@ -22,11 +22,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddInputs()
         {
-            AddGenericTree(
+            InGenericTree(
                 "Input Tree",
                 "Tree structure to select from");
 
-            AddInteger(
+            InInteger(
                 "Path Index",
                 "Integer for branch selection",
                 0);

@@ -69,44 +69,36 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "AttributeGuids",
                 "List of layer combination attribute Guids.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 "Name",
-                "Name",
-                "List of the names of the layer combinations.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "List of the names of the layer combinations.");
+
+            OutGenericTree(
                 "LayerAttributeGuids",
-                "LayerAttributeGuids",
-                "Tree of identifiers of the layers included in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddBooleanParameter(
+                "Tree of identifiers of the layers included in the layer combinations.");
+
+            OutBooleanTree(
                 "IsHiddenLayers",
-                "IsHiddenLayers",
-                "Tree of visibility of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddBooleanParameter(
+                "Tree of visibility of the layers in the layer combinations.");
+
+            OutBooleanTree(
                 "IsLockedLayers",
-                "IsLockedLayers",
-                "Tree of lock states of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddBooleanParameter(
+                "Tree of lock states of the layers in the layer combinations.");
+
+            OutBooleanTree(
                 "IsWireframeLayers",
-                "IsWireframeLayers",
-                "Tree of wireframe modes of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
-            pManager.AddIntegerParameter(
+                "Tree of wireframe modes of the layers in the layer combinations.");
+
+            OutIntegerTree(
                 "IntersectionGroupsOfLayers",
-                "IntersectionGroupsOfLayers",
-                "Tree of intersection groups of the layers in the layer combinations.",
-                GH_ParamAccess.tree);
+                "Tree of intersection groups of the layers in the layer combinations.");
         }
 
         protected override void Solve(

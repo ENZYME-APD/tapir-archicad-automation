@@ -33,15 +33,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementsToAdd",
                 "Elements to add to selection.");
 
-            AddGenerics(
+            InGenerics(
                 "ElementsToRemove",
                 "Elements to remove from selection.");
 
-            AddBoolean(
+            InBoolean(
                 "ClearSelection",
                 "Remove all Elements from selection (before adding the given elements to selection).");
 
@@ -52,13 +52,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            ElementsObj elementsToAdd = ElementsObj.Create(
+            var elementsToAdd = ElementsObj.Create(
                 da,
                 0);
-            ElementsObj elementsToRemove = ElementsObj.Create(
+            var elementsToRemove = ElementsObj.Create(
                 da,
                 1);
-            bool clearSelection = false;
+            var clearSelection = false;
             if (!da.GetData(
                     2,
                     ref clearSelection))
@@ -81,13 +81,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (clearSelection)
             {
-                CommandResponse responseOfGetSelection =
-                    SendArchicadAddOnCommand(
-                        "GetSelectedElements",
-                        null);
+                var responseOfGetSelection = SendArchicadAddOnCommand(
+                    "GetSelectedElements",
+                    null);
                 if (responseOfGetSelection.Succeeded)
                 {
-                    ElementsObj selectedElements = responseOfGetSelection.Result
+                    var selectedElements = responseOfGetSelection.Result
                         .ToObject<ElementsObj>();
                     uniqueElementsToRemove.UnionWith(selectedElements.Elements);
                 }

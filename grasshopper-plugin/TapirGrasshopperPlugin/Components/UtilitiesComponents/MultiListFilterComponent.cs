@@ -22,23 +22,23 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "List 1",
                 "First list to filter.");
 
-            AddGenerics(
+            InGenerics(
                 "List 2",
                 "Second list to filter.");
 
-            AddGenerics(
+            InGenerics(
                 "List 3",
                 "Third list to filter.");
 
-            AddGenerics(
+            InGenerics(
                 "List 4",
                 "Fourth list to filter.");
 
-            AddIntegers(
+            InIntegers(
                 "Index",
                 "Index or indices to extract from lists");
 

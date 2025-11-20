@@ -53,7 +53,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "AttributeGuids",
                 "List of layer attribute Guids.");
         }

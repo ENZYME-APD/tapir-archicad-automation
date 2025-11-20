@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
@@ -40,11 +41,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements Guids to filter.");
 
-            AddTexts(
+            InTexts(
                 "Filter",
                 "Elements filter.",
                 new List<string> { ElementFilter.NoFilter.ToString() });
@@ -73,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess DA)
         {
-            ElementsObj inputElements = ElementsObj.Create(
+            var inputElements = ElementsObj.Create(
                 DA,
                 0);
             if (inputElements == null)

@@ -47,16 +47,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "Type",
                 "Elements type.");
 
-            AddTexts(
+            InTexts(
                 "Filter",
                 "Elements filter.",
                 new List<string> { ElementFilter.NoFilter.ToString() });
 
-            AddGenerics(
+            InGenerics(
                 "Databases",
                 "Databases to find elements.");
 

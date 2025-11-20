@@ -21,11 +21,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddInputs()
         {
-            AddPoints(
+            InPoints(
                 "Points",
                 "List of points to snap.");
 
-            AddNumber(
+            InNumber(
                 "Grid size",
                 "Size of the grid.",
                 1.0);

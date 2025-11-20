@@ -34,11 +34,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements Guids of hierarchical elements to get subelements of.");
 
-            AddText(
+            InText(
                 "SubelemType",
                 "Type of subelements.");
         }

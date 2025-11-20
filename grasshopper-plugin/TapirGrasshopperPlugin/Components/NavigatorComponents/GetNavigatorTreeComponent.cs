@@ -200,11 +200,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "TreeType",
                 "The type of a navigator item tree.");
 
-            AddText(
+            InText(
                 "PublisherSetName",
                 "The name of the publisher set.",
                 "");

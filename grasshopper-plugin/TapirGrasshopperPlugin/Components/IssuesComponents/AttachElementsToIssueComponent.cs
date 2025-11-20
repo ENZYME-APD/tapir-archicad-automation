@@ -35,15 +35,15 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            AddGeneric(
+            InGeneric(
                 "IssueGuid",
                 "Issue Guid.");
 
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements to attach.");
 
-            AddGeneric(
+            InGeneric(
                 "Type",
                 "Type of elements.");
         }

@@ -39,16 +39,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddInputs()
         {
-            AddGeneric(
+            InGeneric(
                 "NavigatorItemIds",
                 "Identifier of navigator items to move.");
 
-            AddGeneric(
+            InGeneric(
                 "ParentNavigatorItemId",
                 "Moves the given navigator item under the parentNavigatorItemId in the navigator tree.");
 
 
-            AddGeneric(
+            InGeneric(
                 "PreviousNavigatorItemId",
                 "Moves the given navigator item after this navigator item. " +
                 "If it's not given then moves it at the first place under the new parent.");

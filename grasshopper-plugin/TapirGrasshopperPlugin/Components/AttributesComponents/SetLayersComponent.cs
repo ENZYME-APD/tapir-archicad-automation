@@ -52,27 +52,27 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "AttributeGuids",
                 "List of layer attribute Guids.");
 
-            AddTexts(
+            InTexts(
                 "Name",
                 "Name of the layer.");
 
-            AddBooleans(
+            InBooleans(
                 "IsHidden",
                 "Visibility of the layer.");
 
-            AddBooleans(
+            InBooleans(
                 "IsLocked",
                 "Lock states of the layer.");
 
-            AddBooleans(
+            InBooleans(
                 "IsWireframe",
                 "Wireframe flag of the layer.");
 
-            AddIntegers(
+            InIntegers(
                 "IntersectionGroup",
                 "Intersection group of the layer.");
         }

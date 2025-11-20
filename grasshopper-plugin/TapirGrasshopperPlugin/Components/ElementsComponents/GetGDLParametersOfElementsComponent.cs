@@ -25,11 +25,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddGenerics(
+            InGenerics(
                 "ElementGuids",
                 "Elements Guids to get detailList for.");
 
-            AddText(
+            InText(
                 "ParamName",
                 "Parameter name to find.");
         }
@@ -57,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            ElementsObj inputElements = ElementsObj.Create(
+            var inputElements = ElementsObj.Create(
                 da,
                 0);
 

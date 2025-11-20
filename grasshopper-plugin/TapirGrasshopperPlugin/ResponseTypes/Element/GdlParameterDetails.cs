@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         {
             var result = new List<GDLHolder>();
 
-            for (int i = 0; i < ids.Count(); i++)
+            for (var i = 0; i < ids.Count(); i++)
             {
                 var id = ids[0];
                 var pList = response.GdlLists[0];

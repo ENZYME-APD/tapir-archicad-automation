@@ -38,16 +38,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddInputs()
         {
-            AddGeneric(
+            InGeneric(
                 "NavigatorItemIds",
                 "Identifier of navigator items to rename.");
 
-            AddText(
+            InText(
                 "New Name",
                 "New name for the navigator item.",
                 "");
 
-            AddText(
+            InText(
                 "New Id",
                 "New id for the navigator item.",
                 "");

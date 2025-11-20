@@ -26,7 +26,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            AddTexts(
+            InTexts(
                 "...",
                 "...");
         }

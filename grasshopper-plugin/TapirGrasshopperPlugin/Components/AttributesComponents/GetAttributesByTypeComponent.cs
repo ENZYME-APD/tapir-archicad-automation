@@ -29,29 +29,24 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "Type",
                 "Attribute type.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "AttributeGuids",
-                "AttributeGuids",
-                "List of attribute Guids.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "List of attribute Guids.");
+
+            OutGenerics(
                 "AttributeIndices",
-                "AttributeIndices",
-                "List of attribute indices.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "List of attribute indices.");
+
+            OutGenerics(
                 "AttributeNames",
-                "AttributeNames",
-                "List of attribute names.",
-                GH_ParamAccess.list);
+                "List of attribute names.");
         }
 
         public override void AddedToDocument(
@@ -74,18 +69,19 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            AttributesByTypeObj attributesByType =
-                new() { AttributeType = attrType };
+            var attributesByType =
+                new AttributesByTypeObj { AttributeType = attrType };
 
             if (!GetConvertedResponse(
                     CommandName,
                     attributesByType,
                     out AttributeDetailsObj attributes)) { return; }
 
-            List<AttributeIdObj> attributeIds = new();
-            List<uint> attributeIndices = new();
-            List<string> attributeNames = new();
-            foreach (AttributeDetail attributeDetail in attributes.Attributes)
+            var attributeIds = new List<AttributeIdObj>();
+            var attributeIndices = new List<uint>();
+            var attributeNames = new List<string>();
+
+            foreach (var attributeDetail in attributes.Attributes)
             {
                 attributeIds.Add(attributeDetail.AttributeId);
                 attributeIndices.Add(attributeDetail.Index);

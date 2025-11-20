@@ -69,9 +69,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 string pathToRoot)
         {
             List<Tuple<ClassificationItemDetailsObj, string>> list = new();
-            foreach (ClassificationItemObj item in tree)
+            foreach (var item in tree)
             {
-                string path = pathToRoot + '/' + item.ClassificationItem.Id;
+                var path = pathToRoot + '/' + item.ClassificationItem.Id;
                 list.Add(
                     new Tuple<ClassificationItemDetailsObj, string>(
                         item.ClassificationItem,
@@ -105,15 +105,14 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
 
-            foreach (ClassificationSystemDetailsObj system in
-                     classificationSystems.ClassificationSystems)
+            foreach (var system in classificationSystems.ClassificationSystems)
             {
                 ClassificationSystemObj classificationSystem = new()
                 {
                     ClassificationSystemId = system.ClassificationSystemId
                 };
 
-                JObject classificationSystemObj =
+                var classificationSystemObj =
                     JObject.FromObject(classificationSystem);
 
                 if (!GetConvertedResponse(
@@ -122,10 +121,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                         out AllClassificationItemsInSystem
                             classificationItemsInSystem)) { return; }
 
-                List<Tuple<ClassificationItemDetailsObj, string>>
-                    itemsInSystem = GetAllClassificationItemFromTree(
-                        classificationItemsInSystem.ClassificationItems,
-                        system.ToString());
+                var itemsInSystem = GetAllClassificationItemFromTree(
+                    classificationItemsInSystem.ClassificationItems,
+                    system.ToString());
 
                 itemsPerSystems.Add(
                     system,
@@ -139,17 +137,13 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             List<string> itemNames = new();
             List<string> itemFullDisplayIds = new();
             List<string> itemPaths = new();
-            foreach (KeyValuePair<ClassificationSystemDetailsObj,
-                             List<Tuple<ClassificationItemDetailsObj, string>>>
-                         itemsInSystem in itemsPerSystems)
+            foreach (var itemsInSystem in itemsPerSystems)
             {
-                ClassificationSystemDetailsObj system = itemsInSystem.Key;
-                foreach (Tuple<ClassificationItemDetailsObj, string>
-                             itemDetailAndPath in itemsInSystem.Value)
+                var system = itemsInSystem.Key;
+                foreach (var itemDetailAndPath in itemsInSystem.Value)
                 {
-                    ClassificationItemDetailsObj itemDetail =
-                        itemDetailAndPath.Item1;
-                    string itemPath = itemDetailAndPath.Item2;
+                    var itemDetail = itemDetailAndPath.Item1;
+                    var itemPath = itemDetailAndPath.Item2;
 
                     systemIds.Add(system.ClassificationSystemId.Guid);
                     systemNamesAndVersions.Add(system.ToString());

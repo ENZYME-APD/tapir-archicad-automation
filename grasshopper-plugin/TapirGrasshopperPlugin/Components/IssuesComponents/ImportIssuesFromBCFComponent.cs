@@ -29,11 +29,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            AddText(
+            InText(
                 "FilePath",
                 "Path to the input BCF file.");
 
-            AddBoolean(
+            InBoolean(
                 "AlignBySurveyPoint",
                 "Align BCF views by Archicad Survey Point or Archicad Project Origin.",
                 true);

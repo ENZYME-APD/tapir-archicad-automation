@@ -33,17 +33,17 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
         protected override void AddInputs()
         {
-            AddInteger(
+            InInteger(
                 "Port",
                 "Port number.",
                 ConnectionSettings.Port);
 
-            AddBoolean(
+            InBoolean(
                 "Allow Automatic Refresh",
                 "Allow Automatic Refresh",
                 AutoRefresh);
 
-            AddBoolean(
+            InBoolean(
                 "Allow Automatic Execution",
                 "Allow Automatic Execution",
                 AutoExecute);
