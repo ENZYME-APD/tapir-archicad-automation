@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -48,18 +49,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var newName = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref newName))
+                    out string newName))
             {
                 return;
             }
 
-            var newId = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     2,
-                    ref newId))
+                    out string newId))
             {
                 return;
             }
@@ -67,8 +66,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             var input = new RenameNavigatorItemInput()
             {
                 NavigatorItemId = navigatorItemId.Id,
-                NewName = String.IsNullOrEmpty(newName) ? null : newName,
-                NewId = String.IsNullOrEmpty(newId) ? null : newId
+                NewName = string.IsNullOrEmpty(newName) ? null : newName,
+                NewId = string.IsNullOrEmpty(newId) ? null : newId
             };
 
             GetResponse(

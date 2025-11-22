@@ -80,24 +80,19 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            Dictionary<ClassificationSystemDetailsObj,
-                    List<Tuple<ClassificationItemDetailsObj, string>>>
-                itemsPerSystems =
-                    new Dictionary<ClassificationSystemDetailsObj,
-                        List<Tuple<ClassificationItemDetailsObj, string>>>();
-
+            var itemsPerSystems =
+                new Dictionary<ClassificationSystemDetailsObj,
+                    List<Tuple<ClassificationItemDetailsObj, string>>>();
 
             if (!GetConvertedResponse(
                     CommandName,
-                    null,
-                    out AllClassificationSystems classificationSystems))
+                    out AllClassificationSystems response))
             {
                 return;
             }
 
-
-            foreach (ClassificationSystemDetailsObj system in
-                     classificationSystems.ClassificationSystems)
+            foreach (ClassificationSystemDetailsObj system in response
+                         .ClassificationSystems)
             {
                 ClassificationSystemObj classificationSystem =
                     new ClassificationSystemObj()

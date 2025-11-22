@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using System.Windows.Forms;
 using System.Drawing;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -130,10 +131,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var highlightedColors = new List<GH_Colour>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     2,
-                    highlightedColors))
+                    out List<GH_Colour> highlightedColors))
             {
                 return;
             }
@@ -147,26 +147,23 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var nonHighlightedColor = new GH_Colour();
-            if (!da.GetData(
+            if (!da.GetItem(
                     3,
-                    ref nonHighlightedColor))
+                    out GH_Colour nonHighlightedColor))
             {
                 return;
             }
 
-            var wireframe3D = false;
-            if (!da.GetData(
+            if (!da.GetItem(
                     4,
-                    ref wireframe3D))
+                    out bool wireframe3D))
             {
                 return;
             }
 
-            var transparency = 0.0;
-            if (!da.GetData<double>(
+            if (!da.GetItem(
                     5,
-                    ref transparency))
+                    out double transparency))
             {
                 return;
             }

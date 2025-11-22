@@ -4,6 +4,7 @@ using Grasshopper.Kernel.Data;
 using System;
 using System.Drawing;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
@@ -88,16 +89,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 return;
             }
 
-            // Get optional inputs
-            var initColor = Color.Black;
-            DA.GetData(
+            var initColor = DA.GetOptionalItem(
                 1,
-                ref initColor);
+                Color.Black);
 
-            var endColor = Color.White;
-            DA.GetData(
+            var endColor = DA.GetOptionalItem(
                 2,
-                ref endColor);
+                Color.White);
 
             int? seed = null;
             var seedValue = 0;
@@ -108,15 +106,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 seed = seedValue;
             }
 
-            var flatten = false;
-            DA.GetData(
+            var flatten = DA.GetOptionalItem(
                 4,
-                ref flatten);
+                false);
 
-            var mode = "random";
-            DA.GetData(
+            var mode = DA.GetOptionalItem(
                 5,
-                ref mode);
+                "random");
 
             // Process the input DataTree
             var numBranches = tree.Branches.Count;

@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
 
@@ -47,34 +48,20 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            var propertyIds = new List<PropertyIdObj>();
-            var propertyGroupNames = new List<string>();
-            var propertyNames = new List<string>();
-            var fullNames = new List<string>();
-
-            foreach (var detail in response.Properties)
-            {
-                propertyIds.Add(detail.PropertyId);
-                propertyGroupNames.Add(detail.PropertyGroupName);
-                propertyNames.Add(detail.PropertyName);
-                fullNames.Add(
-                    ArchicadUtils.JoinNames(
-                        detail.PropertyGroupName,
-                        detail.PropertyName));
-            }
-
             da.SetDataList(
                 0,
-                propertyIds);
+                response.Properties.Select(x => x.PropertyId));
             da.SetDataList(
                 1,
-                propertyGroupNames);
+                response.Properties.Select(x => x.PropertyGroupName));
             da.SetDataList(
                 2,
-                propertyNames);
+                response.Properties.Select(x => x.PropertyName));
             da.SetDataList(
                 3,
-                fullNames);
+                response.Properties.Select(x => ArchicadUtils.JoinNames(
+                    x.PropertyGroupName,
+                    x.PropertyName)));
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -2,6 +2,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
@@ -67,26 +68,23 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             IGH_DataAccess da)
         {
             // Get inputs
-            var startPoints = new List<Point3d>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     0,
-                    startPoints))
+                    out List<Point3d> startPoints))
             {
                 return;
             }
 
-            var endPoints = new List<Point3d>();
-            if (!da.GetDataList(
-                    1,
-                    endPoints))
+            if (!da.GetItems(
+                    0,
+                    out List<Point3d> endPoints))
             {
                 return;
             }
 
-            var northRotation = 0.0;
-            da.GetData(
+            var northRotation = da.GetOptionalItem(
                 2,
-                ref northRotation);
+                0.0);
 
             // Ensure inputs are lists of equal length
             if (startPoints.Count != endPoints.Count)

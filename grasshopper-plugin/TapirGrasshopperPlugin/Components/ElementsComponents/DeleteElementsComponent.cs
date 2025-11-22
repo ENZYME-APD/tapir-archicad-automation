@@ -20,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Elements ids to delete.");
+                "Element Ids to delete.");
         }
 
         protected override void Solve(

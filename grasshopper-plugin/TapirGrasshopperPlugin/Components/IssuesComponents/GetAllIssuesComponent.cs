@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Data;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
@@ -38,21 +39,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var issueIds = new List<IssueIdObj>();
-            var issueNames = new List<string>();
-
-            foreach (var detail in response.Issues)
-            {
-                issueIds.Add(detail.IssueId);
-                issueNames.Add(detail.Name);
-            }
-
             da.SetDataList(
                 0,
-                issueIds);
+                response.Issues.Select(x => x.IssueId));
+
             da.SetDataList(
                 1,
-                issueNames);
+                response.Issues.Select(x => x.Name));
         }
 
         protected override System.Drawing.Bitmap Icon =>

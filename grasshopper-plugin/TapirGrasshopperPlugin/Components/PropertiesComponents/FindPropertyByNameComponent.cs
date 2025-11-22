@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
@@ -37,16 +38,20 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var propertyGroupName = "";
-            var propertyName = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     0,
-                    ref propertyGroupName) || !da.GetData(
-                    1,
-                    ref propertyName))
+                    out string propertyGroupName))
             {
                 return;
             }
+
+            if (!da.GetItem(
+                    1,
+                    out string propertyName))
+            {
+                return;
+            }
+
 
             if (!GetConvertedResponse(
                     CommandName,
@@ -56,6 +61,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
             PropertyDetailsObj found = null;
+
             propertyGroupName = propertyGroupName.ToLower();
             propertyName = propertyName.ToLower();
 

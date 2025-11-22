@@ -3,6 +3,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -48,10 +49,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var moveVectors = new List<Vector3d>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     1,
-                    moveVectors))
+                    out List<Vector3d> moveVectors))
             {
                 return;
             }
@@ -65,10 +65,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var copy = false;
-            if (!da.GetData(
+            if (!da.GetItem(
                     2,
-                    ref copy))
+                    out bool copy))
             {
                 return;
             }

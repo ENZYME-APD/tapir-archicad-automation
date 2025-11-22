@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
@@ -58,14 +59,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            var values = new List<string>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     2,
-                    values))
+                    out List<string> values))
             {
                 return;
             }
-
 
             if (values.Count != 1 && elements.Elements.Count != values.Count)
             {

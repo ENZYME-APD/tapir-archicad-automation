@@ -3,6 +3,7 @@ using Rhino;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
@@ -26,6 +27,8 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "Grid size",
                 "Size of the grid.",
                 1.0);
+
+            Params.Input[1].Optional = true;
         }
 
         protected override void AddOutputs()
@@ -38,21 +41,16 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void SolveInstance(
             IGH_DataAccess da)
         {
-            var points = new List<Point3d>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     0,
-                    points))
+                    out List<Point3d> points))
             {
                 return;
             }
 
-            var gridSize = 1.0;
-            if (!da.GetData(
-                    1,
-                    ref gridSize))
-            {
-                return;
-            }
+            var gridSize = da.GetOptionalItem(
+                1,
+                1.0);
 
             if (gridSize < 0.0 || RhinoMath.EpsilonEquals(
                     gridSize,

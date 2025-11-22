@@ -4,6 +4,7 @@ using Grasshopper.Kernel.Data;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -69,10 +70,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var subelemType = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref subelemType))
+                    out string subType))
             {
                 return;
             }
@@ -91,125 +91,126 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             for (var i = 0; i < subElementsObj.Subelements.Count; i++)
             {
                 List<ElementIdItemObj> subelements = null;
-                if (subelemType == "CurtainWallSegment")
+
+                if (subType == "CurtainWallSegment")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .CurtainWallSegments;
                 }
-                else if (subelemType == "CurtainWallFrame")
+                else if (subType == "CurtainWallFrame")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .CurtainWallFrames;
                 }
-                else if (subelemType == "CurtainWallPanel")
+                else if (subType == "CurtainWallPanel")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .CurtainWallPanels;
                 }
-                else if (subelemType == "CurtainWallJunction")
+                else if (subType == "CurtainWallJunction")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .CurtainWallJunctions;
                 }
-                else if (subelemType == "CurtainWallAccessory")
+                else if (subType == "CurtainWallAccessory")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .CurtainWallAccessories;
                 }
-                else if (subelemType == "StairRiser")
+                else if (subType == "StairRiser")
                 {
                     subelements = subElementsObj.Subelements[i].StairRisers;
                 }
-                else if (subelemType == "StairTread")
+                else if (subType == "StairTread")
                 {
                     subelements = subElementsObj.Subelements[i].StairTreads;
                 }
-                else if (subelemType == "StairStructure")
+                else if (subType == "StairStructure")
                 {
                     subelements = subElementsObj.Subelements[i].StairStructures;
                 }
-                else if (subelemType == "RailingNode")
+                else if (subType == "RailingNode")
                 {
                     subelements = subElementsObj.Subelements[i].RailingNodes;
                 }
-                else if (subelemType == "RailingSegment")
+                else if (subType == "RailingSegment")
                 {
                     subelements = subElementsObj.Subelements[i].RailingSegments;
                 }
-                else if (subelemType == "RailingPost")
+                else if (subType == "RailingPost")
                 {
                     subelements = subElementsObj.Subelements[i].RailingPosts;
                 }
-                else if (subelemType == "RailingRailEnd")
+                else if (subType == "RailingRailEnd")
                 {
                     subelements = subElementsObj.Subelements[i].RailingRailEnds;
                 }
-                else if (subelemType == "RailingRailConnection")
+                else if (subType == "RailingRailConnection")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .RailingRailConnections;
                 }
-                else if (subelemType == "RailingHandrailEnd")
+                else if (subType == "RailingHandrailEnd")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .RailingHandrailEnds;
                 }
-                else if (subelemType == "RailingHandrailConnection")
+                else if (subType == "RailingHandrailConnection")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .RailingHandrailConnections;
                 }
-                else if (subelemType == "RailingToprailEnd")
+                else if (subType == "RailingToprailEnd")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .RailingToprailEnds;
                 }
-                else if (subelemType == "RailingToprailConnection")
+                else if (subType == "RailingToprailConnection")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .RailingToprailConnections;
                 }
-                else if (subelemType == "RailingRail")
+                else if (subType == "RailingRail")
                 {
                     subelements = subElementsObj.Subelements[i].RailingRails;
                 }
-                else if (subelemType == "RailingToprail")
+                else if (subType == "RailingToprail")
                 {
                     subelements = subElementsObj.Subelements[i].RailingToprails;
                 }
-                else if (subelemType == "RailingHandrail")
+                else if (subType == "RailingHandrail")
                 {
                     subelements =
                         subElementsObj.Subelements[i].RailingHandrails;
                 }
-                else if (subelemType == "RailingPattern")
+                else if (subType == "RailingPattern")
                 {
                     subelements = subElementsObj.Subelements[i].RailingPatterns;
                 }
-                else if (subelemType == "RailingInnerPost")
+                else if (subType == "RailingInnerPost")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .RailingInnerPosts;
                 }
-                else if (subelemType == "RailingPanel")
+                else if (subType == "RailingPanel")
                 {
                     subelements = subElementsObj.Subelements[i].RailingPanels;
                 }
-                else if (subelemType == "RailingBalusterSet")
+                else if (subType == "RailingBalusterSet")
                 {
                     subelements = subElementsObj.Subelements[i]
                         .RailingBalusterSets;
                 }
-                else if (subelemType == "RailingBaluster")
+                else if (subType == "RailingBaluster")
                 {
                     subelements =
                         subElementsObj.Subelements[i].RailingBalusters;
                 }
-                else if (subelemType == "BeamSegment")
+                else if (subType == "BeamSegment")
                 {
                     subelements = subElementsObj.Subelements[i].BeamSegments;
                 }
-                else if (subelemType == "ColumnSegment")
+                else if (subType == "ColumnSegment")
                 {
                     subelements = subElementsObj.Subelements[i].ColumnSegments;
                 }

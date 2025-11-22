@@ -1,6 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
@@ -56,39 +56,25 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             if (!da.GetItem(
                     0,
-                    out string attrType))
+                    out string aType))
             {
                 return;
             }
 
-            var attributesByType =
-                new AttributesByTypeObj { AttributeType = attrType };
-
             if (!GetConvertedResponse(
                     CommandName,
-                    attributesByType,
-                    out AttributeDetailsObj attributes)) { return; }
-
-            var attributeIds = new List<AttributeIdObj>();
-            var attributeIndices = new List<uint>();
-            var attributeNames = new List<string>();
-
-            foreach (var attributeDetail in attributes.Attributes)
-            {
-                attributeIds.Add(attributeDetail.AttributeId);
-                attributeIndices.Add(attributeDetail.Index);
-                attributeNames.Add(attributeDetail.Name);
-            }
+                    new AttributesByTypeObj { AttributeType = aType },
+                    out AttributeDetailsObj response)) { return; }
 
             da.SetDataList(
                 0,
-                attributeIds);
+                response.Attributes.Select(x => x.AttributeId));
             da.SetDataList(
                 1,
-                attributeIndices);
+                response.Attributes.Select(x => x.Index));
             da.SetDataList(
                 2,
-                attributeNames);
+                response.Attributes.Select(x => x.Name));
         }
 
         protected override System.Drawing.Bitmap Icon =>

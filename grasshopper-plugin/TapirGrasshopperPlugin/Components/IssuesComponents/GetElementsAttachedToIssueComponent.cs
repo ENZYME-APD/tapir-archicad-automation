@@ -1,6 +1,7 @@
 using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
@@ -59,10 +60,9 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var type = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref type))
+                    out string type))
             {
                 return;
             }

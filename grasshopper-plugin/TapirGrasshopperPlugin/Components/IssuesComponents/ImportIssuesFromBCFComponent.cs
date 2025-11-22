@@ -1,5 +1,6 @@
 using Grasshopper.Kernel;
 using System;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
@@ -31,18 +32,16 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var filePath = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     0,
-                    ref filePath))
+                    out string filePath))
             {
                 return;
             }
 
-            var alignBySurveyPoint = true;
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref alignBySurveyPoint))
+                    out bool alignBySurveyPoint))
             {
                 return;
             }

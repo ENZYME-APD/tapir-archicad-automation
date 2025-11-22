@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
@@ -121,15 +122,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 return;
             }
 
-            var caseSensitive = false;
-            DA.GetData(
+            var caseSensitive = DA.GetOptionalItem(
                 2,
-                ref caseSensitive);
+                false);
 
-            var wholeWords = true;
-            DA.GetData(
+            var wholeWords = DA.GetOptionalItem(
                 3,
-                ref wholeWords);
+                true);
 
             try
             {

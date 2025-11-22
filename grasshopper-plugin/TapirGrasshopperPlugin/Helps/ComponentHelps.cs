@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Components;
 
 namespace TapirGrasshopperPlugin.Helps
 {
@@ -34,6 +33,18 @@ namespace TapirGrasshopperPlugin.Helps
 
             results = items;
             return success;
+        }
+
+        public static T GetOptionalItem<T>(
+            this IGH_DataAccess dataAccess,
+            int index,
+            T defItem)
+        {
+            var item = defItem;
+            dataAccess.GetData(
+                index,
+                ref item);
+            return item;
         }
     }
 }

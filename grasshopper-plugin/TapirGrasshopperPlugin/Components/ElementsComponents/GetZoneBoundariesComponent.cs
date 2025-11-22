@@ -64,14 +64,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var parameters = new ZoneBoundaryParameters()
-            {
-                ZoneElementId = inputZone.ElementId
-            };
-
             if (!GetConvertedResponse(
                     CommandName,
-                    parameters,
+                    new ZoneBoundaryParameters
+                    {
+                        ZoneElementId = inputZone.ElementId
+                    },
                     out ZoneBoundariesOutput response))
             {
                 return;

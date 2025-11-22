@@ -1,6 +1,7 @@
 using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
@@ -52,26 +53,23 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var exportedFilePath = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref exportedFilePath))
+                    out string exportedFilePath))
             {
                 return;
             }
 
-            var useExternalId = true;
-            if (!da.GetData(
+            if (!da.GetItem(
                     2,
-                    ref useExternalId))
+                    out bool useExternalId))
             {
                 return;
             }
 
-            var alignBySurveyPoint = true;
-            if (!da.GetData(
+            if (!da.GetItem(
                     3,
-                    ref alignBySurveyPoint))
+                    out bool alignBySurveyPoint))
             {
                 return;
             }

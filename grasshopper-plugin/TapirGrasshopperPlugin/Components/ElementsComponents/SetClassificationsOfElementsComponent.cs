@@ -48,11 +48,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     0,
                     out List<string> jsonElements)) { return; }
 
-            var jObject = JObject.FromObject(jsonElements);
-
             if (!GetConvertedResponse(
                     CommandName,
-                    jObject,
+                    jsonElements,
                     out ExecutionResultsResponse response))
             {
                 return;

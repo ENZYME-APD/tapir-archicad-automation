@@ -3,6 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -62,10 +63,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var elemType = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref elemType))
+                    out string eType))
             {
                 return;
             }
@@ -73,7 +73,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var parameters = new GetConnectedElementsParameters()
             {
                 Elements = inputElements.Elements,
-                ConnectedElementType = elemType
+                ConnectedElementType = eType
             };
 
             if (!GetConvertedResponse(

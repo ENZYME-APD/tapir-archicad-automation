@@ -1,6 +1,7 @@
 using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
@@ -46,30 +47,28 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var author = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref author))
+                    out string author))
             {
                 return;
             }
 
-            var text = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     2,
-                    ref text))
+                    out string text))
             {
                 return;
             }
 
-            var parametersOfNewComment = new ParametersOfNewComment
+            var parameters = new ParametersOfNewComment
             {
                 IssueId = issueId, Author = author, Text = text
             };
 
             GetResponse(
                 CommandName,
-                parametersOfNewComment);
+                parameters);
         }
 
         protected override System.Drawing.Bitmap Icon =>

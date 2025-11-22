@@ -49,14 +49,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!GetConvertedResponse(
                     CommandName,
                     inputElements,
-                    out BoundingBoxes3DObj boxObject))
+                    out BoundingBoxes3DObj response))
             {
                 return;
             }
 
             da.SetDataList(
                 0,
-                boxObject.BoundingBoxes3D.Select(x => x.ToRhino()));
+                response.BoundingBoxes3D.Select(x => x.ToRhino()));
         }
 
         protected override System.Drawing.Bitmap Icon =>

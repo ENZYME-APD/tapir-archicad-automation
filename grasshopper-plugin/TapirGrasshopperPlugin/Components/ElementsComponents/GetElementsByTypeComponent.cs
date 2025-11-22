@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -57,18 +58,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var elemType = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     0,
-                    ref elemType))
+                    out string eType))
             {
                 return;
             }
 
-            var filters = new List<string>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     1,
-                    filters))
+                    out List<string> filters))
             {
                 return;
             }
@@ -79,7 +78,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var elementsByType = new ElementsByTypeObj()
             {
-                ElementType = elemType,
+                ElementType = eType,
                 Filters =
                     filters is null || filters.Count == 0 ? null : filters,
                 Databases =

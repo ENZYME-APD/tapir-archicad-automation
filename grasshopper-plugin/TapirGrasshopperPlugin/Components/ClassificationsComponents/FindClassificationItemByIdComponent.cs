@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
@@ -76,10 +77,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var classificationSystemId = ClassificationIdObj.Create(
+            var systemId = ClassificationIdObj.Create(
                 da,
                 0);
-            if (classificationSystemId == null)
+            if (systemId == null)
             {
                 AddRuntimeMessage(
                     GH_RuntimeMessageLevel.Error,
@@ -87,30 +88,25 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 return;
             }
 
-            var ClassificationItemId = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref ClassificationItemId))
+                    out string cId))
             {
                 return;
             }
 
-            var classificationSystem = new ClassificationSystemObj()
-            {
-                ClassificationSystemId = classificationSystemId
-            };
-
             if (!GetConvertedResponse(
                     CommandName,
-                    classificationSystem,
-                    out AllClassificationItemsInSystem
-                        classificationItemsInSystem)) { return; }
+                    new ClassificationSystemObj
+                    {
+                        ClassificationSystemId = systemId
+                    },
+                    out AllClassificationItemsInSystem cItems)) { return; }
 
 
-            ClassificationItemId = ClassificationItemId.ToLower();
             var found = FindClassificationItemInTree(
-                classificationItemsInSystem.ClassificationItems,
-                ClassificationItemId);
+                cItems.ClassificationItems,
+                cId.ToLower());
 
             if (found == null)
             {

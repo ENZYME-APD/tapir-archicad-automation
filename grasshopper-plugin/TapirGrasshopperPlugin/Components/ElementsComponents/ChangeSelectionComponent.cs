@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -47,10 +48,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var elementsToRemove = ElementsObj.Create(
                 da,
                 1);
-            var clearSelection = false;
-            if (!da.GetData(
+
+            if (!da.GetItem(
                     2,
-                    ref clearSelection))
+                    out bool clearSelection))
             {
                 return;
             }

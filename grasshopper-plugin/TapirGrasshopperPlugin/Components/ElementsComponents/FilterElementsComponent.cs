@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.Utilities;
 
@@ -50,10 +51,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             ElementsObj inputElements = ElementsObj.Create(
-                DA,
+                da,
                 0);
             if (inputElements == null)
             {
@@ -63,22 +64,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            List<string> filters = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.GetItems(
                     1,
-                    filters))
-            {
-                return;
-            }
+                    out List<string> filters)) { return; }
 
-            FilterElementsObj filterElements = new FilterElementsObj
+            var filterElements = new FilterElementsObj
             {
                 Elements = inputElements.Elements, Filters = filters
             };
 
             if (filterElements.Filters == null)
             {
-                DA.SetDataList(
+                da.SetDataList(
                     0,
                     filterElements.Elements);
                 return;
@@ -87,14 +84,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!GetConvertedResponse(
                     CommandName,
                     filterElements,
-                    out ElementsObj elements))
+                    out ElementsObj response))
             {
                 return;
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
-                elements.Elements);
+                response.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>

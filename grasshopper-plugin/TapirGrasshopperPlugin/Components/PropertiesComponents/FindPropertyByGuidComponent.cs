@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
@@ -33,10 +34,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var propertyGuid = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     0,
-                    ref propertyGuid))
+                    out string propertyGuid))
             {
                 return;
             }

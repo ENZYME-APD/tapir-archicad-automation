@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -43,19 +44,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            List<string> filters = new List<string>();
-            if (!da.GetDataList(
-                    0,
-                    filters))
-            {
-                return;
-            }
+            if (!da.GetItems(
+                    1,
+                    out List<string> filters)) { return; }
 
-            DatabasesObj databases = DatabasesObj.Create(
+            var databases = DatabasesObj.Create(
                 da,
                 1);
 
-            ElementFiltersObj elementFilters = new ElementFiltersObj
+            var elementFilters = new ElementFiltersObj
             {
                 Filters = filters.Count > 0 ? filters : null,
                 Databases =
@@ -67,14 +64,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!GetConvertedResponse(
                     CommandName,
                     elementFilters,
-                    out ElementsObj elements))
+                    out ElementsObj response))
             {
                 return;
             }
 
             da.SetDataList(
                 0,
-                elements.Elements);
+                response.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>

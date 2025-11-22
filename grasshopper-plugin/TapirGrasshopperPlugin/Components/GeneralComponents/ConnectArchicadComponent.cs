@@ -2,6 +2,7 @@
 using System;
 using TapirGrasshopperPlugin.Utilities;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
@@ -61,24 +62,23 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            var portNumber = 0;
-            if (!DA.GetData(
+            if (!da.GetItem(
                     0,
-                    ref portNumber))
+                    out int portNumber))
             {
                 return;
             }
 
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref AutoRefresh))
             {
                 return;
             }
 
-            if (!DA.GetData(
+            if (!da.GetData(
                     2,
                     ref AutoExecute))
             {
@@ -90,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 CommandName,
                 null);
 
-            DA.SetData(
+            da.SetData(
                 0,
                 response.Succeeded);
         }

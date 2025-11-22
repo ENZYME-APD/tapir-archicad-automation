@@ -5,6 +5,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -107,26 +108,23 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var type = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     0,
-                    ref type))
+                    out string type))
             {
                 return;
             }
 
-            var name = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     1,
-                    ref name))
+                    out string name))
             {
                 return;
             }
 
-            var pathRegex = "";
-            if (!da.GetData(
+            if (!da.GetItem(
                     2,
-                    ref pathRegex))
+                    out string pathRegex))
             {
                 return;
             }

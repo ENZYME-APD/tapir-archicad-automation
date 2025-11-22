@@ -44,6 +44,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "SurfaceTolerance",
                 "Intersection body surface area greater then this value will be considered as a collision.",
                 Tolerances.Main);
+
+            Params.Input[2].Optional = true;
+            Params.Input[4].Optional = true;
         }
 
         protected override void AddOutputs()
@@ -90,6 +93,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var inputElementsGroup2 = ElementsObj.Create(
                 da,
                 1);
+
             if (inputElementsGroup2 == null)
             {
                 AddRuntimeMessage(
@@ -98,29 +102,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var volumeTolerance = 0.001;
-            if (!da.GetData(
-                    2,
-                    ref volumeTolerance))
-            {
-                return;
-            }
+            var volumeTolerance = da.GetOptionalItem(
+                2,
+                Tolerances.Main);
 
-            var performSurfaceCheck = false;
-            if (!da.GetData(
+            if (!da.GetItem(
                     3,
-                    ref performSurfaceCheck))
-            {
-                return;
-            }
+                    out bool performSurfaceCheck)) { return; }
 
-            var surfaceTolerance = 0.001;
-            if (!da.GetData(
-                    4,
-                    ref surfaceTolerance))
-            {
-                return;
-            }
+            var surfaceTolerance = da.GetOptionalItem(
+                4,
+                Tolerances.Main);
 
             var parameters = new GetCollisionsParameters()
             {
