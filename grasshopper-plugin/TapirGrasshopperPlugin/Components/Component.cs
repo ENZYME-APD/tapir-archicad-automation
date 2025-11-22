@@ -650,7 +650,7 @@ namespace TapirGrasshopperPlugin.Components
             return false;
         }
 
-        protected bool GetResponse(
+        protected bool SetArchiCadValues(
             string commandName,
             object commandParameters)
         {

@@ -119,7 +119,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     elementClassification);
             }
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 elementClassifications);
         }

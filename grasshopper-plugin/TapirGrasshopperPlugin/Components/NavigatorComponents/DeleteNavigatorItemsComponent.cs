@@ -34,7 +34,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 navigatorItemIds);
         }

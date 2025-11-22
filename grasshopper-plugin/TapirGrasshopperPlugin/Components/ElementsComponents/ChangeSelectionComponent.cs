@@ -106,7 +106,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     uniqueElementsToRemove.ToList()
             };
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 parameters);
         }

@@ -189,14 +189,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 Wireframe3D = wireframe3D
             };
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 highlightElements);
         }
 
         private void ClearHighlight()
         {
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 new HighlightElementsObj());
         }

@@ -65,7 +65,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 NewId = string.IsNullOrEmpty(newId) ? null : newId
             };
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 input);
         }

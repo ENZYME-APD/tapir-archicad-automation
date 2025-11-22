@@ -88,7 +88,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     });
             }
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 stories);
         }

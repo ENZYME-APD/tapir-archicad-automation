@@ -52,7 +52,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 AlignBySurveyPoint = alignBySurveyPoint
             };
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 parameters);
         }

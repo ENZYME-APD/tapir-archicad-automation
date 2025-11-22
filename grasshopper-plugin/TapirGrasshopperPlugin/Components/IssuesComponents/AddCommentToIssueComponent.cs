@@ -63,7 +63,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 IssueId = issueId, Author = author, Text = text
             };
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 parameters);
         }

@@ -92,7 +92,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 moveElementsParameters);
         }

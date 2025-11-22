@@ -90,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 elemPropertyValues.ElementPropertyValues.Add(elemPropertyValue);
             }
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 elemPropertyValues);
         }

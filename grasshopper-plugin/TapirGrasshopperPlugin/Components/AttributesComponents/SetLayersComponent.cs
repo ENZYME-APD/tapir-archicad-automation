@@ -169,7 +169,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
-            GetResponse(
+            SetArchiCadValues(
                 CommandName,
                 layerDataArray);
         }
