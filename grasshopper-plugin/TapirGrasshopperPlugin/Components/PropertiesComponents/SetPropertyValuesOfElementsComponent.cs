@@ -38,7 +38,6 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             IGH_DataAccess da)
         {
             if (!PropertyIdObj.TryCreate(
-                    this,
                     da,
                     0,
                     out PropertyIdObj propertyId))
@@ -47,7 +46,6 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
             if (!ElementsObj.TryCreate(
-                    this,
                     da,
                     1,
                     out ElementsObj elements))

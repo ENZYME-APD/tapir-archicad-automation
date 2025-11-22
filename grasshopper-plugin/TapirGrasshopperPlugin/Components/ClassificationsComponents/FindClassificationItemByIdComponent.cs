@@ -78,7 +78,6 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             IGH_DataAccess da)
         {
             if (!ClassificationIdObj.TryCreate(
-                    this,
                     da,
                     0,
                     out ClassificationIdObj systemId))

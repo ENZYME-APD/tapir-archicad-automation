@@ -27,7 +27,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             IGH_DataAccess da)
         {
             if (!ElementsObj.TryCreate(
-                    this,
                     da,
                     0,
                     out ElementsObj elements))

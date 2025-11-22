@@ -11,8 +11,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 
         public GetFavoritesByTypeComponent()
             : base(
-                "GetFavoritesByType",
-                "Returns a list of the names of all favorites with the given element type.",
+                "FavoritesByType",
+                "Returns a list of the names of all Favorites with the given element type.",
                 GroupNames.Favorites)
         {
         }
@@ -20,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         protected override void AddInputs()
         {
             InText(
-                "Type",
+                "ElementsType",
                 "Elements type.");
         }
 
@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
             OutTexts(
                 nameof(Favorites),
-                "");
+                "Names of the stored Favorites.");
         }
 
         protected override void Solve(

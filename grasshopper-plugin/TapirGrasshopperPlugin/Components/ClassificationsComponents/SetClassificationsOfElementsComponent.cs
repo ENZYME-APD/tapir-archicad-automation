@@ -50,7 +50,6 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             IGH_DataAccess da)
         {
             if (!ClassificationIdObj.TryCreate(
-                    this,
                     da,
                     0,
                     out ClassificationIdObj classificationSystemId))
@@ -76,7 +75,6 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             if (!ElementsObj.TryCreate(
-                    this,
                     da,
                     2,
                     out ElementsObj elements))

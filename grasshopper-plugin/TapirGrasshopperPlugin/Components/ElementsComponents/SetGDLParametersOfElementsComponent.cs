@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             OutTexts(
                 nameof(ExecutionResultsResponse.ExecutionResults),
-                "");
+                ExecutionResultBase.Doc);
         }
 
         protected override void Solve(

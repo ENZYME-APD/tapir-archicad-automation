@@ -48,7 +48,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             IGH_DataAccess da)
         {
             if (!IssueIdObj.TryCreate(
-                    this,
                     da,
                     0,
                     out IssueIdObj issueId))
@@ -57,7 +56,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             }
 
             if (!ElementsObj.TryCreate(
-                    this,
                     da,
                     1,
                     out ElementsObj elements))

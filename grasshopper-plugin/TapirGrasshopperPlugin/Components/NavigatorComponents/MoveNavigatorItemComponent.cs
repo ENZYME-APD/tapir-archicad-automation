@@ -43,7 +43,6 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             IGH_DataAccess da)
         {
             if (!NavigatorIdItemObj.TryCreate(
-                    this,
                     da,
                     0,
                     out NavigatorIdItemObj navigatorItemId))
@@ -52,7 +51,6 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             if (!NavigatorIdItemObj.TryCreate(
-                    this,
                     da,
                     1,
                     out NavigatorIdItemObj parentNavigatorItemId))

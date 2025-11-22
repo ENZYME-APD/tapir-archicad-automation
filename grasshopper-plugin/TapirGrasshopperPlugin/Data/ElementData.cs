@@ -12,7 +12,6 @@ namespace TapirGrasshopperPlugin.Data
         where T : IdObj<T>, new()
     {
         public static bool TryCreate(
-            GH_ActiveObject ghObject,
             IGH_DataAccess da,
             int index,
             out T result)
@@ -24,10 +23,6 @@ namespace TapirGrasshopperPlugin.Data
                 result = Create(id);
                 return true;
             }
-
-            ghObject.AddRuntimeMessage(
-                GH_RuntimeMessageLevel.Error,
-                $"Input failed to collect data at index {index}.");
 
             result = null;
             return false;
@@ -102,7 +97,6 @@ namespace TapirGrasshopperPlugin.Data
         where T : IdItemObj<I, T>, new()
     {
         public static bool TryCreate(
-            GH_ActiveObject ghObject,
             IGH_DataAccess da,
             int index,
             out T result)
@@ -114,10 +108,6 @@ namespace TapirGrasshopperPlugin.Data
                 result = Create(idItem);
                 return true;
             }
-
-            ghObject.AddRuntimeMessage(
-                GH_RuntimeMessageLevel.Error,
-                $"Input failed to collect data at index {index}.");
 
             result = null;
             return false;
@@ -187,7 +177,6 @@ namespace TapirGrasshopperPlugin.Data
         where T : IdsObj<I, J, T>, new()
     {
         public static bool TryCreate(
-            GH_ActiveObject ghObject,
             IGH_DataAccess da,
             int index,
             out T result)
@@ -199,10 +188,6 @@ namespace TapirGrasshopperPlugin.Data
                 result = Create(ids);
                 return true;
             }
-
-            ghObject.AddRuntimeMessage(
-                GH_RuntimeMessageLevel.Error,
-                $"Input failed to collect data at index {index}.");
 
             result = null;
             return false;

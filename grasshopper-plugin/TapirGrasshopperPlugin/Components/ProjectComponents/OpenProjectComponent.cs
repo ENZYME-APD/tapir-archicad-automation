@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public OpenProjectComponent()
             : base(
                 "OpenProject",
-                "Opens the given project.",
+                "Opens a given project.",
                 GroupNames.Project)
         {
         }
@@ -23,14 +23,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             InText(
                 nameof(ProjectFilePathObject.ProjectFilePath),
-                nameof(ProjectFilePathObject.ProjectFilePath));
+                "Path of the ArchiCad file that gets opened.");
         }
 
         protected override void AddOutputs()
         {
             OutText(
                 nameof(ExecutionResultBase.Message),
-                "");
+                ExecutionResultBase.Doc);
         }
 
         protected override void Solve(
@@ -45,7 +45,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    new ProjectFilePathObject(path),
+                    new ProjectFilePathObject { ProjectFilePath = path },
                     out JObject jResponse))
             {
                 return;

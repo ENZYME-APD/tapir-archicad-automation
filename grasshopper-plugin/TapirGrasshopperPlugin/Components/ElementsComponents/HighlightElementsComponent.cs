@@ -121,7 +121,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             if (!ElementsObj.TryCreate(
-                    this,
                     da,
                     1,
                     out ElementsObj inputElements))

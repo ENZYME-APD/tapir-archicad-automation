@@ -26,11 +26,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             OutTexts(
                 nameof(Hotlink.Location) + "s",
-                "");
+                "File paths of the hotlink modules in the current ArchiCad instance.");
 
             OutText(
                 "JsonHierarchy",
-                "");
+                "JSON object of the tree-like hierarchy of  hotlink modules.");
         }
 
         protected override void Solve(

@@ -58,7 +58,6 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             IGH_DataAccess da)
         {
             if (!AttributesObj.TryCreate(
-                    this,
                     da,
                     0,
                     out AttributesObj attributes))

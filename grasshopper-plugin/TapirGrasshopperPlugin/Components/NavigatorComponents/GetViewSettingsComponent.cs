@@ -30,14 +30,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
             OutText(
                 "Json" + nameof(ViewSettings),
-                "");
+                "JSON object of the retrieved view settings.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
             if (!NavigatorItemIdsObj.TryCreate(
-                    this,
                     da,
                     0,
                     out NavigatorItemIdsObj ids))

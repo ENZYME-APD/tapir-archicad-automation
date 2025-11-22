@@ -8,30 +8,35 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
     {
         public static string Doc => "A list of execution results.";
 
-        [JsonProperty ("executionResults")]
+        [JsonProperty("executionResults")]
         public List<ExecutionResultBase> ExecutionResults { get; set; }
     }
 
     public class ExecutionResultBase
     {
-        [JsonProperty ("success")]
+        public static string Doc =>
+            "Result of the node's logic's execution. " +
+            "Success on successful execution, a list of error messages on failed execution.";
+
+        [JsonProperty("success")]
         public bool Success { get; set; }
 
-        public static ExecutionResultBase Deserialize (JObject jObject)
+        public static ExecutionResultBase Deserialize(
+            JObject jObject)
         {
-            var baseResult = jObject.ToObject<ExecutionResultBase> ();
+            var baseResult = jObject.ToObject<ExecutionResultBase>();
 
             if (baseResult.Success)
             {
-                return jObject.ToObject<SuccessfulExecutionResult> ();
+                return jObject.ToObject<SuccessfulExecutionResult>();
             }
             else
             {
-                return jObject.ToObject<FailedExecutionResult> ();
+                return jObject.ToObject<FailedExecutionResult>();
             }
         }
 
-        public virtual string Message () => "Success.";
+        public virtual string Message() => "Success.";
     }
 
     public class SuccessfulExecutionResult : ExecutionResultBase
@@ -40,9 +45,9 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
 
     public class FailedExecutionResult : ExecutionResultBase
     {
-        [JsonProperty ("error")]
+        [JsonProperty("error")]
         public Error Error { get; set; }
 
-        public override string Message () => Error.ToString();
+        public override string Message() => Error.ToString();
     }
 }
