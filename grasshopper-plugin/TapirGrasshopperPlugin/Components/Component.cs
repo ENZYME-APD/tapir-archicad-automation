@@ -187,12 +187,11 @@ namespace TapirGrasshopperPlugin.Components
 
         public Component(
             string name,
-            string nickname,
             string description,
             string subCategory)
             : base(
                 name,
-                nickname,
+                name,
                 description,
                 "Tapir",
                 subCategory)
@@ -711,12 +710,10 @@ namespace TapirGrasshopperPlugin.Components
 
         public ArchicadAccessorComponent(
             string name,
-            string nickname,
             string description,
             string subCategory)
             : base(
                 name,
-                nickname,
                 description,
                 subCategory)
         {
@@ -804,12 +801,10 @@ namespace TapirGrasshopperPlugin.Components
 
         public ArchicadExecutorComponent(
             string name,
-            string nickname,
             string description,
             string subCategory)
             : base(
                 name,
-                nickname,
                 description,
                 subCategory)
         {
@@ -896,14 +891,12 @@ namespace TapirGrasshopperPlugin.Components
 
         public ButtonComponent(
             string name,
-            string nickname,
             string description,
             string subCategory,
             string buttonText,
             int additionalWidth = 0)
             : base(
                 name,
-                nickname,
                 description,
                 subCategory)
         {

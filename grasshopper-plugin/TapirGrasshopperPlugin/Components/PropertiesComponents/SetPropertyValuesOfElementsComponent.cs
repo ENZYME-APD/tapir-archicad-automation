@@ -8,14 +8,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
     public class SetPropertyValuesOfElementsComponent
         : ArchicadExecutorComponent
     {
-        public static string Doc => "Set property values of elements.";
         public override string CommandName => "SetPropertyValuesOfElements";
 
         public SetPropertyValuesOfElementsComponent()
             : base(
-                "Set Property Values",
                 "SetPropertyValues",
-                Doc,
+                "Set property values of elements.",
                 GroupNames.Properties)
         {
         }

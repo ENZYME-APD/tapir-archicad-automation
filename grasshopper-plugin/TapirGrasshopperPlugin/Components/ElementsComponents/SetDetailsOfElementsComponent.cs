@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class SetDetailsOfWallsComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Set details of wall elements.";
         public override string CommandName => "SetDetailsOfElements";
 
         public SetDetailsOfWallsComponent()
             : base(
                 "Set Wall Details",
-                "SetWallDetails",
-                Doc,
+                "Set details of wall elements.",
                 GroupNames.Elements)
         {
         }

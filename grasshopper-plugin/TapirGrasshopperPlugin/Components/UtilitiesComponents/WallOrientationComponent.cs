@@ -12,9 +12,8 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         public WallOrientationComponent()
             : base(
-                "Wall Orientation",
-                "WallOrient",
-                Doc,
+                "WallOrientation",
+                "Calculates the orientation of walls based on start and end points.",
                 GroupNames.Utilities)
         {
         }

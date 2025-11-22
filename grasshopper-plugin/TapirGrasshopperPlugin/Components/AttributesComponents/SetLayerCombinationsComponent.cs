@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
     public class SetLayerCombinationsComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Set the details of layer combinations.";
         public override string CommandName => "CreateLayerCombinations";
 
         public SetLayerCombinationsComponent()
             : base(
-                "Set Layer Combinations",
                 "SetLayerCombinations",
-                Doc,
+                "Set the details of layer combinations.",
                 GroupNames.Attributes)
         {
         }

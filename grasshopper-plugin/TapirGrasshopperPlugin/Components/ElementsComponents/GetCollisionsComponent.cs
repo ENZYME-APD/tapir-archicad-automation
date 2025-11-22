@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetCollisionsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Detects collisions between elements.";
         public override string CommandName => "GetCollisions";
 
         public GetCollisionsComponent()
             : base(
                 "Collisions",
-                "Collisions",
-                Doc,
+                "Detects collisions between elements.",
                 GroupNames.Elements)
         {
         }

@@ -13,9 +13,8 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         public MultiListFilterComponent()
             : base(
-                "Multi-List Filter",
-                "MLFilter",
-                Doc,
+                "Multi-ListFilter",
+                "Filters multiple lists based on specified indices",
                 GroupNames.Utilities)
         {
         }

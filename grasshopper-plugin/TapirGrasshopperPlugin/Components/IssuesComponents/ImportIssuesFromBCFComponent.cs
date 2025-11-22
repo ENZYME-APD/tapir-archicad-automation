@@ -6,14 +6,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class ImportIssuesFromBCFComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Import Issues from BCF.";
         public override string CommandName => "ImportIssuesFromBCF";
 
         public ImportIssuesFromBCFComponent()
             : base(
-                "Import Issues from BCF",
-                "ImportFromBCF",
-                Doc,
+                "ImportIssuesFromBCF",
+                "Import Issues from BCF.",
                 GroupNames.Issues)
         {
         }

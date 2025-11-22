@@ -9,9 +9,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class BranchColorGeneratorComponent : Component
     {
-        public static string Doc =>
-            "Generates colors for branches in a data tree";
-
         public static Dictionary<int, string> ModeMap =
             new Dictionary<int, string>
             {
@@ -20,9 +17,8 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         public BranchColorGeneratorComponent()
             : base(
-                "Branch Color Generator",
-                "BranchColorGen",
-                Doc,
+                "BranchColorGenerator",
+                "Generates colors for branches in a data tree",
                 GroupNames.Utilities)
         {
         }

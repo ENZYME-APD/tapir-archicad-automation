@@ -5,13 +5,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class ElementFilterValueList : ValueList
     {
-        public static string Doc => "Value List for Archicad Elements Filters.";
-
         public ElementFilterValueList()
             : base(
                 "Elements Filter",
-                "",
-                Doc,
+                "Value List for Archicad Elements Filters.",
                 GroupNames.Elements)
         {
         }

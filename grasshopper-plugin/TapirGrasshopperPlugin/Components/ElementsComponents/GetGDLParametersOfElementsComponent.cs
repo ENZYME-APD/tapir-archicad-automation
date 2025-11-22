@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetGDLParametersOfElementsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get GDL parameter values of elements.";
         public override string CommandName => "GetGDLParametersOfElements";
 
         public GetGDLParametersOfElementsComponent()
             : base(
-                "Elem GDL Parameters",
-                "Elem GDL Parameters",
-                Doc,
+                "ElementGDLParameters",
+                "Get GDL parameter values of elements.",
                 GroupNames.Elements)
         {
         }

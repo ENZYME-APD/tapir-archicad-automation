@@ -7,15 +7,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class RenameNavigatorItem : ArchicadExecutorComponent
     {
-        public static string Doc => "Renames a navigator item.";
-
         public override string CommandName => "RenameNavigatorItem";
 
         public RenameNavigatorItem()
             : base(
                 "RenameNavigatorItem",
-                "RenameNavigatorItem",
-                Doc,
+                "Renames a navigator item.",
                 GroupNames.Navigator)
         {
         }

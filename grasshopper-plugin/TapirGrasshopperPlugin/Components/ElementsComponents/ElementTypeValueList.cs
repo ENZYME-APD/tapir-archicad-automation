@@ -6,8 +6,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class ElementTypeValueList : ValueList
     {
-        public static string Doc => "Value List for Archicad Elements Types.";
-
         private ElementTypeValueListType type;
 
         public ElementTypeValueList()
@@ -19,8 +17,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             ElementTypeValueListType t)
             : base(
                 "Elements Type",
-                "",
-                Doc,
+                "Value List for Archicad Elements Types.",
                 GroupNames.Elements)
         {
             type = t;

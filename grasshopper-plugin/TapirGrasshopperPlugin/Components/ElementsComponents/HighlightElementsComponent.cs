@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class HighlightElementsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Highlight Elements.";
         public override string CommandName => "HighlightElements";
 
         public HighlightElementsComponent()
             : base(
-                "Highlight Elements",
-                "HighlightElems",
-                Doc,
+                "HighlightElements",
+                "Highlight Elements.",
                 GroupNames.Elements)
         {
             Params.ParameterSourcesChanged += OnParameterSourcesChanged;

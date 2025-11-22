@@ -5,13 +5,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
     public class AttributeTypeValueList : ValueList
     {
-        public static string Doc => "Value List for Archicad Attribute Types.";
-
         public AttributeTypeValueList()
             : base(
-                "Attribute Type",
-                "",
-                Doc,
+                "AttributeType",
+                "Value List for Archicad Attribute Types.",
                 GroupNames.Attributes)
         {
         }

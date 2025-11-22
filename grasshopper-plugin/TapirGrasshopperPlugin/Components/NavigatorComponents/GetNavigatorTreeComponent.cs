@@ -16,9 +16,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         public GetNavigatorTreeComponent()
             : base(
-                "Navigator Tree",
                 "NavigatorTree",
-                Doc,
+                "Get the tree structure of the navigator.",
                 GroupNames.Navigator)
         {
         }

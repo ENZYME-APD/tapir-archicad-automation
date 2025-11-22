@@ -5,13 +5,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class NavigatorTreeTypeValueList : ValueList
     {
-        public static string Doc => "Value List for Navigator Tree Types.";
-
         public NavigatorTreeTypeValueList()
             : base(
-                "Navigator Tree Types",
-                "",
-                Doc,
+                "NavigatorTreeTypes",
+                "Value List for Navigator Tree Types.",
                 GroupNames.Navigator)
         {
         }

@@ -1,9 +1,7 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
@@ -11,16 +9,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetConnectedElementsComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Gets the connected elements of the given elements.";
-
         public override string CommandName => "GetConnectedElements";
 
         public GetConnectedElementsComponent()
             : base(
                 "Connected Elements",
-                "ConnectedElems",
-                Doc,
+                "Gets the connected elements of the given elements.",
                 GroupNames.Elements)
         {
         }

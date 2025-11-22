@@ -8,16 +8,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class GetStoriesComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Retrieves information about the story structure of the currently loaded project.";
-
         public override string CommandName => "GetStories";
 
         public GetStoriesComponent()
             : base(
                 "Stories",
-                "Stories",
-                Doc,
+                "Retrieves information about the story structure of the currently loaded project.",
                 GroupNames.Project)
         {
         }

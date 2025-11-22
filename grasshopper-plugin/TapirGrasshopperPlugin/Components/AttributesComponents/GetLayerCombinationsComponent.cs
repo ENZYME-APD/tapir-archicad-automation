@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
     public class GetLayerCombinationsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get the details of layer combinations.";
         public override string CommandName => "GetLayerCombinations";
 
         public GetLayerCombinationsComponent()
             : base(
-                "Layer combinations",
-                "Layer combinations",
-                Doc,
+                "LayerCombinations",
+                "Get the details of layer combinations.",
                 GroupNames.Attributes)
         {
         }

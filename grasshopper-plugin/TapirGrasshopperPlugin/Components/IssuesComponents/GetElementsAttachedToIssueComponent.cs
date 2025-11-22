@@ -1,5 +1,4 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Issues;
@@ -8,14 +7,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class GetElementsAttachedToIssueComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get Elements Attached to an Issue.";
         public override string CommandName => "GetElementsAttachedToIssue";
 
         public GetElementsAttachedToIssueComponent()
             : base(
-                "Get Elements Attached to an Issue",
-                "GetAttachedElements",
-                Doc,
+                "GetElementsAttachedToAnIssue",
+                "Get Elements Attached to an Issue.",
                 GroupNames.Issues)
         {
         }

@@ -7,17 +7,13 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class GetHotLinksComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Gets the file system locations (path) of the link modules. " +
-            "The hotlinks can have tree hierarchy in the project.";
-
         public override string CommandName => "GetHotlinks";
 
         public GetHotLinksComponent()
             : base(
                 nameof(Hotlinks),
-                nameof(Hotlinks),
-                Doc,
+                "Gets the file system locations (path) of the link modules. " +
+                "The hotlinks can have tree hierarchy in the project.",
                 GroupNames.Project)
         {
         }

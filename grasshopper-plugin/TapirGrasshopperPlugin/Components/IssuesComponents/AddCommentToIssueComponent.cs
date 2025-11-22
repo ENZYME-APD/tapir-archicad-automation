@@ -1,5 +1,4 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Issues;
@@ -8,14 +7,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class AddCommentToIssueComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Add Comment to an Issue.";
         public override string CommandName => "AddCommentToIssue";
 
         public AddCommentToIssueComponent()
             : base(
-                "Add Comment to an Issue",
-                "AddComment",
-                Doc,
+                "AddCommentToAnIssue",
+                "Add Comment to an Issue.",
                 GroupNames.Issues)
         {
         }

@@ -8,14 +8,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class ClassificationSystemValueList : ArchicadAccessorValueList
     {
-        public static string Doc => "Value List for Classification Systems.";
         public override string CommandName => "GetAllClassificationSystems";
 
         public ClassificationSystemValueList()
             : base(
-                "Classification Systems",
-                "",
-                Doc,
+                "ClassificationSystems",
+                "Value List for Classification Systems.",
                 GroupNames.Classifications)
         {
         }

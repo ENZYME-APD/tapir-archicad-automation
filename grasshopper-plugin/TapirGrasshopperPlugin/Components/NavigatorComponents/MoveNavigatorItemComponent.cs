@@ -1,5 +1,4 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
@@ -8,18 +7,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class MoveNavigatorItem : ArchicadExecutorComponent
     {
-        public static string Doc =>
-            "Moves the given navigator item under the parentNavigatorItemId in the navigator tree. " +
-            "If previousNavigatorItemId is not given then inserts it at the first place under the new parent. " +
-            "If it is given then inserts it after this navigator item.";
-
         public override string CommandName => "MoveNavigatorItem";
 
         public MoveNavigatorItem()
             : base(
                 "MoveNavigatorItem",
-                "MoveNavigatorItem",
-                Doc,
+                "Moves the given navigator item under the parentNavigatorItemId in the navigator tree. " +
+                "If previousNavigatorItemId is not given then inserts it at the first place under the new parent. " +
+                "If it is given then inserts it after this navigator item.",
                 GroupNames.Navigator)
         {
         }

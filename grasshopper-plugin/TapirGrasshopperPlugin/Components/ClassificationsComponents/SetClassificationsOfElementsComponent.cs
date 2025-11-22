@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
     public class SetClassificationsOfElementsComponent
         : ArchicadExecutorComponent
     {
-        public static string Doc => "Set classifications of elements.";
         public override string CommandName => "SetClassificationsOfElements";
 
         public SetClassificationsOfElementsComponent()
             : base(
-                "Set Classifications",
                 "SetClassifications",
-                Doc,
+                "Set classifications of elements.",
                 GroupNames.Classifications)
         {
         }

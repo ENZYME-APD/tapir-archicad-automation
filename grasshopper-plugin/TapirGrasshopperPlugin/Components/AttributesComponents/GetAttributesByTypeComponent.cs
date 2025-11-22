@@ -9,14 +9,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
     public class GetAttributesByTypeComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get all attributes by type";
         public override string CommandName => "GetAttributesByType";
 
         public GetAttributesByTypeComponent()
             : base(
-                "Attributes By Type",
                 "AttributesByType",
-                Doc,
+                "Get all attributes by type",
                 GroupNames.Attributes)
         {
         }

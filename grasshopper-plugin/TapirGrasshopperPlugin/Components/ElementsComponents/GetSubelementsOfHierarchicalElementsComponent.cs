@@ -11,17 +11,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     public class GetSubelementsOfHierarchicalElementsComponent
         : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Gets the subelements of the given hierarchical elements.";
-
         public override string CommandName =>
             "GetSubelementsOfHierarchicalElements";
 
         public GetSubelementsOfHierarchicalElementsComponent()
             : base(
                 "Subelements",
-                "Subelems",
-                Doc,
+                "Gets the subelements of the given hierarchical elements.",
                 GroupNames.Elements)
         {
         }

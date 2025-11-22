@@ -7,16 +7,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class FindClassificationItemByIdComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Finds a Classification Item by id in the given Classification System.";
-
         public override string CommandName => "GetAllClassificationsInSystem";
 
         public FindClassificationItemByIdComponent()
             : base(
-                "Find Classification Item By Id",
-                "ClassificationById",
-                Doc,
+                "FindClassificationItemById",
+                "Finds a Classification Item by id in the given Classification System.",
                 GroupNames.Classifications)
         {
         }

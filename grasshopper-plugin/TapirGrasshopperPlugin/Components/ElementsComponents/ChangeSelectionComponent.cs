@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class ChangeSelectionComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Change Selection, add or remove elements.";
         public override string CommandName => "ChangeSelectionOfElements";
 
         public ChangeSelectionComponent()
             : base(
-                "Change Selection",
                 "ChangeSelection",
-                Doc,
+                "Change Selection, add or remove elements.",
                 GroupNames.Elements)
         {
         }

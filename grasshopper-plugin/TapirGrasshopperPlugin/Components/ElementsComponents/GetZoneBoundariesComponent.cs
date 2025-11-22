@@ -9,16 +9,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetZoneBoundariesComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).";
-
         public override string CommandName => "GetZoneBoundaries";
 
         public GetZoneBoundariesComponent()
             : base(
                 "ZoneBoundaries",
-                "ZoneBoundaries",
-                Doc,
+                "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).",
                 GroupNames.Elements)
         {
         }

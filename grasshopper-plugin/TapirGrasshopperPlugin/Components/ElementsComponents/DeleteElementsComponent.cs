@@ -6,14 +6,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class DeleteElementsComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Delete elements";
         public override string CommandName => "DeleteElements";
 
         public DeleteElementsComponent()
             : base(
-                "Delete Elements",
                 "DeleteElements",
-                Doc,
+                "Delete elements",
                 GroupNames.Elements)
         {
         }

@@ -6,16 +6,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class GetProjectInfoComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Get details of the currently active project.";
-
         public override string CommandName => "GetProjectInfo";
 
         public GetProjectInfoComponent()
             : base(
                 "Project Details",
-                "ProjectDetails",
-                Doc,
+                "Get details of the currently active project.",
                 GroupNames.Project)
         {
         }

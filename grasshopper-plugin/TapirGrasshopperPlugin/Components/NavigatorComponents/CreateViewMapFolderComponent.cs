@@ -7,16 +7,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class CreateViewMapFolderComponent : ArchicadExecutorComponent
     {
-        public static string Doc =>
-            "Creates a view folder item at the given position in the navigator tree.";
-
         public override string CommandName => "CreateViewMapFolder";
 
         public CreateViewMapFolderComponent()
             : base(
                 "CreateViewMapFolderComponent",
-                "CreateViewMapFolderComponent",
-                Doc,
+                "Creates a view folder item at the given position in the navigator tree.",
                 GroupNames.Navigator)
         {
         }

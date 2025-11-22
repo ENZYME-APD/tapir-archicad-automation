@@ -7,14 +7,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class ExportIssuesToBCFComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Export Issues to BCF.";
         public override string CommandName => "ExportIssuesToBCF";
 
         public ExportIssuesToBCFComponent()
             : base(
-                "Export Issues to BCF",
-                "ExportToBCF",
-                Doc,
+                "ExportIssuesToBCF",
+                "Export Issues to BCF.",
                 GroupNames.Issues)
         {
         }

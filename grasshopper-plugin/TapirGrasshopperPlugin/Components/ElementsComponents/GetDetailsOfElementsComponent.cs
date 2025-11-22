@@ -15,11 +15,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public override string CommandName => "GetDetailsOfElements";
 
-        public static string Doc => "Get details of elements.";
-
         public GetDetailsOfElementsComponent()
             : base(
-                "Elem Details",
                 "ElemDetails",
                 "Get details of elements.",
                 GroupNames.Elements)
@@ -151,7 +148,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public GetDetailsOfWallsComponent()
             : base(
-                "Wall Details",
                 "WallDetails",
                 "Get details of wall elements.",
                 "Elements")
@@ -330,7 +326,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public GetDetailsOfBeamsComponent()
             : base(
-                "Beam Details",
                 "BeamDetails",
                 "Get details of beam elements.",
                 "Elements")
@@ -522,7 +517,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public GetDetailsOfColumnsComponent()
             : base(
-                "Column Details",
                 "ColumnDetails",
                 "Get details of column elements.",
                 "Elements")
@@ -629,7 +623,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public GetDetailsOfSlabsComponent()
             : base(
-                "Slab Details",
                 "SlabDetails",
                 "Get details of slab elements.",
                 "Elements")
@@ -752,7 +745,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public GetDetailsOfPolylinesComponent()
             : base(
-                "Polyline Details",
                 "PolylineDetails",
                 "Get details of polyline elements.",
                 "Elements")
@@ -852,14 +844,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
     public class GetDetailsOfZonesComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get details of slab elements.";
         public override string CommandName => "GetDetailsOfElements";
 
         public GetDetailsOfZonesComponent()
             : base(
-                "Zone Details",
                 "ZoneDetails",
-                Doc,
+                "Get details of slab elements.",
                 GroupNames.Elements)
         {
         }

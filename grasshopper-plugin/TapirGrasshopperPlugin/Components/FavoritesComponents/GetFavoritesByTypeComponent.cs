@@ -7,16 +7,12 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 {
     public class GetFavoritesByTypeComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Returns a list of the names of all favorites with the given element type.";
-
         public override string CommandName => "GetFavoritesByType";
 
         public GetFavoritesByTypeComponent()
             : base(
-                "Get Favorites by Type",
-                "Get Favorites by Type",
-                Doc,
+                "GetFavoritesByType",
+                "Returns a list of the names of all favorites with the given element type.",
                 GroupNames.Favorites)
         {
         }

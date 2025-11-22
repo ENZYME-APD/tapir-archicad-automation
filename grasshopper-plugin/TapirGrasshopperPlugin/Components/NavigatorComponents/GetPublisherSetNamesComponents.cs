@@ -6,15 +6,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class GetPublisherSetNames : ArchicadAccessorComponent
     {
-        public static string Doc => "Get names of the publisher sets.";
-
         public override string CommandName => "GetPublisherSetNames";
 
         public GetPublisherSetNames()
             : base(
                 "PublisherSetNames",
-                "PublisherSetNames",
-                Doc,
+                "Get names of the publisher sets' names.",
                 GroupNames.Navigator)
         {
         }

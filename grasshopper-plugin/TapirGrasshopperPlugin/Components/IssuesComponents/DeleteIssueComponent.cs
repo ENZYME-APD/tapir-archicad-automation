@@ -7,14 +7,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class DeleteIssueComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Delete Issue.";
         public override string CommandName => "DeleteIssue";
 
         public DeleteIssueComponent()
             : base(
-                "Delete Issue",
                 "DeleteIssue",
-                Doc,
+                "Delete Issue.",
                 GroupNames.Issues)
         {
         }

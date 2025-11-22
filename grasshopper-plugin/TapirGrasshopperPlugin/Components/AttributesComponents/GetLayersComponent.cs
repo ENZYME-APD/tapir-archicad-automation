@@ -8,14 +8,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
     public class GetLayersComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get the details of layers.";
         public override string CommandName => "GetLayerAttributes";
 
         public GetLayersComponent()
             : base(
                 "Layers",
-                "Layers",
-                Doc,
+                "Get the details of layers.",
                 GroupNames.Attributes)
         {
         }

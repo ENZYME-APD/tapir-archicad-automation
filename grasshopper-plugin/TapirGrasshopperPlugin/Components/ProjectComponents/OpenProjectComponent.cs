@@ -9,14 +9,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class OpenProjectComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Opens the given project.";
         public override string CommandName => "OpenProject";
 
         public OpenProjectComponent()
             : base(
-                "Open Project",
-                "Open Project",
-                Doc,
+                "OpenProject",
+                "Opens the given project.",
                 GroupNames.Project)
         {
         }

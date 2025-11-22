@@ -7,14 +7,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class GetProjectInfoFieldsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get project info.";
         public override string CommandName => "GetProjectInfoFields";
 
         public GetProjectInfoFieldsComponent()
             : base(
-                "Project Info",
                 "ProjectInfo",
-                Doc,
+                "Get project info.",
                 GroupNames.Project)
         {
         }

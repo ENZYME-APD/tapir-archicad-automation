@@ -8,14 +8,10 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class TextFilterComponent : Component
     {
-        public static string Doc =>
-            "Filters a list of strings based on a search string.";
-
         public TextFilterComponent()
             : base(
-                "Filter Contains String",
-                "Filter Contains",
-                Doc,
+                "TextFilter",
+                "Filters a list of strings based on a search string.",
                 GroupNames.Utilities)
         {
         }

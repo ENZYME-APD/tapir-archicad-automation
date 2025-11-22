@@ -9,14 +9,10 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class GroupTreeComponent : Component
     {
-        public static string Doc =>
-            "Groups data items into a tree structure based on values";
-
         public GroupTreeComponent()
             : base(
-                "Group to Tree",
-                "GroupTree",
-                Doc,
+                "GroupToTree",
+                "Groups data items into a tree structure based on values",
                 GroupNames.Utilities)
         {
         }

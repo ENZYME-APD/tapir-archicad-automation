@@ -11,16 +11,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class FindNavigatorItemComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Finds a navigator item.";
-
         public override string CommandName =>
             "GetDatabaseIdFromNavigatorItemId";
 
         public FindNavigatorItemComponent()
             : base(
                 "FindNavigatorItem",
-                "FindNavigatorItem",
-                Doc,
+                "Finds a navigator item.",
                 GroupNames.Navigator)
         {
         }

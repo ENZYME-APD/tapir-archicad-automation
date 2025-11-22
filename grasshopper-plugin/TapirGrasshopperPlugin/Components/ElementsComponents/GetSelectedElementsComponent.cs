@@ -6,14 +6,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetSelectedElementsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get currently selected elements.";
         public override string CommandName => "GetSelectedElements";
 
         public GetSelectedElementsComponent()
             : base(
-                "Selected Elems",
-                "SelectedElems",
-                Doc,
+                "SelectedElements",
+                "Get currently selected elements.",
                 GroupNames.Elements)
         {
         }

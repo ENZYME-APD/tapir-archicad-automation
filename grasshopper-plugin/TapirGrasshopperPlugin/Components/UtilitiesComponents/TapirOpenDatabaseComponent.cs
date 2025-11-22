@@ -6,17 +6,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class TapirOpenDatabaseComponent : ButtonComponent
     {
-        public static string Doc =>
-            "Opens a specified URL in the default browser.";
-
         static public string WebsiteURL =
             "https://app.teable.io/invite?invitationId=invgOX6hmfzc7LrBfsM&invitationCode=8dc6c46ad990e79239f36e071dc1264fc378581b86c109b268d6ca9cdc6fa544";
 
         public TapirOpenDatabaseComponent()
             : base(
                 "Open Website Button",
-                "Prop_DB",
-                Doc,
+                "Opens a specified URL in the default browser.",
                 GroupNames.Utilities,
                 "Open Database",
                 80)

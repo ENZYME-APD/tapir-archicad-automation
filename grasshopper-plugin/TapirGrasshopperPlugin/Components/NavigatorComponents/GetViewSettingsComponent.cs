@@ -9,16 +9,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class GetViewSettingsComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Gets the view settings of navigator items.";
-
         public override string CommandName => "GetViewSettings";
 
         public GetViewSettingsComponent()
             : base(
                 nameof(ViewSettings),
-                nameof(ViewSettings),
-                Doc,
+                "Gets the view settings of navigator items.",
                 GroupNames.Navigator)
         {
         }

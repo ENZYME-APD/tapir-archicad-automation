@@ -7,14 +7,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class DetachElementsFromIssueComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Detach Elements from an Issue.";
         public override string CommandName => "DetachElementsFromIssue";
 
         public DetachElementsFromIssueComponent()
             : base(
-                "Detach Elements from an Issue",
-                "DetachElements",
-                Doc,
+                "DetachElementsFromAnIssue",
+                "Detach Elements from an Issue.",
                 GroupNames.Issues)
         {
         }

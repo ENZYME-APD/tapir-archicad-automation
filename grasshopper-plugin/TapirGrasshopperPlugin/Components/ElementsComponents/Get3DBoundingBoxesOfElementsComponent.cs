@@ -9,13 +9,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     public class Get3DBoundingBoxesOfElementsComponent
         : ArchicadAccessorComponent
     {
-        public static string Doc => "Get 3D bounding boxes of elements.";
-
         public Get3DBoundingBoxesOfElementsComponent()
             : base(
                 "Elem 3D Bounding Boxes",
-                "Elem3DBoxes",
-                Doc,
+                "Get 3D bounding boxes of elements.",
                 GroupNames.Elements)
         {
         }

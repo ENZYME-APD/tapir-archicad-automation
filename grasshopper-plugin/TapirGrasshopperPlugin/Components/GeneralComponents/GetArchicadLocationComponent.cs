@@ -1,27 +1,17 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
+using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
-    public class LocationInfo
-    {
-        [JsonProperty("archicadLocation")]
-        public string ArchicadLocation { get; set; }
-    }
-
     public class GetArchicadLocationComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Get the location of the running Archicad executable.";
-
         public override string CommandName => "GetArchicadLocation";
 
         public GetArchicadLocationComponent()
             : base(
-                "Archicad Location",
                 "ArchicadLocation",
-                Doc,
+                "Get the location of the running Archicad executable.",
                 GroupNames.General)
         {
         }

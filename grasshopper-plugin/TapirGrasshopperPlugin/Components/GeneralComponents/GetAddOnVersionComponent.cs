@@ -1,25 +1,17 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
+using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
-    public class VersionInfo
-    {
-        [JsonProperty("version")]
-        public string Version { get; set; }
-    }
-
     public class GetAddOnVersionComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get Tapir Add-On version.";
         public override string CommandName => "GetAddOnVersion";
 
         public GetAddOnVersionComponent()
             : base(
-                "Tapir Version",
-                "Tapir Version",
-                Doc,
+                "TapirVersion",
+                "Get Tapir Add-On version.",
                 GroupNames.General)
         {
         }

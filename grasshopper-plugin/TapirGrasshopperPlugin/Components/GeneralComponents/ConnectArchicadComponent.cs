@@ -7,7 +7,6 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
     public class ConnectArchicadComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Connect to Archicad by port number.";
         public override string CommandName => "IsAlive";
 
         private const int RefreshAllButtonIndex = 0;
@@ -15,13 +14,12 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
         public ConnectArchicadComponent()
             : base(
-                "Connect Archicad",
-                "Connect Archicad",
-                Doc,
+                "ConnectArchicad",
+                "Connect to Archicad by port number.",
                 GroupNames.General)
         {
             CapsuleButtonTexts =
-                new List<string>() { "Refresh All", "Execute All" };
+                new List<string> { "Refresh All", "Execute All" };
         }
 
         public override void CreateAttributes()

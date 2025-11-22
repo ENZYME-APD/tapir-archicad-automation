@@ -10,14 +10,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class FilterElementsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Filter elements.";
         public override string CommandName => "FilterElements";
 
         public FilterElementsComponent()
             : base(
-                "Filter Elements",
-                "FilterElems",
-                Doc,
+                "FilterElements",
+                "Filter elements.",
                 GroupNames.Elements)
         {
         }

@@ -8,14 +8,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
     public class SetLayersComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Set the details of layers.";
         public override string CommandName => "CreateLayers";
 
         public SetLayersComponent()
             : base(
                 "Set Layers",
-                "Set Layers",
-                Doc,
+                "Set the details of layers.",
                 GroupNames.Attributes)
         {
         }

@@ -6,14 +6,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class DeleteNavigatorItem : ArchicadExecutorComponent
     {
-        public static string Doc => "Deletes items from navigator tree.";
         public override string CommandName => "DeleteNavigatorItems";
 
         public DeleteNavigatorItem()
             : base(
                 "DeleteNavigatorItems",
-                "DeleteNavigatorItems",
-                Doc,
+                "Deletes items from navigator tree.",
                 GroupNames.Navigator)
         {
         }

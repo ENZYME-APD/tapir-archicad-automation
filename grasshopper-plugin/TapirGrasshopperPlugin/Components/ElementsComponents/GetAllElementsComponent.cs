@@ -8,14 +8,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetAllElementsComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get all elements.";
         public override string CommandName => "GetAllElements";
 
         public GetAllElementsComponent()
             : base(
-                "All Elements",
-                "AllElems",
-                Doc,
+                "AllElements",
+                "Get all elements.",
                 GroupNames.Elements)
         {
         }
@@ -45,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var filters = new List<string>();
+            List<string> filters = new List<string>();
             if (!da.GetDataList(
                     0,
                     filters))
@@ -53,11 +51,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var databases = DatabasesObj.Create(
+            DatabasesObj databases = DatabasesObj.Create(
                 da,
                 1);
 
-            var elementFilters = new ElementFiltersObj()
+            ElementFiltersObj elementFilters = new ElementFiltersObj
             {
                 Filters = filters.Count > 0 ? filters : null,
                 Databases =

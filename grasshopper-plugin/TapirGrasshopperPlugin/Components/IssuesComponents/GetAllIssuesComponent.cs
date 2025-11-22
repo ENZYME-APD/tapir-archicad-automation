@@ -7,14 +7,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class GetAllIssuesComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get all issues.";
         public override string CommandName => "GetIssues";
 
         public GetAllIssuesComponent()
             : base(
-                "All Issues",
                 "AllIssues",
-                Doc,
+                "Get all Issues.",
                 GroupNames.Issues)
         {
         }

@@ -9,16 +9,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class GetAllClassificationsComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Get all Classifications in the given Classification System.";
-
         public override string CommandName => "GetAllClassificationSystems";
 
         public GetAllClassificationsComponent()
             : base(
                 "All Classifications in the given Classification System.",
-                "AllClassifications",
-                Doc,
+                "Get all Classifications in the given Classification System.",
                 GroupNames.Classifications)
         {
         }

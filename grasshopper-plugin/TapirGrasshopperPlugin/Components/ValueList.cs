@@ -13,14 +13,13 @@ namespace TapirGrasshopperPlugin.Components
     {
         public ValueList(
             string name,
-            string nickname,
             string description,
             string subCategory)
         {
             CreateAttributes();
 
             Name = name;
-            NickName = nickname;
+            NickName = name;
             Description = description;
             Category = "Tapir";
             SubCategory = subCategory;
@@ -103,12 +102,10 @@ namespace TapirGrasshopperPlugin.Components
 
         public ArchicadAccessorValueList(
             string name,
-            string nickname,
             string description,
             string subCategory)
             : base(
                 name,
-                nickname,
                 description,
                 subCategory)
         {

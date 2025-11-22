@@ -13,8 +13,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         public TreeBranchSelectorComponent()
             : base(
-                "Tree Branch Selector",
-                "BranchSel",
+                "TreeBranchSelector",
                 Doc,
                 GroupNames.Utilities)
         {

@@ -13,9 +13,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public GetElementsByTypeComponent()
             : base(
-                "Elems By Type",
-                "ElemsByType",
-                Doc,
+                "ElementsByType",
+                "Get all elements by type.",
                 GroupNames.Elements)
         {
         }

@@ -7,15 +7,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class AttachElementsToIssueComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Attach Elements to an Issue.";
         public override string CommandName => "AttachElementsToIssue";
 
 
         public AttachElementsToIssueComponent()
             : base(
-                "Attach Elements to an Issue",
-                "AttachElements",
-                Doc,
+                "AttachElementsToAnIssue",
+                "Attach Elements to an Issue.",
                 GroupNames.Issues)
         {
         }

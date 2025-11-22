@@ -6,14 +6,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class FindPropertyByName : ArchicadAccessorComponent
     {
-        public static string Doc => "Finds a property by group name and name.";
         public override string CommandName => "GetAllProperties";
 
         public FindPropertyByName()
             : base(
-                "Property by Name",
                 "PropertyByName",
-                Doc,
+                "Finds a property by group name and name.",
                 GroupNames.Properties)
         {
         }

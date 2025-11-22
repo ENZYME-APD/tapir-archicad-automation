@@ -6,16 +6,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class GetProjectLocationComponent : ArchicadAccessorComponent
     {
-        public static string Doc =>
-            "Get Geo Location of the currently active project.";
-
         public override string CommandName => "GetGeoLocation";
 
         public GetProjectLocationComponent()
             : base(
                 "Project Location",
-                "ProjectLocation",
-                Doc,
+                "Get Geo Location of the currently active project.",
                 GroupNames.Project)
         {
         }

@@ -14,9 +14,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         public GetPropertyValuesOfElementsComponent()
             : base(
-                "Get Property Values",
                 "GetPropertyValues",
-                Doc,
+                "Get property values of elements.",
                 GroupNames.Properties)
         {
         }

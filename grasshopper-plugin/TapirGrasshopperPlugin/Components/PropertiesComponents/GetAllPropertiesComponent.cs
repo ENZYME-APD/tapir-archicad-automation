@@ -8,15 +8,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class GetAllPropertiesComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get all properties.";
-
         public override string CommandName => "GetAllProperties";
 
         public GetAllPropertiesComponent()
             : base(
-                "All Properties",
                 "AllProperties",
-                Doc,
+                "Get all properties.",
                 GroupNames.Properties)
         {
         }

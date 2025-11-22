@@ -9,14 +9,10 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class ParalellListFilterComponent : Component
     {
-        public static string Doc =>
-            "Filters two parallel lists based on values in the primary list";
-
         public ParalellListFilterComponent()
             : base(
-                "Parallel List Filter",
-                "PLFilter",
-                Doc,
+                "ParallelListFilter",
+                "Filters two parallel lists based on values in the primary list",
                 GroupNames.Utilities)
         {
         }

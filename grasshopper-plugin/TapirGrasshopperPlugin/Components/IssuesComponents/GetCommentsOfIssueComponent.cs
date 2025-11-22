@@ -6,14 +6,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class GetCommentsOfIssueComponent : ArchicadAccessorComponent
     {
-        public static string Doc => "Get Comments of an Issue.";
         public override string CommandName => "GetCommentsFromIssue";
 
         public GetCommentsOfIssueComponent()
             : base(
-                "Get Comments of an Issue",
-                "GetComments",
-                Doc,
+                "GetCommentsOfAnIssue",
+                "Get Comments of an Issue.",
                 GroupNames.Issues)
         {
         }

@@ -7,16 +7,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
     public class SetStoriesComponent : ArchicadExecutorComponent
     {
-        public static string Doc =>
-            "Sets the story structure of the currently loaded project.";
-
         public override string CommandName => "SetStories";
 
         public SetStoriesComponent()
             : base(
                 "SetStories",
-                "SetStories",
-                Doc,
+                "Sets the story structure of the currently loaded project.",
                 GroupNames.Project)
         {
         }

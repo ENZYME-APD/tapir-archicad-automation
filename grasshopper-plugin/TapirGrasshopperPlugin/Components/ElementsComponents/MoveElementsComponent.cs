@@ -9,14 +9,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class MoveElementsComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Move elements";
         public override string CommandName => "MoveElements";
 
         public MoveElementsComponent()
             : base(
                 "Move Elements",
-                "MoveElements",
-                Doc,
+                "Move elements",
                 GroupNames.Elements)
         {
         }

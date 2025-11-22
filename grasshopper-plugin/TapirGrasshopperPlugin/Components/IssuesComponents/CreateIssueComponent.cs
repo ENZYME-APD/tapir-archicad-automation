@@ -8,14 +8,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class CreateIssueComponent : ArchicadExecutorComponent
     {
-        public static string Doc => "Create an issue.";
         public override string CommandName => "CreateIssue";
 
         public CreateIssueComponent()
             : base(
-                "Create Issue",
                 "CreateIssue",
-                Doc,
+                "Create an issue.",
                 GroupNames.Issues)
         {
         }
