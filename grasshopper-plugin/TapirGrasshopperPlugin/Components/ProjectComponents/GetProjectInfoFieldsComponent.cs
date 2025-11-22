@@ -19,24 +19,19 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
-                "Project Info Id",
+            OutTexts(
                 "ProjectInfoId",
-                "Project Info Id.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
-                "Project Info Name",
+                "Project Info Id.");
+
+            OutTexts(
                 "ProjectInfoName",
-                "Project Info Name.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
-                "Project Info Value",
+                "Project Info Name.");
+
+            OutTexts(
                 "ProjectInfoValue",
-                "Project Info Value.",
-                GH_ParamAccess.list);
+                "Project Info Value.");
         }
 
         protected override void Solve(

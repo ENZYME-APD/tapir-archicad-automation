@@ -23,45 +23,36 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 "ClassificationSystemGuid",
-                "SystemGuid",
-                "Found Classification System Guid.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Found Classification System Guid.");
+            OutTexts(
                 "ClassificationSystemNameAndVersion",
-                "SystemNameAndVersion",
-                "Found Classification System name and version.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Found Classification System name and version.");
+
+            OutTexts(
                 "ClassificationItemGuid",
-                "ItemGuid",
-                "Found ClassificationItem Guid.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Found ClassificationItem Guid.");
+
+            OutTexts(
                 "ClassificationItemDisplayId",
-                "ItemDisplayId",
-                "Found ClassificationItem display id.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Found ClassificationItem display id.");
+
+            OutTexts(
                 "ClassificationItemFullDisplayId",
-                "ItemFullDisplayId",
-                "Found ClassificationItem full display id.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Found ClassificationItem full display id.");
+
+            OutTexts(
                 "ClassificationItemName",
-                "ItemName",
-                "Found ClassificationItem name.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Found ClassificationItem name.");
+
+            OutTexts(
                 "ClassificationItemPath",
-                "ItemPath",
-                "Path to ClassificationItem.",
-                GH_ParamAccess.list);
+                "Path to ClassificationItem.");
         }
+
 
         private List<Tuple<ClassificationItemDetailsObj, string>>
             GetAllClassificationItemFromTree(
@@ -69,9 +60,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 string pathToRoot)
         {
             List<Tuple<ClassificationItemDetailsObj, string>> list = new();
-            foreach (var item in tree)
+            foreach (ClassificationItemObj item in tree)
             {
-                var path = pathToRoot + '/' + item.ClassificationItem.Id;
+                string path = pathToRoot + '/' + item.ClassificationItem.Id;
                 list.Add(
                     new Tuple<ClassificationItemDetailsObj, string>(
                         item.ClassificationItem,
@@ -105,14 +96,15 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
 
-            foreach (var system in classificationSystems.ClassificationSystems)
+            foreach (ClassificationSystemDetailsObj system in
+                     classificationSystems.ClassificationSystems)
             {
                 ClassificationSystemObj classificationSystem = new()
                 {
                     ClassificationSystemId = system.ClassificationSystemId
                 };
 
-                var classificationSystemObj =
+                JObject classificationSystemObj =
                     JObject.FromObject(classificationSystem);
 
                 if (!GetConvertedResponse(
@@ -121,9 +113,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                         out AllClassificationItemsInSystem
                             classificationItemsInSystem)) { return; }
 
-                var itemsInSystem = GetAllClassificationItemFromTree(
-                    classificationItemsInSystem.ClassificationItems,
-                    system.ToString());
+                List<Tuple<ClassificationItemDetailsObj, string>>
+                    itemsInSystem = GetAllClassificationItemFromTree(
+                        classificationItemsInSystem.ClassificationItems,
+                        system.ToString());
 
                 itemsPerSystems.Add(
                     system,
@@ -137,13 +130,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             List<string> itemNames = new();
             List<string> itemFullDisplayIds = new();
             List<string> itemPaths = new();
-            foreach (var itemsInSystem in itemsPerSystems)
+            foreach (KeyValuePair<ClassificationSystemDetailsObj,
+                             List<Tuple<ClassificationItemDetailsObj, string>>>
+                         itemsInSystem in itemsPerSystems)
             {
-                var system = itemsInSystem.Key;
-                foreach (var itemDetailAndPath in itemsInSystem.Value)
+                ClassificationSystemDetailsObj system = itemsInSystem.Key;
+                foreach (Tuple<ClassificationItemDetailsObj, string>
+                             itemDetailAndPath in itemsInSystem.Value)
                 {
-                    var itemDetail = itemDetailAndPath.Item1;
-                    var itemPath = itemDetailAndPath.Item2;
+                    ClassificationItemDetailsObj itemDetail =
+                        itemDetailAndPath.Item1;
+                    string itemPath = itemDetailAndPath.Item2;
 
                     systemIds.Add(system.ClassificationSystemId.Guid);
                     systemNamesAndVersions.Add(system.ToString());

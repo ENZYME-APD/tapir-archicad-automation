@@ -32,15 +32,13 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 "Classification Item id to find.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGeneric(
                 "ClassificationItemGuid",
-                "ItemGuid",
-                "Found ClassificationItem Guid.",
-                GH_ParamAccess.item);
+                "Found ClassificationItem Guid.");
         }
+
 
         public override void AddedToDocument(
             GH_Document document)

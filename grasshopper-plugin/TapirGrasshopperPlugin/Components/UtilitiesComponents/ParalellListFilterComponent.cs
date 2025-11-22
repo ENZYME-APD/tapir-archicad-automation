@@ -41,24 +41,19 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "equals");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenericTree(
                 "Filtered Primary",
-                "FP",
-                "Filtered primary list",
-                GH_ParamAccess.tree);
-            pManager.AddGenericParameter(
+                "Filtered primary list");
+
+            OutGenericTree(
                 "Filtered Secondary",
-                "FS",
-                "Filtered secondary list",
-                GH_ParamAccess.tree);
-            pManager.AddBooleanParameter(
+                "Filtered secondary list");
+
+            OutBooleans(
                 "Filter Pattern",
-                "P",
-                "Boolean pattern indicating which items were filtered",
-                GH_ParamAccess.list);
+                "Boolean pattern indicating which items were filtered");
         }
 
         protected override void SolveInstance(

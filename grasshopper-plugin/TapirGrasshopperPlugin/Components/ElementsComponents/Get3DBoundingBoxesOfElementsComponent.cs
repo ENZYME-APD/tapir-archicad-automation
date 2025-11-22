@@ -27,14 +27,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Elements Guids to get the bounding box of.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddBoxParameter(
+            OutBoxes(
                 "BoundingBoxes",
-                "BoundingBoxes",
-                "Bounding boxes.",
-                GH_ParamAccess.list);
+                "Bounding boxes.");
         }
 
         protected override void Solve(

@@ -20,17 +20,6 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
-        {
-            pManager.AddBooleanParameter(
-                "Show on Sections",
-                "ShowOnSections",
-                "Show Story on Sections.",
-                GH_ParamAccess.list,
-                @default: new List<bool>() { true });
-        }
-
         protected override void AddInputs()
         {
             InTexts(

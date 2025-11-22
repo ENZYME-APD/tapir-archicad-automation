@@ -60,34 +60,28 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "The identifier of a zone.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "ConnectedElement",
-                "ConnectedElement",
-                "The identifier of the connected element on the boundary.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "The identifier of the connected element on the boundary.");
+
+            OutBooleans(
                 "IsExternal",
-                "IsExternal",
-                "True if the boundary is an external one.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "True if the boundary is an external one.");
+
+            OutGenerics(
                 "NeighbouringZone",
-                "NeighbouringZone",
-                "Returns the unique identifer of the other Zone the element connects to if the boundary is internal. Please note that this boundary does not represent the boundary of the element with the other Zone.",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
+                "Returns the unique identifer of the other Zone the element connects to if the boundary is internal. " +
+                "Please note that this boundary does not represent the boundary of the element with the other Zone.");
+
+            OutNumbers(
                 "Area",
-                "Area",
-                "The area of the polygon of the boundary.",
-                GH_ParamAccess.list);
-            pManager.AddCurveParameter(
+                "The area of the polygon of the boundary.");
+
+            OutCurves(
                 "Polygon outline",
-                "Polygon",
-                "The outline polygon of the boundary.",
-                GH_ParamAccess.list);
+                "The outline polygon of the boundary.");
         }
 
         protected override void Solve(

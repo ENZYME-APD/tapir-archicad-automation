@@ -210,7 +210,7 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.item);
         }
 
-        public void OutGenerics(
+        public void OutGeneric(
             string name,
             string description)
         {
@@ -219,6 +219,17 @@ namespace TapirGrasshopperPlugin.Components
                 name,
                 description,
                 GH_ParamAccess.item);
+        }
+
+        public void OutGenerics(
+            string name,
+            string description)
+        {
+            outManager.AddGenericParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
         }
 
         public void InGenerics(
@@ -265,6 +276,17 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
+        public void OutVectors(
+            string name,
+            string description)
+        {
+            outManager.AddVectorParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
         public void InPoints(
             string name,
             string description)
@@ -275,7 +297,16 @@ namespace TapirGrasshopperPlugin.Components
                 description,
                 GH_ParamAccess.list);
         }
-
+        public void OutPoints(
+            string name,
+            string description)
+        {
+            outManager.AddPointParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
         public void InNumber(
             string name,
             string description,
@@ -287,6 +318,17 @@ namespace TapirGrasshopperPlugin.Components
                 description,
                 GH_ParamAccess.item,
                 defaultValue);
+        }
+
+        public void OutNumbers(
+            string name,
+            string description)
+        {
+            outManager.AddNumberParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
         }
 
         public void InNumbers(
@@ -337,6 +379,28 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.tree);
         }
 
+        public void OutBoolean(
+            string name,
+            string description)
+        {
+            outManager.AddBooleanParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item);
+        }
+
+        public void OutBooleans(
+            string name,
+            string description)
+        {
+            outManager.AddBooleanParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
         public void OutBooleanTree(
             string name,
             string description)
@@ -383,6 +447,27 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.tree);
         }
 
+        public void OutInteger(
+            string name,
+            string description)
+        {
+            outManager.AddIntegerParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item);
+        }
+
+        public void OutIntegers(
+            string name,
+            string description)
+        {
+            outManager.AddIntegerParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
 
         public void OutIntegerTree(
             string name,
@@ -409,6 +494,17 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
+        public void OutText(
+            string name,
+            string description)
+        {
+            outManager.AddTextParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item);
+        }
+
         public void OutTexts(
             string name,
             string description)
@@ -418,6 +514,17 @@ namespace TapirGrasshopperPlugin.Components
                 name,
                 description,
                 GH_ParamAccess.list);
+        }
+
+        public void OutTextTree(
+            string name,
+            string description)
+        {
+            outManager.AddTextParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.tree);
         }
 
         public void InColor(
@@ -457,6 +564,28 @@ namespace TapirGrasshopperPlugin.Components
                 description,
                 GH_ParamAccess.list,
                 defaultValues);
+        }
+
+        public void OutBoxes(
+            string name,
+            string description)
+        {
+            outManager.AddBoxParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
+        }
+
+        public void OutCurves(
+            string name,
+            string description)
+        {
+            outManager.AddCurveParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.list);
         }
 
         protected CommandResponse SendArchicadCommand(

@@ -49,29 +49,23 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             pManager[3].Optional = true;
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 "Filtered List",
-                "F",
-                "List of strings that match the search criteria",
-                GH_ParamAccess.list);
-            pManager.AddIntegerParameter(
+                "List of strings that match the search criteria");
+
+            OutIntegers(
                 "Filtered Indices",
-                "I",
-                "List of indices of the matched strings",
-                GH_ParamAccess.list);
-            pManager.AddIntegerParameter(
+                "List of indices of the matched strings");
+
+            OutInteger(
                 "Count",
-                "C",
-                "Number of matches",
-                GH_ParamAccess.item);
-            pManager.AddBooleanParameter(
+                "Number of matches");
+
+            OutBooleans(
                 "Pattern",
-                "P",
-                "Boolean list indicating which strings matched",
-                GH_ParamAccess.list);
+                "Boolean list indicating which strings matched");
         }
 
         protected override void SolveInstance(

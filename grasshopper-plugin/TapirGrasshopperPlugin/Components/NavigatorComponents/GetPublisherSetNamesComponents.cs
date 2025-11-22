@@ -26,14 +26,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 "PublisherSetNames",
-                "PublisherSetNames",
-                "List of names of the publisher sets.",
-                GH_ParamAccess.list);
+                "List of names of the publisher sets.");
         }
 
         protected override void Solve(

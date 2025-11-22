@@ -39,14 +39,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "Type of elements.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Attached elements of the given issue.",
-                GH_ParamAccess.list);
+                "Attached elements of the given issue.");
         }
 
         public override void AddedToDocument(

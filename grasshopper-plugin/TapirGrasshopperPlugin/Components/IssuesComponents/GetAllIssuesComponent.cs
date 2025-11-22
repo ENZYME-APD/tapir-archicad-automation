@@ -19,19 +19,15 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "IssueGuid",
-                "IssueGuid",
-                "Issue Guid.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Issue Guid.");
+
+            OutGenerics(
                 "Name",
-                "Name",
-                "Name",
-                GH_ParamAccess.list);
+                "Name");
         }
 
         protected override void Solve(

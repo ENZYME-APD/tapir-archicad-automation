@@ -49,14 +49,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 AutoExecute);
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutText(
                 "Success",
-                "Success",
-                "Sucessful connection to Archicad.",
-                GH_ParamAccess.item);
+                "Sucessful connection to Archicad.");
         }
 
         protected override void SolveInstance(

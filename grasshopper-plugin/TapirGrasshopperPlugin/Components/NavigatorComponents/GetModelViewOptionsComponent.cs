@@ -20,14 +20,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 nameof(ModelViewOption.Name) + "s",
-                "",
-                "",
-                GH_ParamAccess.list);
+                "");
         }
 
         protected override void Solve(

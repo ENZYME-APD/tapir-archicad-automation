@@ -69,14 +69,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             Params.Input[2].Optional = true;
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGeneric(
                 "CreatedNavigatorItemId",
-                "CreatedNavigatorItemId",
-                "The ID of the new navigator item in view map.",
-                GH_ParamAccess.item);
+                "The ID of the new navigator item in view map.");
         }
 
         protected override void Solve(

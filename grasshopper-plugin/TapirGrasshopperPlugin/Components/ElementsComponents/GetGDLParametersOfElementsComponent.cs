@@ -34,24 +34,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Parameter name to find.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "List of element Guids with valid GDL detailList.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "List of element Guids with valid GDL detailList.");
+
+            OutTexts(
                 "ParamValues",
-                "ParamValues",
-                "Values of the found GDL detailList.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Values of the found GDL detailList.");
+
+            OutTexts(
                 "JsonValues",
-                "JsonValues",
-                "...",
-                GH_ParamAccess.list);
+                "...");
         }
 
         protected override void Solve(

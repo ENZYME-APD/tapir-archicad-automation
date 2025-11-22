@@ -40,29 +40,23 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
-                "Story Name",
+            OutTexts(
                 "StoryName",
-                "Name of the story.",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
-                "Story Elevation",
+                "Name of the story.");
+
+            OutNumbers(
                 "StoryElevation",
-                "Elevation of the story.",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
-                "Story Height",
+                "Elevation of the story.");
+
+            OutNumbers(
                 "StoryHeight",
-                "Height of the story.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
-                "Show on Sections",
+                "Height of the story.");
+
+            OutBooleans(
                 "ShowOnSections",
-                "Show Story on Sections.",
-                GH_ParamAccess.list);
+                "Show Story on Sections.");
         }
 
         protected override void Solve(

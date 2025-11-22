@@ -47,29 +47,23 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             Params.Input[3].Optional = true;
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "Out 1",
-                "O1",
-                "Filtered output from List 1",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Filtered output from List 1");
+
+            OutGenerics(
                 "Out 2",
-                "O2",
-                "Filtered output from List 2",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Filtered output from List 2");
+
+            OutGenerics(
                 "Out 3",
-                "O3",
-                "Filtered output from List 3",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Filtered output from List 3");
+
+            OutGenerics(
                 "Out 4",
-                "O4",
-                "Filtered output from List 4",
-                GH_ParamAccess.list);
+                "Filtered output from List 4");
         }
 
         protected override void SolveInstance(

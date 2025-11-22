@@ -21,29 +21,23 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGeneric(
                 "PropertyGuid",
-                "PropertyGuid",
-                "Property Guid.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Property Guid.");
+
+            OutTexts(
                 "GroupName",
-                "GroupName",
-                "Property group name.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Property group name.");
+
+            OutTexts(
                 "PropertyName",
-                "PropertyName",
-                "Property name.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Property name.");
+
+            OutTexts(
                 "FullName",
-                "FullName",
-                "Full name containing the group and the property name.",
-                GH_ParamAccess.list);
+                "Full name containing the group and the property name.");
         }
 
         protected override void Solve(

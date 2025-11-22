@@ -50,14 +50,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Type of connected elements.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenericTree(
                 "ConnectedElementGuids",
-                "ConnectedElementGuids",
-                "Connected Elements with the given type.",
-                GH_ParamAccess.tree);
+                "Connected Elements with the given type.");
         }
 
         public override void AddedToDocument(

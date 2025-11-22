@@ -28,14 +28,11 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 "Elements type.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 nameof(Favorites),
-                "",
-                "",
-                GH_ParamAccess.list);
+                "");
         }
 
         protected override void Solve(

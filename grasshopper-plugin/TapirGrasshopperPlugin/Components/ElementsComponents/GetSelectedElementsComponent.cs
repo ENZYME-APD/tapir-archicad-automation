@@ -18,11 +18,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
-        {
-        }
-
         protected override void AddInputs()
         {
             InGenerics(

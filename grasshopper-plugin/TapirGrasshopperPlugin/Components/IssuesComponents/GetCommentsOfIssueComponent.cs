@@ -25,14 +25,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "Issue Guid.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "Comments",
-                "Comments",
-                "Comments of the given issue.",
-                GH_ParamAccess.list);
+                "Comments of the given issue.");
         }
 
         protected override void Solve(

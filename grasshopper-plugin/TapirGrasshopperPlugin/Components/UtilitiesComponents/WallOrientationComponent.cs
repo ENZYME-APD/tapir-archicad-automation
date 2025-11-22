@@ -37,47 +37,39 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             Params.Input[2].Optional = true;
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "Normal Vectors",
-                "N",
-                "Normal vectors as 2D lists",
-                GH_ParamAccess.list);
-            pManager.AddNumberParameter(
+                "Normal vectors as 2D lists");
+
+            OutNumbers(
                 "Orientation Angles",
-                "A",
-                "Orientation angles in degrees",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Orientation angles in degrees");
+
+            OutTexts(
                 "Orientation Codes",
-                "C",
-                "Orientation codes (N, NE, E, etc.)",
-                GH_ParamAccess.list);
-            pManager.AddVectorParameter(
+                "Orientation codes (N, NE, E, etc.)");
+
+            OutVectors(
                 "Rhino Vectors",
-                "V",
-                "Rhino Vector3d objects",
-                GH_ParamAccess.list);
-            pManager.AddPointParameter(
+                "Rhino Vector3d objects");
+
+            OutPoints(
                 "Midpoints",
-                "M",
-                "Midpoints of wall segments",
-                GH_ParamAccess.list);
-            pManager.AddCurveParameter(
+                "Midpoints of wall segments");
+
+            OutCurves(
                 "Vector Lines",
-                "L",
-                "Vector lines at wall midpoints",
-                GH_ParamAccess.list);
+                "Vector lines at wall midpoints");
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             // Get inputs
             var startPoints = new List<Point3d>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     0,
                     startPoints))
             {
@@ -85,7 +77,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             var endPoints = new List<Point3d>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     endPoints))
             {
@@ -93,7 +85,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             var northRotation = 0.0;
-            DA.GetData(
+            da.GetData(
                 2,
                 ref northRotation);
 
@@ -171,22 +163,22 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             // Set outputs
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 normalVectors);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 orientationAngles);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 orientationCodes);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 rhinoVectors);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 midpoints);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 vectorLines);
 

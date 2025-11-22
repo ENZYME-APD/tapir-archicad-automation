@@ -58,34 +58,27 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "List of layer attribute Guids.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 "Name",
-                "Name",
-                "Name of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "Name of the layer.");
+
+            OutBooleans(
                 "IsHidden",
-                "IsHidden",
-                "Visibility of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "Visibility of the layer.");
+
+            OutBooleans(
                 "IsLocked",
-                "IsLocked",
-                "Lock states of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "Lock states of the layer.");
+
+            OutBooleans(
                 "IsWireframe",
-                "IsWireframe",
-                "Wireframe flag of the layer.",
-                GH_ParamAccess.list);
-            pManager.AddIntegerParameter(
+                "Wireframe flag of the layer.");
+
+            OutIntegers(
                 "IntersectionGroup",
-                "IntersectionGroup",
-                "Intersection group of the layer.",
-                GH_ParamAccess.list);
+                "Intersection group of the layer.");
         }
 
         protected override void Solve(

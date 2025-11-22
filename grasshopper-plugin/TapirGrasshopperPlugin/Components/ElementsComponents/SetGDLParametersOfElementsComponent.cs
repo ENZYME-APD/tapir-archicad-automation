@@ -31,14 +31,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "...");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutTexts(
                 nameof(ExecutionResultsResponse.ExecutionResults),
-                "",
-                "",
-                GH_ParamAccess.list);
+                "");
         }
 
         protected override void Solve(

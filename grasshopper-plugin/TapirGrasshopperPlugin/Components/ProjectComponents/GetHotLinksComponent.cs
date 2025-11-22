@@ -23,21 +23,18 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         }
 
         public override Guid ComponentGuid =>
-            new("89ae1638-8c9f-481f-8a01-5cdf2ded8071");
+            new Guid("89ae1638-8c9f-481f-8a01-5cdf2ded8071");
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
-                nameof(Hotlink.Location) + "List",
-                "",
-                "",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+            OutTexts(
+                nameof(Hotlink.Location) + "s",
+                "");
+
+            OutText(
                 "JsonHierarchy",
-                "",
-                "",
-                GH_ParamAccess.item);
+                "");
         }
 
         protected override void Solve(

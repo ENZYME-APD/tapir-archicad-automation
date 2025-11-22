@@ -63,14 +63,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             Params.Input[2].Optional = true;
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "List of element Guids matching the type and the filter.",
-                GH_ParamAccess.list);
+                "List of element Guids matching the type and the filter.");
         }
 
         public override void AddedToDocument(

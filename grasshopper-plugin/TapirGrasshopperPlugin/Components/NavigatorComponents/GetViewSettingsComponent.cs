@@ -30,14 +30,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "Identifier of navigator items to delete.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutText(
                 "Json" + nameof(ViewSettings),
-                "",
-                "",
-                GH_ParamAccess.item);
+                "");
         }
 
         protected override void Solve(

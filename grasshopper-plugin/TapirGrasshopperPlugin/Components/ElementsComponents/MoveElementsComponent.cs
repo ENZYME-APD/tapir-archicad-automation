@@ -66,11 +66,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Move copies of the elements.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
-        }
-
         protected override void Solve(
             IGH_DataAccess da)
         {

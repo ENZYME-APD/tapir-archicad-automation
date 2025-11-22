@@ -33,14 +33,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "Name");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGeneric(
                 "IssueGuid",
-                "IssueGuid",
-                "Issue Guid.",
-                GH_ParamAccess.item);
+                "Issue Guid.");
         }
 
         protected override void Solve(

@@ -43,19 +43,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Type of subelements.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids of the found hierarchical elements which has subelements with the given type.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Elements Guids of the found hierarchical elements which has subelements with the given type.");
+
+            OutGenericTree(
                 "SubelementGuids",
-                "SubelementGuids",
-                "Subelements with the given type.",
-                GH_ParamAccess.tree);
+                "Subelements with the given type.");
         }
 
         public override void AddedToDocument(

@@ -32,19 +32,15 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "Elements Guids to get the value for.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenericTree(
                 "ElementGuids",
-                "ElementGuids",
-                "Elements Guids the property is available for.",
-                GH_ParamAccess.tree);
-            pManager.AddTextParameter(
+                "Elements Guids the property is available for.");
+
+            OutTextTree(
                 "Values",
-                "Values",
-                "The property values of the elements.",
-                GH_ParamAccess.tree);
+                "The property values of the elements.");
         }
 
         protected override void Solve(

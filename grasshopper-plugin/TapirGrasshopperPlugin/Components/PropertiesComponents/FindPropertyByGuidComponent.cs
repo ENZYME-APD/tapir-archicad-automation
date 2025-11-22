@@ -25,14 +25,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "Property guid to find.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGeneric(
                 "PropertyId",
-                "PropertyId",
-                "Found property id.",
-                GH_ParamAccess.item);
+                "Found property id.");
         }
 
         protected override void Solve(

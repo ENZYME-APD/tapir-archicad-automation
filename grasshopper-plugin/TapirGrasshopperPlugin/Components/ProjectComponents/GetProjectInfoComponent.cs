@@ -20,34 +20,27 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddBooleanParameter(
-                "Is Untitled",
+            OutBoolean(
                 "IsUntitled",
-                "Is the project untitled.",
-                GH_ParamAccess.item);
-            pManager.AddBooleanParameter(
-                "Is Teamwork",
+                "Is the project untitled.");
+
+            OutBoolean(
                 "IsTeamwork",
-                "Is teamwork project.",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
-                "Project Location",
+                "Is teamwork project.");
+
+            OutText(
                 "ProjectLocation",
-                "Location of the project.",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
-                "Project Path",
+                "Location of the project.");
+
+            OutText(
                 "ProjectPath",
-                "Path of the project.",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
-                "Project Name",
+                "Path of the project.");
+
+            OutText(
                 "ProjectName",
-                "Name of the project.",
-                GH_ParamAccess.item);
+                "Name of the project.");
         }
 
         protected override void Solve(

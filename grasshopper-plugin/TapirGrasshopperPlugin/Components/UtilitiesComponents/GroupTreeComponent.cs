@@ -32,24 +32,19 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "List of values to group by");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenericTree(
                 "Output Tree",
-                "Tree",
-                "Data tree with items grouped by values",
-                GH_ParamAccess.tree);
-            pManager.AddGenericParameter(
+                "Data tree with items grouped by values");
+
+            OutGenerics(
                 "Unique Values",
-                "UValues",
-                "List of unique values used for grouping",
-                GH_ParamAccess.list);
-            pManager.AddIntegerParameter(
+                "List of unique values used for grouping");
+
+            OutIntegers(
                 "Branch Counts",
-                "C",
-                "Number of items in each branch",
-                GH_ParamAccess.list);
+                "Number of items in each branch");
         }
 
         protected override void SolveInstance(

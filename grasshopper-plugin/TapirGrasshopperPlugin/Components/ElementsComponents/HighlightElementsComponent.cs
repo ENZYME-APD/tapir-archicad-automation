@@ -109,11 +109,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 0.5);
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
-        }
-
         protected override void Solve(
             IGH_DataAccess da)
         {

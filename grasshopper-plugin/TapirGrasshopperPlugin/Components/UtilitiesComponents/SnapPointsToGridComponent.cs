@@ -31,21 +31,18 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 1.0);
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddPointParameter(
+            OutPoints(
                 "Points",
-                "P",
-                "List of points snapped to the grid.",
-                GH_ParamAccess.list);
+                "List of points snapped to the grid.");
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var points = new List<Point3d>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     0,
                     points))
             {
@@ -53,7 +50,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             var gridSize = 1.0;
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref gridSize))
             {
@@ -83,7 +80,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     });
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 snappedPoints);
         }

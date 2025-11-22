@@ -32,29 +32,23 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 0);
         }
 
-
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "Selected Branch",
-                "S",
-                "List of items from the selected branch",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "List of items from the selected branch");
+
+            OutGenerics(
                 "Other Branches",
-                "O",
-                "List of items from all other branches",
-                GH_ParamAccess.list);
-            pManager.AddIntegerParameter(
+                "List of items from all other branches");
+
+            OutInteger(
                 "Total Branches",
-                "T",
-                "Total number of branches in the tree",
-                GH_ParamAccess.item);
+                "Total number of branches in the tree");
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             // Initialize outputs
             var selectedBranch = new List<IGH_Goo>();
@@ -63,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
             // Get input tree
             var inputTree = new GH_Structure<IGH_Goo>();
-            if (!DA.GetDataTree(
+            if (!da.GetDataTree(
                     0,
                     out inputTree))
             {
@@ -83,13 +77,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 {
                     message = "Input tree is empty";
                     Message = message;
-                    DA.SetDataList(
+                    da.SetDataList(
                         0,
                         selectedBranch);
-                    DA.SetDataList(
+                    da.SetDataList(
                         1,
                         otherBranches);
-                    DA.SetData(
+                    da.SetData(
                         2,
                         totalBranches);
                     return;
@@ -97,7 +91,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
                 // Get path index
                 var pathIndex = 0;
-                DA.GetData(
+                da.GetData(
                     1,
                     ref pathIndex);
 
@@ -137,13 +131,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             // Set outputs
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 selectedBranch);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 otherBranches);
-            DA.SetData(
+            da.SetData(
                 2,
                 totalBranches);
 

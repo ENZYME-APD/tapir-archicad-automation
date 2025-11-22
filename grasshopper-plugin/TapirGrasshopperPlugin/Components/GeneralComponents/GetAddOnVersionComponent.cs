@@ -24,14 +24,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutText(
                 "Version",
-                "Version",
-                "Tapir Add-On version.",
-                GH_ParamAccess.item);
+                "Tapir Add-On version.");
         }
 
         protected override void Solve(

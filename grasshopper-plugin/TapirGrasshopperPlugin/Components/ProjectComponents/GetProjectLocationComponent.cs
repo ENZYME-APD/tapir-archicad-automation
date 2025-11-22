@@ -86,74 +86,59 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutText(
                 "Longitude",
-                "Longitude",
-                "Longitude",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Longitude");
+
+            OutText(
                 "Latitude",
-                "Latitude",
-                "Latitude",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Latitude");
+
+            OutText(
                 "Altitude",
-                "Altitude",
-                "Altitude",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Altitude");
+
+            OutText(
                 "North",
-                "North",
-                "North",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "North");
+
+            OutText(
                 "Eastings",
-                "Eastings",
-                "Eastings",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Eastings");
+
+            OutText(
                 "Northings",
-                "Northings",
-                "Northings",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Northings");
+
+            OutText(
                 "Elevation",
-                "Elevation",
-                "Elevation",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Elevation");
+
+            OutText(
                 "CrsName",
-                "CrsName",
-                "CrsName",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "CrsName");
+
+            OutText(
                 "Description",
-                "Description",
-                "Description",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "Description");
+
+            OutText(
                 "GeodeticDatum",
-                "GeodeticDatum",
-                "GeodeticDatum",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "GeodeticDatum");
+
+            OutText(
                 "VerticalDatum",
-                "VerticalDatum",
-                "VerticalDatum",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "VerticalDatum");
+
+            OutText(
                 "MapProjection",
-                "MapProjection",
-                "MapProjection",
-                GH_ParamAccess.item);
-            pManager.AddTextParameter(
+                "MapProjection");
+
+            OutText(
                 "MapZone",
-                "MapZone",
-                "MapZone",
-                GH_ParamAccess.item);
+                "MapZone");
         }
 
         protected override void Solve(

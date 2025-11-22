@@ -51,14 +51,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 new List<string> { ElementFilter.NoFilter.ToString() });
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "ElementGuids",
-                "ElementGuids",
-                "List of element Guids matching the filter.",
-                GH_ParamAccess.list);
+                "List of element Guids matching the filter.");
         }
 
         public override void AddedToDocument(
@@ -74,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess DA)
         {
-            var inputElements = ElementsObj.Create(
+            ElementsObj inputElements = ElementsObj.Create(
                 DA,
                 0);
             if (inputElements == null)
@@ -85,7 +82,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            List<string> filters = new();
+            List<string> filters = new List<string>();
             if (!DA.GetDataList(
                     1,
                     filters))
@@ -93,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            FilterElementsObj filterElements = new()
+            FilterElementsObj filterElements = new FilterElementsObj
             {
                 Elements = inputElements.Elements, Filters = filters
             };
@@ -123,6 +120,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             Properties.Resources.FilterElems;
 
         public override Guid ComponentGuid =>
-            new("133ab85c-53f7-466d-8271-31c5518085e2");
+            new Guid("133ab85c-53f7-466d-8271-31c5518085e2");
     }
 }

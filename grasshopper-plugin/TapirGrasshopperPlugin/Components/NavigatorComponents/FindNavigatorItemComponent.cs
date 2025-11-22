@@ -40,44 +40,35 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "The regular expression pattern for the path of the navigator item.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter(
+            OutGenerics(
                 "Id",
-                "Id",
-                "Navigator item identifier.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Navigator item identifier.");
+
+            OutTexts(
                 "Prefix",
-                "Prefix",
-                "Navigator item prefix.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
-                "Name",
-                "Name",
-                "Navigator item name.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Navigator item prefix.");
+
+            OutTexts(
                 "Path",
-                "Path",
-                "Navigator item path.",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
+                "Navigator item path.");
+
+            OutTexts(
+                "Name",
+                "Navigator item name.");
+
+            OutTexts(
                 "Type",
-                "Type",
-                "Navigator item type.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Navigator item type.");
+
+            OutGenerics(
                 "SourceNavigatorItemId",
-                "SourceNavigatorItemId",
-                "Navigator item source.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "Navigator item source.");
+
+            OutGenerics(
                 "DatabaseId",
-                "DatabaseId",
-                "DatabaseId.",
-                GH_ParamAccess.list);
+                "DatabaseId.");
         }
 
         public override void AddedToDocument(

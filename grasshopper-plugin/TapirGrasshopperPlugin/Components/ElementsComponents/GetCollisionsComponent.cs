@@ -92,39 +92,31 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 Tolerances.Main);
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddIntegerParameter(
+            OutIntegers(
                 "IndexOfElementFromGroup1",
-                "IndexFromGroup1",
-                "The index of Elements with detected collision from group1.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "The index of Elements with detected collision from group1.");
+
+            OutGenerics(
                 "ElementGuidFromGroup1",
-                "ElementGuid1",
-                "Elements id from the group1.",
-                GH_ParamAccess.list);
-            pManager.AddIntegerParameter(
+                "Elements id from the group1.");
+
+            OutIntegers(
                 "IndexOfElementFromGroup2",
-                "IndexFromGroup2",
-                "The index of Elements with detected collision from group2.",
-                GH_ParamAccess.list);
-            pManager.AddGenericParameter(
+                "The index of Elements with detected collision from group2.");
+
+            OutGenerics(
                 "ElementGuidFromGroup2",
-                "ElementGuid2",
-                "Elements id from the group2.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "Elements id from the group2.");
+
+            OutBooleans(
                 "HasBodyCollision",
-                "HasBodyCollision",
-                "The element has body collision.",
-                GH_ParamAccess.list);
-            pManager.AddBooleanParameter(
+                "The element has body collision.");
+
+            OutBooleans(
                 "HasClearenceCollision",
-                "HasClearenceCollision",
-                "The element has clearance collision.",
-                GH_ParamAccess.list);
+                "The element has clearance collision.");
         }
 
         protected override void Solve(
@@ -238,8 +230,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 5,
                 hasClearenceCollisions);
         }
-
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.Collisions;
 
         public override Guid ComponentGuid =>
             new Guid("6ff649b0-89a0-466a-aaa6-3b0b5eef70ee");

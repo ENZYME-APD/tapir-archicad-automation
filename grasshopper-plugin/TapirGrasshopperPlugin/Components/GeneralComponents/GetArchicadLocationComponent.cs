@@ -26,14 +26,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         {
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter(
+            OutText(
                 "Location",
-                "Location",
-                "Location of the running Archicad executable.",
-                GH_ParamAccess.item);
+                "Location of the running Archicad executable.");
         }
 
         protected override void Solve(

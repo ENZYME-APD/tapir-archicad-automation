@@ -48,11 +48,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "Type of elements.");
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
-        {
-        }
-
         public override void AddedToDocument(
             GH_Document document)
         {
