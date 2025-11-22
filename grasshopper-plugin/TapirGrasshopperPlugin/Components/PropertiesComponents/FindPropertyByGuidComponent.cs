@@ -80,6 +80,6 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             Properties.Resources.PropertyByGuid;
 
         public override Guid ComponentGuid =>
-            new("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
+            new Guid("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
     }
 }

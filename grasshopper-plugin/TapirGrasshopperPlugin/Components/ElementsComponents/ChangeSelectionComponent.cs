@@ -73,7 +73,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            HashSet<ElementIdItemObj> uniqueElementsToRemove = new();
+            HashSet<ElementIdItemObj> uniqueElementsToRemove =
+                new HashSet<ElementIdItemObj>();
             if (elementsToRemove != null)
             {
                 uniqueElementsToRemove.UnionWith(elementsToRemove.Elements);
@@ -97,15 +98,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 uniqueElementsToRemove.ExceptWith(elementsToAdd.Elements);
             }
 
-            ChangeSelectionParameters parameters = new()
-            {
-                AddElementsToSelection =
-                    elementsToAdd != null
-                        ? elementsToAdd.Elements
-                        : new List<ElementIdItemObj>(),
-                RemoveElementsFromSelection =
-                    uniqueElementsToRemove.ToList()
-            };
+            ChangeSelectionParameters parameters =
+                new ChangeSelectionParameters()
+                {
+                    AddElementsToSelection =
+                        elementsToAdd != null
+                            ? elementsToAdd.Elements
+                            : new List<ElementIdItemObj>(),
+                    RemoveElementsFromSelection =
+                        uniqueElementsToRemove.ToList()
+                };
 
             GetResponse(
                 CommandName,
@@ -116,6 +118,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             Properties.Resources.ChangeSelection;
 
         public override Guid ComponentGuid =>
-            new("d93b983a-35b3-436e-898f-87a79facbec5");
+            new Guid("d93b983a-35b3-436e-898f-87a79facbec5");
     }
 }

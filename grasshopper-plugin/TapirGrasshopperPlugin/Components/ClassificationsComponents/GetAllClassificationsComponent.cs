@@ -59,7 +59,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 List<ClassificationItemObj> tree,
                 string pathToRoot)
         {
-            List<Tuple<ClassificationItemDetailsObj, string>> list = new();
+            List<Tuple<ClassificationItemDetailsObj, string>> list =
+                new List<Tuple<ClassificationItemDetailsObj, string>>();
+
             foreach (ClassificationItemObj item in tree)
             {
                 string path = pathToRoot + '/' + item.ClassificationItem.Id;
@@ -84,7 +86,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
             Dictionary<ClassificationSystemDetailsObj,
                     List<Tuple<ClassificationItemDetailsObj, string>>>
-                itemsPerSystems = new();
+                itemsPerSystems =
+                    new Dictionary<ClassificationSystemDetailsObj,
+                        List<Tuple<ClassificationItemDetailsObj, string>>>();
 
 
             if (!GetConvertedResponse(
@@ -99,10 +103,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             foreach (ClassificationSystemDetailsObj system in
                      classificationSystems.ClassificationSystems)
             {
-                ClassificationSystemObj classificationSystem = new()
-                {
-                    ClassificationSystemId = system.ClassificationSystemId
-                };
+                ClassificationSystemObj classificationSystem =
+                    new ClassificationSystemObj()
+                    {
+                        ClassificationSystemId =
+                            system.ClassificationSystemId
+                    };
 
                 JObject classificationSystemObj =
                     JObject.FromObject(classificationSystem);
@@ -123,13 +129,14 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     itemsInSystem);
             }
 
-            List<string> systemIds = new();
-            List<string> systemNamesAndVersions = new();
-            List<string> itemIds = new();
-            List<string> itemDisplayIds = new();
-            List<string> itemNames = new();
-            List<string> itemFullDisplayIds = new();
-            List<string> itemPaths = new();
+            List<string> systemIds = new List<string>();
+            List<string> systemNamesAndVersions = new List<string>();
+            List<string> itemIds = new List<string>();
+            List<string> itemDisplayIds = new List<string>();
+            List<string> itemNames = new List<string>();
+            List<string> itemFullDisplayIds = new List<string>();
+            List<string> itemPaths = new List<string>();
+
             foreach (KeyValuePair<ClassificationSystemDetailsObj,
                              List<Tuple<ClassificationItemDetailsObj, string>>>
                          itemsInSystem in itemsPerSystems)
@@ -182,6 +189,6 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             Properties.Resources.AllClassifications;
 
         public override Guid ComponentGuid =>
-            new("46a81cf1-e043-4cb7-b587-c2a6d3349bd8");
+            new Guid("46a81cf1-e043-4cb7-b587-c2a6d3349bd8");
     }
 }

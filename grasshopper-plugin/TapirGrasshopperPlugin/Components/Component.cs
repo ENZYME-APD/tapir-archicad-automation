@@ -297,6 +297,7 @@ namespace TapirGrasshopperPlugin.Components
                 description,
                 GH_ParamAccess.list);
         }
+
         public void OutPoints(
             string name,
             string description)
@@ -307,6 +308,7 @@ namespace TapirGrasshopperPlugin.Components
                 description,
                 GH_ParamAccess.list);
         }
+
         public void InNumber(
             string name,
             string description,
@@ -410,6 +412,17 @@ namespace TapirGrasshopperPlugin.Components
                 name,
                 description,
                 GH_ParamAccess.tree);
+        }
+
+        public void InInteger(
+            string name,
+            string description)
+        {
+            inManager.AddIntegerParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item);
         }
 
         public void InInteger(
@@ -525,6 +538,17 @@ namespace TapirGrasshopperPlugin.Components
                 name,
                 description,
                 GH_ParamAccess.tree);
+        }
+
+        public void InColor(
+            string name,
+            string description)
+        {
+            inManager.AddColourParameter(
+                name,
+                name,
+                description,
+                GH_ParamAccess.item);
         }
 
         public void InColor(
@@ -754,7 +778,7 @@ namespace TapirGrasshopperPlugin.Components
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             if (!AutoRefresh && !ManualRefreshRequested)
             {
@@ -764,7 +788,7 @@ namespace TapirGrasshopperPlugin.Components
                 return;
             }
 
-            Solve(DA);
+            Solve(da);
         }
 
         protected abstract void Solve(

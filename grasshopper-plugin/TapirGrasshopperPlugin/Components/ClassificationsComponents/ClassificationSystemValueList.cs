@@ -1,6 +1,8 @@
-﻿using Grasshopper.Kernel.Special;
+﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Special;
 using System;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
@@ -20,17 +22,24 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
         public override void RefreshItems()
         {
-            if (!GetAndConvertResponse(
-                    CommandName,
-                    null,
-                    out AllClassificationSystems classificationSystems))
+            CommandResponse response = SendArchicadCommand(
+                "GetAllClassificationSystems",
+                null);
+
+            if (!response.Succeeded)
             {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    response.GetErrorMessage());
                 return;
             }
 
             var previouslySelected = SelectedItems[0].Expression;
 
             ListItems.Clear();
+
+            AllClassificationSystems classificationSystems =
+                response.Result.ToObject<AllClassificationSystems>();
 
             foreach (var system in classificationSystems.ClassificationSystems)
             {

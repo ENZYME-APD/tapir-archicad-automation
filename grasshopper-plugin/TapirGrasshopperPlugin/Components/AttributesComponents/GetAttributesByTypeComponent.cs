@@ -103,6 +103,6 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             Properties.Resources.AttributesByType;
 
         public override Guid ComponentGuid =>
-            new("f974c9ec-e3ec-4cf2-a576-b7a8548c9883");
+            new Guid("f974c9ec-e3ec-4cf2-a576-b7a8548c9883");
     }
 }
