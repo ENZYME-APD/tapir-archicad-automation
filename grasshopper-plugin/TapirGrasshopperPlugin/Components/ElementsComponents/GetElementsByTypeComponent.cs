@@ -58,7 +58,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     0,
                     out string eType))
             {
@@ -87,7 +87,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         : databases.Databases
             };
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     elementsByType,
                     out ElementsObj elements))

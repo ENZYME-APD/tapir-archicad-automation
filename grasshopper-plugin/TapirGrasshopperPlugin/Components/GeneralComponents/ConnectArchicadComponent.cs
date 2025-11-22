@@ -64,7 +64,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     0,
                     out int portNumber))
             {

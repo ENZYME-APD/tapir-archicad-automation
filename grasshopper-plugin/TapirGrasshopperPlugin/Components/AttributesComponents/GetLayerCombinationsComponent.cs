@@ -57,21 +57,19 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var attributes = AttributesObj.Create(
-                da,
-                0);
-            if (attributes == null)
+            if (!AttributesObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out AttributesObj attributes))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input AttributeGuids failed to collect data.");
                 return;
             }
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     attributes,
-                    out LayerCombinationsObj layerCombinations)) { return; }
+                    out LayerCombinationsObj response)) { return; }
 
             var attributeNames = new List<string>();
             var layerAttributeIds = new DataTree<AttributeIdItemObj>();
@@ -80,9 +78,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             var isWireframeLayers = new DataTree<bool>();
             var intersectionGroupsOfLayers = new DataTree<int>();
 
-            for (var i = 0; i < layerCombinations.LayerCombinations.Count; i++)
+            for (var i = 0; i < response.LayerCombinations.Count; i++)
             {
-                var layerCombination = layerCombinations.LayerCombinations[i];
+                var layerCombination = response.LayerCombinations[i];
                 attributeNames.Add(layerCombination.LayerCombination.Name);
                 var layerIds = new List<AttributeIdItemObj>();
                 var isHiddens = new List<bool>();

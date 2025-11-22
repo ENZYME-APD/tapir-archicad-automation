@@ -38,14 +38,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var elements = ElementsObj.Create(
-                da,
-                0);
-            if (elements == null)
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out ElementsObj elements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ElementGuids failed to collect data.");
                 return;
             }
 
@@ -65,7 +63,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     2,
                     out bool copy))
             {

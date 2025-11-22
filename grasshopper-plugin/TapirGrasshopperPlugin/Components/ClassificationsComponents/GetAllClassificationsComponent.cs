@@ -104,7 +104,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 JObject classificationSystemObj =
                     JObject.FromObject(classificationSystem);
 
-                if (!GetConvertedResponse(
+                if (!TryGetConvertedResponse(
                         CommandName,
                         classificationSystemObj,
                         out AllClassificationItemsInSystem

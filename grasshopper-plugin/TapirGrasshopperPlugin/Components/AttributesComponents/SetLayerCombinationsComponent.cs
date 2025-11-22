@@ -55,14 +55,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var attributes = AttributesObj.Create(
-                da,
-                0);
-            if (attributes == null)
+            if (!AttributesObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out AttributesObj attributes))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input AttributeGuids failed to collect data.");
                 return;
             }
 

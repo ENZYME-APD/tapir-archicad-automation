@@ -48,7 +48,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     0,
                     out List<string> jsonElements)) { return; }
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     jsonElements,
                     out ExecutionResultsResponse response))

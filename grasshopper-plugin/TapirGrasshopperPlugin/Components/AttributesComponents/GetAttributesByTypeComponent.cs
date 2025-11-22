@@ -54,14 +54,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     0,
                     out string aType))
             {
                 return;
             }
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     new AttributesByTypeObj { AttributeType = aType },
                     out AttributeDetailsObj response)) { return; }

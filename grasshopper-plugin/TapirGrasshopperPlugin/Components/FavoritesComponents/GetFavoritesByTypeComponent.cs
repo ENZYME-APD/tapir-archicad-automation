@@ -34,14 +34,14 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     0,
                     out string eType))
             {
                 return;
             }
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     new ElementTypeObject(eType),
                     out FavoritesResponse response))

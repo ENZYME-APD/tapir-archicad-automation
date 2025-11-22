@@ -36,25 +36,23 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var issueId = IssueIdObj.Create(
-                da,
-                0);
-            if (issueId == null)
+            if (!IssueIdObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out IssueIdObj issueId))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input IssueGuid failed to collect data.");
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     1,
                     out string author))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     2,
                     out string text))
             {

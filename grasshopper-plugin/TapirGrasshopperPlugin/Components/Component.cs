@@ -683,7 +683,7 @@ namespace TapirGrasshopperPlugin.Components
             return false;
         }
 
-        protected bool GetConvertedResponse<T>(
+        protected bool TryGetConvertedResponse<T>(
             string commandName,
             object commandParameters,
             out T response)

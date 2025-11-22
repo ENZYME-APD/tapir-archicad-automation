@@ -48,7 +48,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     0,
                     out string name))
             {
@@ -74,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     : previousNavigatorItemId.Id
             };
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     input,
                     out CreateViewMapFolderOutput response))

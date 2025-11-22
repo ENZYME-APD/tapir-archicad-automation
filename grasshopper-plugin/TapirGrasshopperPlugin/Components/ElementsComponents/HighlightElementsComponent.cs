@@ -120,14 +120,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var inputElements = ElementsObj.Create(
-                da,
-                1);
-            if (inputElements == null)
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    1,
+                    out ElementsObj inputElements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ElementGuids failed to collect data.");
                 return;
             }
 
@@ -147,21 +145,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     3,
                     out GH_Colour nonHighlightedColor))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     4,
                     out bool wireframe3D))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     5,
                     out double transparency))
             {

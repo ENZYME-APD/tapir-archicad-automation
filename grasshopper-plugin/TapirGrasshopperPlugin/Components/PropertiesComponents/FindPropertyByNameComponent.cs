@@ -38,14 +38,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     0,
                     out string propertyGroupName))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     1,
                     out string propertyName))
             {

@@ -108,21 +108,21 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     0,
                     out string type))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     1,
                     out string name))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     2,
                     out string pathRegex))
             {
@@ -138,7 +138,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             };
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     navigatorTreeId,
                     out NavigatorTreeObj response))

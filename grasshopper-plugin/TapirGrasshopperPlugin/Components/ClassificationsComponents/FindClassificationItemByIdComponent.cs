@@ -77,25 +77,23 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var systemId = ClassificationIdObj.Create(
-                da,
-                0);
-            if (systemId == null)
+            if (!ClassificationIdObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out ClassificationIdObj systemId))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ClassificationSystemId failed to collect data.");
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     1,
                     out string cId))
             {
                 return;
             }
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     new ClassificationSystemObj
                     {

@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
@@ -51,18 +52,16 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var attributes = AttributeIdsObj.Create(
-                da,
-                0);
-            if (attributes == null)
+            if (AttributeIdsObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out AttributeIdsObj attributes))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input AttributeGuids failed to collect data.");
                 return;
             }
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     attributes,
                     out LayersObj layers)) { return; }

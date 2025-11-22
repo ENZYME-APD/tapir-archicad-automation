@@ -42,25 +42,21 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var navigatorItemId = NavigatorIdItemObj.Create(
-                da,
-                0);
-            if (navigatorItemId == null)
+            if (!NavigatorIdItemObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out NavigatorIdItemObj navigatorItemId))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input NavigatorItemId failed to collect data.");
                 return;
             }
 
-            var parentNavigatorItemId = NavigatorIdItemObj.Create(
-                da,
-                1);
-            if (parentNavigatorItemId == null)
+            if (!NavigatorIdItemObj.TryCreate(
+                    this,
+                    da,
+                    1,
+                    out NavigatorIdItemObj parentNavigatorItemId))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ParentNavigatorItemId failed to collect data.");
                 return;
             }
 

@@ -79,26 +79,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var inputElementsGroup1 = ElementsObj.Create(
-                da,
-                0);
-            if (inputElementsGroup1 == null)
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out ElementsObj inputGroup1))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ElementsGroup1 failed to collect data.");
                 return;
             }
 
-            var inputElementsGroup2 = ElementsObj.Create(
-                da,
-                1);
-
-            if (inputElementsGroup2 == null)
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out ElementsObj inputGroup2))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ElementsGroup2 failed to collect data.");
                 return;
             }
 
@@ -106,7 +101,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 2,
                 Tolerances.Main);
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     3,
                     out bool performSurfaceCheck)) { return; }
 
@@ -116,8 +111,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var parameters = new GetCollisionsParameters()
             {
-                ElementsGroup1 = inputElementsGroup1.Elements,
-                ElementsGroup2 = inputElementsGroup2.Elements,
+                ElementsGroup1 = inputGroup1.Elements,
+                ElementsGroup2 = inputGroup2.Elements,
                 Settings = new CollisionDetectionSettings
                 {
                     VolumeTolerance = volumeTolerance,
@@ -126,7 +121,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
             };
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     parameters,
                     out CollisionsOutput collisions))
@@ -144,12 +139,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             foreach (var c in collisions.Collisions)
             {
                 elementIndex1s.Add(
-                    inputElementsGroup1.Elements.FindIndex(e =>
+                    inputGroup1.Elements.FindIndex(e =>
                         e.ElementId.Equals(c.ElementId1)));
                 elementId1s.Add(
                     new ElementIdItemObj { ElementId = c.ElementId1 });
                 elementIndex2s.Add(
-                    inputElementsGroup2.Elements.FindIndex(e =>
+                    inputGroup2.Elements.FindIndex(e =>
                         e.ElementId.Equals(c.ElementId2)));
                 elementId2s.Add(
                     new ElementIdItemObj { ElementId = c.ElementId2 });

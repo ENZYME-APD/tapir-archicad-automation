@@ -3,6 +3,7 @@ using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
@@ -48,21 +49,18 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var classificationSystemId = ClassificationIdObj.Create(
-                da,
-                0);
-            if (classificationSystemId == null)
+            if (!ClassificationIdObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out ClassificationIdObj classificationSystemId))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ClsSystemGuid failed to collect data.");
                 return;
             }
 
-            var inputItemIds = new List<GH_ObjectWrapper>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     1,
-                    inputItemIds))
+                    out List<GH_ObjectWrapper> inputItemIds))
             {
                 return;
             }
@@ -77,14 +75,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 }
             }
 
-            var elements = ElementsObj.Create(
-                da,
-                2);
-            if (elements == null)
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    2,
+                    out ElementsObj elements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ElementGuids failed to collect data.");
                 return;
             }
 

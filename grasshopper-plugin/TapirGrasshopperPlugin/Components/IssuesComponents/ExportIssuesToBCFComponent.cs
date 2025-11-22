@@ -42,32 +42,30 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var issues = IssuesObj.Create(
-                da,
-                0);
-            if (issues == null)
+            if (!IssuesObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out IssuesObj issues))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input IssueGuids failed to collect data.");
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     1,
                     out string exportedFilePath))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     2,
                     out bool useExternalId))
             {
                 return;
             }
 
-            if (!da.GetItem(
+            if (!da.TryGetItem(
                     3,
                     out bool alignBySurveyPoint))
             {

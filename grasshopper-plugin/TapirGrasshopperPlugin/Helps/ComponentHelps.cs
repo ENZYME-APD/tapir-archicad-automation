@@ -5,7 +5,7 @@ namespace TapirGrasshopperPlugin.Helps
 {
     public static class ComponentHelps
     {
-        public static bool GetItem<T>(
+        public static bool TryGetItem<T>(
             this IGH_DataAccess dataAccess,
             int index,
             out T result)

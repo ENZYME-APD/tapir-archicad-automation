@@ -37,25 +37,21 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var propertyId = PropertyIdObj.Create(
-                da,
-                0);
-            if (propertyId == null)
+            if (!PropertyIdObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out PropertyIdObj propertyId))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input PropertyGuid failed to collect data.");
                 return;
             }
 
-            var elements = ElementsObj.Create(
-                da,
-                1);
-            if (elements == null)
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    1,
+                    out ElementsObj elements))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ElementGuids failed to collect data.");
                 return;
             }
 

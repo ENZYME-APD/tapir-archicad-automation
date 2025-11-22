@@ -4,23 +4,33 @@ using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Data
 {
     public abstract class IdObj<T>
         where T : IdObj<T>, new()
     {
-        public static T Create(
+        public static bool TryCreate(
+            GH_ActiveObject ghObject,
             IGH_DataAccess da,
-            int index)
+            int index,
+            out T result)
         {
-            var id = new GH_ObjectWrapper();
+            if (da.TryGetItem(
+                    index,
+                    out GH_ObjectWrapper id))
+            {
+                result = Create(id);
+                return true;
+            }
 
-            return !da.GetData(
-                index,
-                ref id)
-                ? null
-                : Create(id);
+            ghObject.AddRuntimeMessage(
+                GH_RuntimeMessageLevel.Error,
+                $"Input failed to collect data at index {index}.");
+
+            result = null;
+            return false;
         }
 
         public static T Create(
@@ -91,17 +101,40 @@ namespace TapirGrasshopperPlugin.Data
         where I : IdObj<I>, new()
         where T : IdItemObj<I, T>, new()
     {
+        public static bool TryCreate(
+            GH_ActiveObject ghObject,
+            IGH_DataAccess da,
+            int index,
+            out T result)
+        {
+            if (da.TryGetItem(
+                    index,
+                    out GH_ObjectWrapper idItem))
+            {
+                result = Create(idItem);
+                return true;
+            }
+
+            ghObject.AddRuntimeMessage(
+                GH_RuntimeMessageLevel.Error,
+                $"Input failed to collect data at index {index}.");
+
+            result = null;
+            return false;
+        }
+
         public static T Create(
             IGH_DataAccess da,
             int index)
         {
-            var idItem = new GH_ObjectWrapper();
+            if (da.TryGetItem(
+                    index,
+                    out GH_ObjectWrapper idItem))
+            {
+                return Create(idItem);
+            }
 
-            return !da.GetData(
-                index,
-                ref idItem)
-                ? null
-                : Create(idItem);
+            return null;
         }
 
         public static T Create(
@@ -153,12 +186,35 @@ namespace TapirGrasshopperPlugin.Data
         where J : IdItemObj<I, J>, new()
         where T : IdsObj<I, J, T>, new()
     {
+        public static bool TryCreate(
+            GH_ActiveObject ghObject,
+            IGH_DataAccess da,
+            int index,
+            out T result)
+        {
+            if (da.GetItems(
+                    index,
+                    out List<GH_ObjectWrapper> ids))
+            {
+                result = Create(ids);
+                return true;
+            }
+
+            ghObject.AddRuntimeMessage(
+                GH_RuntimeMessageLevel.Error,
+                $"Input failed to collect data at index {index}.");
+
+            result = null;
+            return false;
+        }
+
         public static T Create(
-            IGH_DataAccess DA,
+            IGH_DataAccess da,
             int index)
         {
             var ids = new List<GH_ObjectWrapper>();
-            if (!DA.GetDataList(
+
+            if (!da.GetDataList(
                     index,
                     ids))
             {
@@ -172,6 +228,7 @@ namespace TapirGrasshopperPlugin.Data
             List<GH_ObjectWrapper> objects)
         {
             var ids = new T { Ids = new List<J>() };
+
             foreach (var obj in objects)
             {
                 var id = IdItemObj<I, J>.Create(obj);

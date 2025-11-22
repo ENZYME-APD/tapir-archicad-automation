@@ -42,29 +42,39 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var elementsToAdd = ElementsObj.Create(
-                da,
-                0);
-            var elementsToRemove = ElementsObj.Create(
-                da,
-                1);
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out ElementsObj elementsToAdd))
+            {
+                return;
+            }
 
-            if (!da.GetItem(
+            if (!ElementsObj.TryCreate(
+                    this,
+                    da,
+                    1,
+                    out ElementsObj elementsToRemove))
+            {
+                return;
+            }
+
+            if (!da.TryGetItem(
                     2,
                     out bool clearSelection))
             {
                 return;
             }
 
-            if ((elementsToAdd == null || elementsToAdd.Elements.Count == 0) &&
-                (elementsToRemove == null ||
-                 elementsToRemove.Elements.Count == 0) && !clearSelection)
+            if (elementsToAdd.Elements.Count == 0 &&
+                elementsToRemove.Elements.Count == 0 && !clearSelection)
             {
                 return;
             }
 
-            HashSet<ElementIdItemObj> uniqueElementsToRemove =
-                new HashSet<ElementIdItemObj>();
+            var uniqueElementsToRemove = new HashSet<ElementIdItemObj>();
+
             if (elementsToRemove != null)
             {
                 uniqueElementsToRemove.UnionWith(elementsToRemove.Elements);

@@ -53,18 +53,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var inputZone = ElementIdItemObj.Create(
-                da,
-                0);
-            if (inputZone == null)
+            if (!ElementIdItemObj.TryCreate(
+                    this,
+                    da,
+                    0,
+                    out ElementIdItemObj inputZone))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ZoneElementGuid failed to collect data.");
                 return;
             }
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     new ZoneBoundaryParameters
                     {
