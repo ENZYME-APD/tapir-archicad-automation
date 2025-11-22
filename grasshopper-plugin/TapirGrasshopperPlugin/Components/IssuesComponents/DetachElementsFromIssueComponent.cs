@@ -1,8 +1,7 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -10,15 +9,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public static string Doc => "Detach Elements from an Issue.";
         public override string CommandName => "DetachElementsFromIssue";
-
-        public class ParametersOfDetachElements
-        {
-            [JsonProperty("issueId")]
-            public IssueIdObj IssueId;
-
-            [JsonProperty("elements")]
-            public List<ElementIdItemObj> Elements;
-        }
 
         public DetachElementsFromIssueComponent()
             : base(

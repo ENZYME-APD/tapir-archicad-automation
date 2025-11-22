@@ -1,18 +1,12 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public class AttributesByTypeObj
-    {
-        [JsonProperty("attributeType")]
-        public string AttributeType;
-    }
-
     public class GetAttributesByTypeComponent : ArchicadAccessorComponent
     {
         public static string Doc => "Get all attributes by type";

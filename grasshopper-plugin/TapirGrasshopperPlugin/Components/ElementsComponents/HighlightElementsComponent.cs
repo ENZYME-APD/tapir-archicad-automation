@@ -193,7 +193,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     inputElements.Elements.Count),
                 NonHighlightedColor = Utilities.Convert.ToRGBColor(
                     nonHighlightedColor,
-                    System.Convert.ToInt32(transparency * 255.0)),
+                    Convert.ToInt32(transparency * 255.0)),
                 Wireframe3D = wireframe3D
             };
 

@@ -1,48 +1,13 @@
-﻿using Eto.Forms;
-using Grasshopper.Kernel;
-using Newtonsoft.Json;
+﻿using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class SetWallDetails
-    {
-        [JsonProperty("begCoordinate")]
-        public Point2D BegCoordinate;
-
-        [JsonProperty("endCoordinate")]
-        public Point2D EndCoordinate;
-
-        [JsonProperty("height")]
-        public double Height;
-    }
-
-    public class TypedDetails<T>
-    {
-        [JsonProperty("typeSpecificDetails")]
-        public T TypeSpecificDetails;
-    }
-
-    public class TypedElementWithDetailsObj<T>
-    {
-        [JsonProperty("elementId")]
-        public ElementIdObj ElementId;
-
-        [JsonProperty("details")]
-        public TypedDetails<T> Details;
-    }
-
-    public class TypedElementsWithDetailsObj<T>
-    {
-        [JsonProperty("elementsWithDetails")]
-        public List<TypedElementWithDetailsObj<T>> ElementsWithDetails;
-    }
-
     public class SetDetailsOfWallsComponent : ArchicadExecutorComponent
     {
         public static string Doc => "Set details of wall elements.";
@@ -79,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var inputElements = ElementsObj.Create(
+            ElementsObj inputElements = ElementsObj.Create(
                 da,
                 0);
             if (inputElements == null)
@@ -90,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var begCoords = new List<Point3d>();
+            List<Point3d> begCoords = new List<Point3d>();
             if (!da.GetDataList(
                     1,
                     begCoords))
@@ -101,7 +66,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var endCoords = new List<Point3d>();
+            List<Point3d> endCoords = new List<Point3d>();
             if (!da.GetDataList(
                     2,
                     endCoords))
@@ -112,7 +77,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var heights = new List<double>();
+            List<double> heights = new List<double>();
             if (!da.GetDataList(
                     3,
                     heights))
@@ -155,20 +120,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var obj = new TypedElementsWithDetailsObj<SetWallDetails>()
+            TypedElementsWithDetailsObj<SetWallDetails> obj =
+                new TypedElementsWithDetailsObj<SetWallDetails>
+                {
+                    ElementsWithDetails =
+                        new List<TypedElementWithDetailsObj<
+                            SetWallDetails>>()
+                };
+            for (int i = 0; i < inputElements.Elements.Count; i++)
             {
-                ElementsWithDetails =
-                    new List<TypedElementWithDetailsObj<SetWallDetails>>()
-            };
-            for (var i = 0; i < inputElements.Elements.Count; i++)
-            {
-                var elementWithDetails =
-                    new TypedElementWithDetailsObj<SetWallDetails>()
+                TypedElementWithDetailsObj<SetWallDetails> elementWithDetails =
+                    new TypedElementWithDetailsObj<SetWallDetails>
                     {
                         ElementId = inputElements.Elements[i].ElementId,
-                        Details = new TypedDetails<SetWallDetails>()
+                        Details = new TypedDetails<SetWallDetails>
                         {
-                            TypeSpecificDetails = new SetWallDetails()
+                            TypeSpecificDetails = new SetWallDetails
                             {
                                 BegCoordinate =
                                     Point2D.Create(
@@ -193,9 +160,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            for (var i = 0; i < executionResults.ExecutionResults.Count; i++)
+            for (int i = 0; i < executionResults.ExecutionResults.Count; i++)
             {
-                var eResult = executionResults.ExecutionResults[i];
+                ExecutionResultBase eResult =
+                    executionResults.ExecutionResults[i];
                 if (eResult.Success)
                 {
                     continue;

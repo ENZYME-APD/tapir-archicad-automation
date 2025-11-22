@@ -1,7 +1,7 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -9,15 +9,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public static string Doc => "Delete Issue.";
         public override string CommandName => "DeleteIssue";
-
-        public class ParametersOfDelete
-        {
-            [JsonProperty("issueId")]
-            public IssueIdObj IssueId;
-
-            [JsonProperty("acceptAllElements")]
-            public bool AcceptAllElements;
-        }
 
         public DeleteIssueComponent()
             : base(

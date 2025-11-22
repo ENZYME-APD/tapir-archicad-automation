@@ -1,19 +1,13 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class HierarchicalElementsObj
-    {
-        [JsonProperty("hierarchicalElements")]
-        public List<ElementIdItemObj> Elements;
-    }
-
     public class GetSubelementsOfHierarchicalElementsComponent
         : ArchicadAccessorComponent
     {

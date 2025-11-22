@@ -5,24 +5,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class GetConnectedElementsParameters
-    {
-        [JsonProperty("elements")]
-        public List<ElementIdItemObj> Elements;
-
-        [JsonProperty("connectedElementType")]
-        public string ConnectedElementType;
-    }
-
-    public class ConnectedElementsObj
-    {
-        [JsonProperty("connectedElements")]
-        public List<ElementsObj> ConnectedElements;
-    }
-
     public class GetConnectedElementsComponent : ArchicadAccessorComponent
     {
         public static string Doc =>

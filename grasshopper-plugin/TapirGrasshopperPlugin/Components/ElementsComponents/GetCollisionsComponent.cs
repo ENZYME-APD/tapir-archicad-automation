@@ -4,54 +4,10 @@ using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CollisionDetectionSettings
-    {
-        [JsonProperty("volumeTolerance")]
-        public double VolumeTolerance;
-
-        [JsonProperty("performSurfaceCheck")]
-        public bool PerformSurfaceCheck;
-
-        [JsonProperty("surfaceTolerance")]
-        public double SurfaceTolerance;
-    }
-
-    public class GetCollisionsParameters
-    {
-        [JsonProperty("elementsGroup1")]
-        public List<ElementIdItemObj> ElementsGroup1;
-
-        [JsonProperty("elementsGroup2")]
-        public List<ElementIdItemObj> ElementsGroup2;
-
-        [JsonProperty("settings")]
-        public CollisionDetectionSettings Settings;
-    }
-
-    public class Collision
-    {
-        [JsonProperty("elementId1")]
-        public ElementIdObj ElementId1;
-
-        [JsonProperty("elementId2")]
-        public ElementIdObj ElementId2;
-
-        [JsonProperty("hasBodyCollision")]
-        public bool HasBodyCollision;
-
-        [JsonProperty("hasClearenceCollision")]
-        public bool HasClearenceCollision;
-    }
-
-    public class CollisionsOutput
-    {
-        [JsonProperty("collisions")]
-        public List<Collision> Collisions;
-    }
-
     public class GetCollisionsComponent : ArchicadAccessorComponent
     {
         public static string Doc => "Detects collisions between elements.";

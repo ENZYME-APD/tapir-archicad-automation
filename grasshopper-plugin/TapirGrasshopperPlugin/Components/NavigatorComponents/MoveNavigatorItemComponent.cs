@@ -2,23 +2,10 @@
 using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
-    public class MoveNavigatorItemInput
-    {
-        [JsonProperty("navigatorItemIdToMove")]
-        public NavigatorIdObj NavigatorItemIdToMove;
-
-        [JsonProperty("parentNavigatorItemId")]
-        public NavigatorIdObj ParentNavigatorItemId;
-
-        [JsonProperty(
-            "previousNavigatorItemId",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public NavigatorIdObj PreviousNavigatorItemId;
-    }
-
     public class MoveNavigatorItem : ArchicadExecutorComponent
     {
         public static string Doc =>

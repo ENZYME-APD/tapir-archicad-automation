@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -12,15 +12,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public static string Doc => "Change Selection, add or remove elements.";
         public override string CommandName => "ChangeSelectionOfElements";
-
-        public class ChangeSelectionParameters
-        {
-            [JsonProperty("addElementsToSelection")]
-            public List<ElementIdItemObj> AddElementsToSelection;
-
-            [JsonProperty("removeElementsFromSelection")]
-            public List<ElementIdItemObj> RemoveElementsFromSelection;
-        }
 
         public ChangeSelectionComponent()
             : base(
@@ -98,16 +89,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 uniqueElementsToRemove.ExceptWith(elementsToAdd.Elements);
             }
 
-            ChangeSelectionParameters parameters =
-                new ChangeSelectionParameters()
-                {
-                    AddElementsToSelection =
-                        elementsToAdd != null
-                            ? elementsToAdd.Elements
-                            : new List<ElementIdItemObj>(),
-                    RemoveElementsFromSelection =
-                        uniqueElementsToRemove.ToList()
-                };
+            var parameters = new ChangeSelectionParameters()
+            {
+                AddElementsToSelection =
+                    elementsToAdd != null
+                        ? elementsToAdd.Elements
+                        : new List<ElementIdItemObj>(),
+                RemoveElementsFromSelection =
+                    uniqueElementsToRemove.ToList()
+            };
 
             GetResponse(
                 CommandName,

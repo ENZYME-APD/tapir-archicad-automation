@@ -1,8 +1,7 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -10,21 +9,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public static string Doc => "Export Issues to BCF.";
         public override string CommandName => "ExportIssuesToBCF";
-
-        public class ParametersOfExport
-        {
-            [JsonProperty("issues")]
-            public List<IssueIdItemObj> Issues;
-
-            [JsonProperty("exportPath")]
-            public string ExportPath;
-
-            [JsonProperty("useExternalId")]
-            public bool UseExternalId;
-
-            [JsonProperty("alignBySurveyPoint")]
-            public bool AlignBySurveyPoint;
-        }
 
         public ExportIssuesToBCFComponent()
             : base(

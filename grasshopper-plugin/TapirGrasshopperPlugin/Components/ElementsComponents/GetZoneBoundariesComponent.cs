@@ -1,42 +1,12 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using Rhino.Geometry;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class ZoneBoundaryParameters
-    {
-        [JsonProperty("zoneElementId")]
-        public ElementIdObj ZoneElementId;
-    }
-
-    public class ZoneBoundary
-    {
-        [JsonProperty("connectedElementId")]
-        public ElementIdObj ConnectedElementId;
-
-        [JsonProperty("isExternal")]
-        public bool IsExternal;
-
-        [JsonProperty("neighbouringZoneElementId")]
-        public ElementIdObj NeighbouringZoneElementId;
-
-        [JsonProperty("area")]
-        public double Area;
-
-        [JsonProperty("polygonOutline")]
-        public List<Point3D> PolygonCoordinates;
-    }
-
-    public class ZoneBoundariesOutput
-    {
-        [JsonProperty("zoneBoundaries")]
-        public List<ZoneBoundary> ZoneBoundaries;
-    }
-
     public class GetZoneBoundariesComponent : ArchicadAccessorComponent
     {
         public static string Doc =>
@@ -85,10 +55,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var inputZone = ElementIdItemObj.Create(
-                DA,
+                da,
                 0);
             if (inputZone == null)
             {
@@ -106,7 +76,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!GetConvertedResponse(
                     CommandName,
                     parameters,
-                    out ZoneBoundariesOutput zoneBoundaries))
+                    out ZoneBoundariesOutput response))
             {
                 return;
             }
@@ -117,7 +87,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var areas = new List<double>();
             var polygons = new List<PolyCurve>();
 
-            foreach (var zb in zoneBoundaries.ZoneBoundaries)
+            foreach (var zb in response.ZoneBoundaries)
             {
                 connectedElements.Add(
                     new ElementIdItemObj()
@@ -135,19 +105,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     Utilities.Convert.ToPolyCurve(zb.PolygonCoordinates));
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 connectedElements);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 isExternals);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 neighbouringZones);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 areas);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 polygons);
         }

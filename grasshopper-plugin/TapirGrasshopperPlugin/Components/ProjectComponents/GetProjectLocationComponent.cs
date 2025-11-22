@@ -1,75 +1,9 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
+using TapirGrasshopperPlugin.ResponseTypes.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
-    public class Location
-    {
-        [JsonProperty("longitude")]
-        public double Longitude;
-
-        [JsonProperty("latitude")]
-        public double Latitude;
-
-        [JsonProperty("altitude")]
-        public double Altitude;
-
-        [JsonProperty("north")]
-        public double North;
-    }
-
-    public class SurveyPointPosition
-    {
-        [JsonProperty("eastings")]
-        public double Eastings;
-
-        [JsonProperty("northings")]
-        public double Northings;
-
-        [JsonProperty("elevation")]
-        public double Elevation;
-    }
-
-    public class GeoReferencingParameters
-    {
-        [JsonProperty("crsName")]
-        public string CrsName;
-
-        [JsonProperty("description")]
-        public string Description;
-
-        [JsonProperty("geodeticDatum")]
-        public string GeodeticDatum;
-
-        [JsonProperty("verticalDatum")]
-        public string VerticalDatum;
-
-        [JsonProperty("mapProjection")]
-        public string MapProjection;
-
-        [JsonProperty("mapZone")]
-        public string MapZone;
-    }
-
-    public class SurveyPoint
-    {
-        [JsonProperty("position")]
-        public SurveyPointPosition Position;
-
-        [JsonProperty("geoReferencingParameters")]
-        public GeoReferencingParameters GeoReferencingParams;
-    }
-
-    public class ProjectLocation
-    {
-        [JsonProperty("projectLocation")]
-        public Location Loc;
-
-        [JsonProperty("surveyPoint")]
-        public SurveyPoint Survey;
-    }
-
     public class GetProjectLocationComponent : ArchicadAccessorComponent
     {
         public static string Doc =>
@@ -89,56 +23,56 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddOutputs()
         {
             OutText(
-                "Longitude",
-                "Longitude");
+                nameof(Location.Longitude),
+                "");
 
             OutText(
-                "Latitude",
-                "Latitude");
+                nameof(Location.Latitude),
+                "");
 
             OutText(
-                "Altitude",
-                "Altitude");
+                nameof(Location.Altitude),
+                "");
 
             OutText(
-                "North",
-                "North");
+                nameof(Location.North),
+                "");
 
             OutText(
-                "Eastings",
-                "Eastings");
+                nameof(SurveyPointPosition.Eastings),
+                "");
 
             OutText(
-                "Northings",
-                "Northings");
+                nameof(SurveyPointPosition.Northings),
+                "");
 
             OutText(
                 "Elevation",
-                "Elevation");
+                "");
 
             OutText(
-                "CrsName",
-                "CrsName");
+                nameof(GeoReferencingParameters.CrsName),
+                "");
 
             OutText(
-                "Description",
-                "Description");
+                nameof(GeoReferencingParameters.Description),
+                "");
 
             OutText(
-                "GeodeticDatum",
-                "GeodeticDatum");
+                nameof(GeoReferencingParameters.GeodeticDatum),
+                "");
 
             OutText(
-                "VerticalDatum",
-                "VerticalDatum");
+                nameof(GeoReferencingParameters.VerticalDatum),
+                "");
 
             OutText(
-                "MapProjection",
-                "MapProjection");
+                nameof(GeoReferencingParameters.MapProjection),
+                "");
 
             OutText(
-                "MapZone",
-                "MapZone");
+                nameof(GeoReferencingParameters.MapZone),
+                "");
         }
 
         protected override void Solve(

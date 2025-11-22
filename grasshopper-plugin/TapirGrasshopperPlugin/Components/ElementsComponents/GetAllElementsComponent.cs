@@ -1,33 +1,11 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class ElementFiltersObj : AcceptsElementFilters
-    {
-        [JsonProperty(
-            "filters",
-            NullValueHandling = NullValueHandling.Ignore)]
-        private List<string> filters;
-
-        [JsonIgnore]
-        public List<string> Filters
-        {
-            get => filters;
-            set => filters = AcceptElementFilters(value);
-        }
-
-        [JsonProperty(
-            "databases",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public List<DatabaseIdItemObj> Databases;
-    }
-
-
     public class GetAllElementsComponent : ArchicadAccessorComponent
     {
         public static string Doc => "Get all elements.";

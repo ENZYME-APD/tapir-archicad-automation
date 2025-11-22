@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.ResponseTypes.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -89,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            var stories = new StoriesData() { Stories = new List<StoryData>() };
+            var stories = new StoriesData { Stories = new List<StoryData>() };
 
             for (var i = 0; i < names.Count; ++i)
             {

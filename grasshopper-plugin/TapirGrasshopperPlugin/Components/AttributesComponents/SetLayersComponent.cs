@@ -1,41 +1,11 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public class LayerDataObj
-    {
-        [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
-
-        [JsonProperty("name")]
-        public string Name;
-
-        [JsonProperty("isHidden")]
-        public bool IsHidden;
-
-        [JsonProperty("isLocked")]
-        public bool IsLocked;
-
-        [JsonProperty("isWireframe")]
-        public bool IsWireframe;
-
-        [JsonProperty("intersectionGroupNr")]
-        public int IntersectionGroupNr;
-    }
-
-    public class LayerDataArrayObj
-    {
-        [JsonProperty("layerDataArray")]
-        public List<LayerDataObj> LayerDataArray;
-
-        [JsonProperty("overwriteExisting")]
-        public bool OverwriteExisting;
-    }
-
     public class SetLayersComponent : ArchicadExecutorComponent
     {
         public static string Doc => "Set the details of layers.";
@@ -176,6 +146,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             };
 
             var index = 0;
+
             foreach (var attributeId in attributes.Attributes)
             {
                 layerDataArray.LayerDataArray.Add(
@@ -207,8 +178,6 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 CommandName,
                 layerDataArray);
         }
-
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SetLayers;
 
         public override Guid ComponentGuid =>
             new Guid("7e336988-3756-42e1-bc27-8d4e83e21ae5");

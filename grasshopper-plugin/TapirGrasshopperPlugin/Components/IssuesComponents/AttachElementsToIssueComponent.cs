@@ -1,9 +1,7 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Xml.Linq;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -12,17 +10,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         public static string Doc => "Attach Elements to an Issue.";
         public override string CommandName => "AttachElementsToIssue";
 
-        public class ParametersOfAttachElements
-        {
-            [JsonProperty("issueId")]
-            public IssueIdObj IssueId;
-
-            [JsonProperty("elements")]
-            public List<ElementIdItemObj> Elements;
-
-            [JsonProperty("type")]
-            public string Type;
-        }
 
         public AttachElementsToIssueComponent()
             : base(

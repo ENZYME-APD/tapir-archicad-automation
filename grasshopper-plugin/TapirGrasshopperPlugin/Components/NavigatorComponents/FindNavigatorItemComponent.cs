@@ -5,6 +5,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -107,10 +108,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         protected override void Solve(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
             var type = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     0,
                     ref type))
             {
@@ -118,7 +119,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             var name = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     1,
                     ref name))
             {
@@ -126,7 +127,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             }
 
             var pathRegex = "";
-            if (!DA.GetData(
+            if (!da.GetData(
                     2,
                     ref pathRegex))
             {
@@ -195,25 +196,25 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             }
 
-            DA.SetDataList(
+            da.SetDataList(
                 0,
                 navigatorItemIdList);
-            DA.SetDataList(
+            da.SetDataList(
                 1,
                 navigatorItemPrefixList);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 navigatorItemNameList);
-            DA.SetDataList(
+            da.SetDataList(
                 3,
                 navigatorItemPathList);
-            DA.SetDataList(
+            da.SetDataList(
                 4,
                 navigatorItemTypeList);
-            DA.SetDataList(
+            da.SetDataList(
                 5,
                 sourceNavigatorItemIdList);
-            DA.SetDataList(
+            da.SetDataList(
                 6,
                 GetDatabaseIdsFromNavigatorItemIds(navigatorItemIdList));
         }

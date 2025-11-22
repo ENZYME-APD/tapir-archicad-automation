@@ -2,6 +2,7 @@ using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -9,15 +10,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public static string Doc => "Get Elements Attached to an Issue.";
         public override string CommandName => "GetElementsAttachedToIssue";
-
-        public class ParametersOfGetAttachedElements
-        {
-            [JsonProperty("issueId")]
-            public IssueIdObj IssueId;
-
-            [JsonProperty("type")]
-            public string Type;
-        }
 
         public GetElementsAttachedToIssueComponent()
             : base(

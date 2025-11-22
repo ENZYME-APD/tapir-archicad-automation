@@ -1,24 +1,8 @@
 ﻿using System;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public enum ElementFilter
-    {
-        NoFilter,
-        IsEditable,
-        IsVisibleByLayer,
-        IsVisibleByRenovation,
-        IsVisibleByStructureDisplay,
-        IsVisibleIn3D,
-        OnActualFloor,
-        OnActualLayout,
-        InMyWorkspace,
-        IsIndependent,
-        InCroppedView,
-        HasAccessRight,
-        IsOverriddenByRenovation
-    }
-
     public class ElementFilterValueList : ValueList
     {
         public static string Doc => "Value List for Archicad Elements Filters.";

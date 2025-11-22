@@ -1,49 +1,21 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
-    public class FolderParameters
-    {
-        [JsonProperty("name")]
-        public string Name;
-    }
-
-    public class CreateViewMapFolderInput
-    {
-        [JsonProperty("folderParameters")]
-        public FolderParameters FolderParameters;
-
-        [JsonProperty(
-            "parentNavigatorItemId",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public NavigatorIdObj ParentNavigatorItemId;
-
-        [JsonProperty(
-            "previousNavigatorItemId",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public NavigatorIdObj PreviousNavigatorItemId;
-    }
-
-    public class CreateViewMapFolderOutput
-    {
-        [JsonProperty("createdFolderNavigatorItemId")]
-        public NavigatorIdObj CreatedFolderNavigatorItemId;
-    }
-
-    public class CreateViewMapFolder : ArchicadExecutorComponent
+    public class CreateViewMapFolderComponent : ArchicadExecutorComponent
     {
         public static string Doc =>
             "Creates a view folder item at the given position in the navigator tree.";
 
         public override string CommandName => "CreateViewMapFolder";
 
-        public CreateViewMapFolder()
+        public CreateViewMapFolderComponent()
             : base(
-                "CreateViewMapFolder",
-                "CreateViewMapFolder",
+                "CreateViewMapFolderComponent",
+                "CreateViewMapFolderComponent",
                 Doc,
                 GroupNames.Navigator)
         {

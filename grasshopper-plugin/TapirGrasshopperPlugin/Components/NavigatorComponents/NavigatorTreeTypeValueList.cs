@@ -1,15 +1,8 @@
 ﻿using System;
+using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
-    public enum NavigatorTreeType
-    {
-        ProjectMap,
-        ViewMap,
-        LayoutBook,
-        PublisherSets
-    }
-
     public class NavigatorTreeTypeValueList : ValueList
     {
         public static string Doc => "Value List for Navigator Tree Types.";

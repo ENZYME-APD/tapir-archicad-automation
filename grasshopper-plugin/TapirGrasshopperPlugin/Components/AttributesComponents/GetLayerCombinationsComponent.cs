@@ -1,58 +1,13 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public class ContainedLayerObj
-    {
-        [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
-
-        [JsonProperty("isHidden")]
-        public bool IsHidden;
-
-        [JsonProperty("isLocked")]
-        public bool IsLocked;
-
-        [JsonProperty("isWireframe")]
-        public bool IsWireframe;
-
-        [JsonProperty("intersectionGroupNr")]
-        public int IntersectionGroupNr;
-    }
-
-    public class LayerCombinationDetailsObj
-    {
-        [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
-
-        [JsonProperty("attributeIndex")]
-        public int AttributeIndex;
-
-        [JsonProperty("name")]
-        public string Name;
-
-        [JsonProperty("layers")]
-        public List<ContainedLayerObj> Layers;
-    }
-
-    public class LayerCombinationObj
-    {
-        [JsonProperty("layerCombination")]
-        public LayerCombinationDetailsObj LayerCombination;
-    }
-
-    public class LayerCombinationsObj
-    {
-        [JsonProperty("layerCombinations")]
-        public List<LayerCombinationObj> LayerCombinations;
-    }
-
     public class GetLayerCombinationsComponent : ArchicadAccessorComponent
     {
         public static string Doc => "Get the details of layer combinations.";

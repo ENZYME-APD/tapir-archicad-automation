@@ -1,26 +1,10 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
-    public class RenameNavigatorItemInput
-    {
-        [JsonProperty("navigatorItemId")]
-        public NavigatorIdObj NavigatorItemId;
-
-        [JsonProperty(
-            "newName",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public string NewName;
-
-        [JsonProperty(
-            "newId",
-            NullValueHandling = NullValueHandling.Ignore)]
-        public string NewId;
-    }
-
     public class RenameNavigatorItem : ArchicadExecutorComponent
     {
         public static string Doc => "Renames a navigator item.";

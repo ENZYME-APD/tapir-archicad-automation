@@ -1,23 +1,8 @@
 ﻿using System;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public enum AttributeType
-    {
-        Layer,
-        Line,
-        Fill,
-        Composite,
-        Surface,
-        LayerCombination,
-        ZoneCategory,
-        Profile,
-        PenTable,
-        MEPSystem,
-        OperationProfile,
-        BuildingMaterial
-    }
-
     public class AttributeTypeValueList : ValueList
     {
         public static string Doc => "Value List for Archicad Attribute Types.";

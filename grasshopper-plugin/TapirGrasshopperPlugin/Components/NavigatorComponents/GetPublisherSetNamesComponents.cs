@@ -1,16 +1,9 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
-    public class PublisherSetNamesObj
-    {
-        [JsonProperty("publisherSetNames")]
-        public List<string> PublisherSetNames;
-    }
-
     public class GetPublisherSetNames : ArchicadAccessorComponent
     {
         public static string Doc => "Get names of the publisher sets.";

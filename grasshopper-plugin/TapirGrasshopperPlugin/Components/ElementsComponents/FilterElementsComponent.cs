@@ -3,28 +3,11 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class FilterElementsObj : AcceptsElementFilters
-    {
-        [JsonProperty("elements")]
-        public List<ElementIdItemObj> Elements;
-
-        [JsonProperty(
-            "filters",
-            NullValueHandling = NullValueHandling.Ignore)]
-        private List<string> filters;
-
-        [JsonIgnore]
-        public List<string> Filters
-        {
-            get => filters;
-            set => filters = AcceptElementFilters(value);
-        }
-    }
-
     public class FilterElementsComponent : ArchicadAccessorComponent
     {
         public static string Doc => "Filter elements.";

@@ -1,23 +1,16 @@
 ﻿using System;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public enum IssueElementType
-    {
-        Creation,
-        Highlight,
-        Deletion,
-        Modification
-    }
-
     public class IssueElementTypeValueList : ValueList
     {
         public static string Doc => "Value List for Issue Elements Types.";
 
         public IssueElementTypeValueList()
             : base(
-                "IssueElementType",
-                "",
+                nameof(IssueElementType),
+                nameof(IssueElementType),
                 Doc,
                 GroupNames.Issues)
         {

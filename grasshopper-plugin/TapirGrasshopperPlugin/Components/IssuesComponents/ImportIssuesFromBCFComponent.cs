@@ -1,6 +1,6 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -8,15 +8,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public static string Doc => "Import Issues from BCF.";
         public override string CommandName => "ImportIssuesFromBCF";
-
-        public class ParametersOfImport
-        {
-            [JsonProperty("importPath")]
-            public string ImportPath;
-
-            [JsonProperty("alignBySurveyPoint")]
-            public bool AlignBySurveyPoint;
-        }
 
         public ImportIssuesFromBCFComponent()
             : base(

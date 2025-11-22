@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
@@ -79,8 +78,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            // new from here
-
             var gdlHolders = response.ToGdlHolders(
                 inputElements.Elements.Select(x => x.ElementId.Guid).ToList(),
                 parameterName.ToLower());
@@ -98,50 +95,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 gdlHolders.Select(x => JsonConvert.SerializeObject(
                     x.GdlParameterDetails,
                     Formatting.Indented)));
-
-            // new to here
-
-            //List<ElementIdItemObj> validElementIds =
-            //    new List<ElementIdItemObj>();
-            //List<string> paramValues = new List<string>();
-
-            //for (int i = 0; i < response.GdlLists.Count; i++)
-            //{
-            //    GdlParameterList paramList = response.GdlLists[i];
-
-            //    if (paramList == null || paramList.GdlParameterArray == null ||
-            //        paramList.GdlParameterArray.Count == 0)
-            //    {
-            //        continue;
-            //    }
-
-            //    string paramValue = null;
-
-            //    foreach (GdlParameterDetails details in paramList
-            //                 .GdlParameterArray)
-            //    {
-            //        if (details.Name.ToLower() == paramName)
-            //        {
-            //            paramValue = details.Value.ToString();
-            //            break;
-            //        }
-            //    }
-
-            //    if (paramValue == null)
-            //    {
-            //        continue;
-            //    }
-
-            //    validElementIds.Add(inputElements.Elements[i]);
-            //    paramValues.Add(paramValue);
-            //}
-
-            //da.SetDataList(
-            //    0,
-            //    validElementIds);
-            //da.SetDataList(
-            //    1,
-            //    paramValues);
         }
 
         protected override System.Drawing.Bitmap Icon =>

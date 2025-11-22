@@ -1,17 +1,11 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
-    public class ParametersOfNewIssue
-    {
-        [JsonProperty("name")]
-        public string Name;
-    }
-
     public class CreateIssueComponent : ArchicadExecutorComponent
     {
         public static string Doc => "Create an issue.";

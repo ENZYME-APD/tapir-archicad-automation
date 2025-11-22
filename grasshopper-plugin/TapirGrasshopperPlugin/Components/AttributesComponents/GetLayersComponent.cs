@@ -1,42 +1,11 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public class LayerDetailsObj
-    {
-        [JsonProperty("name")]
-        public string Name;
-
-        [JsonProperty("isHidden")]
-        public bool IsHidden;
-
-        [JsonProperty("isLocked")]
-        public bool IsLocked;
-
-        [JsonProperty("isWireframe")]
-        public bool IsWireframe;
-
-        [JsonProperty("intersectionGroupNr")]
-        public int IntersectionGroupNr;
-    }
-
-    public class LayerObj
-    {
-        [JsonProperty("layerAttribute")]
-        public LayerDetailsObj LayerAttribute;
-    }
-
-    public class LayersObj
-    {
-        [JsonProperty("attributes")]
-        public List<LayerObj> Attributes;
-    }
-
     public class GetLayersComponent : ArchicadAccessorComponent
     {
         public static string Doc => "Get the details of layers.";
@@ -95,43 +64,27 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            var attributesObj = JObject.FromObject(attributes);
-
             if (!GetConvertedResponse(
                     CommandName,
-                    attributesObj,
+                    attributes,
                     out LayersObj layers)) { return; }
-
-            var name = new List<string>();
-            var isHidden = new List<bool>();
-            var isLocked = new List<bool>();
-            var isWireframe = new List<bool>();
-            var intersectionGroup = new List<int>();
-
-            foreach (var layer in layers.Attributes)
-            {
-                name.Add(layer.LayerAttribute.Name);
-                isHidden.Add(layer.LayerAttribute.IsHidden);
-                isLocked.Add(layer.LayerAttribute.IsLocked);
-                isWireframe.Add(layer.LayerAttribute.IsWireframe);
-                intersectionGroup.Add(layer.LayerAttribute.IntersectionGroupNr);
-            }
 
             da.SetDataList(
                 0,
-                name);
+                layers.Attributes.Select(x => x.LayerAttribute.Name));
             da.SetDataList(
                 1,
-                isHidden);
+                layers.Attributes.Select(x => x.LayerAttribute.IsHidden));
             da.SetDataList(
                 2,
-                isLocked);
+                layers.Attributes.Select(x => x.LayerAttribute.IsLocked));
             da.SetDataList(
                 3,
-                isWireframe);
+                layers.Attributes.Select(x => x.LayerAttribute.IsWireframe));
             da.SetDataList(
                 4,
-                intersectionGroup);
+                layers.Attributes.Select(x =>
+                    x.LayerAttribute.IntersectionGroupNr));
         }
 
         public override Guid ComponentGuid =>

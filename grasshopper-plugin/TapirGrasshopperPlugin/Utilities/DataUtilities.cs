@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
-using TapirGrasshopperPlugin.Components.ElementsComponents;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
+using Arc = TapirGrasshopperPlugin.ResponseTypes.Element.Arc;
 
 namespace TapirGrasshopperPlugin.Utilities
 {
@@ -83,7 +84,7 @@ namespace TapirGrasshopperPlugin.Utilities
 
         static public PolyCurve ToPolyCurve(
             List<Point2D> points,
-            List<Components.ElementsComponents.Arc> arcs,
+            List<Arc> arcs,
             double zCoordinate,
             double? slantAngle = null,
             double? verticalCurveHeight = null)

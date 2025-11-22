@@ -1,5 +1,4 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
 
@@ -40,11 +39,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var elementsObj = JObject.FromObject(elements);
-
             if (!GetConvertedResponse(
                     CommandName,
-                    elementsObj,
+                    elements,
                     out ExecutionResultObj executionResult)) { return; }
 
             if (!executionResult.Success)

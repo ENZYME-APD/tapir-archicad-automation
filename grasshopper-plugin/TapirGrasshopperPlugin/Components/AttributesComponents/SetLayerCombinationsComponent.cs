@@ -1,34 +1,13 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public class LayerCombinationDataObj
-    {
-        [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
-
-        [JsonProperty("name")]
-        public string Name;
-
-        [JsonProperty("layers")]
-        public List<ContainedLayerObj> Layers;
-    }
-
-    public class LayerCombinationDataArrayObj
-    {
-        [JsonProperty("layerCombinationDataArray")]
-        public List<LayerCombinationDataObj> LayerCombinationDataArray;
-
-        [JsonProperty("overwriteExisting")]
-        public bool OverwriteExisting;
-    }
-
     public class SetLayerCombinationsComponent : ArchicadExecutorComponent
     {
         public static string Doc => "Set the details of layer combinations.";

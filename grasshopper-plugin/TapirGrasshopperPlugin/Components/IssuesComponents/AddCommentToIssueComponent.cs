@@ -2,6 +2,7 @@ using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -9,18 +10,6 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
     {
         public static string Doc => "Add Comment to an Issue.";
         public override string CommandName => "AddCommentToIssue";
-
-        public class ParametersOfNewComment
-        {
-            [JsonProperty("issueId")]
-            public IssueIdObj IssueId;
-
-            [JsonProperty("author")]
-            public string Author;
-
-            [JsonProperty("text")]
-            public string Text;
-        }
 
         public AddCommentToIssueComponent()
             : base(

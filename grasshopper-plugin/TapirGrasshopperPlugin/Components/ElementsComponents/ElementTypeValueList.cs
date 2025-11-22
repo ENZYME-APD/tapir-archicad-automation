@@ -1,95 +1,9 @@
 ﻿using System;
 using System.Windows.Forms;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public enum MainElementType
-    {
-        Wall,
-        Column,
-        Beam,
-        Window,
-        Door,
-        Object,
-        Lamp,
-        Slab,
-        Roof,
-        Mesh,
-        Dimension,
-        RadialDimension,
-        LevelDimension,
-        AngleDimension,
-        Text,
-        Label,
-        Zone,
-        Hatch,
-        Line,
-        PolyLine,
-        Arc,
-        Circle,
-        Spline,
-        Hotspot,
-        CutPlane,
-        Camera,
-        CamSet,
-        Group,
-        SectElem,
-        Drawing,
-        Picture,
-        Detail,
-        Elevation,
-        InteriorElevation,
-        Worksheet,
-        Hotlink,
-        CurtainWall,
-        Shell,
-        Skylight,
-        Morph,
-        ChangeMarker,
-        Stair,
-        Railing,
-        Opening,
-    }
-
-    public enum SubElementType
-    {
-        CurtainWallSegment,
-        CurtainWallFrame,
-        CurtainWallPanel,
-        CurtainWallJunction,
-        CurtainWallAccessory,
-        Riser,
-        Tread,
-        StairStructure,
-        RailingToprail,
-        RailingHandrail,
-        RailingRail,
-        RailingPost,
-        RailingInnerPost,
-        RailingBaluster,
-        RailingPanel,
-        RailingSegment,
-        RailingNode,
-        RailingBalusterSet,
-        RailingPattern,
-        RailingToprailEnd,
-        RailingHandrailEnd,
-        RailingRailEnd,
-        RailingToprailConnection,
-        RailingHandrailConnection,
-        RailingRailConnection,
-        RailingEndFinish,
-        BeamSegment,
-        ColumnSegment,
-    }
-
-    public enum ElementTypeValueListType
-    {
-        MainElementsOnly,
-        SubElementsOnly,
-        AllElements
-    }
-
     public class ElementTypeValueList : ValueList
     {
         public static string Doc => "Value List for Archicad Elements Types.";
@@ -134,17 +48,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             object sender,
             EventArgs e)
         {
-            if (type == ElementTypeValueListType.SubElementsOnly)
+            switch (type)
             {
-                type = ElementTypeValueListType.AllElements;
-            }
-            else if (type == ElementTypeValueListType.AllElements)
-            {
-                type = ElementTypeValueListType.SubElementsOnly;
-            }
-            else
-            {
-                return;
+                case ElementTypeValueListType.SubElementsOnly:
+                    type = ElementTypeValueListType.AllElements;
+                    break;
+                case ElementTypeValueListType.AllElements:
+                    type = ElementTypeValueListType.SubElementsOnly;
+                    break;
+                default:
+                    return;
             }
 
             RefreshItems();
@@ -154,17 +67,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             object sender,
             EventArgs e)
         {
-            if (type == ElementTypeValueListType.MainElementsOnly)
+            switch (type)
             {
-                type = ElementTypeValueListType.AllElements;
-            }
-            else if (type == ElementTypeValueListType.AllElements)
-            {
-                type = ElementTypeValueListType.MainElementsOnly;
-            }
-            else
-            {
-                return;
+                case ElementTypeValueListType.MainElementsOnly:
+                    type = ElementTypeValueListType.AllElements;
+                    break;
+                case ElementTypeValueListType.AllElements:
+                    type = ElementTypeValueListType.MainElementsOnly;
+                    break;
+                default:
+                    return;
             }
 
             RefreshItems();
