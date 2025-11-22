@@ -24,12 +24,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void AddInputs()
         {
             InGeneric(
-                "ClassificationSystemGuid",
-                "The Guid of a classification system.");
+                "Guid",
+                "The Guid of a Classification system.");
 
             InGenerics(
-                "ClassificationItemGuids",
-                "The Guids of classification items to assign for the given elements.");
+                "ItemGuids",
+                "The Guids of Classification items to assign for the given elements.");
 
             InGenerics(
                 "ElementGuids",

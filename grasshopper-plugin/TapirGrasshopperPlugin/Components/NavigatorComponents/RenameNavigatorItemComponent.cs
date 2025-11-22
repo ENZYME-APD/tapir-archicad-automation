@@ -25,14 +25,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "Identifier of navigator items to rename.");
 
             InText(
-                "New Name",
-                "New name for the navigator item.",
-                "");
+                "NewName",
+                "New name for the navigator item.");
 
             InText(
-                "New Id",
-                "New id for the navigator item.",
-                "");
+                "NewId",
+                "New id for the navigator item.");
         }
 
         protected override void Solve(

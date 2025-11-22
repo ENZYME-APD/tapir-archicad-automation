@@ -20,26 +20,26 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void AddInputs()
         {
             InGenerics(
-                "Data List",
+                "DataList",
                 "List of data items to group");
 
             InGenerics(
-                "Values List",
+                "ValuesList",
                 "List of values to group by");
         }
 
         protected override void AddOutputs()
         {
             OutGenericTree(
-                "Output Tree",
+                "OutputTree",
                 "Data tree with items grouped by values");
 
             OutGenerics(
-                "Unique Values",
+                "UniqueValues",
                 "List of unique values used for grouping");
 
             OutIntegers(
-                "Branch Counts",
+                "BranchCounts",
                 "Number of items in each branch");
         }
 

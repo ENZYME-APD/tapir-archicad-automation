@@ -17,43 +17,37 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter(
-                "Strings List",
-                "L",
-                "A list of strings to search through",
-                GH_ParamAccess.list);
-            pManager.AddTextParameter(
-                "Search String",
-                "S",
-                "The string to search for within the strings list",
-                GH_ParamAccess.item);
-            pManager.AddBooleanParameter(
-                "Case Sensitive",
-                "C",
-                "Determines if the search is case-sensitive",
-                GH_ParamAccess.item,
-                false);
-            pManager[2].Optional = true;
-            pManager.AddBooleanParameter(
-                "Whole Words",
-                "W",
+            InTexts(
+                "StringsList",
+                "A list of strings to search through");
+
+            InText(
+                "SearchString",
+                "The string to search for within the strings list");
+
+            InBoolean(
+                "CaseSensitive",
+                "Determines if the search is case-sensitive");
+
+            InBoolean(
+                "WholeWords",
                 "Determines if the search matches whole words only",
-                GH_ParamAccess.item,
                 true);
-            pManager[3].Optional = true;
+
+            Params.Input[2].Optional = true;
+            Params.Input[3].Optional = true;
         }
 
         protected override void AddOutputs()
         {
             OutTexts(
-                "Filtered List",
+                "FilteredList",
                 "List of strings that match the search criteria");
 
             OutIntegers(
-                "Filtered Indices",
+                "FilteredIndices",
                 "List of indices of the matched strings");
 
             OutInteger(

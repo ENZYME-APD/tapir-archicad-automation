@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
@@ -29,32 +30,23 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             InBooleans(
                 "Show On Sections",
-                "Show Story on Sections.",
-                new List<bool> { true });
+                "Show Story on Sections.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var names = new List<string>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     0,
-                    names))
+                    out List<string> names))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input StoryName failed to collect data.");
                 return;
             }
 
-            var elevations = new List<double>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     1,
-                    elevations))
+                    out List<double> elevations))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input StoryElevation failed to collect data.");
                 return;
             }
 
@@ -66,14 +58,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            var showOnSections = new List<bool>();
-            if (!da.GetDataList(
+            if (!da.GetItems(
                     2,
-                    showOnSections))
+                    out List<bool> showOnSections))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input ShowOnSections failed to collect data.");
                 return;
             }
 

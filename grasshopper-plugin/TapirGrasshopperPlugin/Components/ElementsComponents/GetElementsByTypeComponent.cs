@@ -28,8 +28,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InTexts(
                 "Filter",
-                "Elements filter.",
-                new List<string> { ElementFilter.NoFilter.ToString() });
+                "Elements filter.");
 
             InGenerics(
                 "Databases",

@@ -14,8 +14,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public SetDetailsOfWallsComponent()
             : base(
-                "Set Wall Details",
-                "Set details of wall elements.",
+                "SetWallDetails",
+                "Set details of Wall elements.",
                 GroupNames.Elements)
         {
         }
@@ -27,11 +27,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Elements Guids to get details of.");
 
             InPoints(
-                "Begin coordinates",
-                "Begin coordinates.");
+                "StartCoordinates",
+                "Start coordinates.");
 
             InPoints(
-                "End coordinates",
+                "EndCoordinates",
                 "End coordinates.");
 
             InNumbers(

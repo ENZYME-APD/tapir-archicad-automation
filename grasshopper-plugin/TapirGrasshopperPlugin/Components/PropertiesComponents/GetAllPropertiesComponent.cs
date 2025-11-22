@@ -1,6 +1,5 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Utilities;
@@ -51,12 +50,15 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetDataList(
                 0,
                 response.Properties.Select(x => x.PropertyId));
+
             da.SetDataList(
                 1,
                 response.Properties.Select(x => x.PropertyGroupName));
+
             da.SetDataList(
                 2,
                 response.Properties.Select(x => x.PropertyName));
+
             da.SetDataList(
                 3,
                 response.Properties.Select(x => ArchicadUtils.JoinNames(

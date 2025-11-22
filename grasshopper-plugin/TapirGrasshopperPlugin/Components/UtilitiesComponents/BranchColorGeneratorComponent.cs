@@ -31,11 +31,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "A Grasshopper DataTree with multiple branches");
 
             InColor(
-                "Starting Color",
+                "StartingColor",
                 "Starting color for gradient or base color for complementary mode");
 
             InColor(
-                "End Color",
+                "EndColor",
                 "Ending color for gradient mode");
 
             InInteger(
@@ -48,8 +48,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
             InText(
                 "Mode",
-                "Color generation mode: 'gradient', 'complementary', or 'random'",
-                "random");
+                "Color generation mode: 'gradient', 'complementary', or 'random'. Default: RANDOM");
 
             Params.Input[1].Optional = true;
             Params.Input[2].Optional = true;
@@ -58,19 +57,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             Params.Input[5].Optional = true;
         }
 
-        protected override void RegisterOutputParams(
-            GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddColourParameter(
+            OutColorTree(
                 "Generated Colors",
-                "Colors",
-                "Generated colors for each branch",
-                GH_ParamAccess.tree);
-            pManager.AddGenericParameter(
+                "Generated colors for each branch");
+
+            OutColorTree(
                 "Input Tree",
-                "Tree",
-                "Input tree with original structure",
-                GH_ParamAccess.tree);
+                "Input tree with original structure");
         }
 
         protected override void SolveInstance(

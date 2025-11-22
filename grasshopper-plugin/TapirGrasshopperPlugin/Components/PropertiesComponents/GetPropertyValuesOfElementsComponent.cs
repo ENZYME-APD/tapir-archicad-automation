@@ -63,15 +63,13 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            var elementsAndPropertyIds = new ElementsAndPropertyIdsObj()
-            {
-                Elements = elements.Elements,
-                PropertyIds = properties.Properties
-            };
-
             if (!TryGetConvertedResponse(
                     CommandName,
-                    elementsAndPropertyIds,
+                    new ElementsAndPropertyIdsObj
+                    {
+                        Elements = elements.Elements,
+                        PropertyIds = properties.Properties
+                    },
                     out PropertyValuesForElements response))
             {
                 return;
@@ -86,6 +84,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             {
                 var propertyValuesOrError =
                     response.PropertyValuesOrErrors[elementIndex];
+
                 if (propertyValuesOrError.PropertyValuesOrErrors == null)
                 {
                     continue;

@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         public GetProjectLocationComponent()
             : base(
-                "Project Location",
+                "ProjectLocation",
                 "Get Geo Location of the currently active project.",
                 GroupNames.Project)
         {

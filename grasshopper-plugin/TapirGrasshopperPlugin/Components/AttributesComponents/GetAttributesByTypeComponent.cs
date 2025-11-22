@@ -30,15 +30,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             OutGenerics(
                 "AttributeGuids",
-                "List of attribute Guids.");
+                "List of Attribute Guids.");
 
             OutGenerics(
                 "AttributeIndices",
-                "List of attribute indices.");
+                "List of Attribute indices.");
 
             OutGenerics(
                 "AttributeNames",
-                "List of attribute names.");
+                "List of Attribute names.");
         }
 
         public override void AddedToDocument(

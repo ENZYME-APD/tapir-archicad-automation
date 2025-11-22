@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public ElementTypeValueList(
             ElementTypeValueListType t)
             : base(
-                "Elements Type",
+                "ElementsType",
                 "Value List for Archicad Elements Types.",
                 GroupNames.Elements)
         {

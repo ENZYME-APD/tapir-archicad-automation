@@ -26,11 +26,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
             InGeneric(
                 "Author",
-                "Author");
+                "Author.");
 
             InGeneric(
                 "Text",
-                "Text");
+                "Text.");
         }
 
         protected override void Solve(

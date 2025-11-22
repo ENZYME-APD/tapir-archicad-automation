@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         public IssueElementTypeValueList()
             : base(
                 nameof(IssueElementType),
-                "Value List for Issue Elements Types.",
+                "Value list for Issue Elements Types.",
                 GroupNames.Issues)
         {
         }

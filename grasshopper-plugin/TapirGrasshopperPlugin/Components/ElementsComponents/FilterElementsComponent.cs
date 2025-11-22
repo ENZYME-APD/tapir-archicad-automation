@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -29,8 +28,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InTexts(
                 "Filter",
-                "Elements filter.",
-                new List<string> { ElementFilter.NoFilter.ToString() });
+                "Elements filter.");
         }
 
         protected override void AddOutputs()

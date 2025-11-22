@@ -8,13 +8,10 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class TreeBranchSelectorComponent : Component
     {
-        public static string Doc =>
-            "Selects a specific branch from a tree structure based on an index.";
-
         public TreeBranchSelectorComponent()
             : base(
                 "TreeBranchSelector",
-                Doc,
+                "Selects a specific branch from a tree structure based on an index.",
                 GroupNames.Utilities)
         {
         }
@@ -22,11 +19,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void AddInputs()
         {
             InGenericTree(
-                "Input Tree",
+                "InputTree",
                 "Tree structure to select from");
 
             InInteger(
-                "Path Index",
+                "PathIndex",
                 "Integer for branch selection",
                 0);
         }
@@ -34,15 +31,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void AddOutputs()
         {
             OutGenerics(
-                "Selected Branch",
+                "SelectedBranch",
                 "List of items from the selected branch");
 
             OutGenerics(
-                "Other Branches",
+                "OtherBranches",
                 "List of items from all other branches");
 
             OutInteger(
-                "Total Branches",
+                "TotalBrancheCount",
                 "Total number of branches in the tree");
         }
 

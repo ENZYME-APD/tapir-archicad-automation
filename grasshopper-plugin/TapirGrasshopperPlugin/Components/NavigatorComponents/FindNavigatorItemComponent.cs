@@ -31,8 +31,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             InText(
                 "PublisherSetName",
-                "The name of the publisher set.",
-                "");
+                "The name of the publisher set.");
 
             InText(
                 "PathRegex",

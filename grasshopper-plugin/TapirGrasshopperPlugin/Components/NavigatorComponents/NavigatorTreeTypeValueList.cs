@@ -8,7 +8,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public NavigatorTreeTypeValueList()
             : base(
                 "NavigatorTreeTypes",
-                "Value List for Navigator Tree Types.",
+                "Value list for Navigator Tree Types.",
                 GroupNames.Navigator)
         {
         }

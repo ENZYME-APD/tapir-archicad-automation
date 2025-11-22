@@ -11,8 +11,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         public FindPropertyByGuidComponent()
             : base(
-                "Property by Guid",
-                "Finds a property by guid.",
+                "PropertyByGuid",
+                "Finds a property by Guid.",
                 GroupNames.Properties)
         {
         }
@@ -21,14 +21,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         {
             InText(
                 "PropertyGuid",
-                "Property guid to find.");
+                "Property Guid to find.");
         }
 
         protected override void AddOutputs()
         {
             OutGeneric(
                 "PropertyId",
-                "Found property id.");
+                "Found property Id.");
         }
 
         protected override void Solve(

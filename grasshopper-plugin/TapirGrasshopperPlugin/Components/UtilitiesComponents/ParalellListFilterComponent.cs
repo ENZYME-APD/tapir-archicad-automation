@@ -4,6 +4,7 @@ using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
@@ -20,21 +21,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void AddInputs()
         {
             InGenerics(
-                "Primary List",
+                "PrimaryList",
                 "Primary list for filtering");
 
             InGenerics(
-                "Secondary List",
+                "SecondaryList",
                 "Secondary list that gets filtered in parallel");
 
             InGenerics(
-                "Search Values",
+                "SearchValues",
                 "Search values for filtering");
 
             InText(
-                "Filter Mode",
-                "Filter mode (equals, notFound, greater, smaller, range, closest, group_equals, group_unique)",
-                "equals");
+                "FilterMode",
+                "Filter mode (equals, notFound, greater, smaller, range, closest, group_equals, group_unique)");
         }
 
         protected override void AddOutputs()
@@ -53,11 +53,10 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            // Get inputs
             var primaryList = new List<IGH_Goo>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     0,
                     primaryList))
             {
@@ -66,7 +65,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             var secondaryList = new List<IGH_Goo>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     1,
                     secondaryList))
             {
@@ -75,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             var searchValues = new List<IGH_Goo>();
-            if (!DA.GetDataList(
+            if (!da.GetDataList(
                     2,
                     searchValues))
             {
@@ -83,10 +82,9 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 return;
             }
 
-            var filterMode = "equals";
-            DA.GetData(
+            var filterMode = da.GetOptionalItem(
                 3,
-                ref filterMode);
+                "equals");
 
             // Initialize outputs
             var filteredPrimary = new GH_Structure<IGH_Goo>();
@@ -106,13 +104,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             message = result.message;
 
             // Set outputs
-            DA.SetDataTree(
+            da.SetDataTree(
                 0,
                 filteredPrimary);
-            DA.SetDataTree(
+            da.SetDataTree(
                 1,
                 filteredSecondary);
-            DA.SetDataList(
+            da.SetDataList(
                 2,
                 pattern);
 

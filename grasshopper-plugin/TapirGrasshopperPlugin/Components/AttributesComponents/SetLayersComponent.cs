@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         public SetLayersComponent()
             : base(
-                "Set Layers",
+                "SetLayers",
                 "Set the details of layers.",
                 GroupNames.Attributes)
         {

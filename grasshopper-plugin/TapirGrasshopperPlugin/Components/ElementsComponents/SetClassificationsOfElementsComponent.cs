@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public SetClassificationsOfElementsComponent()
             : base(
-                "Set Elements Classifications",
+                "SetElementsClassifications",
                 "Sets the classifications of elements. " +
                 "In order to set the classification of an element to unclassified, " +
                 "omit the classificationItemId field. " +

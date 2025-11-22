@@ -24,7 +24,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             InGenerics(
                 "AttributeGuids",
-                "List of layer combination attribute Guids.");
+                "List of layer combination Attribute Guids.");
         }
 
         protected override void AddOutputs()

@@ -13,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         public FindClassificationItemByIdComponent()
             : base(
                 "FindClassificationItemById",
-                "Finds a Classification Item by id in the given Classification System.",
+                "Finds a Classification Item by Id in the given Classification System.",
                 GroupNames.Classifications)
         {
         }
@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 "The Guid of a classification system.");
 
             InText(
-                "Classification Item id",
+                "ClassificationItemId",
                 "Classification Item id to find.");
         }
 

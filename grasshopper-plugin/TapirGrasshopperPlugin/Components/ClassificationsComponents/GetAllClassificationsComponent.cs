@@ -13,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
         public GetAllClassificationsComponent()
             : base(
-                "All Classifications in the given Classification System.",
+                "AllClassifications",
                 "Get all Classifications in the given Classification System.",
                 GroupNames.Classifications)
         {
@@ -22,30 +22,30 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void AddOutputs()
         {
             OutTexts(
-                "ClassificationSystemGuid",
+                "Guid",
                 "Found Classification System Guid.");
             OutTexts(
                 "ClassificationSystemNameAndVersion",
                 "Found Classification System name and version.");
 
             OutTexts(
-                "ClassificationItemGuid",
+                "ItemGuid",
                 "Found ClassificationItem Guid.");
 
             OutTexts(
-                "ClassificationItemDisplayId",
+                "ItemDisplayId",
                 "Found ClassificationItem display id.");
 
             OutTexts(
-                "ClassificationItemFullDisplayId",
+                "ItemFullDisplayId",
                 "Found ClassificationItem full display id.");
 
             OutTexts(
-                "ClassificationItemName",
+                "ItemName",
                 "Found ClassificationItem name.");
 
             OutTexts(
-                "ClassificationItemPath",
+                "ItemPath",
                 "Path to ClassificationItem.");
         }
 

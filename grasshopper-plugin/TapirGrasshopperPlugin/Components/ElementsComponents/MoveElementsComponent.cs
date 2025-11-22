@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public MoveElementsComponent()
             : base(
-                "Move Elements",
+                "MoveElements",
                 "Move elements",
                 GroupNames.Elements)
         {
@@ -27,11 +27,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Elements ids to move.");
 
             InVectors(
-                "Moving 3D Vectors",
+                "Vectors",
                 "The 3D vectors to move elements (input only 1 vector to move all elements with the same vector).");
 
             InBoolean(
-                "Move copies",
+                "Copy",
                 "Move copies of the elements.");
         }
 

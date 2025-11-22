@@ -17,7 +17,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public GetDetailsOfElementsComponent()
             : base(
-                "ElemDetails",
+                "ElementDetails",
                 "Get details of elements.",
                 GroupNames.Elements)
         {
@@ -27,7 +27,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Elements Guids to get details of.");
+                "Elements Guids to get the details of.");
         }
 
         protected override void RegisterOutputParams(

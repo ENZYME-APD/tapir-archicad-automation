@@ -8,9 +8,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class WallOrientationComponent : Component
     {
-        public static string Doc =>
-            "Calculates the orientation of walls based on start and end points.";
-
         public WallOrientationComponent()
             : base(
                 "WallOrientation",
@@ -22,15 +19,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void AddInputs()
         {
             InPoints(
-                "Start Points",
+                "StartPoints",
                 "Start point(s) of wall segment(s)");
 
             InPoints(
-                "End Points",
+                "EndPoints",
                 "End point(s) of wall segment(s)");
 
             InNumber(
-                "North Rotation",
+                "NorthRotation",
                 "Rotation angle for north direction",
                 0.0);
 

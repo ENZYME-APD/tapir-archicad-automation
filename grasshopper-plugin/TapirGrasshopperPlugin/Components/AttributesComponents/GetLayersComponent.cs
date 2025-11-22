@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
@@ -23,7 +22,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             InGenerics(
                 "AttributeGuids",
-                "List of layer attribute Guids.");
+                "List of layer Attribute Guids.");
         }
 
         protected override void AddOutputs()

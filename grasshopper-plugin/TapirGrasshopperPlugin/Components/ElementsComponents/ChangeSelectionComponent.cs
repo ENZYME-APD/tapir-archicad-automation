@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InBoolean(
                 "ClearSelection",
-                "Remove all Elements from selection (before adding the given elements to selection).");
+                "Remove all Elements from the selection (before adding the given elements to selection).");
 
             Params.Input[0].Optional = true;
             Params.Input[1].Optional = true;

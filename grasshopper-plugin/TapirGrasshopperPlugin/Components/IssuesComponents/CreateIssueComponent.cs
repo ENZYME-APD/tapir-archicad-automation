@@ -22,7 +22,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
             InText(
                 "Name",
-                "Name");
+                "Name.");
         }
 
         protected override void AddOutputs()

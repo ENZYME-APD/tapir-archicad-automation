@@ -2,7 +2,6 @@
 using Grasshopper.Kernel.Special;
 using System;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
@@ -13,15 +12,15 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         public ClassificationSystemValueList()
             : base(
                 "ClassificationSystems",
-                "Value List for Classification Systems.",
+                "Value list for Classification Systems.",
                 GroupNames.Classifications)
         {
         }
 
         public override void RefreshItems()
         {
-            CommandResponse response = SendArchicadCommand(
-                "GetAllClassificationSystems",
+            var response = SendArchicadCommand(
+                CommandName,
                 null);
 
             if (!response.Succeeded)
@@ -36,10 +35,9 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             ListItems.Clear();
 
-            AllClassificationSystems classificationSystems =
-                response.Result.ToObject<AllClassificationSystems>();
+            var sytems = response.Result.ToObject<AllClassificationSystems>();
 
-            foreach (var system in classificationSystems.ClassificationSystems)
+            foreach (var system in sytems.ClassificationSystems)
             {
                 var item = new GH_ValueListItem(
                     system.ToString(),

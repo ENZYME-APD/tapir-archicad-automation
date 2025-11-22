@@ -7,8 +7,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         public ElementFilterValueList()
             : base(
-                "Elements Filter",
-                "Value List for Archicad Elements Filters.",
+                "ElementsFilter",
+                "Value list for Archicad Elements Filters.",
                 GroupNames.Elements)
         {
         }

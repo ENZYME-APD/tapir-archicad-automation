@@ -27,7 +27,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Elements Guids to get detailList for.");
 
             InText(
-                "ParamName",
+                "ParameterName",
                 "Parameter name to find.");
         }
 
@@ -38,7 +38,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "List of element Guids with valid GDL detailList.");
 
             OutTexts(
-                "ParamValues",
+                "ParameterValues",
                 "Values of the found GDL detailList.");
 
             OutTexts(

@@ -8,12 +8,9 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class MultiListFilterComponent : Component
     {
-        public static string Doc =>
-            "Filters multiple lists based on specified indices";
-
         public MultiListFilterComponent()
             : base(
-                "Multi-ListFilter",
+                "MultiListFilter",
                 "Filters multiple lists based on specified indices",
                 GroupNames.Utilities)
         {
