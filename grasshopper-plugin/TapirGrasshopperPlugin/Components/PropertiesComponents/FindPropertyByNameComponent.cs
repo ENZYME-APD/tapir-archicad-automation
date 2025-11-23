@@ -53,7 +53,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             }
 
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     out AllProperties response))
             {

@@ -74,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     out ProjectLocation response))
             {

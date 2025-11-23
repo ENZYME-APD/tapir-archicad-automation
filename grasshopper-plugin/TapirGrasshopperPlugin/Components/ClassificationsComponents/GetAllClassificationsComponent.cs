@@ -84,7 +84,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 new Dictionary<ClassificationSystemDetailsObj,
                     List<Tuple<ClassificationItemDetailsObj, string>>>();
 
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     out AllClassificationSystems response))
             {

@@ -660,66 +660,47 @@ namespace TapirGrasshopperPlugin.Components
                 out var result);
         }
 
-        protected bool GetConvertedResponse<T>(
+        protected bool TryGetConvertedResponse<T>(
             string commandName,
             out T response)
             where T : class
         {
-            if (GetArchicadAddonResponse(
-                    commandName,
-                    null,
-                    out var result))
-            {
-                try
-                {
-                    response = result.ToObject<T>();
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    AddRuntimeMessage(
-                        GH_RuntimeMessageLevel.Error,
-                        $"Failed to convert response: {ex.Message}");
-                }
-            }
-
-            response = null;
-            return false;
+            return TryGetConvertedResponse(
+                commandName,
+                null,
+                out response);
         }
 
         protected bool TryGetConvertedResponse<T>(
             string commandName,
-            object commandParameters,
+            object commandParametersObject,
             out T response)
             where T : class
         {
             response = null;
 
+            var commandParameters = commandParametersObject == null
+                ? new JObject()
+                : JObject.FromObject(commandParametersObject);
+
+            if (!GetArchicadAddonResponse(
+                    commandName,
+                    commandParameters,
+                    out var result))
+            {
+                return false;
+            }
+
             try
             {
-                if (GetArchicadAddonResponse(
-                        commandName,
-                        JObject.FromObject(commandParameters),
-                        out var result))
-                {
-                    try
-                    {
-                        response = result.ToObject<T>();
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        AddRuntimeMessage(
-                            GH_RuntimeMessageLevel.Error,
-                            $"Failed to convert response to {typeof(T).Name}: {ex.Message}");
-                    }
-                }
+                response = result.ToObject<T>();
+                return true;
             }
             catch (Exception ex)
             {
                 AddRuntimeMessage(
                     GH_RuntimeMessageLevel.Error,
-                    $"Error in {nameof(TryGetConvertedResponse)}: {ex.Message}");
+                    $"Failed to convert response to {typeof(T).Name}: {ex.Message}");
             }
 
             return false;

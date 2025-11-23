@@ -40,7 +40,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     out AllProperties response))
             {

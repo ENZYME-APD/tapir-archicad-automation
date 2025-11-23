@@ -26,7 +26,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     out VersionInfo response))
             {

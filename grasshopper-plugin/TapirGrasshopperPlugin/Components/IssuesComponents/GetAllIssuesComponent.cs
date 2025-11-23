@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!GetConvertedResponse(
+            if (!TryGetConvertedResponse(
                     CommandName,
                     out AllIssues response))
             {
