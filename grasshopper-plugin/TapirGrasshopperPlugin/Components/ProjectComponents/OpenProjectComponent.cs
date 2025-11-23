@@ -29,8 +29,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddOutputs()
         {
             OutText(
-                nameof(ExecutionResultBase.Message),
-                ExecutionResultBase.Doc);
+                nameof(ExecutionResult.Message),
+                ExecutionResult.Doc);
         }
 
         protected override void Solve(
@@ -46,12 +46,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     new ProjectFilePathObject { ProjectFilePath = path },
-                    out JObject jResponse))
+                    out ExecutionResult result))
             {
                 return;
             }
-
-            var result = ExecutionResultBase.Deserialize(jResponse);
 
             da.SetData(
                 0,

@@ -156,8 +156,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             for (int i = 0; i < executionResults.ExecutionResults.Count; i++)
             {
-                ExecutionResultBase eResult =
-                    executionResults.ExecutionResults[i];
+                ExecutionResult eResult = executionResults.ExecutionResults[i];
                 if (eResult.Success)
                 {
                     continue;

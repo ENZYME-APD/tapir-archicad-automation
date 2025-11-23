@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItems(
+            if (!da.TryGetItems(
                     1,
                     out List<string> filters)) { return; }
 

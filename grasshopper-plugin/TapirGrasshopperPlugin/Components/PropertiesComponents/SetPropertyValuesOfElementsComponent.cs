@@ -54,7 +54,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            if (!da.GetItems(
+            if (!da.TryGetItems(
                     2,
                     out List<string> values))
             {

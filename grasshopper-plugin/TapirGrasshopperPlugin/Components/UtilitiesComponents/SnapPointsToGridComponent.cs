@@ -41,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void SolveInstance(
             IGH_DataAccess da)
         {
-            if (!da.GetItems(
+            if (!da.TryGetItems(
                     0,
                     out List<Point3d> points))
             {

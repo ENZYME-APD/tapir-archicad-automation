@@ -22,7 +22,7 @@ namespace TapirGrasshopperPlugin.Helps
             return success;
         }
 
-        public static bool GetItems<T>(
+        public static bool TryGetItems<T>(
             this IGH_DataAccess dataAccess,
             int index,
             out List<T> results)
@@ -49,62 +49,22 @@ namespace TapirGrasshopperPlugin.Helps
             return item;
         }
 
-        public static bool TryCreate<T>(
+        public static bool TryGetAndCreate<T>(
             this IGH_DataAccess da,
             int index,
             out T result)
             where T : class
-
         {
-            if (da.TryGetItem(
+            if (da.TryGetItems(
                     index,
-                    out GH_ObjectWrapper wrapper))
+                    out List<object> response))
             {
-                result = JObject.FromObject(wrapper.Value).ToObject<T>();
+                result = JObject.FromObject(response).ToObject<T>();
                 return true;
             }
 
             result = null;
             return false;
         }
-
-        //public static T Parse<T>(
-        //    this GH_ObjectWrapper wrapper)
-        //    where T : class
-        //{
-        //    if (wrapper.Value is T)
-        //    {
-        //        return wrapper.Value as T;
-        //    }
-        //    else if (wrapper.Value is GH_String)
-        //    {
-        //        var stringValue = wrapper.Value as GH_String;
-        //        return FromString(stringValue.ToString());
-        //    }
-        //    else if (wrapper.Value.GetType().GetProperty("Guid") != null)
-        //    {
-        //        return FromString(
-        //            wrapper.Value.GetType().GetProperty("Guid").ToString());
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        //public static T FromString(
-        //    string guidString)
-        //{
-        //    if (System.Guid.TryParse(
-        //            guidString,
-        //            out _))
-        //    {
-        //        return new T { Guid = guidString };
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
     }
 }

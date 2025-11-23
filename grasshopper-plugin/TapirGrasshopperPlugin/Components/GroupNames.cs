@@ -12,5 +12,6 @@
         public static string Project => nameof(Project);
         public static string Properties => nameof(Properties);
         public static string Utilities => nameof(Utilities);
+        public static string Teamwork => nameof(Teamwork);
     }
 }

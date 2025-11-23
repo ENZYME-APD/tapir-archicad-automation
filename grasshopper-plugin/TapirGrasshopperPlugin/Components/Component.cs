@@ -6,8 +6,11 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.Generic;
 using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components
@@ -792,10 +795,53 @@ namespace TapirGrasshopperPlugin.Components
             Solve(da);
         }
 
+        public List<string> CapsuleButtonTexts { get; set; }
+
         protected abstract void Solve(
             IGH_DataAccess da);
 
-        public List<string> CapsuleButtonTexts { get; set; }
+        protected void SolveByResponse(
+            IGH_DataAccess da)
+        {
+            if (!TryGetConvertedResponse(
+                    CommandName,
+                    out JObject response))
+            {
+                return;
+            }
+
+            var result = ExecutionResult.Deserialize(response);
+
+            da.SetData(
+                0,
+                result.Message());
+        }
+
+        protected void SolveByElementsInputResponse(
+            IGH_DataAccess da)
+        {
+            if (!ElementsObj.TryCreate(
+                    da,
+                    0,
+                    out ElementsObj input))
+            {
+                return;
+            }
+
+            if (!TryGetConvertedResponse(
+                    CommandName,
+                    input,
+                    out JObject response))
+            {
+                return;
+            }
+
+            var result = ExecutionResult.Deserialize(response);
+
+            da.SetData(
+                0,
+                result.Message());
+        }
     }
 
     public abstract class ArchicadExecutorComponent

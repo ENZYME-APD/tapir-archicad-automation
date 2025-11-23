@@ -189,7 +189,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
             int index,
             out T result)
         {
-            if (da.GetItems(
+            if (da.TryGetItems(
                     index,
                     out List<GH_ObjectWrapper> ids))
             {

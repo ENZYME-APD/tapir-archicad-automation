@@ -4,19 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.Favorites;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
-namespace TapirGrasshopperPlugin.Components.ElementsComponents
+namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 {
-    public class SetGDLParametersComponent : ArchicadAccessorComponent
+    public class CreateFavoritesComponent : ArchicadAccessorComponent
     {
-        public override string CommandName => "SetGDLParametersOfElements";
+        public override string CommandName => "CreateFavoritesFromElements";
 
-        public SetGDLParametersComponent()
+        public CreateFavoritesComponent()
             : base(
-                "SetElementGDLs",
-                "Sets the given GDL parameters of the given elements.",
-                GroupNames.Elements)
+                "CreateFavoritesFromElements",
+                "Create favorites from the given elements.",
+                GroupNames.Favorites)
         {
         }
 
@@ -24,15 +25,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Elements Guids to set the parameters of.");
+                "Elements Guids to get detailList for.");
 
             InTexts(
-                "ParameterName",
-                "Parameter name to find and set.");
-
-            InGenerics(
-                "Value",
-                "Value to set the parameter to.");
+                nameof(Favorites),
+                "A list of favorite names.");
         }
 
         protected override void AddOutputs()
@@ -48,32 +45,32 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!ElementsObj.TryCreate(
                     da,
                     0,
-                    out ElementsObj elementsObj))
+                    out ElementsObj elements))
             {
                 return;
             }
 
             if (!da.TryGetItems(
                     1,
-                    out List<string> parameterNames))
+                    out List<string> favorites))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
-                    2,
-                    out List<object> values))
+            if (favorites.Count != elements.Elements.Count)
             {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    "Unequal counts between elements and favorites.");
+
                 return;
             }
-
-            var input = elementsObj.ToElementsWithGDLParameters(
-                parameterNames,
-                values);
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    input,
+                    new FavoritesFromElementsObj(
+                        elements.Ids,
+                        favorites),
                     out ExecutionResultsResponse response))
             {
                 return;
@@ -85,6 +82,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         }
 
         public override Guid ComponentGuid =>
-            new Guid("c6e20c16-6edc-446d-88c2-c83f2e30c0b3");
+            new Guid("412380d3-4833-4166-827d-67e80edf4dbf");
     }
 }

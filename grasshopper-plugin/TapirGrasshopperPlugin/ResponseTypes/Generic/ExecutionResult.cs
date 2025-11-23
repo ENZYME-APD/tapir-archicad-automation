@@ -9,10 +9,10 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
         public static string Doc => "A list of execution results.";
 
         [JsonProperty("executionResults")]
-        public List<ExecutionResultBase> ExecutionResults { get; set; }
+        public List<ExecutionResult> ExecutionResults { get; set; }
     }
 
-    public class ExecutionResultBase
+    public class ExecutionResult
     {
         public static string Doc =>
             "Result of the node's logic's execution. " +
@@ -21,10 +21,10 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
         [JsonProperty("success")]
         public bool Success { get; set; }
 
-        public static ExecutionResultBase Deserialize(
+        public static ExecutionResult Deserialize(
             JObject jObject)
         {
-            var baseResult = jObject.ToObject<ExecutionResultBase>();
+            var baseResult = jObject.ToObject<ExecutionResult>();
 
             if (baseResult.Success)
             {
@@ -39,11 +39,11 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
         public virtual string Message() => "Success.";
     }
 
-    public class SuccessfulExecutionResult : ExecutionResultBase
+    public class SuccessfulExecutionResult : ExecutionResult
     {
     }
 
-    public class FailedExecutionResult : ExecutionResultBase
+    public class FailedExecutionResult : ExecutionResult
     {
         [JsonProperty("error")]
         public Error Error { get; set; }

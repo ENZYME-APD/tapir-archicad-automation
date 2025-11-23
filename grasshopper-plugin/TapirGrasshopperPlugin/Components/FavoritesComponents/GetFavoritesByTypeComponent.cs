@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     new ElementTypeObject(eType),
-                    out FavoritesResponse response))
+                    out FavoritesObj response))
             {
                 return;
             }

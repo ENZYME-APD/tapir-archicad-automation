@@ -37,13 +37,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             OutTexts(
                 nameof(ExecutionResultsResponse.ExecutionResults),
-                ExecutionResultBase.Doc);
+                ExecutionResult.Doc);
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItems(
+            if (!da.TryGetItems(
                     0,
                     out List<string> jsonElements)) { return; }
 
