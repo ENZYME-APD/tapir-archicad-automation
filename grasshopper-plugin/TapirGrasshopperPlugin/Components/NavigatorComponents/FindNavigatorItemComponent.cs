@@ -138,7 +138,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             };
 
             if (!TryGetConvertedResponse(
-                    CommandName,
+                    "GetNavigatorItemTree",
                     navigatorTreeId,
                     out NavigatorTreeObj response))
             {

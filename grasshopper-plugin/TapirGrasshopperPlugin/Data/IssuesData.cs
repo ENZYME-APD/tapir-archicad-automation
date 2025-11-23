@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class IssueIdObj : IdObj<IssueIdObj> { }
+    public class IssueIdObj : IdObj<IssueIdObj>
+    {
+    }
 
     public class IssueIdItemObj : IdItemObj<IssueIdObj, IssueIdItemObj>
     {
-        [JsonProperty ("issueId")]
+        [JsonProperty("issueId")]
         public IssueIdObj IssueId;
 
         [JsonIgnore]
@@ -20,7 +23,7 @@ namespace TapirGrasshopperPlugin.Data
 
     public class IssuesObj : IdsObj<IssueIdObj, IssueIdItemObj, IssuesObj>
     {
-        [JsonProperty ("issues")]
+        [JsonProperty("issues")]
         public List<IssueIdItemObj> Issues;
 
         [JsonIgnore]
@@ -33,41 +36,41 @@ namespace TapirGrasshopperPlugin.Data
 
     public class IssueDetailsObj
     {
-        public override string ToString ()
+        public override string ToString()
         {
-            return IssueId.ToString () + "; " + Name;
+            return IssueId.ToString() + "; " + Name;
         }
 
-        [JsonProperty ("issueId")]
+        [JsonProperty("issueId")]
         public IssueIdObj IssueId;
 
-        [JsonProperty ("name")]
+        [JsonProperty("name")]
         public string Name;
     }
 
     public class AllIssues
     {
-        [JsonProperty ("issues")]
+        [JsonProperty("issues")]
         public List<IssueDetailsObj> Issues { get; set; }
     }
 
     public class IssueComment
     {
-        public override string ToString ()
+        public override string ToString()
         {
             return Author + ": " + Text;
         }
 
-        [JsonProperty ("author")]
+        [JsonProperty("author")]
         public string Author;
 
-        [JsonProperty ("text")]
+        [JsonProperty("text")]
         public string Text;
     }
 
     public class IssueComments
     {
-        [JsonProperty ("comments")]
+        [JsonProperty("comments")]
         public List<IssueComment> Comments { get; set; }
     }
 }

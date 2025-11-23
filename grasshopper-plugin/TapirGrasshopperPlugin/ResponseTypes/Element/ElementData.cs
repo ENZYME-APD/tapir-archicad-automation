@@ -4,13 +4,17 @@ using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
+using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 
-namespace TapirGrasshopperPlugin.Data
+namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {
     public abstract class IdObj<T>
         where T : IdObj<T>, new()
     {
+        [JsonProperty("guid")]
+        public string Guid;
+
         public static bool TryCreate(
             IGH_DataAccess da,
             int index,
@@ -38,11 +42,11 @@ namespace TapirGrasshopperPlugin.Data
             else if (obj.Value is GH_String)
             {
                 var stringValue = obj.Value as GH_String;
-                return CreateFromGuidString(stringValue.ToString());
+                return FromString(stringValue.ToString());
             }
             else if (obj.Value.GetType().GetProperty("Guid") != null)
             {
-                return CreateFromGuidString(
+                return FromString(
                     obj.Value.GetType().GetProperty("Guid").ToString());
             }
             else
@@ -51,7 +55,7 @@ namespace TapirGrasshopperPlugin.Data
             }
         }
 
-        public static T CreateFromGuidString(
+        public static T FromString(
             string guidString)
         {
             if (System.Guid.TryParse(
@@ -87,15 +91,19 @@ namespace TapirGrasshopperPlugin.Data
         {
             return Guid == null || new System.Guid(Guid) == System.Guid.Empty;
         }
-
-        [JsonProperty("guid")]
-        public string Guid;
     }
 
     public abstract class IdItemObj<I, T>
         where I : IdObj<I>, new()
         where T : IdItemObj<I, T>, new()
     {
+        [JsonIgnore]
+        public abstract I Id
+        {
+            get;
+            set;
+        }
+
         public static bool TryCreate(
             IGH_DataAccess da,
             int index,
@@ -162,13 +170,6 @@ namespace TapirGrasshopperPlugin.Data
         {
             return Id.GetHashCode();
         }
-
-        [JsonIgnore]
-        public abstract I Id
-        {
-            get;
-            set;
-        }
     }
 
     public abstract class IdsObj<I, J, T>
@@ -176,6 +177,13 @@ namespace TapirGrasshopperPlugin.Data
         where J : IdItemObj<I, J>, new()
         where T : IdsObj<I, J, T>, new()
     {
+        [JsonIgnore]
+        public abstract List<J> Ids
+        {
+            get;
+            set;
+        }
+
         public static bool TryCreate(
             IGH_DataAccess da,
             int index,
@@ -228,13 +236,6 @@ namespace TapirGrasshopperPlugin.Data
             }
 
             return ids;
-        }
-
-        [JsonIgnore]
-        public abstract List<J> Ids
-        {
-            get;
-            set;
         }
     }
 

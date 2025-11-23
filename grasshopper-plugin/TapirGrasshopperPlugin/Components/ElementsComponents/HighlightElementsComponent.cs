@@ -2,10 +2,10 @@
 using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
 using System.Windows.Forms;
 using System.Drawing;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {

@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class PropertyIdObj : IdObj<PropertyIdObj> { }
+    public class PropertyIdObj : IdObj<PropertyIdObj>
+    {
+    }
 
     public class PropertyIdItemObj : IdItemObj<PropertyIdObj, PropertyIdItemObj>
     {
-        [JsonProperty ("propertyId")]
+        [JsonProperty("propertyId")]
         public PropertyIdObj PropertyId;
 
         [JsonIgnore]
@@ -19,9 +22,10 @@ namespace TapirGrasshopperPlugin.Data
         }
     }
 
-    public class PropertiesObj : IdsObj<PropertyIdObj, PropertyIdItemObj, PropertiesObj>
+    public class PropertiesObj
+        : IdsObj<PropertyIdObj, PropertyIdItemObj, PropertiesObj>
     {
-        [JsonProperty ("properties")]
+        [JsonProperty("properties")]
         public List<PropertyIdItemObj> Properties;
 
         [JsonIgnore]
@@ -34,56 +38,60 @@ namespace TapirGrasshopperPlugin.Data
 
     public class PropertyValueObj
     {
-        [JsonProperty ("value")]
+        [JsonProperty("value")]
         public string Value;
     }
 
     public class PropertyDetailsObj
     {
-        public override string ToString ()
+        public override string ToString()
         {
-            return PropertyId.ToString () + "; " + PropertyGroupName + "; " + PropertyName;
+            return PropertyId + "; " + PropertyGroupName + "; " + PropertyName;
         }
 
-        [JsonProperty ("propertyId")]
+        [JsonProperty("propertyId")]
         public PropertyIdObj PropertyId;
 
-        [JsonProperty ("propertyGroupName")]
+        [JsonProperty("propertyGroupName")]
         public string PropertyGroupName;
 
-        [JsonProperty ("propertyName")]
+        [JsonProperty("propertyName")]
         public string PropertyName;
     }
 
     public class AllProperties
     {
-        [JsonProperty ("properties")]
+        [JsonProperty("properties")]
         public List<PropertyDetailsObj> Properties { get; set; }
     }
 
     public class PropertyValue
     {
-        [JsonProperty ("value")]
+        [JsonProperty("value")]
         public string Value;
     }
 
     public class PropertyValueOrError
     {
-        [JsonProperty ("propertyValue", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue (null)]
+        [JsonProperty(
+            "propertyValue",
+            DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(null)]
         public PropertyValue PropertyValue;
     }
 
     public class PropertyValues
     {
-        [JsonProperty ("propertyValues", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue (null)]
+        [JsonProperty(
+            "propertyValues",
+            DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(null)]
         public List<PropertyValueOrError> PropertyValuesOrErrors;
     }
 
     public class PropertyValuesForElements
     {
-        [JsonProperty ("propertyValuesForElements")]
+        [JsonProperty("propertyValuesForElements")]
         public List<PropertyValues> PropertyValuesOrErrors { get; set; }
     }
 }

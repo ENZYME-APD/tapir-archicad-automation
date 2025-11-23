@@ -1,6 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -16,9 +16,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void AddInputs()
+        protected override void AddOutputs()
         {
-            InGenerics(
+            OutGenerics(
                 "ElementGuids",
                 "Currently selected element Guids.");
         }

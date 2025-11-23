@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
 using Rhino.Geometry;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 

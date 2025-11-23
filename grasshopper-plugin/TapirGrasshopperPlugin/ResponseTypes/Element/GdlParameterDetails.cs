@@ -1,13 +1,47 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using TapirGrasshopperPlugin.Data;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {
     public static class GDLParameterHelps
     {
+        public static NewElementsWithGDLParameters ToElementsWithGDLParameters(
+            this ElementsObj elementsObj,
+            List<string> parameterNames,
+            List<object> values)
+        {
+            var result = new NewElementsWithGDLParameters
+            {
+                ElementsWithGDLParameters =
+                    new List<NewElementWithGDLParameters>()
+            };
+
+            for (int i = 0; i < parameterNames.Count; i++)
+            {
+                var item = new NewElementWithGDLParameters
+                {
+                    ElementId =
+                        new NewElementId
+                        {
+                            Guid = elementsObj.Ids[i].ElementId.Guid
+                        },
+                    GdlParameters = new List<GdlParameterDetails>()
+                    {
+                        new GdlParameterDetails()
+                        {
+                            Name = parameterNames[i],
+                            Value = values[i]
+                        }
+                    }
+                };
+
+                result.ElementsWithGDLParameters.Add(item);
+            }
+
+            return result;
+        }
+
         public static List<GDLHolder> ToGdlHolders(
             this GDLParametersResponse response,
             List<string> ids,
@@ -15,10 +49,15 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         {
             var result = new List<GDLHolder>();
 
-            for (var i = 0; i < ids.Count(); i++)
+            if (response?.GdlLists == null || ids == null)
             {
-                var id = ids[0];
-                var pList = response.GdlLists[0];
+                return result;
+            }
+
+            for (var i = 0; i < ids.Count; i++)
+            {
+                var id = ids[i];
+                var pList = response.GdlLists[i];
 
                 if (pList.GdlParameterArray == null ||
                     pList.GdlParameterArray.Count == 0)
@@ -82,9 +121,14 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         public int Dimension2;
 
         [JsonProperty("value")]
-        public Object Value;
+        public object Value;
     }
 
+    public class ElementsWithGDLParametersInput
+    {
+        [JsonProperty("elementsWithGDLParameters")]
+        public ElementsWithGDLParameters ElementsWithGDLParameters { get; set; }
+    }
 
     public class ElementsWithGDLParameters : List<ElementWithGDLParameters>
     {

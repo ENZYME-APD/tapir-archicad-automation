@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             InText(
                 nameof(ProjectInfoField.ProjectInfoId),
-                "Guid to select the field to set.");
+                "Guid of the targeted project info field.");
 
             InText(
                 nameof(ProjectInfoField.ProjectInfoValue),
@@ -34,6 +34,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!da.TryGetItem(
                     0,
                     out string id)) { return; }
+
 
             if (!da.TryGetItem(
                     1,

@@ -2,17 +2,16 @@
 using Newtonsoft.Json;
 using System;
 using System.Linq;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class GetGDLParametersOfElementsComponent : ArchicadAccessorComponent
+    public class GetGDLParametersComponent : ArchicadAccessorComponent
     {
         public override string CommandName => "GetGDLParametersOfElements";
 
-        public GetGDLParametersOfElementsComponent()
+        public GetGDLParametersComponent()
             : base(
                 "ElementGDLParameters",
                 "Get GDL parameter values of elements.",
@@ -42,8 +41,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Values of the found GDL detailList.");
 
             OutTexts(
-                "JsonValues",
-                "...");
+                nameof(GdlParameterDetails),
+                "JSON dictionary object describing the retrieved parameters.");
         }
 
         protected override void Solve(
@@ -74,7 +73,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var gdlHolders = response.ToGdlHolders(
                 inputElements.Elements.Select(x => x.ElementId.Guid).ToList(),
-                parameterName.ToLower());
+                parameterName);
 
             da.SetDataList(
                 0,

@@ -1,13 +1,17 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class NavigatorIdObj : IdObj<NavigatorIdObj> { }
-
-    public class NavigatorIdItemObj : IdItemObj<NavigatorIdObj, NavigatorIdItemObj>
+    public class NavigatorIdObj : IdObj<NavigatorIdObj>
     {
-        [JsonProperty ("navigatorItemId")]
+    }
+
+    public class NavigatorIdItemObj
+        : IdItemObj<NavigatorIdObj, NavigatorIdItemObj>
+    {
+        [JsonProperty("navigatorItemId")]
         public NavigatorIdObj NavigatorId;
 
         [JsonIgnore]
@@ -18,9 +22,10 @@ namespace TapirGrasshopperPlugin.Data
         }
     }
 
-    public class NavigatorItemIdsObj : IdsObj<NavigatorIdObj, NavigatorIdItemObj, NavigatorItemIdsObj>
+    public class NavigatorItemIdsObj
+        : IdsObj<NavigatorIdObj, NavigatorIdItemObj, NavigatorItemIdsObj>
     {
-        [JsonProperty ("navigatorItemIds")]
+        [JsonProperty("navigatorItemIds")]
         public List<NavigatorIdItemObj> NavigatorItemIds;
 
         [JsonIgnore]
@@ -31,11 +36,13 @@ namespace TapirGrasshopperPlugin.Data
         }
     }
 
-    public class DatabaseIdObj : IdObj<DatabaseIdObj> { }
+    public class DatabaseIdObj : IdObj<DatabaseIdObj>
+    {
+    }
 
     public class DatabaseIdItemObj : IdItemObj<DatabaseIdObj, DatabaseIdItemObj>
     {
-        [JsonProperty ("databaseId")]
+        [JsonProperty("databaseId")]
         public DatabaseIdObj DatabaseId;
 
         [JsonIgnore]
@@ -46,9 +53,10 @@ namespace TapirGrasshopperPlugin.Data
         }
     }
 
-    public class DatabasesObj : IdsObj<DatabaseIdObj, DatabaseIdItemObj, DatabasesObj>
+    public class DatabasesObj
+        : IdsObj<DatabaseIdObj, DatabaseIdItemObj, DatabasesObj>
     {
-        [JsonProperty ("databases")]
+        [JsonProperty("databases")]
         public List<DatabaseIdItemObj> Databases;
 
         [JsonIgnore]

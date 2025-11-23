@@ -6,7 +6,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Utilities;
@@ -633,19 +632,20 @@ namespace TapirGrasshopperPlugin.Components
             JObject commandParameters,
             out JObject response)
         {
-            var cResponse = SendArchicadAddOnCommand(
+            var cadResponse = SendArchicadAddOnCommand(
                 commandName,
                 commandParameters);
 
-            if (cResponse.Succeeded)
+            if (cadResponse.Succeeded)
             {
-                response = cResponse.Result;
+                response = cadResponse.Result;
                 return true;
             }
 
             AddRuntimeMessage(
                 GH_RuntimeMessageLevel.Error,
-                cResponse.GetErrorMessage());
+                cadResponse.GetErrorMessage());
+
             response = null;
             return false;
         }
@@ -670,8 +670,17 @@ namespace TapirGrasshopperPlugin.Components
                     null,
                     out var result))
             {
-                response = result.ToObject<T>();
-                return true;
+                try
+                {
+                    response = result.ToObject<T>();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    AddRuntimeMessage(
+                        GH_RuntimeMessageLevel.Error,
+                        $"Failed to convert response: {ex.Message}");
+                }
             }
 
             response = null;
@@ -684,16 +693,35 @@ namespace TapirGrasshopperPlugin.Components
             out T response)
             where T : class
         {
-            if (GetArchicadAddonResponse(
-                    commandName,
-                    JObject.FromObject(commandParameters),
-                    out var result))
+            response = null;
+
+            try
             {
-                response = result.ToObject<T>();
-                return true;
+                if (GetArchicadAddonResponse(
+                        commandName,
+                        JObject.FromObject(commandParameters),
+                        out var result))
+                {
+                    try
+                    {
+                        response = result.ToObject<T>();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        AddRuntimeMessage(
+                            GH_RuntimeMessageLevel.Error,
+                            $"Failed to convert response to {typeof(T).Name}: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    $"Error in {nameof(TryGetConvertedResponse)}: {ex.Message}");
             }
 
-            response = null;
             return false;
         }
     }

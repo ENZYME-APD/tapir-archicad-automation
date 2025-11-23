@@ -2,7 +2,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using System;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 

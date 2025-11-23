@@ -101,7 +101,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 };
 
             if (!TryGetConvertedResponse(
-                    CommandName,
+                    "GetDatabaseIdFromNavigatorItemId",
                     input,
                     out GetDatabaseIdFromNavigatorItemIdOutput response))
             {

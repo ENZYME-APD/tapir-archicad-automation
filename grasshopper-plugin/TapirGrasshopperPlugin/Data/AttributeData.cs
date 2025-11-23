@@ -1,13 +1,17 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class AttributeIdObj : IdObj<AttributeIdObj> { }
-
-    public class AttributeIdItemObj : IdItemObj<AttributeIdObj, AttributeIdItemObj>
+    public class AttributeIdObj : IdObj<AttributeIdObj>
     {
-        [JsonProperty ("attributeId")]
+    }
+
+    public class AttributeIdItemObj
+        : IdItemObj<AttributeIdObj, AttributeIdItemObj>
+    {
+        [JsonProperty("attributeId")]
         public AttributeIdObj AttributeId;
 
         [JsonIgnore]
@@ -18,9 +22,10 @@ namespace TapirGrasshopperPlugin.Data
         }
     }
 
-    public class AttributesObj : IdsObj<AttributeIdObj, AttributeIdItemObj, AttributesObj>
+    public class AttributesObj
+        : IdsObj<AttributeIdObj, AttributeIdItemObj, AttributesObj>
     {
-        [JsonProperty ("attributes")]
+        [JsonProperty("attributes")]
         public List<AttributeIdItemObj> Attributes;
 
         [JsonIgnore]
@@ -31,9 +36,10 @@ namespace TapirGrasshopperPlugin.Data
         }
     }
 
-    public class AttributeIdsObj : IdsObj<AttributeIdObj, AttributeIdItemObj, AttributeIdsObj>
+    public class AttributeIdsObj
+        : IdsObj<AttributeIdObj, AttributeIdItemObj, AttributeIdsObj>
     {
-        [JsonProperty ("attributeIds")]
+        [JsonProperty("attributeIds")]
         public List<AttributeIdItemObj> AttributeIds;
 
         [JsonIgnore]
@@ -46,19 +52,19 @@ namespace TapirGrasshopperPlugin.Data
 
     public class AttributeDetail
     {
-        [JsonProperty ("attributeId")]
+        [JsonProperty("attributeId")]
         public AttributeIdObj AttributeId;
 
-        [JsonProperty ("index")]
+        [JsonProperty("index")]
         public uint Index;
 
-        [JsonProperty ("name")]
+        [JsonProperty("name")]
         public string Name;
     }
 
     public class AttributeDetailsObj
     {
-        [JsonProperty ("attributes")]
+        [JsonProperty("attributes")]
         public List<AttributeDetail> Attributes;
     }
 }

@@ -3,15 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class SetGDLParametersOfElementsComponent : ArchicadAccessorComponent
+    public class SetGDLParametersComponent : ArchicadAccessorComponent
     {
         public override string CommandName => "SetGDLParametersOfElements";
 
-        public SetGDLParametersOfElementsComponent()
+        public SetGDLParametersComponent()
             : base(
                 "SetElementGDLs",
                 "Sets the given GDL parameters of the given elements.",
@@ -21,9 +22,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
+            InGenerics(
+                "ElementGuids",
+                "Elements Guids to set the parameters of.");
+
             InTexts(
-                "...",
-                "...");
+                "ParameterName",
+                "Parameter name to find and set.");
+
+            InGenerics(
+                "Value",
+                "Value to set the parameter to.");
         }
 
         protected override void AddOutputs()
@@ -36,13 +45,35 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.GetItems(
+            if (!ElementsObj.TryCreate(
+                    da,
                     0,
-                    out List<string> jsonElements)) { return; }
+                    out ElementsObj elementsObj))
+            {
+                return;
+            }
+
+            if (!da.GetItems(
+                    1,
+                    out List<string> parameterNames))
+            {
+                return;
+            }
+
+            if (!da.GetItems(
+                    2,
+                    out List<object> values))
+            {
+                return;
+            }
+
+            var input = elementsObj.ToElementsWithGDLParameters(
+                parameterNames,
+                values);
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    jsonElements,
+                    input,
                     out ExecutionResultsResponse response))
             {
                 return;

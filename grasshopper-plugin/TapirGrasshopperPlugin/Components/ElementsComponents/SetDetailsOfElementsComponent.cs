@@ -2,7 +2,6 @@
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
@@ -166,7 +165,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
                 AddRuntimeMessage(
                     GH_RuntimeMessageLevel.Error,
-                    eResult.Message() + " [ElementId " +
+                    eResult.Message() + " [NewElementId " +
                     inputElements.Elements[i].ToString() + "]");
             }
         }
