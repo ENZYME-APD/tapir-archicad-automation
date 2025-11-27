@@ -67,13 +67,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 }
 
                 for (int propertyIndex = 0; propertyIndex < propertyValuesOrError.PropertyValuesOrErrors.Count; propertyIndex++) {
-                    PropertyValueOrError propertyValueOrError = propertyValuesOrError.PropertyValuesOrErrors[propertyIndex];
-                    if (propertyValueOrError.PropertyValue == null) {
-                        continue;
-                    }
-
                     elementIds.Add (elements.Elements[elementIndex], new GH_Path (propertyIndex));
-                    values.Add (propertyValueOrError.PropertyValue.Value, new GH_Path (propertyIndex));
+
+                    PropertyValueOrError propertyValueOrError = propertyValuesOrError.PropertyValuesOrErrors[propertyIndex];
+                    values.Add (propertyValueOrError.PropertyValue == null ? null : propertyValueOrError.PropertyValue.Value, new GH_Path (propertyIndex));
                 }
             }
 

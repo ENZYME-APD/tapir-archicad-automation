@@ -67,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components
                             box: this._buttonBounds[i],
                             textbox: this._buttonBounds[i],
                             palette: this._isPressed[i] ? GH_Palette.Grey : GH_Palette.Black,
-                            text: buttonComponent.CapsuleButtonTexts[i],
+                            text: buttonComponent.CapsuleButtonTexts[i % buttonComponent.CapsuleButtonTexts.Count],
                             radius: 5,
                             highlight: 0);
                         buttonCapsule.Render (graphics, this.Selected, this.Owner.Locked, false);
@@ -280,7 +280,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public override void CreateAttributes ()
         {
-            this.m_attributes = new ButtonAttributes (this, 2, _additionalWidth);
+            this.m_attributes = new ButtonAttributes (this, 1, _additionalWidth);
         }
 
         public abstract void OnCapsuleButtonPressed (int buttonIndex);
