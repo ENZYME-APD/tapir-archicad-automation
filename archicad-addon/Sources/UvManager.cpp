@@ -7,6 +7,7 @@
 #include "IBinaryChannelUtilities.hpp"
 #include "FileSystem.hpp"
 #include "Folder.hpp"
+#include "Config.hpp"
 #include <vector>
 #include <string>
 #include <regex>
@@ -156,6 +157,25 @@ static GS::UniString FindValidUvExecutablePath ()
 
 GS::UniString UvManager::GetUvExecutablePath ()
 {
+    const GS::UniString& uvLocationFromConfigFile = Config::Instance ().uvLocation ();
+    if (!uvLocationFromConfigFile.IsEmpty ()) {
+        GS::UniString validPath = GetValidPathIfSufficient (uvLocationFromConfigFile);
+        if (!validPath.IsEmpty ()) {
+            return validPath;
+        } else {
+            static bool alertOnce = true;
+            if (alertOnce) {
+                DGAlert (DG_WARNING, "Configured 'uv' Executable Invalid",
+                    GS::UniString::Printf (
+                        "'uv' executable path configured in Tapir settings is invalid or points to an outdated version:\n\n%T\n\n"
+                        "Tapir will attempt to find a valid 'uv' installation automatically.",
+                        uvLocationFromConfigFile.ToPrintf ()),
+                    "", "OK");
+                alertOnce = false;
+            }
+        }
+    }
+
     GS::UniString uvPath = FindValidUvExecutablePath ();
     if (!uvPath.IsEmpty ()) {
         return uvPath;
