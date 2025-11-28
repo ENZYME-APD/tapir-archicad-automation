@@ -499,6 +499,13 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
 
     IO::Name name;
     popUpData->fileLocation.GetLastLocalName (&name);
+
+#if defined (macintosh)
+    if (name.ToString ().BeginsWith ('.')) {
+        return false;
+    }
+#endif
+
     scriptSelectionPopUp.InsertItem (index);
     if (popUpData->repo) {
         auto* repo = popUpData->repo;
