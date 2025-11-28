@@ -9,7 +9,7 @@ using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components
 {
-    abstract public class ValueList : GH_ValueList
+    public abstract class ValueList : GH_ValueList
     {
         public ValueList(
             string name,
@@ -51,7 +51,7 @@ namespace TapirGrasshopperPlugin.Components
                 commandParameters);
         }
 
-        abstract public void RefreshItems();
+        public abstract void RefreshItems();
 
         public void AddEnumItems<T>(
             T defaultSelected)
@@ -96,7 +96,7 @@ namespace TapirGrasshopperPlugin.Components
         }
     }
 
-    abstract public class ArchicadAccessorValueList : ValueList
+    public abstract class ArchicadAccessorValueList : ValueList
     {
         public abstract string CommandName { get; }
 

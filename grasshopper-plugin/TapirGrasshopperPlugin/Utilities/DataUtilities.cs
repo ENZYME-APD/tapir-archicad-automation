@@ -12,52 +12,30 @@ namespace TapirGrasshopperPlugin.Utilities
     {
         public const double Epsilon = 1E-5;
 
-        static public List<int> ToRGBColor(
-            GH_Colour colorRGBA,
+        public static List<int> ToRgb(
+            GH_Colour color,
             int alpha)
         {
-            if (colorRGBA == null)
-            {
-                return null;
-            }
-
-            return new List<int>
-            {
-                colorRGBA.Value.R,
-                colorRGBA.Value.G,
-                colorRGBA.Value.B,
-                alpha
-            };
+            return color == null
+                ? null
+                : new List<int>
+                {
+                    color.Value.R, color.Value.G, color.Value.B, alpha
+                };
         }
 
-        static public List<List<int>> ToRGBColors(
-            List<GH_Colour> colorRGBAs,
-            int alpha,
-            int minSize)
+        public static List<List<int>> ToRgb(
+            List<GH_Colour> ghColors,
+            int alpha)
         {
-            if (colorRGBAs == null)
-            {
-                return null;
-            }
-
-            var colors = new List<List<int>>();
-            foreach (var colorRGBA in colorRGBAs)
-            {
-                colors.Add(
-                    ToRGBColor(
-                        colorRGBA,
-                        alpha));
-            }
-
-            for (var i = colors.Count; i < minSize; ++i)
-            {
-                colors.Add(colors.Last());
-            }
-
-            return colors;
+            return ghColors
+                ?.Select(x => ToRgb(
+                    x,
+                    alpha))
+                .ToList();
         }
 
-        static public Point2d GetArcOrigo(
+        public static Point2d GetArcOrigo(
             Point2d begC,
             Point2d endC,
             double angle)
@@ -82,7 +60,7 @@ namespace TapirGrasshopperPlugin.Utilities
             return origo;
         }
 
-        static public PolyCurve ToPolyCurve(
+        public static PolyCurve ToPolyCurve(
             List<Point2D> points,
             List<Arc> arcs,
             double zCoordinate,
@@ -199,7 +177,7 @@ namespace TapirGrasshopperPlugin.Utilities
             return polyCurve;
         }
 
-        static public PolyCurve ToPolyCurve(
+        public static PolyCurve ToPolyCurve(
             List<Point3D> points)
         {
             var polyCurve = new PolyCurve();

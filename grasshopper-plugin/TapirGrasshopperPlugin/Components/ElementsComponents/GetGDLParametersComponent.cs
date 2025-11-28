@@ -58,10 +58,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (!da.TryGetItem(
                     1,
-                    out string parameterName))
-            {
-                return;
-            }
+                    out string parameterName)) { return; }
 
             if (!TryGetConvertedResponse(
                     CommandName,

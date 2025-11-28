@@ -1,11 +1,13 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -13,7 +15,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
     {
         public static string Doc => "Get the tree structure of the navigator.";
 
-        public override string CommandName => "GetNavigatorItemTree";
+        public override string CommandName =>
+            "GetDatabaseIdFromNavigatorItemId";
 
         public GetNavigatorTreeComponent()
             : base(
@@ -101,7 +104,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 };
 
             if (!TryGetConvertedResponse(
-                    "GetDatabaseIdFromNavigatorItemId",
+                    CommandName,
                     input,
                     out GetDatabaseIdFromNavigatorItemIdOutput response))
             {
@@ -145,10 +148,20 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             };
 
-            if (!TryGetConvertedResponse(
-                    CommandName,
-                    navigatorTreeId,
-                    out NavigatorTreeObj response)) { return; }
+            var navigatorTreeIdObj = JObject.FromObject(navigatorTreeId);
+            CommandResponse response = SendArchicadCommand(
+                "GetNavigatorItemTree",
+                navigatorTreeIdObj);
+            if (!response.Succeeded)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    response.GetErrorMessage());
+                return;
+            }
+
+            NavigatorTreeObj navigatorTreeObj =
+                response.Result.ToObject<NavigatorTreeObj>();
 
             var navigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
             var navigatorItemPrefixTree = new DataTree<string>();
@@ -157,7 +170,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             var navigatorItemTypeTree = new DataTree<string>();
             var sourceNavigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
 
-            response.GetItems(
+            navigatorTreeObj.GetItems(
                 navigatorItemIdTree,
                 navigatorItemPrefixTree,
                 navigatorItemNameTree,

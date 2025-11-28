@@ -123,8 +123,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!ElementsObj.TryCreate(
                     da,
                     1,
-                    out ElementsObj inputElements))
+                    out ElementsObj input) || input.Elements.Count == 0)
             {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Warning,
+                    "Input ElementGuids failed to collect data.");
                 return;
             }
 
@@ -135,14 +138,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (highlightedColors.Count != 1 && inputElements.Elements.Count !=
-                highlightedColors.Count)
-            {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "The count of highlighted colors must be 1 or the same as the count of ElementGuids.");
-                return;
-            }
 
             if (!da.TryGetItem(
                     3,
@@ -165,6 +160,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            highlightedColors.MultiplyTo(input.Elements.Count);
+
+
             if (transparency < 0.0)
             {
                 transparency = 0.0;
@@ -178,12 +176,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             // always comes from the non-highlighted element color.
             var highlightElements = new HighlightElementsObj()
             {
-                Elements = inputElements.Elements,
-                HighlightedColors = Utilities.Convert.ToRGBColors(
+                Elements = input.Elements,
+                HighlightedColors = Utilities.Convert.ToRgb(
                     highlightedColors,
-                    255,
-                    inputElements.Elements.Count),
-                NonHighlightedColor = Utilities.Convert.ToRGBColor(
+                    255),
+                NonHighlightedColor = Utilities.Convert.ToRgb(
                     nonHighlightedColor,
                     Convert.ToInt32(transparency * 255.0)),
                 Wireframe3D = wireframe3D

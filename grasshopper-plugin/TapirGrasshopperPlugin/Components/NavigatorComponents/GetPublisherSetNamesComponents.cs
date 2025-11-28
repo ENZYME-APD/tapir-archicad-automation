@@ -26,16 +26,23 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedResponse(
-                    CommandName,
-                    out PublisherSetNamesObj response))
+            var response = SendArchicadCommand(
+                "GetPublisherSetNames",
+                null);
+
+            if (!response.Succeeded)
             {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    response.GetErrorMessage());
+
                 return;
             }
 
+            var obj = response.Result.ToObject<PublisherSetNamesObj>();
             da.SetDataList(
                 0,
-                response.PublisherSetNames);
+                obj.PublisherSetNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>
