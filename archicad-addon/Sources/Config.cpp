@@ -4,6 +4,7 @@
 #include "ObjectStateJSONConversion.hpp"
 #include "APIEnvir.h"
 #include "ACAPinc.h"
+#include "UvManager.hpp"
 
 Config::Repository Config::Repository::FromOS (const GS::ObjectState& os) {
     Repository repo;
@@ -61,6 +62,7 @@ void Config::GetDefaults ()
         "builtin-scripts"
     });
     askUpdatingAddOnBeforeEachExecution = false;
+    uvLocationStr = GS::EmptyUniString;
 }
 
 void Config::LoadFromFile (IO::File& file)
@@ -87,6 +89,7 @@ void Config::LoadFromFile (IO::File& file)
     }
 
     os.Get ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
+    os.Get ("uvLocation", uvLocationStr);
 }
 
 void Config::SaveToFile (IO::File& file) const
@@ -98,6 +101,7 @@ void Config::SaveToFile (IO::File& file) const
     }
 
     os.Add ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
+    os.Add ("uvLocation", uvLocationStr);
 
     constexpr bool prettyPrint = true;
     file.Open (IO::File::OpenMode::WriteEmptyMode);

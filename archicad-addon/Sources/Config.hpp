@@ -49,6 +49,7 @@ public:
 
     const std::vector<Repository>& Repositories () const { return repositories; }
     bool AskUpdatingAddOnBeforeEachExecution () const { return askUpdatingAddOnBeforeEachExecution; }
+    const GS::UniString& uvLocation() const { return uvLocationStr; }
 
 private:
     Config ();
@@ -64,4 +65,5 @@ private:
     GSTime configFileTimestamp = 0;
     std::vector<Repository> repositories;
     bool askUpdatingAddOnBeforeEachExecution;
+    GS::UniString uvLocationStr;
 };
