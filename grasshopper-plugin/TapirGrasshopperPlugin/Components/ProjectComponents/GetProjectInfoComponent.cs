@@ -1,5 +1,7 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents

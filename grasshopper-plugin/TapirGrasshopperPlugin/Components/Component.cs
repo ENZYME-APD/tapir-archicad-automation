@@ -676,7 +676,34 @@ namespace TapirGrasshopperPlugin.Components
 
         protected bool TryGetConvertedResponse<T>(
             string commandName,
+            Func<JObject, T> deserializer,
+            out T response)
+            where T : class
+        {
+            return TryGetConvertedResponse(
+                commandName,
+                null,
+                deserializer,
+                out response);
+        }
+
+        protected bool TryGetConvertedResponse<T>(
+            string commandName,
             object commandParametersObject,
+            out T response)
+            where T : class
+        {
+            return TryGetConvertedResponse(
+                commandName,
+                null,
+                x => x.ToObject<T>(),
+                out response);
+        }
+
+        protected bool TryGetConvertedResponse<T>(
+            string commandName,
+            object commandParametersObject,
+            Func<JObject, T> deserializer,
             out T response)
             where T : class
         {
@@ -696,13 +723,12 @@ namespace TapirGrasshopperPlugin.Components
 
             try
             {
-                response = cadResponse.ToObject<T>();
+                response = deserializer.Invoke(cadResponse);
                 return true;
             }
             catch (Exception ex)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
+                this.AddError(
                     $"Failed to deserialize JSON response to {typeof(T).Name}: {ex.Message}");
             }
 
@@ -805,14 +831,15 @@ namespace TapirGrasshopperPlugin.Components
         {
             if (!TryGetConvertedResponse(
                     CommandName,
-                    out JObject response))
+                    deserializer: ExecutionResult.Deserialize,
+                    out ExecutionResult response))
             {
                 return;
             }
 
             da.SetData(
                 0,
-                ExecutionResult.Deserialize(response).Message());
+                response.Message());
         }
 
         protected void SolveByElementsInputResponse(
@@ -829,14 +856,15 @@ namespace TapirGrasshopperPlugin.Components
             if (!TryGetConvertedResponse(
                     CommandName,
                     input,
-                    out JObject response))
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
             {
                 return;
             }
 
             da.SetData(
                 0,
-                ExecutionResult.Deserialize(response).Message());
+                response.Message());
         }
     }
 

@@ -62,23 +62,23 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     attributes,
-                    out LayersObj layers)) { return; }
+                    out LayersObj response)) { return; }
 
             da.SetDataList(
                 0,
-                layers.Attributes.Select(x => x.LayerAttribute.Name));
+                response.Attributes.Select(x => x.LayerAttribute.Name));
             da.SetDataList(
                 1,
-                layers.Attributes.Select(x => x.LayerAttribute.IsHidden));
+                response.Attributes.Select(x => x.LayerAttribute.IsHidden));
             da.SetDataList(
                 2,
-                layers.Attributes.Select(x => x.LayerAttribute.IsLocked));
+                response.Attributes.Select(x => x.LayerAttribute.IsLocked));
             da.SetDataList(
                 3,
-                layers.Attributes.Select(x => x.LayerAttribute.IsWireframe));
+                response.Attributes.Select(x => x.LayerAttribute.IsWireframe));
             da.SetDataList(
                 4,
-                layers.Attributes.Select(x =>
+                response.Attributes.Select(x =>
                     x.LayerAttribute.IntersectionGroupNr));
         }
 

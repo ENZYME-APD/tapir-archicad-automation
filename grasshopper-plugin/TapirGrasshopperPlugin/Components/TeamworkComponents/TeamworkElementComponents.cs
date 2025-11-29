@@ -6,8 +6,9 @@ using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.TeamworkComponents
 {
-    public abstract class AbsTeamworkElementsComponent
+    public abstract class AbsTeamworkElementsComponent<T>
         : AbsTeamworkBaseComponent
+        where T : class
     {
         protected AbsTeamworkElementsComponent(
             string name,
@@ -42,18 +43,20 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     input,
-                    out JObject response))
+                    T.Deserialize,
+                    out T response))
             {
                 return;
             }
 
             da.SetData(
                 0,
-                GetMessage(response));
+                T.Message(response));
         }
     }
 
-    public class ReserveElementsComponent : AbsTeamworkElementsComponent
+    public class ReserveElementsComponent
+        : AbsTeamworkElementsComponent<ExecutionResultResponse>
     {
         public override string CommandName => "ReserveElements";
 
@@ -67,14 +70,15 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         protected override string GetMessage(
             JObject response)
         {
-            return ExecutionResultResponse.Deserialize(response).Message();
+            return T.Deserialize(response).Message();
         }
 
         public override Guid ComponentGuid =>
             new Guid("3c0e9944-2875-4a68-8794-ec16fa3235f5");
     }
 
-    public class ReleaseElementsComponent : AbsTeamworkElementsComponent
+    public class ReleaseElementsComponent
+        : AbsTeamworkElementsComponent<ExecutionResult>
     {
         public override string CommandName => "ReleaseElements";
 

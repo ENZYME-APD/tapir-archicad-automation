@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.TeamworkComponents
 {
@@ -17,7 +18,17 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            SolveByResponse(da);
+            if (!TryGetConvertedResponse(
+                    CommandName,
+                    deserializer: ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response.Message());
         }
     }
 

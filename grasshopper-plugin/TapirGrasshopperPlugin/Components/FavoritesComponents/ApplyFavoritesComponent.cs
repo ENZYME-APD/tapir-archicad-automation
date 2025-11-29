@@ -51,16 +51,15 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     input,
-                    out JObject response))
+                    ExecutionResultsResponse.Deserialize,
+                    out ExecutionResultsResponse response))
             {
                 return;
             }
 
             da.SetDataList(
                 0,
-                ExecutionResultsResponse
-                    .Deserialize(response)
-                    .ExecutionResults.Select(x => x.Message()));
+                response.ExecutionResults.Select(x => x.Message()));
         }
 
         public override Guid ComponentGuid =>

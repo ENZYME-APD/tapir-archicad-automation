@@ -46,14 +46,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     new ProjectFilePathObject { ProjectFilePath = path },
-                    out JObject response))
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
             {
                 return;
             }
 
             da.SetData(
                 0,
-                ExecutionResult.Deserialize(response).Message());
+                response.Message());
         }
 
         public override Guid ComponentGuid =>

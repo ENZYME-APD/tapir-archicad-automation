@@ -1,5 +1,4 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,16 +68,15 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                     new FavoritesFromElementsObj(
                         elements.Ids,
                         favorites),
-                    out JObject response))
+                    ExecutionResultsResponse.Deserialize,
+                    out ExecutionResultsResponse response))
             {
                 return;
             }
 
             da.SetDataList(
                 0,
-                ExecutionResultsResponse
-                    .Deserialize(response)
-                    .ExecutionResults.Select(x => x.Message()));
+                response.ExecutionResults.Select(x => x.Message()));
         }
 
         public override Guid ComponentGuid =>
