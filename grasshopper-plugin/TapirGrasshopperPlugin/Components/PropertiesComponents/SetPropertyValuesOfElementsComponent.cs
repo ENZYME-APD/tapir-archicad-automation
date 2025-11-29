@@ -63,8 +63,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
             if (values.Count != 1 && elements.Elements.Count != values.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
+                this.AddError(
                     "The count of Values must be 1 or the same as the count of ElementGuids.");
                 return;
             }

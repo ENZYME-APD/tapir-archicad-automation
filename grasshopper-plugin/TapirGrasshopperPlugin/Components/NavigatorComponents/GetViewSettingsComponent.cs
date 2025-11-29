@@ -47,17 +47,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     ids,
-                    out JObject jResponse))
+                    out JObject response))
             {
                 return;
             }
 
-            var response = ViewSettingsResponse.FromResponse(jResponse);
-
             da.SetData(
                 0,
                 JsonConvert.SerializeObject(
-                    response,
+                    ViewSettingsResponse.FromResponse(response),
                     Formatting.Indented));
         }
 

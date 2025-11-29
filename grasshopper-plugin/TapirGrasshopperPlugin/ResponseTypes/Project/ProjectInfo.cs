@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Project
 {
@@ -31,6 +32,18 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Project
 
         [JsonProperty("projectInfoValue")]
         public string ProjectInfoValue { get; set; }
+
+        public ProjectInfoField()
+        {
+        }
+
+        public ProjectInfoField(
+            string id,
+            string value)
+        {
+            ProjectInfoId = id;
+            ProjectInfoValue = value;
+        }
     }
 
     public class ProjectInfoFields

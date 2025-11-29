@@ -156,9 +156,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 navigatorTreeIdObj);
             if (!response.Succeeded)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
+                this.AddError(response.GetErrorMessage());
                 return;
             }
 

@@ -125,9 +125,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     1,
                     out ElementsObj input) || input.Elements.Count == 0)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Warning,
-                    "Input ElementGuids failed to collect data.");
+                this.AddWarning("Input ElementGuids failed to collect data.");
                 return;
             }
 

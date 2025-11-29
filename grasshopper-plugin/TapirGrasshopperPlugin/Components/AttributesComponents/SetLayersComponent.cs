@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
@@ -61,17 +62,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     1,
                     names))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input AttributeNames failed to collect data.");
                 return;
             }
 
             if (attributes.Attributes.Count != names.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "The number of AttributeGuids and Names must be the same.");
+                this.AddError("Attribute to Name count mismatch!");
                 return;
             }
 
@@ -80,9 +76,6 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     2,
                     isHiddenLayers))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input IsHidden failed to collect data.");
                 return;
             }
 
@@ -91,9 +84,6 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     3,
                     isLockedLayers))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input IsLocked failed to collect data.");
                 return;
             }
 
@@ -102,9 +92,6 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     4,
                     isWireframeLayers))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input IsWireframe failed to collect data.");
                 return;
             }
 
@@ -113,9 +100,6 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     5,
                     intersectionGroupsOfLayers))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input IntersectionGroup failed to collect data.");
                 return;
             }
 
@@ -128,9 +112,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 (names.Count != intersectionGroupsOfLayers.Count &&
                  intersectionGroupsOfLayers.Count != 1))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "The number of items in the input lists must match the number of input layers.");
+                this.AddError("Tree branch count inequality!");
                 return;
             }
 

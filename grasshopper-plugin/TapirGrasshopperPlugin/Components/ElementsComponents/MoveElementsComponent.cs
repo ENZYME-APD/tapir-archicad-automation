@@ -55,8 +55,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (moveVectors.Count != 1 &&
                 moveVectors.Count != elements.Elements.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
+                this.AddError(
                     "The size of the input MoveVectors must be 1 or equal to the size of the input ElementGuids.");
                 return;
             }

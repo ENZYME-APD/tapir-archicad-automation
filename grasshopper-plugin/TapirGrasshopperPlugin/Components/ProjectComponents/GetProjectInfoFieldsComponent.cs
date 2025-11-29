@@ -21,15 +21,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             OutTexts(
                 "ProjectInfoId",
-                "Project Info Id.");
+                "Project info Id.");
 
             OutTexts(
                 "ProjectInfoName",
-                "Project Info Name.");
+                "Project info name.");
 
             OutTexts(
                 "ProjectInfoValue",
-                "Project Info Value.");
+                "Project info value.");
         }
 
         protected override void Solve(

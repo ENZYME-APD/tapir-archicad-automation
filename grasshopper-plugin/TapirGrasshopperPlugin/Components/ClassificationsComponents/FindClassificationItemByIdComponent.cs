@@ -107,9 +107,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             if (found == null)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "ClassificationItem is not found.");
+                this.AddError("ClassificationItem not found!");
             }
             else
             {

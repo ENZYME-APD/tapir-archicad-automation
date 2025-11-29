@@ -84,9 +84,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             if (classificationItemIds.Count != 1 && elements.Elements.Count !=
                 classificationItemIds.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "The count of ClsItemGuids must be 1 or the same as the count of ElementGuids.");
+                this.AddError("Classification- to ElementGuid count mismatch!");
                 return;
             }
 

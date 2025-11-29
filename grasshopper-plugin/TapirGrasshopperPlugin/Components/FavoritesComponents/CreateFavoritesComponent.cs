@@ -60,10 +60,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 
             if (favorites.Count != elements.Elements.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Unequal counts between elements and favorites.");
-
+                this.AddError("Element to Favorite count mismatch!");
                 return;
             }
 

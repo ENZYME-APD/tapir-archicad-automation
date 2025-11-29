@@ -2,6 +2,7 @@
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
@@ -54,9 +55,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     1,
                     begCoords))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input BegCoords failed to collect data.");
                 return;
             }
 
@@ -65,9 +63,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     2,
                     endCoords))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input EndCoords failed to collect data.");
                 return;
             }
 
@@ -76,17 +71,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     3,
                     heights))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input Heights failed to collect data.");
                 return;
             }
 
             if (begCoords.Count != 1 &&
                 inputElements.Elements.Count != begCoords.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
+                this.AddError(
                     "The count of BegCoords must be 1 or the same as the count of ElementGuids.");
                 return;
             }
@@ -94,8 +85,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (endCoords.Count != 1 &&
                 inputElements.Elements.Count != endCoords.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
+                this.AddError(
                     "The count of EndCoords must be 1 or the same as the count of ElementGuids.");
                 return;
             }
@@ -103,8 +93,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (heights.Count != 1 &&
                 inputElements.Elements.Count != heights.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
+                this.AddError(
                     "The count of Heights must be 1 or the same as the count of ElementGuids.");
                 return;
             }
@@ -162,8 +151,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     continue;
                 }
 
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
+                this.AddError(
                     eResult.Message() + " [NewElementId " +
                     inputElements.Elements[i].ToString() + "]");
             }

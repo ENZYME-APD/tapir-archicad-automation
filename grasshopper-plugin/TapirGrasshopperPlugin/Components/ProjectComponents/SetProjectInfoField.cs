@@ -1,5 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Project;
 
@@ -11,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         public SetProjectInfoFieldsComponent()
             : base(
-                "SetProjectInfoField",
+                "SetProjectInfoFields",
                 "Set a project info field to a requested value.",
                 GroupNames.Project)
         {
@@ -19,33 +21,55 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void AddInputs()
         {
-            InText(
-                nameof(ProjectInfoField.ProjectInfoId),
-                "Guid of the targeted project info field.");
+            InTexts(
+                nameof(ProjectInfoField.ProjectInfoId) + "s",
+                "Guids of the targeted project info fields.");
 
-            InText(
-                nameof(ProjectInfoField.ProjectInfoValue),
-                "Value to set the field to.");
+            InTexts(
+                nameof(ProjectInfoField.ProjectInfoValue) + "s",
+                "Values to set the fields to.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGetItems(
                     0,
-                    out string id)) { return; }
+                    out List<string> ids))
+            {
+                return;
+            }
 
 
-            if (!da.TryGetItem(
+            if (!da.TryGetItems(
                     1,
-                    out string value)) { return; }
+                    out List<string> values))
+            {
+                return;
+            }
 
-            SetArchiCadValues(
-                CommandName,
-                new ProjectInfoField
-                {
-                    ProjectInfoId = id, ProjectInfoValue = value
-                });
+            if (ids.Count != values.Count)
+            {
+                this.AddError("Id to Value count mismatch!");
+            }
+
+            if (ids.Count != ids.Distinct().Count())
+            {
+                this.AddError("Duplicate input ids!");
+            }
+
+            foreach (var field in ids.Zip(
+                         values,
+                         (
+                             x,
+                             y) => new ProjectInfoField(
+                             x,
+                             y)))
+            {
+                SetArchiCadValues(
+                    CommandName,
+                    field);
+            }
         }
 
         protected override System.Drawing.Bitmap Icon =>

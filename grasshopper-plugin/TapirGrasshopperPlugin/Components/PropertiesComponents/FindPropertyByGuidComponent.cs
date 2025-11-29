@@ -62,9 +62,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
             if (found == null)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Property is not found.");
+                this.AddError("Property is not found.");
             }
             else
             {

@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -32,17 +33,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             if (!response.Succeeded)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-
+                this.AddError(response.GetErrorMessage());
                 return;
             }
 
-            var obj = response.Result.ToObject<PublisherSetNamesObj>();
             da.SetDataList(
                 0,
-                obj.PublisherSetNames);
+                response.Result.ToObject<PublisherSetNamesObj>()
+                    .PublisherSetNames);
         }
 
         protected override System.Drawing.Bitmap Icon =>

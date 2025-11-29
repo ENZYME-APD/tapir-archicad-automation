@@ -52,9 +52,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             if (names.Count != elevations.Count)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input StoryName and StoryElevation lists must have the same number of items.");
+                this.AddError("StoryName to -Elevation count mismatch!");
                 return;
             }
 
@@ -68,9 +66,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (names.Count != showOnSections.Count &&
                 showOnSections.Count != 1)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    "Input StoryName and ShowOnSections lists must have the same number of items.");
+                this.AddError("StoryName to ShowOnSections count mismatch!");
                 return;
             }
 

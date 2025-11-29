@@ -61,5 +61,23 @@ namespace TapirGrasshopperPlugin.Helps
                     $"Cannot convert {nameof(GH_ObjectWrapper)} to string.");
             }
         }
+
+        public static void AddError(
+            this GH_ActiveObject activeObject,
+            string message)
+        {
+            activeObject.AddRuntimeMessage(
+                GH_RuntimeMessageLevel.Error,
+                message);
+        }
+
+        public static void AddWarning(
+            this GH_ActiveObject active,
+            string message)
+        {
+            active.AddRuntimeMessage(
+                GH_RuntimeMessageLevel.Warning,
+                message);
+        }
     }
 }
