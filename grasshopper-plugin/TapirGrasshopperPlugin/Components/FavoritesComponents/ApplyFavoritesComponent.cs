@@ -1,5 +1,8 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Favorites;
@@ -36,24 +39,28 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetAndCreate(
+            if (!da.TryGetItems(
                     0,
-                    out FavoritesObj input))
+                    out List<GH_ObjectWrapper> ghInputs))
             {
                 return;
             }
 
+            var input = FavoritesObj.FromWrappers(ghInputs);
+
             if (!TryGetConvertedResponse(
                     CommandName,
                     input,
-                    out ExecutionResultsResponse response))
+                    out JObject response))
             {
                 return;
             }
 
             da.SetDataList(
                 0,
-                response.ExecutionResults.Select(x => x.Message()));
+                ExecutionResultsResponse
+                    .Deserialize(response)
+                    .ExecutionResults.Select(x => x.Message()));
         }
 
         public override Guid ComponentGuid =>

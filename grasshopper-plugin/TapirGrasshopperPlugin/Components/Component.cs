@@ -689,21 +689,21 @@ namespace TapirGrasshopperPlugin.Components
             if (!GetArchicadAddonResponse(
                     commandName,
                     commandParameters,
-                    out var result))
+                    out var cadResponse))
             {
                 return false;
             }
 
             try
             {
-                response = result.ToObject<T>();
+                response = cadResponse.ToObject<T>();
                 return true;
             }
             catch (Exception ex)
             {
                 AddRuntimeMessage(
                     GH_RuntimeMessageLevel.Error,
-                    $"Failed to convert response to {typeof(T).Name}: {ex.Message}");
+                    $"Failed to deserialize JSON response to {typeof(T).Name}: {ex.Message}");
             }
 
             return false;

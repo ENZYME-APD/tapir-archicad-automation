@@ -19,8 +19,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void AddInputs()
         {
             InGenerics(
-                "ElementGuids",
-                "Elements Guids of the Drawings to update.");
+                "DrawingIds",
+                "ElementsGuids of the Drawings to update.");
         }
 
         protected override void AddOutputs()

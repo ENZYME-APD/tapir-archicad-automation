@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +11,38 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
     {
         [JsonProperty("executionResults")]
         public List<ExecutionResult> ExecutionResults { get; set; }
+
+        public ExecutionResultsResponse()
+        {
+            ExecutionResults = new List<ExecutionResult>();
+        }
+
+        public static ExecutionResultsResponse Deserialize(
+            JObject jObject)
+        {
+            var response = new ExecutionResultsResponse();
+
+            var results = jObject["executionResults"] as JArray;
+
+            if (results == null)
+            {
+                return response;
+            }
+
+            foreach (var token in results)
+            {
+                var resultItem = token as JObject;
+                if (resultItem == null)
+                {
+                    continue;
+                }
+
+                response.ExecutionResults.Add(
+                    ExecutionResult.Deserialize(resultItem));
+            }
+
+            return response;
+        }
     }
 
     public class ExecutionResultResponse

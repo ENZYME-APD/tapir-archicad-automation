@@ -3,6 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Rhino.Commands;
 using Rhino.Geometry;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
@@ -191,9 +192,9 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         {
             if (da.TryGetItems(
                     index,
-                    out List<GH_ObjectWrapper> ids))
+                    out List<GH_ObjectWrapper> wrappers))
             {
-                result = Create(ids);
+                result = Create(wrappers);
                 return true;
             }
 
@@ -205,11 +206,9 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
             IGH_DataAccess da,
             int index)
         {
-            var ids = new List<GH_ObjectWrapper>();
-
-            if (!da.GetDataList(
+            if (da.TryGetItems(
                     index,
-                    ids))
+                    out List<GH_ObjectWrapper> ids))
             {
                 return null;
             }

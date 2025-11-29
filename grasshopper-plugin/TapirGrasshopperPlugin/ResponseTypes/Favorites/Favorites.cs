@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Grasshopper.Kernel.Types;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Favorites
@@ -9,10 +11,36 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Favorites
     {
         [JsonProperty("favorites")]
         public Favorites Favorites { get; set; }
+
+        public FavoritesObj()
+        {
+            Favorites = new Favorites();
+        }
+
+        public FavoritesObj(
+            IEnumerable<string> strings)
+        {
+            Favorites = new Favorites(strings);
+        }
+
+        public static FavoritesObj FromWrappers(
+            List<GH_ObjectWrapper> wrappers)
+        {
+            return new FavoritesObj(wrappers.Select(x => x.AsString()));
+        }
     }
 
     public class Favorites : List<string>
     {
+        public Favorites()
+        {
+        }
+
+        public Favorites(
+            IEnumerable<string> strings)
+        {
+            AddRange(strings);
+        }
     }
 
     public class FavoritesFromElementsObj

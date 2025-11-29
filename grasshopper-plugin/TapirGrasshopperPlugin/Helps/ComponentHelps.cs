@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+using Grasshopper.Kernel.Types;
 
 namespace TapirGrasshopperPlugin.Helps
 {
@@ -49,22 +48,18 @@ namespace TapirGrasshopperPlugin.Helps
             return item;
         }
 
-        public static bool TryGetAndCreate<T>(
-            this IGH_DataAccess da,
-            int index,
-            out T result)
-            where T : class
+        public static string AsString(
+            this GH_ObjectWrapper wrapper)
         {
-            if (da.TryGetItems(
-                    index,
-                    out List<object> response))
+            if (wrapper.Value is GH_String)
             {
-                result = JObject.FromObject(response).ToObject<T>();
-                return true;
+                return wrapper.Value.ToString();
             }
-
-            result = null;
-            return false;
+            else
+            {
+                throw new System.Exception(
+                    $"Cannot convert {nameof(GH_ObjectWrapper)} to string.");
+            }
         }
     }
 }
