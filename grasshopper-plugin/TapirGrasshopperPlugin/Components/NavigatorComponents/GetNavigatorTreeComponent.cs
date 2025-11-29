@@ -86,10 +86,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             var branches = new List<GH_Path>();
             var allItems = new List<NavigatorIdItemObj>();
+
             for (var i = 0; i < navItemIdTree.BranchCount; i++)
             {
                 var path = navItemIdTree.Path(i);
                 var items = navItemIdTree.Branch(path);
+
                 foreach (var item in items)
                 {
                     branches.Add(path);

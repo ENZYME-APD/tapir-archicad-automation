@@ -1,6 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using Grasshopper;
+using Grasshopper.Kernel.Data;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Project
 {
@@ -50,6 +53,44 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Project
 
                 return locations;
             });
+        }
+
+        public static DataTree<string> GetTree(
+            this HotlinksResponse response)
+        {
+            var tree = new DataTree<string>();
+
+            response.Hotlinks.AddToTree(
+                tree,
+                new GH_Path());
+
+            return tree;
+        }
+
+        public static void AddToTree(
+            this Hotlinks hotlinks,
+            DataTree<string> tree,
+            GH_Path path)
+        {
+            for (int i = 0; i < hotlinks.Count; i++)
+            {
+                var link = hotlinks[i];
+                var currentPath = path.AppendElement(i);
+
+                if (!string.IsNullOrEmpty(link.Location))
+                {
+                    tree.Add(
+                        link.Location,
+                        currentPath);
+                }
+
+                if (link.Children != null && link.Children.Any())
+                {
+                    link.Children.AddToTree(
+                        tree,
+                        currentPath);
+                }
+            }
         }
     }
 }

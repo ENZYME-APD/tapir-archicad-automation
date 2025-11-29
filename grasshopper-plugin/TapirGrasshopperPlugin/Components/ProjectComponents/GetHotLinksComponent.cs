@@ -31,6 +31,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutText(
                 "JsonHierarchy",
                 "JSON object of the tree-like hierarchy of  hotlink modules.");
+
+            OutTextTree(
+                "TreeHierarchy",
+                "Nested text tree object of hotlink module names.");
         }
 
         protected override void Solve(
@@ -49,6 +53,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 JsonConvert.SerializeObject(
                     response,
                     Formatting.Indented));
+
+            da.SetDataTree(
+                2,
+                response.GetTree());
         }
     }
 }

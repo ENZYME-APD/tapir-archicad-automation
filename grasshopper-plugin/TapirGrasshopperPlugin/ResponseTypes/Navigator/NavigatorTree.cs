@@ -109,26 +109,33 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
                         NavigatorId = childNavItem.NavigatorItemId
                     },
                     path);
+
                 navigatorItemPrefixTree.Add(
                     childNavItem.Prefix,
                     path);
+
                 navigatorItemNameTree.Add(
                     childNavItem.Name,
                     path);
+
                 var fullName =
                     string.IsNullOrEmpty(childNavItem.Prefix) ||
                     childNavItem.Prefix == childNavItem.Name
                         ? childNavItem.Name
                         : childNavItem.Prefix + " " + childNavItem.Name;
+
                 var newPathStr = string.IsNullOrEmpty(pathStr)
                     ? fullName
                     : pathStr + "/" + fullName;
+
                 navigatorItemPathTree.Add(
                     newPathStr,
                     path);
+
                 navigatorItemTypeTree.Add(
                     childNavItem.Type,
                     path);
+
                 sourceNavigatorItemIdTree.Add(
                     new NavigatorIdItemObj
                     {
