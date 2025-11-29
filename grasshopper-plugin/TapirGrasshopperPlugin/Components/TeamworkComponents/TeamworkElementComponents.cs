@@ -1,5 +1,8 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.TeamworkComponents
 {
@@ -22,10 +25,31 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 "Elements Guids to get detailList for.");
         }
 
+        protected abstract string GetMessage(
+            JObject response);
+
         protected override void Solve(
             IGH_DataAccess da)
         {
-            SolveByElementsInputResponse(da);
+            if (!ElementsObj.TryCreate(
+                    da,
+                    0,
+                    out ElementsObj input))
+            {
+                return;
+            }
+
+            if (!TryGetConvertedResponse(
+                    CommandName,
+                    input,
+                    out JObject response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                GetMessage(response));
         }
     }
 
@@ -38,6 +62,12 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 "ReserveElements",
                 "Reserves elements in Teamwork mode.")
         {
+        }
+
+        protected override string GetMessage(
+            JObject response)
+        {
+            return ExecutionResultResponse.Deserialize(response).Message();
         }
 
         public override Guid ComponentGuid =>
@@ -53,6 +83,12 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 "ReleaseElements",
                 "Releases elements in Teamwork mode.")
         {
+        }
+
+        protected override string GetMessage(
+            JObject response)
+        {
+            return ExecutionResult.Deserialize(response).Message();
         }
 
         public override Guid ComponentGuid =>

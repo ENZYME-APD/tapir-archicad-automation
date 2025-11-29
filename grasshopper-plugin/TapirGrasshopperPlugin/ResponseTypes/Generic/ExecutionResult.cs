@@ -1,15 +1,98 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Generic
 {
     public class ExecutionResultsResponse
     {
-        public static string Doc => "A list of execution results.";
-
         [JsonProperty("executionResults")]
         public List<ExecutionResult> ExecutionResults { get; set; }
+    }
+
+    public class ExecutionResultResponse
+    {
+        [JsonProperty("executionResult")]
+        public ExecutionResult ExecutionResult { get; set; }
+
+        [JsonProperty("conflicts")]
+        public List<ConflictResponse> ConflictResponses { get; set; }
+
+        public static ExecutionResultResponse Deserialize(
+            JObject jObject)
+        {
+            var response = new ExecutionResultResponse();
+
+            var resultProperty = jObject["executionResult"] as JObject;
+
+            if (resultProperty != null)
+            {
+                response.ExecutionResult =
+                    ExecutionResult.Deserialize(resultProperty);
+            }
+
+            var conflicts = jObject["conflicts"];
+
+            if (conflicts != null && conflicts.Type != JTokenType.Null)
+            {
+                response.ConflictResponses =
+                    conflicts.ToObject<List<ConflictResponse>>();
+            }
+            else
+            {
+                response.ConflictResponses = new List<ConflictResponse>();
+            }
+
+            return response;
+        }
+
+        public string Message()
+        {
+            var builder = new StringBuilder();
+
+            builder.AppendLine(
+                $"{ExecutionResult?.Message() ?? "No execution result."}");
+
+            if (ConflictResponses == null || ConflictResponses == null ||
+                !ConflictResponses.Any())
+            {
+                return builder.ToString();
+            }
+
+            builder.AppendLine("Conflicts found:");
+
+            foreach (var conflict in ConflictResponses)
+            {
+                builder.AppendLine(conflict.ToString());
+            }
+
+            return builder.ToString();
+        }
+    }
+
+    public class ConflictResponse
+    {
+        [JsonProperty("elementId")]
+        public ElementIdObj ElementId { get; set; }
+
+        [JsonProperty("user")]
+        public User User { get; set; }
+
+        public override string ToString() =>
+            $"Element {ElementId.Guid} is reserved by user {User.Name} (ID: {User.Id}).";
+    }
+
+    public class User
+    {
+        [JsonProperty("userId")]
+        public int Id { get; set; }
+
+        [JsonProperty("userName")]
+        public string Name { get; set; }
     }
 
     public class ExecutionResult

@@ -810,11 +810,9 @@ namespace TapirGrasshopperPlugin.Components
                 return;
             }
 
-            var result = ExecutionResult.Deserialize(response);
-
             da.SetData(
                 0,
-                result.Message());
+                ExecutionResult.Deserialize(response).Message());
         }
 
         protected void SolveByElementsInputResponse(
@@ -836,11 +834,9 @@ namespace TapirGrasshopperPlugin.Components
                 return;
             }
 
-            var result = ExecutionResult.Deserialize(response);
-
             da.SetData(
                 0,
-                result.Message());
+                ExecutionResult.Deserialize(response).Message());
         }
     }
 
