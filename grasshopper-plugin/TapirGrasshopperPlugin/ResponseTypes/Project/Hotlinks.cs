@@ -68,13 +68,13 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Project
         }
 
         public static void AddToTree(
-            this Hotlinks hotlinks,
+            this Hotlinks links,
             DataTree<string> tree,
             GH_Path path)
         {
-            for (int i = 0; i < hotlinks.Count; i++)
+            for (int i = 0; i < links.Count; i++)
             {
-                var link = hotlinks[i];
+                var link = links[i];
                 var currentPath = path.AppendElement(i);
 
                 if (!string.IsNullOrEmpty(link.Location))

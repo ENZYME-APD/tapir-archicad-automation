@@ -36,14 +36,14 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
             if (!da.TryGetItem(
                     0,
-                    out string eType))
+                    out string input))
             {
                 return;
             }
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    new ElementTypeObject(eType),
+                    new ElementTypeObject(input),
                     out FavoritesObj response))
             {
                 return;
