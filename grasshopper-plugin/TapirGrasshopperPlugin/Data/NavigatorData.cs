@@ -4,6 +4,29 @@ using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Data
 {
+    public class NavItemId
+    {
+        [JsonProperty("guid")]
+        public string Guid { get; set; }
+    }
+
+    public class NavItemIdArrayItem
+    {
+        [JsonProperty("navigatorItemId")]
+        public NavItemId NavItemId { get; set; }
+    }
+
+    public class NavItemIds : List<NavItemIdArrayItem>
+    {
+    }
+
+    public class NavItemInputStructure
+    {
+        [JsonProperty("navigatorItemIds")]
+        public NavItemIds NavItemIds { get; set; }
+    }
+
+
     public class NavigatorIdObj : IdObj<NavigatorIdObj>
     {
     }

@@ -1,7 +1,9 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -35,17 +37,36 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!NavigatorItemIdsObj.TryCreate(
-                    da,
+            //if (!NavigatorItemIdsObj.TryCreate(
+            //        da,
+            //        0,
+            //        out NavigatorItemIdsObj input))
+            //{
+            //    return;
+            //}
+
+            if (!da.TryGetItems(
                     0,
-                    out NavigatorItemIdsObj input))
+                    out List<string> ids))
             {
                 return;
             }
 
+            var main = new NavItemInputStructure();
+            main.NavItemIds = new NavItemIds();
+
+            foreach (var id in ids)
+            {
+                var arrayItem = new NavItemIdArrayItem
+                {
+                    NavItemId = new NavItemId { Guid = id }
+                };
+                main.NavItemIds.Add(arrayItem);
+            }
+
             if (!TryGetConvertedValues(
                     CommandName,
-                    input,
+                    main,
                     SendToAddOn,
                     ViewSettingsResponse.FromResponse,
                     out ViewSettingsResponse response))

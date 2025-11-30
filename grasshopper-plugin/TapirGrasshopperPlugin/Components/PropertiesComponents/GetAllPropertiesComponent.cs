@@ -20,13 +20,13 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void AddOutputs()
         {
-            OutGeneric("PropertyGuid");
-            OutTexts("GroupName");
-            OutTexts("PropertyName");
+            OutGenerics("PropertyIds");
+            OutTexts("GroupNames");
+            OutTexts("PropertyNames");
 
             OutTexts(
-                "FullName",
-                "Full name containing the group and the property name.");
+                "FullNames",
+                "Full names containing the joined group and property name.");
         }
 
         protected override void Solve(
