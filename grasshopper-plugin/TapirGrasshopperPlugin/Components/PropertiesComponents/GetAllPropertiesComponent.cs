@@ -20,17 +20,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void AddOutputs()
         {
-            OutGeneric(
-                "PropertyGuid",
-                "Property Guid.");
-
-            OutTexts(
-                "GroupName",
-                "Property group name.");
-
-            OutTexts(
-                "PropertyName",
-                "Property name.");
+            OutGeneric("PropertyGuid");
+            OutTexts("GroupName");
+            OutTexts("PropertyName");
 
             OutTexts(
                 "FullName",

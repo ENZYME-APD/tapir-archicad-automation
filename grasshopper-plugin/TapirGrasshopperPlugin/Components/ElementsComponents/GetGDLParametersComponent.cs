@@ -23,26 +23,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Elements Guids to get detailList for.");
+                "Elements Guids to get detail list for.");
 
-            InText(
-                "ParameterName",
-                "Parameter name to find.");
+            InText("ParameterName");
         }
 
         protected override void AddOutputs()
         {
             OutGenerics(
                 "ElementGuids",
-                "List of element Guids with valid GDL detailList.");
+                "List of element Guids with valid GDL detail list.");
 
             OutTexts(
                 "ParameterValues",
-                "Values of the found GDL detailList.");
+                "Values of the found GDL detail list.");
 
             OutTexts(
                 nameof(GdlParameterDetails),
-                "JSON dictionary object describing the retrieved parameters.");
+                "JSON dictionary object storing the retrieved parameters.");
         }
 
         protected override void Solve(
@@ -51,7 +49,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!ElementsObj.TryCreate(
                     da,
                     0,
-                    out ElementsObj inputElements))
+                    out ElementsObj inputs))
             {
                 return;
             }
@@ -62,14 +60,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    inputElements,
+                    inputs,
                     out GDLParametersResponse response))
             {
                 return;
             }
 
             var gdlHolders = response.ToGdlHolders(
-                inputElements.Elements.Select(x => x.ElementId.Guid).ToList(),
+                inputs.Elements.Select(x => x.ElementId.Guid).ToList(),
                 parameterName);
 
             da.SetDataList(

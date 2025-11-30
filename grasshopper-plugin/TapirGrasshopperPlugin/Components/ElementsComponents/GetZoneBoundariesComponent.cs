@@ -41,12 +41,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Please note that this boundary does not represent the boundary of the element with the other Zone.");
 
             OutNumbers(
-                "Area",
-                "The area of the polygon of the boundary.");
+                "Areas",
+                "The areas of the boundary polygons.");
 
             OutCurves(
-                "Polygon outline",
-                "The outline polygon of the boundary.");
+                "PolygonOutlines",
+                "The outlines of the boundary polygons.");
         }
 
         protected override void Solve(
@@ -55,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!ElementIdItemObj.TryCreate(
                     da,
                     0,
-                    out ElementIdItemObj inputZone))
+                    out ElementIdItemObj inputs))
             {
                 return;
             }
@@ -64,7 +64,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     CommandName,
                     new ZoneBoundaryParameters
                     {
-                        ZoneElementId = inputZone.ElementId
+                        ZoneElementId = inputs.ElementId
                     },
                     out ZoneBoundariesOutput response))
             {

@@ -20,9 +20,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddInputs()
         {
-            InText(
-                "Name",
-                "Name of the new folder.");
+            InText("FolderName");
 
             InGeneric(
                 "ParentNavigatorItemId",

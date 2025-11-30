@@ -24,6 +24,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             OutTexts(
                 "Guid",
                 "Found Classification System Guid.");
+
             OutTexts(
                 "ClassificationSystemNameAndVersion",
                 "Found Classification System name and version.");

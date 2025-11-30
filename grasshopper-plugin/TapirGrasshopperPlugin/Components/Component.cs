@@ -6,10 +6,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 using TapirGrasshopperPlugin.Utilities;
 
@@ -204,7 +202,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InGeneric(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddGenericParameter(
                 name,
@@ -215,7 +213,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutGeneric(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddGenericParameter(
                 name,
@@ -226,7 +224,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutGenerics(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddGenericParameter(
                 name,
@@ -237,7 +235,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InGenerics(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddGenericParameter(
                 name,
@@ -248,7 +246,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InGenericTree(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddGenericParameter(
                 name,
@@ -259,7 +257,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutGenericTree(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddGenericParameter(
                 name,
@@ -270,7 +268,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InVectors(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddVectorParameter(
                 name,
@@ -281,7 +279,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutVectors(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddVectorParameter(
                 name,
@@ -292,7 +290,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InPoints(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddPointParameter(
                 name,
@@ -303,7 +301,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutPoints(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddPointParameter(
                 name,
@@ -327,7 +325,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutNumbers(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddNumberParameter(
                 name,
@@ -338,7 +336,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InNumbers(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddNumberParameter(
                 name,
@@ -349,7 +347,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InBoolean(
             string name,
-            string description,
+            string description = "",
             bool defaultValue = false)
         {
             inManager.AddBooleanParameter(
@@ -362,7 +360,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InBooleans(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddBooleanParameter(
                 name,
@@ -373,7 +371,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InBooleanTree(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddBooleanParameter(
                 name,
@@ -384,7 +382,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutBoolean(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddBooleanParameter(
                 name,
@@ -395,7 +393,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutBooleans(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddBooleanParameter(
                 name,
@@ -406,7 +404,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutBooleanTree(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddBooleanParameter(
                 name,
@@ -417,7 +415,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InInteger(
             string name,
-            string description,
+            string description = "",
             int defaultValue = 0)
         {
             inManager.AddIntegerParameter(
@@ -430,7 +428,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InIntegers(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddIntegerParameter(
                 name,
@@ -441,7 +439,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InIntegerTree(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddIntegerParameter(
                 name,
@@ -452,7 +450,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutInteger(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddIntegerParameter(
                 name,
@@ -463,7 +461,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutIntegers(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddIntegerParameter(
                 name,
@@ -474,7 +472,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutIntegerTree(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddIntegerParameter(
                 name,
@@ -485,7 +483,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InText(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddTextParameter(
                 name,
@@ -496,7 +494,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutText(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddTextParameter(
                 name,
@@ -507,7 +505,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutTexts(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddTextParameter(
                 name,
@@ -518,7 +516,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutTextTree(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddTextParameter(
                 name,
@@ -529,7 +527,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InColor(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddColourParameter(
                 name,
@@ -566,7 +564,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutColorTree(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddColourParameter(
                 name,
@@ -577,7 +575,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InTexts(
             string name,
-            string description)
+            string description = "")
         {
             inManager.AddTextParameter(
                 name,
@@ -588,7 +586,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutBoxes(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddBoxParameter(
                 name,
@@ -599,7 +597,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutCurves(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddCurveParameter(
                 name,
@@ -610,7 +608,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public void OutCurveTree(
             string name,
-            string description)
+            string description = "")
         {
             outManager.AddCurveParameter(
                 name,

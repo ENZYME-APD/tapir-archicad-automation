@@ -19,9 +19,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddOutputs()
         {
-            OutTexts(
-                "PublisherSetNames",
-                "List of names of the publisher sets.");
+            OutTexts("PublisherSetNames");
         }
 
         protected override void Solve(

@@ -18,25 +18,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void AddOutputs()
         {
-            OutBoolean(
-                "IsUntitled",
-                "Is the project untitled.");
-
-            OutBoolean(
-                "IsTeamwork",
-                "Is teamwork project.");
-
-            OutText(
-                "ProjectLocation",
-                "Location of the project.");
-
-            OutText(
-                "ProjectPath",
-                "Path of the project.");
-
-            OutText(
-                "ProjectName",
-                "Name of the project.");
+            OutBoolean("IsUntitled");
+            OutBoolean("IsTeamwork");
+            OutText("ProjectLocation");
+            OutText("ProjectPath");
+            OutText("ProjectName");
         }
 
         protected override void Solve(

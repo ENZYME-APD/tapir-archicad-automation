@@ -20,17 +20,9 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            InGeneric(
-                "IssueGuid",
-                "Issue Guid.");
-
-            InGeneric(
-                "Author",
-                "Author.");
-
-            InGeneric(
-                "Text",
-                "Text.");
+            InGeneric("IssueGuid");
+            InGeneric("Author");
+            InGeneric("Text");
         }
 
         protected override void Solve(

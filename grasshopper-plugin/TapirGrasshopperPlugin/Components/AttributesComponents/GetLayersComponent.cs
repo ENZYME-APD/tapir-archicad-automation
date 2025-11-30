@@ -20,32 +20,28 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            InGenerics(
-                "AttributeGuids",
-                "List of layer Attribute Guids.");
+            InGenerics("LayerAttributeGuids");
         }
 
         protected override void AddOutputs()
         {
-            OutTexts(
-                "Name",
-                "Name of the layer.");
+            OutTexts("LayerNames");
 
             OutBooleans(
                 "IsHidden",
-                "Visibility of the layer.");
+                "Visibility of the layers.");
 
             OutBooleans(
                 "IsLocked",
-                "Lock states of the layer.");
+                "Lock states of the layers.");
 
             OutBooleans(
                 "IsWireframe",
-                "Wireframe flag of the layer.");
+                "Wireframe flag of the layers.");
 
             OutIntegers(
                 "IntersectionGroup",
-                "Intersection group of the layer.");
+                "Intersection group of the layers.");
         }
 
         protected override void Solve(

@@ -18,16 +18,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            InGeneric(
-                "IssueGuid",
-                "Issue Guid.");
+            InGeneric("IssueGuid");
         }
 
         protected override void AddOutputs()
         {
-            OutGenerics(
-                "Comments",
-                "Comments of the given issue.");
+            OutGenerics("Comments");
         }
 
         protected override void Solve(

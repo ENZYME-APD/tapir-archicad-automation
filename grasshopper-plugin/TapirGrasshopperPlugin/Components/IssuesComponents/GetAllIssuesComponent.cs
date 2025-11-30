@@ -19,13 +19,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddOutputs()
         {
-            OutGenerics(
-                "IssueGuid",
-                "Issue Guid.");
-
-            OutGenerics(
-                "Name",
-                "Name.");
+            OutGenerics("IssueGuid");
+            OutGenerics("Name");
         }
 
         protected override void Solve(

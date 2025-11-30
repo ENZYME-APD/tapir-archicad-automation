@@ -22,9 +22,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         protected override void AddInputs()
         {
-            InGeneric(
-                "IssueGuid",
-                "Issue Guid.");
+            InGeneric("IssueGuid");
 
             InGenerics(
                 "ElementGuids",
@@ -32,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
             InGeneric(
                 "Type",
-                "Type of elements.");
+                "Type of Elements.");
         }
 
         public override void AddedToDocument(

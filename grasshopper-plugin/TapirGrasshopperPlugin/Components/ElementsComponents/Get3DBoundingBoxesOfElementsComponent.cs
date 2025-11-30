@@ -25,9 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddOutputs()
         {
-            OutBoxes(
-                "BoundingBoxes",
-                "Bounding boxes.");
+            OutBoxes("BoundingBoxes");
         }
 
         protected override void Solve(

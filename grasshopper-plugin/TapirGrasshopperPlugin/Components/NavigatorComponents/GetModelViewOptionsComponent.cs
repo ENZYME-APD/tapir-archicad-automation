@@ -19,9 +19,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddOutputs()
         {
-            OutTexts(
-                nameof(ModelViewOption.Name) + "s",
-                "");
+            OutTexts(nameof(ModelViewOption.Name) + "s");
         }
 
         protected override void Solve(

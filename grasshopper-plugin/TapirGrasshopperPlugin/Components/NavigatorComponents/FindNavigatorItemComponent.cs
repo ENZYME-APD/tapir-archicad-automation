@@ -29,9 +29,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "TreeType",
                 "The type of a navigator item tree.");
 
-            InText(
-                "PublisherSetName",
-                "The name of the publisher set.");
+            InText("PublisherSetName");
 
             InText(
                 "PathRegex",

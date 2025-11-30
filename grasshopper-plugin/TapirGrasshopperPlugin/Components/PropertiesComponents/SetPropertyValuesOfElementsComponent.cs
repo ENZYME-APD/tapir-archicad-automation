@@ -70,8 +70,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
             var input = new ElementPropertyValuesObj();
 
-            input.ElementPropertyValues =
-                new List<ElementPropertyValueObj>();
+            input.ElementPropertyValues = new List<ElementPropertyValueObj>();
 
             for (var i = 0; i < elements.Elements.Count; i++)
             {

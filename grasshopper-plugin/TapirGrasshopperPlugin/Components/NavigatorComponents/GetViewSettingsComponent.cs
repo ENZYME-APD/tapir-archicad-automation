@@ -1,9 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -24,7 +22,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
             InGenerics(
                 "NavigatorItemIds",
-                "Identifier of navigator items to delete.");
+                "Identifiers of the navigator items to delete.");
         }
 
         protected override void AddOutputs()

@@ -21,13 +21,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            InTexts(
-                "Filter",
-                "Elements filter.");
-
-            InGenerics(
-                "Databases",
-                "Databases to find elements.");
+            InTexts("Filters");
+            InGenerics("Databases");
 
             Params.Input[1].Optional = true;
         }

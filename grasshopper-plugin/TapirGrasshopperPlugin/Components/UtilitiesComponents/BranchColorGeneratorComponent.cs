@@ -30,9 +30,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "Tree",
                 "A Grasshopper DataTree with multiple branches");
 
-            InColor(
-                "StartingColor",
-                "Starting color for gradient or base color for complementary mode");
+            InColor("StartingColor");
 
             InColor(
                 "EndColor",

@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 InputFieldName,
-                "Elements Guids to get the details of.");
+                "ElementsGuids of the Elements to get the details of.");
         }
 
         protected override void Solve(

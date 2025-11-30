@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Elements Guids to get detailList for.");
+                "Elements Guids to get detail list for.");
         }
     }
 

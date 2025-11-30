@@ -20,13 +20,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            InGenerics(
-                "ElementGuids",
-                "Elements Guids to filter.");
-
-            InTexts(
-                "Filter",
-                "Elements filter.");
+            InGenerics("ElementGuids");
+            InTexts("Filters");
         }
 
         protected override void AddOutputs()

@@ -3,7 +3,6 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Rhino.Commands;
 using Rhino.Geometry;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;

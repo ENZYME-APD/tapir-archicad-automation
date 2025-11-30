@@ -18,57 +18,19 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void AddOutputs()
         {
-            OutText(
-                nameof(Location.Longitude),
-                "");
-
-            OutText(
-                nameof(Location.Latitude),
-                "");
-
-            OutText(
-                nameof(Location.Altitude),
-                "");
-
-            OutText(
-                nameof(Location.North),
-                "");
-
-            OutText(
-                nameof(SurveyPointPosition.Eastings),
-                "");
-
-            OutText(
-                nameof(SurveyPointPosition.Northings),
-                "");
-
-            OutText(
-                "Elevation",
-                "");
-
-            OutText(
-                nameof(GeoReferencingParameters.CrsName),
-                "");
-
-            OutText(
-                nameof(GeoReferencingParameters.Description),
-                "");
-
-            OutText(
-                nameof(GeoReferencingParameters.GeodeticDatum),
-                "");
-
-            OutText(
-                nameof(GeoReferencingParameters.VerticalDatum),
-                "");
-
-            OutText(
-                nameof(GeoReferencingParameters.MapProjection),
-                "");
-
-            OutText(
-                nameof(GeoReferencingParameters.MapZone),
-                "");
+            OutText(nameof(Location.Longitude));
+            OutText(nameof(Location.Latitude));
+            OutText(nameof(Location.Altitude));
+            OutText(nameof(Location.North));
+            OutText(nameof(SurveyPointPosition.Eastings));
+            OutText(nameof(SurveyPointPosition.Northings));
+            OutText("Elevation");
+            OutText(nameof(GeoReferencingParameters.CrsName));
+            OutText(nameof(GeoReferencingParameters.Description));
+            OutText(nameof(GeoReferencingParameters.GeodeticDatum));
+            OutText(nameof(GeoReferencingParameters.VerticalDatum));
+            OutText(nameof(GeoReferencingParameters.MapProjection));
+            OutText(nameof(GeoReferencingParameters.MapZone));
         }
 
         protected override void Solve(

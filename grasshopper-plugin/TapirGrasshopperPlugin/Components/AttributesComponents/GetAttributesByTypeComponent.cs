@@ -14,31 +14,21 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public GetAttributesByTypeComponent()
             : base(
                 "AttributesByType",
-                "Get all attributes by type",
+                "Get all attributes by Type",
                 GroupNames.Attributes)
         {
         }
 
         protected override void AddInputs()
         {
-            InText(
-                "Type",
-                "Attribute type.");
+            InText("AttributeType");
         }
 
         protected override void AddOutputs()
         {
-            OutGenerics(
-                "AttributeGuids",
-                "List of Attribute Guids.");
-
-            OutGenerics(
-                "AttributeIndices",
-                "List of Attribute indices.");
-
-            OutGenerics(
-                "AttributeNames",
-                "List of Attribute names.");
+            OutGenerics("AttributeGuids");
+            OutGenerics("AttributeIndices");
+            OutGenerics("AttributeNames");
         }
 
         public override void AddedToDocument(

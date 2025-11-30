@@ -34,18 +34,15 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         {
             InInteger(
                 "PortNumber",
-                "Port number.",
-                ConnectionSettings.Port);
+                defaultValue: ConnectionSettings.Port);
 
             InBoolean(
                 "AllowAutomaticRefresh",
-                "Allow automatic refresh.",
-                AutoRefresh);
+                defaultValue: AutoRefresh);
 
             InBoolean(
                 "AllowAutomaticExecution",
-                "Allow automatic execution.",
-                AutoExecute);
+                defaultValue: AutoExecute);
         }
 
         protected override void AddOutputs()

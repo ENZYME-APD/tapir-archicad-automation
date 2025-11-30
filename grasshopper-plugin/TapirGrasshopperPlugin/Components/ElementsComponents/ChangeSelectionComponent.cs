@@ -21,17 +21,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            InGenerics(
-                "ElementsToAdd",
-                "Elements to add to selection.");
-
-            InGenerics(
-                "ElementsToRemove",
-                "Elements to remove from selection.");
-
-            InBoolean(
-                "ClearSelection",
-                "Remove all Elements from the selection (before adding the given elements to selection).");
+            InGenerics("ElementsToAdd");
+            InGenerics("ElementsToRemove");
+            InBoolean("ClearSelection");
 
             Params.Input[0].Optional = true;
             Params.Input[1].Optional = true;

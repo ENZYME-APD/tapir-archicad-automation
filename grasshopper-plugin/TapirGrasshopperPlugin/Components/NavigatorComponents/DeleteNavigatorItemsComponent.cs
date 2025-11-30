@@ -11,7 +11,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public DeleteNavigatorItem()
             : base(
                 "DeleteNavigatorItems",
-                "Deletes items from navigator tree.",
+                "Deletes items from the NavigatorTree.",
                 GroupNames.Navigator)
         {
         }

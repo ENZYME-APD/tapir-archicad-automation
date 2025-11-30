@@ -19,9 +19,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 
         protected override void AddInputs()
         {
-            InText(
-                "ElementsType",
-                "Elements type.");
+            InText("ElementsType");
         }
 
         protected override void AddOutputs()

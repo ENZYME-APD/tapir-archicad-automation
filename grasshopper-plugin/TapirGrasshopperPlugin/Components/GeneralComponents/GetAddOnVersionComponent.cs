@@ -18,9 +18,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
         protected override void AddOutputs()
         {
-            OutText(
-                "Version",
-                "Tapir Add-On version.");
+            OutText("TapirVersion");
         }
 
         protected override void Solve(

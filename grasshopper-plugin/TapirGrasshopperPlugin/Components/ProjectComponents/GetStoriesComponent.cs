@@ -20,21 +20,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void AddOutputs()
         {
-            OutTexts(
-                "StoryName",
-                "Name of the story.");
-
-            OutNumbers(
-                "StoryElevation",
-                "Elevation of the story.");
-
-            OutNumbers(
-                "StoryHeight",
-                "Height of the story.");
-
-            OutBooleans(
-                "ShowOnSections",
-                "Show Story on Sections.");
+            OutTexts("StoryNames");
+            OutNumbers("StoryElevations");
+            OutNumbers("StoryHeights");
+            OutBooleans("ShowOnSections");
         }
 
         protected override void Solve(

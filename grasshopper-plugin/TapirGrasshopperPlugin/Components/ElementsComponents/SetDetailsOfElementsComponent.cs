@@ -1,5 +1,4 @@
 ﻿using Grasshopper.Kernel;
-using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -26,17 +25,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "ElementGuids",
                 "Elements Guids to get details of.");
 
-            InPoints(
-                "StartCoordinates",
-                "Start coordinates.");
-
-            InPoints(
-                "EndCoordinates",
-                "End coordinates.");
-
-            InNumbers(
-                "Height",
-                "Height.");
+            InPoints("StartCoordinates");
+            InPoints("EndCoordinates");
+            InNumbers("Height");
         }
 
         protected override void Solve(

@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "List of layer combination attribute Guids.");
 
             InTexts(
-                "Name",
+                "Names",
                 "List of the names of the layer combinations.");
 
             InGenericTree(

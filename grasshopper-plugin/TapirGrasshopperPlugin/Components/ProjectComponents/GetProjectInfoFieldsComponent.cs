@@ -19,17 +19,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         protected override void AddOutputs()
         {
-            OutTexts(
-                "ProjectInfoId",
-                "Project info Id.");
-
-            OutTexts(
-                "ProjectInfoName",
-                "Project info name.");
-
-            OutTexts(
-                "ProjectInfoValue",
-                "Project info value.");
+            OutTexts("ProjectInfoId");
+            OutTexts("ProjectInfoName");
+            OutTexts("ProjectInfoValue");
         }
 
         protected override void Solve(

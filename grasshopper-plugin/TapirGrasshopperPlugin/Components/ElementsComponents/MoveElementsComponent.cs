@@ -23,7 +23,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Elements ids to move.");
+                "ElementsGuids of the objects to move.");
 
             InVectors(
                 "Vectors",
@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InBoolean(
                 "Copy",
-                "Move copies of the elements.");
+                "Move copies of the elements or move the elements themselves.");
         }
 
         protected override void Solve(

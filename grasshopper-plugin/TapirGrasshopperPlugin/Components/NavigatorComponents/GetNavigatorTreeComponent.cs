@@ -32,40 +32,18 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "TreeType",
                 "The type of a navigator item tree.");
 
-            InText(
-                "PublisherSetName",
-                "The name of the publisher set.");
+            InText("PublisherSetName");
         }
 
         protected override void AddOutputs()
         {
-            OutGenericTree(
-                "NavigatorItemIds",
-                "Navigator item identifiers.");
-
-            OutTextTree(
-                "NavigatorItemPrefixes",
-                "Navigator item prefixes.");
-
-            OutTextTree(
-                "NavigatorItemNames",
-                "Navigator item names.");
-
-            OutTextTree(
-                "NavigatorItemPaths",
-                "Navigator item paths.");
-
-            OutTextTree(
-                "NavigatorItemTypes",
-                "Navigator item types.");
-
-            OutGenericTree(
-                "SourceNavigatorItemIds",
-                "Navigator item sources.");
-
-            OutGenericTree(
-                "DatabaseIds",
-                "DatabaseIds of Navigator items.");
+            OutGenericTree("NavigatorItemIds");
+            OutTextTree("NavigatorItemPrefixes");
+            OutTextTree("NavigatorItemNames");
+            OutTextTree("NavigatorItemPaths");
+            OutTextTree("NavigatorItemTypes");
+            OutGenericTree("SourceNavigatorItemIds");
+            OutGenericTree("DatabaseIds");
         }
 
         public override void AddedToDocument(
