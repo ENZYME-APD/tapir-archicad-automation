@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
 using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components
@@ -164,8 +163,6 @@ namespace TapirGrasshopperPlugin.Components
         public bool ManualRefreshRequested = false;
         protected static bool AutoExecute = false;
         public bool ManualExecuteRequested = false;
-
-        private static string CommandNameSpace => "TapirCommand";
 
         protected GH_InputParamManager inManager;
         protected GH_OutputParamManager outManager;
@@ -617,34 +614,33 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.tree);
         }
 
-        protected CommandResponse SendArchicadCommand(
+        protected CommandResponse SendToArchicad(
             string commandName,
             JObject commandParameters)
         {
-            var connection = new ArchicadConnection(ConnectionSettings.Port);
-            return connection.SendCommand(
+            return new ArchicadConnection(ConnectionSettings.Port).SendCommand(
                 commandName,
                 commandParameters);
         }
 
-        protected CommandResponse SendArchicadAddOnCommand(
+        protected CommandResponse SendToAddOn(
             string commandName,
             JObject commandParameters)
         {
-            var connection = new ArchicadConnection(ConnectionSettings.Port);
-
-            return connection.SendAddOnCommand(
-                CommandNameSpace,
-                commandName,
-                commandParameters);
+            return new ArchicadConnection(ConnectionSettings.Port)
+                .SendAddOnCommand(
+                    "TapirCommand",
+                    commandName,
+                    commandParameters);
         }
 
-        protected bool GetArchicadAddonResponse(
+        protected bool TryGetResponse(
             string commandName,
             JObject commandParameters,
+            Func<string, JObject, CommandResponse> sendCommand,
             out JObject response)
         {
-            var cadResponse = SendArchicadAddOnCommand(
+            var cadResponse = sendCommand.Invoke(
                 commandName,
                 commandParameters);
 
@@ -653,65 +649,30 @@ namespace TapirGrasshopperPlugin.Components
                 response = cadResponse.Result;
                 return true;
             }
-
-            AddRuntimeMessage(
-                GH_RuntimeMessageLevel.Error,
-                cadResponse.GetErrorMessage());
-
-            response = null;
-            return false;
+            else
+            {
+                this.AddError(cadResponse.GetErrorMessage());
+                response = null;
+                return false;
+            }
         }
 
-        protected bool SetArchiCadValues(
+        protected void SetValues(
             string commandName,
-            object commandParameters)
+            object commandParameters,
+            Func<string, JObject, CommandResponse> sendCommand)
         {
-            return GetArchicadAddonResponse(
+            TryGetResponse(
                 commandName,
                 JObject.FromObject(commandParameters),
+                sendCommand,
                 out var result);
         }
 
-        protected bool TryGetConvertedResponse<T>(
-            string commandName,
-            out T response)
-            where T : class
-        {
-            return TryGetConvertedResponse(
-                commandName,
-                null,
-                out response);
-        }
-
-        protected bool TryGetConvertedResponse<T>(
-            string commandName,
-            Func<JObject, T> deserializer,
-            out T response)
-            where T : class
-        {
-            return TryGetConvertedResponse(
-                commandName,
-                null,
-                deserializer,
-                out response);
-        }
-
-        protected bool TryGetConvertedResponse<T>(
+        protected bool TryGetConvertedValues<T>(
             string commandName,
             object commandParametersObject,
-            out T response)
-            where T : class
-        {
-            return TryGetConvertedResponse(
-                commandName,
-                null,
-                x => x.ToObject<T>(),
-                out response);
-        }
-
-        protected bool TryGetConvertedResponse<T>(
-            string commandName,
-            object commandParametersObject,
+            Func<string, JObject, CommandResponse> sendCommand,
             Func<JObject, T> deserializer,
             out T response)
             where T : class
@@ -722,9 +683,10 @@ namespace TapirGrasshopperPlugin.Components
                 ? new JObject()
                 : JObject.FromObject(commandParametersObject);
 
-            if (!GetArchicadAddonResponse(
+            if (!TryGetResponse(
                     commandName,
                     commandParameters,
+                    sendCommand,
                     out var cadResponse))
             {
                 return false;
@@ -834,22 +796,6 @@ namespace TapirGrasshopperPlugin.Components
 
         protected abstract void Solve(
             IGH_DataAccess da);
-
-        protected void SolveByResponse(
-            IGH_DataAccess da)
-        {
-            if (!TryGetConvertedResponse(
-                    CommandName,
-                    deserializer: ExecutionResult.Deserialize,
-                    out ExecutionResult response))
-            {
-                return;
-            }
-
-            da.SetData(
-                0,
-                response.Message());
-        }
     }
 
     public abstract class ArchicadExecutorComponent

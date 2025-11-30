@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TapirGrasshopperPlugin.Helps
 {
-    public static class EnumerationHelps
+    public static class EnumerationHelp
     {
         public static void MultiplyTo<T>(
             this List<T> values,

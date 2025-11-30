@@ -42,9 +42,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
                     ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {

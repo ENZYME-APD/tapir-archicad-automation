@@ -51,10 +51,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new AttributesByTypeObj { AttributeType = aType },
-                    out AttributeDetailsObj response)) { return; }
+                    SendToAddOn,
+                    JHelp.Deserialize<AttributeDetailsObj>,
+                    out AttributeDetailsObj response))
+            {
+                return;
+            }
 
             da.SetDataList(
                 0,

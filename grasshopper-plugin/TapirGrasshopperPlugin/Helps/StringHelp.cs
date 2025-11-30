@@ -2,7 +2,7 @@
 
 namespace TapirGrasshopperPlugin.Helps
 {
-    public static class StringHelps
+    public static class StringHelp
     {
         public static string WithTypeName(
             this string description,
@@ -10,6 +10,13 @@ namespace TapirGrasshopperPlugin.Helps
         {
             return
                 $"[{type}]{Environment.NewLine}{Environment.NewLine}{description}";
+        }
+
+        public static string Join(
+            string text,
+            string otherText)
+        {
+            return text + "/" + otherText;
         }
     }
 }

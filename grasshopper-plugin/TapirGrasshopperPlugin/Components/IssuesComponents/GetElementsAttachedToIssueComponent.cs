@@ -60,12 +60,14 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new ParametersOfGetAttachedElements
                     {
                         IssueId = id, Type = type
                     },
+                    SendToAddOn,
+                    JHelp.Deserialize<ElementsObj>,
                     out ElementsObj response))
             {
                 return;

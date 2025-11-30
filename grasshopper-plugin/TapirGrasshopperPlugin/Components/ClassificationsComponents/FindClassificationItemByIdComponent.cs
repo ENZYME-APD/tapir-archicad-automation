@@ -92,20 +92,21 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
-                    CommandName,
-                    new ClassificationSystemObj
+            if (!TryGetConvertedValues(
+                    "GetAllClassificationsInSystem",
+                    new ClassificationSystemObj()
                     {
                         ClassificationSystemId = systemId
                     },
-                    out AllClassificationItemsInSystem cItems))
+                    SendToAddOn,
+                    JHelp.Deserialize<AllClassificationItemsInSystem>,
+                    out AllClassificationItemsInSystem response))
             {
                 return;
             }
 
-
             var found = FindClassificationItemInTree(
-                cItems.ClassificationItems,
+                response.ClassificationItems,
                 cId.ToLower());
 
             if (found == null)

@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
@@ -32,8 +32,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
+                    null,
+                    SendToAddOn,
+                    JHelp.Deserialize<AllProperties>,
                     out AllProperties response))
             {
                 return;
@@ -53,7 +56,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
             da.SetDataList(
                 3,
-                response.Properties.Select(x => ArchicadUtils.JoinNames(
+                response.Properties.Select(x => StringHelp.Join(
                     x.PropertyGroupName,
                     x.PropertyName)));
         }

@@ -72,9 +72,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     : previousNavigatorItemId.Id
             };
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToArchicad,
+                    JHelp.Deserialize<CreateViewMapFolderOutput>,
                     out CreateViewMapFolderOutput response))
             {
                 return;

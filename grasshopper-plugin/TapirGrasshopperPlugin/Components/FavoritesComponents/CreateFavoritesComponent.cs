@@ -63,11 +63,12 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new FavoritesFromElementsObj(
                         elements.Ids,
                         favorites),
+                    SendToAddOn,
                     ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))
             {

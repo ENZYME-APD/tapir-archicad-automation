@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Linq;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -8,6 +9,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     public class Get3DBoundingBoxesOfElementsComponent
         : ArchicadAccessorComponent
     {
+        public override string CommandName => "Get3DBoundingBoxes";
+
         public Get3DBoundingBoxesOfElementsComponent()
             : base(
                 "Element3DBoundingBoxes",
@@ -39,9 +42,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     elements,
+                    SendToAddOn,
+                    JHelp.Deserialize<BoundingBoxes3DObj>,
                     out BoundingBoxes3DObj response))
             {
                 return;
@@ -57,7 +62,5 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         public override Guid ComponentGuid =>
             new Guid("2044841d-a1af-40c5-ab9d-291187261d69");
-
-        public override string CommandName => "Get3DBoundingBoxes";
     }
 }

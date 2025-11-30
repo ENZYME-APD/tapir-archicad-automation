@@ -20,17 +20,16 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
 
     public class ClassificationObj
     {
-        public override string ToString()
-        {
-            return ClassificationSystemId.ToString() + "/" +
-                   ClassificationItemId.ToString();
-        }
-
         [JsonProperty("classificationSystemId")]
         public ClassificationIdObj ClassificationSystemId;
 
         [JsonProperty("classificationItemId")]
         public ClassificationIdObj ClassificationItemId;
+
+        public override string ToString()
+        {
+            return ClassificationSystemId + "/" + ClassificationItemId;
+        }
     }
 
     public class ElementClassificationObj

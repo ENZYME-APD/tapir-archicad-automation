@@ -120,9 +120,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
             };
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     parameters,
+                    SendToAddOn,
+                    JHelp.Deserialize<CollisionsOutput>,
                     out CollisionsOutput response))
             {
                 return;

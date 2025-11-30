@@ -89,7 +89,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 return;
             }
 
-            var elementClassifications = new ElementClassificationsObj()
+            var elementClassifications = new ElementClassificationsObj
             {
                 ElementClassifications =
                     new List<ElementClassificationObj>()
@@ -117,9 +117,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     elementClassification);
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
-                elementClassifications);
+                elementClassifications,
+                SendToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>

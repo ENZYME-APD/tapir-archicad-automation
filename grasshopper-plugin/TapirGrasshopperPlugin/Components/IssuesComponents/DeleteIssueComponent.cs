@@ -48,12 +48,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
                 new ParametersOfDelete
                 {
                     IssueId = id, AcceptAllElements = accept
-                });
+                },
+                SendToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -18,9 +18,11 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
-                    deserializer: ExecutionResult.Deserialize,
+                    null,
+                    SendToAddOn,
+                    ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {
                 return;

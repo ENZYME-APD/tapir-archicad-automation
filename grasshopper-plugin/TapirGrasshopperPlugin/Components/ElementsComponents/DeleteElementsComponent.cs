@@ -34,9 +34,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
+                    JHelp.Deserialize<ExecutionResultObj>,
                     out ExecutionResultObj response))
             {
                 return;

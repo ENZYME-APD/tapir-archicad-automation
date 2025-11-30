@@ -89,9 +89,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 input.ElementPropertyValues.Add(elemPropertyValue);
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
-                input);
+                input,
+                SendToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -71,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
                 new ParametersOfExport
                 {
@@ -79,7 +79,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                     ExportPath = exportPath,
                     UseExternalId = useExternalId,
                     AlignBySurveyPoint = alignBySurveyPoint
-                });
+                },
+                SendToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -212,9 +212,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
-                layerCombinationDataArray);
+                layerCombinationDataArray,
+                SendToAddOn);
         }
 
         public override Guid ComponentGuid =>

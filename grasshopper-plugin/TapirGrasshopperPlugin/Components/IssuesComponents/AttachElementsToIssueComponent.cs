@@ -69,14 +69,15 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
                 new ParametersOfAttachElements
                 {
                     IssueId = issueId,
                     Elements = elements.Elements,
                     Type = type
-                });
+                },
+                SendToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

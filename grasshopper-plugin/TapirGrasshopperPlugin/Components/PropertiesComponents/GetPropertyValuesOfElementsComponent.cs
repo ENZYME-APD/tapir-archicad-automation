@@ -3,6 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
@@ -62,13 +63,15 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new ElementsAndPropertyIdsObj
                     {
                         Elements = elements.Elements,
                         PropertyIds = properties.Properties
                     },
+                    SendToAddOn,
+                    JHelp.Deserialize<PropertyValuesForElements>,
                     out PropertyValuesForElements response))
             {
                 return;

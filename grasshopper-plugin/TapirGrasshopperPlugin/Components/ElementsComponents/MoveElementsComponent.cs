@@ -90,9 +90,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
-                input);
+                input,
+                SendToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>

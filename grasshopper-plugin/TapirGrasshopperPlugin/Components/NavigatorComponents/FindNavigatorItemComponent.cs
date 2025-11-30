@@ -86,7 +86,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     NavigatorItemIds = navItemIds
                 };
             var inputObj = JObject.FromObject(input);
-            var response = SendArchicadAddOnCommand(
+            var response = SendToAddOn(
                 "GetDatabaseIdFromNavigatorItemId",
                 inputObj);
             if (!response.Succeeded)
@@ -135,9 +135,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             };
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     "GetNavigatorItemTree",
                     navigatorTreeId,
+                    SendToArchicad,
+                    JHelp.Deserialize<NavigatorTreeObj>,
                     out NavigatorTreeObj response))
             {
                 return;

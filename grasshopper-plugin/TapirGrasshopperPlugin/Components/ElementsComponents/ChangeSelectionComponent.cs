@@ -70,7 +70,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (clearSelection)
             {
-                var responseOfGetSelection = SendArchicadAddOnCommand(
+                var responseOfGetSelection = SendToAddOn(
                     "GetSelectedElements",
                     null);
                 if (responseOfGetSelection.Succeeded)
@@ -96,9 +96,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     uniqueElementsToRemove.ToList()
             };
 
-            SetArchiCadValues(
+
+            SetValues(
                 CommandName,
-                parameters);
+                parameters,
+                SendToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

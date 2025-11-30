@@ -66,13 +66,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new GetConnectedElementsParameters
                     {
                         Elements = input.Elements,
                         ConnectedElementType = elementType
                     },
+                    SendToAddOn,
+                    JHelp.Deserialize<ConnectedElementsObj>,
                     out ConnectedElementsObj response))
             {
                 return;

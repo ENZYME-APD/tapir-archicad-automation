@@ -71,9 +71,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     : previousNavigatorItemId.Id
             };
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
-                input);
+                input,
+                SendToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>

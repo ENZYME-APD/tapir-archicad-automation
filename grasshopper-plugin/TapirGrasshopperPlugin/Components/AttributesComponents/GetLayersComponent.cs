@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
@@ -55,10 +56,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    out LayersObj response)) { return; }
+                    SendToArchicad,
+                    JHelp.Deserialize<LayersObj>,
+                    out LayersObj response))
+            {
+                return;
+            }
 
             da.SetDataList(
                 0,

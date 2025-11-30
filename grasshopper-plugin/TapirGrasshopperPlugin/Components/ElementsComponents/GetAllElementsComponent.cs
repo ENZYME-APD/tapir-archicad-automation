@@ -57,9 +57,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         : databases.Databases
             };
 
-            if (!TryGetConvertedResponse(
+
+            if (!TryGetConvertedValues(
                     CommandName,
                     elementFilters,
+                    SendToAddOn,
+                    JHelp.Deserialize<ElementsObj>,
                     out ElementsObj response))
             {
                 return;

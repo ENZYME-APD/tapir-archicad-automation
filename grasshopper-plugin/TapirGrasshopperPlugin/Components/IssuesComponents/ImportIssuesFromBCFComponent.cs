@@ -46,12 +46,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
                 new ParametersOfImport
                 {
                     ImportPath = path, AlignBySurveyPoint = align
-                });
+                },
+                SendToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

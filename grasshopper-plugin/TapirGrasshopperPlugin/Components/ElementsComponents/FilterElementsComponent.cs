@@ -72,9 +72,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     filterElements,
+                    SendToAddOn,
+                    JHelp.Deserialize<ElementsObj>,
                     out ElementsObj response))
             {
                 return;

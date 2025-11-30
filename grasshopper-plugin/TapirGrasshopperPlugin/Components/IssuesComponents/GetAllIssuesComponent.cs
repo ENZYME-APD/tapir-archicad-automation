@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -26,8 +27,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
+                    null,
+                    SendToAddOn,
+                    JHelp.Deserialize<AllIssues>,
                     out AllIssues response))
             {
                 return;

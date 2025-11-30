@@ -42,9 +42,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new ProjectFilePathObject { ProjectFilePath = path },
+                    SendToAddOn,
                     ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {

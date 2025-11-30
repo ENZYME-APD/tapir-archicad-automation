@@ -71,9 +71,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 parameterNames,
                 values);
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
+                    ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))
             {
                 return;

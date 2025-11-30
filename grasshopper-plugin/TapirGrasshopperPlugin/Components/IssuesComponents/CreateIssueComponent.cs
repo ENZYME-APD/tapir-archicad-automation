@@ -40,9 +40,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new ParametersOfNewIssue { Name = name },
+                    SendToAddOn,
+                    JHelp.Deserialize<IssueIdItemObj>,
                     out IssueIdItemObj response))
             {
                 return;

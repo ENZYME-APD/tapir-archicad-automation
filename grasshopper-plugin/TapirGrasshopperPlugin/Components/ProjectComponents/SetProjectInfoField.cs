@@ -66,9 +66,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                              x,
                              y)))
             {
-                SetArchiCadValues(
+                SetValues(
                     CommandName,
-                    field);
+                    field,
+                    SendToAddOn);
             }
         }
 

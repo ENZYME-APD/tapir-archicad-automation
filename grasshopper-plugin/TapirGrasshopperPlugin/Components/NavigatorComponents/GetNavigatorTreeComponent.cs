@@ -1,13 +1,11 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -83,9 +81,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     NavigatorItemIds = allItems
                 };
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
+                    JHelp.Deserialize<GetDatabaseIdFromNavigatorItemIdOutput>,
                     out GetDatabaseIdFromNavigatorItemIdOutput response))
             {
                 return databaseIdTree;
@@ -128,18 +128,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             };
 
-            var navigatorTreeIdObj = JObject.FromObject(navigatorTreeId);
-            CommandResponse response = SendArchicadCommand(
-                "GetNavigatorItemTree",
-                navigatorTreeIdObj);
-            if (!response.Succeeded)
+            if (!TryGetConvertedValues(
+                    "GetNavigatorItemTree",
+                    navigatorTreeId,
+                    SendToArchicad,
+                    JHelp.Deserialize<NavigatorTreeObj>,
+                    out NavigatorTreeObj response))
             {
-                this.AddError(response.GetErrorMessage());
                 return;
             }
-
-            NavigatorTreeObj navigatorTreeObj =
-                response.Result.ToObject<NavigatorTreeObj>();
 
             var navigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
             var navigatorItemPrefixTree = new DataTree<string>();
@@ -148,7 +145,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             var navigatorItemTypeTree = new DataTree<string>();
             var sourceNavigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
 
-            navigatorTreeObj.GetItems(
+            response.GetItems(
                 navigatorItemIdTree,
                 navigatorItemPrefixTree,
                 navigatorItemNameTree,

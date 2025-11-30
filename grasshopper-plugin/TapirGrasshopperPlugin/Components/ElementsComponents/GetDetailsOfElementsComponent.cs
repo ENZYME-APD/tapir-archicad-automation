@@ -5,6 +5,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using Arc = TapirGrasshopperPlugin.ResponseTypes.Element.Arc;
 
@@ -45,9 +46,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     inputs,
+                    SendToAddOn,
+                    JHelp.Deserialize<DetailsOfElementsObj>,
                     out response))
             {
                 return;

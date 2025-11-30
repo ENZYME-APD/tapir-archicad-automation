@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
@@ -24,8 +25,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
+                    null,
+                    SendToAddOn,
+                    JHelp.Deserialize<VersionInfo>,
                     out VersionInfo response))
             {
                 return;

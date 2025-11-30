@@ -50,12 +50,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
                 new ParametersOfNewComment
                 {
                     IssueId = issueId, Author = author, Text = text
-                });
+                },
+                SendToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

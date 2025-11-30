@@ -47,9 +47,10 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
                     ExecutionResultResponse.Deserialize,
                     out ExecutionResultResponse response))
             {
@@ -87,9 +88,10 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
                     ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {

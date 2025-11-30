@@ -2,8 +2,8 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
@@ -26,7 +26,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 "Found Classification System Guid.");
 
             OutTexts(
-                "ClassificationSystemNameAndVersion",
+                "NameAndVersion",
                 "Found Classification System name and version.");
 
             OutTexts(
@@ -85,8 +85,11 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 new Dictionary<ClassificationSystemDetailsObj,
                     List<Tuple<ClassificationItemDetailsObj, string>>>();
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
+                    null,
+                    SendToArchicad,
+                    JHelp.Deserialize<AllClassificationSystems>,
                     out AllClassificationSystems response))
             {
                 return;
@@ -105,11 +108,16 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 JObject classificationSystemObj =
                     JObject.FromObject(classificationSystem);
 
-                if (!TryGetConvertedResponse(
+                if (!TryGetConvertedValues(
                         CommandName,
                         classificationSystemObj,
+                        SendToArchicad,
+                        JHelp.Deserialize<AllClassificationItemsInSystem>,
                         out AllClassificationItemsInSystem
-                            classificationItemsInSystem)) { return; }
+                            classificationItemsInSystem))
+                {
+                    return;
+                }
 
                 List<Tuple<ClassificationItemDetailsObj, string>>
                     itemsInSystem = GetAllClassificationItemFromTree(
@@ -134,6 +142,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                          itemsInSystem in itemsPerSystems)
             {
                 ClassificationSystemDetailsObj system = itemsInSystem.Key;
+
                 foreach (Tuple<ClassificationItemDetailsObj, string>
                              itemDetailAndPath in itemsInSystem.Value)
                 {
@@ -146,7 +155,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     itemIds.Add(itemDetail.ClassificationItemId.Guid);
                     itemDisplayIds.Add(itemDetail.Id);
                     itemFullDisplayIds.Add(
-                        ArchicadUtils.JoinNames(
+                        StringHelp.Join(
                             system.ToString(),
                             itemDetail.Id));
                     itemNames.Add(itemDetail.Name);

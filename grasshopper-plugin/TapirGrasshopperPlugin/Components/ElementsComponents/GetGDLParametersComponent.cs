@@ -58,9 +58,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     1,
                     out string parameterName)) { return; }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     inputs,
+                    SendToAddOn,
+                    JHelp.Deserialize<GDLParametersResponse>,
                     out GDLParametersResponse response))
             {
                 return;

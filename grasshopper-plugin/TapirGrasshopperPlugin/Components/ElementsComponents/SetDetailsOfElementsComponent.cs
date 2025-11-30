@@ -122,17 +122,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 obj.ElementsWithDetails.Add(elementWithDetails);
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     obj,
-                    out ExecutionResultsResponse executionResults))
+                    SendToAddOn,
+                    ExecutionResultsResponse.Deserialize,
+                    out ExecutionResultsResponse response))
             {
                 return;
             }
 
-            for (int i = 0; i < executionResults.ExecutionResults.Count; i++)
+            for (int i = 0; i < response.ExecutionResults.Count; i++)
             {
-                ExecutionResult eResult = executionResults.ExecutionResults[i];
+                ExecutionResult eResult = response.ExecutionResults[i];
                 if (eResult.Success)
                 {
                     continue;

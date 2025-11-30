@@ -5,7 +5,7 @@ using Grasshopper.Kernel.Types;
 
 namespace TapirGrasshopperPlugin.Helps
 {
-    public static class ComponentHelps
+    public static class ComponentHelp
     {
         public static bool TryGetItem<T>(
             this IGH_DataAccess da,

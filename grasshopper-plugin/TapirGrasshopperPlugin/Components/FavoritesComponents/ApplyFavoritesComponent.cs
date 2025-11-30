@@ -47,9 +47,10 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 
             var input = FavoritesObj.FromWrappers(ghInputs);
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
                     ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))
             {

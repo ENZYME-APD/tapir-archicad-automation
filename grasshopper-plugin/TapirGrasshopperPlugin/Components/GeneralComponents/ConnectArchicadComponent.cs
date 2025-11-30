@@ -84,7 +84,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
             ConnectionSettings.Port = portNumber;
 
-            var response = SendArchicadCommand(
+            var response = SendToArchicad(
                 CommandName,
                 null);
 

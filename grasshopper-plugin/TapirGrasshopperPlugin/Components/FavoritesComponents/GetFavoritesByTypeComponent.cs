@@ -39,9 +39,11 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new ElementTypeObject(input),
+                    SendToAddOn,
+                    JHelp.Deserialize<FavoritesObj>,
                     out FavoritesObj response))
             {
                 return;

@@ -1,6 +1,7 @@
 using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -37,9 +38,11 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     input,
+                    SendToAddOn,
+                    JHelp.Deserialize<IssueComments>,
                     out IssueComments response))
             {
                 return;

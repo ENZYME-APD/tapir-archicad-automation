@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -65,10 +66,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     attributes,
-                    out LayerCombinationsObj response)) { return; }
+                    SendToAddOn,
+                    JHelp.Deserialize<LayerCombinationsObj>,
+                    out LayerCombinationsObj response))
+            {
+                return;
+            }
 
             var attributeNames = new List<string>();
             var layerAttributeIds = new DataTree<AttributeIdItemObj>();

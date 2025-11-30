@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Rhino.Geometry;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -60,12 +61,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedResponse(
+            if (!TryGetConvertedValues(
                     CommandName,
                     new ZoneBoundaryParameters
                     {
                         ZoneElementId = inputs.ElementId
                     },
+                    SendToAddOn,
+                    JHelp.Deserialize<ZoneBoundariesOutput>,
                     out ZoneBoundariesOutput response))
             {
                 return;

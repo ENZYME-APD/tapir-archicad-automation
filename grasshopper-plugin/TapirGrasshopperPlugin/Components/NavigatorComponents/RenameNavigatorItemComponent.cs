@@ -58,16 +58,17 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var input = new RenameNavigatorItemInput()
+            var input = new RenameNavigatorItemInput
             {
                 NavigatorItemId = navigatorItemId.Id,
                 NewName = string.IsNullOrEmpty(newName) ? null : newName,
                 NewId = string.IsNullOrEmpty(newId) ? null : newId
             };
 
-            SetArchiCadValues(
+            SetValues(
                 CommandName,
-                input);
+                input,
+                SendToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>
