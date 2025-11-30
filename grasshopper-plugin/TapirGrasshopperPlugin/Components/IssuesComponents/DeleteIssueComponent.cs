@@ -36,26 +36,24 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             if (!IssueIdObj.TryCreate(
                     da,
                     0,
-                    out IssueIdObj issueId))
+                    out IssueIdObj id))
             {
                 return;
             }
 
             if (!da.TryGetItem(
                     1,
-                    out bool acceptAllElements))
+                    out bool accept))
             {
                 return;
             }
 
-            var parameters = new ParametersOfDelete
-            {
-                IssueId = issueId, AcceptAllElements = acceptAllElements
-            };
-
             SetArchiCadValues(
                 CommandName,
-                parameters);
+                new ParametersOfDelete
+                {
+                    IssueId = id, AcceptAllElements = accept
+                });
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -112,8 +112,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 polygons);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ZoneBoundaries;
-
         public override Guid ComponentGuid =>
             new Guid("50a6793f-e9ba-4a6f-a20d-bcaccaa3e6d9");
     }

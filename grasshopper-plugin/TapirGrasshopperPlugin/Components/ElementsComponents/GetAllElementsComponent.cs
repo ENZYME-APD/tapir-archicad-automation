@@ -39,13 +39,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "List of element Guids matching the filter.");
         }
 
-
         protected override void Solve(
             IGH_DataAccess da)
         {
             if (!da.TryGetItems(
                     1,
-                    out List<string> filters)) { return; }
+                    out List<string> filters))
+            {
+                return;
+            }
 
             var databases = DatabasesObj.Create(
                 da,

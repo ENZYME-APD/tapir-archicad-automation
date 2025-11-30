@@ -229,6 +229,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 0,
                 hierarchicalElements);
+
             da.SetDataTree(
                 1,
                 subelementsOfHierarchicals);

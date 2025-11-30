@@ -23,16 +23,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
-        protected override void RegisterInputParams(
-            GH_InputParamManager pManager)
-        {
-            //pManager.AddTextParameter(
-            //    nameof(ElementGDLParametersObj),
-            //    nameof(ElementGDLParametersObj),
-            //    nameof(ElementGDLParametersObj),
-            //    GH_ParamAccess.list);
-        }
-
         protected override void AddOutputs()
         {
             OutTexts(

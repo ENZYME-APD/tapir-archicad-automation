@@ -68,9 +68,9 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            var elemPropertyValues = new ElementPropertyValuesObj();
+            var input = new ElementPropertyValuesObj();
 
-            elemPropertyValues.ElementPropertyValues =
+            input.ElementPropertyValues =
                 new List<ElementPropertyValueObj>();
 
             for (var i = 0; i < elements.Elements.Count; i++)
@@ -87,12 +87,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                             : values[i]
                     }
                 };
-                elemPropertyValues.ElementPropertyValues.Add(elemPropertyValue);
+                input.ElementPropertyValues.Add(elemPropertyValue);
             }
 
             SetArchiCadValues(
                 CommandName,
-                elemPropertyValues);
+                input);
         }
 
         protected override System.Drawing.Bitmap Icon =>

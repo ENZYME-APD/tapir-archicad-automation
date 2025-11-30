@@ -52,13 +52,13 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         {
             OutText(
                 "Success",
-                "Sucessful connection to Archicad.");
+                "Successful connection to Archicad.");
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            Solve(DA);
+            Solve(da);
         }
 
         protected override void Solve(
@@ -86,6 +86,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             }
 
             ConnectionSettings.Port = portNumber;
+
             var response = SendArchicadCommand(
                 CommandName,
                 null);

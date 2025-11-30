@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Generic;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -39,15 +40,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!NavigatorItemIdsObj.TryCreate(
                     da,
                     0,
-                    out NavigatorItemIdsObj ids))
+                    out NavigatorItemIdsObj input))
             {
                 return;
             }
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    ids,
-                    out JObject response))
+                    input,
+                    ViewSettingsResponse.FromResponse,
+                    out ViewSettingsResponse response))
             {
                 return;
             }
@@ -55,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             da.SetData(
                 0,
                 JsonConvert.SerializeObject(
-                    ViewSettingsResponse.FromResponse(response),
+                    response,
                     Formatting.Indented));
         }
 

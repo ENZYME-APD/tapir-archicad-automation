@@ -45,37 +45,34 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!ElementsObj.TryCreate(
                     da,
                     0,
-                    out ElementsObj inputElements))
+                    out ElementsObj inputs))
             {
                 return;
             }
 
-            List<Point3d> begCoords = new List<Point3d>();
-            if (!da.GetDataList(
+            if (!da.TryGetItems(
                     1,
-                    begCoords))
+                    out List<Point3D> startCoords))
             {
                 return;
             }
 
-            List<Point3d> endCoords = new List<Point3d>();
-            if (!da.GetDataList(
+            if (!da.TryGetItems(
                     2,
-                    endCoords))
+                    out List<Point3D> endCoords))
             {
                 return;
             }
 
-            List<double> heights = new List<double>();
-            if (!da.GetDataList(
+            if (!da.TryGetItems(
                     3,
-                    heights))
+                    out List<double> heights))
             {
                 return;
             }
 
-            if (begCoords.Count != 1 &&
-                inputElements.Elements.Count != begCoords.Count)
+            if (startCoords.Count != 1 &&
+                inputs.Elements.Count != startCoords.Count)
             {
                 this.AddError(
                     "The count of BegCoords must be 1 or the same as the count of ElementGuids.");
@@ -83,47 +80,46 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             if (endCoords.Count != 1 &&
-                inputElements.Elements.Count != endCoords.Count)
+                inputs.Elements.Count != endCoords.Count)
             {
                 this.AddError(
                     "The count of EndCoords must be 1 or the same as the count of ElementGuids.");
                 return;
             }
 
-            if (heights.Count != 1 &&
-                inputElements.Elements.Count != heights.Count)
+            if (heights.Count != 1 && inputs.Elements.Count != heights.Count)
             {
                 this.AddError(
                     "The count of Heights must be 1 or the same as the count of ElementGuids.");
                 return;
             }
 
-            if (inputElements.Elements.Count == 0)
+            if (inputs.Elements.Count == 0)
             {
                 return;
             }
 
-            TypedElementsWithDetailsObj<SetWallDetails> obj =
-                new TypedElementsWithDetailsObj<SetWallDetails>
-                {
-                    ElementsWithDetails =
-                        new List<TypedElementWithDetailsObj<
-                            SetWallDetails>>()
-                };
-            for (int i = 0; i < inputElements.Elements.Count; i++)
+            var obj = new TypedElementsWithDetailsObj<SetWallDetails>
+            {
+                ElementsWithDetails =
+                    new List<TypedElementWithDetailsObj<SetWallDetails>>()
+            };
+
+            for (int i = 0; i < inputs.Elements.Count; i++)
             {
                 TypedElementWithDetailsObj<SetWallDetails> elementWithDetails =
                     new TypedElementWithDetailsObj<SetWallDetails>
                     {
-                        ElementId = inputElements.Elements[i].ElementId,
+                        ElementId = inputs.Elements[i].ElementId,
                         Details = new TypedDetails<SetWallDetails>
                         {
                             TypeSpecificDetails = new SetWallDetails
                             {
                                 BegCoordinate =
                                     Point2D.Create(
-                                        begCoords
-                                            [i % begCoords.Count]),
+                                        startCoords
+                                            [i % startCoords
+                                                .Count]),
                                 EndCoordinate =
                                     Point2D.Create(
                                         endCoords[
@@ -153,7 +149,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
                 this.AddError(
                     eResult.Message() + " [NewElementId " +
-                    inputElements.Elements[i].ToString() + "]");
+                    inputs.Elements[i].ToString() + "]");
             }
         }
 

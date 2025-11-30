@@ -26,7 +26,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Elements ids of hierarchical elements to get subelements of.");
 
             InText(
-                "ConnectedElemType",
+                "ConnectedElementType",
                 "Type of connected elements.");
         }
 
@@ -54,48 +54,44 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!ElementsObj.TryCreate(
                     da,
                     0,
-                    out ElementsObj inputElements))
+                    out ElementsObj input))
             {
                 return;
             }
 
             if (!da.TryGetItem(
                     1,
-                    out string eType))
+                    out string elementType))
             {
                 return;
             }
 
             var parameters = new GetConnectedElementsParameters()
             {
-                Elements = inputElements.Elements,
-                ConnectedElementType = eType
+                Elements = input.Elements,
+                ConnectedElementType = elementType
             };
 
             if (!TryGetConvertedResponse(
                     CommandName,
                     parameters,
-                    out ConnectedElementsObj connectedElementsObj))
+                    out ConnectedElementsObj response))
             {
                 return;
             }
 
-            var connectedElementsTree = new DataTree<ElementIdItemObj>();
+            var tree = new DataTree<ElementIdItemObj>();
 
-            for (var i = 0;
-                 i < connectedElementsObj.ConnectedElements.Count;
-                 i++)
+            for (var i = 0; i < response.ConnectedElements.Count; i++)
             {
-                var connectedElements =
-                    connectedElementsObj.ConnectedElements[i];
-                connectedElementsTree.AddRange(
-                    connectedElements.Elements,
+                tree.AddRange(
+                    response.ConnectedElements[i].Elements,
                     new GH_Path(i));
             }
 
             da.SetDataTree(
                 0,
-                connectedElementsTree);
+                tree);
         }
 
         protected override System.Drawing.Bitmap Icon =>

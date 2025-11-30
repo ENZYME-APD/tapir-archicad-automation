@@ -1,6 +1,6 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
+﻿using Grasshopper.Kernel.Special;
 using System;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
@@ -25,9 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             if (!response.Succeeded)
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
+                this.AddError(response.GetErrorMessage());
                 return;
             }
 

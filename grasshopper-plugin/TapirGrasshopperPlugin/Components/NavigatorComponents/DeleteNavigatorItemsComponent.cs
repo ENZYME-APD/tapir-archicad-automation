@@ -29,14 +29,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!NavigatorItemIdsObj.TryCreate(
                     da,
                     0,
-                    out NavigatorItemIdsObj navigatorItemIds))
+                    out NavigatorItemIdsObj input))
             {
                 return;
             }
 
             SetArchiCadValues(
                 CommandName,
-                navigatorItemIds);
+                input);
         }
 
         protected override System.Drawing.Bitmap Icon =>

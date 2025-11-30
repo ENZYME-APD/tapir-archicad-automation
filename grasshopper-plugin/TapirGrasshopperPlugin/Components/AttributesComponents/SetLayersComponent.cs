@@ -57,10 +57,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            var names = new List<string>();
-            if (!da.GetDataList(
+            if (!da.TryGetItems(
                     1,
-                    names))
+                    out List<string> names))
             {
                 return;
             }
@@ -71,34 +70,32 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            var isHiddenLayers = new List<bool>();
-            if (!da.GetDataList(
+            if (!da.TryGetItems(
                     2,
-                    isHiddenLayers))
+                    out List<bool> isHiddenLayers))
             {
                 return;
             }
 
-            var isLockedLayers = new List<bool>();
-            if (!da.GetDataList(
+
+            if (!da.TryGetItems(
                     3,
-                    isLockedLayers))
+                    out List<bool> isLockedLayers))
             {
                 return;
             }
 
-            var isWireframeLayers = new List<bool>();
-            if (!da.GetDataList(
+            if (!da.TryGetItems(
                     4,
-                    isWireframeLayers))
+                    out List<bool> isWireframeLayers))
             {
                 return;
             }
 
-            var intersectionGroupsOfLayers = new List<int>();
-            if (!da.GetDataList(
+
+            if (!da.TryGetItems(
                     5,
-                    intersectionGroupsOfLayers))
+                    out List<int> intersectionGroupsOfLayers))
             {
                 return;
             }
@@ -127,7 +124,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             foreach (var attributeId in attributes.Attributes)
             {
                 layerDataArray.LayerDataArray.Add(
-                    new LayerDataObj()
+                    new LayerDataObj
                     {
                         AttributeId = attributeId.AttributeId,
                         Name = names[index],

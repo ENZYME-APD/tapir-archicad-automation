@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             IGH_DataAccess da)
         {
             var response = SendArchicadCommand(
-                "GetPublisherSetNames",
+                CommandName,
                 null);
 
             if (!response.Succeeded)

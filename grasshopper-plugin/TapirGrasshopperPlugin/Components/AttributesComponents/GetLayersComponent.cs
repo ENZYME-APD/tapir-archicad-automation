@@ -51,17 +51,17 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (AttributeIdsObj.TryCreate(
+            if (!AttributeIdsObj.TryCreate(
                     da,
                     0,
-                    out AttributeIdsObj attributes))
+                    out AttributeIdsObj input))
             {
                 return;
             }
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    attributes,
+                    input,
                     out LayersObj response)) { return; }
 
             da.SetDataList(

@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -33,7 +34,26 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            SolveByElementsInputResponse(da);
+            if (!ElementsObj.TryCreate(
+                    da,
+                    0,
+                    out ElementsObj input))
+            {
+                return;
+            }
+
+            if (!TryGetConvertedResponse(
+                    CommandName,
+                    input,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response.Message());
         }
 
         public override Guid ComponentGuid =>

@@ -1,20 +1,20 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using System.Collections.Generic;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json.Linq;
 
 namespace TapirGrasshopperPlugin.Helps
 {
     public static class ComponentHelps
     {
         public static bool TryGetItem<T>(
-            this IGH_DataAccess dataAccess,
+            this IGH_DataAccess da,
             int index,
             out T result)
         {
             T baseItem = default;
 
-            var success = dataAccess.GetData(
+            var success = da.GetData(
                 index,
                 ref baseItem);
 
@@ -23,18 +23,29 @@ namespace TapirGrasshopperPlugin.Helps
         }
 
         public static bool TryGetItems<T>(
-            this IGH_DataAccess dataAccess,
+            this IGH_DataAccess da,
             int index,
             out List<T> results)
         {
             var items = new List<T>();
 
-            var success = dataAccess.GetDataList(
+            var success = da.GetDataList(
                 index,
                 items);
 
             results = items;
             return success;
+        }
+
+        public static bool TryGetTree<T>(
+            this IGH_DataAccess da,
+            int index,
+            out GH_Structure<T> structure)
+            where T : IGH_Goo
+        {
+            return da.GetDataTree(
+                index,
+                out structure);
         }
 
         public static T GetOptionalItem<T>(

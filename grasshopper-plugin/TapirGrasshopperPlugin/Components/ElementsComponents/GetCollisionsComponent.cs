@@ -99,7 +99,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (!da.TryGetItem(
                     3,
-                    out bool performSurfaceCheck)) { return; }
+                    out bool performSurfaceCheck))
+            {
+                return;
+            }
 
             var surfaceTolerance = da.GetOptionalItem(
                 4,
@@ -120,7 +123,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     parameters,
-                    out CollisionsOutput collisions))
+                    out CollisionsOutput response))
             {
                 return;
             }
@@ -132,7 +135,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var hasBodyCollisions = new List<bool>();
             var hasClearenceCollisions = new List<bool>();
 
-            foreach (var c in collisions.Collisions)
+            foreach (var c in response.Collisions)
             {
                 elementIndex1s.Add(
                     inputGroup1.Elements.FindIndex(e =>

@@ -52,7 +52,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
             if (!da.TryGetItem(
                     1,
-                    out string exportedFilePath))
+                    out string exportPath))
             {
                 return;
             }
@@ -71,17 +71,15 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var parameters = new ParametersOfExport
-            {
-                Issues = issues.Issues,
-                ExportPath = exportedFilePath,
-                UseExternalId = useExternalId,
-                AlignBySurveyPoint = alignBySurveyPoint
-            };
-
             SetArchiCadValues(
                 CommandName,
-                parameters);
+                new ParametersOfExport
+                {
+                    Issues = issues.Issues,
+                    ExportPath = exportPath,
+                    UseExternalId = useExternalId,
+                    AlignBySurveyPoint = alignBySurveyPoint
+                });
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -42,7 +42,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             if (!TryGetConvertedResponse(
                     CommandName,
-                    out HotlinksResponse response)) { return; }
+                    out HotlinksResponse response))
+            {
+                return;
+            }
 
             da.SetDataList(
                 0,

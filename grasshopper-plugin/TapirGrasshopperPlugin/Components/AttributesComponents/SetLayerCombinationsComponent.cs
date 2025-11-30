@@ -59,67 +59,61 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             if (!AttributesObj.TryCreate(
                     da,
                     0,
-                    out AttributesObj attributes))
+                    out AttributesObj input))
             {
                 return;
             }
 
-            var names = new List<string>();
-            if (!da.GetDataList(
+            if (!da.TryGetItems(
                     1,
-                    names))
+                    out List<string> names))
             {
                 return;
             }
 
-            if (attributes.Attributes.Count != names.Count)
+            if (input.Attributes.Count != names.Count)
             {
                 this.AddError("Attribute to Name count mismatch!");
                 return;
             }
 
-            GH_Structure<IGH_Goo> layerAttributeGuidsInput;
-            if (!da.GetDataTree(
+            if (!da.TryGetTree(
                     2,
-                    out layerAttributeGuidsInput))
+                    out GH_Structure<IGH_Goo> layerAttributeGuidsInput))
             {
                 return;
             }
 
-            GH_Structure<GH_Boolean> isHiddenLayers;
-            if (!da.GetDataTree(
+            if (!da.TryGetTree(
                     3,
-                    out isHiddenLayers))
+                    out GH_Structure<GH_Boolean> isHiddenLayers))
             {
                 return;
             }
 
-            GH_Structure<GH_Boolean> isLockedLayers;
-            if (!da.GetDataTree(
+            if (!da.TryGetTree(
                     4,
-                    out isLockedLayers))
+                    out GH_Structure<GH_Boolean> isLockedLayers))
             {
                 return;
             }
 
-            GH_Structure<GH_Boolean> isWireframeLayers;
-            if (!da.GetDataTree(
+            if (!da.TryGetTree(
                     5,
-                    out isWireframeLayers))
+                    out GH_Structure<GH_Boolean> isWireframeLayers))
             {
                 return;
             }
 
-            GH_Structure<GH_Integer> intersectionGroupsOfLayers;
-            if (!da.GetDataTree(
+            if (!da.TryGetTree(
                     6,
-                    out intersectionGroupsOfLayers))
+                    out GH_Structure<GH_Integer> intersectionGroupsOfLayers))
             {
                 return;
             }
 
             if
-                (attributes.Attributes.Count <
+                (input.Attributes.Count <
                  layerAttributeGuidsInput.Branches.Count ||
                  (layerAttributeGuidsInput.Branches.Count !=
                   isHiddenLayers.Branches.Count &&
@@ -150,7 +144,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             };
 
             var index = 0;
-            foreach (var attributeId in attributes.Attributes)
+
+            foreach (var attributeId in input.Attributes)
             {
                 var layerCombinationData = new LayerCombinationDataObj();
                 layerCombinationData.AttributeId = attributeId.AttributeId;
@@ -178,7 +173,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                         intersectionGroupsOfLayers.Branches.Count == 1
                             ? 0
                             : index];
+
                 var layerCount = layerGuidsGooList.Count;
+
                 for (var i = 0; i < layerCount; i++)
                 {
                     var containedLayer = new ContainedLayerObj()

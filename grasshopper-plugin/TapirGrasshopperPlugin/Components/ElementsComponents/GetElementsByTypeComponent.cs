@@ -75,7 +75,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da,
                 2);
 
-            var elementsByType = new ElementsByTypeObj()
+            var input = new ElementsByTypeObj()
             {
                 ElementType = eType,
                 Filters =
@@ -88,15 +88,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    elementsByType,
-                    out ElementsObj elements))
+                    input,
+                    out ElementsObj response))
             {
                 return;
             }
 
             da.SetDataList(
                 0,
-                elements.Elements);
+                response.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>

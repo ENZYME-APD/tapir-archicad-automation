@@ -59,7 +59,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (!da.TryGetItems(
                     1,
-                    out List<string> filters)) { return; }
+                    out List<string> filters))
+            {
+                return;
+            }
 
             var filterElements = new FilterElementsObj
             {

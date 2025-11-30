@@ -53,7 +53,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             if (!IssueIdObj.TryCreate(
                     da,
                     0,
-                    out IssueIdObj issueId))
+                    out IssueIdObj id))
             {
                 return;
             }
@@ -65,15 +65,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var parameters =
-                new ParametersOfGetAttachedElements
-                {
-                    IssueId = issueId, Type = type
-                };
-
             if (!TryGetConvertedResponse(
                     CommandName,
-                    parameters,
+                    new ParametersOfGetAttachedElements
+                    {
+                        IssueId = id, Type = type
+                    },
                     out ElementsObj response))
             {
                 return;

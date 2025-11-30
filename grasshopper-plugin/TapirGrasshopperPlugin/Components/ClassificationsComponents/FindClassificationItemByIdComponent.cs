@@ -98,7 +98,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     {
                         ClassificationSystemId = systemId
                     },
-                    out AllClassificationItemsInSystem cItems)) { return; }
+                    out AllClassificationItemsInSystem cItems))
+            {
+                return;
+            }
 
 
             var found = FindClassificationItemInTree(

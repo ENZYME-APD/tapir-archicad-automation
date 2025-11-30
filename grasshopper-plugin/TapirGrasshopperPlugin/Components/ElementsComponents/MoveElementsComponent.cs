@@ -67,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var moveElementsParameters = new MoveElementsParameters()
+            var input = new MoveElementsParameters()
             {
                 ElementsWithMoveParameters =
                     new List<ElementWithMoveParameters>()
@@ -76,7 +76,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 var element = elements.Elements[i];
                 var moveVector = moveVectors[moveVectors.Count == 1 ? 0 : i];
-                moveElementsParameters.ElementsWithMoveParameters.Add(
+                input.ElementsWithMoveParameters.Add(
                     new ElementWithMoveParameters()
                     {
                         Element = element.ElementId,
@@ -92,7 +92,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             SetArchiCadValues(
                 CommandName,
-                moveElementsParameters);
+                input);
         }
 
         protected override System.Drawing.Bitmap Icon =>

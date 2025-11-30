@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
                         $"Invalid response object in {nameof(ViewSettingsResponse)}: 'viewSettings' is not a list.");
                 }
 
-                return new ViewSettingsResponse()
+                return new ViewSettingsResponse
                 {
                     ViewSettings = viewSettings
                         .Values<JObject>()

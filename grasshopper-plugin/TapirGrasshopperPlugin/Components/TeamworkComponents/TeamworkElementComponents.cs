@@ -1,14 +1,12 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.TeamworkComponents
 {
-    public abstract class AbsTeamworkElementsComponent<T>
+    public abstract class AbsTeamworkElementsComponent
         : AbsTeamworkBaseComponent
-        where T : class
     {
         protected AbsTeamworkElementsComponent(
             string name,
@@ -25,9 +23,18 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 "ElementGuids",
                 "Elements Guids to get detailList for.");
         }
+    }
 
-        protected abstract string GetMessage(
-            JObject response);
+    public class ReserveElementsComponent : AbsTeamworkElementsComponent
+    {
+        public override string CommandName => "ReserveElements";
+
+        public ReserveElementsComponent()
+            : base(
+                "ReserveElements",
+                "Reserves elements in Teamwork mode.")
+        {
+        }
 
         protected override void Solve(
             IGH_DataAccess da)
@@ -43,42 +50,22 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
             if (!TryGetConvertedResponse(
                     CommandName,
                     input,
-                    T.Deserialize,
-                    out T response))
+                    ExecutionResultResponse.Deserialize,
+                    out ExecutionResultResponse response))
             {
                 return;
             }
 
             da.SetData(
                 0,
-                T.Message(response));
-        }
-    }
-
-    public class ReserveElementsComponent
-        : AbsTeamworkElementsComponent<ExecutionResultResponse>
-    {
-        public override string CommandName => "ReserveElements";
-
-        public ReserveElementsComponent()
-            : base(
-                "ReserveElements",
-                "Reserves elements in Teamwork mode.")
-        {
-        }
-
-        protected override string GetMessage(
-            JObject response)
-        {
-            return T.Deserialize(response).Message();
+                response.Message());
         }
 
         public override Guid ComponentGuid =>
             new Guid("3c0e9944-2875-4a68-8794-ec16fa3235f5");
     }
 
-    public class ReleaseElementsComponent
-        : AbsTeamworkElementsComponent<ExecutionResult>
+    public class ReleaseElementsComponent : AbsTeamworkElementsComponent
     {
         public override string CommandName => "ReleaseElements";
 
@@ -89,10 +76,29 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         {
         }
 
-        protected override string GetMessage(
-            JObject response)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            return ExecutionResult.Deserialize(response).Message();
+            if (!ElementsObj.TryCreate(
+                    da,
+                    0,
+                    out ElementsObj input))
+            {
+                return;
+            }
+
+            if (!TryGetConvertedResponse(
+                    CommandName,
+                    input,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response.Message());
         }
 
         public override Guid ComponentGuid =>

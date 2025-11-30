@@ -58,14 +58,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var parameters = new ParametersOfNewComment
-            {
-                IssueId = issueId, Author = author, Text = text
-            };
-
             SetArchiCadValues(
                 CommandName,
-                parameters);
+                new ParametersOfNewComment
+                {
+                    IssueId = issueId, Author = author, Text = text
+                });
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -36,14 +36,14 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             if (!IssueIdItemObj.TryCreate(
                     da,
                     0,
-                    out IssueIdItemObj issueId))
+                    out IssueIdItemObj input))
             {
                 return;
             }
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    issueId,
+                    input,
                     out IssueComments response))
             {
                 return;

@@ -4,7 +4,7 @@ namespace TapirGrasshopperPlugin.Helps
 {
     public static class StringHelps
     {
-        public static string WithType(
+        public static string WithTypeName(
             this string description,
             string type)
         {

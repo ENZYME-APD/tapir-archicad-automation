@@ -82,7 +82,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var createdId = new NavigatorIdItemObj()
+            var createdId = new NavigatorIdItemObj
             {
                 Id = response.CreatedFolderNavigatorItemId
             };

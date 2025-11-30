@@ -70,11 +70,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            var stories = new StoriesData { Stories = new List<StoryData>() };
+            var input = new StoriesData { Stories = new List<StoryData>() };
 
             for (var i = 0; i < names.Count; ++i)
             {
-                stories.Stories.Add(
+                input.Stories.Add(
                     new StoryData()
                     {
                         Name = names[i],
@@ -86,7 +86,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             SetArchiCadValues(
                 CommandName,
-                stories);
+                input);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -209,7 +209,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddGenericParameter(
                 name,
                 name,
-                description.WithType("genericItem"),
+                description.WithTypeName("genericItem"),
                 GH_ParamAccess.item);
         }
 
@@ -220,7 +220,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddGenericParameter(
                 name,
                 name,
-                description.WithType("genericItem"),
+                description.WithTypeName("genericItem"),
                 GH_ParamAccess.item);
         }
 
@@ -231,7 +231,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddGenericParameter(
                 name,
                 name,
-                description.WithType("genericList"),
+                description.WithTypeName("genericList"),
                 GH_ParamAccess.list);
         }
 
@@ -242,7 +242,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddGenericParameter(
                 name,
                 name,
-                description.WithType("genericList"),
+                description.WithTypeName("genericList"),
                 GH_ParamAccess.list);
         }
 
@@ -253,7 +253,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddGenericParameter(
                 name,
                 name,
-                description.WithType("genericTree"),
+                description.WithTypeName("genericTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -264,7 +264,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddGenericParameter(
                 name,
                 name,
-                description.WithType("genericTree"),
+                description.WithTypeName("genericTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -275,7 +275,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddVectorParameter(
                 name,
                 name,
-                description.WithType("vectorList"),
+                description.WithTypeName("vectorList"),
                 GH_ParamAccess.list);
         }
 
@@ -286,7 +286,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddVectorParameter(
                 name,
                 name,
-                description.WithType("vectorList"),
+                description.WithTypeName("vectorList"),
                 GH_ParamAccess.list);
         }
 
@@ -297,7 +297,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddPointParameter(
                 name,
                 name,
-                description.WithType("pointList"),
+                description.WithTypeName("pointList"),
                 GH_ParamAccess.list);
         }
 
@@ -308,7 +308,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddPointParameter(
                 name,
                 name,
-                description.WithType("pointList"),
+                description.WithTypeName("pointList"),
                 GH_ParamAccess.list);
         }
 
@@ -320,7 +320,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddNumberParameter(
                 name,
                 name,
-                description.WithType("numberItem"),
+                description.WithTypeName("numberItem"),
                 GH_ParamAccess.item,
                 defaultValue);
         }
@@ -332,7 +332,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddNumberParameter(
                 name,
                 name,
-                description.WithType("numberTree"),
+                description.WithTypeName("numberTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -343,7 +343,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddNumberParameter(
                 name,
                 name,
-                description.WithType("numberList"),
+                description.WithTypeName("numberList"),
                 GH_ParamAccess.list);
         }
 
@@ -355,7 +355,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddBooleanParameter(
                 name,
                 name,
-                description.WithType("booleanItem"),
+                description.WithTypeName("booleanItem"),
                 GH_ParamAccess.item,
                 defaultValue);
         }
@@ -367,7 +367,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddBooleanParameter(
                 name,
                 name,
-                description.WithType("booleanList"),
+                description.WithTypeName("booleanList"),
                 GH_ParamAccess.list);
         }
 
@@ -378,7 +378,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddBooleanParameter(
                 name,
                 name,
-                description.WithType("booleanTree"),
+                description.WithTypeName("booleanTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -389,7 +389,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddBooleanParameter(
                 name,
                 name,
-                description.WithType("booleanItem"),
+                description.WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
         }
 
@@ -400,7 +400,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddBooleanParameter(
                 name,
                 name,
-                description.WithType("booleanList"),
+                description.WithTypeName("booleanList"),
                 GH_ParamAccess.list);
         }
 
@@ -411,7 +411,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddBooleanParameter(
                 name,
                 name,
-                description.WithType("booleanTree"),
+                description.WithTypeName("booleanTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -423,7 +423,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddIntegerParameter(
                 name,
                 name,
-                description.WithType("integerItem"),
+                description.WithTypeName("integerItem"),
                 GH_ParamAccess.item,
                 defaultValue);
         }
@@ -435,7 +435,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddIntegerParameter(
                 name,
                 name,
-                description.WithType("integerList"),
+                description.WithTypeName("integerList"),
                 GH_ParamAccess.list);
         }
 
@@ -446,7 +446,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddIntegerParameter(
                 name,
                 name,
-                description.WithType("integerTree"),
+                description.WithTypeName("integerTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -457,7 +457,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddIntegerParameter(
                 name,
                 name,
-                description.WithType("integerItem"),
+                description.WithTypeName("integerItem"),
                 GH_ParamAccess.item);
         }
 
@@ -468,7 +468,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddIntegerParameter(
                 name,
                 name,
-                description.WithType("integerList"),
+                description.WithTypeName("integerList"),
                 GH_ParamAccess.list);
         }
 
@@ -479,7 +479,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddIntegerParameter(
                 name,
                 name,
-                description.WithType("integerTree"),
+                description.WithTypeName("integerTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -490,7 +490,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddTextParameter(
                 name,
                 name,
-                description.WithType("textItem"),
+                description.WithTypeName("textItem"),
                 GH_ParamAccess.item);
         }
 
@@ -501,7 +501,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddTextParameter(
                 name,
                 name,
-                description.WithType("textItem"),
+                description.WithTypeName("textItem"),
                 GH_ParamAccess.item);
         }
 
@@ -512,7 +512,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddTextParameter(
                 name,
                 name,
-                description.WithType("textList"),
+                description.WithTypeName("textList"),
                 GH_ParamAccess.list);
         }
 
@@ -523,7 +523,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddTextParameter(
                 name,
                 name,
-                description.WithType("textTree"),
+                description.WithTypeName("textTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -534,7 +534,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddColourParameter(
                 name,
                 name,
-                description.WithType("colorItem"),
+                description.WithTypeName("colorItem"),
                 GH_ParamAccess.item);
         }
 
@@ -546,7 +546,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddColourParameter(
                 name,
                 name,
-                description.WithType("colorItem"),
+                description.WithTypeName("colorItem"),
                 GH_ParamAccess.item,
                 defaultValue);
         }
@@ -559,7 +559,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddColourParameter(
                 name,
                 name,
-                description.WithType("colorList"),
+                description.WithTypeName("colorList"),
                 GH_ParamAccess.list,
                 defaultValue);
         }
@@ -571,7 +571,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddColourParameter(
                 name,
                 name,
-                description.WithType("colorTree"),
+                description.WithTypeName("colorTree"),
                 GH_ParamAccess.tree);
         }
 
@@ -582,7 +582,7 @@ namespace TapirGrasshopperPlugin.Components
             inManager.AddTextParameter(
                 name,
                 name,
-                description.WithType("textList"),
+                description.WithTypeName("textList"),
                 GH_ParamAccess.list);
         }
 
@@ -593,7 +593,7 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddBoxParameter(
                 name,
                 name,
-                description.WithType("boxList"),
+                description.WithTypeName("boxList"),
                 GH_ParamAccess.list);
         }
 
@@ -604,8 +604,19 @@ namespace TapirGrasshopperPlugin.Components
             outManager.AddCurveParameter(
                 name,
                 name,
-                description.WithType("curveList"),
+                description.WithTypeName("curveList"),
                 GH_ParamAccess.list);
+        }
+
+        public void OutCurveTree(
+            string name,
+            string description)
+        {
+            outManager.AddCurveParameter(
+                name,
+                name,
+                description.WithTypeName("curveTree"),
+                GH_ParamAccess.tree);
         }
 
         protected CommandResponse SendArchicadCommand(
@@ -832,31 +843,6 @@ namespace TapirGrasshopperPlugin.Components
             if (!TryGetConvertedResponse(
                     CommandName,
                     deserializer: ExecutionResult.Deserialize,
-                    out ExecutionResult response))
-            {
-                return;
-            }
-
-            da.SetData(
-                0,
-                response.Message());
-        }
-
-        protected void SolveByElementsInputResponse(
-            IGH_DataAccess da)
-        {
-            if (!ElementsObj.TryCreate(
-                    da,
-                    0,
-                    out ElementsObj input))
-            {
-                return;
-            }
-
-            if (!TryGetConvertedResponse(
-                    CommandName,
-                    input,
-                    ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {
                 return;

@@ -34,27 +34,24 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         {
             if (!da.TryGetItem(
                     0,
-                    out string filePath))
+                    out string path))
             {
                 return;
             }
 
             if (!da.TryGetItem(
                     1,
-                    out bool alignBySurveyPoint))
+                    out bool align))
             {
                 return;
             }
 
-            var parameters = new ParametersOfImport
-            {
-                ImportPath = filePath,
-                AlignBySurveyPoint = alignBySurveyPoint
-            };
-
             SetArchiCadValues(
                 CommandName,
-                parameters);
+                new ParametersOfImport
+                {
+                    ImportPath = path, AlignBySurveyPoint = align
+                });
         }
 
         protected override System.Drawing.Bitmap Icon =>

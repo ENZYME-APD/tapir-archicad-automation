@@ -45,7 +45,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             if (!IssueIdObj.TryCreate(
                     da,
                     0,
-                    out IssueIdObj issueId))
+                    out IssueIdObj id))
             {
                 return;
             }
@@ -58,14 +58,12 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            var parameters = new ParametersOfDetachElements
-            {
-                IssueId = issueId, Elements = elements.Elements
-            };
-
             SetArchiCadValues(
                 CommandName,
-                parameters);
+                new ParametersOfDetachElements
+                {
+                    IssueId = id, Elements = elements.Elements
+                });
         }
 
         protected override System.Drawing.Bitmap Icon =>

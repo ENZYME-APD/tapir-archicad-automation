@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -30,21 +31,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!ElementsObj.TryCreate(
                     da,
                     0,
-                    out ElementsObj elements))
+                    out ElementsObj input))
             {
                 return;
             }
 
             if (!TryGetConvertedResponse(
                     CommandName,
-                    elements,
-                    out ExecutionResultObj executionResult)) { return; }
-
-            if (!executionResult.Success)
+                    input,
+                    out ExecutionResultObj response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    executionResult.Error.Message);
+                return;
+            }
+
+            if (!response.Success)
+            {
+                this.AddError(response.Error.Message);
             }
         }
 

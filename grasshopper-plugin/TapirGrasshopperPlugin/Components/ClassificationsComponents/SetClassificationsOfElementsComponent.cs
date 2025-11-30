@@ -64,6 +64,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             var classificationItemIds = new List<ClassificationIdObj>();
+
             foreach (var obj in inputItemIds)
             {
                 var itemId = ClassificationIdObj.Create(obj);

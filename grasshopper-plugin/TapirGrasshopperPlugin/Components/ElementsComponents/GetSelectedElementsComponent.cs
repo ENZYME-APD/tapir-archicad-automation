@@ -28,14 +28,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             if (!TryGetConvertedResponse(
                     CommandName,
-                    out ElementsObj elements))
+                    out ElementsObj response))
             {
                 return;
             }
 
             da.SetDataList(
                 0,
-                elements.Elements);
+                response.Elements);
         }
 
         protected override System.Drawing.Bitmap Icon =>
