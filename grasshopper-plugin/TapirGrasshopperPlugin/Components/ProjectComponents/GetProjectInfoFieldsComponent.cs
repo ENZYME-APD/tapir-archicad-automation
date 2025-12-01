@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<ProjectInfoFields>,
                     out ProjectInfoFields response))
             {

@@ -77,34 +77,32 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj inputGroup1))
             {
                 return;
             }
 
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj inputGroup2))
             {
                 return;
             }
 
-            var volumeTolerance = da.GetOptionalItem(
+            var volumeTolerance = da.GetOptional(
                 2,
                 Tolerances.Main);
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     3,
                     out bool performSurfaceCheck))
             {
                 return;
             }
 
-            var surfaceTolerance = da.GetOptionalItem(
+            var surfaceTolerance = da.GetOptional(
                 4,
                 Tolerances.Main);
 
@@ -123,7 +121,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     parameters,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<CollisionsOutput>,
                     out CollisionsOutput response))
             {
@@ -131,9 +129,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var elementIndex1s = new List<int>();
-            var elementId1s = new List<ElementIdItemObj>();
+            var elementId1s = new List<ElementGuidItemObject>();
             var elementIndex2s = new List<int>();
-            var elementId2s = new List<ElementIdItemObj>();
+            var elementId2s = new List<ElementGuidItemObject>();
             var hasBodyCollisions = new List<bool>();
             var hasClearenceCollisions = new List<bool>();
 
@@ -143,12 +141,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     inputGroup1.Elements.FindIndex(e =>
                         e.ElementId.Equals(c.ElementId1)));
                 elementId1s.Add(
-                    new ElementIdItemObj { ElementId = c.ElementId1 });
+                    new ElementGuidItemObject { ElementId = c.ElementId1 });
                 elementIndex2s.Add(
                     inputGroup2.Elements.FindIndex(e =>
                         e.ElementId.Equals(c.ElementId2)));
                 elementId2s.Add(
-                    new ElementIdItemObj { ElementId = c.ElementId2 });
+                    new ElementGuidItemObject { ElementId = c.ElementId2 });
                 hasBodyCollisions.Add(c.HasBodyCollision);
                 hasClearenceCollisions.Add(c.HasClearenceCollision);
             }

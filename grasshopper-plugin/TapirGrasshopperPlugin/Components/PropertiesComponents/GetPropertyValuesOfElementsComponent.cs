@@ -47,16 +47,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!PropertiesObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out PropertiesObj properties))
             {
                 return;
             }
 
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     1,
                     out ElementsObj elements))
             {
@@ -70,14 +68,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                         Elements = elements.Elements,
                         PropertyIds = properties.Properties
                     },
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<PropertyValuesForElements>,
                     out PropertyValuesForElements response))
             {
                 return;
             }
 
-            var elementIds = new DataTree<ElementIdItemObj>();
+            var elementIds = new DataTree<ElementGuidItemObject>();
             var values = new DataTree<string>();
 
             for (var elementIndex = 0;

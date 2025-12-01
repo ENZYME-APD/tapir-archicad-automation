@@ -7,7 +7,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class FilterElementsObj : AcceptsElementFilters
     {
         [JsonProperty("elements")]
-        public List<ElementIdItemObj> Elements;
+        public List<ElementGuidItemObject> Elements;
 
         [JsonProperty(
             "filters",

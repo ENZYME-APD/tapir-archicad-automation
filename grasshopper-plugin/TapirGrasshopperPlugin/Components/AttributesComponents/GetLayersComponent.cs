@@ -48,10 +48,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!AttributeIdsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
-                    out AttributeIdsObj input))
+                    out AttributeGuidItemsObject input))
             {
                 return;
             }
@@ -59,7 +58,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    SendToArchicad,
+                    ToArchicad,
                     JHelp.Deserialize<LayersObj>,
                     out LayersObj response))
             {

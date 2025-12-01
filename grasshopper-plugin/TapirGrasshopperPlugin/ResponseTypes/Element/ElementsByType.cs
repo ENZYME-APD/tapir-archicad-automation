@@ -25,6 +25,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         [JsonProperty(
             "databases",
             NullValueHandling = NullValueHandling.Ignore)]
-        public List<DatabaseIdItemObj> Databases;
+        public List<DatabaseGuidItemObject> Databases;
     }
 }

@@ -11,8 +11,8 @@ namespace TapirGrasshopperPlugin.Utilities
     {
         public static int Port
         {
-            get { return port; }
-            set { port = value; }
+            get => port;
+            set => port = value;
         }
 
         private static int port = 19723;

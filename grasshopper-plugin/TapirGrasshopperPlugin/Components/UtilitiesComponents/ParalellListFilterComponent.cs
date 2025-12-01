@@ -82,7 +82,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 return;
             }
 
-            var filterMode = da.GetOptionalItem(
+            var filterMode = da.GetOptional(
                 3,
                 "equals");
 

@@ -7,7 +7,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Attributes
     public class ContainedLayerObj
     {
         [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
+        public AttributeGuidObject AttributeId;
 
         [JsonProperty("isHidden")]
         public bool IsHidden;
@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Attributes
     public class LayerCombinationDetailsObj
     {
         [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
+        public AttributeGuidObject AttributeId;
 
         [JsonProperty("attributeIndex")]
         public int AttributeIndex;
@@ -52,7 +52,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Attributes
     public class LayerCombinationDataObj
     {
         [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
+        public AttributeGuidObject AttributeId;
 
         [JsonProperty("name")]
         public string Name;

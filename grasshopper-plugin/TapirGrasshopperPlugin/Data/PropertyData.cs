@@ -1,38 +1,40 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class PropertyIdObj : IdObj<PropertyIdObj>
+    public class PropertyGuidObject : GuidObject<PropertyGuidObject>
     {
     }
 
-    public class PropertyIdItemObj : IdItemObj<PropertyIdObj, PropertyIdItemObj>
+    public class PropertyGuidItemObject
+        : GuidItemObject<PropertyGuidObject, PropertyGuidItemObject>
     {
         [JsonProperty("propertyId")]
-        public PropertyIdObj PropertyId;
+        public PropertyGuidObject PropertyId;
 
         [JsonIgnore]
-        public override PropertyIdObj Id
+        public override PropertyGuidObject Id
         {
-            get { return PropertyId; }
-            set { PropertyId = value; }
+            get => PropertyId;
+            set => PropertyId = value;
         }
     }
 
     public class PropertiesObj
-        : IdsObj<PropertyIdObj, PropertyIdItemObj, PropertiesObj>
+        : GuidItemsObject<PropertyGuidObject, PropertyGuidItemObject,
+            PropertiesObj>
     {
         [JsonProperty("properties")]
-        public List<PropertyIdItemObj> Properties;
+        public List<PropertyGuidItemObject> Properties;
 
         [JsonIgnore]
-        public override List<PropertyIdItemObj> Ids
+        public override List<PropertyGuidItemObject> GuidItems
         {
-            get { return Properties; }
-            set { Properties = value; }
+            get => Properties;
+            set => Properties = value;
         }
     }
 
@@ -50,7 +52,7 @@ namespace TapirGrasshopperPlugin.Data
         }
 
         [JsonProperty("propertyId")]
-        public PropertyIdObj PropertyId;
+        public PropertyGuidObject PropertyId;
 
         [JsonProperty("propertyGroupName")]
         public string PropertyGroupName;

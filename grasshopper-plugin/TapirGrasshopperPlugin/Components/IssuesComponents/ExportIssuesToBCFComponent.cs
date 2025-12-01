@@ -42,29 +42,28 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!IssuesObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out IssuesObj issues))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string exportPath))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     2,
                     out bool useExternalId))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     3,
                     out bool alignBySurveyPoint))
             {
@@ -73,14 +72,14 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
             SetValues(
                 CommandName,
-                new ParametersOfExport
+                new
                 {
-                    Issues = issues.Issues,
-                    ExportPath = exportPath,
-                    UseExternalId = useExternalId,
-                    AlignBySurveyPoint = alignBySurveyPoint
+                    issues = issues.Issues,
+                    exportPath,
+                    useExternalId,
+                    alignBySurveyPoint
                 },
-                SendToAddOn);
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

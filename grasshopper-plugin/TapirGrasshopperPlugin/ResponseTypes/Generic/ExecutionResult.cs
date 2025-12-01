@@ -108,7 +108,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
     public class ConflictResponse
     {
         [JsonProperty("elementId")]
-        public ElementIdObj ElementId { get; set; }
+        public ElementGuid ElementId { get; set; }
 
         [JsonProperty("user")]
         public User User { get; set; }

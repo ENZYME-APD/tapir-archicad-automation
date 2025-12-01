@@ -7,7 +7,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Attributes
     public class LayerDataObj
     {
         [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
+        public AttributeGuidObject AttributeId;
 
         [JsonProperty("name")]
         public string Name;

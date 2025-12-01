@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<VersionInfo>,
                     out VersionInfo response))
             {

@@ -614,7 +614,7 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.tree);
         }
 
-        protected CommandResponse SendToArchicad(
+        protected CommandResponse ToArchicad(
             string commandName,
             JObject commandParameters)
         {
@@ -623,7 +623,7 @@ namespace TapirGrasshopperPlugin.Components
                 commandParameters);
         }
 
-        protected CommandResponse SendToAddOn(
+        protected CommandResponse ToAddOn(
             string commandName,
             JObject commandParameters)
         {

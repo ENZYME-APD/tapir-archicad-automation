@@ -3,7 +3,6 @@ using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -46,23 +45,21 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!IssueIdObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out IssueIdObj issueId))
+                    out IssueGuid issueId))
             {
                 return;
             }
 
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     1,
                     out ElementsObj elements))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     2,
                     out string type))
             {
@@ -71,13 +68,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
             SetValues(
                 CommandName,
-                new ParametersOfAttachElements
-                {
-                    IssueId = issueId,
-                    Elements = elements.Elements,
-                    Type = type
-                },
-                SendToAddOn);
+                new { issueId, type, elements = elements.Elements },
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToArchicad,
+                    ToArchicad,
                     JHelp.Deserialize<PublisherSetNamesObj>,
                     out PublisherSetNamesObj response))
             {

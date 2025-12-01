@@ -38,23 +38,21 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!PropertyIdObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out PropertyIdObj propertyId))
+                    out PropertyGuidObject propertyId))
             {
                 return;
             }
 
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     1,
                     out ElementsObj elements))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     2,
                     out List<string> values))
             {
@@ -92,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             SetValues(
                 CommandName,
                 input,
-                SendToAddOn);
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

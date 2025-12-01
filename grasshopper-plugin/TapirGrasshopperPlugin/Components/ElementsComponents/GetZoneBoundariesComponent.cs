@@ -53,43 +53,39 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementIdItemObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out ElementIdItemObj inputs))
+                    out ElementGuid zoneElementId))
             {
                 return;
             }
 
             if (!TryGetConvertedValues(
                     CommandName,
-                    new ZoneBoundaryParameters
-                    {
-                        ZoneElementId = inputs.ElementId
-                    },
-                    SendToAddOn,
+                    new { zoneElementId },
+                    ToAddOn,
                     JHelp.Deserialize<ZoneBoundariesOutput>,
                     out ZoneBoundariesOutput response))
             {
                 return;
             }
 
-            var connectedElements = new List<ElementIdItemObj>();
+            var connectedElements = new List<ElementGuidItemObject>();
             var isExternals = new List<bool>();
-            var neighbouringZones = new List<ElementIdItemObj>();
+            var neighbouringZones = new List<ElementGuidItemObject>();
             var areas = new List<double>();
             var polygons = new List<PolyCurve>();
 
             foreach (var zb in response.ZoneBoundaries)
             {
                 connectedElements.Add(
-                    new ElementIdItemObj()
+                    new ElementGuidItemObject()
                     {
                         ElementId = zb.ConnectedElementId
                     });
                 isExternals.Add(zb.IsExternal);
                 neighbouringZones.Add(
-                    new ElementIdItemObj()
+                    new ElementGuidItemObject()
                     {
                         ElementId = zb.NeighbouringZoneElementId
                     });

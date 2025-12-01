@@ -33,14 +33,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     0,
                     out List<string> jsonElements)) { return; }
 
             if (!TryGetConvertedValues(
                     CommandName,
                     jsonElements,
-                    SendToAddOn,
+                    ToAddOn,
                     ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))
             {

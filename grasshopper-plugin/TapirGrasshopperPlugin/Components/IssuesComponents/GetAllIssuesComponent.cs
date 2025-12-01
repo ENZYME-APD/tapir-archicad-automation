@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<AllIssues>,
                     out AllIssues response))
             {

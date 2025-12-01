@@ -82,11 +82,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 return;
             }
 
-            var initColor = DA.GetOptionalItem(
+            var initColor = DA.GetOptional(
                 1,
                 Color.Black);
 
-            var endColor = DA.GetOptionalItem(
+            var endColor = DA.GetOptional(
                 2,
                 Color.White);
 
@@ -99,11 +99,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 seed = seedValue;
             }
 
-            var flatten = DA.GetOptionalItem(
+            var flatten = DA.GetOptional(
                 4,
                 false);
 
-            var mode = DA.GetOptionalItem(
+            var mode = DA.GetOptional(
                 5,
                 "random");
 

@@ -48,34 +48,32 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ClassificationIdObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out ClassificationIdObj classificationSystemId))
+                    out ClassificationGuid classificationSystemId))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     1,
                     out List<GH_ObjectWrapper> inputItemIds))
             {
                 return;
             }
 
-            var classificationItemIds = new List<ClassificationIdObj>();
+            var classificationItemIds = new List<ClassificationGuid>();
 
             foreach (var obj in inputItemIds)
             {
-                var itemId = ClassificationIdObj.Create(obj);
+                var itemId = ClassificationGuid.CreateFromWrapper(obj);
                 if (itemId != null)
                 {
                     classificationItemIds.Add(itemId);
                 }
             }
 
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     2,
                     out ElementsObj elements))
             {
@@ -120,7 +118,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             SetValues(
                 CommandName,
                 elementClassifications,
-                SendToArchicad);
+                ToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -28,14 +28,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     0,
                     out List<string> names))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     1,
                     out List<double> elevations))
             {
@@ -48,7 +48,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     2,
                     out List<bool> showOnSections))
             {
@@ -79,7 +79,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             SetValues(
                 CommandName,
                 input,
-                SendToAddOn);
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

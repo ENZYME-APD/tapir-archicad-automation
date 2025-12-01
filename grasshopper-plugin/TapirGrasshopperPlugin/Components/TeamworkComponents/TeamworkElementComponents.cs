@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
@@ -39,8 +40,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj input))
             {
@@ -50,7 +50,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    SendToAddOn,
+                    ToAddOn,
                     ExecutionResultResponse.Deserialize,
                     out ExecutionResultResponse response))
             {
@@ -80,8 +80,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj input))
             {
@@ -91,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    SendToAddOn,
+                    ToAddOn,
                     ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {

@@ -58,8 +58,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!AttributesObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out AttributesObj attributes))
             {
@@ -69,7 +68,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     attributes,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<LayerCombinationsObj>,
                     out LayerCombinationsObj response))
             {
@@ -77,7 +76,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var attributeNames = new List<string>();
-            var layerAttributeIds = new DataTree<AttributeIdItemObj>();
+            var layerAttributeIds = new DataTree<AttributeGuidItemObject>();
             var isHiddenLayers = new DataTree<bool>();
             var isLockedLayers = new DataTree<bool>();
             var isWireframeLayers = new DataTree<bool>();
@@ -87,7 +86,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             {
                 var layerCombination = response.LayerCombinations[i];
                 attributeNames.Add(layerCombination.LayerCombination.Name);
-                var layerIds = new List<AttributeIdItemObj>();
+                var layerIds = new List<AttributeGuidItemObject>();
                 var isHiddens = new List<bool>();
                 var isLockeds = new List<bool>();
                 var isWireframes = new List<bool>();
@@ -96,7 +95,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 foreach (var layer in layerCombination.LayerCombination.Layers)
                 {
                     layerIds.Add(
-                        new AttributeIdItemObj()
+                        new AttributeGuidItemObject()
                         {
                             AttributeId = layer.AttributeId
                         });

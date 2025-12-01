@@ -54,14 +54,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 0);
         }
 
-        private DataTree<DatabaseIdItemObj>
+        private DataTree<DatabaseGuidItemObject>
             GetDatabaseIdTreeFromNavigatorItemIdTree(
-                DataTree<NavigatorIdItemObj> navItemIdTree)
+                DataTree<NavigatorGuidItemObject> navItemIdTree)
         {
-            var databaseIdTree = new DataTree<DatabaseIdItemObj>();
+            var databaseIdTree = new DataTree<DatabaseGuidItemObject>();
 
             var branches = new List<GH_Path>();
-            var allItems = new List<NavigatorIdItemObj>();
+            var allItems = new List<NavigatorGuidItemObject>();
 
             for (var i = 0; i < navItemIdTree.BranchCount; i++)
             {
@@ -84,7 +84,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<GetDatabaseIdFromNavigatorItemIdOutput>,
                     out GetDatabaseIdFromNavigatorItemIdOutput response))
             {
@@ -105,14 +105,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out string type))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string name))
             {
@@ -131,19 +131,20 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!TryGetConvertedValues(
                     "GetNavigatorItemTree",
                     navigatorTreeId,
-                    SendToArchicad,
+                    ToArchicad,
                     JHelp.Deserialize<NavigatorTreeObj>,
                     out NavigatorTreeObj response))
             {
                 return;
             }
 
-            var navigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
+            var navigatorItemIdTree = new DataTree<NavigatorGuidItemObject>();
             var navigatorItemPrefixTree = new DataTree<string>();
             var navigatorItemNameTree = new DataTree<string>();
             var navigatorItemPathTree = new DataTree<string>();
             var navigatorItemTypeTree = new DataTree<string>();
-            var sourceNavigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
+            var sourceNavigatorItemIdTree =
+                new DataTree<NavigatorGuidItemObject>();
 
             response.GetItems(
                 navigatorItemIdTree,

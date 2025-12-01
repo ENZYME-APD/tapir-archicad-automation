@@ -37,8 +37,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItems(
-                    1,
+            if (!da.TryGet(
+                    0,
                     out List<string> filters))
             {
                 return;
@@ -61,7 +61,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     elementFilters,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<ElementsObj>,
                     out ElementsObj response))
             {

@@ -6,9 +6,9 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ChangeSelectionParameters
     {
         [JsonProperty("addElementsToSelection")]
-        public List<ElementIdItemObj> AddElementsToSelection;
+        public List<ElementGuidItemObject> AddElementsToSelection;
 
         [JsonProperty("removeElementsFromSelection")]
-        public List<ElementIdItemObj> RemoveElementsFromSelection;
+        public List<ElementGuidItemObject> RemoveElementsFromSelection;
     }
 }

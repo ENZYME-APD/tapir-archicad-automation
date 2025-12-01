@@ -38,7 +38,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     0,
                     out List<GH_ObjectWrapper> ghInputs))
             {
@@ -50,7 +50,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    SendToAddOn,
+                    ToAddOn,
                     ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))
             {

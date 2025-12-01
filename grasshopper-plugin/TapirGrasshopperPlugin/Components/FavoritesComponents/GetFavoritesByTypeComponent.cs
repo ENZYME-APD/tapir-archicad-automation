@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out string input))
             {
@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     new ElementTypeObject(input),
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<FavoritesObj>,
                     out FavoritesObj response))
             {

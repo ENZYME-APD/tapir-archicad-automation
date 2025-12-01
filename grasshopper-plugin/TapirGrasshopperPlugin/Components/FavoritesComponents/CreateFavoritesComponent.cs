@@ -42,15 +42,14 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj elements))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     1,
                     out List<string> favorites))
             {
@@ -66,9 +65,9 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     new FavoritesFromElementsObj(
-                        elements.Ids,
+                        elements.GuidItems,
                         favorites),
-                    SendToAddOn,
+                    ToAddOn,
                     ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))
             {

@@ -2,12 +2,13 @@
 using Grasshopper.Kernel.Data;
 using System.Collections.Generic;
 using Grasshopper.Kernel.Types;
+using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
 namespace TapirGrasshopperPlugin.Helps
 {
     public static class ComponentHelp
     {
-        public static bool TryGetItem<T>(
+        public static bool TryGet<T>(
             this IGH_DataAccess da,
             int index,
             out T result)
@@ -22,7 +23,7 @@ namespace TapirGrasshopperPlugin.Helps
             return success;
         }
 
-        public static bool TryGetItems<T>(
+        public static bool TryGet<T>(
             this IGH_DataAccess da,
             int index,
             out List<T> results)
@@ -37,7 +38,7 @@ namespace TapirGrasshopperPlugin.Helps
             return success;
         }
 
-        public static bool TryGetTree<T>(
+        public static bool TryGet<T>(
             this IGH_DataAccess da,
             int index,
             out GH_Structure<T> structure)
@@ -48,7 +49,7 @@ namespace TapirGrasshopperPlugin.Helps
                 out structure);
         }
 
-        public static T GetOptionalItem<T>(
+        public static T GetOptional<T>(
             this IGH_DataAccess dataAccess,
             int index,
             T defItem)
@@ -90,6 +91,58 @@ namespace TapirGrasshopperPlugin.Helps
             active.AddRuntimeMessage(
                 GH_RuntimeMessageLevel.Warning,
                 message);
+        }
+
+        public static bool TryCreate<T>(
+            this IGH_DataAccess da,
+            int index,
+            out T result)
+            where T : IFromGhWrapper, new()
+        {
+            result = default;
+
+            if (!da.TryGet(
+                    index,
+                    out GH_ObjectWrapper wrapper))
+            {
+                return false;
+            }
+
+            var instance = new T();
+
+            if (!instance.TryCreateFromWrapper(wrapper))
+            {
+                return false;
+            }
+
+            result = instance;
+            return true;
+        }
+
+        public static bool TryCreateFromList<T>(
+            this IGH_DataAccess da,
+            int index,
+            out T result)
+            where T : IFromGhWrappers, new()
+        {
+            result = default;
+
+            if (!da.TryGet(
+                    index,
+                    out List<GH_ObjectWrapper> wrappers))
+            {
+                return false;
+            }
+
+            var instance = new T();
+
+            if (!instance.TryCreateFromWrappers(wrappers))
+            {
+                return false;
+            }
+
+            result = instance;
+            return true;
         }
     }
 }

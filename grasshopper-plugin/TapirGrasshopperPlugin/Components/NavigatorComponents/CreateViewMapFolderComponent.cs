@@ -46,17 +46,17 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out string name))
             {
                 return;
             }
 
-            var parentNavigatorItemId = NavigatorIdItemObj.Create(
+            var parentNavigatorItemId = NavigatorGuidItemObject.Create(
                 da,
                 1);
-            var previousNavigatorItemId = NavigatorIdItemObj.Create(
+            var previousNavigatorItemId = NavigatorGuidItemObject.Create(
                 da,
                 2);
 
@@ -75,14 +75,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    SendToArchicad,
+                    ToArchicad,
                     JHelp.Deserialize<CreateViewMapFolderOutput>,
                     out CreateViewMapFolderOutput response))
             {
                 return;
             }
 
-            var createdId = new NavigatorIdItemObj
+            var createdId = new NavigatorGuidItemObject
             {
                 Id = response.CreatedFolderNavigatorItemId
             };

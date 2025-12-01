@@ -38,14 +38,14 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out string propertyGroupName))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string propertyName))
             {
@@ -56,7 +56,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<AllProperties>,
                     out AllProperties response))
             {

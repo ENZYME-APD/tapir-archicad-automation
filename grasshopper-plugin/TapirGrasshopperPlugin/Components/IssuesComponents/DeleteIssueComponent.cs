@@ -2,7 +2,6 @@ using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -33,28 +32,24 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!IssueIdObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out IssueIdObj id))
+                    out IssueGuid issueId))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
-                    out bool accept))
+                    out bool acceptAllElements))
             {
                 return;
             }
 
             SetValues(
                 CommandName,
-                new ParametersOfDelete
-                {
-                    IssueId = id, AcceptAllElements = accept
-                },
-                SendToAddOn);
+                new { issueId, acceptAllElements },
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

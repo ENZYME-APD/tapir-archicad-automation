@@ -3,22 +3,16 @@ using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {
-    public class ZoneBoundaryParameters
-    {
-        [JsonProperty("zoneElementId")]
-        public ElementIdObj ZoneElementId;
-    }
-
     public class ZoneBoundary
     {
         [JsonProperty("connectedElementId")]
-        public ElementIdObj ConnectedElementId;
+        public ElementGuid ConnectedElementId;
 
         [JsonProperty("isExternal")]
         public bool IsExternal;
 
         [JsonProperty("neighbouringZoneElementId")]
-        public ElementIdObj NeighbouringZoneElementId;
+        public ElementGuid NeighbouringZoneElementId;
 
         [JsonProperty("area")]
         public double Area;

@@ -58,15 +58,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj inputElements))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string subType))
             {
@@ -76,19 +75,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     inputElements,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<SubelementsObj>,
                     out SubelementsObj response))
             {
                 return;
             }
 
-            var hierarchicalElements = new List<ElementIdItemObj>();
-            var subelementsOfHierarchicals = new DataTree<ElementIdItemObj>();
+            var hierarchicalElements = new List<ElementGuidItemObject>();
+            var subelementsOfHierarchicals =
+                new DataTree<ElementGuidItemObject>();
 
             for (var i = 0; i < response.Subelements.Count; i++)
             {
-                List<ElementIdItemObj> subelements = null;
+                List<ElementGuidItemObject> subelements = null;
 
                 if (subType == "CurtainWallSegment")
                 {
@@ -209,7 +209,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 hierarchicalElements.Add(
-                    new ElementIdItemObj()
+                    new ElementGuidItemObject()
                     {
                         ElementId = inputElements.Elements[i].ElementId
                     });

@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<LocationInfo>,
                     out LocationInfo response))
             {

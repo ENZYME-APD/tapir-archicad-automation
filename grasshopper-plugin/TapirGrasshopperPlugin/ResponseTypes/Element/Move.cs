@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ElementWithMoveParameters
     {
         [JsonProperty("elementId")]
-        public ElementIdObj Element;
+        public ElementGuid Element;
 
         [JsonProperty("moveVector")]
         public Vector3D MoveVector;

@@ -120,8 +120,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     1,
                     out ElementsObj input) || input.Elements.Count == 0)
             {
@@ -129,7 +128,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     2,
                     out List<GH_Colour> highlightedColors))
             {
@@ -137,21 +136,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     3,
                     out GH_Colour nonHighlightedColor))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     4,
                     out bool wireframe3D))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     5,
                     out double transparency))
             {
@@ -187,7 +186,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetValues(
                 CommandName,
                 highlightElements,
-                SendToArchicad);
+                ToArchicad);
         }
 
         private void ClearHighlight()
@@ -195,7 +194,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetValues(
                 CommandName,
                 new HighlightElementsObj(),
-                SendToArchicad);
+                ToArchicad);
         }
 
         public void OnParameterSourcesChanged(

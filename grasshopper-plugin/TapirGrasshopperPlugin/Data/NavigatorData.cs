@@ -1,92 +1,72 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class NavItemId
+    public class NavigatorGuid : GuidObject<NavigatorGuid>
     {
-        [JsonProperty("guid")]
-        public string Guid { get; set; }
     }
 
-    public class NavItemIdArrayItem
+    public class NavigatorGuidItemObject
+        : GuidItemObject<NavigatorGuid, NavigatorGuidItemObject>
     {
         [JsonProperty("navigatorItemId")]
-        public NavItemId NavItemId { get; set; }
-    }
-
-    public class NavItemIds : List<NavItemIdArrayItem>
-    {
-    }
-
-    public class NavItemInputStructure
-    {
-        [JsonProperty("navigatorItemIds")]
-        public NavItemIds NavItemIds { get; set; }
-    }
-
-
-    public class NavigatorIdObj : IdObj<NavigatorIdObj>
-    {
-    }
-
-    public class NavigatorIdItemObj
-        : IdItemObj<NavigatorIdObj, NavigatorIdItemObj>
-    {
-        [JsonProperty("navigatorItemId")]
-        public NavigatorIdObj NavigatorId;
+        public NavigatorGuid NavigatorId;
 
         [JsonIgnore]
-        public override NavigatorIdObj Id
+        public override NavigatorGuid Id
         {
-            get { return NavigatorId; }
-            set { NavigatorId = value; }
+            get => NavigatorId;
+            set => NavigatorId = value;
         }
     }
 
-    public class NavigatorItemIdsObj
-        : IdsObj<NavigatorIdObj, NavigatorIdItemObj, NavigatorItemIdsObj>
+    public class NavigatorItemsObject
+        : GuidItemsObject<NavigatorGuid, NavigatorGuidItemObject,
+            NavigatorItemsObject>
     {
         [JsonProperty("navigatorItemIds")]
-        public List<NavigatorIdItemObj> NavigatorItemIds;
+        public List<NavigatorGuidItemObject> NavigatorItemIds;
 
         [JsonIgnore]
-        public override List<NavigatorIdItemObj> Ids
+        public override List<NavigatorGuidItemObject> GuidItems
         {
-            get { return NavigatorItemIds; }
-            set { NavigatorItemIds = value; }
+            get => NavigatorItemIds;
+            set => NavigatorItemIds = value;
         }
     }
 
-    public class DatabaseIdObj : IdObj<DatabaseIdObj>
+    public class DatabaseGuidObject : GuidObject<DatabaseGuidObject>
     {
     }
 
-    public class DatabaseIdItemObj : IdItemObj<DatabaseIdObj, DatabaseIdItemObj>
+    public class DatabaseGuidItemObject
+        : GuidItemObject<DatabaseGuidObject, DatabaseGuidItemObject>
     {
         [JsonProperty("databaseId")]
-        public DatabaseIdObj DatabaseId;
+        public DatabaseGuidObject DatabaseId;
 
         [JsonIgnore]
-        public override DatabaseIdObj Id
+        public override DatabaseGuidObject Id
         {
-            get { return DatabaseId; }
-            set { DatabaseId = value; }
+            get => DatabaseId;
+            set => DatabaseId = value;
         }
     }
 
     public class DatabasesObj
-        : IdsObj<DatabaseIdObj, DatabaseIdItemObj, DatabasesObj>
+        : GuidItemsObject<DatabaseGuidObject, DatabaseGuidItemObject,
+            DatabasesObj>
     {
         [JsonProperty("databases")]
-        public List<DatabaseIdItemObj> Databases;
+        public List<DatabaseGuidItemObject> Databases;
 
         [JsonIgnore]
-        public override List<DatabaseIdItemObj> Ids
+        public override List<DatabaseGuidItemObject> GuidItems
         {
-            get { return Databases; }
-            set { Databases = value; }
+            get => Databases;
+            set => Databases = value;
         }
     }
 }

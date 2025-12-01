@@ -26,7 +26,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
     public class NavigatorItemObj
     {
         [JsonProperty("navigatorItemId")]
-        public NavigatorIdObj NavigatorItemId;
+        public NavigatorGuid NavigatorItemId;
 
         [JsonProperty("prefix")]
         public string Prefix;
@@ -38,7 +38,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
         public string Type;
 
         [JsonProperty("sourceNavigatorItemId")]
-        public NavigatorIdObj SourceNavigatorItemId;
+        public NavigatorGuid SourceNavigatorItemId;
 
         [JsonProperty("children")]
         public List<NavigatorItemHolderObj> Children;
@@ -62,12 +62,12 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
         public RootNavigatorItemObj NavigatorTree;
 
         public void GetItems(
-            DataTree<NavigatorIdItemObj> navigatorItemIdTree,
+            DataTree<NavigatorGuidItemObject> navigatorItemIdTree,
             DataTree<string> navigatorItemPrefixTree,
             DataTree<string> navigatorItemNameTree,
             DataTree<string> navigatorItemPathTree,
             DataTree<string> navigatorItemTypeTree,
-            DataTree<NavigatorIdItemObj> sourceNavigatorItemIdTree)
+            DataTree<NavigatorGuidItemObject> sourceNavigatorItemIdTree)
         {
             AddChildren(
                 NavigatorTree.RootItem,
@@ -85,12 +85,12 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
             NavigatorItemObj navItem,
             GH_Path path,
             string pathStr,
-            DataTree<NavigatorIdItemObj> navigatorItemIdTree,
+            DataTree<NavigatorGuidItemObject> navigatorItemIdTree,
             DataTree<string> navigatorItemPrefixTree,
             DataTree<string> navigatorItemNameTree,
             DataTree<string> navigatorItemPathTree,
             DataTree<string> navigatorItemTypeTree,
-            DataTree<NavigatorIdItemObj> sourceNavigatorItemIdTree)
+            DataTree<NavigatorGuidItemObject> sourceNavigatorItemIdTree)
         {
             if (navItem.Children == null || navItem.Children.Count == 0)
             {
@@ -104,7 +104,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
                 var childNavItem = navItem.Children[childIndex].NavigatorItem;
 
                 navigatorItemIdTree.Add(
-                    new NavigatorIdItemObj
+                    new NavigatorGuidItemObject
                     {
                         NavigatorId = childNavItem.NavigatorItemId
                     },
@@ -137,7 +137,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
                     path);
 
                 sourceNavigatorItemIdTree.Add(
-                    new NavigatorIdItemObj
+                    new NavigatorGuidItemObject
                     {
                         NavigatorId = childNavItem.SourceNavigatorItemId
                     },
@@ -162,12 +162,12 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
     public class GetDatabaseIdFromNavigatorItemIdInput
     {
         [JsonProperty("navigatorItemIds")]
-        public List<NavigatorIdItemObj> NavigatorItemIds;
+        public List<NavigatorGuidItemObject> NavigatorItemIds;
     }
 
     public class GetDatabaseIdFromNavigatorItemIdOutput
     {
         [JsonProperty("databases")]
-        public List<DatabaseIdItemObj> Databases;
+        public List<DatabaseGuidItemObject> Databases;
     }
 }

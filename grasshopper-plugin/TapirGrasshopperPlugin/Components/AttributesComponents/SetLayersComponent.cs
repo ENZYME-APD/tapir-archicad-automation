@@ -49,15 +49,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!AttributesObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out AttributesObj attributes))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     1,
                     out List<string> names))
             {
@@ -70,7 +69,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     2,
                     out List<bool> isHiddenLayers))
             {
@@ -78,14 +77,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     3,
                     out List<bool> isLockedLayers))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     4,
                     out List<bool> isWireframeLayers))
             {
@@ -93,7 +92,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     5,
                     out List<int> intersectionGroupsOfLayers))
             {
@@ -151,7 +150,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             SetValues(
                 CommandName,
                 layerDataArray,
-                SendToAddOn);
+                ToAddOn);
         }
 
         public override Guid ComponentGuid =>

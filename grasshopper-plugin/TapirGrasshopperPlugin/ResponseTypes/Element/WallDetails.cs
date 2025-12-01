@@ -24,7 +24,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class TypedElementWithDetailsObj<T>
     {
         [JsonProperty("elementId")]
-        public ElementIdObj ElementId;
+        public ElementGuid ElementId;
 
         [JsonProperty("details")]
         public TypedDetails<T> Details;

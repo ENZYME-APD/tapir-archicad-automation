@@ -34,8 +34,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj elements))
             {
@@ -45,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     elements,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<BoundingBoxes3DObj>,
                     out BoundingBoxes3DObj response))
             {

@@ -65,21 +65,21 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             IGH_DataAccess da)
         {
             // Get inputs
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     0,
                     out List<Point3d> startPoints))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     0,
                     out List<Point3d> endPoints))
             {
                 return;
             }
 
-            var northRotation = da.GetOptionalItem(
+            var northRotation = da.GetOptional(
                 2,
                 0.0);
 

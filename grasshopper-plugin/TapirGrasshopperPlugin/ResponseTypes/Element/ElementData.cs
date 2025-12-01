@@ -1,253 +1,24 @@
 ﻿using System.Collections.Generic;
-using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {
-    public abstract class IdObj<T>
-        where T : IdObj<T>, new()
-    {
-        [JsonProperty("guid")]
-        public string Guid;
-
-        public static bool TryCreate(
-            IGH_DataAccess da,
-            int index,
-            out T result)
-        {
-            if (da.TryGetItem(
-                    index,
-                    out GH_ObjectWrapper id))
-            {
-                result = Create(id);
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-
-        public static T Create(
-            GH_ObjectWrapper obj)
-        {
-            if (obj.Value is T)
-            {
-                return obj.Value as T;
-            }
-            else if (obj.Value is GH_String)
-            {
-                var stringValue = obj.Value as GH_String;
-                return FromString(stringValue.ToString());
-            }
-            else if (obj.Value.GetType().GetProperty("Guid") != null)
-            {
-                return FromString(
-                    obj.Value.GetType().GetProperty("Guid").ToString());
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static T FromString(
-            string guidString)
-        {
-            if (System.Guid.TryParse(
-                    guidString,
-                    out _))
-            {
-                return new T { Guid = guidString };
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public override string ToString()
-        {
-            return Guid;
-        }
-
-        public override bool Equals(
-            object other)
-        {
-            var o = other as IdObj<T>;
-            return o != null && Guid == o.Guid;
-        }
-
-        public override int GetHashCode()
-        {
-            return Guid.GetHashCode();
-        }
-
-        public bool IsNullGuid()
-        {
-            return Guid == null || new System.Guid(Guid) == System.Guid.Empty;
-        }
-    }
-
-    public abstract class IdItemObj<I, T>
-        where I : IdObj<I>, new()
-        where T : IdItemObj<I, T>, new()
-    {
-        [JsonIgnore]
-        public abstract I Id
-        {
-            get;
-            set;
-        }
-
-        public static bool TryCreate(
-            IGH_DataAccess da,
-            int index,
-            out T result)
-        {
-            if (da.TryGetItem(
-                    index,
-                    out GH_ObjectWrapper idItem))
-            {
-                result = Create(idItem);
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-
-        public static T Create(
-            IGH_DataAccess da,
-            int index)
-        {
-            if (da.TryGetItem(
-                    index,
-                    out GH_ObjectWrapper idItem))
-            {
-                return Create(idItem);
-            }
-
-            return null;
-        }
-
-        public static T Create(
-            GH_ObjectWrapper obj)
-        {
-            if (obj.Value is T)
-            {
-                return obj.Value as T;
-            }
-            else
-            {
-                var id = IdObj<I>.Create(obj);
-                if (id != null)
-                {
-                    return new T { Id = id };
-                }
-
-                return null;
-            }
-        }
-
-        public override string ToString()
-        {
-            return Id?.ToString();
-        }
-
-        public override bool Equals(
-            object other)
-        {
-            var o = other as IdItemObj<I, T>;
-            return o != null && Id.Guid == o.Id.Guid;
-        }
-
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
-    }
-
-    public abstract class IdsObj<I, J, T>
-        where I : IdObj<I>, new()
-        where J : IdItemObj<I, J>, new()
-        where T : IdsObj<I, J, T>, new()
-    {
-        [JsonIgnore]
-        public abstract List<J> Ids
-        {
-            get;
-            set;
-        }
-
-        public static bool TryCreate(
-            IGH_DataAccess da,
-            int index,
-            out T result)
-        {
-            if (da.TryGetItems(
-                    index,
-                    out List<GH_ObjectWrapper> wrappers))
-            {
-                result = Create(wrappers);
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-
-        public static T Create(
-            IGH_DataAccess da,
-            int index)
-        {
-            if (da.TryGetItems(
-                    index,
-                    out List<GH_ObjectWrapper> ids))
-            {
-                return null;
-            }
-
-            return Create(ids);
-        }
-
-        public static T Create(
-            List<GH_ObjectWrapper> objects)
-        {
-            var ids = new T { Ids = new List<J>() };
-
-            foreach (var obj in objects)
-            {
-                var id = IdItemObj<I, J>.Create(obj);
-                if (id != null)
-                {
-                    ids.Ids.Add(id);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-            return ids;
-        }
-    }
-
-    public class ElementIdObj : IdObj<ElementIdObj>
+    public class ElementGuid : GuidObject<ElementGuid>
     {
     }
 
-    public class ElementIdItemObj : IdItemObj<ElementIdObj, ElementIdItemObj>
+    public class ElementGuidItemObject
+        : GuidItemObject<ElementGuid, ElementGuidItemObject>
     {
         [JsonProperty("elementId")]
-        public ElementIdObj ElementId;
+        public ElementGuid ElementId;
 
         [JsonIgnore]
-        public override ElementIdObj Id
+        public override ElementGuid Id
         {
             get => ElementId;
             set => ElementId = value;
@@ -255,13 +26,13 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     }
 
     public class ElementsObj
-        : IdsObj<ElementIdObj, ElementIdItemObj, ElementsObj>
+        : GuidItemsObject<ElementGuid, ElementGuidItemObject, ElementsObj>
     {
         [JsonProperty("elements")]
-        public List<ElementIdItemObj> Elements;
+        public List<ElementGuidItemObject> Elements;
 
         [JsonIgnore]
-        public override List<ElementIdItemObj> Ids
+        public override List<ElementGuidItemObject> GuidItems
         {
             get => Elements;
             set => Elements = value;
@@ -271,10 +42,10 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ElementPropertyValueObj
     {
         [JsonProperty("elementId")]
-        public ElementIdObj ElementId;
+        public ElementGuid ElementId;
 
         [JsonProperty("propertyId")]
-        public PropertyIdObj PropertyId;
+        public PropertyGuidObject PropertyId;
 
         [JsonProperty("propertyValue")]
         public PropertyValueObj PropertyValue;
@@ -283,10 +54,10 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ElementsAndPropertyIdsObj
     {
         [JsonProperty("elements")]
-        public List<ElementIdItemObj> Elements;
+        public List<ElementGuidItemObject> Elements;
 
         [JsonProperty("properties")]
-        public List<PropertyIdItemObj> PropertyIds;
+        public List<PropertyGuidItemObject> PropertyIds;
     }
 
     public class ElementPropertyValuesObj
@@ -299,12 +70,12 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     {
         public HighlightElementsObj()
         {
-            Elements = new List<ElementIdItemObj>();
+            Elements = new List<ElementGuidItemObject>();
             HighlightedColors = new List<List<int>>();
         }
 
         [JsonProperty("elements")]
-        public List<ElementIdItemObj> Elements;
+        public List<ElementGuidItemObject> Elements;
 
         [JsonProperty("highlightedColors")]
         public List<List<int>> HighlightedColors;
@@ -348,85 +119,85 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class SubelementsItemObj
     {
         [JsonProperty("cWallSegments")]
-        public List<ElementIdItemObj> CurtainWallSegments;
+        public List<ElementGuidItemObject> CurtainWallSegments;
 
         [JsonProperty("cWallFrames")]
-        public List<ElementIdItemObj> CurtainWallFrames;
+        public List<ElementGuidItemObject> CurtainWallFrames;
 
         [JsonProperty("cWallPanels")]
-        public List<ElementIdItemObj> CurtainWallPanels;
+        public List<ElementGuidItemObject> CurtainWallPanels;
 
         [JsonProperty("cWallJunctions")]
-        public List<ElementIdItemObj> CurtainWallJunctions;
+        public List<ElementGuidItemObject> CurtainWallJunctions;
 
         [JsonProperty("cWallAccessories")]
-        public List<ElementIdItemObj> CurtainWallAccessories;
+        public List<ElementGuidItemObject> CurtainWallAccessories;
 
         [JsonProperty("stairRisers")]
-        public List<ElementIdItemObj> StairRisers;
+        public List<ElementGuidItemObject> StairRisers;
 
         [JsonProperty("stairTreads")]
-        public List<ElementIdItemObj> StairTreads;
+        public List<ElementGuidItemObject> StairTreads;
 
         [JsonProperty("stairStructures")]
-        public List<ElementIdItemObj> StairStructures;
+        public List<ElementGuidItemObject> StairStructures;
 
         [JsonProperty("railingNodes")]
-        public List<ElementIdItemObj> RailingNodes;
+        public List<ElementGuidItemObject> RailingNodes;
 
         [JsonProperty("railingSegments")]
-        public List<ElementIdItemObj> RailingSegments;
+        public List<ElementGuidItemObject> RailingSegments;
 
         [JsonProperty("railingPosts")]
-        public List<ElementIdItemObj> RailingPosts;
+        public List<ElementGuidItemObject> RailingPosts;
 
         [JsonProperty("railingRailEnds")]
-        public List<ElementIdItemObj> RailingRailEnds;
+        public List<ElementGuidItemObject> RailingRailEnds;
 
         [JsonProperty("railingRailConnections")]
-        public List<ElementIdItemObj> RailingRailConnections;
+        public List<ElementGuidItemObject> RailingRailConnections;
 
         [JsonProperty("railingHandrailEnds")]
-        public List<ElementIdItemObj> RailingHandrailEnds;
+        public List<ElementGuidItemObject> RailingHandrailEnds;
 
         [JsonProperty("railingHandrailConnections")]
-        public List<ElementIdItemObj> RailingHandrailConnections;
+        public List<ElementGuidItemObject> RailingHandrailConnections;
 
         [JsonProperty("railingToprailEnds")]
-        public List<ElementIdItemObj> RailingToprailEnds;
+        public List<ElementGuidItemObject> RailingToprailEnds;
 
         [JsonProperty("railingToprailConnections")]
-        public List<ElementIdItemObj> RailingToprailConnections;
+        public List<ElementGuidItemObject> RailingToprailConnections;
 
         [JsonProperty("railingRails")]
-        public List<ElementIdItemObj> RailingRails;
+        public List<ElementGuidItemObject> RailingRails;
 
         [JsonProperty("railingToprails")]
-        public List<ElementIdItemObj> RailingToprails;
+        public List<ElementGuidItemObject> RailingToprails;
 
         [JsonProperty("railingHandrails")]
-        public List<ElementIdItemObj> RailingHandrails;
+        public List<ElementGuidItemObject> RailingHandrails;
 
         [JsonProperty("railingPatterns")]
-        public List<ElementIdItemObj> RailingPatterns;
+        public List<ElementGuidItemObject> RailingPatterns;
 
         [JsonProperty("railingInnerPosts")]
-        public List<ElementIdItemObj> RailingInnerPosts;
+        public List<ElementGuidItemObject> RailingInnerPosts;
 
         [JsonProperty("railingPanels")]
-        public List<ElementIdItemObj> RailingPanels;
+        public List<ElementGuidItemObject> RailingPanels;
 
         [JsonProperty("railingBalusterSets")]
-        public List<ElementIdItemObj> RailingBalusterSets;
+        public List<ElementGuidItemObject> RailingBalusterSets;
 
         [JsonProperty("railingBalusters")]
-        public List<ElementIdItemObj> RailingBalusters;
+        public List<ElementGuidItemObject> RailingBalusters;
 
         [JsonProperty("beamSegments")]
-        public List<ElementIdItemObj> BeamSegments;
+        public List<ElementGuidItemObject> BeamSegments;
 
         [JsonProperty("columnSegments")]
-        public List<ElementIdItemObj> ColumnSegments;
+        public List<ElementGuidItemObject> ColumnSegments;
     }
 
     public class SubelementsObj

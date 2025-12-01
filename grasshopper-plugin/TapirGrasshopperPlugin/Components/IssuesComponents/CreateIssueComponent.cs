@@ -2,7 +2,6 @@ using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -33,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string name))
             {
@@ -42,10 +41,10 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
             if (!TryGetConvertedValues(
                     CommandName,
-                    new ParametersOfNewIssue { Name = name },
-                    SendToAddOn,
-                    JHelp.Deserialize<IssueIdItemObj>,
-                    out IssueIdItemObj response))
+                    new { name },
+                    ToAddOn,
+                    JHelp.Deserialize<IssueGuidItemObject>,
+                    out IssueGuidItemObject response))
             {
                 return;
             }

@@ -1,59 +1,61 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class AttributeIdObj : IdObj<AttributeIdObj>
+    public class AttributeGuidObject : GuidObject<AttributeGuidObject>
     {
     }
 
-    public class AttributeIdItemObj
-        : IdItemObj<AttributeIdObj, AttributeIdItemObj>
+    public class AttributeGuidItemObject
+        : GuidItemObject<AttributeGuidObject, AttributeGuidItemObject>
     {
         [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
+        public AttributeGuidObject AttributeId;
 
         [JsonIgnore]
-        public override AttributeIdObj Id
+        public override AttributeGuidObject Id
         {
-            get { return AttributeId; }
-            set { AttributeId = value; }
+            get => AttributeId;
+            set => AttributeId = value;
         }
     }
 
     public class AttributesObj
-        : IdsObj<AttributeIdObj, AttributeIdItemObj, AttributesObj>
+        : GuidItemsObject<AttributeGuidObject, AttributeGuidItemObject,
+            AttributesObj>
     {
         [JsonProperty("attributes")]
-        public List<AttributeIdItemObj> Attributes;
+        public List<AttributeGuidItemObject> Attributes;
 
         [JsonIgnore]
-        public override List<AttributeIdItemObj> Ids
+        public override List<AttributeGuidItemObject> GuidItems
         {
-            get { return Attributes; }
-            set { Attributes = value; }
+            get => Attributes;
+            set => Attributes = value;
         }
     }
 
-    public class AttributeIdsObj
-        : IdsObj<AttributeIdObj, AttributeIdItemObj, AttributeIdsObj>
+    public class AttributeGuidItemsObject
+        : GuidItemsObject<AttributeGuidObject, AttributeGuidItemObject,
+            AttributeGuidItemsObject>
     {
         [JsonProperty("attributeIds")]
-        public List<AttributeIdItemObj> AttributeIds;
+        public List<AttributeGuidItemObject> AttributeIds;
 
         [JsonIgnore]
-        public override List<AttributeIdItemObj> Ids
+        public override List<AttributeGuidItemObject> GuidItems
         {
-            get { return AttributeIds; }
-            set { AttributeIds = value; }
+            get => AttributeIds;
+            set => AttributeIds = value;
         }
     }
 
     public class AttributeDetail
     {
         [JsonProperty("attributeId")]
-        public AttributeIdObj AttributeId;
+        public AttributeGuidObject AttributeId;
 
         [JsonProperty("index")]
         public uint Index;

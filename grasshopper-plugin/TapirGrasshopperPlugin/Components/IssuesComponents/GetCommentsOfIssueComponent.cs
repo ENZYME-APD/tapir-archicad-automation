@@ -30,10 +30,9 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!IssueIdItemObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out IssueIdItemObj input))
+                    out IssueGuid input))
             {
                 return;
             }
@@ -41,7 +40,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     input,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<IssueComments>,
                     out IssueComments response))
             {

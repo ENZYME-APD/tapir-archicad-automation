@@ -24,7 +24,8 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
                     ElementId =
                         new NewElementId
                         {
-                            Guid = elementsObj.Ids[i].ElementId.Guid
+                            Guid = elementsObj.GuidItems[i].ElementId
+                                .Guid
                         },
                     GdlParameters = new List<GdlParameterDetails>()
                     {
@@ -137,7 +138,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ElementWithGDLParameters
     {
         [JsonProperty("elementId")]
-        public ElementIdItemObj ElementId { get; set; }
+        public ElementGuidItemObject ElementGuid { get; set; }
 
         [JsonProperty("gdlParameters")]
         public GdlParameterList GdlDetailList { get; set; }

@@ -33,29 +33,28 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj inputs))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     1,
                     out List<Point3D> startCoords))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     2,
                     out List<Point3D> endCoords))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     3,
                     out List<double> heights))
             {
@@ -125,7 +124,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     obj,
-                    SendToAddOn,
+                    ToAddOn,
                     ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))
             {

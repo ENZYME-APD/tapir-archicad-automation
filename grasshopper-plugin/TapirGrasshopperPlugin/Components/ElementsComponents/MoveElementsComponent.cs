@@ -37,15 +37,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj elements))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     1,
                     out List<Vector3d> moveVectors))
             {
@@ -60,22 +59,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     2,
                     out bool copy))
             {
                 return;
             }
 
-            var input = new MoveElementsParameters()
+            var input = new MoveElementsParameters
             {
                 ElementsWithMoveParameters =
                     new List<ElementWithMoveParameters>()
             };
+
             for (var i = 0; i < elements.Elements.Count; i++)
             {
                 var element = elements.Elements[i];
                 var moveVector = moveVectors[moveVectors.Count == 1 ? 0 : i];
+
                 input.ElementsWithMoveParameters.Add(
                     new ElementWithMoveParameters()
                     {
@@ -93,7 +94,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetValues(
                 CommandName,
                 input,
-                SendToArchicad);
+                ToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -2,7 +2,6 @@
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
-using TapirGrasshopperPlugin.ResponseTypes.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -21,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void AddInputs()
         {
             InText(
-                nameof(ProjectFilePathObject.ProjectFilePath),
+                "FilePath",
                 "Path of the ArchiCad file that gets opened.");
         }
 
@@ -35,7 +34,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out string path))
             {
@@ -44,8 +43,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             if (!TryGetConvertedValues(
                     CommandName,
-                    new ProjectFilePathObject { ProjectFilePath = path },
-                    SendToAddOn,
+                    new { projectFilePath = path },
+                    ToAddOn,
                     ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {

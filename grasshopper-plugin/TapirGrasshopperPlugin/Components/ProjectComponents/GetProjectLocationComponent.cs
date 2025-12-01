@@ -40,7 +40,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<ProjectLocation>,
                     out ProjectLocation response))
             {

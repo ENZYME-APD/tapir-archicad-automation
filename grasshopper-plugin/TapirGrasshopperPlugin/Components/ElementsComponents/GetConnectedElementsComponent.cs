@@ -51,15 +51,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj input))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string elementType))
             {
@@ -73,14 +72,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         Elements = input.Elements,
                         ConnectedElementType = elementType
                     },
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<ConnectedElementsObj>,
                     out ConnectedElementsObj response))
             {
                 return;
             }
 
-            var tree = new DataTree<ElementIdItemObj>();
+            var tree = new DataTree<ElementGuidItemObject>();
 
             for (var i = 0; i < response.ConnectedElements.Count; i++)
             {

@@ -116,11 +116,11 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 return;
             }
 
-            var caseSensitive = DA.GetOptionalItem(
+            var caseSensitive = DA.GetOptional(
                 2,
                 false);
 
-            var wholeWords = DA.GetOptionalItem(
+            var wholeWords = DA.GetOptional(
                 3,
                 true);
 

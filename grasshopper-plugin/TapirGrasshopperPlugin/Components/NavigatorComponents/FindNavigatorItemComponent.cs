@@ -77,49 +77,46 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 0);
         }
 
-        private List<DatabaseIdItemObj> GetDatabaseIdsFromNavigatorItemIds(
-            List<NavigatorIdItemObj> navItemIds)
+        private List<DatabaseGuidItemObject> GetDatabaseIdsFromNavigatorItemIds(
+            List<NavigatorGuidItemObject> navItemIds)
         {
             var input =
-                new GetDatabaseIdFromNavigatorItemIdInput()
+                new GetDatabaseIdFromNavigatorItemIdInput
                 {
                     NavigatorItemIds = navItemIds
                 };
-            var inputObj = JObject.FromObject(input);
-            var response = SendToAddOn(
-                "GetDatabaseIdFromNavigatorItemId",
-                inputObj);
-            if (!response.Succeeded)
+
+            if (!TryGetConvertedValues(
+                    "GetDatabaseIdFromNavigatorItemId",
+                    input,
+                    ToAddOn,
+                    JHelp.Deserialize<GetDatabaseIdFromNavigatorItemIdOutput>,
+                    out GetDatabaseIdFromNavigatorItemIdOutput response))
             {
-                AddRuntimeMessage(
-                    GH_RuntimeMessageLevel.Error,
-                    response.GetErrorMessage());
-                return new List<DatabaseIdItemObj>();
+                return new List<DatabaseGuidItemObject>();
             }
 
-            var output = response.Result
-                .ToObject<GetDatabaseIdFromNavigatorItemIdOutput>();
-            return output.Databases;
+            return response.Databases;
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out string type))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string name))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     2,
                     out string pathRegex))
             {
@@ -138,19 +135,20 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!TryGetConvertedValues(
                     "GetNavigatorItemTree",
                     navigatorTreeId,
-                    SendToArchicad,
+                    ToArchicad,
                     JHelp.Deserialize<NavigatorTreeObj>,
                     out NavigatorTreeObj response))
             {
                 return;
             }
 
-            var navigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
+            var navigatorItemIdTree = new DataTree<NavigatorGuidItemObject>();
             var navigatorItemPrefixTree = new DataTree<string>();
             var navigatorItemNameTree = new DataTree<string>();
             var navigatorItemPathTree = new DataTree<string>();
             var navigatorItemTypeTree = new DataTree<string>();
-            var sourceNavigatorItemIdTree = new DataTree<NavigatorIdItemObj>();
+            var sourceNavigatorItemIdTree =
+                new DataTree<NavigatorGuidItemObject>();
 
             response.GetItems(
                 navigatorItemIdTree,
@@ -160,12 +158,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 navigatorItemTypeTree,
                 sourceNavigatorItemIdTree);
 
-            var navigatorItemIdList = new List<NavigatorIdItemObj>();
+            var navigatorItemIdList = new List<NavigatorGuidItemObject>();
             var navigatorItemPrefixList = new List<string>();
             var navigatorItemNameList = new List<string>();
             var navigatorItemPathList = new List<string>();
             var navigatorItemTypeList = new List<string>();
-            var sourceNavigatorItemIdList = new List<NavigatorIdItemObj>();
+            var sourceNavigatorItemIdList = new List<NavigatorGuidItemObject>();
 
             var re = new Regex(pathRegex);
             for (var i = 0; i < navigatorItemPathTree.BranchCount; i++)

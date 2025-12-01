@@ -41,14 +41,14 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void SolveInstance(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     0,
                     out List<Point3d> points))
             {
                 return;
             }
 
-            var gridSize = da.GetOptionalItem(
+            var gridSize = da.GetOptional(
                 1,
                 1.0);
 

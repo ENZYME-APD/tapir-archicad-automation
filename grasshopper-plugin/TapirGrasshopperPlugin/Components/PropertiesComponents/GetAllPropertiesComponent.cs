@@ -35,7 +35,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<AllProperties>,
                     out AllProperties response))
             {

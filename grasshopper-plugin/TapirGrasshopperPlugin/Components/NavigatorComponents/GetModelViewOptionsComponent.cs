@@ -29,7 +29,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<ModelViewOptionsResponse>,
                     out ModelViewOptionsResponse response))
             {

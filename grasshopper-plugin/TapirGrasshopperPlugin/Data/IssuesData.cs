@@ -1,36 +1,38 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
 namespace TapirGrasshopperPlugin.Data
 {
-    public class IssueIdObj : IdObj<IssueIdObj>
+    public class IssueGuid : GuidObject<IssueGuid>
     {
     }
 
-    public class IssueIdItemObj : IdItemObj<IssueIdObj, IssueIdItemObj>
+    public class IssueGuidItemObject
+        : GuidItemObject<IssueGuid, IssueGuidItemObject>
     {
         [JsonProperty("issueId")]
-        public IssueIdObj IssueId;
+        public IssueGuid IssueId;
 
         [JsonIgnore]
-        public override IssueIdObj Id
+        public override IssueGuid Id
         {
-            get { return IssueId; }
-            set { IssueId = value; }
+            get => IssueId;
+            set => IssueId = value;
         }
     }
 
-    public class IssuesObj : IdsObj<IssueIdObj, IssueIdItemObj, IssuesObj>
+    public class IssuesObj
+        : GuidItemsObject<IssueGuid, IssueGuidItemObject, IssuesObj>
     {
         [JsonProperty("issues")]
-        public List<IssueIdItemObj> Issues;
+        public List<IssueGuidItemObject> Issues;
 
         [JsonIgnore]
-        public override List<IssueIdItemObj> Ids
+        public override List<IssueGuidItemObject> GuidItems
         {
-            get { return Issues; }
-            set { Issues = value; }
+            get => Issues;
+            set => Issues = value;
         }
     }
 
@@ -38,11 +40,11 @@ namespace TapirGrasshopperPlugin.Data
     {
         public override string ToString()
         {
-            return IssueId.ToString() + "; " + Name;
+            return IssueId + "; " + Name;
         }
 
         [JsonProperty("issueId")]
-        public IssueIdObj IssueId;
+        public IssueGuid IssueId;
 
         [JsonProperty("name")]
         public string Name;

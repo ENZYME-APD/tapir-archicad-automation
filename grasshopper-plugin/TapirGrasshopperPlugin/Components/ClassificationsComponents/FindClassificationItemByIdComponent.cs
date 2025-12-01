@@ -36,7 +36,6 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 "Found ClassificationItem Guid.");
         }
 
-
         public override void AddedToDocument(
             GH_Document document)
         {
@@ -77,15 +76,14 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ClassificationIdObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out ClassificationIdObj systemId))
+                    out ClassificationGuid id))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string cId))
             {
@@ -94,11 +92,8 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             if (!TryGetConvertedValues(
                     "GetAllClassificationsInSystem",
-                    new ClassificationSystemObj()
-                    {
-                        ClassificationSystemId = systemId
-                    },
-                    SendToAddOn,
+                    new ClassificationSystemObj { ClassificationSystemId = id },
+                    ToArchicad,
                     JHelp.Deserialize<AllClassificationItemsInSystem>,
                     out AllClassificationItemsInSystem response))
             {

@@ -192,7 +192,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         public string NumberStr;
 
         [JsonProperty("categoryAttributeId")]
-        public AttributeIdObj CategoryAttributeId;
+        public AttributeGuidObject CategoryAttributeId;
 
         [JsonProperty("stampPosition")]
         public Point2D StampPosition;

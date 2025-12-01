@@ -32,23 +32,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj elementsToAdd))
             {
                 return;
             }
 
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     1,
                     out ElementsObj elementsToRemove))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     2,
                     out bool clearSelection))
             {
@@ -61,7 +59,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var uniqueElementsToRemove = new HashSet<ElementIdItemObj>();
+            var uniqueElementsToRemove = new HashSet<ElementGuidItemObject>();
 
             if (elementsToRemove != null)
             {
@@ -70,7 +68,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (clearSelection)
             {
-                var responseOfGetSelection = SendToAddOn(
+                var responseOfGetSelection = ToAddOn(
                     "GetSelectedElements",
                     null);
                 if (responseOfGetSelection.Succeeded)
@@ -91,7 +89,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 AddElementsToSelection =
                     elementsToAdd != null
                         ? elementsToAdd.Elements
-                        : new List<ElementIdItemObj>(),
+                        : new List<ElementGuidItemObject>(),
                 RemoveElementsFromSelection =
                     uniqueElementsToRemove.ToList()
             };
@@ -100,7 +98,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetValues(
                 CommandName,
                 parameters,
-                SendToAddOn);
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

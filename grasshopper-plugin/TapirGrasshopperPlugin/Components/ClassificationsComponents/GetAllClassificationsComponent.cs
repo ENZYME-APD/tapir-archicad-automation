@@ -1,5 +1,4 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -10,6 +9,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
     public class GetAllClassificationsComponent : ArchicadAccessorComponent
     {
         public override string CommandName => "GetAllClassificationSystems";
+        public string LoopCommandName => "GetAllClassificationsInSystem";
 
         public GetAllClassificationsComponent()
             : base(
@@ -56,16 +56,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 List<ClassificationItemObj> tree,
                 string pathToRoot)
         {
-            List<Tuple<ClassificationItemDetailsObj, string>> list =
-                new List<Tuple<ClassificationItemDetailsObj, string>>();
+            var list = new List<Tuple<ClassificationItemDetailsObj, string>>();
 
             foreach (ClassificationItemObj item in tree)
             {
                 string path = pathToRoot + '/' + item.ClassificationItem.Id;
+
                 list.Add(
                     new Tuple<ClassificationItemDetailsObj, string>(
                         item.ClassificationItem,
                         path));
+
                 if (item.ClassificationItem.Children != null)
                 {
                     list.AddRange(
@@ -88,30 +89,24 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToArchicad,
+                    ToArchicad,
                     JHelp.Deserialize<AllClassificationSystems>,
                     out AllClassificationSystems response))
             {
                 return;
             }
 
-            foreach (ClassificationSystemDetailsObj system in response
-                         .ClassificationSystems)
+            foreach (var system in response.ClassificationSystems)
             {
-                ClassificationSystemObj classificationSystem =
-                    new ClassificationSystemObj()
-                    {
-                        ClassificationSystemId =
-                            system.ClassificationSystemId
-                    };
-
-                JObject classificationSystemObj =
-                    JObject.FromObject(classificationSystem);
+                var classificationSystem = new ClassificationSystemObj
+                {
+                    ClassificationSystemId = system.ClassificationSystemId
+                };
 
                 if (!TryGetConvertedValues(
-                        CommandName,
-                        classificationSystemObj,
-                        SendToArchicad,
+                        LoopCommandName,
+                        classificationSystem,
+                        ToArchicad,
                         JHelp.Deserialize<AllClassificationItemsInSystem>,
                         out AllClassificationItemsInSystem
                             classificationItemsInSystem))
@@ -129,37 +124,32 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     itemsInSystem);
             }
 
-            List<string> systemIds = new List<string>();
-            List<string> systemNamesAndVersions = new List<string>();
-            List<string> itemIds = new List<string>();
-            List<string> itemDisplayIds = new List<string>();
-            List<string> itemNames = new List<string>();
-            List<string> itemFullDisplayIds = new List<string>();
-            List<string> itemPaths = new List<string>();
+            var systemIds = new List<string>();
+            var systemNamesAndVersions = new List<string>();
+            var itemIds = new List<string>();
+            var itemDisplayIds = new List<string>();
+            var itemNames = new List<string>();
+            var itemFullDisplayIds = new List<string>();
+            var itemPaths = new List<string>();
 
-            foreach (KeyValuePair<ClassificationSystemDetailsObj,
-                             List<Tuple<ClassificationItemDetailsObj, string>>>
-                         itemsInSystem in itemsPerSystems)
+            foreach (var itemsInSystem in itemsPerSystems)
             {
                 ClassificationSystemDetailsObj system = itemsInSystem.Key;
 
-                foreach (Tuple<ClassificationItemDetailsObj, string>
-                             itemDetailAndPath in itemsInSystem.Value)
+                foreach (var tuple in itemsInSystem.Value)
                 {
-                    ClassificationItemDetailsObj itemDetail =
-                        itemDetailAndPath.Item1;
-                    string itemPath = itemDetailAndPath.Item2;
+                    var detail = tuple.Item1;
 
                     systemIds.Add(system.ClassificationSystemId.Guid);
                     systemNamesAndVersions.Add(system.ToString());
-                    itemIds.Add(itemDetail.ClassificationItemId.Guid);
-                    itemDisplayIds.Add(itemDetail.Id);
+                    itemIds.Add(detail.ClassificationItemId.Guid);
+                    itemDisplayIds.Add(detail.Id);
                     itemFullDisplayIds.Add(
                         StringHelp.Join(
                             system.ToString(),
-                            itemDetail.Id));
-                    itemNames.Add(itemDetail.Name);
-                    itemPaths.Add(itemPath);
+                            detail.Id));
+                    itemNames.Add(detail.Name);
+                    itemPaths.Add(tuple.Item2);
                 }
             }
 

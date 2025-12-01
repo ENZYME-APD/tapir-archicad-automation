@@ -6,7 +6,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class GetConnectedElementsParameters
     {
         [JsonProperty("elements")]
-        public List<ElementIdItemObj> Elements;
+        public List<ElementGuidItemObject> Elements;
 
         [JsonProperty("connectedElementType")]
         public string ConnectedElementType;

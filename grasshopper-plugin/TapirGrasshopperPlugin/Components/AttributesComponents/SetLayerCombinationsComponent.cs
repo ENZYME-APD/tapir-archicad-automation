@@ -56,15 +56,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!AttributesObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out AttributesObj input))
             {
                 return;
             }
 
-            if (!da.TryGetItems(
+            if (!da.TryGet(
                     1,
                     out List<string> names))
             {
@@ -77,35 +76,35 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!da.TryGetTree(
+            if (!da.TryGet(
                     2,
                     out GH_Structure<IGH_Goo> layerAttributeGuidsInput))
             {
                 return;
             }
 
-            if (!da.TryGetTree(
+            if (!da.TryGet(
                     3,
                     out GH_Structure<GH_Boolean> isHiddenLayers))
             {
                 return;
             }
 
-            if (!da.TryGetTree(
+            if (!da.TryGet(
                     4,
                     out GH_Structure<GH_Boolean> isLockedLayers))
             {
                 return;
             }
 
-            if (!da.TryGetTree(
+            if (!da.TryGet(
                     5,
                     out GH_Structure<GH_Boolean> isWireframeLayers))
             {
                 return;
             }
 
-            if (!da.TryGetTree(
+            if (!da.TryGet(
                     6,
                     out GH_Structure<GH_Integer> intersectionGroupsOfLayers))
             {
@@ -178,10 +177,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
                 for (var i = 0; i < layerCount; i++)
                 {
-                    var containedLayer = new ContainedLayerObj()
+                    var containedLayer = new ContainedLayerObj
                     {
                         AttributeId =
-                            AttributeIdObj.FromString(
+                            AttributeGuidObject.CreateFromString(
                                 (layerGuidsGooList.Count == 1
                                     ? layerGuidsGooList[0]
                                     : layerGuidsGooList[i]).ToString()),
@@ -215,7 +214,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             SetValues(
                 CommandName,
                 layerCombinationDataArray,
-                SendToAddOn);
+                ToAddOn);
         }
 
         public override Guid ComponentGuid =>

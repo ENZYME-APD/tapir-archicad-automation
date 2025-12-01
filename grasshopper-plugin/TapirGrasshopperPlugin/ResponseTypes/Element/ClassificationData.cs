@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {
-    public class ClassificationIdObj : IdObj<ClassificationIdObj>
+    public class ClassificationGuid : GuidObject<ClassificationGuid>
     {
     }
 
@@ -15,16 +16,16 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         }
 
         [JsonProperty("classificationSystemId")]
-        public ClassificationIdObj ClassificationSystemId;
+        public ClassificationGuid ClassificationSystemId;
     }
 
     public class ClassificationObj
     {
         [JsonProperty("classificationSystemId")]
-        public ClassificationIdObj ClassificationSystemId;
+        public ClassificationGuid ClassificationSystemId;
 
         [JsonProperty("classificationItemId")]
-        public ClassificationIdObj ClassificationItemId;
+        public ClassificationGuid ClassificationItemId;
 
         public override string ToString()
         {
@@ -35,7 +36,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ElementClassificationObj
     {
         [JsonProperty("elementId")]
-        public ElementIdObj ElementId;
+        public ElementGuid ElementId;
 
         [JsonProperty(
             "classificationId",
@@ -52,7 +53,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ClassificationSystemDetailsObj
     {
         [JsonProperty("classificationSystemId")]
-        public ClassificationIdObj ClassificationSystemId;
+        public ClassificationGuid ClassificationSystemId;
 
         [JsonProperty("name")]
         public string Name;
@@ -78,7 +79,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ClassificationItemDetailsObj
     {
         [JsonProperty("classificationItemId")]
-        public ClassificationIdObj ClassificationItemId;
+        public ClassificationGuid ClassificationItemId;
 
         [JsonProperty("id")]
         public string Id;

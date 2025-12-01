@@ -17,17 +17,17 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
         [JsonProperty(
             "parentNavigatorItemId",
             NullValueHandling = NullValueHandling.Ignore)]
-        public NavigatorIdObj ParentNavigatorItemId;
+        public NavigatorGuid ParentNavigatorItemId;
 
         [JsonProperty(
             "previousNavigatorItemId",
             NullValueHandling = NullValueHandling.Ignore)]
-        public NavigatorIdObj PreviousNavigatorItemId;
+        public NavigatorGuid PreviousNavigatorItemId;
     }
 
     public class CreateViewMapFolderOutput
     {
         [JsonProperty("createdFolderNavigatorItemId")]
-        public NavigatorIdObj CreatedFolderNavigatorItemId;
+        public NavigatorGuid CreatedFolderNavigatorItemId;
     }
 }

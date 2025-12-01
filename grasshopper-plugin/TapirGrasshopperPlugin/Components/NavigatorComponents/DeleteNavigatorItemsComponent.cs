@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -26,10 +27,9 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!NavigatorItemIdsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
-                    out NavigatorItemIdsObj input))
+                    out NavigatorItemsObject input))
             {
                 return;
             }
@@ -37,7 +37,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             SetValues(
                 CommandName,
                 input,
-                SendToArchicad);
+                ToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>

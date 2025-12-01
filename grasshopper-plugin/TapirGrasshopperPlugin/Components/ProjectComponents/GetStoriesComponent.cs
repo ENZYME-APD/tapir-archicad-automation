@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<StoriesData>,
                     out StoriesData response))
             {

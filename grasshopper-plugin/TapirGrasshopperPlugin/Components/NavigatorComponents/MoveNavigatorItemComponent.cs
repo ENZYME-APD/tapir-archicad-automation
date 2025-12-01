@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -33,48 +33,44 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             InGeneric(
                 "PreviousNavigatorItemId",
                 "Moves the given navigator item after this navigator item. " +
-                "If it's not given then moves it at the first place under the new parent.");
+                "By default it moves it at the first place under the new parent.");
 
-            Params.Input[1].Optional = true;
             Params.Input[2].Optional = true;
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!NavigatorIdItemObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out NavigatorIdItemObj navigatorItemId))
+                    out NavigatorGuid navigatorItemIdToMove))
             {
                 return;
             }
 
-            if (!NavigatorIdItemObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     1,
-                    out NavigatorIdItemObj parentNavigatorItemId))
+                    out NavigatorGuid parentNavigatorItemId))
             {
                 return;
             }
 
-            var previousNavigatorItemId = NavigatorIdItemObj.Create(
-                da,
-                2);
-
-            var input = new MoveNavigatorItemInput()
+            if (!da.TryCreate(
+                    2,
+                    out NavigatorGuid previousNavigatorItemId))
             {
-                NavigatorItemIdToMove = navigatorItemId.Id,
-                ParentNavigatorItemId = parentNavigatorItemId.Id,
-                PreviousNavigatorItemId = previousNavigatorItemId == null
-                    ? null
-                    : previousNavigatorItemId.Id
-            };
+                previousNavigatorItemId = null;
+            }
 
             SetValues(
                 CommandName,
-                input,
-                SendToArchicad);
+                new
+                {
+                    navigatorItemIdToMove,
+                    parentNavigatorItemId,
+                    previousNavigatorItemId
+                },
+                ToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out string aType))
             {
@@ -54,7 +54,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     new AttributesByTypeObj { AttributeType = aType },
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<AttributeDetailsObj>,
                     out AttributeDetailsObj response))
             {

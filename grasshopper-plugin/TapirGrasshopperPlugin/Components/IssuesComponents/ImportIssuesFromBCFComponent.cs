@@ -32,27 +32,24 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
-                    out string path))
+                    out string importPath))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
-                    out bool align))
+                    out bool alignBySurveyPoint))
             {
                 return;
             }
 
             SetValues(
                 CommandName,
-                new ParametersOfImport
-                {
-                    ImportPath = path, AlignBySurveyPoint = align
-                },
-                SendToAddOn);
+                new { importPath, alignBySurveyPoint },
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -61,7 +61,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     0,
                     out int portNumber))
             {
@@ -84,7 +84,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
             ConnectionSettings.Port = portNumber;
 
-            var response = SendToArchicad(
+            var response = ToArchicad(
                 CommandName,
                 null);
 

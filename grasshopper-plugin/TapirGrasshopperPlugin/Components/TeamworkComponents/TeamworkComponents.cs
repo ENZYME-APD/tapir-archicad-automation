@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     ExecutionResult.Deserialize,
                     out ExecutionResult response))
             {

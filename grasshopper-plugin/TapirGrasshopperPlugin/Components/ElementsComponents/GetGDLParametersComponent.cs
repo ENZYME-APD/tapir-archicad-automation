@@ -46,22 +46,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!ElementsObj.TryCreate(
-                    da,
+            if (!da.TryCreateFromList(
                     0,
                     out ElementsObj inputs))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string parameterName)) { return; }
 
             if (!TryGetConvertedValues(
                     CommandName,
                     inputs,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<GDLParametersResponse>,
                     out GDLParametersResponse response))
             {

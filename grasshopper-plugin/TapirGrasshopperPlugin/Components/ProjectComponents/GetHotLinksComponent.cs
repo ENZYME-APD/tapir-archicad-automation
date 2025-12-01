@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     null,
-                    SendToAddOn,
+                    ToAddOn,
                     JHelp.Deserialize<HotlinksResponse>,
                     out HotlinksResponse response))
             {

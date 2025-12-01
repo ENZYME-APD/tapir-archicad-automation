@@ -2,7 +2,6 @@
 using System;
 using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -21,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void AddInputs()
         {
             InGeneric(
-                "NavigatorItemIds",
+                "NavigatorItemId",
                 "Identifier of navigator items to rename.");
 
             InText(
@@ -36,39 +35,31 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!NavigatorIdItemObj.TryCreate(
-                    da,
+            if (!da.TryCreate(
                     0,
-                    out NavigatorIdItemObj navigatorItemId))
+                    out NavigatorGuid navigatorItemId))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     1,
                     out string newName))
             {
                 return;
             }
 
-            if (!da.TryGetItem(
+            if (!da.TryGet(
                     2,
                     out string newId))
             {
                 return;
             }
 
-            var input = new RenameNavigatorItemInput
-            {
-                NavigatorItemId = navigatorItemId.Id,
-                NewName = string.IsNullOrEmpty(newName) ? null : newName,
-                NewId = string.IsNullOrEmpty(newId) ? null : newId
-            };
-
             SetValues(
                 CommandName,
-                input,
-                SendToArchicad);
+                new { navigatorItemId, newName, newId },
+                ToArchicad);
         }
 
         protected override System.Drawing.Bitmap Icon =>
