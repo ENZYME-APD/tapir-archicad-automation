@@ -52,14 +52,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<string> parameterNames))
             {
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     2,
                     out List<object> values))
             {

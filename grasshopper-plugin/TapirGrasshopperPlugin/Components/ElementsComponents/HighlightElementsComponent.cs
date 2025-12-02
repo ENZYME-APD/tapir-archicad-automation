@@ -1,11 +1,14 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
+using Rhino.Commands;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -83,11 +86,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Enable highlight.",
                 true);
 
-            InGenerics(
+            InGenericTree(
                 "ElementGuids",
                 "Elements to highlight.");
 
-            InColors(
+            InColorTree(
                 "HighligtedColors",
                 "Colors for the elements.",
                 Color.Blue);
@@ -120,18 +123,27 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryCreateFromList(
+            if (!da.TryGetTree(
                     1,
-                    out ElementsObj input) || input.Elements.Count == 0)
+                    out GH_Structure<IGH_Goo> elementTree) || !elementTree
+                    .FlattenData()
+                    .Select(x => x.ToWrapper())
+                    .ToList()
+                    .TryBuildObject(out ElementsObj input))
             {
-                this.AddWarning("Input ElementGuids failed to collect data.");
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetTree(
                     2,
-                    out List<GH_Colour> highlightedColors))
+                    out GH_Structure<GH_Colour> colorTree))
             {
+                return;
+            }
+
+            if (!colorTree.EqualsTo(elementTree))
+            {
+                this.AddError("Unequal tree structures!");
                 return;
             }
 
@@ -157,9 +169,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            highlightedColors.MultiplyTo(input.Elements.Count);
-
-
             if (transparency < 0.0)
             {
                 transparency = 0.0;
@@ -171,11 +180,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             // There is an error in the Archicad API implementation: the transparency
             // always comes from the non-highlighted element color.
-            var highlightElements = new HighlightElementsObj()
+            var highlightElements = new HighlightElementsObj
             {
                 Elements = input.Elements,
                 HighlightedColors = Utilities.Convert.ToRgb(
-                    highlightedColors,
+                    colorTree.FlattenData(),
                     255),
                 NonHighlightedColor = Utilities.Convert.ToRgb(
                     nonHighlightedColor,
@@ -186,7 +195,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetValues(
                 CommandName,
                 highlightElements,
-                ToArchicad);
+                ToAddOn);
         }
 
         private void ClearHighlight()
@@ -194,7 +203,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetValues(
                 CommandName,
                 new HighlightElementsObj(),
-                ToArchicad);
+                ToAddOn);
         }
 
         public void OnParameterSourcesChanged(

@@ -49,7 +49,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<string> favorites))
             {

@@ -22,7 +22,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
             IGH_DataAccess da,
             int index)
         {
-            if (da.TryGet(
+            if (da.TryGetList(
                     index,
                     out List<GH_ObjectWrapper> wrappers))
             {

@@ -55,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<GH_ObjectWrapper> inputItemIds))
             {

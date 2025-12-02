@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     0,
                     out List<string> ids))
             {
@@ -41,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             }
 
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<string> values))
             {

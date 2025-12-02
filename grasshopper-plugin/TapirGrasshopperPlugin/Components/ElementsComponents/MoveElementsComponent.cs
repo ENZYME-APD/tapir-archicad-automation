@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<Vector3d> moveVectors))
             {

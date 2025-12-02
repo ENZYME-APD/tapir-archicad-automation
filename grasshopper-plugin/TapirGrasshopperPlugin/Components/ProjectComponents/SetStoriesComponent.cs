@@ -28,14 +28,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     0,
                     out List<string> names))
             {
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<double> elevations))
             {
@@ -48,7 +48,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     2,
                     out List<bool> showOnSections))
             {

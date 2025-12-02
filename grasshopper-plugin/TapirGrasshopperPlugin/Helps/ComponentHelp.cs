@@ -8,6 +8,36 @@ namespace TapirGrasshopperPlugin.Helps
 {
     public static class ComponentHelp
     {
+        public static GH_ObjectWrapper ToWrapper(
+            this IGH_Goo goo)
+        {
+            return new GH_ObjectWrapper(goo);
+        }
+
+        public static bool EqualsTo<T1, T2>(
+            this GH_Structure<T1> tree,
+            GH_Structure<T2> other)
+            where T1 : IGH_Goo
+            where T2 : IGH_Goo
+
+        {
+            if (tree.Branches.Count != other.Branches.Count ||
+                tree.PathCount != other.PathCount)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < tree.Branches.Count; i++)
+            {
+                if (tree[i].Count != other[i].Count)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool TryGet<T>(
             this IGH_DataAccess da,
             int index,
@@ -23,7 +53,7 @@ namespace TapirGrasshopperPlugin.Helps
             return success;
         }
 
-        public static bool TryGet<T>(
+        public static bool TryGetList<T>(
             this IGH_DataAccess da,
             int index,
             out List<T> results)
@@ -38,7 +68,7 @@ namespace TapirGrasshopperPlugin.Helps
             return success;
         }
 
-        public static bool TryGet<T>(
+        public static bool TryGetTree<T>(
             this IGH_DataAccess da,
             int index,
             out GH_Structure<T> structure)
@@ -84,15 +114,6 @@ namespace TapirGrasshopperPlugin.Helps
                 message);
         }
 
-        public static void AddWarning(
-            this GH_ActiveObject active,
-            string message)
-        {
-            active.AddRuntimeMessage(
-                GH_RuntimeMessageLevel.Warning,
-                message);
-        }
-
         public static bool TryCreate<T>(
             this IGH_DataAccess da,
             int index,
@@ -103,10 +124,7 @@ namespace TapirGrasshopperPlugin.Helps
                     index,
                     out GH_ObjectWrapper wrapper))
             {
-                return da.Try(
-                    index,
-                    wrapper,
-                    out result);
+                return wrapper.TryBuildObject(out result);
             }
 
             result = default;
@@ -119,24 +137,19 @@ namespace TapirGrasshopperPlugin.Helps
             out T result)
             where T : IFromGhWrapper, new()
         {
-            if (da.TryGet(
+            if (da.TryGetList(
                     index,
                     out List<GH_ObjectWrapper> wrappers))
             {
-                return da.Try(
-                    index,
-                    wrappers,
-                    out result);
+                return wrappers.TryBuildObject(out result);
             }
 
             result = default;
             return false;
         }
 
-        public static bool Try<T, T2>(
-            this IGH_DataAccess da,
-            int index,
-            T2 wrapper,
+        public static bool TryBuildObject<T, T2>(
+            this T2 wrapper,
             out T result)
             where T : IFromGhWrapper, new()
         {

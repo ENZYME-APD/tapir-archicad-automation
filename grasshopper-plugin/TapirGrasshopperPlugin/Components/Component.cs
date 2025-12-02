@@ -559,6 +559,18 @@ namespace TapirGrasshopperPlugin.Components
                 defaultValue);
         }
 
+        public void InColorTree(
+            string name,
+            string description,
+            Color defaultValue)
+        {
+            inManager.AddColourParameter(
+                name,
+                name,
+                description.WithTypeName("colorTree"),
+                GH_ParamAccess.tree);
+        }
+
         public void OutColorTree(
             string name,
             string description = "")

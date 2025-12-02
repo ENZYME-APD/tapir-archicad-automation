@@ -37,7 +37,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     0,
                     out List<string> filters))
             {

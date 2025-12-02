@@ -55,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<string> names))
             {
@@ -68,7 +68,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     2,
                     out List<bool> isHiddenLayers))
             {
@@ -76,14 +76,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     3,
                     out List<bool> isLockedLayers))
             {
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     4,
                     out List<bool> isWireframeLayers))
             {
@@ -91,7 +91,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     5,
                     out List<int> intersectionGroupsOfLayers))
             {

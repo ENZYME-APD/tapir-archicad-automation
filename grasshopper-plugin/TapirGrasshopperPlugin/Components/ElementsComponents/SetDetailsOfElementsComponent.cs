@@ -40,21 +40,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     1,
                     out List<Point3D> startCoords))
             {
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     2,
                     out List<Point3D> endCoords))
             {
                 return;
             }
 
-            if (!da.TryGet(
+            if (!da.TryGetList(
                     3,
                     out List<double> heights))
             {
