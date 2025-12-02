@@ -99,45 +99,52 @@ namespace TapirGrasshopperPlugin.Helps
             out T result)
             where T : IFromGhWrapper, new()
         {
-            result = default;
-
-            if (!da.TryGet(
+            if (da.TryGet(
                     index,
                     out GH_ObjectWrapper wrapper))
             {
-                return false;
+                return da.Try(
+                    index,
+                    wrapper,
+                    out result);
             }
 
-            var instance = new T();
-
-            if (!instance.TryCreateFromWrapper(wrapper))
-            {
-                return false;
-            }
-
-            result = instance;
-            return true;
+            result = default;
+            return false;
         }
 
         public static bool TryCreateFromList<T>(
             this IGH_DataAccess da,
             int index,
             out T result)
-            where T : IFromGhWrappers, new()
+            where T : IFromGhWrapper, new()
         {
-            result = default;
-
-            if (!da.TryGet(
+            if (da.TryGet(
                     index,
                     out List<GH_ObjectWrapper> wrappers))
             {
-                return false;
+                return da.Try(
+                    index,
+                    wrappers,
+                    out result);
             }
 
+            result = default;
+            return false;
+        }
+
+        public static bool Try<T, T2>(
+            this IGH_DataAccess da,
+            int index,
+            T2 wrapper,
+            out T result)
+            where T : IFromGhWrapper, new()
+        {
             var instance = new T();
 
-            if (!instance.TryCreateFromWrappers(wrappers))
+            if (!instance.TryCreateFromWrapper(wrapper))
             {
+                result = default;
                 return false;
             }
 

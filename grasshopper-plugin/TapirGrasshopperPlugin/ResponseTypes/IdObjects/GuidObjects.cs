@@ -9,13 +9,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
     public interface IFromGhWrapper
     {
         bool TryCreateFromWrapper(
-            GH_ObjectWrapper wrapper);
-    }
-
-    public interface IFromGhWrappers
-    {
-        bool TryCreateFromWrappers(
-            List<GH_ObjectWrapper> wrappers);
+            object wrapper);
     }
 
     public abstract class GuidObject<T> : IFromGhWrapper
@@ -113,16 +107,16 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
         }
 
         public bool TryCreateFromWrapper(
-            GH_ObjectWrapper wrapper)
+            object wrapper)
         {
-            T created = CreateFromWrapper(wrapper);
+            T temporary = CreateFromWrapper((GH_ObjectWrapper)wrapper);
 
-            if (created == null)
+            if (temporary == null)
             {
                 return false;
             }
 
-            Guid = created.Guid;
+            Guid = temporary.Guid;
             return true;
         }
     }
@@ -172,16 +166,16 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
         }
 
         public bool TryCreateFromWrapper(
-            GH_ObjectWrapper wrapper)
+            object wrapper)
         {
-            T temporaryCreated = CreateFromWrapper(wrapper);
+            T temporary = CreateFromWrapper((GH_ObjectWrapper)wrapper);
 
-            if (temporaryCreated == null)
+            if (temporary == null)
             {
                 return false;
             }
 
-            Id = temporaryCreated.Id;
+            Id = temporary.Id;
 
             return true;
         }
@@ -204,7 +198,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
         }
     }
 
-    public abstract class GuidItemsObject<I, J, T> : IFromGhWrappers
+    public abstract class GuidItemsObject<I, J, T> : IFromGhWrapper
         where I : GuidObject<I>, new()
         where J : GuidItemObject<I, J>, new()
         where T : GuidItemsObject<I, J, T>, new()
@@ -252,17 +246,17 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
             return gObject;
         }
 
-        public bool TryCreateFromWrappers(
-            List<GH_ObjectWrapper> wrappers)
+        public bool TryCreateFromWrapper(
+            object wrappers)
         {
-            T temporaryCreated = ConvertFrom(wrappers);
+            T temporary = ConvertFrom((List<GH_ObjectWrapper>)wrappers);
 
-            if (temporaryCreated == null)
+            if (temporary == null)
             {
                 return false;
             }
 
-            GuidItems = temporaryCreated.GuidItems;
+            GuidItems = temporary.GuidItems;
 
             return true;
         }
