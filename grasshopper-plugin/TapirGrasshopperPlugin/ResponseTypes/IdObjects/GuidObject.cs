@@ -24,12 +24,12 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
 
             else if (wrapper.Value is GH_String ghString)
             {
-                return CreateFromString(ghString.Value);
+                return FromString(ghString.Value);
             }
 
             else if (wrapper.Value is string rawString)
             {
-                return CreateFromString(rawString);
+                return FromString(rawString);
             }
 
             else
@@ -49,23 +49,33 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
 
                 if (!string.IsNullOrEmpty(propValue))
                 {
-                    return CreateFromString(propValue);
+                    return FromString(propValue);
                 }
 
                 return null;
             }
         }
 
-        public static T CreateFromString(
-            string guidString)
+        public static T FromString(
+            string guidString,
+            bool throwOnFailure = false)
         {
-            if (string.IsNullOrWhiteSpace(guidString)) return null;
+            if (string.IsNullOrWhiteSpace(guidString))
+            {
+                return null;
+            }
 
             if (System.Guid.TryParse(
                     guidString,
                     out _))
             {
                 return new T { Guid = guidString };
+            }
+
+            if (throwOnFailure)
+            {
+                throw new System.Exception(
+                    "Invalid GUID string: " + guidString);
             }
 
             return null;

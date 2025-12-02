@@ -62,8 +62,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                     CommandName,
                     new { issueId, type },
                     ToAddOn,
-                    JHelp.Deserialize<ElementsObj>,
-                    out ElementsObj response))
+                    JHelp.Deserialize<ElementsObject>,
+                    out ElementsObject response))
             {
                 return;
             }

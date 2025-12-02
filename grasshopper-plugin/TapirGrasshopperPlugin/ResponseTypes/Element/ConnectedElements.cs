@@ -15,6 +15,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ConnectedElementsObj
     {
         [JsonProperty("connectedElements")]
-        public List<ElementsObj> ConnectedElements;
+        public List<ElementsObject> ConnectedElements;
     }
 }

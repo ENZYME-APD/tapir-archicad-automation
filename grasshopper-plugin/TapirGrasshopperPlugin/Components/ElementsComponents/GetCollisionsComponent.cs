@@ -79,14 +79,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj inputGroup1))
+                    out ElementsObject inputGroup1))
             {
                 return;
             }
 
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj inputGroup2))
+                    out ElementsObject inputGroup2))
             {
                 return;
             }

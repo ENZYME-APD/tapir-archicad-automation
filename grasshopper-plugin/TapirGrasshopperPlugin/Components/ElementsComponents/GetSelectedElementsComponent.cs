@@ -31,8 +31,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     CommandName,
                     null,
                     ToAddOn,
-                    JHelp.Deserialize<ElementsObj>,
-                    out ElementsObj response))
+                    JHelp.Deserialize<ElementsObject>,
+                    out ElementsObject response))
             {
                 return;
             }

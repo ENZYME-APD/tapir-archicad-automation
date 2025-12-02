@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj input))
+                    out ElementsObject input))
             {
                 return;
             }
@@ -82,7 +82,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj input))
+                    out ElementsObject input))
             {
                 return;
             }

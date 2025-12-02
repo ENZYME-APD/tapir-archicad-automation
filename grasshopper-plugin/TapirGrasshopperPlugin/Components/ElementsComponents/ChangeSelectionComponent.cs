@@ -34,14 +34,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj elementsToAdd))
+                    out ElementsObject elementsToAdd))
             {
                 return;
             }
 
             if (!da.TryCreateFromList(
                     1,
-                    out ElementsObj elementsToRemove))
+                    out ElementsObject elementsToRemove))
             {
                 return;
             }
@@ -74,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 if (responseOfGetSelection.Succeeded)
                 {
                     var selectedElements = responseOfGetSelection.Result
-                        .ToObject<ElementsObj>();
+                        .ToObject<ElementsObject>();
                     uniqueElementsToRemove.UnionWith(selectedElements.Elements);
                 }
             }

@@ -46,7 +46,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj elements))
+                    out ElementsObject elements))
             {
                 return;
             }
@@ -75,8 +75,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     CommandName,
                     filterElements,
                     ToAddOn,
-                    JHelp.Deserialize<ElementsObj>,
-                    out ElementsObj response))
+                    JHelp.Deserialize<ElementsObject>,
+                    out ElementsObject response))
             {
                 return;
             }

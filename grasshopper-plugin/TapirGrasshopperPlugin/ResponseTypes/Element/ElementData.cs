@@ -25,8 +25,8 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         }
     }
 
-    public class ElementsObj
-        : GuidItemsObject<ElementGuid, ElementGuidWrapper, ElementsObj>
+    public class ElementsObject
+        : GuidItemsObject<ElementGuid, ElementGuidWrapper, ElementsObject>
     {
         [JsonProperty("elements")]
         public List<ElementGuidWrapper> Elements;

@@ -129,7 +129,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .FlattenData()
                     .Select(x => x.ToWrapper())
                     .ToList()
-                    .TryBuildObject(out ElementsObj input))
+                    .TryBuildObject(out ElementsObject input))
             {
                 return;
             }

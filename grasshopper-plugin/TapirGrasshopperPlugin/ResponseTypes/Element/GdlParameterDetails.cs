@@ -7,7 +7,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public static class GDLParameterHelps
     {
         public static NewElementsWithGDLParameters ToElementsWithGDLParameters(
-            this ElementsObj elementsObj,
+            this ElementsObject elementsObject,
             List<string> parameterNames,
             List<object> values)
         {
@@ -24,7 +24,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
                     ElementId =
                         new NewElementId
                         {
-                            Guid = elementsObj.GuidItems[i].ElementId
+                            Guid = elementsObject.GuidItems[i].ElementId
                                 .Guid
                         },
                     GdlParameters = new List<GdlParameterDetails>()

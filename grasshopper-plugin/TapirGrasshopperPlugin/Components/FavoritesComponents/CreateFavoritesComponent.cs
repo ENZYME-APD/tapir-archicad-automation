@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj elements))
+                    out ElementsObject elements))
             {
                 return;
             }

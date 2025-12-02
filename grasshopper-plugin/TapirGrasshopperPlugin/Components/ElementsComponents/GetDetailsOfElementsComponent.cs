@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public override string CommandName => "GetDetailsOfElements";
         protected abstract string InputFieldName { get; }
 
-        protected ElementsObj inputs;
+        protected ElementsObject inputs;
         protected DetailsOfElementsObj response;
 
         public AbsGetDetailsComponent(

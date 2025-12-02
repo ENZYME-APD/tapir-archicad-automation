@@ -60,7 +60,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObj inputElements))
+                    out ElementsObject inputElements))
             {
                 return;
             }

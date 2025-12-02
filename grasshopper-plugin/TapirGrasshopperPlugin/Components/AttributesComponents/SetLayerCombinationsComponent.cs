@@ -179,7 +179,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     var containedLayer = new ContainedLayerObj
                     {
                         AttributeId =
-                            AttributeGuidObject.CreateFromString(
+                            AttributeGuidObject.FromString(
                                 (layerGuidsGooList.Count == 1
                                     ? layerGuidsGooList[0]
                                     : layerGuidsGooList[i]).ToString()),

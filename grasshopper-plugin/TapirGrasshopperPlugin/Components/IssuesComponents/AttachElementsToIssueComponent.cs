@@ -54,7 +54,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
             if (!da.TryCreateFromList(
                     1,
-                    out ElementsObj elements))
+                    out ElementsObject elements))
             {
                 return;
             }
