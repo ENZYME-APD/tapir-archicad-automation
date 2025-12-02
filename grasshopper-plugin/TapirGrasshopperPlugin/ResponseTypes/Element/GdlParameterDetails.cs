@@ -138,7 +138,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class ElementWithGDLParameters
     {
         [JsonProperty("elementId")]
-        public ElementGuidItemObject ElementGuid { get; set; }
+        public ElementGuidWrapper ElementGuid { get; set; }
 
         [JsonProperty("gdlParameters")]
         public GdlParameterList GdlDetailList { get; set; }

@@ -79,7 +79,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var tree = new DataTree<ElementGuidItemObject>();
+            var tree = new DataTree<ElementGuidWrapper>();
 
             for (var i = 0; i < response.ConnectedElements.Count; i++)
             {

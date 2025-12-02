@@ -2,14 +2,14 @@
 using Newtonsoft.Json;
 using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
-namespace TapirGrasshopperPlugin.Data
+namespace TapirGrasshopperPlugin.ResponseTypes.Attributes
 {
     public class AttributeGuidObject : GuidObject<AttributeGuidObject>
     {
     }
 
-    public class AttributeGuidItemObject
-        : GuidItemObject<AttributeGuidObject, AttributeGuidItemObject>
+    public class AttributeGuidWrapper
+        : GuidWrapper<AttributeGuidObject, AttributeGuidWrapper>
     {
         [JsonProperty("attributeId")]
         public AttributeGuidObject AttributeId;
@@ -23,14 +23,14 @@ namespace TapirGrasshopperPlugin.Data
     }
 
     public class AttributesObj
-        : GuidItemsObject<AttributeGuidObject, AttributeGuidItemObject,
+        : GuidItemsObject<AttributeGuidObject, AttributeGuidWrapper,
             AttributesObj>
     {
         [JsonProperty("attributes")]
-        public List<AttributeGuidItemObject> Attributes;
+        public List<AttributeGuidWrapper> Attributes;
 
         [JsonIgnore]
-        public override List<AttributeGuidItemObject> GuidItems
+        public override List<AttributeGuidWrapper> GuidItems
         {
             get => Attributes;
             set => Attributes = value;
@@ -38,14 +38,14 @@ namespace TapirGrasshopperPlugin.Data
     }
 
     public class AttributeGuidItemsObject
-        : GuidItemsObject<AttributeGuidObject, AttributeGuidItemObject,
+        : GuidItemsObject<AttributeGuidObject, AttributeGuidWrapper,
             AttributeGuidItemsObject>
     {
         [JsonProperty("attributeIds")]
-        public List<AttributeGuidItemObject> AttributeIds;
+        public List<AttributeGuidWrapper> AttributeIds;
 
         [JsonIgnore]
-        public override List<AttributeGuidItemObject> GuidItems
+        public override List<AttributeGuidWrapper> GuidItems
         {
             get => AttributeIds;
             set => AttributeIds = value;

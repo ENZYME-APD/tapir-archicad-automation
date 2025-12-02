@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Rhino.Geometry;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {

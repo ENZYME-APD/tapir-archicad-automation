@@ -2,14 +2,13 @@
 using Newtonsoft.Json;
 using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
-namespace TapirGrasshopperPlugin.Data
+namespace TapirGrasshopperPlugin.ResponseTypes.Issues
 {
     public class IssueGuid : GuidObject<IssueGuid>
     {
     }
 
-    public class IssueGuidItemObject
-        : GuidItemObject<IssueGuid, IssueGuidItemObject>
+    public class IssueGuidWrapper : GuidWrapper<IssueGuid, IssueGuidWrapper>
     {
         [JsonProperty("issueId")]
         public IssueGuid IssueId;
@@ -23,13 +22,13 @@ namespace TapirGrasshopperPlugin.Data
     }
 
     public class IssuesObj
-        : GuidItemsObject<IssueGuid, IssueGuidItemObject, IssuesObj>
+        : GuidItemsObject<IssueGuid, IssueGuidWrapper, IssuesObj>
     {
         [JsonProperty("issues")]
-        public List<IssueGuidItemObject> Issues;
+        public List<IssueGuidWrapper> Issues;
 
         [JsonIgnore]
-        public override List<IssueGuidItemObject> GuidItems
+        public override List<IssueGuidWrapper> GuidItems
         {
             get => Issues;
             set => Issues = value;

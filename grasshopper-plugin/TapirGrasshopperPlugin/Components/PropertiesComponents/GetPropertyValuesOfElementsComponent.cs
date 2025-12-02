@@ -2,9 +2,9 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using System;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
@@ -63,10 +63,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
             if (!TryGetConvertedValues(
                     CommandName,
-                    new ElementsAndPropertyIdsObj
+                    new
                     {
-                        Elements = elements.Elements,
-                        PropertyIds = properties.Properties
+                        elements = elements.Elements,
+                        propertyies = properties.Properties
                     },
                     ToAddOn,
                     JHelp.Deserialize<PropertyValuesForElements>,
@@ -75,7 +75,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            var elementIds = new DataTree<ElementGuidItemObject>();
+            var elementIds = new DataTree<ElementGuidWrapper>();
             var values = new DataTree<string>();
 
             for (var elementIndex = 0;

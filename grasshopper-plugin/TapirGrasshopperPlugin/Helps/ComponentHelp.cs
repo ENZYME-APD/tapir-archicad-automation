@@ -142,7 +142,7 @@ namespace TapirGrasshopperPlugin.Helps
         {
             var instance = new T();
 
-            if (!instance.TryCreateFromWrapper(wrapper))
+            if (!instance.TryCreateFromGhWrapper(wrapper))
             {
                 result = default;
                 return false;

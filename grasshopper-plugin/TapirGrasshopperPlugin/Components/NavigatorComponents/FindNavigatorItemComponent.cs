@@ -4,7 +4,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
@@ -77,8 +76,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 0);
         }
 
-        private List<DatabaseGuidItemObject> GetDatabaseIdsFromNavigatorItemIds(
-            List<NavigatorGuidItemObject> navItemIds)
+        private List<DatabaseGuidWrapper> GetDatabaseIdsFromNavigatorItemIds(
+            List<NavigatorGuidWrapper> navItemIds)
         {
             var input =
                 new GetDatabaseIdFromNavigatorItemIdInput
@@ -93,7 +92,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     JHelp.Deserialize<GetDatabaseIdFromNavigatorItemIdOutput>,
                     out GetDatabaseIdFromNavigatorItemIdOutput response))
             {
-                return new List<DatabaseGuidItemObject>();
+                return new List<DatabaseGuidWrapper>();
             }
 
             return response.Databases;
@@ -142,13 +141,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var navigatorItemIdTree = new DataTree<NavigatorGuidItemObject>();
+            var navigatorItemIdTree = new DataTree<NavigatorGuidWrapper>();
             var navigatorItemPrefixTree = new DataTree<string>();
             var navigatorItemNameTree = new DataTree<string>();
             var navigatorItemPathTree = new DataTree<string>();
             var navigatorItemTypeTree = new DataTree<string>();
             var sourceNavigatorItemIdTree =
-                new DataTree<NavigatorGuidItemObject>();
+                new DataTree<NavigatorGuidWrapper>();
 
             response.GetItems(
                 navigatorItemIdTree,
@@ -158,12 +157,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 navigatorItemTypeTree,
                 sourceNavigatorItemIdTree);
 
-            var navigatorItemIdList = new List<NavigatorGuidItemObject>();
+            var navigatorItemIdList = new List<NavigatorGuidWrapper>();
             var navigatorItemPrefixList = new List<string>();
             var navigatorItemNameList = new List<string>();
             var navigatorItemPathList = new List<string>();
             var navigatorItemTypeList = new List<string>();
-            var sourceNavigatorItemIdList = new List<NavigatorGuidItemObject>();
+            var sourceNavigatorItemIdList = new List<NavigatorGuidWrapper>();
 
             var re = new Regex(pathRegex);
             for (var i = 0; i < navigatorItemPathTree.BranchCount; i++)

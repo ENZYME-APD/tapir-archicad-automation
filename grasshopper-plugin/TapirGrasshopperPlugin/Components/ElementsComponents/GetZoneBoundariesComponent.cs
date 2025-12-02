@@ -70,22 +70,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var connectedElements = new List<ElementGuidItemObject>();
+            var connectedElements = new List<ElementGuidWrapper>();
             var isExternals = new List<bool>();
-            var neighbouringZones = new List<ElementGuidItemObject>();
+            var neighbouringZones = new List<ElementGuidWrapper>();
             var areas = new List<double>();
             var polygons = new List<PolyCurve>();
 
             foreach (var zb in response.ZoneBoundaries)
             {
                 connectedElements.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = zb.ConnectedElementId
                     });
                 isExternals.Add(zb.IsExternal);
                 neighbouringZones.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = zb.NeighbouringZoneElementId
                     });

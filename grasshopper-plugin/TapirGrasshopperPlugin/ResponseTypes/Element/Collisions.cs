@@ -18,10 +18,10 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class GetCollisionsParameters
     {
         [JsonProperty("elementsGroup1")]
-        public List<ElementGuidItemObject> ElementsGroup1;
+        public List<ElementGuidWrapper> ElementsGroup1;
 
         [JsonProperty("elementsGroup2")]
-        public List<ElementGuidItemObject> ElementsGroup2;
+        public List<ElementGuidWrapper> ElementsGroup2;
 
         [JsonProperty("settings")]
         public CollisionDetectionSettings Settings;

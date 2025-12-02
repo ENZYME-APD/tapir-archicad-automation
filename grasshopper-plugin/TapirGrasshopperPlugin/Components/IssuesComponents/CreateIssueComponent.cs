@@ -1,7 +1,7 @@
 using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -43,8 +43,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                     CommandName,
                     new { name },
                     ToAddOn,
-                    JHelp.Deserialize<IssueGuidItemObject>,
-                    out IssueGuidItemObject response))
+                    JHelp.Deserialize<IssueGuidWrapper>,
+                    out IssueGuidWrapper response))
             {
                 return;
             }

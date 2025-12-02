@@ -129,9 +129,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var elementIndex1s = new List<int>();
-            var elementId1s = new List<ElementGuidItemObject>();
+            var elementId1s = new List<ElementGuidWrapper>();
             var elementIndex2s = new List<int>();
-            var elementId2s = new List<ElementGuidItemObject>();
+            var elementId2s = new List<ElementGuidWrapper>();
             var hasBodyCollisions = new List<bool>();
             var hasClearenceCollisions = new List<bool>();
 
@@ -141,12 +141,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     inputGroup1.Elements.FindIndex(e =>
                         e.ElementId.Equals(c.ElementId1)));
                 elementId1s.Add(
-                    new ElementGuidItemObject { ElementId = c.ElementId1 });
+                    new ElementGuidWrapper { ElementId = c.ElementId1 });
                 elementIndex2s.Add(
                     inputGroup2.Elements.FindIndex(e =>
                         e.ElementId.Equals(c.ElementId2)));
                 elementId2s.Add(
-                    new ElementGuidItemObject { ElementId = c.ElementId2 });
+                    new ElementGuidWrapper { ElementId = c.ElementId2 });
                 hasBodyCollisions.Add(c.HasBodyCollision);
                 hasClearenceCollisions.Add(c.HasClearenceCollision);
             }

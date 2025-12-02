@@ -2,8 +2,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
+using TapirGrasshopperPlugin.ResponseTypes.Properties;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {
@@ -11,8 +11,8 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     {
     }
 
-    public class ElementGuidItemObject
-        : GuidItemObject<ElementGuid, ElementGuidItemObject>
+    public class ElementGuidWrapper
+        : GuidWrapper<ElementGuid, ElementGuidWrapper>
     {
         [JsonProperty("elementId")]
         public ElementGuid ElementId;
@@ -26,13 +26,13 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     }
 
     public class ElementsObj
-        : GuidItemsObject<ElementGuid, ElementGuidItemObject, ElementsObj>
+        : GuidItemsObject<ElementGuid, ElementGuidWrapper, ElementsObj>
     {
         [JsonProperty("elements")]
-        public List<ElementGuidItemObject> Elements;
+        public List<ElementGuidWrapper> Elements;
 
         [JsonIgnore]
-        public override List<ElementGuidItemObject> GuidItems
+        public override List<ElementGuidWrapper> GuidItems
         {
             get => Elements;
             set => Elements = value;
@@ -51,15 +51,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         public PropertyValueObj PropertyValue;
     }
 
-    public class ElementsAndPropertyIdsObj
-    {
-        [JsonProperty("elements")]
-        public List<ElementGuidItemObject> Elements;
-
-        [JsonProperty("properties")]
-        public List<PropertyGuidItemObject> PropertyIds;
-    }
-
     public class ElementPropertyValuesObj
     {
         [JsonProperty("elementPropertyValues")]
@@ -70,12 +61,12 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     {
         public HighlightElementsObj()
         {
-            Elements = new List<ElementGuidItemObject>();
+            Elements = new List<ElementGuidWrapper>();
             HighlightedColors = new List<List<int>>();
         }
 
         [JsonProperty("elements")]
-        public List<ElementGuidItemObject> Elements;
+        public List<ElementGuidWrapper> Elements;
 
         [JsonProperty("highlightedColors")]
         public List<List<int>> HighlightedColors;
@@ -119,85 +110,85 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class SubelementsItemObj
     {
         [JsonProperty("cWallSegments")]
-        public List<ElementGuidItemObject> CurtainWallSegments;
+        public List<ElementGuidWrapper> CurtainWallSegments;
 
         [JsonProperty("cWallFrames")]
-        public List<ElementGuidItemObject> CurtainWallFrames;
+        public List<ElementGuidWrapper> CurtainWallFrames;
 
         [JsonProperty("cWallPanels")]
-        public List<ElementGuidItemObject> CurtainWallPanels;
+        public List<ElementGuidWrapper> CurtainWallPanels;
 
         [JsonProperty("cWallJunctions")]
-        public List<ElementGuidItemObject> CurtainWallJunctions;
+        public List<ElementGuidWrapper> CurtainWallJunctions;
 
         [JsonProperty("cWallAccessories")]
-        public List<ElementGuidItemObject> CurtainWallAccessories;
+        public List<ElementGuidWrapper> CurtainWallAccessories;
 
         [JsonProperty("stairRisers")]
-        public List<ElementGuidItemObject> StairRisers;
+        public List<ElementGuidWrapper> StairRisers;
 
         [JsonProperty("stairTreads")]
-        public List<ElementGuidItemObject> StairTreads;
+        public List<ElementGuidWrapper> StairTreads;
 
         [JsonProperty("stairStructures")]
-        public List<ElementGuidItemObject> StairStructures;
+        public List<ElementGuidWrapper> StairStructures;
 
         [JsonProperty("railingNodes")]
-        public List<ElementGuidItemObject> RailingNodes;
+        public List<ElementGuidWrapper> RailingNodes;
 
         [JsonProperty("railingSegments")]
-        public List<ElementGuidItemObject> RailingSegments;
+        public List<ElementGuidWrapper> RailingSegments;
 
         [JsonProperty("railingPosts")]
-        public List<ElementGuidItemObject> RailingPosts;
+        public List<ElementGuidWrapper> RailingPosts;
 
         [JsonProperty("railingRailEnds")]
-        public List<ElementGuidItemObject> RailingRailEnds;
+        public List<ElementGuidWrapper> RailingRailEnds;
 
         [JsonProperty("railingRailConnections")]
-        public List<ElementGuidItemObject> RailingRailConnections;
+        public List<ElementGuidWrapper> RailingRailConnections;
 
         [JsonProperty("railingHandrailEnds")]
-        public List<ElementGuidItemObject> RailingHandrailEnds;
+        public List<ElementGuidWrapper> RailingHandrailEnds;
 
         [JsonProperty("railingHandrailConnections")]
-        public List<ElementGuidItemObject> RailingHandrailConnections;
+        public List<ElementGuidWrapper> RailingHandrailConnections;
 
         [JsonProperty("railingToprailEnds")]
-        public List<ElementGuidItemObject> RailingToprailEnds;
+        public List<ElementGuidWrapper> RailingToprailEnds;
 
         [JsonProperty("railingToprailConnections")]
-        public List<ElementGuidItemObject> RailingToprailConnections;
+        public List<ElementGuidWrapper> RailingToprailConnections;
 
         [JsonProperty("railingRails")]
-        public List<ElementGuidItemObject> RailingRails;
+        public List<ElementGuidWrapper> RailingRails;
 
         [JsonProperty("railingToprails")]
-        public List<ElementGuidItemObject> RailingToprails;
+        public List<ElementGuidWrapper> RailingToprails;
 
         [JsonProperty("railingHandrails")]
-        public List<ElementGuidItemObject> RailingHandrails;
+        public List<ElementGuidWrapper> RailingHandrails;
 
         [JsonProperty("railingPatterns")]
-        public List<ElementGuidItemObject> RailingPatterns;
+        public List<ElementGuidWrapper> RailingPatterns;
 
         [JsonProperty("railingInnerPosts")]
-        public List<ElementGuidItemObject> RailingInnerPosts;
+        public List<ElementGuidWrapper> RailingInnerPosts;
 
         [JsonProperty("railingPanels")]
-        public List<ElementGuidItemObject> RailingPanels;
+        public List<ElementGuidWrapper> RailingPanels;
 
         [JsonProperty("railingBalusterSets")]
-        public List<ElementGuidItemObject> RailingBalusterSets;
+        public List<ElementGuidWrapper> RailingBalusterSets;
 
         [JsonProperty("railingBalusters")]
-        public List<ElementGuidItemObject> RailingBalusters;
+        public List<ElementGuidWrapper> RailingBalusters;
 
         [JsonProperty("beamSegments")]
-        public List<ElementGuidItemObject> BeamSegments;
+        public List<ElementGuidWrapper> BeamSegments;
 
         [JsonProperty("columnSegments")]
-        public List<ElementGuidItemObject> ColumnSegments;
+        public List<ElementGuidWrapper> ColumnSegments;
     }
 
     public class SubelementsObj

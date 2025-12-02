@@ -82,13 +82,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var hierarchicalElements = new List<ElementGuidItemObject>();
-            var subelementsOfHierarchicals =
-                new DataTree<ElementGuidItemObject>();
+            var hierarchicalElements = new List<ElementGuidWrapper>();
+            var subelementsOfHierarchicals = new DataTree<ElementGuidWrapper>();
 
             for (var i = 0; i < response.Subelements.Count; i++)
             {
-                List<ElementGuidItemObject> subelements = null;
+                List<ElementGuidWrapper> subelements = null;
 
                 if (subType == "CurtainWallSegment")
                 {
@@ -209,7 +208,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 hierarchicalElements.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = inputElements.Elements[i].ElementId
                     });

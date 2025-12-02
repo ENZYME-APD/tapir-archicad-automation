@@ -3,7 +3,6 @@ using Grasshopper.Kernel.Data;
 using Grasshopper;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 using TapirGrasshopperPlugin.Helps;
 
@@ -76,7 +75,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             }
 
             var attributeNames = new List<string>();
-            var layerAttributeIds = new DataTree<AttributeGuidItemObject>();
+            var layerAttributeIds = new DataTree<AttributeGuidWrapper>();
             var isHiddenLayers = new DataTree<bool>();
             var isLockedLayers = new DataTree<bool>();
             var isWireframeLayers = new DataTree<bool>();
@@ -86,7 +85,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             {
                 var layerCombination = response.LayerCombinations[i];
                 attributeNames.Add(layerCombination.LayerCombination.Name);
-                var layerIds = new List<AttributeGuidItemObject>();
+                var layerIds = new List<AttributeGuidWrapper>();
                 var isHiddens = new List<bool>();
                 var isLockeds = new List<bool>();
                 var isWireframes = new List<bool>();
@@ -95,7 +94,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 foreach (var layer in layerCombination.LayerCombination.Layers)
                 {
                     layerIds.Add(
-                        new AttributeGuidItemObject()
+                        new AttributeGuidWrapper()
                         {
                             AttributeId = layer.AttributeId
                         });

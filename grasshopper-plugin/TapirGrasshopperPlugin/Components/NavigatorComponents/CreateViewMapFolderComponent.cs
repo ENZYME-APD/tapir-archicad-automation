@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
@@ -53,43 +53,43 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var parentNavigatorItemId = NavigatorGuidItemObject.Create(
-                da,
-                1);
-            var previousNavigatorItemId = NavigatorGuidItemObject.Create(
-                da,
-                2);
-
-            var input = new CreateViewMapFolderInput()
+            if (!da.TryCreate(
+                    1,
+                    out NavigatorGuid parentNavigatorItemId))
             {
-                FolderParameters = new FolderParameters() { Name = name },
-                ParentNavigatorItemId =
-                    parentNavigatorItemId == null
-                        ? null
-                        : parentNavigatorItemId.Id,
-                PreviousNavigatorItemId = previousNavigatorItemId == null
-                    ? null
-                    : previousNavigatorItemId.Id
-            };
+                parentNavigatorItemId = null;
+            }
+
+            if (!da.TryCreate(
+                    2,
+                    out NavigatorGuid previousNavigatorItemId))
+            {
+                parentNavigatorItemId = null;
+            }
 
             if (!TryGetConvertedValues(
                     CommandName,
-                    input,
+                    new
+                    {
+                        folderParameters = new { name },
+                        parentNavigatorItemId,
+                        previousNavigatorItemId
+                    },
                     ToArchicad,
-                    JHelp.Deserialize<CreateViewMapFolderOutput>,
-                    out CreateViewMapFolderOutput response))
+                    JHelp.Deserialize<ViewMapFolderOutput>,
+                    out ViewMapFolderOutput response))
             {
                 return;
             }
 
-            var createdId = new NavigatorGuidItemObject
+            var wrapper = new NavigatorGuidWrapper
             {
                 Id = response.CreatedFolderNavigatorItemId
             };
 
             da.SetData(
                 0,
-                createdId);
+                wrapper);
         }
 
         protected override System.Drawing.Bitmap Icon =>

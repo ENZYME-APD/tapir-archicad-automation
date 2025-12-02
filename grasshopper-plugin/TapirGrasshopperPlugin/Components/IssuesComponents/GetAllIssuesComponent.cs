@@ -1,8 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Linq;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {

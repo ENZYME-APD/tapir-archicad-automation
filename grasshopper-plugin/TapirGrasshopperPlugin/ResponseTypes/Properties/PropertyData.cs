@@ -3,14 +3,14 @@ using System.ComponentModel;
 using Newtonsoft.Json;
 using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
-namespace TapirGrasshopperPlugin.Data
+namespace TapirGrasshopperPlugin.ResponseTypes.Properties
 {
     public class PropertyGuidObject : GuidObject<PropertyGuidObject>
     {
     }
 
-    public class PropertyGuidItemObject
-        : GuidItemObject<PropertyGuidObject, PropertyGuidItemObject>
+    public class PropertyGuidWrapper
+        : GuidWrapper<PropertyGuidObject, PropertyGuidWrapper>
     {
         [JsonProperty("propertyId")]
         public PropertyGuidObject PropertyId;
@@ -24,14 +24,14 @@ namespace TapirGrasshopperPlugin.Data
     }
 
     public class PropertiesObj
-        : GuidItemsObject<PropertyGuidObject, PropertyGuidItemObject,
+        : GuidItemsObject<PropertyGuidObject, PropertyGuidWrapper,
             PropertiesObj>
     {
         [JsonProperty("properties")]
-        public List<PropertyGuidItemObject> Properties;
+        public List<PropertyGuidWrapper> Properties;
 
         [JsonIgnore]
-        public override List<PropertyGuidItemObject> GuidItems
+        public override List<PropertyGuidWrapper> GuidItems
         {
             get => Properties;
             set => Properties = value;

@@ -2,14 +2,14 @@
 using Newtonsoft.Json;
 using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
 
-namespace TapirGrasshopperPlugin.Data
+namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
 {
     public class NavigatorGuid : GuidObject<NavigatorGuid>
     {
     }
 
-    public class NavigatorGuidItemObject
-        : GuidItemObject<NavigatorGuid, NavigatorGuidItemObject>
+    public class NavigatorGuidWrapper
+        : GuidWrapper<NavigatorGuid, NavigatorGuidWrapper>
     {
         [JsonProperty("navigatorItemId")]
         public NavigatorGuid NavigatorId;
@@ -23,14 +23,14 @@ namespace TapirGrasshopperPlugin.Data
     }
 
     public class NavigatorItemsObject
-        : GuidItemsObject<NavigatorGuid, NavigatorGuidItemObject,
+        : GuidItemsObject<NavigatorGuid, NavigatorGuidWrapper,
             NavigatorItemsObject>
     {
         [JsonProperty("navigatorItemIds")]
-        public List<NavigatorGuidItemObject> NavigatorItemIds;
+        public List<NavigatorGuidWrapper> NavigatorItemIds;
 
         [JsonIgnore]
-        public override List<NavigatorGuidItemObject> GuidItems
+        public override List<NavigatorGuidWrapper> GuidItems
         {
             get => NavigatorItemIds;
             set => NavigatorItemIds = value;
@@ -41,8 +41,8 @@ namespace TapirGrasshopperPlugin.Data
     {
     }
 
-    public class DatabaseGuidItemObject
-        : GuidItemObject<DatabaseGuidObject, DatabaseGuidItemObject>
+    public class DatabaseGuidWrapper
+        : GuidWrapper<DatabaseGuidObject, DatabaseGuidWrapper>
     {
         [JsonProperty("databaseId")]
         public DatabaseGuidObject DatabaseId;
@@ -56,14 +56,13 @@ namespace TapirGrasshopperPlugin.Data
     }
 
     public class DatabasesObj
-        : GuidItemsObject<DatabaseGuidObject, DatabaseGuidItemObject,
-            DatabasesObj>
+        : GuidItemsObject<DatabaseGuidObject, DatabaseGuidWrapper, DatabasesObj>
     {
         [JsonProperty("databases")]
-        public List<DatabaseGuidItemObject> Databases;
+        public List<DatabaseGuidWrapper> Databases;
 
         [JsonIgnore]
-        public override List<DatabaseGuidItemObject> GuidItems
+        public override List<DatabaseGuidWrapper> GuidItems
         {
             get => Databases;
             set => Databases = value;

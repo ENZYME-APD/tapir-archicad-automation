@@ -1,8 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -37,15 +37,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     CommandName,
                     input,
                     ToAddOn,
-                    JHelp.Deserialize<ExecutionResultObj>,
-                    out ExecutionResultObj response))
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
             {
                 return;
             }
 
             if (!response.Success)
             {
-                this.AddError(response.Error.Message);
+                this.AddError(response.Message());
             }
         }
 

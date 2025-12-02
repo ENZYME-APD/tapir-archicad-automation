@@ -54,7 +54,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Favorites
         }
 
         public FavoritesFromElementsObj(
-            List<ElementGuidItemObject> ids,
+            List<ElementGuidWrapper> ids,
             List<string> favorites)
         {
             FavoritesFromElements = ids
@@ -73,7 +73,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Favorites
     public class FavoriteFromElementObj
     {
         [JsonProperty("elementId")]
-        public ElementGuidItemObject ElementGuid;
+        public ElementGuidWrapper ElementGuid;
 
         [JsonProperty("favorite")]
         public string Favorite;

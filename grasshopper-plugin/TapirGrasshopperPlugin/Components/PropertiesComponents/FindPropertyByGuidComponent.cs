@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {

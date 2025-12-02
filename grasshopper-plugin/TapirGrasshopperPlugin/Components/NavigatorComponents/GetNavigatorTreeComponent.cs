@@ -3,7 +3,6 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
@@ -54,14 +53,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 0);
         }
 
-        private DataTree<DatabaseGuidItemObject>
+        private DataTree<DatabaseGuidWrapper>
             GetDatabaseIdTreeFromNavigatorItemIdTree(
-                DataTree<NavigatorGuidItemObject> navItemIdTree)
+                DataTree<NavigatorGuidWrapper> navItemIdTree)
         {
-            var databaseIdTree = new DataTree<DatabaseGuidItemObject>();
+            var databaseIdTree = new DataTree<DatabaseGuidWrapper>();
 
             var branches = new List<GH_Path>();
-            var allItems = new List<NavigatorGuidItemObject>();
+            var allItems = new List<NavigatorGuidWrapper>();
 
             for (var i = 0; i < navItemIdTree.BranchCount; i++)
             {
@@ -138,13 +137,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var navigatorItemIdTree = new DataTree<NavigatorGuidItemObject>();
+            var navigatorItemIdTree = new DataTree<NavigatorGuidWrapper>();
             var navigatorItemPrefixTree = new DataTree<string>();
             var navigatorItemNameTree = new DataTree<string>();
             var navigatorItemPathTree = new DataTree<string>();
             var navigatorItemTypeTree = new DataTree<string>();
             var sourceNavigatorItemIdTree =
-                new DataTree<NavigatorGuidItemObject>();
+                new DataTree<NavigatorGuidWrapper>();
 
             response.GetItems(
                 navigatorItemIdTree,

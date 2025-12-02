@@ -4,8 +4,8 @@ using Grasshopper.Kernel.Data;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using Arc = TapirGrasshopperPlugin.ResponseTypes.Element.Arc;
 
@@ -101,7 +101,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void ManageResponse(
             IGH_DataAccess da)
         {
-            var validElements = new List<ElementGuidItemObject>();
+            var validElements = new List<ElementGuidWrapper>();
             var elemTypes = new List<String>();
             var elementIDs = new List<String>();
             var storyIndices = new List<int>();
@@ -117,7 +117,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 validElements.Add(
-                    new ElementGuidItemObject
+                    new ElementGuidWrapper
                     {
                         ElementId = inputs.Elements[i].ElementId
                     });
@@ -194,7 +194,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void ManageResponse(
             IGH_DataAccess da)
         {
-            var walls = new List<ElementGuidItemObject>();
+            var walls = new List<ElementGuidWrapper>();
             var begCoords = new List<Point3d>();
             var endCoords = new List<Point3d>();
             var heights = new List<double>();
@@ -224,7 +224,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 walls.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = inputs.Elements[i].ElementId
                     });
@@ -336,7 +336,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void ManageResponse(
             IGH_DataAccess da)
         {
-            var beams = new List<ElementGuidItemObject>();
+            var beams = new List<ElementGuidWrapper>();
             var begCoords = new List<Point3d>();
             var endCoords = new List<Point3d>();
             var slantAngles = new List<double>();
@@ -361,7 +361,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 beams.Add(
-                    new ElementGuidItemObject
+                    new ElementGuidWrapper
                     {
                         ElementId = inputs.Elements[i].ElementId
                     });
@@ -468,7 +468,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void ManageResponse(
             IGH_DataAccess da)
         {
-            var columns = new List<ElementGuidItemObject>();
+            var columns = new List<ElementGuidWrapper>();
             var origoCoords = new List<Point3d>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
@@ -488,7 +488,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 columns.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = inputs.Elements[i].ElementId
                     });
@@ -542,7 +542,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void ManageResponse(
             IGH_DataAccess da)
         {
-            var slabs = new List<ElementGuidItemObject>();
+            var slabs = new List<ElementGuidWrapper>();
             var polygons = new List<PolyCurve>();
             var holePolygonsTree = new DataTree<PolyCurve>();
 
@@ -562,7 +562,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 slabs.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = inputs.Elements[i].ElementId
                     });
@@ -628,7 +628,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void ManageResponse(
             IGH_DataAccess da)
         {
-            var polylines = new List<ElementGuidItemObject>();
+            var polylines = new List<ElementGuidWrapper>();
             var rhinoPolylines = new List<PolyCurve>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
@@ -647,7 +647,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 polylines.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = inputs.Elements[i].ElementId
                     });
@@ -720,7 +720,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         protected override void ManageResponse(
             IGH_DataAccess da)
         {
-            var zones = new List<ElementGuidItemObject>();
+            var zones = new List<ElementGuidWrapper>();
             var names = new List<string>();
             var numberStrs = new List<string>();
             var categoryAttributeIds = new List<AttributeGuidObject>();
@@ -745,7 +745,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 zones.Add(
-                    new ElementGuidItemObject()
+                    new ElementGuidWrapper()
                     {
                         ElementId = inputs.Elements[i].ElementId
                     });

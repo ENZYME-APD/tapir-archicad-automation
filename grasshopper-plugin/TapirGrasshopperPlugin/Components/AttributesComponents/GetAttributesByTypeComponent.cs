@@ -1,7 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Linq;
-using TapirGrasshopperPlugin.Data;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 
@@ -26,9 +25,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddOutputs()
         {
-            OutGenerics("AttributeGuids");
-            OutGenerics("AttributeIndices");
-            OutGenerics("AttributeNames");
+            OutGenerics("Guids");
+            OutGenerics("Indices");
+            OutGenerics("Names");
         }
 
         public override void AddedToDocument(
@@ -46,14 +45,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             if (!da.TryGet(
                     0,
-                    out string aType))
+                    out string attributeType))
             {
                 return;
             }
 
             if (!TryGetConvertedValues(
                     CommandName,
-                    new AttributesByTypeObj { AttributeType = aType },
+                    new { attributeType },
                     ToAddOn,
                     JHelp.Deserialize<AttributeDetailsObj>,
                     out AttributeDetailsObj response))

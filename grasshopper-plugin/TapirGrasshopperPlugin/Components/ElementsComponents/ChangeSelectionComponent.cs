@@ -59,7 +59,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var uniqueElementsToRemove = new HashSet<ElementGuidItemObject>();
+            var uniqueElementsToRemove = new HashSet<ElementGuidWrapper>();
 
             if (elementsToRemove != null)
             {
@@ -89,7 +89,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 AddElementsToSelection =
                     elementsToAdd != null
                         ? elementsToAdd.Elements
-                        : new List<ElementGuidItemObject>(),
+                        : new List<ElementGuidWrapper>(),
                 RemoveElementsFromSelection =
                     uniqueElementsToRemove.ToList()
             };

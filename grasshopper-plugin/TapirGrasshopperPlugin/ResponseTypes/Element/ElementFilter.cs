@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
+using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
@@ -39,6 +39,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         [JsonProperty(
             "databases",
             NullValueHandling = NullValueHandling.Ignore)]
-        public List<DatabaseGuidItemObject> Databases;
+        public List<DatabaseGuidWrapper> Databases;
     }
 }

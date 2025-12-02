@@ -6,6 +6,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class HierarchicalElementsObj
     {
         [JsonProperty("hierarchicalElements")]
-        public List<ElementGuidItemObject> Elements;
+        public List<ElementGuidWrapper> Elements;
     }
 }
