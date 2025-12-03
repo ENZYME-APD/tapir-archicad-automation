@@ -40,7 +40,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             OutTexts(
                 nameof(GdlParameterDetails),
-                "JSON dictionary object storing the retrieved parameters.");
+                "JSON dictionary of the retrieved parameters.");
         }
 
         protected override void Solve(
@@ -55,7 +55,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (!da.TryGet(
                     1,
-                    out string parameterName)) { return; }
+                    out string parameterName))
+            {
+                return;
+            }
 
             if (!TryGetConvertedValues(
                     CommandName,

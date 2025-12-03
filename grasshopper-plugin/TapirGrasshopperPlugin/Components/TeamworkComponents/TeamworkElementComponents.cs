@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using TapirGrasshopperPlugin.ResponseTypes.Generic;
@@ -37,6 +38,15 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         {
         }
 
+        protected override void AddOutputs()
+        {
+            OutText(
+                nameof(ExecutionResult),
+                ExecutionResult.Doc);
+
+            OutGenerics($"{nameof(Conflict)}{nameof(Conflict.ElementId)}s");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -60,6 +70,13 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
             da.SetData(
                 0,
                 response.Message());
+
+            if (response.HasConflicts)
+            {
+                da.SetData(
+                    1,
+                    response.Conflicts.Select(x => x.ElementId));
+            }
         }
 
         public override Guid ComponentGuid =>

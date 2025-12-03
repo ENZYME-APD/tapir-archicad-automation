@@ -27,11 +27,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Elements Guids to set the parameters of.");
 
             InTexts(
-                "ParameterName",
+                "ParameterNames",
                 "Parameter name to find and set.");
 
             InGenerics(
-                "Value",
+                "Values",
                 "Value to set the parameter to.");
         }
 
@@ -63,6 +63,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     2,
                     out List<object> values))
             {
+                return;
+            }
+
+            if (parameterNames.Count != values.Count)
+            {
+                this.AddError("Unequal parameter name to value count.");
                 return;
             }
 

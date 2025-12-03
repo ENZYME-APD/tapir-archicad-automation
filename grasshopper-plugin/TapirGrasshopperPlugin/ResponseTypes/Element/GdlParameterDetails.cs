@@ -1,82 +1,55 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {
-    public static class GDLParameterHelps
+    public class GdlParameterDetails
     {
-        public static NewElementsWithGDLParameters ToElementsWithGDLParameters(
-            this ElementsObject elementsObject,
-            List<string> parameterNames,
-            List<object> values)
+        [JsonProperty("name")]
+        public string Name;
+
+        [JsonProperty("index")]
+        public string Index;
+
+        [JsonProperty("type")]
+        public string Type;
+
+        [JsonProperty("dimension1")]
+        public int Dimension1;
+
+        [JsonProperty("dimension2")]
+        public int Dimension2;
+
+        [JsonProperty("value")]
+        public object Value;
+    }
+
+    // set starts
+
+    public class ElementsWithGDLParametersInput
+    {
+        [JsonProperty("elementsWithGDLParameters")]
+        public List<ElementWithGDLParameters> ElementsWithGDLParameters
         {
-            var result = new NewElementsWithGDLParameters
-            {
-                ElementsWithGDLParameters =
-                    new List<NewElementWithGDLParameters>()
-            };
-
-            for (int i = 0; i < parameterNames.Count; i++)
-            {
-                var item = new NewElementWithGDLParameters
-                {
-                    ElementId =
-                        new NewElementId
-                        {
-                            Guid = elementsObject.GuidItems[i].ElementId
-                                .Guid
-                        },
-                    GdlParameters = new List<GdlParameterDetails>()
-                    {
-                        new GdlParameterDetails()
-                        {
-                            Name = parameterNames[i],
-                            Value = values[i]
-                        }
-                    }
-                };
-
-                result.ElementsWithGDLParameters.Add(item);
-            }
-
-            return result;
-        }
-
-        public static List<GDLHolder> ToGdlHolders(
-            this GDLParametersResponse response,
-            List<string> ids,
-            string parameterName)
-        {
-            var result = new List<GDLHolder>();
-
-            if (response?.GdlLists == null || ids == null)
-            {
-                return result;
-            }
-
-            for (var i = 0; i < ids.Count; i++)
-            {
-                var id = ids[i];
-                var pList = response.GdlLists[i];
-
-                if (pList.GdlParameterArray == null ||
-                    pList.GdlParameterArray.Count == 0)
-                {
-                    continue;
-                }
-
-                result.AddRange(
-                    pList
-                        .GdlParameterArray.Where(x => x.Name == parameterName)
-                        .Select(details => new GDLHolder(
-                            id,
-                            details)));
-            }
-
-            return result;
+            get;
+            set;
         }
     }
+
+    public class ElementWithGDLParameters
+    {
+        [JsonProperty("elementId")]
+        public ElementGuid ElementId { get; set; }
+
+        [JsonProperty("gdlParameters")]
+        public GdlParameterArray GdlParameterList { get; set; }
+    }
+
+    public class GdlParameterArray : List<GdlParameterDetails>
+    {
+    }
+
+    // set ends
 
     public class GDLHolder
     {
@@ -101,46 +74,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class GdlParameterList
     {
         [JsonProperty("parameters")]
-        public List<GdlParameterDetails> GdlParameterArray;
-    }
-
-    public class GdlParameterDetails
-    {
-        [JsonProperty("name")]
-        public string Name;
-
-        [JsonProperty("index")]
-        public string Index;
-
-        [JsonProperty("type")]
-        public string Type;
-
-        [JsonProperty("dimension1")]
-        public int Dimension1;
-
-        [JsonProperty("dimension2")]
-        public int Dimension2;
-
-        [JsonProperty("value")]
-        public object Value;
-    }
-
-    public class ElementsWithGDLParametersInput
-    {
-        [JsonProperty("elementsWithGDLParameters")]
-        public ElementsWithGDLParameters ElementsWithGDLParameters { get; set; }
-    }
-
-    public class ElementsWithGDLParameters : List<ElementWithGDLParameters>
-    {
-    }
-
-    public class ElementWithGDLParameters
-    {
-        [JsonProperty("elementId")]
-        public ElementGuidWrapper ElementGuid { get; set; }
-
-        [JsonProperty("gdlParameters")]
-        public GdlParameterList GdlDetailList { get; set; }
+        public GdlParameterArray GdlParameterArray;
     }
 }

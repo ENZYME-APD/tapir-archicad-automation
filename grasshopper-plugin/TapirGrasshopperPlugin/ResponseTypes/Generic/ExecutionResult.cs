@@ -51,7 +51,9 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
         public ExecutionResult ExecutionResult { get; set; }
 
         [JsonProperty("conflicts")]
-        public List<ConflictResponse> ConflictResponses { get; set; }
+        public List<Conflict> Conflicts { get; set; }
+
+        public bool HasConflicts => Conflicts != null && Conflicts.Any();
 
         public static ExecutionResultResponse Deserialize(
             JObject jObject)
@@ -70,12 +72,11 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
 
             if (conflicts != null && conflicts.Type != JTokenType.Null)
             {
-                response.ConflictResponses =
-                    conflicts.ToObject<List<ConflictResponse>>();
+                response.Conflicts = conflicts.ToObject<List<Conflict>>();
             }
             else
             {
-                response.ConflictResponses = new List<ConflictResponse>();
+                response.Conflicts = new List<Conflict>();
             }
 
             return response;
@@ -88,15 +89,14 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
             builder.AppendLine(
                 $"{ExecutionResult?.Message() ?? "No execution result."}");
 
-            if (ConflictResponses == null || ConflictResponses == null ||
-                !ConflictResponses.Any())
+            if (!HasConflicts)
             {
                 return builder.ToString();
             }
 
             builder.AppendLine("Conflicts found:");
 
-            foreach (var conflict in ConflictResponses)
+            foreach (var conflict in Conflicts)
             {
                 builder.AppendLine(conflict.ToString());
             }
@@ -105,7 +105,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Generic
         }
     }
 
-    public class ConflictResponse
+    public class Conflict
     {
         [JsonProperty("elementId")]
         public ElementGuid ElementId { get; set; }
