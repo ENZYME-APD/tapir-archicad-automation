@@ -1,6 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
 
@@ -30,6 +31,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             OutText(
                 "Json" + nameof(ViewSettings),
                 "JSON object of the retrieved view settings.");
+
+            OutTexts(nameof(ViewSettings.ModelViewOptions));
+            OutTexts(nameof(ViewSettings.LayerCombination) + "s");
+            OutTexts(nameof(ViewSettings.DimensionStyle) + "s");
+            OutTexts(nameof(ViewSettings.PenSetName) + "s");
+            OutTexts(nameof(ViewSettings.GraphicOverrideCombination) + "s");
         }
 
         protected override void Solve(
@@ -46,8 +53,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     CommandName,
                     input,
                     ToAddOn,
-                    ViewSettingsResponse.FromResponse,
-                    out ViewSettingsResponse response))
+                    ViewSettingsData.FromResponse,
+                    out ViewSettingsData response))
             {
                 return;
             }
@@ -57,6 +64,31 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 JsonConvert.SerializeObject(
                     response,
                     Formatting.Indented));
+
+            da.SetDataList(
+                1,
+                response.ViewSettings.Select(x =>
+                    ((ViewSettings)x).ModelViewOptions));
+
+            da.SetDataList(
+                2,
+                response.ViewSettings.Select(x =>
+                    ((ViewSettings)x).LayerCombination));
+
+            da.SetDataList(
+                3,
+                response.ViewSettings.Select(x =>
+                    ((ViewSettings)x).DimensionStyle));
+
+            da.SetDataList(
+                4,
+                response.ViewSettings.Select(x =>
+                    ((ViewSettings)x).PenSetName));
+
+            da.SetDataList(
+                5,
+                response.ViewSettings.Select(x =>
+                    ((ViewSettings)x).GraphicOverrideCombination));
         }
 
         public override Guid ComponentGuid =>

@@ -7,18 +7,18 @@ using TapirGrasshopperPlugin.ResponseTypes.Generic;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
 {
-    public class ViewSettingsResponse
+    public class ViewSettingsData
     {
         [JsonProperty("viewSettings")]
         public List<ViewSettingsOrError> ViewSettings { get; set; }
 
-        public static ViewSettingsResponse FromResponse(
+        public static ViewSettingsData FromResponse(
             JObject baseResponse)
         {
             if (!baseResponse.ContainsKey("viewSettings"))
             {
                 throw new Exception(
-                    $"Invalid response object in {nameof(ViewSettingsResponse)}: No 'viewSettings' key.");
+                    $"Invalid response object in {nameof(ViewSettingsData)}: No 'viewSettings' key.");
             }
             else
             {
@@ -28,10 +28,10 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
                 if (viewSettings == null)
                 {
                     throw new Exception(
-                        $"Invalid response object in {nameof(ViewSettingsResponse)}: 'viewSettings' is not a list.");
+                        $"Invalid response object in {nameof(ViewSettingsData)}: 'viewSettings' is not a list.");
                 }
 
-                return new ViewSettingsResponse
+                return new ViewSettingsData
                 {
                     ViewSettings = viewSettings
                         .Values<JObject>()

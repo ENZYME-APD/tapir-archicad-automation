@@ -91,6 +91,20 @@ namespace TapirGrasshopperPlugin.Helps
             return item;
         }
 
+
+        public static List<T> GetOptionals<T>(
+            this IGH_DataAccess dataAccess,
+            int index)
+        {
+            var list = new List<T>();
+
+            dataAccess.GetDataList(
+                index,
+                list);
+
+            return list;
+        }
+
         public static string AsString(
             this GH_ObjectWrapper wrapper)
         {

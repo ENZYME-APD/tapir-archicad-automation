@@ -65,7 +65,7 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             if (!TryGetConvertedValues(
                     CommandName,
                     new FavoritesFromElementsObj(
-                        elements.GuidItems,
+                        elements.GuidWrappers,
                         favorites),
                     ToAddOn,
                     ExecutionResultsResponse.Deserialize,

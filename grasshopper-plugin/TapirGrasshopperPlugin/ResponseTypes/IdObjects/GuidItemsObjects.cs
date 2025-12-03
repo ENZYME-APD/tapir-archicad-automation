@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
         where T : GuidItemsObject<I, J, T>, new()
     {
         [JsonIgnore]
-        public abstract List<J> GuidItems
+        public abstract List<J> GuidWrappers
         {
             get;
             set;
@@ -35,7 +35,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
         public static T ConvertFrom(
             List<GH_ObjectWrapper> wrappers)
         {
-            var gObject = new T { GuidItems = new List<J>() };
+            var gObject = new T { GuidWrappers = new List<J>() };
 
             foreach (var wrapper in wrappers)
             {
@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
 
                 if (item != null)
                 {
-                    gObject.GuidItems.Add(item);
+                    gObject.GuidWrappers.Add(item);
                 }
                 else
                 {
@@ -64,7 +64,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
                 return false;
             }
 
-            GuidItems = temporary.GuidItems;
+            GuidWrappers = temporary.GuidWrappers;
 
             return true;
         }

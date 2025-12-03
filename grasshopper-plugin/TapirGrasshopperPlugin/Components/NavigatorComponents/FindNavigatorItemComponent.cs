@@ -77,20 +77,14 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         }
 
         private List<DatabaseGuidWrapper> GetDatabaseIdsFromNavigatorItemIds(
-            List<NavigatorGuidWrapper> navItemIds)
+            List<NavigatorGuidWrapper> navigatorItemIds)
         {
-            var input =
-                new GetDatabaseIdFromNavigatorItemIdInput
-                {
-                    NavigatorItemIds = navItemIds
-                };
-
             if (!TryGetConvertedValues(
                     "GetDatabaseIdFromNavigatorItemId",
-                    input,
+                    new { navigatorItemIds },
                     ToAddOn,
-                    JHelp.Deserialize<GetDatabaseIdFromNavigatorItemIdOutput>,
-                    out GetDatabaseIdFromNavigatorItemIdOutput response))
+                    JHelp.Deserialize<DatabaseIdFromNavigatorWrapperResponse>,
+                    out DatabaseIdFromNavigatorWrapperResponse response))
             {
                 return new List<DatabaseGuidWrapper>();
             }
@@ -122,18 +116,18 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var navigatorTreeId = new NavigatorTreeIdHolderObj()
-            {
-                NavigatorTreeId = new NavigatorTreeIdObj()
-                {
-                    Type = type,
-                    Name = string.IsNullOrEmpty(name) ? null : name
-                }
-            };
-
             if (!TryGetConvertedValues(
                     "GetNavigatorItemTree",
-                    navigatorTreeId,
+                    new
+                    {
+                        navigatorTreeId = new NavigatorTreeIdObj
+                        {
+                            Type = type,
+                            Name = string.IsNullOrEmpty(name)
+                                ? null
+                                : name
+                        }
+                    },
                     ToArchicad,
                     JHelp.Deserialize<NavigatorTreeObj>,
                     out NavigatorTreeObj response))

@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         public List<ElementGuidWrapper> Elements;
 
         [JsonIgnore]
-        public override List<ElementGuidWrapper> GuidItems
+        public override List<ElementGuidWrapper> GuidWrappers
         {
             get => Elements;
             set => Elements = value;

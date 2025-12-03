@@ -480,13 +480,15 @@ namespace TapirGrasshopperPlugin.Components
 
         public void InText(
             string name,
-            string description = "")
+            string description = "",
+            string defaultValue = "")
         {
             inManager.AddTextParameter(
                 name,
                 name,
                 description.WithTypeName("textItem"),
-                GH_ParamAccess.item);
+                GH_ParamAccess.item,
+                defaultValue);
         }
 
         public void OutText(

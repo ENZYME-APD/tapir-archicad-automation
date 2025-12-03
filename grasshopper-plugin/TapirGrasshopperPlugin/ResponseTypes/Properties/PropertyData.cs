@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Properties
         public List<PropertyGuidWrapper> Properties;
 
         [JsonIgnore]
-        public override List<PropertyGuidWrapper> GuidItems
+        public override List<PropertyGuidWrapper> GuidWrappers
         {
             get => Properties;
             set => Properties = value;

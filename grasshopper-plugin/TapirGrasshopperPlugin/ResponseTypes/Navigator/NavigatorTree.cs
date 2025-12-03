@@ -16,12 +16,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
         public string Name;
     }
 
-    public class NavigatorTreeIdHolderObj
-    {
-        [JsonProperty("navigatorTreeId")]
-        public NavigatorTreeIdObj NavigatorTreeId;
-    }
-
     public class NavigatorItemObj
     {
         [JsonProperty("navigatorItemId")]
@@ -158,13 +152,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
         }
     }
 
-    public class GetDatabaseIdFromNavigatorItemIdInput
-    {
-        [JsonProperty("navigatorItemIds")]
-        public List<NavigatorGuidWrapper> NavigatorItemIds;
-    }
-
-    public class GetDatabaseIdFromNavigatorItemIdOutput
+    public class DatabaseIdFromNavigatorWrapperResponse
     {
         [JsonProperty("databases")]
         public List<DatabaseGuidWrapper> Databases;

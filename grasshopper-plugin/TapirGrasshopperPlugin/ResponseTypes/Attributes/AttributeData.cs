@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Attributes
         public List<AttributeGuidWrapper> Attributes;
 
         [JsonIgnore]
-        public override List<AttributeGuidWrapper> GuidItems
+        public override List<AttributeGuidWrapper> GuidWrappers
         {
             get => Attributes;
             set => Attributes = value;
@@ -45,7 +45,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Attributes
         public List<AttributeGuidWrapper> AttributeIds;
 
         [JsonIgnore]
-        public override List<AttributeGuidWrapper> GuidItems
+        public override List<AttributeGuidWrapper> GuidWrappers
         {
             get => AttributeIds;
             set => AttributeIds = value;

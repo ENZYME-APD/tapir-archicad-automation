@@ -27,45 +27,13 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
             NavigatorItemsObject>
     {
         [JsonProperty("navigatorItemIds")]
-        public List<NavigatorGuidWrapper> NavigatorItemIds;
+        public List<NavigatorGuidWrapper> NavigatorGuidWrappers;
 
         [JsonIgnore]
-        public override List<NavigatorGuidWrapper> GuidItems
+        public override List<NavigatorGuidWrapper> GuidWrappers
         {
-            get => NavigatorItemIds;
-            set => NavigatorItemIds = value;
-        }
-    }
-
-    public class DatabaseGuidObject : GuidObject<DatabaseGuidObject>
-    {
-    }
-
-    public class DatabaseGuidWrapper
-        : GuidWrapper<DatabaseGuidObject, DatabaseGuidWrapper>
-    {
-        [JsonProperty("databaseId")]
-        public DatabaseGuidObject DatabaseId;
-
-        [JsonIgnore]
-        public override DatabaseGuidObject Id
-        {
-            get => DatabaseId;
-            set => DatabaseId = value;
-        }
-    }
-
-    public class DatabasesObj
-        : GuidItemsObject<DatabaseGuidObject, DatabaseGuidWrapper, DatabasesObj>
-    {
-        [JsonProperty("databases")]
-        public List<DatabaseGuidWrapper> Databases;
-
-        [JsonIgnore]
-        public override List<DatabaseGuidWrapper> GuidItems
-        {
-            get => Databases;
-            set => Databases = value;
+            get => NavigatorGuidWrappers;
+            set => NavigatorGuidWrappers = value;
         }
     }
 }

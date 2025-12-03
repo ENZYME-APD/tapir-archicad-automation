@@ -29,17 +29,21 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "TreeType",
                 "The type of a navigator item tree.");
 
-            InText("PublisherSetName");
+            InText(
+                "PublisherSetName",
+                defaultValue: "");
+
+            Params.Input[1].Optional = true;
         }
 
         protected override void AddOutputs()
         {
-            OutGenericTree("NavigatorItemIds");
-            OutTextTree("NavigatorItemPrefixes");
-            OutTextTree("NavigatorItemNames");
-            OutTextTree("NavigatorItemPaths");
-            OutTextTree("NavigatorItemTypes");
-            OutGenericTree("SourceNavigatorItemIds");
+            OutGenericTree("Ids");
+            OutTextTree("Prefixes");
+            OutTextTree("Names");
+            OutTextTree("Paths");
+            OutTextTree("Types");
+            OutGenericTree("SourceIds");
             OutGenericTree("DatabaseIds");
         }
 
@@ -53,54 +57,6 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 0);
         }
 
-        private DataTree<DatabaseGuidWrapper>
-            GetDatabaseIdTreeFromNavigatorItemIdTree(
-                DataTree<NavigatorGuidWrapper> navItemIdTree)
-        {
-            var databaseIdTree = new DataTree<DatabaseGuidWrapper>();
-
-            var branches = new List<GH_Path>();
-            var allItems = new List<NavigatorGuidWrapper>();
-
-            for (var i = 0; i < navItemIdTree.BranchCount; i++)
-            {
-                var path = navItemIdTree.Path(i);
-                var items = navItemIdTree.Branch(path);
-
-                foreach (var item in items)
-                {
-                    branches.Add(path);
-                    allItems.Add(item);
-                }
-            }
-
-            var input =
-                new GetDatabaseIdFromNavigatorItemIdInput
-                {
-                    NavigatorItemIds = allItems
-                };
-
-            if (!TryGetConvertedValues(
-                    CommandName,
-                    input,
-                    ToAddOn,
-                    JHelp.Deserialize<GetDatabaseIdFromNavigatorItemIdOutput>,
-                    out GetDatabaseIdFromNavigatorItemIdOutput response))
-            {
-                return databaseIdTree;
-            }
-
-            for (var i = 0; i < response.Databases.Count; i++)
-            {
-                var item = response.Databases[i];
-                databaseIdTree.Add(
-                    item,
-                    branches[i]);
-            }
-
-            return databaseIdTree;
-        }
-
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -111,25 +67,22 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            if (!da.TryGet(
-                    1,
-                    out string name))
-            {
-                return;
-            }
-
-            var navigatorTreeId = new NavigatorTreeIdHolderObj
-            {
-                NavigatorTreeId = new NavigatorTreeIdObj
-                {
-                    Type = type,
-                    Name = string.IsNullOrEmpty(name) ? null : name
-                }
-            };
+            var name = da.GetOptional(
+                1,
+                "");
 
             if (!TryGetConvertedValues(
                     "GetNavigatorItemTree",
-                    navigatorTreeId,
+                    new
+                    {
+                        navigatorTreeId = new NavigatorTreeIdObj
+                        {
+                            Type = type,
+                            Name = string.IsNullOrEmpty(name)
+                                ? null
+                                : name
+                        }
+                    },
                     ToArchicad,
                     JHelp.Deserialize<NavigatorTreeObj>,
                     out NavigatorTreeObj response))
@@ -137,44 +90,85 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            var navigatorItemIdTree = new DataTree<NavigatorGuidWrapper>();
-            var navigatorItemPrefixTree = new DataTree<string>();
-            var navigatorItemNameTree = new DataTree<string>();
-            var navigatorItemPathTree = new DataTree<string>();
-            var navigatorItemTypeTree = new DataTree<string>();
-            var sourceNavigatorItemIdTree =
-                new DataTree<NavigatorGuidWrapper>();
+            var idTree = new DataTree<NavigatorGuidWrapper>();
+            var prefixTree = new DataTree<string>();
+            var nameTree = new DataTree<string>();
+            var pathTree = new DataTree<string>();
+            var typeTree = new DataTree<string>();
+            var sourceTree = new DataTree<NavigatorGuidWrapper>();
 
             response.GetItems(
-                navigatorItemIdTree,
-                navigatorItemPrefixTree,
-                navigatorItemNameTree,
-                navigatorItemPathTree,
-                navigatorItemTypeTree,
-                sourceNavigatorItemIdTree);
+                idTree,
+                prefixTree,
+                nameTree,
+                pathTree,
+                typeTree,
+                sourceTree);
 
             da.SetDataTree(
                 0,
-                navigatorItemIdTree);
+                idTree);
             da.SetDataTree(
                 1,
-                navigatorItemPrefixTree);
+                prefixTree);
             da.SetDataTree(
                 2,
-                navigatorItemNameTree);
+                nameTree);
             da.SetDataTree(
                 3,
-                navigatorItemPathTree);
+                pathTree);
             da.SetDataTree(
                 4,
-                navigatorItemTypeTree);
+                typeTree);
             da.SetDataTree(
                 5,
-                sourceNavigatorItemIdTree);
+                sourceTree);
             da.SetDataTree(
                 6,
-                GetDatabaseIdTreeFromNavigatorItemIdTree(navigatorItemIdTree));
+                GetDatabaseIdTree(idTree));
         }
+
+        private DataTree<DatabaseGuidWrapper> GetDatabaseIdTree(
+            DataTree<NavigatorGuidWrapper> wrapperTree)
+        {
+            var tree = new DataTree<DatabaseGuidWrapper>();
+
+            var branches = new List<GH_Path>();
+            var navigatorItemIds = new List<NavigatorGuidWrapper>();
+
+            for (var i = 0; i < wrapperTree.BranchCount; i++)
+            {
+                var path = wrapperTree.Path(i);
+                var items = wrapperTree.Branch(path);
+
+                foreach (var item in items)
+                {
+                    branches.Add(path);
+                    navigatorItemIds.Add(item);
+                }
+            }
+
+            if (!TryGetConvertedValues(
+                    CommandName,
+                    new { navigatorItemIds },
+                    ToAddOn,
+                    JHelp.Deserialize<DatabaseIdFromNavigatorWrapperResponse>,
+                    out DatabaseIdFromNavigatorWrapperResponse response))
+            {
+                return tree;
+            }
+
+            for (var i = 0; i < response.Databases.Count; i++)
+            {
+                var item = response.Databases[i];
+                tree.Add(
+                    item,
+                    branches[i]);
+            }
+
+            return tree;
+        }
+
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.NavigatorTree;

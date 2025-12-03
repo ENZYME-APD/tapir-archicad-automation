@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Issues
         public List<IssueGuidWrapper> Issues;
 
         [JsonIgnore]
-        public override List<IssueGuidWrapper> GuidItems
+        public override List<IssueGuidWrapper> GuidWrappers
         {
             get => Issues;
             set => Issues = value;

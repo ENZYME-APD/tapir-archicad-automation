@@ -22,7 +22,7 @@ namespace TapirGrasshopperPlugin.Helps
             {
                 var item = new ElementWithGDLParameters
                 {
-                    ElementId = elementsObject.GuidItems[i].ElementId,
+                    ElementId = elementsObject.GuidWrappers[i].ElementId,
                     GdlParameterList = new GdlParameterArray()
                     {
                         new GdlParameterDetails

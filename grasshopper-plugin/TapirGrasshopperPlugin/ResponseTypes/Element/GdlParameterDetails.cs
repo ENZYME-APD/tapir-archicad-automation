@@ -24,8 +24,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         public object Value;
     }
 
-    // set starts
-
     public class ElementsWithGDLParametersInput
     {
         [JsonProperty("elementsWithGDLParameters")]
@@ -48,8 +46,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     public class GdlParameterArray : List<GdlParameterDetails>
     {
     }
-
-    // set ends
 
     public class GDLHolder
     {
