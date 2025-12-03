@@ -98,14 +98,13 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             foreach (var system in response.ClassificationSystems)
             {
-                var classificationSystem = new ClassificationSystemObj
-                {
-                    ClassificationSystemId = system.ClassificationSystemId
-                };
-
                 if (!TryGetConvertedValues(
                         LoopCommandName,
-                        classificationSystem,
+                        new
+                        {
+                            classificationSystemId =
+                                system.ClassificationSystemId
+                        },
                         ToArchicad,
                         JHelp.Deserialize<AllClassificationItemsInSystem>,
                         out AllClassificationItemsInSystem

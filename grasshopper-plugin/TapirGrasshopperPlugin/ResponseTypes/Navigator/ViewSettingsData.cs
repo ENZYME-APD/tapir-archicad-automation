@@ -81,4 +81,13 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Navigator
         [JsonProperty("error")]
         public Error Error { get; set; }
     }
+
+    public class SetViewSettingsObject
+    {
+        [JsonProperty("navigatorItemId")]
+        public NavigatorGuid NavigatorGuid { get; set; }
+
+        [JsonProperty("viewSettings")]
+        public ViewSettings ViewSettings { get; set; }
+    }
 }

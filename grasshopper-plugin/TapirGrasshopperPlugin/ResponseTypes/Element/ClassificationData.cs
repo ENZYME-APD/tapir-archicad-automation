@@ -8,17 +8,6 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
     {
     }
 
-    public class ClassificationSystemObj
-    {
-        public override string ToString()
-        {
-            return ClassificationSystemId.ToString();
-        }
-
-        [JsonProperty("classificationSystemId")]
-        public ClassificationGuid ClassificationSystemId;
-    }
-
     public class ClassificationObj
     {
         [JsonProperty("classificationSystemId")]
@@ -44,7 +33,7 @@ namespace TapirGrasshopperPlugin.ResponseTypes.Element
         public ClassificationObj Classification;
     }
 
-    public class ElementClassificationsObj
+    public class ElementClassificationsObject
     {
         [JsonProperty("elementClassifications")]
         public List<ElementClassificationObj> ElementClassifications;

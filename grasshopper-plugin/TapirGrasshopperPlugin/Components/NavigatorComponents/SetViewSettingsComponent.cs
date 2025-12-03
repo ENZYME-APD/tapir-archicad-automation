@@ -94,15 +94,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 5,
                 "");
 
-            var settings = new List<object>();
+            var settings = new List<SetViewSettingsObject>();
 
             for (int i = 0; i < items.GuidWrappers.Count; i++)
             {
                 settings.Add(
-                    new
+                    new SetViewSettingsObject
                     {
-                        navigatorGuid = items.GuidWrappers[i].NavigatorId,
-                        viewSettings = new ViewSettings
+                        NavigatorGuid = items.GuidWrappers[i].Id,
+                        ViewSettings = new ViewSettings
                         {
                             ModelViewOptions = options,
                             LayerCombination = layer,

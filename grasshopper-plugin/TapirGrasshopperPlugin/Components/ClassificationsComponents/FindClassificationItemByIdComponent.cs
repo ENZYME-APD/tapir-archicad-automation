@@ -78,7 +78,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
             if (!da.TryCreate(
                     0,
-                    out ClassificationGuid id))
+                    out ClassificationGuid classificationSystemId))
             {
                 return;
             }
@@ -91,8 +91,8 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             }
 
             if (!TryGetConvertedValues(
-                    "GetAllClassificationsInSystem",
-                    new ClassificationSystemObj { ClassificationSystemId = id },
+                    CommandName,
+                    new { classificationSystemId },
                     ToArchicad,
                     JHelp.Deserialize<AllClassificationItemsInSystem>,
                     out AllClassificationItemsInSystem response))

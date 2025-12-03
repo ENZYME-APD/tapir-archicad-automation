@@ -2,6 +2,7 @@
 using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 
@@ -15,7 +16,10 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         public SetClassificationsOfElementsComponent()
             : base(
                 "SetClassifications",
-                "Set classifications of elements.",
+                "Sets the classifications of elements. " +
+                "In order to set the classification of an element to unclassified, " +
+                "omit the classificationItemId field. " +
+                "It works for subelements of hierarchal elements also.",
                 GroupNames.Classifications)
         {
         }
@@ -23,7 +27,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void AddInputs()
         {
             InGeneric(
-                "Guid",
+                "SystemGuid",
                 "The Guid of a Classification system.");
 
             InGenerics(
@@ -50,26 +54,26 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
             if (!da.TryCreate(
                     0,
-                    out ClassificationGuid classificationSystemId))
+                    out ClassificationGuid systemId))
             {
                 return;
             }
 
             if (!da.TryGetList(
                     1,
-                    out List<GH_ObjectWrapper> inputItemIds))
+                    out List<GH_ObjectWrapper> wrappers))
             {
                 return;
             }
 
-            var classificationItemIds = new List<ClassificationGuid>();
+            var guids = new List<ClassificationGuid>();
 
-            foreach (var obj in inputItemIds)
+            foreach (var wrapper in wrappers)
             {
-                var itemId = ClassificationGuid.CreateFromWrapper(obj);
+                var itemId = ClassificationGuid.CreateFromWrapper(wrapper);
                 if (itemId != null)
                 {
-                    classificationItemIds.Add(itemId);
+                    guids.Add(itemId);
                 }
             }
 
@@ -80,45 +84,43 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 return;
             }
 
-            if (classificationItemIds.Count != 1 && elements.Elements.Count !=
-                classificationItemIds.Count)
+            if (guids.Count != 1 && elements.Elements.Count != guids.Count)
             {
                 this.AddError("Classification- to ElementGuid count mismatch!");
                 return;
             }
 
-            var elementClassifications = new ElementClassificationsObj
-            {
-                ElementClassifications =
-                    new List<ElementClassificationObj>()
-            };
+            var elementClassifications = new List<ElementClassificationObj>();
 
             for (var i = 0; i < elements.Elements.Count; i++)
             {
                 var elementId = elements.Elements[i];
-                var elementClassification = new ElementClassificationObj()
+
+                var elementClassification = new ElementClassificationObj
                 {
                     ElementId = elementId.ElementId,
-                    Classification = new ClassificationObj()
+                    Classification = new ClassificationObj
                     {
-                        ClassificationSystemId = classificationSystemId
+                        ClassificationSystemId = systemId
                     }
                 };
-                var classificationItemId = classificationItemIds.Count == 1
-                    ? classificationItemIds[0]
-                    : classificationItemIds[i];
+
+                var classificationItemId = guids.Count == 1
+                    ? guids[0]
+                    : guids[i];
+
                 elementClassification.Classification.ClassificationItemId =
                     classificationItemId.IsNullGuid()
                         ? null
                         : classificationItemId;
-                elementClassifications.ElementClassifications.Add(
-                    elementClassification);
+
+                elementClassifications.Add(elementClassification);
             }
 
             SetValues(
                 CommandName,
-                elementClassifications,
-                ToArchicad);
+                new { elementClassifications },
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

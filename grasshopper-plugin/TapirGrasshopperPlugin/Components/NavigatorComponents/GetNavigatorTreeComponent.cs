@@ -29,7 +29,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "TreeType",
                 "The type of a navigator item tree.");
 
-            InText(
+            InTextWithDefault(
                 "PublisherSetName",
                 defaultValue: "");
 
