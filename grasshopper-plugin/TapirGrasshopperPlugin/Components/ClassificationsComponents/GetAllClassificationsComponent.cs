@@ -22,31 +22,31 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void AddOutputs()
         {
             OutTexts(
-                "Guid",
+                "ClassificationSystemGuid",
                 "Found Classification System Guid.");
 
             OutTexts(
-                "NameAndVersion",
+                "ClassificationSystemNameAndVersion",
                 "Found Classification System name and version.");
 
             OutTexts(
-                "ItemGuid",
+                "ClassificationItemGuid",
                 "Found ClassificationItem Guid.");
 
             OutTexts(
-                "ItemDisplayId",
+                "ClassificationItemDisplayId",
                 "Found ClassificationItem display id.");
 
             OutTexts(
-                "ItemFullDisplayId",
+                "ClassificationItemFullDisplayId",
                 "Found ClassificationItem full display id.");
 
             OutTexts(
-                "ItemName",
+                "ClassificationItemName",
                 "Found ClassificationItem name.");
 
             OutTexts(
-                "ItemPath",
+                "ClassificationItemPath",
                 "Path to ClassificationItem.");
         }
 

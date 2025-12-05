@@ -2,7 +2,6 @@
 using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 

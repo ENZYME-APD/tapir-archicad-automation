@@ -2,13 +2,11 @@
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
-using Rhino.Commands;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -183,12 +181,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var highlightElements = new HighlightElementsObj
             {
                 Elements = input.Elements,
-                HighlightedColors = Utilities.Convert.ToRgb(
+                HighlightedColors = Helps.Convert.ToRgb(
                     colorTree.FlattenData(),
                     255),
-                NonHighlightedColor = Utilities.Convert.ToRgb(
+                NonHighlightedColor = Helps.Convert.ToRgb(
                     nonHighlightedColor,
-                    Convert.ToInt32(transparency * 255.0)),
+                    System.Convert.ToInt32(transparency * 255.0)),
                 Wireframe3D = wireframe3D
             };
 

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.ResponseTypes.ArchiCad;
 
 namespace TapirGrasshopperPlugin.Components
 {

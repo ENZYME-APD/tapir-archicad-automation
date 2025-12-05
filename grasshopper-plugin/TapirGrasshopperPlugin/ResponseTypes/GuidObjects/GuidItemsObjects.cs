@@ -1,10 +1,10 @@
-﻿using Grasshopper.Kernel.Types;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 
-namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
+namespace TapirGrasshopperPlugin.ResponseTypes.GuidObjects
 {
     public abstract class GuidItemsObject<I, J, T> : IFromGhWrapper
         where I : GuidObject<I>, new()

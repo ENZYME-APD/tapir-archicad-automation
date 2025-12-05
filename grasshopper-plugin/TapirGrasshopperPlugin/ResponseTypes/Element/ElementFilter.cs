@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.ResponseTypes.Navigator;
-using TapirGrasshopperPlugin.Utilities;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element
 {

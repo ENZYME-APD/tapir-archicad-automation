@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TapirGrasshopperPlugin.Utilities
+namespace TapirGrasshopperPlugin.ResponseTypes.ArchiCad
 {
     public static class ConnectionSettings
     {

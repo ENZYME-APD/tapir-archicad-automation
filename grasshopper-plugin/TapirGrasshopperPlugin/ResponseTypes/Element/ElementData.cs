@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
-using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
+using TapirGrasshopperPlugin.ResponseTypes.GuidObjects;
 using TapirGrasshopperPlugin.ResponseTypes.Properties;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Element

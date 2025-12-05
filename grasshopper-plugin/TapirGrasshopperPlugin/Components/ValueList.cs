@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.ResponseTypes.ArchiCad;
 
 namespace TapirGrasshopperPlugin.Components
 {

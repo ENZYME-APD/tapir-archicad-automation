@@ -243,7 +243,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 var arcs = new List<Arc>();
                 if (wallDetails.ArcAngle.HasValue &&
                     Math.Abs(wallDetails.ArcAngle.Value) >=
-                    Utilities.Convert.Epsilon)
+                    Helps.Convert.Epsilon)
                 {
                     arcs.Add(
                         new Arc
@@ -255,7 +255,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 curves.Add(
-                    Utilities.Convert.ToPolyCurve(
+                    Helps.Convert.ToPolyCurve(
                         new List<Point2D>
                         {
                             wallDetails.BegCoordinate,
@@ -379,7 +379,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 begCoords.Add(begPoint3D);
 
                 if (Math.Abs(beamDetails.SlantAngle) >=
-                    Utilities.Convert.Epsilon)
+                    Helps.Convert.Epsilon)
                 {
                     var dirV = endPoint3D - begPoint3D;
                     var delta = Math.Sin(beamDetails.SlantAngle) * dirV.Length;
@@ -391,7 +391,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 arcAngles.Add(beamDetails.ArcAngle);
                 verticalCurveHeights.Add(beamDetails.VerticalCurveHeight);
                 var arcs = new List<Arc>();
-                if (Math.Abs(beamDetails.ArcAngle) >= Utilities.Convert.Epsilon)
+                if (Math.Abs(beamDetails.ArcAngle) >= Helps.Convert.Epsilon)
                 {
                     arcs.Add(
                         new Arc
@@ -403,7 +403,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 curves.Add(
-                    Utilities.Convert.ToPolyCurve(
+                    Helps.Convert.ToPolyCurve(
                         new List<Point2D>
                         {
                             beamDetails.BegCoordinate,
@@ -567,7 +567,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         ElementId = inputs.Elements[i].ElementId
                     });
                 polygons.Add(
-                    Utilities.Convert.ToPolyCurve(
+                    Helps.Convert.ToPolyCurve(
                         slabDetails.PolygonCoordinates,
                         slabDetails.PolygonArcs,
                         slabDetails.ZCoordinate));
@@ -576,7 +576,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 foreach (var holeDetail in slabDetails.Holes)
                 {
                     holePolygons.Add(
-                        Utilities.Convert.ToPolyCurve(
+                        Helps.Convert.ToPolyCurve(
                             holeDetail.PolygonCoordinates,
                             holeDetail.PolygonArcs,
                             slabDetails.ZCoordinate));
@@ -652,7 +652,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         ElementId = inputs.Elements[i].ElementId
                     });
                 rhinoPolylines.Add(
-                    Utilities.Convert.ToPolyCurve(
+                    Helps.Convert.ToPolyCurve(
                         polylineDetails.Coordinates,
                         polylineDetails.Arcs,
                         polylineDetails.ZCoordinate));
@@ -759,7 +759,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         zoneDetails.ZCoordinate));
                 isManuals.Add(zoneDetails.IsManual);
                 polygons.Add(
-                    Utilities.Convert.ToPolyCurve(
+                    Helps.Convert.ToPolyCurve(
                         zoneDetails.PolygonCoordinates,
                         zoneDetails.PolygonArcs,
                         zoneDetails.ZCoordinate));
@@ -769,7 +769,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 foreach (var holeDetail in zoneDetails.Holes)
                 {
                     holePolygons.Add(
-                        Utilities.Convert.ToPolyCurve(
+                        Helps.Convert.ToPolyCurve(
                             holeDetail.PolygonCoordinates,
                             holeDetail.PolygonArcs,
                             zoneDetails.ZCoordinate));

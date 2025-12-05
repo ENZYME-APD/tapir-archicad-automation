@@ -6,7 +6,7 @@ using Rhino.Geometry;
 using TapirGrasshopperPlugin.ResponseTypes.Element;
 using Arc = TapirGrasshopperPlugin.ResponseTypes.Element.Arc;
 
-namespace TapirGrasshopperPlugin.Utilities
+namespace TapirGrasshopperPlugin.Helps
 {
     public class Convert
     {

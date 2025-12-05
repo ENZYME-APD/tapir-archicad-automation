@@ -1,4 +1,4 @@
-﻿namespace TapirGrasshopperPlugin.ResponseTypes.IdObjects
+﻿namespace TapirGrasshopperPlugin.ResponseTypes.GuidObjects
 {
     public interface IFromGhWrapper
     {

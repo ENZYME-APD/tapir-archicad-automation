@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
-using TapirGrasshopperPlugin.ResponseTypes.IdObjects;
+using TapirGrasshopperPlugin.ResponseTypes.GuidObjects;
 
 namespace TapirGrasshopperPlugin.ResponseTypes.Properties
 {

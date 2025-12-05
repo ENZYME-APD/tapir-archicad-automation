@@ -91,7 +91,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
                 areas.Add(zb.Area);
                 polygons.Add(
-                    Utilities.Convert.ToPolyCurve(zb.PolygonCoordinates));
+                    Helps.Convert.ToPolyCurve(zb.PolygonCoordinates));
             }
 
             da.SetDataList(
