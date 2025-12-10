@@ -28,7 +28,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "Size of the grid.",
                 1.0);
 
-            Params.Input[1].Optional = true;
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()

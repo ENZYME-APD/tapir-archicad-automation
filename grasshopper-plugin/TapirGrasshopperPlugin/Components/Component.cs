@@ -197,6 +197,21 @@ namespace TapirGrasshopperPlugin.Components
         {
         }
 
+        public void SetOptionality(
+            int[] indices)
+        {
+            foreach (var index in indices)
+            {
+                SetOptionality(index);
+            }
+        }
+
+        protected void SetOptionality(
+            int index)
+        {
+            inManager[index].Optional = true;
+        }
+
         public void InGeneric(
             string name,
             string description = "")
@@ -604,6 +619,19 @@ namespace TapirGrasshopperPlugin.Components
                 name,
                 description.WithTypeName("textList"),
                 GH_ParamAccess.list);
+        }
+
+        public void InTexts(
+            string name,
+            string defaultValue,
+            string description = "")
+        {
+            inManager.AddTextParameter(
+                name,
+                name,
+                description.WithTypeName("textList"),
+                GH_ParamAccess.list,
+                defaultValue);
         }
 
         public void OutBoxes(

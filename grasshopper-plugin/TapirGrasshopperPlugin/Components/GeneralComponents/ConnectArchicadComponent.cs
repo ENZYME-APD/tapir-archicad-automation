@@ -43,6 +43,14 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             InBoolean(
                 "AllowAutomaticExecution",
                 defaultValue: AutoExecute);
+
+            SetOptionality(
+                new[]
+                {
+                    0,
+                    1,
+                    2
+                });
         }
 
         protected override void AddOutputs()

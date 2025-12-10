@@ -38,9 +38,13 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "Index",
                 "Index or indices to extract from lists");
 
-            Params.Input[1].Optional = true;
-            Params.Input[2].Optional = true;
-            Params.Input[3].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2,
+                    3
+                });
         }
 
         protected override void AddOutputs()
@@ -65,14 +69,12 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void SolveInstance(
             IGH_DataAccess DA)
         {
-            // Initialize outputs as empty lists
             var out1 = new List<IGH_Goo>();
             var out2 = new List<IGH_Goo>();
             var out3 = new List<IGH_Goo>();
             var out4 = new List<IGH_Goo>();
             var message = "Waiting for at least one input list.";
 
-            // Collect input lists
             var list1 = new List<IGH_Goo>();
             var list2 = new List<IGH_Goo>();
             var list3 = new List<IGH_Goo>();
@@ -91,7 +93,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 3,
                 list4);
 
-            // Collect non-null input lists
             var inputLists = new List<List<IGH_Goo>>();
             if (hasList1 && list1.Count > 0)
             {

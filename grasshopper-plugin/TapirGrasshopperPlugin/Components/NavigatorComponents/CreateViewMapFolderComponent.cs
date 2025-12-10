@@ -32,8 +32,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "The newly created folder will be placed after this sibling item. " +
                 "If this parameter is not given the folder will be created as the first item under the parent.");
 
-            Params.Input[1].Optional = true;
-            Params.Input[2].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2
+                });
         }
 
         protected override void AddOutputs()

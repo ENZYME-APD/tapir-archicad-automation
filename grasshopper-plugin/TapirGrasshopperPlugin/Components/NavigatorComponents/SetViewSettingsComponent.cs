@@ -54,11 +54,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "The name of the graphic override combination. " +
                 "If empty, the view has custom graphic override combination.");
 
-            Params.Input[1].Optional = true;
-            Params.Input[2].Optional = true;
-            Params.Input[3].Optional = true;
-            Params.Input[4].Optional = true;
-            Params.Input[5].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                });
         }
 
         protected override void AddOutputs()

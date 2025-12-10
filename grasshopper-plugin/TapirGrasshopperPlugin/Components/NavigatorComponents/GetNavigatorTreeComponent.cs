@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "PublisherSetName",
                 defaultValue: "");
 
-            Params.Input[1].Optional = true;
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()

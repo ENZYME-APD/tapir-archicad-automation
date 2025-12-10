@@ -27,6 +27,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "AcceptAllElements",
                 "Accept all new/deleted Elements.",
                 true);
+
+            SetOptionality(1);
         }
 
         protected override void Solve(
@@ -39,12 +41,9 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            if (!da.TryGet(
-                    1,
-                    out bool acceptAllElements))
-            {
-                return;
-            }
+            bool acceptAllElements = da.GetOptional(
+                1,
+                true);
 
             SetValues(
                 CommandName,

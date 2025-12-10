@@ -85,9 +85,11 @@ namespace TapirGrasshopperPlugin.Helps
             T defItem)
         {
             var item = defItem;
+
             dataAccess.GetData(
                 index,
                 ref item);
+
             return item;
         }
 

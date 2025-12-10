@@ -43,8 +43,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Intersection body surface area greater then this value will be considered as a collision.",
                 Tolerances.Main);
 
-            Params.Input[2].Optional = true;
-            Params.Input[4].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    2,
+                    4
+                });
         }
 
         protected override void AddOutputs()
@@ -85,7 +89,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             if (!da.TryCreateFromList(
-                    0,
+                    1,
                     out ElementsObject inputGroup2))
             {
                 return;

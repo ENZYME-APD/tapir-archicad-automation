@@ -25,8 +25,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InGenerics("ElementsToRemove");
             InBoolean("ClearSelection");
 
-            Params.Input[0].Optional = true;
-            Params.Input[1].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    0,
+                    1
+                });
         }
 
         protected override void Solve(

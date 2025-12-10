@@ -36,8 +36,12 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "Determines if the search matches whole words only",
                 true);
 
-            Params.Input[2].Optional = true;
-            Params.Input[3].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    2,
+                    3
+                });
         }
 
         protected override void AddOutputs()

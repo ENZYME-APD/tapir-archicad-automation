@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "Rotation angle for north direction",
                 0.0);
 
-            Params.Input[2].Optional = true;
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
@@ -64,7 +64,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void SolveInstance(
             IGH_DataAccess da)
         {
-            // Get inputs
             if (!da.TryGetList(
                     0,
                     out List<Point3d> startPoints))
@@ -73,7 +72,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             }
 
             if (!da.TryGetList(
-                    0,
+                    1,
                     out List<Point3d> endPoints))
             {
                 return;
@@ -83,7 +82,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 2,
                 0.0);
 
-            // Ensure inputs are lists of equal length
             if (startPoints.Count != endPoints.Count)
             {
                 AddRuntimeMessage(
@@ -92,7 +90,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 return;
             }
 
-            // Initialize outputs
             var normalVectors = new List<List<double>>();
             var orientationAngles = new List<double>();
             var orientationCodes = new List<string>();
@@ -100,18 +97,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             var midpoints = new List<Point3d>();
             var vectorLines = new List<Curve>();
 
-            // Process each wall
             for (var i = 0; i < startPoints.Count; i++)
             {
                 var start = startPoints[i];
                 var end = endPoints[i];
 
-                // Calculate normal vector and midpoint
                 var (normalVector, midpoint) = CalculateNormalVector(
                     start,
                     end);
 
-                // Skip invalid results
                 if (normalVector == null)
                 {
                     normalVectors.Add(null);
@@ -123,21 +117,17 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     continue;
                 }
 
-                // Determine orientation angle
                 var orientationAngle = CalculateOrientation(
                     normalVector,
                     northRotation);
 
-                // Get orientation code
                 var orientationCode = GetOrientationCode(orientationAngle);
 
-                // Create Rhino vector
                 var rhinoVector = new Vector3d(
                     normalVector[0],
                     normalVector[1],
                     0);
 
-                // Create vector line with hardcoded length of 2
                 var vecEndpoint = new Point3d(
                     midpoint.X +
                     normalVector[0] * 2, // Length of vector is hardcoded as 2
@@ -147,7 +137,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                     midpoint,
                     vecEndpoint);
 
-                // Append results
                 normalVectors.Add(normalVector);
                 orientationAngles.Add(orientationAngle);
                 orientationCodes.Add(orientationCode);
@@ -156,7 +145,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 vectorLines.Add(vectorLine);
             }
 
-            // Set outputs
             da.SetDataList(
                 0,
                 normalVectors);
@@ -176,7 +164,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 5,
                 vectorLines);
 
-            // Update component message
             Message = "Wall Orientation\nV1.0";
         }
 

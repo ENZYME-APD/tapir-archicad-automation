@@ -48,11 +48,15 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 "Mode",
                 "Color generation mode: 'gradient', 'complementary', or 'random'. Default: RANDOM");
 
-            Params.Input[1].Optional = true;
-            Params.Input[2].Optional = true;
-            Params.Input[3].Optional = true;
-            Params.Input[4].Optional = true;
-            Params.Input[5].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                });
         }
 
         protected override void AddOutputs()
@@ -69,10 +73,8 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void SolveInstance(
             IGH_DataAccess DA)
         {
-            // Initialize default message
             var message = "Waiting for input DataTree.";
 
-            // Get input tree
             var tree = new GH_Structure<IGH_Goo>();
             if (!DA.GetDataTree(
                     0,

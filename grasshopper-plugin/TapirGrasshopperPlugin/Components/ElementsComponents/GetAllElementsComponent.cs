@@ -19,12 +19,30 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
+        public override void AddedToDocument(
+            GH_Document document)
+        {
+            base.AddedToDocument(document);
+
+            new ElementFilterValueList().AddAsSource(
+                this,
+                0);
+        }
+
         protected override void AddInputs()
         {
-            InTexts("Filters");
+            InTexts(
+                "Filters",
+                defaultValue: nameof(ElementFilter.NoFilter));
+
             InGenerics("Databases");
 
-            Params.Input[1].Optional = true;
+            SetOptionality(
+                new[]
+                {
+                    0,
+                    1
+                });
         }
 
         protected override void AddOutputs()

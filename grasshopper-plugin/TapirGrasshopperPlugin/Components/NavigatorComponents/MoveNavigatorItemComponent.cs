@@ -29,13 +29,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "ParentNavigatorItemId",
                 "Moves the given navigator item under the parentNavigatorItemId in the navigator tree.");
 
-
             InGeneric(
                 "PreviousNavigatorItemId",
                 "Moves the given navigator item after this navigator item. " +
                 "By default it moves it at the first place under the new parent.");
 
-            Params.Input[2].Optional = true;
+            SetOptionality(2);
         }
 
         protected override void Solve(

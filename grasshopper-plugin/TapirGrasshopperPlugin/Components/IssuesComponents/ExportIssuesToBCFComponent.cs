@@ -36,6 +36,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "AlignBySurveyPoint",
                 "Align BCF views by Archicad Survey Point or Archicad Project Origin.",
                 true);
+
+            SetOptionality(
+                new[]
+                {
+                    2,
+                    3
+                });
         }
 
         protected override void Solve(
@@ -55,19 +62,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            if (!da.TryGet(
-                    2,
-                    out bool useExternalId))
-            {
-                return;
-            }
+            bool useExternalId = da.GetOptional(
+                2,
+                true);
 
-            if (!da.TryGet(
-                    3,
-                    out bool alignBySurveyPoint))
-            {
-                return;
-            }
+            bool alignBySurveyPoint = da.GetOptional(
+                3,
+                true);
 
             SetValues(
                 CommandName,
