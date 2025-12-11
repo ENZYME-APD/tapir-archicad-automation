@@ -39,10 +39,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public override void AddedToDocument(
             GH_Document document)
         {
-            base.AddedToDocument(document);
-
-            new AttributeTypeValueList().AddAsSource(
-                this,
+            AddAsSource<AttributeTypeValueList>(
+                document,
                 0);
         }
 

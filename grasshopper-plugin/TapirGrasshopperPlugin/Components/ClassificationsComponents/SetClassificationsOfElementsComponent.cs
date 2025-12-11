@@ -41,10 +41,8 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         public override void AddedToDocument(
             GH_Document document)
         {
-            base.AddedToDocument(document);
-
-            new ClassificationSystemValueList().AddAsSource(
-                this,
+            AddAsSource<ClassificationSystemValueList>(
+                document,
                 0);
         }
 

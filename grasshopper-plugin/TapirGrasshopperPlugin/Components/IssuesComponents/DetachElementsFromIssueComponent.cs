@@ -30,10 +30,8 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         public override void AddedToDocument(
             GH_Document document)
         {
-            base.AddedToDocument(document);
-
-            new IssueElementTypeValueList().AddAsSource(
-                this,
+            AddAsSource<IssueElementTypeValueList>(
+                document,
                 2);
         }
 

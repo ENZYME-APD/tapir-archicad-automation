@@ -181,6 +181,18 @@ namespace TapirGrasshopperPlugin.Components
             AddOutputs();
         }
 
+        protected void AddAsSource<T>(
+            GH_Document document,
+            int index)
+            where T : ValueList, new()
+        {
+            base.AddedToDocument(document);
+
+            new T().AddAsSource(
+                this,
+                index);
+        }
+
         protected virtual void AddInputs() { }
         protected virtual void AddOutputs() { }
 

@@ -73,10 +73,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public override void AddedToDocument(
             GH_Document document)
         {
-            base.AddedToDocument(document);
-
-            new NavigatorTreeTypeValueList().AddAsSource(
-                this,
+            AddAsSource<NavigatorTreeTypeValueList>(
+                document,
                 0);
         }
 

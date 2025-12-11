@@ -49,10 +49,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public override void AddedToDocument(
             GH_Document document)
         {
-            base.AddedToDocument(document);
-
-            new ElementTypeValueList().AddAsSource(
-                this,
+            AddAsSource<ElementTypeValueList>(
+                document,
                 0);
         }
 
