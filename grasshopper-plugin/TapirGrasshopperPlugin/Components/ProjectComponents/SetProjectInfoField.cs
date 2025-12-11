@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Project;
+using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -66,7 +66,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                              x,
                              y)))
             {
-                SetValues(
+                SetCadValues(
                     CommandName,
                     field,
                     ToAddOn);

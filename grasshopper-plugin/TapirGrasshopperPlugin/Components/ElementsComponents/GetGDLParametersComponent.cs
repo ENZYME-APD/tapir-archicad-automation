@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -60,7 +60,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     inputs,
                     ToAddOn,

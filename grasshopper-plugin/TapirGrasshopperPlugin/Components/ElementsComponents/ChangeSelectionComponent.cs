@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -21,9 +21,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            InGenerics("ElementsToAdd");
-            InGenerics("ElementsToRemove");
-            InBoolean("ClearSelection");
+            InGenerics(
+                "ElementsToAdd",
+                "Elements to add to selection.");
+
+            InGenerics(
+                "ElementsToRemove",
+                "Elements to remove from selection.");
+
+            InBoolean(
+                "ClearSelection",
+                "Remove all Elements from selection (before adding the given elements to selection).");
 
             SetOptionality(
                 new[]
@@ -99,7 +107,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             };
 
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 parameters,
                 ToAddOn);

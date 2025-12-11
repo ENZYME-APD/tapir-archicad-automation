@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -61,7 +61,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 previousNavigatorItemId = null;
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 new
                 {

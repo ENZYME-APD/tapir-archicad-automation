@@ -1,8 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     input,
                     ToAddOn,

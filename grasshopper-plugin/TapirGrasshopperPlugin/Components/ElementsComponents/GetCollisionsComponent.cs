@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -74,7 +74,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "The element has body collision.");
 
             OutBooleans(
-                "HasClearenceCollision",
+                "HasClearanceCollision",
                 "The element has clearance collision.");
         }
 
@@ -122,7 +122,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
             };
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     parameters,
                     ToAddOn,

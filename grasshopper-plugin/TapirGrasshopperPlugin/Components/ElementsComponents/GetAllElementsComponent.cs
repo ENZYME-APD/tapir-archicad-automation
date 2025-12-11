@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -35,7 +35,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Filters",
                 defaultValue: nameof(ElementFilter.NoFilter));
 
-            InGenerics("Databases");
+            InGenerics(
+                "Databases",
+                "Databases to find elements in.");
 
             SetOptionality(
                 new[]
@@ -75,8 +77,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         : databases.Databases
             };
 
-
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     elementFilters,
                     ToAddOn,

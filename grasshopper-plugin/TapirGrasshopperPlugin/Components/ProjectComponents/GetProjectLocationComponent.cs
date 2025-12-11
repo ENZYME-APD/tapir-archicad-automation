@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Project;
+using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutText(nameof(Location.North));
             OutText(nameof(SurveyPointPosition.Eastings));
             OutText(nameof(SurveyPointPosition.Northings));
-            OutText("Elevation");
+            OutText(nameof(SurveyPointPosition.Elevation));
             OutText(nameof(GeoReferencingParameters.CrsName));
             OutText(nameof(GeoReferencingParameters.Description));
             OutText(nameof(GeoReferencingParameters.GeodeticDatum));
@@ -37,7 +37,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     null,
                     ToAddOn,

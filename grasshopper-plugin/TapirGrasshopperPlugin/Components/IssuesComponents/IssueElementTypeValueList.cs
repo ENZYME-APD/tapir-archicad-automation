@@ -1,5 +1,5 @@
 ﻿using System;
-using TapirGrasshopperPlugin.ResponseTypes.Issues;
+using TapirGrasshopperPlugin.Types.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {

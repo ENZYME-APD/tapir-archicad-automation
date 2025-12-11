@@ -3,7 +3,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -31,7 +31,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InBoolean(
                 "Copy",
-                "Move copies of the elements or move the elements themselves.");
+                "Move copies of the elements or move the elements themselves.",
+                false);
         }
 
         protected override void Solve(
@@ -91,10 +92,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 input,
-                ToArchicad);
+                ToAddOn);
         }
 
         protected override System.Drawing.Bitmap Icon =>

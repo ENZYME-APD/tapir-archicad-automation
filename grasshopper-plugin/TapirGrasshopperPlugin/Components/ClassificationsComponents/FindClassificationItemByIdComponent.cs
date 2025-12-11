@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
@@ -22,11 +22,11 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         {
             InGeneric(
                 "ClassificationSystemGuid",
-                "The Guid of a classification system.");
+                "The Guid of the classification system.");
 
             InText(
                 "ClassificationItemId",
-                "Classification Item id to find.");
+                "Classification Item Id to find.");
         }
 
         protected override void AddOutputs()
@@ -85,12 +85,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             if (!da.TryGet(
                     1,
-                    out string cId))
+                    out string classificationItemId))
             {
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { classificationSystemId },
                     ToArchicad,
@@ -102,7 +102,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             var found = FindClassificationItemInTree(
                 response.ClassificationItems,
-                cId.ToLower());
+                classificationItemId.ToLower());
 
             if (found == null)
             {

@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Favorites;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Favorites;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 {
@@ -45,9 +45,9 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 return;
             }
 
-            var input = FavoritesObj.FromWrappers(ghInputs);
+            var input = FavoritesObject.FromWrappers(ghInputs);
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     input,
                     ToAddOn,

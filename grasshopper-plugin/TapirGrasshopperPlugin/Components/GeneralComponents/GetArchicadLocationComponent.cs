@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
@@ -27,7 +27,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     null,
                     ToAddOn,

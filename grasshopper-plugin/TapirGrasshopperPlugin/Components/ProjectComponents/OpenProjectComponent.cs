@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -41,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { projectFilePath = path },
                     ToAddOn,

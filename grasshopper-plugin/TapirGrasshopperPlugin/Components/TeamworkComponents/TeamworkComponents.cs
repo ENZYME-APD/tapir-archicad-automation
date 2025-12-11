@@ -1,6 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.TeamworkComponents
 {
@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     null,
                     ToAddOn,

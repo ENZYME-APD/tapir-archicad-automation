@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using Arc = TapirGrasshopperPlugin.ResponseTypes.Element.Arc;
+using TapirGrasshopperPlugin.Types.Element;
+using Arc = TapirGrasshopperPlugin.Types.Element.Arc;
 
 namespace TapirGrasshopperPlugin.Helps
 {

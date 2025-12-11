@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -68,7 +68,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (parameterNames.Count != values.Count)
             {
-                this.AddError("Unequal parameter name to value count.");
+                this.AddError("Parameter name to value count mismatch.");
                 return;
             }
 
@@ -76,7 +76,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 parameterNames,
                 values);
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     input,
                     ToAddOn,

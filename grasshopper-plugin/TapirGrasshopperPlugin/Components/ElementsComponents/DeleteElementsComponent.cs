@@ -1,8 +1,8 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -20,7 +20,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            InGenerics("ElementGuids");
+            InGenerics(
+                "ElementGuids",
+                "Element ids to delete.");
         }
 
         protected override void Solve(
@@ -33,7 +35,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     input,
                     ToAddOn,

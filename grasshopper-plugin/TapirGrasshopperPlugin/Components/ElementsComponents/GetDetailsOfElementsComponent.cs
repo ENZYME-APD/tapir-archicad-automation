@@ -5,9 +5,9 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Attributes;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using Arc = TapirGrasshopperPlugin.ResponseTypes.Element.Arc;
+using TapirGrasshopperPlugin.Types.Attributes;
+using TapirGrasshopperPlugin.Types.Element;
+using Arc = TapirGrasshopperPlugin.Types.Element.Arc;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -45,7 +45,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     inputs,
                     ToAddOn,
@@ -378,8 +378,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
                 begCoords.Add(begPoint3D);
 
-                if (Math.Abs(beamDetails.SlantAngle) >=
-                    Helps.Convert.Epsilon)
+                if (Math.Abs(beamDetails.SlantAngle) >= Helps.Convert.Epsilon)
                 {
                     var dirV = endPoint3D - begPoint3D;
                     var delta = Math.Sin(beamDetails.SlantAngle) * dirV.Length;

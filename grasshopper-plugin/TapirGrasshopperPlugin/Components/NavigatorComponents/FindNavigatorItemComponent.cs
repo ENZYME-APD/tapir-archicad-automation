@@ -5,7 +5,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -28,11 +28,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "TreeType",
                 "The type of a navigator item tree.");
 
-            InText("PublisherSetName");
+            InTextWithDefault(
+                "PublisherSetName",
+                defaultValue: "");
 
             InText(
                 "PathRegex",
                 "The regular expression pattern for the path of the navigator item.");
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
@@ -79,7 +83,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         private List<DatabaseGuidWrapper> GetDatabaseIdsFromNavigatorItemIds(
             List<NavigatorGuidWrapper> navigatorItemIds)
         {
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     "GetDatabaseIdFromNavigatorItemId",
                     new { navigatorItemIds },
                     ToAddOn,
@@ -116,7 +120,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     "GetNavigatorItemTree",
                     new
                     {

@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -25,12 +25,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     null,
                     ToArchicad,
-                    JHelp.Deserialize<PublisherSetNamesObj>,
-                    out PublisherSetNamesObj response))
+                    JHelp.Deserialize<PublisherSetNamesObject>,
+                    out PublisherSetNamesObject response))
             {
                 return;
             }

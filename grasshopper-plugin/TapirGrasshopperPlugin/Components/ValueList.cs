@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using TapirGrasshopperPlugin.ResponseTypes.ArchiCad;
+using TapirGrasshopperPlugin.Types.ArchiCad;
 
 namespace TapirGrasshopperPlugin.Components
 {
@@ -35,18 +35,6 @@ namespace TapirGrasshopperPlugin.Components
         {
             var connection = new ArchicadConnection(ConnectionSettings.Port);
             return connection.SendCommand(
-                commandName,
-                commandParameters);
-        }
-
-        protected CommandResponse SendArchicadAddOnCommand(
-            string commandNamespace,
-            string commandName,
-            JObject commandParameters)
-        {
-            var connection = new ArchicadConnection(ConnectionSettings.Port);
-            return connection.SendAddOnCommand(
-                commandNamespace,
                 commandName,
                 commandParameters);
         }

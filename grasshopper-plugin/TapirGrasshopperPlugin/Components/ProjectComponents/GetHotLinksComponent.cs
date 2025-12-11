@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Project;
+using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -41,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     null,
                     ToAddOn,

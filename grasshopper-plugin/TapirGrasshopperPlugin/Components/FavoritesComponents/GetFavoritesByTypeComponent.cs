@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Favorites;
+using TapirGrasshopperPlugin.Types.Favorites;
 
 namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 {
@@ -39,12 +39,12 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new ElementTypeObject(input),
                     ToAddOn,
-                    JHelp.Deserialize<FavoritesObj>,
-                    out FavoritesObj response))
+                    JHelp.Deserialize<FavoritesObject>,
+                    out FavoritesObject response))
             {
                 return;
             }

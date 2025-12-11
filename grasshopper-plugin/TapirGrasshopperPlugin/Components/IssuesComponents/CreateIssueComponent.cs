@@ -1,7 +1,7 @@
 using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Issues;
+using TapirGrasshopperPlugin.Types.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -33,13 +33,13 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             IGH_DataAccess da)
         {
             if (!da.TryGet(
-                    1,
+                    0,
                     out string name))
             {
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { name },
                     ToAddOn,

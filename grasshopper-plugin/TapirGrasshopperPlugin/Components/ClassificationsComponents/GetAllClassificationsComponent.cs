@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
@@ -86,7 +86,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 new Dictionary<ClassificationSystemDetailsObj,
                     List<Tuple<ClassificationItemDetailsObj, string>>>();
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     null,
                     ToArchicad,
@@ -98,7 +98,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             foreach (var system in response.ClassificationSystems)
             {
-                if (!TryGetConvertedValues(
+                if (!TryGetConvertedCadValues(
                         LoopCommandName,
                         new
                         {

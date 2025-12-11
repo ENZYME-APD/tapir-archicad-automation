@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Types.Generic;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 // ReSharper disable All
 
@@ -117,7 +117,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     });
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { navigatorItemIdsWithViewSettings = settings },
                     ToAddOn,

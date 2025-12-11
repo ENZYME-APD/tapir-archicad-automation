@@ -3,7 +3,7 @@ using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
@@ -26,11 +26,11 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void AddInputs()
         {
             InGeneric(
-                "SystemGuid",
+                "ClassificationSystemGuid",
                 "The Guid of a Classification system.");
 
             InGenerics(
-                "ItemGuids",
+                "ClassificationItemGuids",
                 "The Guids of Classification items to assign for the given elements.");
 
             InGenerics(
@@ -85,7 +85,8 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 
             if (guids.Count != 1 && elements.Elements.Count != guids.Count)
             {
-                this.AddError("Classification- to ElementGuid count mismatch!");
+                this.AddError(
+                    "ClassificationGuid to ElementGuid count mismatch!");
                 return;
             }
 
@@ -116,7 +117,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 elementClassifications.Add(elementClassification);
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 new { elementClassifications },
                 ToAddOn);

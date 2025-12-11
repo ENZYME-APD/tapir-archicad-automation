@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Attributes;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -20,16 +20,20 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            InGenerics("LayerAttributeGuids");
+            InGenerics(
+                "LayerAttributeGuids",
+                "List of layer attribute Guids.");
         }
 
         protected override void AddOutputs()
         {
-            OutTexts("LayerNames");
+            OutTexts(
+                "Names",
+                "Names of the layers.");
 
             OutBooleans(
                 "IsHidden",
-                "Visibility of the layers.");
+                "Visibility states of the layers.");
 
             OutBooleans(
                 "IsLocked",
@@ -37,11 +41,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             OutBooleans(
                 "IsWireframe",
-                "Wireframe flag of the layers.");
+                "Wireframe flags of the layers.");
 
             OutIntegers(
                 "IntersectionGroup",
-                "Intersection group of the layers.");
+                "Intersection groups of the layers.");
         }
 
         protected override void Solve(
@@ -54,12 +58,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     input,
                     ToArchicad,
-                    JHelp.Deserialize<LayersObj>,
-                    out LayersObj response))
+                    JHelp.Deserialize<LayersObject>,
+                    out LayersObject response))
             {
                 return;
             }

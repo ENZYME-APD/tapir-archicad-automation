@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public Get3DBoundingBoxesOfElementsComponent()
             : base(
                 "Element3DBoundingBoxes",
-                "Gets the 3D BoundingBoxes of Elements.",
+                "Gets the 3D BoundingBoxes of elements.",
                 GroupNames.Elements)
         {
         }
@@ -41,12 +41,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     elements,
                     ToAddOn,
-                    JHelp.Deserialize<BoundingBoxes3DObj>,
-                    out BoundingBoxes3DObj response))
+                    JHelp.Deserialize<BoundingBoxes3DObject>,
+                    out BoundingBoxes3DObject response))
             {
                 return;
             }

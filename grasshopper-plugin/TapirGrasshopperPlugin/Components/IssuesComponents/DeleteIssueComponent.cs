@@ -1,7 +1,7 @@
 using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Issues;
+using TapirGrasshopperPlugin.Types.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -45,7 +45,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 1,
                 true);
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 new { issueId, acceptAllElements },
                 ToAddOn);

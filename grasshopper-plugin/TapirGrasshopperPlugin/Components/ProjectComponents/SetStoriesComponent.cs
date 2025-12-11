@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Project;
+using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             if (names.Count != elevations.Count)
             {
-                this.AddError("StoryName to -Elevation count mismatch!");
+                this.AddError("StoryName to StoryElevation count mismatch!");
                 return;
             }
 
@@ -76,7 +76,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     });
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 input,
                 ToAddOn);

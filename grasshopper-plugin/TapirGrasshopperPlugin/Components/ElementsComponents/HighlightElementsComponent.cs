@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -190,7 +190,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 Wireframe3D = wireframe3D
             };
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 highlightElements,
                 ToAddOn);
@@ -198,7 +198,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         private void ClearHighlight()
         {
-            SetValues(
+            SetCadValues(
                 CommandName,
                 new HighlightElementsObj(),
                 ToAddOn);

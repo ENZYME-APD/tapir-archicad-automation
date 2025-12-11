@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.ArchiCad;
+using TapirGrasshopperPlugin.Types.ArchiCad;
 
 namespace TapirGrasshopperPlugin.Components
 {
@@ -687,7 +687,7 @@ namespace TapirGrasshopperPlugin.Components
                     commandParameters);
         }
 
-        protected bool TryGetResponse(
+        protected bool TryGetCadResponse(
             string commandName,
             JObject commandParameters,
             Func<string, JObject, CommandResponse> sendCommand,
@@ -705,24 +705,25 @@ namespace TapirGrasshopperPlugin.Components
             else
             {
                 this.AddError(cadResponse.GetErrorMessage());
+
                 response = null;
                 return false;
             }
         }
 
-        protected void SetValues(
+        protected void SetCadValues(
             string commandName,
             object commandParameters,
             Func<string, JObject, CommandResponse> sendCommand)
         {
-            TryGetResponse(
+            TryGetCadResponse(
                 commandName,
                 JObject.FromObject(commandParameters),
                 sendCommand,
                 out var result);
         }
 
-        protected bool TryGetConvertedValues<T>(
+        protected bool TryGetConvertedCadValues<T>(
             string commandName,
             object commandParametersObject,
             Func<string, JObject, CommandResponse> sendCommand,
@@ -736,7 +737,7 @@ namespace TapirGrasshopperPlugin.Components
                 ? new JObject()
                 : JObject.FromObject(commandParametersObject);
 
-            if (!TryGetResponse(
+            if (!TryGetCadResponse(
                     commandName,
                     commandParameters,
                     sendCommand,

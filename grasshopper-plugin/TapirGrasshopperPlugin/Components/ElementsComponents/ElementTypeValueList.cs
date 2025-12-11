@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -27,12 +27,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             ToolStripDropDown menu)
         {
             menu.Items.Clear();
+
             Menu_AppendItem(
                 menu,
                 "MainElements",
                 Menu_MainElementsClicked,
                 enabled: true,
                 @checked: type != ElementTypeValueListType.SubElementsOnly);
+
             Menu_AppendItem(
                 menu,
                 "SubElements",
@@ -82,6 +84,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public override void RefreshItems()
         {
             ListItems.Clear();
+
             if (type != ElementTypeValueListType.SubElementsOnly)
             {
                 AddEnumItems(defaultSelected: MainElementType.Wall);

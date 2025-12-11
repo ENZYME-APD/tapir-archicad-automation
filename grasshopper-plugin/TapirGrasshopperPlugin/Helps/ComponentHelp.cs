@@ -2,7 +2,7 @@
 using Grasshopper.Kernel.Data;
 using System.Collections.Generic;
 using Grasshopper.Kernel.Types;
-using TapirGrasshopperPlugin.ResponseTypes.GuidObjects;
+using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Helps
 {

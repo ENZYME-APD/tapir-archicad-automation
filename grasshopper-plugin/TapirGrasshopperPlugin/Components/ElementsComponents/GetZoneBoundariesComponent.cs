@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using Rhino.Geometry;
+using System.Security.Cryptography.X509Certificates;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
+using System.Linq;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -60,7 +62,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { zoneElementId },
                     ToAddOn,
@@ -70,45 +72,32 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var connectedElements = new List<ElementGuidWrapper>();
-            var isExternals = new List<bool>();
-            var neighbouringZones = new List<ElementGuidWrapper>();
-            var areas = new List<double>();
-            var polygons = new List<PolyCurve>();
-
-            foreach (var zb in response.ZoneBoundaries)
-            {
-                connectedElements.Add(
-                    new ElementGuidWrapper()
-                    {
-                        ElementId = zb.ConnectedElementId
-                    });
-                isExternals.Add(zb.IsExternal);
-                neighbouringZones.Add(
-                    new ElementGuidWrapper()
-                    {
-                        ElementId = zb.NeighbouringZoneElementId
-                    });
-                areas.Add(zb.Area);
-                polygons.Add(
-                    Helps.Convert.ToPolyCurve(zb.PolygonCoordinates));
-            }
-
             da.SetDataList(
                 0,
-                connectedElements);
+                response.ZoneBoundaries.Select(x => new ElementGuidWrapper
+                {
+                    ElementId = x.ConnectedElementId
+                }));
+
             da.SetDataList(
                 1,
-                isExternals);
+                response.ZoneBoundaries.Select(x => x.IsExternal));
+
             da.SetDataList(
                 2,
-                neighbouringZones);
+                response.ZoneBoundaries.Select(x => new ElementGuidWrapper
+                {
+                    ElementId = x.NeighbouringZoneElementId
+                }));
+
             da.SetDataList(
                 3,
-                areas);
+                response.ZoneBoundaries.Select(x => x.Area));
+
             da.SetDataList(
                 4,
-                polygons);
+                response.ZoneBoundaries.Select(x =>
+                    Helps.Convert.ToPolyCurve(x.PolygonCoordinates)));
         }
 
         public override Guid ComponentGuid =>

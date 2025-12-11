@@ -3,7 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -65,7 +65,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new GetConnectedElementsParameters
                     {
@@ -73,8 +73,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         ConnectedElementType = elementType
                     },
                     ToAddOn,
-                    JHelp.Deserialize<ConnectedElementsObj>,
-                    out ConnectedElementsObj response))
+                    JHelp.Deserialize<ConnectedElementsObject>,
+                    out ConnectedElementsObject response))
             {
                 return;
             }

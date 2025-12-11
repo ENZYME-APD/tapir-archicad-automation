@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Attributes;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -20,14 +20,20 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
         protected override void AddInputs()
         {
-            InText("AttributeType");
+            InText("Type");
         }
 
         protected override void AddOutputs()
         {
-            OutGenerics("Guids");
-            OutGenerics("Indices");
-            OutGenerics("Names");
+            OutGenerics(
+                "Guids",
+                "List of attribute Guids.");
+            OutGenerics(
+                "Indices",
+                "List of attribute indices.");
+            OutGenerics(
+                "Names",
+                "List of attribute names.");
         }
 
         public override void AddedToDocument(
@@ -50,12 +56,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { attributeType },
                     ToAddOn,
-                    JHelp.Deserialize<AttributeDetailsObj>,
-                    out AttributeDetailsObj response))
+                    JHelp.Deserialize<AttributeDetailsObject>,
+                    out AttributeDetailsObject response))
             {
                 return;
             }
@@ -63,9 +69,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(
                 0,
                 response.Attributes.Select(x => x.AttributeId));
+
             da.SetDataList(
                 1,
                 response.Attributes.Select(x => x.Index));
+
             da.SetDataList(
                 2,
                 response.Attributes.Select(x => x.Name));

@@ -1,7 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -23,13 +23,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "NavigatorItemId",
                 "Identifier of navigator items to rename.");
 
-            InText(
+            InTextWithDefault(
                 "NewName",
-                "New name for the navigator item.");
+                "New name for the navigator item.",
+                defaultValue: "");
 
-            InText(
+            InTextWithDefault(
                 "NewId",
-                "New id for the navigator item.");
+                "New id for the navigator item.",
+                defaultValue: "");
         }
 
         protected override void Solve(
@@ -56,7 +58,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 new { navigatorItemId, newName, newId },
                 ToArchicad);

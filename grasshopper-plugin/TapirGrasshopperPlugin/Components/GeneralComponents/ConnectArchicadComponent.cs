@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.ArchiCad;
+using TapirGrasshopperPlugin.Types.ArchiCad;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {

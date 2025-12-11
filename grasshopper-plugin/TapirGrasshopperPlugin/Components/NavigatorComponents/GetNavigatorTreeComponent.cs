@@ -4,7 +4,7 @@ using Grasshopper.Kernel.Data;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Navigator;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -71,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 1,
                 "");
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     "GetNavigatorItemTree",
                     new
                     {
@@ -148,7 +148,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { navigatorItemIds },
                     ToAddOn,

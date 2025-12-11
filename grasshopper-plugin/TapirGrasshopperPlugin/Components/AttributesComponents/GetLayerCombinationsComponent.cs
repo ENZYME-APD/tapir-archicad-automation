@@ -3,8 +3,8 @@ using Grasshopper.Kernel.Data;
 using Grasshopper;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.ResponseTypes.Attributes;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -24,7 +24,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             InGenerics(
                 "AttributeGuids",
-                "List of layer combination Attribute Guids.");
+                "List of layer combination attribute Guids.");
         }
 
         protected override void AddOutputs()
@@ -59,12 +59,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out AttributesObj attributes))
+                    out AttributesObject attributes))
             {
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     attributes,
                     ToAddOn,
@@ -94,7 +94,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 foreach (var layer in layerCombination.LayerCombination.Layers)
                 {
                     layerIds.Add(
-                        new AttributeGuidWrapper()
+                        new AttributeGuidWrapper
                         {
                             AttributeId = layer.AttributeId
                         });

@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Properties;
+using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void AddOutputs()
         {
             OutGenerics("PropertyIds");
-            OutTexts("GroupNames");
+            OutTexts("PropertyGroupNames");
             OutTexts("PropertyNames");
 
             OutTexts(
@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     null,
                     ToAddOn,

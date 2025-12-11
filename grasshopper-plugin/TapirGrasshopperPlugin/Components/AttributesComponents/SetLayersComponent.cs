@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Attributes;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -30,7 +30,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             InBooleans(
                 "IsHidden",
-                "Visibility of the layers.");
+                "Visibility states of the layers.");
 
             InBooleans(
                 "IsLocked",
@@ -38,11 +38,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             InBooleans(
                 "IsWireframe",
-                "Wireframe flag of the layers.");
+                "Wireframe flags of the layers.");
 
             InIntegers(
                 "IntersectionGroups",
-                "Intersection group of the layers.");
+                "Intersection groups of the layers.");
         }
 
         protected override void Solve(
@@ -50,7 +50,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out AttributesObj attributes))
+                    out AttributesObject attributes))
             {
                 return;
             }
@@ -111,9 +111,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            var layerDataArray = new LayerDataArrayObj()
+            var layerDataArray = new LayerDataArrayObject
             {
-                LayerDataArray = new List<LayerDataObj>(),
+                LayerDataArray = new List<LayerDataObject>(),
                 OverwriteExisting = true
             };
 
@@ -122,7 +122,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             foreach (var attributeId in attributes.Attributes)
             {
                 layerDataArray.LayerDataArray.Add(
-                    new LayerDataObj
+                    new LayerDataObject
                     {
                         AttributeId = attributeId.AttributeId,
                         Name = names[index],
@@ -146,7 +146,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 layerDataArray,
                 ToAddOn);

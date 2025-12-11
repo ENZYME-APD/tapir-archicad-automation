@@ -4,7 +4,7 @@ using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Attributes;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
@@ -32,24 +32,24 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             InGenericTree(
                 "LayerAttributeGuids",
-                "Tree of identifiers of the layers to be included in the layer combinations.");
+                "Identifiers of the layers to be included in the combinations.");
 
             InBooleanTree(
                 "IsHiddenLayers",
-                "Tree of visibility of the layers in the layer combinations.");
+                "Visibility states of the layers in the combinations.");
 
             InBooleanTree(
                 "IsLockedLayers",
-                "Tree of lock states of the layers in the layer combinations.");
+                "Lock states of the layers in the combinations.");
 
 
             InBooleanTree(
                 "IsWireframeLayers",
-                "Tree of wireframe modes of the layers in the layer combinations.");
+                "Wireframe states of the layers in the combinations.");
 
             InIntegerTree(
-                "IntersectionGroupsOfLayers",
-                "Tree of intersection groups of the layers in the layer combinations.");
+                "IntersectionGroups",
+                "Intersection groups of the layers in the combinations.");
         }
 
         protected override void Solve(
@@ -57,7 +57,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out AttributesObj input))
+                    out AttributesObject input))
             {
                 return;
             }
@@ -134,10 +134,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
-            var layerCombinationDataArray = new LayerCombinationDataArrayObj()
+            var layerCombinationDataArray = new LayerCombinationDataArrayObject
             {
                 LayerCombinationDataArray =
-                    new List<LayerCombinationDataObj>(),
+                    new List<LayerCombinationDataObject>(),
                 OverwriteExisting = true
             };
 
@@ -145,10 +145,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             foreach (var attributeId in input.Attributes)
             {
-                var layerCombinationData = new LayerCombinationDataObj();
+                var layerCombinationData = new LayerCombinationDataObject();
                 layerCombinationData.AttributeId = attributeId.AttributeId;
                 layerCombinationData.Name = names[index];
-                layerCombinationData.Layers = new List<ContainedLayerObj>();
+                layerCombinationData.Layers = new List<ContainedLayerObject>();
                 var path = new GH_Path(index);
                 var layerGuidsGooList =
                     layerAttributeGuidsInput.Branches[
@@ -176,7 +176,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
                 for (var i = 0; i < layerCount; i++)
                 {
-                    var containedLayer = new ContainedLayerObj
+                    var containedLayer = new ContainedLayerObject
                     {
                         AttributeId =
                             AttributeGuidObject.FromString(
@@ -210,7 +210,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 layerCombinationDataArray,
                 ToAddOn);

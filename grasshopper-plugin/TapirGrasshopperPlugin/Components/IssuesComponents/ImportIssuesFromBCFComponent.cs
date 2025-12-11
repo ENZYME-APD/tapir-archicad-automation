@@ -44,7 +44,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 1,
                 true);
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 new { importPath, alignBySurveyPoint },
                 ToAddOn);

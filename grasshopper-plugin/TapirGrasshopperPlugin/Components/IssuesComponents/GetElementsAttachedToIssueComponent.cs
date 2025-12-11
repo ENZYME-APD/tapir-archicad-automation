@@ -1,8 +1,8 @@
 using Grasshopper.Kernel;
 using System;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.ResponseTypes.Issues;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
@@ -12,7 +12,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
 
         public GetElementsAttachedToIssueComponent()
             : base(
-                "GetElementsAttachedToAnIssue",
+                "ElementsAttachedToIssue",
                 "Get Elements Attached to an Issue.",
                 GroupNames.Issues)
         {
@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
         protected override void AddInputs()
         {
             InGeneric("IssueGuid");
-            InGeneric("ElementType");
+            InGeneric("Type");
         }
 
         protected override void AddOutputs()
@@ -58,7 +58,7 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     new { issueId, type },
                     ToAddOn,

@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
-using TapirGrasshopperPlugin.ResponseTypes.Generic;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -26,8 +26,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Elements Guids to get details of.");
 
             InPoints("StartCoordinates");
+
             InPoints("EndCoordinates");
-            InNumbers("Height");
+
+            InNumbers("Heights");
         }
 
         protected override void Solve(
@@ -121,7 +123,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 obj.ElementsWithDetails.Add(elementWithDetails);
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     obj,
                     ToAddOn,

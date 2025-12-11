@@ -1,9 +1,9 @@
 ﻿using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.ResponseTypes.Properties;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
@@ -66,9 +66,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            var input = new ElementPropertyValuesObj();
-
-            input.ElementPropertyValues = new List<ElementPropertyValueObj>();
+            var input = new ElementPropertyValuesObj
+            {
+                ElementPropertyValues = new List<ElementPropertyValueObj>()
+            };
 
             for (var i = 0; i < elements.Elements.Count; i++)
             {
@@ -87,7 +88,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 input.ElementPropertyValues.Add(elemPropertyValue);
             }
 
-            SetValues(
+            SetCadValues(
                 CommandName,
                 input,
                 ToAddOn);

@@ -1,5 +1,5 @@
 ﻿using System;
-using TapirGrasshopperPlugin.ResponseTypes.Attributes;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {

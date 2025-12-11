@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.ResponseTypes.Element;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -20,8 +20,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override void AddInputs()
         {
-            InGenerics("ElementGuids");
-            InTexts("Filters");
+            InGenerics(
+                "ElementGuids",
+                "Element Guids to filter.");
+
+            InTexts(
+                "Filters",
+                defaultValue: nameof(ElementFilter.NoFilter),
+                description: "Element filter.");
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
@@ -58,7 +66,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            var filterElements = new FilterElementsObj
+            var filterElements = new FilterElementsObject
             {
                 Elements = elements.Elements, Filters = filters
             };
@@ -68,10 +76,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da.SetDataList(
                     0,
                     filterElements.Elements);
+
                 return;
             }
 
-            if (!TryGetConvertedValues(
+            if (!TryGetConvertedCadValues(
                     CommandName,
                     filterElements,
                     ToAddOn,

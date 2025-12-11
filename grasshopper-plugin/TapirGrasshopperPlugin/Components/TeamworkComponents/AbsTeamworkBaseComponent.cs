@@ -1,4 +1,4 @@
-﻿using TapirGrasshopperPlugin.ResponseTypes.Generic;
+﻿using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.TeamworkComponents
 {
