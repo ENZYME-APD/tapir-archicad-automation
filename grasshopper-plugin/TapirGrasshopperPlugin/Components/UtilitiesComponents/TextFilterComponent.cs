@@ -20,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         protected override void AddInputs()
         {
             InTexts(
-                "StringsList",
+                "Strings",
                 "A list of strings to search through");
 
             InText(
