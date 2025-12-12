@@ -47,16 +47,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             object sender,
             EventArgs e)
         {
-            switch (type)
+            if (type == ElementTypeValueListType.SubElementsOnly)
             {
-                case ElementTypeValueListType.SubElementsOnly:
-                    type = ElementTypeValueListType.AllElements;
-                    break;
-                case ElementTypeValueListType.AllElements:
-                    type = ElementTypeValueListType.SubElementsOnly;
-                    break;
-                default:
-                    return;
+                type = ElementTypeValueListType.AllElements;
+            }
+            else if (type == ElementTypeValueListType.AllElements)
+            {
+                type = ElementTypeValueListType.SubElementsOnly;
+            }
+            else
+            {
+                return;
             }
 
             RefreshItems();
@@ -66,16 +67,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             object sender,
             EventArgs e)
         {
-            switch (type)
+            if (type == ElementTypeValueListType.MainElementsOnly)
             {
-                case ElementTypeValueListType.MainElementsOnly:
-                    type = ElementTypeValueListType.AllElements;
-                    break;
-                case ElementTypeValueListType.AllElements:
-                    type = ElementTypeValueListType.MainElementsOnly;
-                    break;
-                default:
-                    return;
+                type = ElementTypeValueListType.AllElements;
+            }
+            else if (type == ElementTypeValueListType.AllElements)
+            {
+                type = ElementTypeValueListType.MainElementsOnly;
+            }
+            else
+            {
+                return;
             }
 
             RefreshItems();
