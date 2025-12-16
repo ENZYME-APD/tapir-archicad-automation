@@ -63,6 +63,9 @@
 
 #define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
 
+#define ACAPI_AutoText_GetAutoTextFlag(par1) ACAPI_Goodies(APIAny_GetAutoTextFlagID,par1)
+#define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;
