@@ -40,6 +40,18 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
     return APIFilt_None;
 }
 
+static API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&element.header) != NoError ||
+        GetElemTypeId (element.header) != API_SectElemID ||
+        ACAPI_Element_Get (&element) != NoError) {
+        return elemGuid;
+    }
+    return element.sectElem.parentGuid;
+}
+
 template <typename ListProxyType>
 static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
@@ -64,7 +76,7 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
     }
 
     for (const API_Guid& elemGuid : elemList) {
-        elementsListProxy (CreateElementIdObjectState (elemGuid));
+        elementsListProxy (CreateElementIdObjectState (GetParentElemOfSectElem (elemGuid)));
     }
     return NoError;
 }
@@ -902,30 +914,7 @@ GS::ObjectState GetSelectedElementsCommand::Execute (const GS::ObjectState& /*pa
 
     GS::Array<API_Guid> selElemGuids;
     for (API_Neig& selectedNeig : selectedNeigs) {
-        API_ElemTypeID elemTypeID = API_ZombieElemID;
-#ifdef ServerMainVers_2600
-        API_ElemType apiElemType;
-        if (ACAPI_Element_NeigIDToElemType (selectedNeig.neigID, apiElemType) != NoError) {
-            continue;
-        }
-        elemTypeID = apiElemType.typeID;
-#else
-        if (ACAPI_Goodies (APIAny_NeigIDToElemTypeID, &selectedNeig.neigID, &elemTypeID) != NoError) {
-            continue;
-        }
-#endif
-
-        API_Guid elemGuid = selectedNeig.guid;
-        if (elemTypeID == API_SectElemID) {
-            API_Element element = {};
-            element.header.guid = selectedNeig.guid;
-            if (ACAPI_Element_Get (&element) != NoError) {
-                continue;
-            }
-            elemGuid = element.sectElem.parentGuid;
-        }
-
-        elementsList (CreateElementIdObjectState (elemGuid));
+        elementsList (CreateElementIdObjectState (GetParentElemOfSectElem (selectedNeig.guid)));
     }
 
     return response;

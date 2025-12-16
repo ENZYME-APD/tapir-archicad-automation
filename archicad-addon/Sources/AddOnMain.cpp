@@ -284,6 +284,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.9",
             "Creates Mesh elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateLabelsCommand> (
+            elementCommands, "1.2.5",
+            "Creates Label elements based on the given parameters."
+        );
         AddCommandGroup (elementCommands);
     }
 

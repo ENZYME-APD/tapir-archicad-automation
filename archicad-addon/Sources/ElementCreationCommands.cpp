@@ -918,3 +918,102 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
 
     return {};
 }
+
+CreateLabelsCommand::CreateLabelsCommand () :
+    CreateElementsCommandBase ("CreateLabels", API_LabelID, "labelsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "labelsData": {
+            "type": "array",
+            "description": "Array of data to create Labels.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Label.",
+                "properties": {
+                    "parentElementId": {
+                        "$ref": "#/ElementId",
+                        "description" : "The parent element if the label is an associative label."	
+                    },
+                    "text": { 
+                        "type": "string",
+                        "description": "The text content if the label is a text label."
+                    },
+                    "begCoordinate": {
+                        "$ref": "#/2DCoordinate",
+                        "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
+                    },
+                    "floorInd": {
+                        "type": "number",
+                        "description" : "The identifier of the floor. Optional parameter, by default the current floor or the floor of the parent element is used."	
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "labelsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorInd", element.header.floorInd);
+
+    const GS::ObjectState* begCOS = parameters.Get ("begCoordinate");
+
+    element.label.parent = GetGuidFromArrayItem ("parentElementId", parameters);
+    API_Elem_Head parentElemHead = {};
+    if (element.label.parent != APINULLGuid) {
+        parentElemHead.guid = element.label.parent;
+        if (ACAPI_Element_GetHeader (&parentElemHead) == NoError) {
+#ifdef ServerMainVers_2600
+            element.label.parentType = parentElemHead.type;
+#else
+            element.label.parentType = parentElemHead.typeID;
+#endif
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
+        }
+
+        element.header.floorInd = parentElemHead.floorInd;
+    }
+
+    if (begCOS != nullptr) {
+        element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
+    } else if (parentElemHead.guid != APINULLGuid) {
+        API_Box3D box = {};
+        ACAPI_Element_CalcBounds (&parentElemHead, &box);
+        element.label.begC.x = (box.xMin + box.xMax) / 2.0;
+        element.label.begC.y = (box.yMin + box.yMax) / 2.0;
+    } else {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'begCoordinate' parameter");
+    }
+    element.label.createAtDefaultPosition = true;
+
+    if (element.label.labelClass == APILblClass_Text) {
+        GS::UniString text;
+        if (!parameters.Get ("text", text)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' parameter for text label");
+        }
+#ifdef ServerMainVers_2800
+        delete memo.textContent;
+        memo.textContent = new GS::UniString { text };
+#else
+        memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
+        GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
+#endif
+    }
+
+    return {};
+}
