@@ -1,6 +1,7 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
@@ -49,7 +50,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out PropertiesObj properties))
+                    out PropertiesObject properties))
             {
                 return;
             }
@@ -66,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     new
                     {
                         elements = elements.Elements,
-                        propertyies = properties.Properties
+                        properties = properties.Properties
                     },
                     ToAddOn,
                     JHelp.Deserialize<PropertyValuesForElements>,
@@ -78,43 +79,38 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             var elementIds = new DataTree<ElementGuidWrapper>();
             var values = new DataTree<string>();
 
-            for (var elementIndex = 0;
-                 elementIndex < response.PropertyValuesOrErrors.Count;
-                 elementIndex++)
+            for (var i = 0; i < response.PropertyValuesOrErrors.Count; i++)
             {
-                var propertyValuesOrError =
-                    response.PropertyValuesOrErrors[elementIndex];
+                var propertyValues = response.PropertyValuesOrErrors[i];
 
-                if (propertyValuesOrError.PropertyValuesOrErrors == null)
+                if (propertyValues.PropertyValuesOrErrors == null)
                 {
-                    continue;
+                    throw new Exception(
+                        $"No property found for {elements.Elements[i]}!");
                 }
 
-                for (var propertyIndex = 0;
-                     propertyIndex < propertyValuesOrError
-                         .PropertyValuesOrErrors.Count;
-                     propertyIndex++)
+                for (var pIndex = 0;
+                     pIndex < propertyValues.PropertyValuesOrErrors.Count;
+                     pIndex++)
                 {
-                    var propertyValueOrError =
-                        propertyValuesOrError.PropertyValuesOrErrors[
-                            propertyIndex];
-                    if (propertyValueOrError.PropertyValue == null)
-                    {
-                        continue;
-                    }
+                    var path = new GH_Path(pIndex);
+                    var valueOrError =
+                        propertyValues.PropertyValuesOrErrors[pIndex];
 
                     elementIds.Add(
-                        elements.Elements[elementIndex],
-                        new GH_Path(propertyIndex));
+                        elements.Elements[i],
+                        path);
+
                     values.Add(
-                        propertyValueOrError.PropertyValue.Value,
-                        new GH_Path(propertyIndex));
+                        valueOrError.PropertyValue?.Value,
+                        path);
                 }
             }
 
             da.SetDataTree(
                 0,
                 elementIds);
+
             da.SetDataTree(
                 1,
                 values);

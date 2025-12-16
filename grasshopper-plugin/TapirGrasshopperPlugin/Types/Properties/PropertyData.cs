@@ -23,9 +23,9 @@ namespace TapirGrasshopperPlugin.Types.Properties
         }
     }
 
-    public class PropertiesObj
+    public class PropertiesObject
         : GuidItemsObject<PropertyGuidObject, PropertyGuidWrapper,
-            PropertiesObj>
+            PropertiesObject>
     {
         [JsonProperty("properties")]
         public List<PropertyGuidWrapper> Properties;
