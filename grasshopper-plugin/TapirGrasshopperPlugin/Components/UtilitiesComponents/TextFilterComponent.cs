@@ -1,9 +1,12 @@
+using Grasshopper;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using TapirGrasshopperPlugin.Helps;
+
+// ReSharper disable All
 
 namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
@@ -21,19 +24,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
         {
             InTexts(
                 "Strings",
-                "A list of strings to search through");
+                "A list of strings to search through.");
 
-            InText(
-                "SearchString",
-                "The string to search for within the strings list");
+            InTexts(
+                "FilterStrings",
+                "The strings to search for within the Strings input list.");
 
             InBoolean(
                 "CaseSensitive",
-                "Determines if the search is case-sensitive");
+                "Determines if the search is case-sensitive.",
+                false);
 
             InBoolean(
                 "WholeWords",
-                "Determines if the search matches whole words only",
+                "Determines if the search matches whole words only.",
                 true);
 
             SetOptionality(
@@ -46,196 +50,107 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
         protected override void AddOutputs()
         {
-            OutTexts(
-                "FilteredList",
-                "List of strings that match the search criteria");
+            OutTextTree(
+                "FilteredTexts",
+                "List of strings matching the search filter.");
 
-            OutIntegers(
+            OutIntegerTree(
                 "FilteredIndices",
-                "List of indices of the matched strings");
+                "List of indices of the matched strings in the original list.");
 
-            OutInteger(
-                "Count",
-                "Number of matches");
+            OutBooleanTree(
+                "MatchPatterns",
+                "Booleans indicating whether a string matched or not.");
+        }
 
-            OutBooleans(
-                "Pattern",
-                "Boolean list indicating which strings matched");
+        private Regex BuildRegex(
+            string filter,
+            bool isWholeWords,
+            bool isCaseSensitive)
+        {
+            var escape = Regex.Escape(filter);
+            var pattern = isWholeWords ? $@"\b{escape}\b" : escape;
+
+            RegexOptions options = isCaseSensitive
+                ? RegexOptions.None
+                : RegexOptions.IgnoreCase;
+
+            return new Regex(
+                pattern,
+                options);
         }
 
         protected override void SolveInstance(
-            IGH_DataAccess DA)
+            IGH_DataAccess da)
         {
-            // Initialize outputs
-            var filteredList = new List<string>();
-            var filteredIndices = new List<int>();
-            var count = 0;
-            var pattern = new List<bool>();
-            var message = "Waiting for input strings.";
-
-            // Get inputs
-            var stringsList = new List<string>();
-            if (!DA.GetDataList(
+            if (!da.TryGetList(
                     0,
-                    stringsList) || stringsList.Count == 0)
+                    out List<string> textsToFilter))
             {
-                message =
-                    "Error: Provide both a strings list and a search string.";
-                Message = message;
-                DA.SetDataList(
-                    0,
-                    filteredList);
-                DA.SetDataList(
-                    1,
-                    filteredIndices);
-                DA.SetData(
-                    2,
-                    count);
-                DA.SetDataList(
-                    3,
-                    pattern);
                 return;
             }
 
-            var searchStr = "";
-            if (!DA.GetData(
+            if (!da.TryGetList(
                     1,
-                    ref searchStr) || string.IsNullOrEmpty(searchStr))
+                    out List<string> filters))
             {
-                message =
-                    "Error: Provide both a strings list and a search string.";
-                Message = message;
-                DA.SetDataList(
-                    0,
-                    filteredList);
-                DA.SetDataList(
-                    1,
-                    filteredIndices);
-                DA.SetData(
-                    2,
-                    count);
-                DA.SetDataList(
-                    3,
-                    pattern);
                 return;
             }
 
-            var caseSensitive = DA.GetOptional(
+            var isCaseSensitive = da.GetOptional(
                 2,
                 false);
 
-            var wholeWords = DA.GetOptional(
+            var isWholeWords = da.GetOptional(
                 3,
                 true);
 
-            try
+            var treeFiltered = new DataTree<string>();
+            var treeIndices = new DataTree<int>();
+            var treeMask = new DataTree<bool>();
+
+            for (int i = 0; i < filters.Count; i++)
             {
-                // Initialize pattern with false for all items
-                pattern = Enumerable
-                    .Repeat(
-                        false,
-                        stringsList.Count)
-                    .ToList();
+                var filter = filters[i];
+                var path = new GH_Path(i);
+                var regex = BuildRegex(
+                    filter,
+                    isWholeWords,
+                    isCaseSensitive);
 
-                // Main filtering logic
-                var filteredWithIndices = new List<(int, string)>();
-
-                if (wholeWords)
+                for (int j = 0; j < textsToFilter.Count; j++)
                 {
-                    var patternStr = @"\b" + Regex.Escape(searchStr) + @"\b";
-                    var options = caseSensitive
-                        ? RegexOptions.None
-                        : RegexOptions.IgnoreCase;
-                    var regex = new Regex(
-                        patternStr,
-                        options);
+                    var text = textsToFilter[j];
+                    var isMatch = regex.IsMatch(text);
 
-                    for (var i = 0; i < stringsList.Count; i++)
+                    treeMask.Add(
+                        isMatch,
+                        path);
+
+                    if (isMatch)
                     {
-                        if (regex.IsMatch(stringsList[i]))
-                        {
-                            filteredWithIndices.Add((i, stringsList[i]));
-                        }
+                        treeFiltered.Add(
+                            text,
+                            path);
+
+                        treeIndices.Add(
+                            j,
+                            path);
                     }
                 }
-                else
-                {
-                    if (caseSensitive)
-                    {
-                        for (var i = 0; i < stringsList.Count; i++)
-                        {
-                            if (stringsList[i].Contains(searchStr))
-                            {
-                                filteredWithIndices.Add((i, stringsList[i]));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var lowerSearchStr = searchStr.ToLower();
-                        for (var i = 0; i < stringsList.Count; i++)
-                        {
-                            if (stringsList[i]
-                                .ToLower()
-                                .Contains(lowerSearchStr))
-                            {
-                                filteredWithIndices.Add((i, stringsList[i]));
-                            }
-                        }
-                    }
-                }
-
-                // Extract results
-                if (filteredWithIndices.Count > 0)
-                {
-                    filteredIndices = filteredWithIndices
-                        .Select(item => item.Item1)
-                        .ToList();
-                    filteredList = filteredWithIndices
-                        .Select(item => item.Item2)
-                        .ToList();
-
-                    // Update pattern
-                    foreach (var idx in filteredIndices)
-                    {
-                        pattern[idx] = true;
-                    }
-                }
-
-                count = filteredList.Count;
-
-                // Create message
-                var modeWholeWords = $"whole_words: {wholeWords}";
-                var modeCaseSensitive = $"case_sensitive: {caseSensitive}";
-                var matchCount = $"Number of matches: {count}";
-                message =
-                    $"{modeWholeWords}\n{modeCaseSensitive}\n{matchCount}";
-            }
-            catch (Exception e)
-            {
-                message = $"Error: {e.Message}";
-                filteredList.Clear();
-                filteredIndices.Clear();
-                count = 0;
-                pattern.Clear();
             }
 
-            // Set outputs
-            DA.SetDataList(
+            da.SetDataTree(
                 0,
-                filteredList);
-            DA.SetDataList(
-                1,
-                filteredIndices);
-            DA.SetData(
-                2,
-                count);
-            DA.SetDataList(
-                3,
-                pattern);
+                treeFiltered);
 
-            // Update component message
-            Message = message;
+            da.SetDataTree(
+                1,
+                treeIndices);
+
+            da.SetDataTree(
+                2,
+                treeMask);
         }
 
         protected override System.Drawing.Bitmap Icon =>
