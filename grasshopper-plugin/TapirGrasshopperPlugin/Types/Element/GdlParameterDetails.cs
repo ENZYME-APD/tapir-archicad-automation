@@ -49,11 +49,11 @@ namespace TapirGrasshopperPlugin.Types.Element
 
     public class GDLHolder
     {
-        public string ElementId { get; set; }
+        public ElementGuid ElementId { get; set; }
         public GdlParameterDetails GdlParameterDetails { get; set; }
 
         public GDLHolder(
-            string id,
+            ElementGuid id,
             GdlParameterDetails details)
         {
             ElementId = id;

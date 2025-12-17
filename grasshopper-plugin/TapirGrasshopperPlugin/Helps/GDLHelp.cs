@@ -6,11 +6,9 @@ namespace TapirGrasshopperPlugin.Helps
 {
     public static class GDLParameterHelps
     {
-        public static ElementsWithGDLParametersInput
-            ToElementsWithGDLParameters(
-                this ElementsObject elementsObject,
-                List<string> parameterNames,
-                List<object> values)
+        public static ElementsWithGDLParametersInput ToSetInput(
+            this List<GDLHolder> gdlHolders,
+            object value)
         {
             var result = new ElementsWithGDLParametersInput
             {
@@ -18,18 +16,17 @@ namespace TapirGrasshopperPlugin.Helps
                     new List<ElementWithGDLParameters>()
             };
 
-            for (int i = 0; i < parameterNames.Count; i++)
+            foreach (var holder in gdlHolders)
             {
+                var changedParameters = holder.GdlParameterDetails;
+                changedParameters.Value = value;
+
                 var item = new ElementWithGDLParameters
                 {
-                    ElementId = elementsObject.GuidWrappers[i].ElementId,
+                    ElementId = holder.ElementId,
                     GdlParameterList = new GdlParameterArray
                     {
-                        new GdlParameterDetails
-                        {
-                            Name = parameterNames[i],
-                            Value = values[i]
-                        }
+                        changedParameters
                     }
                 };
 
@@ -41,7 +38,7 @@ namespace TapirGrasshopperPlugin.Helps
 
         public static List<GDLHolder> ToGdlHolders(
             this GDLParametersResponse response,
-            List<string> ids,
+            List<ElementGuid> ids,
             string parameterName)
         {
             var result = new List<GDLHolder>();
@@ -51,19 +48,19 @@ namespace TapirGrasshopperPlugin.Helps
                 return result;
             }
 
-            for (var i = 0; i < ids.Count; i++)
+            for (var idIndex = 0; idIndex < ids.Count; idIndex++)
             {
-                var id = ids[i];
-                var pList = response.GdlLists[i];
+                var id = ids[idIndex];
+                var parameterList = response.GdlLists[idIndex];
 
-                if (pList.GdlParameterArray == null ||
-                    pList.GdlParameterArray.Count == 0)
+                if (parameterList.GdlParameterArray == null ||
+                    parameterList.GdlParameterArray.Count == 0)
                 {
                     continue;
                 }
 
                 result.AddRange(
-                    pList
+                    parameterList
                         .GdlParameterArray.Where(x => x.Name == parameterName)
                         .Select(details => new GDLHolder(
                             id,

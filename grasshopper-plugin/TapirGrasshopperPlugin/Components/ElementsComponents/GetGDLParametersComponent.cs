@@ -71,7 +71,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
 
             var gdlHolders = response.ToGdlHolders(
-                inputs.Elements.Select(x => x.ElementId.Guid).ToList(),
+                inputs.Elements.Select(x => x.ElementId).ToList(),
                 parameterName);
 
             da.SetDataList(

@@ -11,6 +11,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     public class SetGDLParametersComponent : ArchicadAccessorComponent
     {
         public override string CommandName => "SetGDLParametersOfElements";
+        public string GetCommandName => "GetGDLParametersOfElements";
 
         public SetGDLParametersComponent()
             : base(
@@ -26,12 +27,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "ElementGuids",
                 "Elements Guids to set the parameters of.");
 
-            InTexts(
-                "ParameterNames",
+            InText(
+                "ParameterName",
                 "Parameter name to find and set.");
 
-            InGenerics(
-                "Values",
+            InGeneric(
+                "Value",
                 "Value to set the parameter to.");
         }
 
@@ -47,34 +48,40 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObject elementsObj))
+                    out ElementsObject elementsObject))
             {
                 return;
             }
 
-            if (!da.TryGetList(
+            if (!da.TryGet(
                     1,
-                    out List<string> parameterNames))
+                    out string parameterName))
             {
                 return;
             }
 
-            if (!da.TryGetList(
+            if (!da.TryGet(
                     2,
-                    out List<object> values))
+                    out object value))
             {
                 return;
             }
 
-            if (parameterNames.Count != values.Count)
+            if (!TryGetConvertedCadValues(
+                    GetCommandName,
+                    elementsObject,
+                    ToAddOn,
+                    JHelp.Deserialize<GDLParametersResponse>,
+                    out GDLParametersResponse getResponse))
             {
-                this.AddError("Parameter name to value count mismatch.");
                 return;
             }
 
-            var input = elementsObj.ToElementsWithGDLParameters(
-                parameterNames,
-                values);
+            var gdlHolders = getResponse.ToGdlHolders(
+                elementsObject.Elements.Select(x => x.ElementId).ToList(),
+                parameterName);
+
+            var input = gdlHolders.ToSetInput(value);
 
             if (!TryGetConvertedCadValues(
                     CommandName,
