@@ -1660,7 +1660,7 @@ var gCommands = [{
                         "description": "The text content if the label is a text label."
                     },
                     "begCoordinate": {
-                        "$ref": "#/2DCoordinate",
+                        "$ref": "#/Coordinate2D",
                         "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
                     },
                     "floorInd": {
