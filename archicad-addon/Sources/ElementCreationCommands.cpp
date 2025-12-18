@@ -54,6 +54,11 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
 #endif
         GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
 
+        bool savedAutoTextFlag;
+        ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag);
+        bool setAutoTextFlag = false;
+        ACAPI_AutoText_ChangeAutoTextFlag (&setAutoTextFlag);
+
         for (const GS::ObjectState& data : dataArray) {
             auto os = SetTypeSpecificParameters (element, memo, stories, data);
             if (os.HasValue ()) {
@@ -69,6 +74,8 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
 
             elements (CreateElementIdObjectState (element.header.guid));
         }
+
+        ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
 
         return NoError;
     });
@@ -914,6 +921,182 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
             meshLevelCoord.vertexID = vertexID++;
         }
         (*memo.meshLevelEnds)[lineID++] = vertexID;
+    }
+
+    return {};
+}
+
+CreateLabelsCommand::CreateLabelsCommand () :
+    CreateElementsCommandBase ("CreateLabels", API_LabelID, "labelsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "labelsData": {
+            "type": "array",
+            "description": "Array of data to create Labels.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Label.",
+                "properties": {
+                    "parentElementId": {
+                        "$ref": "#/ElementId",
+                        "description" : "The parent element if the label is an associative label."	
+                    },
+                    "text": { 
+                        "type": "string",
+                        "description": "The text content if the label is a text label."
+                    },
+                    "begCoordinate": {
+                        "$ref": "#/2DCoordinate",
+                        "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
+                    },
+                    "floorInd": {
+                        "type": "number",
+                        "description" : "The identifier of the floor. Optional parameter, by default the current floor or the floor of the parent element is used."	
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "labelsData"
+    ]
+})";
+}
+
+static GSErrCode SetParagraph (API_ParagraphType** paragraph, UInt32 parNum, Int32 from, Int32 range, Int32 numOfTabs, Int32 numOfRuns,
+							   Int32 numOfeolPos)
+{
+	if (paragraph == nullptr || parNum >= (BMhGetSize (reinterpret_cast<GSHandle> (paragraph)) / sizeof (API_ParagraphType)))
+		return APIERR_BADPARS;
+
+	if (numOfTabs < 1 || numOfRuns < 1 || numOfeolPos < 0)
+		return APIERR_BADPARS;
+
+	(*paragraph)[parNum].from = from;
+	(*paragraph)[parNum].range = range;
+
+	(*paragraph)[parNum].tab = reinterpret_cast<API_TabType*> (BMpAllClear (numOfTabs * sizeof (API_TabType)));
+	(*paragraph)[parNum].run = reinterpret_cast<API_RunType*> (BMpAllClear (numOfRuns * sizeof (API_RunType)));
+
+	if (numOfeolPos > 0) {
+		(*paragraph)[parNum].eolPos = reinterpret_cast<Int32*> (BMpAllClear (numOfeolPos * sizeof (Int32)));
+	}
+
+	return NoError;
+}
+
+static GSErrCode SetRun (API_ParagraphType** paragraph, UInt32 parNum, UInt32 runNum, Int32 from, Int32 range, short pen, unsigned short faceBits,
+						 short font, Int32 effectBits, double size)
+{
+	if (paragraph == nullptr || parNum >= (BMhGetSize (reinterpret_cast<GSHandle> (paragraph)) / sizeof (API_ParagraphType)))
+		return APIERR_BADPARS;
+
+	if (runNum >= BMGetPtrSize (reinterpret_cast<GSPtr> ((*paragraph)[parNum].run)) / sizeof (API_RunType))
+		return APIERR_BADPARS;
+
+	(*paragraph)[parNum].run[runNum].from	    = from;
+	(*paragraph)[parNum].run[runNum].range	    = range;
+	(*paragraph)[parNum].run[runNum].pen	    = pen;
+	(*paragraph)[parNum].run[runNum].faceBits   = faceBits;
+	(*paragraph)[parNum].run[runNum].font	    = font;
+	(*paragraph)[parNum].run[runNum].effectBits = (unsigned short)effectBits;
+	(*paragraph)[parNum].run[runNum].size	    = size;
+
+	return NoError;
+}
+
+static GSErrCode SetEOL (API_ParagraphType** paragraph, UInt32 parNum, UInt32 eolNum, Int32 offset)
+{
+	if (paragraph == nullptr || parNum >= (BMhGetSize (reinterpret_cast<GSHandle> (paragraph)) / sizeof (API_ParagraphType)))
+		return APIERR_BADPARS;
+
+	if (eolNum >= BMGetPtrSize (reinterpret_cast<GSPtr> ((*paragraph)[parNum].eolPos)) / sizeof (Int32))
+		return APIERR_BADPARS;
+
+	if (offset < 0)
+		return APIERR_BADPARS;
+
+	(*paragraph)[parNum].eolPos[eolNum] = offset;
+
+	return NoError;
+}
+
+GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorInd", element.header.floorInd);
+
+    const GS::ObjectState* begCOS = parameters.Get ("begCoordinate");
+
+    element.label.parent = GetGuidFromArrayItem ("parentElementId", parameters);
+    API_Elem_Head parentElemHead = {};
+    if (element.label.parent != APINULLGuid) {
+        parentElemHead.guid = element.label.parent;
+        if (ACAPI_Element_GetHeader (&parentElemHead) == NoError) {
+#ifdef ServerMainVers_2600
+            element.label.parentType = parentElemHead.type;
+#else
+            element.label.parentType = parentElemHead.typeID;
+#endif
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
+        }
+
+        element.header.floorInd = parentElemHead.floorInd;
+    }
+
+    if (begCOS != nullptr) {
+        element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
+    } else if (parentElemHead.guid != APINULLGuid) {
+        API_Box3D box = {};
+        ACAPI_Element_CalcBounds (&parentElemHead, &box);
+        element.label.begC.x = (box.xMin + box.xMax) / 2.0;
+        element.label.begC.y = (box.yMin + box.yMax) / 2.0;
+    } else {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'begCoordinate' parameter");
+    }
+    element.label.createAtDefaultPosition = true;
+
+    if (element.label.labelClass == APILblClass_Text) {
+        GS::UniString text;
+        if (!parameters.Get ("text", text)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' parameter for text label");
+        }
+#ifdef ServerMainVers_2800
+        delete memo.textContent;
+        memo.textContent = new GS::UniString { text };
+#else
+        memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
+        GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
+#endif
+
+        const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
+        element.label.u.text.nLine = text.Count(newlineChar) + 1;
+	    const Int32 numOfParagraphs = 1;
+	    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
+        SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, 1, element.label.u.text.nLine);
+        SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), element.label.u.text.pen, element.label.u.text.faceBits, element.label.u.text.font, element.label.u.text.effectsBits, element.label.u.text.size);
+        Int32 lastEolPos = 0;
+        for (Int32 eolIndex = 0; eolIndex < element.label.u.text.nLine; ++eolIndex) {
+            Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
+            Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
+            lastEolPos = eolPos;
+            SetEOL (memo.paragraphs, 0, eolIndex, offset);
+        }
+
+        element.label.u.text.width  = 0;
+        element.label.u.text.height = 0;
+        element.label.u.text.nonBreaking = true;
+        element.label.u.text.useEolPos = true;
     }
 
     return {};

@@ -371,6 +371,37 @@ var gCommands = [{
             "surveyPoint"
         ]
     }
+            },{
+                "name": "IFCFileOperation",
+                "version": "1.2.6",
+                "description": "Executes an IFC file operation.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "method": {
+                "type": "string",
+                "description": "The file operation method to use.",
+                "enum": ["save", "merge", "open"]
+            },
+            "ifcFilePath": {
+                "type": "string",
+                "description": "The target IFC file to use."
+            },
+            "fileType": {
+                "type": "string",
+                "description": "The type of the IFC file. The default is 'ifc'.",
+                "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "method",
+            "ifcFilePath"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Element Commands",
@@ -864,52 +895,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "type": "object",
-        "properties": {
-            "zoneBoundaries": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "connectedElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The unique identifier of the connected element."
-                        },
-                        "isExternal": {
-                            "type": "boolean",
-                            "description": "True if the boundary is an external one."
-                        },
-                        "neighbouringZoneElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "Returns the unique identifer of the other Zone the element connects to if the boundary is internal. Please note that this boundary does not represent the boundary of the element with the other Zone."
-                        },
-                        "area": {
-                            "type": "number",
-                            "description": "The area of the polygon of the boundary."
-                        },
-                        "polygonOutline": {
-                            "type": "array",
-                            "description": "The outline polygon of the boundary.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "connectedElementId",
-                        "isExternal",
-                        "neighbouringZoneElementId",
-                        "area",
-                        "polygonOutline"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "zoneBoundaries"
-        ]
+        "$ref": "#/ZoneBoundariesResponseOrError"
     }
             },{
                 "name": "GetCollisions",
@@ -1637,6 +1623,60 @@ var gCommands = [{
     "additionalProperties": false,
     "required": [
         "meshesData"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "CreateLabels",
+                "version": "1.2.5",
+                "description": "Creates Label elements based on the given parameters.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "labelsData": {
+            "type": "array",
+            "description": "Array of data to create Labels.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Label.",
+                "properties": {
+                    "parentElementId": {
+                        "$ref": "#/ElementId",
+                        "description" : "The parent element if the label is an associative label."	
+                    },
+                    "text": { 
+                        "type": "string",
+                        "description": "The text content if the label is a text label."
+                    },
+                    "begCoordinate": {
+                        "$ref": "#/2DCoordinate",
+                        "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
+                    },
+                    "floorInd": {
+                        "type": "number",
+                        "description" : "The identifier of the floor. Optional parameter, by default the current floor or the floor of the parent element is used."	
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "labelsData"
     ]
 },
                 "outputScheme": {

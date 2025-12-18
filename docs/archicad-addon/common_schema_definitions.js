@@ -3341,5 +3341,65 @@ var gSchemaDefinitions = {
             "type": "string",
             "description": "The name of a favorite."
         }
+    },
+    "ZoneBoundariesResponse": {
+        "type": "object",
+        "properties": {
+            "zoneBoundaries": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "connectedElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The unique identifier of the connected element."
+                        },
+                        "isExternal": {
+                            "type": "boolean",
+                            "description": "True if the boundary is an external one."
+                        },
+                        "neighbouringZoneElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "Returns the unique identifer of the other Zone the element connects to if the boundary is internal. Please note that this boundary does not represent the boundary of the element with the other Zone."
+                        },
+                        "area": {
+                            "type": "number",
+                            "description": "The area of the polygon of the boundary."
+                        },
+                        "polygonOutline": {
+                            "type": "array",
+                            "description": "The outline polygon of the boundary.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "connectedElementId",
+                        "isExternal",
+                        "neighbouringZoneElementId",
+                        "area",
+                        "polygonOutline"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneBoundaries"
+        ]
+    },
+    "ZoneBoundariesResponseOrError": {
+        "type": "object",
+        "description": "The response of the zone boundaries command or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ZoneBoundariesResponse"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 };

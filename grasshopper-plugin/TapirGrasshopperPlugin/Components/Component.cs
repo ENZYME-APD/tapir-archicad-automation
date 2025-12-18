@@ -977,10 +977,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public override void CreateAttributes()
         {
-            m_attributes = new ButtonAttributes(
-                this,
-                2,
-                _additionalWidth);
+            this.m_attributes = new ButtonAttributes (this, 1, _additionalWidth);
         }
 
         public abstract void OnCapsuleButtonPressed(
