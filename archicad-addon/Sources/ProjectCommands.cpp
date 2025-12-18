@@ -782,3 +782,108 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
                 "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
                 "mapZone", apiGeoLocation.geoReferenceData.mapZone)));
 }
+
+IFCFileOperationCommand::IFCFileOperationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String IFCFileOperationCommand::GetName () const
+{
+    return "IFCFileOperation";
+}
+
+GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "method": {
+                "type": "string",
+                "description": "The file operation method to use.",
+                "enum": ["save", "merge", "open"]
+            },
+            "ifcFilePath": {
+                "type": "string",
+                "description": "The target IFC file to use."
+            },
+            "fileType": {
+                "type": "string",
+                "description": "The type of the IFC file. The default is 'ifc'.",
+                "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "method",
+            "ifcFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> IFCFileOperationCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString ifcFilePath;
+    if (!parameters.Get ("ifcFilePath", ifcFilePath)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is missing");
+    }
+
+    GS::UniString methodStr;
+    if (!parameters.Get ("method", methodStr)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "method parameter is missing");
+    }
+
+    API_IOParams ioParams = {};
+    ioParams.fileTypeID = APIFType_IfcFile;
+    if (methodStr == "open") {
+        ioParams.method = IO_OPEN;
+    } else if (methodStr == "merge") {
+        ioParams.method = IO_MERGE;
+    } else if (methodStr == "save") {
+        ioParams.method = IO_SAVEAS;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "method parameter is invalid");
+    }
+
+    GS::UniString fileTypeStr;
+    if (!parameters.Get ("fileType", fileTypeStr)) {
+        ioParams.refCon = 1;
+    } else {
+        if (fileTypeStr == "ifc") {
+            ioParams.refCon = 1;
+        } else if (fileTypeStr == "ifcxml") {
+            ioParams.refCon = 2;
+        } else if (fileTypeStr == "ifczip") {
+            ioParams.refCon = 3;
+        } else if (fileTypeStr == "ifcxmlzip") {
+            ioParams.refCon = 4;
+        } else {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "fileType parameter is invalid");
+        }
+    }
+
+    IO::Location ifcFileLocation (ifcFilePath);
+    IO::Name lastLocalName;
+    if (ifcFileLocation.GetLastLocalName (&lastLocalName) != NoError) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is invalid");
+    }
+    ioParams.fileLoc = &ifcFileLocation;
+    ioParams.saveFileIOName = &lastLocalName;
+    ioParams.noDialog = true;
+    ioParams.fromDragDrop = false;
+
+    API_ModulID moduleID = { 1198731108, 138575850 };
+    const GSErrCode err = ACAPI_AddOnAddOnCommunication_Call (&moduleID, 'IFCI', 1, reinterpret_cast<GSHandle>(&ioParams), nullptr, ioParams.noDialog);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to execute the IFC operation");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
