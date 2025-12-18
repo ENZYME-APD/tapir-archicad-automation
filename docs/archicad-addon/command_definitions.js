@@ -371,6 +371,37 @@ var gCommands = [{
             "surveyPoint"
         ]
     }
+            },{
+                "name": "IFCFileOperation",
+                "version": "1.2.6",
+                "description": "Executes an IFC file operation.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "method": {
+                "type": "string",
+                "description": "The file operation method to use.",
+                "enum": ["save", "merge", "open"]
+            },
+            "ifcFilePath": {
+                "type": "string",
+                "description": "The target IFC file to use."
+            },
+            "fileType": {
+                "type": "string",
+                "description": "The type of the IFC file. The default is 'ifc'.",
+                "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "method",
+            "ifcFilePath"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Element Commands",
