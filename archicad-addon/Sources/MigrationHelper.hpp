@@ -66,6 +66,8 @@
 #define ACAPI_AutoText_GetAutoTextFlag(par1) ACAPI_Goodies(APIAny_GetAutoTextFlagID,par1)
 #define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
 
+#define ACAPI_AddOnAddOnCommunication_Call ACAPI_Command_Call
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;
