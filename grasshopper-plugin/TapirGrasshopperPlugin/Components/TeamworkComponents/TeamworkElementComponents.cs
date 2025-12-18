@@ -1,0 +1,125 @@
+﻿using Grasshopper.Kernel;
+using System;
+using System.Linq;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
+
+namespace TapirGrasshopperPlugin.Components.TeamworkComponents
+{
+    public abstract class AbsTeamworkElementsComponent
+        : AbsTeamworkBaseComponent
+    {
+        protected AbsTeamworkElementsComponent(
+            string name,
+            string description)
+            : base(
+                name,
+                description)
+        {
+        }
+
+        protected override void AddInputs()
+        {
+            InGenerics(
+                "ElementGuids",
+                "Elements Guids to get detail list for.");
+        }
+    }
+
+    public class ReserveElementsComponent : AbsTeamworkElementsComponent
+    {
+        public override string CommandName => "ReserveElements";
+
+        public ReserveElementsComponent()
+            : base(
+                "ReserveElements",
+                "Reserves elements in Teamwork mode.")
+        {
+        }
+
+        protected override void AddOutputs()
+        {
+            OutText(
+                nameof(ExecutionResult),
+                ExecutionResult.Doc);
+
+            OutGenerics($"{nameof(Conflict)}{nameof(Conflict.ElementId)}s");
+        }
+
+        protected override void Solve(
+            IGH_DataAccess da)
+        {
+            if (!da.TryCreateFromList(
+                    0,
+                    out ElementsObject input))
+            {
+                return;
+            }
+
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToAddOn,
+                    ExecutionResultResponse.Deserialize,
+                    out ExecutionResultResponse response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response.Message());
+
+            if (response.HasConflicts)
+            {
+                da.SetData(
+                    1,
+                    response.Conflicts.Select(x => x.ElementId));
+            }
+        }
+
+        public override Guid ComponentGuid =>
+            new Guid("3c0e9944-2875-4a68-8794-ec16fa3235f5");
+    }
+
+    public class ReleaseElementsComponent : AbsTeamworkElementsComponent
+    {
+        public override string CommandName => "ReleaseElements";
+
+        public ReleaseElementsComponent()
+            : base(
+                "ReleaseElements",
+                "Releases elements in Teamwork mode.")
+        {
+        }
+
+        protected override void Solve(
+            IGH_DataAccess da)
+        {
+            if (!da.TryCreateFromList(
+                    0,
+                    out ElementsObject input))
+            {
+                return;
+            }
+
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToAddOn,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response.Message());
+        }
+
+        public override Guid ComponentGuid =>
+            new Guid("f0456a61-c0c7-445a-b670-009b2ae5d1af");
+    }
+}

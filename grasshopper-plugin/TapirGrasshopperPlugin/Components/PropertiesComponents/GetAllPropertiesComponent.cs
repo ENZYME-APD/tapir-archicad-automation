@@ -1,64 +1,70 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using System.Linq;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class GetAllPropertiesComponent : ArchicadAccessorComponent
     {
-        public GetAllPropertiesComponent ()
-          : base (
-                "All Properties",
+        public override string CommandName => "GetAllProperties";
+
+        public GetAllPropertiesComponent()
+            : base(
                 "AllProperties",
                 "Get all properties.",
-                "Properties"
-            )
+                GroupNames.Properties)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddOutputs()
         {
+            OutGenerics("PropertyIds");
+            OutTexts("PropertyGroupNames");
+            OutTexts("PropertyNames");
 
+            OutTexts(
+                "FullNames",
+                "Full names containing the joined group and property name.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            pManager.AddGenericParameter ("PropertyGuid", "PropertyGuid", "Property Guid.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("GroupName", "GroupName", "Property group name.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("PropertyName", "PropertyName", "Property name.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("FullName", "FullName", "Full name containing the group and the property name.", GH_ParamAccess.list);
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    null,
+                    ToAddOn,
+                    JHelp.Deserialize<AllProperties>,
+                    out AllProperties response))
+            {
                 return;
             }
 
-            AllProperties properties = response.Result.ToObject<AllProperties> ();
-            List<PropertyIdObj> propertyIds = new List<PropertyIdObj> ();
-            List<string> propertyGroupNames = new List<string> ();
-            List<string> propertyNames = new List<string> ();
-            List<string> fullNames = new List<string> ();
-            foreach (PropertyDetailsObj detail in properties.Properties) {
-                propertyIds.Add (detail.PropertyId);
-                propertyGroupNames.Add (detail.PropertyGroupName);
-                propertyNames.Add (detail.PropertyName);
-                fullNames.Add (ArchicadUtils.JoinNames (detail.PropertyGroupName, detail.PropertyName));
-            }
+            da.SetDataList(
+                0,
+                response.Properties.Select(x => x.PropertyId));
 
-            DA.SetDataList (0, propertyIds);
-            DA.SetDataList (1, propertyGroupNames);
-            DA.SetDataList (2, propertyNames);
-            DA.SetDataList (3, fullNames);
+            da.SetDataList(
+                1,
+                response.Properties.Select(x => x.PropertyGroupName));
+
+            da.SetDataList(
+                2,
+                response.Properties.Select(x => x.PropertyName));
+
+            da.SetDataList(
+                3,
+                response.Properties.Select(x => StringHelp.Join(
+                    x.PropertyGroupName,
+                    x.PropertyName)));
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.AllProperties;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.AllProperties;
 
-        public override Guid ComponentGuid => new Guid ("79f924e4-5b26-4efe-bfaf-0e82f9bb3821");
+        public override Guid ComponentGuid =>
+            new Guid("79f924e4-5b26-4efe-bfaf-0e82f9bb3821");
     }
 }

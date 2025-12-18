@@ -1,51 +1,68 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
     public class FindClassificationItemByIdComponent : ArchicadAccessorComponent
     {
-        public FindClassificationItemByIdComponent ()
-          : base (
-                "Find Classification Item By Id",
-                "ClassificationById",
-                "Finds a Classification Item by id in the given Classification System.",
-                "Classifications"
-            )
+        public override string CommandName => "GetAllClassificationsInSystem";
+
+        public FindClassificationItemByIdComponent()
+            : base(
+                "FindClassificationItemById",
+                "Finds a Classification Item by Id in the given Classification System.",
+                GroupNames.Classifications)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("ClassificationSystemGuid", "SystemGuid", "The Guid of a classification system.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Classification Item id", "ItemId", "Classification Item id to find.", GH_ParamAccess.item);
+            InGeneric(
+                "ClassificationSystemGuid",
+                "The Guid of the classification system.");
+
+            InText(
+                "ClassificationItemId",
+                "Classification Item Id to find.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter ("ClassificationItemGuid", "ItemGuid", "Found ClassificationItem Guid.", GH_ParamAccess.item);
+            OutGeneric(
+                "ClassificationItemGuid",
+                "Found ClassificationItem Guid.");
         }
 
-        public override void AddedToDocument (GH_Document document)
+        public override void AddedToDocument(
+            GH_Document document)
         {
-            base.AddedToDocument (document);
-
-            new ClassificationSystemValueList ().AddAsSource (this, 0);
+            AddAsSource<ClassificationSystemValueList>(
+                document,
+                0);
         }
 
-        private ClassificationItemDetailsObj FindClassificationItemInTree (List<ClassificationItemObj> branch, string classificationItemId)
+        private ClassificationItemDetailsObj FindClassificationItemInTree(
+            List<ClassificationItemObj> branch,
+            string classificationItemId)
         {
-            foreach (ClassificationItemObj item in branch) {
-                if (item.ClassificationItem.Id.ToLower () == classificationItemId) {
+            foreach (var item in branch)
+            {
+                if (item.ClassificationItem.Id.ToLower() ==
+                    classificationItemId)
+                {
                     return item.ClassificationItem;
                 }
-                if (item.ClassificationItem.Children != null) {
-                    ClassificationItemDetailsObj foundInChildren = FindClassificationItemInTree (item.ClassificationItem.Children, classificationItemId);
-                    if (foundInChildren != null) {
+
+                if (item.ClassificationItem.Children != null)
+                {
+                    var foundInChildren = FindClassificationItemInTree(
+                        item.ClassificationItem.Children,
+                        classificationItemId);
+                    if (foundInChildren != null)
+                    {
                         return foundInChildren;
                     }
                 }
@@ -54,43 +71,53 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             return null;
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
-            if (classificationSystemId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClassificationSystemId failed to collect data.");
+            if (!da.TryCreate(
+                    0,
+                    out ClassificationGuid classificationSystemId))
+            {
                 return;
             }
 
-            string ClassificationItemId = "";
-            if (!DA.GetData (1, ref ClassificationItemId)) {
+            if (!da.TryGet(
+                    1,
+                    out string classificationItemId))
+            {
                 return;
             }
 
-            ClassificationSystemObj classificationSystem = new ClassificationSystemObj () {
-                ClassificationSystemId = classificationSystemId
-            };
-
-            JObject classificationSystemObj = JObject.FromObject (classificationSystem);
-            CommandResponse response = SendArchicadCommand ("GetAllClassificationsInSystem", classificationSystemObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    new { classificationSystemId },
+                    ToArchicad,
+                    JHelp.Deserialize<AllClassificationItemsInSystem>,
+                    out AllClassificationItemsInSystem response))
+            {
                 return;
             }
 
-            AllClassificationItemsInSystem classificationItemsInSystem = response.Result.ToObject<AllClassificationItemsInSystem> ();
-            ClassificationItemId = ClassificationItemId.ToLower ();
-            ClassificationItemDetailsObj found = FindClassificationItemInTree (classificationItemsInSystem.ClassificationItems, ClassificationItemId);
+            var found = FindClassificationItemInTree(
+                response.ClassificationItems,
+                classificationItemId.ToLower());
 
-            if (found == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "ClassificationItem is not found.");
-            } else {
-                DA.SetData (0, found.ClassificationItemId);
+            if (found == null)
+            {
+                this.AddError("ClassificationItem not found!");
+            }
+            else
+            {
+                da.SetData(
+                    0,
+                    found.ClassificationItemId);
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ClassificationById;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ClassificationById;
 
-        public override Guid ComponentGuid => new Guid ("46026689-054d-4164-9d35-ac56150cd733");
+        public override Guid ComponentGuid =>
+            new Guid("46026689-054d-4164-9d35-ac56150cd733");
     }
 }

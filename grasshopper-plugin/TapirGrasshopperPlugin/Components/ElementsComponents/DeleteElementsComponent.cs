@@ -1,61 +1,60 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Rhino.Geometry;
 using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class DeleteElementsComponent : ArchicadExecutorComponent
     {
-        public DeleteElementsComponent ()
-          : base (
-                "Delete Elements",
+        public override string CommandName => "DeleteElements";
+
+        public DeleteElementsComponent()
+            : base(
                 "DeleteElements",
                 "Delete elements",
-                "Elements"
-            )
+                GroupNames.Elements)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element ids to delete.", GH_ParamAccess.list);
+            InGenerics(
+                "ElementGuids",
+                "Element ids to delete.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            ElementsObj elements = ElementsObj.Create (DA, 0);
-            if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            if (!da.TryCreateFromList(
+                    0,
+                    out ElementsObject input))
+            {
                 return;
             }
 
-            JObject elementsObj = JObject.FromObject (elements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "DeleteElements", elementsObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToAddOn,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
                 return;
             }
-            ExecutionResultObj executionResult = response.Result.ToObject<ExecutionResultObj> ();
-            if (!executionResult.Success) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, executionResult.Error.Message);
+
+            if (!response.Success)
+            {
+                this.AddError(response.Message());
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.DeleteElements;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.DeleteElements;
 
-        public override Guid ComponentGuid => new Guid ("9880138a-731a-40f6-a820-aa47923a872f");
+        public override Guid ComponentGuid =>
+            new Guid("9880138a-731a-40f6-a820-aa47923a872f");
     }
 }

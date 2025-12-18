@@ -1,52 +1,49 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
     public class DeleteNavigatorItem : ArchicadExecutorComponent
     {
-        public DeleteNavigatorItem ()
-          : base (
+        public override string CommandName => "DeleteNavigatorItems";
+
+        public DeleteNavigatorItem()
+            : base(
                 "DeleteNavigatorItems",
-                "DeleteNavigatorItems",
-                "Deletes items from navigator tree.",
-                "Navigator"
-            )
+                "Deletes items from the NavigatorTree.",
+                GroupNames.Navigator)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("NavigatorItemIds", "NavigatorItemIds", "Identifier of navigator items to delete.", GH_ParamAccess.list);
+            InGenerics(
+                "NavigatorItemIds",
+                "Identifier of navigator items to delete.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            NavigatorItemIdsObj navigatorItemIds = NavigatorItemIdsObj.Create (DA, 0);
-            if (navigatorItemIds == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input NavigatorItemIds failed to collect data.");
+            if (!da.TryCreateFromList(
+                    0,
+                    out NavigatorItemsObject input))
+            {
                 return;
             }
 
-            JObject inputObj = JObject.FromObject (navigatorItemIds);
-            CommandResponse response = SendArchicadCommand ("DeleteNavigatorItems", inputObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
+            SetCadValues(
+                CommandName,
+                input,
+                ToArchicad);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.DeleteNavigatorItems;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.DeleteNavigatorItems;
 
-        public override Guid ComponentGuid => new Guid ("b4ff32b4-91ac-405d-96ed-1938aec11eb3");
+        public override Guid ComponentGuid =>
+            new Guid("b4ff32b4-91ac-405d-96ed-1938aec11eb3");
     }
 }

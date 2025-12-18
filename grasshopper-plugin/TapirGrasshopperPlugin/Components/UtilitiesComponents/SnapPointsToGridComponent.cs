@@ -1,62 +1,89 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Graphs;
 using Rhino;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 {
     public class SnapPointsToGridComponent : Component
     {
-        public SnapPointsToGridComponent ()
-          : base (
-                "Snap Points",
-                "SnapPt",
+        public SnapPointsToGridComponent()
+            : base(
+                "SnapPoints",
                 "Snap points to an axis-aligned grid.",
-                "Utilities"
-            )
+                GroupNames.Utilities)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddPointParameter ("Points", "P", "List of points to snap.", GH_ParamAccess.list);
-            pManager.AddNumberParameter ("Grid size", "G", "Size of the grid.", GH_ParamAccess.item, 1.0);
+            InPoints(
+                "Points",
+                "List of points to snap.");
+
+            InNumber(
+                "Grid size",
+                "Size of the grid.",
+                1.0);
+
+            SetOptionality(1);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddPointParameter ("Points", "P", "List of points snapped to the grid.", GH_ParamAccess.list);
+            OutPoints(
+                "Points",
+                "List of points snapped to the grid.");
         }
 
-        protected override void SolveInstance (IGH_DataAccess DA)
+        protected override void SolveInstance(
+            IGH_DataAccess da)
         {
-            List<Point3d> points = new List<Point3d> ();
-            if (!DA.GetDataList (0, points)) {
+            if (!da.TryGetList(
+                    0,
+                    out List<Point3d> points))
+            {
                 return;
             }
-            double gridSize = 1.0;
-            if (!DA.GetData (1, ref gridSize)) {
+
+            var gridSize = da.GetOptional(
+                1,
+                1.0);
+
+            if (gridSize < 0.0 || RhinoMath.EpsilonEquals(
+                    gridSize,
+                    0.0,
+                    RhinoMath.Epsilon))
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Error,
+                    "Grid size must be positive.");
                 return;
             }
-            if (gridSize < 0.0 || RhinoMath.EpsilonEquals (gridSize, 0.0, RhinoMath.Epsilon)) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Grid size must be positive.");
-                return;
+
+            var snappedPoints = new List<Point3d>();
+            foreach (var point in points)
+            {
+                snappedPoints.Add(
+                    new Point3d()
+                    {
+                        X = Math.Floor(point.X / gridSize) * gridSize,
+                        Y = Math.Floor(point.Y / gridSize) * gridSize,
+                        Z = Math.Floor(point.Z / gridSize) * gridSize
+                    });
             }
-            List<Point3d> snappedPoints = new List<Point3d> ();
-            foreach (Point3d point in points) {
-                snappedPoints.Add (new Point3d () {
-                    X = Math.Floor (point.X / gridSize) * gridSize,
-                    Y = Math.Floor (point.Y / gridSize) * gridSize,
-                    Z = Math.Floor (point.Z / gridSize) * gridSize
-                });
-            }
-            DA.SetDataList (0, snappedPoints);
+
+            da.SetDataList(
+                0,
+                snappedPoints);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.SnapPt;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.SnapPt;
 
-        public override Guid ComponentGuid => new Guid ("b8b3282c-bdd5-497e-b7d3-7b1af0c71eaa");
+        public override Guid ComponentGuid =>
+            new Guid("b8b3282c-bdd5-497e-b7d3-7b1af0c71eaa");
     }
 }

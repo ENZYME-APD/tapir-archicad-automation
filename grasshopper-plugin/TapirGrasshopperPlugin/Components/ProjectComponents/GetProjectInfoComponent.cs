@@ -1,70 +1,65 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Project;
 
 namespace TapirGrasshopperPlugin.Components.ProjectComponents
 {
-    public class ProjectInfo
-    {
-        [JsonProperty ("isUntitled")]
-        public bool IsUntitled { get; set; }
-
-        [JsonProperty ("isTeamwork")]
-        public bool IsTeamwork { get; set; }
-
-        [JsonProperty ("projectLocation")]
-        public string ProjectLocation { get; set; }
-
-        [JsonProperty ("projectPath")]
-        public string ProjectPath { get; set; }
-
-        [JsonProperty ("projectName")]
-        public string ProjectName { get; set; }
-    }
-
     public class GetProjectInfoComponent : ArchicadAccessorComponent
     {
-        public GetProjectInfoComponent ()
-          : base (
-                "Project Details",
+        public override string CommandName => "GetProjectInfo";
+
+        public GetProjectInfoComponent()
+            : base(
                 "ProjectDetails",
                 "Get details of the currently active project.",
-                "Project"
-            )
+                GroupNames.Project)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddOutputs()
         {
+            OutBoolean("IsUntitled");
+            OutBoolean("IsTeamwork");
+            OutText("ProjectLocation");
+            OutText("ProjectPath");
+            OutText("ProjectName");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            pManager.AddBooleanParameter ("Is Untitled", "IsUntitled", "Is the project untitled.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter ("Is Teamwork", "IsTeamwork", "Is teamwork project.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Project Location", "ProjectLocation", "Location of the project.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Project Path", "ProjectPath", "Path of the project.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Project Name", "ProjectName", "Name of the project.", GH_ParamAccess.item);
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetProjectInfo", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    null,
+                    ToAddOn,
+                    JHelp.Deserialize<ProjectInfo>,
+                    out ProjectInfo response))
+            {
                 return;
             }
-            ProjectInfo projectInfo = response.Result.ToObject<ProjectInfo> ();
-            DA.SetData (0, projectInfo.IsUntitled);
-            DA.SetData (1, projectInfo.IsTeamwork);
-            DA.SetData (2, projectInfo.ProjectLocation);
-            DA.SetData (3, projectInfo.ProjectPath);
-            DA.SetData (4, projectInfo.ProjectName);
+
+            da.SetData(
+                0,
+                response.IsUntitled);
+            da.SetData(
+                1,
+                response.IsTeamwork);
+            da.SetData(
+                2,
+                response.ProjectLocation);
+            da.SetData(
+                3,
+                response.ProjectPath);
+            da.SetData(
+                4,
+                response.ProjectName);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ProjectDetails;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ProjectDetails;
 
-        public override Guid ComponentGuid => new Guid ("d46b6591-cae7-4809-8a3d-9b9b5ed77caf");
+        public override Guid ComponentGuid =>
+            new Guid("d46b6591-cae7-4809-8a3d-9b9b5ed77caf");
     }
 }

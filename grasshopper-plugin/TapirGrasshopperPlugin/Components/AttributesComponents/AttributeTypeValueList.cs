@@ -1,45 +1,29 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
-using Grasshopper.GUI;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Runtime.CompilerServices;
+﻿using System;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public enum AttributeType
-    {
-        Layer,
-        Line,
-        Fill,
-        Composite,
-        Surface,
-        LayerCombination,
-        ZoneCategory,
-        Profile,
-        PenTable,
-        MEPSystem,
-        OperationProfile,
-        BuildingMaterial
-    }
-
     public class AttributeTypeValueList : ValueList
     {
-        public AttributeTypeValueList () :
-            base ("Attribute Type", "", "Value List for Archicad Attribute Types.", "Attributes")
+        public AttributeTypeValueList()
+            : base(
+                "AttributeType",
+                "Value List for Archicad Attribute Types.",
+                GroupNames.Attributes)
         {
         }
 
-        public override void RefreshItems ()
+        public override void RefreshItems()
         {
-            ListItems.Clear ();
-            AddEnumItems (defaultSelected: AttributeType.Surface);
-            ExpireSolution (true);
+            ListItems.Clear();
+            AddEnumItems(defaultSelected: AttributeType.Surface);
+            ExpireSolution(true);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.AttributesByTypeValueList;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.AttributesByTypeValueList;
 
-        public override Guid ComponentGuid => new Guid ("0f6abd5b-6efe-4699-8e0f-ac67eea42890");
+        public override Guid ComponentGuid =>
+            new Guid("0f6abd5b-6efe-4699-8e0f-ac67eea42890");
     }
 }

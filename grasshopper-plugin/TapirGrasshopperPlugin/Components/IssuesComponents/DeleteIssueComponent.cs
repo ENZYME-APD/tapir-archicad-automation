@@ -1,71 +1,60 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class DeleteIssueComponent : ArchicadExecutorComponent
     {
-        public class ParametersOfDelete
-        {
-            [JsonProperty ("issueId")]
-            public IssueIdObj IssueId;
+        public override string CommandName => "DeleteIssue";
 
-            [JsonProperty ("acceptAllElements")]
-            public bool AcceptAllElements;
-        }
-
-        public DeleteIssueComponent ()
-          : base (
-                "Delete Issue",
+        public DeleteIssueComponent()
+            : base(
                 "DeleteIssue",
                 "Delete Issue.",
-                "Issues"
-            )
+                GroupNames.Issues)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("IssueGuid", "IssueGuid", "Issue to delete.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter ("AcceptAllElements", "AcceptAllElements", "Accept all new/deleted Elements.", GH_ParamAccess.item, @default: true);
+            InGeneric(
+                "IssueGuid",
+                "Issue to delete.");
+
+            InBoolean(
+                "AcceptAllElements",
+                "Accept all new/deleted Elements.",
+                true);
+
+            SetOptionality(1);
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            IssueIdObj issueId = IssueIdObj.Create (DA, 0);
-            if (issueId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueGuid failed to collect data.");
+            if (!da.TryCreate(
+                    0,
+                    out IssueGuid issueId))
+            {
                 return;
             }
 
-            bool acceptAllElements = true;
-            if (!DA.GetData (1, ref acceptAllElements)) {
-                return;
-            }
+            bool acceptAllElements = da.GetOptional(
+                1,
+                true);
 
-            ParametersOfDelete parametersOfDelete = new ParametersOfDelete {
-                IssueId = issueId,
-                AcceptAllElements = acceptAllElements
-            };
-            JObject parameters = JObject.FromObject (parametersOfDelete);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "DeleteIssue", parameters);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
+            SetCadValues(
+                CommandName,
+                new { issueId, acceptAllElements },
+                ToAddOn);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.DeleteIssue;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.DeleteIssue;
 
-        public override Guid ComponentGuid => new Guid ("6cc670ea-6c05-408a-9041-3e7cd94a6f84");
+        public override Guid ComponentGuid =>
+            new Guid("6cc670ea-6c05-408a-9041-3e7cd94a6f84");
     }
 }

@@ -1,50 +1,49 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
-    public class VersionInfo
-    {
-        [JsonProperty ("version")]
-        public string Version { get; set; }
-    }
-
     public class GetAddOnVersionComponent : ArchicadAccessorComponent
     {
-        public GetAddOnVersionComponent ()
-          : base (
-                "Tapir Version",
+        public override string CommandName => "GetAddOnVersion";
+
+        public GetAddOnVersionComponent()
+            : base(
                 "TapirVersion",
                 "Get Tapir Add-On version.",
-                "General"
-            )
+                GroupNames.General)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddOutputs()
         {
+            OutText("TapirVersion");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            pManager.AddTextParameter ("Version", "Version", "Tapir Add-On version.", GH_ParamAccess.item);
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAddOnVersion", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    null,
+                    ToAddOn,
+                    JHelp.Deserialize<VersionInfo>,
+                    out VersionInfo response))
+            {
                 return;
             }
-            VersionInfo versionInfo = response.Result.ToObject<VersionInfo> ();
-            DA.SetData (0, versionInfo.Version);
+
+            da.SetData(
+                0,
+                response.Version);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.TapirVersion;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.TapirVersion;
 
-        public override Guid ComponentGuid => new Guid ("de017e94-ea0e-4947-bbf1-7c7d60e5e016");
+        public override Guid ComponentGuid =>
+            new Guid("de017e94-ea0e-4947-bbf1-7c7d60e5e016");
     }
 }

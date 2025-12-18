@@ -1,0 +1,63 @@
+﻿using Grasshopper.Kernel;
+using System;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
+
+namespace TapirGrasshopperPlugin.Components.NavigatorComponents
+{
+    public class UpdateDrawingsComponent : ArchicadAccessorComponent
+    {
+        public override string CommandName => "UpdateDrawings";
+
+        public UpdateDrawingsComponent()
+            : base(
+                "UpdateDrawings",
+                "Performs a drawing update on the given elements.",
+                GroupNames.Navigator)
+        {
+        }
+
+        protected override void AddInputs()
+        {
+            InGenerics(
+                "DrawingIds",
+                "ElementsGuids of the Drawings to update.");
+        }
+
+        protected override void AddOutputs()
+        {
+            OutText(
+                nameof(ExecutionResult),
+                ExecutionResult.Doc);
+        }
+
+        protected override void Solve(
+            IGH_DataAccess da)
+        {
+            if (!da.TryCreateFromList(
+                    0,
+                    out ElementsObject input))
+            {
+                return;
+            }
+
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToAddOn,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response.Message());
+        }
+
+        public override Guid ComponentGuid =>
+            new Guid("bfba1890-06d6-4902-b817-5e06e99398b2");
+    }
+}

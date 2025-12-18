@@ -1,0 +1,38 @@
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+
+namespace TapirGrasshopperPlugin.Types.Element
+{
+    public class SetWallDetails
+    {
+        [JsonProperty("begCoordinate")]
+        public Point2D BegCoordinate;
+
+        [JsonProperty("endCoordinate")]
+        public Point2D EndCoordinate;
+
+        [JsonProperty("height")]
+        public double Height;
+    }
+
+    public class TypedDetails<T>
+    {
+        [JsonProperty("typeSpecificDetails")]
+        public T TypeSpecificDetails;
+    }
+
+    public class TypedElementWithDetailsObj<T>
+    {
+        [JsonProperty("elementId")]
+        public ElementGuid ElementId;
+
+        [JsonProperty("details")]
+        public TypedDetails<T> Details;
+    }
+
+    public class TypedElementsWithDetailsObj<T>
+    {
+        [JsonProperty("elementsWithDetails")]
+        public List<TypedElementWithDetailsObj<T>> ElementsWithDetails;
+    }
+}

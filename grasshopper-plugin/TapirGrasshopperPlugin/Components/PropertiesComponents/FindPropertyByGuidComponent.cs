@@ -1,66 +1,84 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class FindPropertyByGuidComponent : ArchicadAccessorComponent
     {
-        public FindPropertyByGuidComponent ()
-          : base (
-                "Property by Guid",
+        public override string CommandName => "GetAllProperties";
+
+        public FindPropertyByGuidComponent()
+            : base(
                 "PropertyByGuid",
-                "Finds a property by guid.",
-                "Properties"
-            )
+                "Finds a property by Guid.",
+                GroupNames.Properties)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter ("PropertyGuid", "PropertyGuid", "Property guid to find.", GH_ParamAccess.item);
+            InText(
+                "PropertyGuid",
+                "Property Guid to find.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter ("PropertyId", "PropertyId", "Found property id.", GH_ParamAccess.item);
+            OutGeneric(
+                "PropertyId",
+                "Found property Id.");
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            string propertyGuid = "";
-            if (!DA.GetData (0, ref propertyGuid)) {
+            if (!da.TryGet(
+                    0,
+                    out string propertyGuid))
+            {
                 return;
             }
 
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    null,
+                    ToAddOn,
+                    JHelp.Deserialize<AllProperties>,
+                    out AllProperties response))
+            {
                 return;
             }
 
-            AllProperties properties = response.Result.ToObject<AllProperties> ();
             PropertyDetailsObj found = null;
-            propertyGuid = propertyGuid.ToLower ();
-            foreach (PropertyDetailsObj detail in properties.Properties) {
-                if (detail.PropertyId.Guid.ToLower () == propertyGuid) {
+            propertyGuid = propertyGuid.ToLower();
+
+            foreach (var detail in response.Properties)
+            {
+                if (detail.PropertyId.Guid.ToLower() == propertyGuid)
+                {
                     found = detail;
                     break;
                 }
             }
 
-            if (found == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Property is not found.");
-            } else {
-                DA.SetData (0, found.PropertyId);
+            if (found == null)
+            {
+                this.AddError("Property is not found.");
+            }
+            else
+            {
+                da.SetData(
+                    0,
+                    found.PropertyId);
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PropertyByGuid;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.PropertyByGuid;
 
-        public override Guid ComponentGuid => new Guid ("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
+        public override Guid ComponentGuid =>
+            new Guid("d7f26316-9d62-48b4-854f-ab3d79db1cbf");
     }
 }

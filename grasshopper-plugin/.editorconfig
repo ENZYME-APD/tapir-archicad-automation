@@ -1,5 +1,5 @@
-# Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
 
 # C# files
 [*.cs]
@@ -20,7 +20,7 @@ insert_final_newline = false
 # Organize usings
 dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = false
-file_header_template = unset
+file_header_template = 
 
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false
@@ -71,7 +71,7 @@ dotnet_code_quality_unused_parameters = all
 dotnet_remove_unnecessary_suppression_exclusions = none
 
 # New line preferences
-dotnet_style_allow_multiple_blank_lines_experimental = true
+dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_style_allow_statement_immediately_after_block_experimental = true
 
 #### C# Coding Conventions ####
@@ -144,12 +144,14 @@ csharp_style_allow_embedded_statements_on_same_line_experimental = true
 #### C# Formatting Rules ####
 
 # New line preferences
-csharp_new_line_before_catch = false
-csharp_new_line_before_else = false
-csharp_new_line_before_finally = false
+csharp_new_line_before_open_paren = true
+csharp_new_line_before_if = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_else = true
+csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_before_members_in_object_initializers = true
-csharp_new_line_before_open_brace = types,methods,properties
+csharp_new_line_before_open_brace = all
 csharp_new_line_between_query_expression_clauses = true
 
 # Indentation preferences
@@ -157,11 +159,11 @@ csharp_indent_block_contents = true
 csharp_indent_braces = false
 csharp_indent_case_contents = true
 csharp_indent_case_contents_when_block = true
-csharp_indent_labels = one_less_than_current
+csharp_indent_labels = no_change
 csharp_indent_switch_labels = true
 
 # Space preferences
-csharp_space_after_cast = true
+csharp_space_after_cast = false
 csharp_space_after_colon_in_inheritance_clause = true
 csharp_space_after_comma = true
 csharp_space_after_dot = false
@@ -176,10 +178,10 @@ csharp_space_before_open_square_brackets = false
 csharp_space_before_semicolon_in_for_statement = false
 csharp_space_between_empty_square_brackets = false
 csharp_space_between_method_call_empty_parameter_list_parentheses = false
-csharp_space_between_method_call_name_and_opening_parenthesis = true
+csharp_space_between_method_call_name_and_opening_parenthesis = false
 csharp_space_between_method_call_parameter_list_parentheses = false
 csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
-csharp_space_between_method_declaration_name_and_open_parenthesis = true
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
 csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
@@ -229,3 +231,6 @@ dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.required_suffix = 
 dotnet_naming_style.begins_with_i.word_separator = 
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+# ReSharper properties
+resharper_indent_preprocessor_if = usual_indent

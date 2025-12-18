@@ -1,64 +1,63 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class CreateIssueComponent : ArchicadExecutorComponent
     {
-        public class ParametersOfNewIssue
-        {
-            [JsonProperty ("name")]
-            public string Name;
-        }
+        public override string CommandName => "CreateIssue";
 
-        public CreateIssueComponent ()
-          : base (
-                "Create Issue",
+        public CreateIssueComponent()
+            : base(
                 "CreateIssue",
                 "Create an issue.",
-                "Issues"
-            )
+                GroupNames.Issues)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter ("Name", "Name", "Name", GH_ParamAccess.item);
+            InText(
+                "Name",
+                "Name.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter ("IssueGuid", "IssueGuid", "Issue Guid.", GH_ParamAccess.item);
+            OutGeneric("IssueGuid");
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            string name = "";
-            if (!DA.GetData (0, ref name)) {
+            if (!da.TryGet(
+                    0,
+                    out string name))
+            {
                 return;
             }
 
-            ParametersOfNewIssue parametersOfNewIssue = new ParametersOfNewIssue {
-                Name = name
-            };
-            JObject parameters = JObject.FromObject (parametersOfNewIssue);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "CreateIssue", parameters);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    new { name },
+                    ToAddOn,
+                    JHelp.Deserialize<IssueGuidWrapper>,
+                    out IssueGuidWrapper response))
+            {
                 return;
             }
 
-            IssueIdItemObj newIssue = response.Result.ToObject<IssueIdItemObj> ();
-            DA.SetData (0, newIssue.IssueId);
+            da.SetData(
+                0,
+                response.IssueId);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.CreateIssue;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.CreateIssue;
 
-        public override Guid ComponentGuid => new Guid ("fdd43474-b0de-4354-8856-c1dc0b07195f");
+        public override Guid ComponentGuid =>
+            new Guid("fdd43474-b0de-4354-8856-c1dc0b07195f");
     }
 }

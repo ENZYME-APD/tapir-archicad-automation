@@ -1,69 +1,98 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
     public class FindPropertyByName : ArchicadAccessorComponent
     {
-        public FindPropertyByName ()
-          : base (
-                "Property by Name",
+        public override string CommandName => "GetAllProperties";
+
+        public FindPropertyByName()
+            : base(
                 "PropertyByName",
                 "Finds a property by group name and name.",
-                "Properties"
-            )
+                GroupNames.Properties)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter ("Group name", "GroupName", "Property group name to find.", GH_ParamAccess.item);
-            pManager.AddTextParameter ("Property name", "PropertyName", "Property name to find.", GH_ParamAccess.item);
+            InText(
+                "GroupName",
+                "Property group name to find.");
+
+            InText(
+                "PropertyName",
+                "Property name to find.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter ("PropertyGuid", "PropertyGuid", "Found property Guid.", GH_ParamAccess.item);
+            OutGeneric(
+                "PropertyGuid",
+                "Found property Guid.");
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            string propertyGroupName = "";
-            string propertyName = "";
-            if (!DA.GetData (0, ref propertyGroupName) || !DA.GetData (1, ref propertyName)) {
+            if (!da.TryGet(
+                    0,
+                    out string propertyGroupName))
+            {
                 return;
             }
 
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetAllProperties", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!da.TryGet(
+                    1,
+                    out string propertyName))
+            {
                 return;
             }
 
-            AllProperties properties = response.Result.ToObject<AllProperties> ();
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    null,
+                    ToAddOn,
+                    JHelp.Deserialize<AllProperties>,
+                    out AllProperties response))
+            {
+                return;
+            }
+
             PropertyDetailsObj found = null;
-            propertyGroupName = propertyGroupName.ToLower ();
-            propertyName = propertyName.ToLower ();
-            foreach (PropertyDetailsObj detail in properties.Properties) {
-                if (detail.PropertyGroupName.ToLower () == propertyGroupName && detail.PropertyName.ToLower () == propertyName) {
+
+            propertyGroupName = propertyGroupName.ToLower();
+            propertyName = propertyName.ToLower();
+
+            foreach (var detail in response.Properties)
+            {
+                if (detail.PropertyGroupName.ToLower() == propertyGroupName &&
+                    detail.PropertyName.ToLower() == propertyName)
+                {
                     found = detail;
                     break;
                 }
             }
 
-            if (found == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Property is not found.");
-            } else {
-                DA.SetData (0, found.PropertyId);
+            if (found == null)
+            {
+                this.AddError("Property is not found.");
+            }
+            else
+            {
+                da.SetData(
+                    0,
+                    found.PropertyId);
             }
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.PropertyByName;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.PropertyByName;
 
-        public override Guid ComponentGuid => new Guid ("9bb30fb5-9a68-4672-b807-4e35b2d27761");
+        public override Guid ComponentGuid =>
+            new Guid("9bb30fb5-9a68-4672-b807-4e35b2d27761");
     }
 }

@@ -1,148 +1,205 @@
 ﻿using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class HierarchicalElementsObj
+    public class GetSubelementsOfHierarchicalElementsComponent
+        : ArchicadAccessorComponent
     {
-        [JsonProperty ("hierarchicalElements")]
-        public List<ElementIdItemObj> Elements;
-    }
+        public override string CommandName =>
+            "GetSubelementsOfHierarchicalElements";
 
-    public class GetSubelementsOfHierarchicalElementsComponent : ArchicadAccessorComponent
-    {
-        public GetSubelementsOfHierarchicalElementsComponent ()
-          : base (
+        public GetSubelementsOfHierarchicalElementsComponent()
+            : base(
                 "Subelements",
-                "Subelems",
                 "Gets the subelements of the given hierarchical elements.",
-                "Elements"
-            )
+                GroupNames.Elements)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids of hierarchical elements to get subelements of.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("SubelemType", "SubelemType", "Type of subelements.", GH_ParamAccess.item);
+            InGenerics(
+                "ElementGuids",
+                "Elements Guids of hierarchical elements to get subelements of.");
+
+            InText(
+                "SubelementType",
+                "Type of subelements.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids of the found hierarchical elements which has subelements with the given type.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("SubelementGuids", "SubelementGuids", "Subelements with the given type.", GH_ParamAccess.tree);
+            OutGenerics(
+                "ElementGuids",
+                "Elements Guids of the found hierarchical elements which has subelements with the given type.");
+
+            OutGenericTree(
+                "SubelementGuids",
+                "Subelements with the given type.");
         }
 
-        public override void AddedToDocument (GH_Document document)
+        public override void AddedToDocument(
+            GH_Document document)
         {
-            base.AddedToDocument (document);
+            base.AddedToDocument(document);
 
-            new ElementTypeValueList (ElementTypeValueListType.SubElementsOnly).AddAsSource (this, 1);
+            new ElementTypeValueList(ElementTypeValueListType.SubElementsOnly)
+                .AddAsSource(
+                    this,
+                    1);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            ElementsObj inputElements = ElementsObj.Create (DA, 0);
-            if (inputElements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            if (!da.TryCreateFromList(
+                    0,
+                    out ElementsObject inputElements))
+            {
                 return;
             }
 
-            string subelemType = "";
-            if (!DA.GetData (1, ref subelemType)) {
+            if (!da.TryGet(
+                    1,
+                    out string subType))
+            {
                 return;
             }
 
-            JObject inputElementsObj = JObject.FromObject (inputElements);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSubelementsOfHierarchicalElements", inputElementsObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            var subTypeEnum = EnumHelp.ToEnum<SubElementType>(subType);
+
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    inputElements,
+                    ToAddOn,
+                    JHelp.Deserialize<SubelementsObject>,
+                    out SubelementsObject response))
+            {
                 return;
             }
 
-            List<ElementIdItemObj> hierarchicalElements = new List<ElementIdItemObj> ();
-            DataTree<ElementIdItemObj> subelementsOfHierarchicals = new DataTree<ElementIdItemObj> ();
-            SubelementsObj subElementsObj = response.Result.ToObject<SubelementsObj> ();
-            for (int i = 0; i < subElementsObj.Subelements.Count; i++) {
-                List<ElementIdItemObj> subelements = null;
-                if (subelemType == "CurtainWallSegment") {
-                    subelements = subElementsObj.Subelements[i].CurtainWallSegments;
-                } else if (subelemType == "CurtainWallFrame") {
-                    subelements = subElementsObj.Subelements[i].CurtainWallFrames;
-                } else if (subelemType == "CurtainWallPanel") {
-                    subelements = subElementsObj.Subelements[i].CurtainWallPanels;
-                } else if (subelemType == "CurtainWallJunction") {
-                    subelements = subElementsObj.Subelements[i].CurtainWallJunctions;
-                } else if (subelemType == "CurtainWallAccessory") {
-                    subelements = subElementsObj.Subelements[i].CurtainWallAccessories;
-                } else if (subelemType == "StairRiser") {
-                    subelements = subElementsObj.Subelements[i].StairRisers;
-                } else if (subelemType == "StairTread") {
-                    subelements = subElementsObj.Subelements[i].StairTreads;
-                } else if (subelemType == "StairStructure") {
-                    subelements = subElementsObj.Subelements[i].StairStructures;
-                } else if (subelemType == "RailingNode") {
-                    subelements = subElementsObj.Subelements[i].RailingNodes;
-                } else if (subelemType == "RailingSegment") {
-                    subelements = subElementsObj.Subelements[i].RailingSegments;
-                } else if (subelemType == "RailingPost") {
-                    subelements = subElementsObj.Subelements[i].RailingPosts;
-                } else if (subelemType == "RailingRailEnd") {
-                    subelements = subElementsObj.Subelements[i].RailingRailEnds;
-                } else if (subelemType == "RailingRailConnection") {
-                    subelements = subElementsObj.Subelements[i].RailingRailConnections;
-                } else if (subelemType == "RailingHandrailEnd") {
-                    subelements = subElementsObj.Subelements[i].RailingHandrailEnds;
-                } else if (subelemType == "RailingHandrailConnection") {
-                    subelements = subElementsObj.Subelements[i].RailingHandrailConnections;
-                } else if (subelemType == "RailingToprailEnd") {
-                    subelements = subElementsObj.Subelements[i].RailingToprailEnds;
-                } else if (subelemType == "RailingToprailConnection") {
-                    subelements = subElementsObj.Subelements[i].RailingToprailConnections;
-                } else if (subelemType == "RailingRail") {
-                    subelements = subElementsObj.Subelements[i].RailingRails;
-                } else if (subelemType == "RailingToprail") {
-                    subelements = subElementsObj.Subelements[i].RailingToprails;
-                } else if (subelemType == "RailingHandrail") {
-                    subelements = subElementsObj.Subelements[i].RailingHandrails;
-                } else if (subelemType == "RailingPattern") {
-                    subelements = subElementsObj.Subelements[i].RailingPatterns;
-                } else if (subelemType == "RailingInnerPost") {
-                    subelements = subElementsObj.Subelements[i].RailingInnerPosts;
-                } else if (subelemType == "RailingPanel") {
-                    subelements = subElementsObj.Subelements[i].RailingPanels;
-                } else if (subelemType == "RailingBalusterSet") {
-                    subelements = subElementsObj.Subelements[i].RailingBalusterSets;
-                } else if (subelemType == "RailingBaluster") {
-                    subelements = subElementsObj.Subelements[i].RailingBalusters;
-                } else if (subelemType == "BeamSegment") {
-                    subelements = subElementsObj.Subelements[i].BeamSegments;
-                } else if (subelemType == "ColumnSegment") {
-                    subelements = subElementsObj.Subelements[i].ColumnSegments;
+            var hierarchicalElements = new List<ElementGuidWrapper>();
+            var subelementsOfHierarchicals = new DataTree<ElementGuidWrapper>();
+
+            for (var i = 0; i < response.Subelements.Count; i++)
+            {
+                List<ElementGuidWrapper> subelements = null;
+
+                if (TypeMap.TryGetValue(
+                        subTypeEnum,
+                        out var selector))
+                {
+                    subelements = selector(response.Subelements[i]);
                 }
-                if (subelements == null || subelements.Count == 0) {
+
+                if (subelements == null || subelements.Count == 0)
+                {
                     continue;
                 }
-                hierarchicalElements.Add (new ElementIdItemObj () {
-                    ElementId = inputElements.Elements[i].ElementId
-                });
-                subelementsOfHierarchicals.AddRange (subelements, new GH_Path (i));
+
+                hierarchicalElements.Add(
+                    new ElementGuidWrapper
+                    {
+                        ElementId = inputElements.Elements[i].ElementId
+                    });
+                subelementsOfHierarchicals.AddRange(
+                    subelements,
+                    new GH_Path(i));
             }
 
-            DA.SetDataList (0, hierarchicalElements);
-            DA.SetDataTree (1, subelementsOfHierarchicals);
+            da.SetDataList(
+                0,
+                hierarchicalElements);
+
+            da.SetDataTree(
+                1,
+                subelementsOfHierarchicals);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.Subelems;
+        public Dictionary<SubElementType,
+            Func<SubelementsItemObj, List<ElementGuidWrapper>>> TypeMap
+        {
+            get;
+        } =
+            new
+                Dictionary<SubElementType, Func<SubelementsItemObj,
+                    List<ElementGuidWrapper>>>()
+                {
+                    {
+                        SubElementType.CurtainWallSegment,
+                        x => x.CurtainWallSegments
+                    },
+                    {
+                        SubElementType.CurtainWallFrame,
+                        x => x.CurtainWallFrames
+                    },
+                    {
+                        SubElementType.CurtainWallPanel,
+                        x => x.CurtainWallPanels
+                    },
+                    {
+                        SubElementType.CurtainWallJunction,
+                        x => x.CurtainWallJunctions
+                    },
+                    {
+                        SubElementType.CurtainWallAccessory,
+                        x => x.CurtainWallAccessories
+                    },
+                    { SubElementType.StairTread, x => x.StairTreads },
+                    { SubElementType.StairRiser, x => x.StairRisers },
+                    { SubElementType.StairStructure, x => x.StairStructures },
+                    { SubElementType.RailingNode, x => x.RailingNodes },
+                    { SubElementType.RailingSegment, x => x.RailingSegments },
+                    { SubElementType.RailingPost, x => x.RailingPosts },
+                    { SubElementType.RailingRailEnd, x => x.RailingRailEnds },
+                    {
+                        SubElementType.RailingRailConnection,
+                        x => x.RailingRailConnections
+                    },
+                    {
+                        SubElementType.RailingHandrailEnd,
+                        x => x.RailingHandrailEnds
+                    },
+                    {
+                        SubElementType.RailingHandrailConnection,
+                        x => x.RailingHandrailConnections
+                    },
+                    {
+                        SubElementType.RailingToprailEnd,
+                        x => x.RailingToprailEnds
+                    },
+                    {
+                        SubElementType.RailingToprailConnection,
+                        x => x.RailingToprailConnections
+                    },
+                    { SubElementType.RailingRail, x => x.RailingRails },
+                    { SubElementType.RailingToprail, x => x.RailingToprails },
+                    { SubElementType.RailingHandrail, x => x.RailingHandrails },
+                    { SubElementType.RailingPattern, x => x.RailingPatterns },
+                    {
+                        SubElementType.RailingInnerPost,
+                        x => x.RailingInnerPosts
+                    },
+                    { SubElementType.RailingPanel, x => x.RailingPanels },
+                    {
+                        SubElementType.RailingBalusterSet,
+                        x => x.RailingBalusterSets
+                    },
+                    { SubElementType.RailingBaluster, x => x.RailingBalusters },
+                    { SubElementType.BeamSegment, x => x.BeamSegments },
+                    { SubElementType.ColumnSegment, x => x.ColumnSegments },
+                };
 
-        public override Guid ComponentGuid => new Guid ("c0e93009-a0b6-4d24-9963-ef6c2e2535ed");
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.Subelems;
+
+        public override Guid ComponentGuid =>
+            new Guid("c0e93009-a0b6-4d24-9963-ef6c2e2535ed");
     }
 }

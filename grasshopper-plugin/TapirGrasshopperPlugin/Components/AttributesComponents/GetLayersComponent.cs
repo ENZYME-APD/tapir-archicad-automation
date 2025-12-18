@@ -1,108 +1,92 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
-using Grasshopper;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Rhino.DocObjects;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using System.Linq;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
-    public class LayerDetailsObj
-    {
-        [JsonProperty ("name")]
-        public string Name;
-
-        [JsonProperty ("isHidden")]
-        public bool IsHidden;
-
-        [JsonProperty ("isLocked")]
-        public bool IsLocked;
-
-        [JsonProperty ("isWireframe")]
-        public bool IsWireframe;
-
-        [JsonProperty ("intersectionGroupNr")]
-        public int IntersectionGroupNr;
-    }
-
-    public class LayerObj
-    {
-        [JsonProperty ("layerAttribute")]
-        public LayerDetailsObj LayerAttribute;
-    }
-
-    public class LayersObj
-    {
-        [JsonProperty ("attributes")]
-        public List<LayerObj> Attributes;
-    }
-
     public class GetLayersComponent : ArchicadAccessorComponent
     {
-        public GetLayersComponent ()
-          : base (
-                "Layers",
+        public override string CommandName => "GetLayerAttributes";
+
+        public GetLayersComponent()
+            : base(
                 "Layers",
                 "Get the details of layers.",
-                "Attributes"
-            )
+                GroupNames.Attributes)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("AttributeGuids", "AttributeGuids", "List of layer attribute Guids.", GH_ParamAccess.list);
+            InGenerics(
+                "LayerAttributeGuids",
+                "List of layer attribute Guids.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddTextParameter ("Name", "Name", "Name of the layer.", GH_ParamAccess.list);
-            pManager.AddBooleanParameter ("IsHidden", "IsHidden", "Visibility of the layer.", GH_ParamAccess.list);
-            pManager.AddBooleanParameter ("IsLocked", "IsLocked", "Lock states of the layer.", GH_ParamAccess.list);
-            pManager.AddBooleanParameter ("IsWireframe", "IsWireframe", "Wireframe flag of the layer.", GH_ParamAccess.list);
-            pManager.AddIntegerParameter ("IntersectionGroup", "IntersectionGroup", "Intersection group of the layer.", GH_ParamAccess.list);
+            OutTexts(
+                "Names",
+                "Names of the layers.");
+
+            OutBooleans(
+                "IsHidden",
+                "Visibility states of the layers.");
+
+            OutBooleans(
+                "IsLocked",
+                "Lock states of the layers.");
+
+            OutBooleans(
+                "IsWireframe",
+                "Wireframe flags of the layers.");
+
+            OutIntegers(
+                "IntersectionGroup",
+                "Intersection groups of the layers.");
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            AttributeIdsObj attributes = AttributeIdsObj.Create (DA, 0);
-            if (attributes == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input AttributeGuids failed to collect data.");
+            if (!da.TryCreateFromList(
+                    0,
+                    out AttributeGuidItemsObject input))
+            {
                 return;
             }
 
-            JObject attributesObj = JObject.FromObject (attributes);
-            CommandResponse response = SendArchicadCommand ("GetLayerAttributes", attributesObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToArchicad,
+                    JHelp.Deserialize<LayersObject>,
+                    out LayersObject response))
+            {
                 return;
             }
-            LayersObj layers = response.Result.ToObject<LayersObj> ();
-            List<string> name = new List<string> ();
-            List<bool> isHidden = new List<bool> ();
-            List<bool> isLocked = new List<bool> ();
-            List<bool> isWireframe = new List<bool> ();
-            List<int> intersectionGroup = new List<int> ();
-            foreach (LayerObj layer in layers.Attributes) {
-                name.Add (layer.LayerAttribute.Name);
-                isHidden.Add (layer.LayerAttribute.IsHidden);
-                isLocked.Add (layer.LayerAttribute.IsLocked);
-                isWireframe.Add (layer.LayerAttribute.IsWireframe);
-                intersectionGroup.Add (layer.LayerAttribute.IntersectionGroupNr);
-            }
-            DA.SetDataList (0, name);
-            DA.SetDataList (1, isHidden);
-            DA.SetDataList (2, isLocked);
-            DA.SetDataList (3, isWireframe);
-            DA.SetDataList (4, intersectionGroup);
+
+            da.SetDataList(
+                0,
+                response.Attributes.Select(x => x.LayerAttribute.Name));
+            da.SetDataList(
+                1,
+                response.Attributes.Select(x => x.LayerAttribute.IsHidden));
+            da.SetDataList(
+                2,
+                response.Attributes.Select(x => x.LayerAttribute.IsLocked));
+            da.SetDataList(
+                3,
+                response.Attributes.Select(x => x.LayerAttribute.IsWireframe));
+            da.SetDataList(
+                4,
+                response.Attributes.Select(x =>
+                    x.LayerAttribute.IntersectionGroupNr));
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.Layers;
-
-        public override Guid ComponentGuid => new Guid ("0ffbee62-00a0-4974-9d9b-9bb1da20f6d0");
+        public override Guid ComponentGuid =>
+            new Guid("0ffbee62-00a0-4974-9d9b-9bb1da20f6d0");
     }
 }

@@ -1,98 +1,122 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class ChangeSelectionComponent : ArchicadAccessorComponent
     {
-        public class ChangeSelectionParameters
-        {
-            [JsonProperty ("addElementsToSelection")]
-            public List<ElementIdItemObj> AddElementsToSelection;
+        public override string CommandName => "ChangeSelectionOfElements";
 
-            [JsonProperty ("removeElementsFromSelection")]
-            public List<ElementIdItemObj> RemoveElementsFromSelection;
-        }
-
-        public ChangeSelectionComponent ()
-          : base (
-                "Change Selection",
+        public ChangeSelectionComponent()
+            : base(
                 "ChangeSelection",
                 "Change Selection, add or remove elements.",
-                "Elements"
-            )
+                GroupNames.Elements)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("ElementsToAdd", "ElementsToAdd", "Elements to add to selection.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("ElementsToRemove", "ElementsToRemove", "Elements to remove from selection.", GH_ParamAccess.list);
-            pManager.AddBooleanParameter ("ClearSelection", "ClearSelection", "Remove all Elements from selection (before adding the given elements to selection).", GH_ParamAccess.item, @default: false);
+            InGenerics(
+                "ElementsToAdd",
+                "Elements to add to selection.");
 
-            Params.Input[0].Optional = true;
-            Params.Input[1].Optional = true;
+            InGenerics(
+                "ElementsToRemove",
+                "Elements to remove from selection.");
+
+            InBoolean(
+                "ClearSelection",
+                "Remove all Elements from selection (before adding the given elements to selection).");
+
+            SetOptionality(
+                new[]
+                {
+                    0,
+                    1
+                });
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            ElementsObj elementsToAdd = ElementsObj.Create (DA, 0);
-            ElementsObj elementsToRemove = ElementsObj.Create (DA, 1);
-            bool clearSelection = false;
-            if (!DA.GetData (2, ref clearSelection)) {
+            if (!da.TryCreateFromList(
+                    0,
+                    out ElementsObject elementsToAdd))
+            {
                 return;
             }
 
-            if ((elementsToAdd == null || elementsToAdd.Elements.Count == 0) &&
-                (elementsToRemove == null || elementsToRemove.Elements.Count == 0) &&
-                !clearSelection) {
+            if (!da.TryCreateFromList(
+                    1,
+                    out ElementsObject elementsToRemove))
+            {
                 return;
             }
 
-            HashSet<ElementIdItemObj> uniqueElementsToRemove = new HashSet<ElementIdItemObj> ();
-            if (elementsToRemove != null) {
-                uniqueElementsToRemove.UnionWith (elementsToRemove.Elements);
+            if (!da.TryGet(
+                    2,
+                    out bool clearSelection))
+            {
+                return;
             }
 
-            if (clearSelection) {
-                CommandResponse responseOfGetSelection = SendArchicadAddOnCommand ("TapirCommand", "GetSelectedElements", null);
-                if (responseOfGetSelection.Succeeded) {
-                    ElementsObj selectedElements = responseOfGetSelection.Result.ToObject<ElementsObj> ();
-                    uniqueElementsToRemove.UnionWith (selectedElements.Elements);
+            if (elementsToAdd.Elements.Count == 0 &&
+                elementsToRemove.Elements.Count == 0 && !clearSelection)
+            {
+                return;
+            }
+
+            var uniqueElementsToRemove = new HashSet<ElementGuidWrapper>();
+
+            if (elementsToRemove != null)
+            {
+                uniqueElementsToRemove.UnionWith(elementsToRemove.Elements);
+            }
+
+            if (clearSelection)
+            {
+                var responseOfGetSelection = ToAddOn(
+                    "GetSelectedElements",
+                    null);
+                if (responseOfGetSelection.Succeeded)
+                {
+                    var selectedElements = responseOfGetSelection.Result
+                        .ToObject<ElementsObject>();
+                    uniqueElementsToRemove.UnionWith(selectedElements.Elements);
                 }
             }
 
-            if (elementsToAdd != null) {
-                uniqueElementsToRemove.ExceptWith (elementsToAdd.Elements);
+            if (elementsToAdd != null)
+            {
+                uniqueElementsToRemove.ExceptWith(elementsToAdd.Elements);
             }
 
-            ChangeSelectionParameters parameters = new ChangeSelectionParameters () {
-                AddElementsToSelection = elementsToAdd != null ? elementsToAdd.Elements : new List<ElementIdItemObj> (),
-                RemoveElementsFromSelection = uniqueElementsToRemove.ToList ()
+            var parameters = new ChangeSelectionParameters()
+            {
+                AddElementsToSelection =
+                    elementsToAdd != null
+                        ? elementsToAdd.Elements
+                        : new List<ElementGuidWrapper>(),
+                RemoveElementsFromSelection =
+                    uniqueElementsToRemove.ToList()
             };
-            JObject parametersObj = JObject.FromObject (parameters);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "ChangeSelectionOfElements", parametersObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
+
+
+            SetCadValues(
+                CommandName,
+                parameters,
+                ToAddOn);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ChangeSelection;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ChangeSelection;
 
-        public override Guid ComponentGuid => new Guid ("d93b983a-35b3-436e-898f-87a79facbec5");
+        public override Guid ComponentGuid =>
+            new Guid("d93b983a-35b3-436e-898f-87a79facbec5");
     }
 }

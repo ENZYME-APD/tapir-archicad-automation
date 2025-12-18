@@ -1,91 +1,91 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Issues;
 
 namespace TapirGrasshopperPlugin.Components.IssuesComponents
 {
     public class ExportIssuesToBCFComponent : ArchicadAccessorComponent
     {
-        public class ParametersOfExport
-        {
-            [JsonProperty ("issues")]
-            public List<IssueIdItemObj> Issues;
+        public override string CommandName => "ExportIssuesToBCF";
 
-            [JsonProperty ("exportPath")]
-            public string ExportPath;
-
-            [JsonProperty ("useExternalId")]
-            public bool UseExternalId;
-
-            [JsonProperty ("alignBySurveyPoint")]
-            public bool AlignBySurveyPoint;
-        }
-
-        public ExportIssuesToBCFComponent ()
-          : base (
-                "Export Issues to BCF",
-                "ExportToBCF",
+        public ExportIssuesToBCFComponent()
+            : base(
+                "ExportIssuesToBCF",
                 "Export Issues to BCF.",
-                "Issues"
-            )
+                GroupNames.Issues)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("IssueGuids", "IssueGuids", "Issues to export.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("ExportedFilePath", "ExportedFilePath", "Path to the output BCF file.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter ("UseExternalId", "UseExternalId", "Use external IFC ID or Archicad IFC ID as referenced in BCF topics.", GH_ParamAccess.item, @default: true);
-            pManager.AddBooleanParameter ("AlignBySurveyPoint", "AlignBySurveyPoint", "Align BCF views by Archicad Survey Point or Archicad Project Origin.", GH_ParamAccess.item, @default: true);
+            InGenerics(
+                "IssueGuid",
+                "Issues to export.");
+
+            InText(
+                "ExportedFilePath",
+                "Path to the output BCF file.");
+
+            InBoolean(
+                "UseExternalId",
+                "Use external IFC ID or Archicad IFC ID as referenced in BCF topics.",
+                true);
+
+            InBoolean(
+                "AlignBySurveyPoint",
+                "Align BCF views by Archicad Survey Point or Archicad Project Origin.",
+                true);
+
+            SetOptionality(
+                new[]
+                {
+                    2,
+                    3
+                });
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
+            if (!da.TryCreateFromList(
+                    0,
+                    out IssuesObj issues))
+            {
+                return;
+            }
+
+            if (!da.TryGet(
+                    1,
+                    out string exportPath))
+            {
+                return;
+            }
+
+            bool useExternalId = da.GetOptional(
+                2,
+                true);
+
+            bool alignBySurveyPoint = da.GetOptional(
+                3,
+                true);
+
+            SetCadValues(
+                CommandName,
+                new
+                {
+                    issues = issues.Issues,
+                    exportPath,
+                    useExternalId,
+                    alignBySurveyPoint
+                },
+                ToAddOn);
         }
 
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            IssuesObj issues = IssuesObj.Create (DA, 0);
-            if (issues == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input IssueGuids failed to collect data.");
-                return;
-            }
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ExportIssuesToBCF;
 
-            string exportedFilePath = "";
-            if (!DA.GetData (1, ref exportedFilePath)) {
-                return;
-            }
-
-            bool useExternalId = true;
-            if (!DA.GetData (2, ref useExternalId)) {
-                return;
-            }
-
-            bool alignBySurveyPoint = true;
-            if (!DA.GetData (3, ref alignBySurveyPoint)) {
-                return;
-            }
-
-            ParametersOfExport parametersOfExport = new ParametersOfExport {
-                Issues = issues.Issues,
-                ExportPath = exportedFilePath,
-                UseExternalId = useExternalId,
-                AlignBySurveyPoint = alignBySurveyPoint
-            };
-            JObject parameters = JObject.FromObject (parametersOfExport);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "ExportIssuesToBCF", parameters);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
-        }
-
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.ExportIssuesToBCF;
-
-        public override Guid ComponentGuid => new Guid ("541081dc-ab2d-4bde-8e56-175070da4f21");
+        public override Guid ComponentGuid =>
+            new Guid("541081dc-ab2d-4bde-8e56-175070da4f21");
     }
 }

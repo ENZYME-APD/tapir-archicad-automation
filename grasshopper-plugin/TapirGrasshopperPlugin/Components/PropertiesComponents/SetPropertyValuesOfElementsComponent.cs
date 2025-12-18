@@ -1,85 +1,103 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
-    public class SetPropertyValuesOfElementsComponent : ArchicadExecutorComponent
+    public class SetPropertyValuesOfElementsComponent
+        : ArchicadExecutorComponent
     {
-        public SetPropertyValuesOfElementsComponent ()
-          : base (
-                "Set Property Values",
+        public override string CommandName => "SetPropertyValuesOfElements";
+
+        public SetPropertyValuesOfElementsComponent()
+            : base(
                 "SetPropertyValues",
                 "Set property values of elements.",
-                "Properties"
-            )
+                GroupNames.Properties)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("PropertyGuid", "PropertyGuid", "The property Guid to set the value for.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to set the value for.", GH_ParamAccess.list);
-            pManager.AddTextParameter ("Values", "Values", "Single value or list of values to set for the corresponding elements.", GH_ParamAccess.list);
+            InGeneric(
+                "PropertyGuid",
+                "The property Guid to set the value for.");
+
+            InGenerics(
+                "ElementGuids",
+                "Elements Guids to set the value for.");
+
+            InTexts(
+                "Values",
+                "Single value or list of values to set for the corresponding elements.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            PropertyIdObj propertyId = PropertyIdObj.Create (DA, 0);
-            if (propertyId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input PropertyGuid failed to collect data.");
-                return;
-            }
-            ElementsObj elements = ElementsObj.Create (DA, 1);
-            if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
-                return;
-            }
-            List<string> values = new List<string> ();
-            if (!DA.GetDataList (2, values)) {
+            if (!da.TryCreate(
+                    0,
+                    out PropertyGuidObject propertyId))
+            {
                 return;
             }
 
-
-            if (values.Count != 1 && elements.Elements.Count != values.Count) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of Values must be 1 or the same as the count of ElementGuids.");
+            if (!da.TryCreateFromList(
+                    1,
+                    out ElementsObject elements))
+            {
                 return;
             }
 
-            ElementPropertyValuesObj elemPropertyValues = new ElementPropertyValuesObj ();
-            elemPropertyValues.ElementPropertyValues = new List<ElementPropertyValueObj> ();
+            if (!da.TryGetList(
+                    2,
+                    out List<string> values))
+            {
+                return;
+            }
 
-            for (int i = 0; i < elements.Elements.Count; i++) {
-                ElementIdItemObj elementId = elements.Elements[i];
-                ElementPropertyValueObj elemPropertyValue = new ElementPropertyValueObj () {
+            if (values.Count != 1 && elements.Elements.Count != values.Count)
+            {
+                this.AddError(
+                    "The count of Values must be 1 or the same as the count of ElementGuids.");
+                return;
+            }
+
+            var input = new ElementPropertyValuesObj
+            {
+                ElementPropertyValues = new List<ElementPropertyValueObj>()
+            };
+
+            for (var i = 0; i < elements.Elements.Count; i++)
+            {
+                var elementId = elements.Elements[i];
+                var elemPropertyValue = new ElementPropertyValueObj()
+                {
                     ElementId = elementId.ElementId,
                     PropertyId = propertyId,
-                    PropertyValue = new PropertyValueObj () {
-                        Value = values.Count == 1 ? values[0] : values[i]
+                    PropertyValue = new PropertyValueObj()
+                    {
+                        Value = values.Count == 1
+                            ? values[0]
+                            : values[i]
                     }
                 };
-                elemPropertyValues.ElementPropertyValues.Add (elemPropertyValue);
+                input.ElementPropertyValues.Add(elemPropertyValue);
             }
 
-            JObject elemPropertyValuesObj = JObject.FromObject (elemPropertyValues);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "SetPropertyValuesOfElements", elemPropertyValuesObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
+            SetCadValues(
+                CommandName,
+                input,
+                ToAddOn);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.SetPropertyValues;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.SetPropertyValues;
 
-        public override Guid ComponentGuid => new Guid ("5d2aa76e-4a59-4b58-a5ce-51878c1478d0");
+        public override Guid ComponentGuid =>
+            new Guid("5d2aa76e-4a59-4b58-a5ce-51878c1478d0");
     }
 }

@@ -1,46 +1,51 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using TapirGrasshopperPlugin.Components;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
     public class GetSelectedElementsComponent : ArchicadAccessorComponent
     {
-        public GetSelectedElementsComponent ()
-          : base (
-                "Selected Elems",
-                "SelectedElems",
+        public override string CommandName => "GetSelectedElements";
+
+        public GetSelectedElementsComponent()
+            : base(
+                "SelectedElements",
                 "Get currently selected elements.",
-                "Elements"
-            )
+                GroupNames.Elements)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddOutputs()
         {
-
+            OutGenerics(
+                "ElementGuids",
+                "Currently selected element Guids.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Currently selected element Guids.", GH_ParamAccess.list);
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetSelectedElements", null);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    null,
+                    ToAddOn,
+                    JHelp.Deserialize<ElementsObject>,
+                    out ElementsObject response))
+            {
                 return;
             }
-            ElementsObj elements = response.Result.ToObject<ElementsObj> ();
-            DA.SetDataList (0, elements.Elements);
+
+            da.SetDataList(
+                0,
+                response.Elements);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.SelectedElems;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.SelectedElems;
 
-        public override Guid ComponentGuid => new Guid ("1949E4B5-4E37-4F35-8C5C-BEA7575AC1C6");
+        public override Guid ComponentGuid =>
+            new Guid("1949E4B5-4E37-4F35-8C5C-BEA7575AC1C6");
     }
 }

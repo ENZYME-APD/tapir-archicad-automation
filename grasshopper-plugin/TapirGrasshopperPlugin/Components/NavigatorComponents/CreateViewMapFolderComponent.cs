@@ -1,94 +1,104 @@
 ﻿using Grasshopper.Kernel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
-    public class FolderParameters
+    public class CreateViewMapFolderComponent : ArchicadExecutorComponent
     {
-        [JsonProperty ("name")]
-        public string Name;
-    }
+        public override string CommandName => "CreateViewMapFolder";
 
-    public class CreateViewMapFolderInput
-    {
-        [JsonProperty ("folderParameters")]
-        public FolderParameters FolderParameters;
-
-        [JsonProperty ("parentNavigatorItemId", NullValueHandling = NullValueHandling.Ignore)]
-        public NavigatorIdObj ParentNavigatorItemId;
-
-        [JsonProperty ("previousNavigatorItemId", NullValueHandling = NullValueHandling.Ignore)]
-        public NavigatorIdObj PreviousNavigatorItemId;
-    }
-
-    public class CreateViewMapFolderOutput
-    {
-        [JsonProperty ("createdFolderNavigatorItemId")]
-        public NavigatorIdObj CreatedFolderNavigatorItemId;
-    }
-
-    public class CreateViewMapFolder : ArchicadExecutorComponent
-    {
-        public CreateViewMapFolder ()
-          : base (
-                "CreateViewMapFolder",
-                "CreateViewMapFolder",
+        public CreateViewMapFolderComponent()
+            : base(
+                "CreateViewMapFolderComponent",
                 "Creates a view folder item at the given position in the navigator tree.",
-                "Navigator"
-            )
+                GroupNames.Navigator)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddTextParameter ("Name", "Name", "Name of the new folder.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ParentNavigatorItemId", "ParentNavigatorItemId", "The newly created folder will be placed under this parent item. If this parameter is not given the folder will be created as the first item in the View Map list.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("PreviousNavigatorItemId", "PreviousNavigatorItemId", "The newly created folder will be placed after this sibling item. If this parameter is not given the folder will be created as the first item under the parent.", GH_ParamAccess.item);
+            InText("FolderName");
 
-            Params.Input[1].Optional = true;
-            Params.Input[2].Optional = true;
+            InGeneric(
+                "ParentNavigatorItemId",
+                "The newly created folder will be placed under this parent item. " +
+                "If this parameter is not given the folder will be created as the first item in the View Map list.");
+
+            InGeneric(
+                "PreviousNavigatorItemId",
+                "The newly created folder will be placed after this sibling item. " +
+                "If this parameter is not given the folder will be created as the first item under the parent.");
+
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2
+                });
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter ("CreatedNavigatorItemId", "CreatedNavigatorItemId", "The ID of the new navigator item in view map.", GH_ParamAccess.item);
+            OutGeneric(
+                "CreatedNavigatorItemId",
+                "The ID of the new navigator item in view map.");
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            string name = "";
-            if (!DA.GetData (0, ref name)) {
+            if (!da.TryGet(
+                    0,
+                    out string name))
+            {
                 return;
             }
 
-            NavigatorIdItemObj parentNavigatorItemId = NavigatorIdItemObj.Create (DA, 1);
-            NavigatorIdItemObj previousNavigatorItemId = NavigatorIdItemObj.Create (DA, 2);
+            if (!da.TryCreate(
+                    1,
+                    out NavigatorGuid parentNavigatorItemId))
+            {
+                parentNavigatorItemId = null;
+            }
 
-            CreateViewMapFolderInput input = new CreateViewMapFolderInput () {
-                FolderParameters = new FolderParameters () {
-                    Name = name
-                },
-                ParentNavigatorItemId = parentNavigatorItemId == null ? null : parentNavigatorItemId.Id,
-                PreviousNavigatorItemId = previousNavigatorItemId == null ? null : previousNavigatorItemId.Id
-            };
-            JObject inputObj = JObject.FromObject (input);
-            CommandResponse response = SendArchicadCommand ("CreateViewMapFolder", inputObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!da.TryCreate(
+                    2,
+                    out NavigatorGuid previousNavigatorItemId))
+            {
+                parentNavigatorItemId = null;
+            }
+
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    new
+                    {
+                        folderParameters = new { name },
+                        parentNavigatorItemId,
+                        previousNavigatorItemId
+                    },
+                    ToArchicad,
+                    JHelp.Deserialize<ViewMapFolderOutput>,
+                    out ViewMapFolderOutput response))
+            {
                 return;
             }
-            NavigatorIdItemObj createdFolderNavigatorItemId = new NavigatorIdItemObj () {
-                Id = response.Result.ToObject<CreateViewMapFolderOutput> ().CreatedFolderNavigatorItemId
+
+            var wrapper = new NavigatorGuidWrapper
+            {
+                Id = response.CreatedFolderNavigatorItemId
             };
-            DA.SetData (0, createdFolderNavigatorItemId);
+
+            da.SetData(
+                0,
+                wrapper);
         }
 
-        protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.CreateViewMapFolder;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.CreateViewMapFolder;
 
-        public override Guid ComponentGuid => new Guid ("4de02e9a-55c3-4d23-9f96-bb5f73d50f0e");
+        public override Guid ComponentGuid =>
+            new Guid("4de02e9a-55c3-4d23-9f96-bb5f73d50f0e");
     }
 }

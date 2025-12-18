@@ -3,83 +3,123 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Newtonsoft.Json.Linq;
 using System;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
-    public class GetPropertyValuesOfElementsComponent : ArchicadAccessorComponent
+    public class GetPropertyValuesOfElementsComponent
+        : ArchicadAccessorComponent
     {
-        public GetPropertyValuesOfElementsComponent ()
-          : base (
-                "Get Property Values",
+        public static string Doc => "Get property values of elements.";
+        public override string CommandName => "GetPropertyValuesOfElements";
+
+        public GetPropertyValuesOfElementsComponent()
+            : base(
                 "GetPropertyValues",
                 "Get property values of elements.",
-                "Properties"
-            )
+                GroupNames.Properties)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("PropertyGuids", "PropertyGuids", "The property Guids to get the value for.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to get the value for.", GH_ParamAccess.list);
+            InGenerics(
+                "PropertyGuids",
+                "The property Guids to get the value for.");
+
+            InGenerics(
+                "ElementGuids",
+                "Elements Guids to get the value for.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void AddOutputs()
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids the property is available for.", GH_ParamAccess.tree);
-            pManager.AddTextParameter ("Values", "Values", "The property values of the elements.", GH_ParamAccess.tree);
+            OutGenericTree(
+                "ElementGuids",
+                "Elements Guids the property is available for.");
+
+            OutTextTree(
+                "Values",
+                "The property values of the elements.");
         }
 
-        protected override void Solve (IGH_DataAccess DA)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            PropertiesObj properties = PropertiesObj.Create (DA, 0);
-            if (properties == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input PropertyGuids failed to collect data.");
-                return;
-            }
-            ElementsObj elements = ElementsObj.Create (DA, 1);
-            if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            if (!da.TryCreateFromList(
+                    0,
+                    out PropertiesObject properties))
+            {
                 return;
             }
 
-            ElementsAndPropertyIdsObj elementsAndPropertyIds = new ElementsAndPropertyIdsObj () {
-                Elements = elements.Elements,
-                PropertyIds = properties.Properties
-            };
-
-            JObject elementsAndPropertyIdsObj = JObject.FromObject (elementsAndPropertyIds);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "GetPropertyValuesOfElements", elementsAndPropertyIdsObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
+            if (!da.TryCreateFromList(
+                    1,
+                    out ElementsObject elements))
+            {
                 return;
             }
 
-            PropertyValuesForElements propertyValuesForElements = response.Result.ToObject<PropertyValuesForElements> ();
-            DataTree<ElementIdItemObj> elementIds = new DataTree<ElementIdItemObj> ();
-            DataTree<string> values = new DataTree<string> ();
-            for (int elementIndex = 0; elementIndex < propertyValuesForElements.PropertyValuesOrErrors.Count; elementIndex++) {
-                PropertyValues propertyValuesOrError = propertyValuesForElements.PropertyValuesOrErrors[elementIndex];
-                if (propertyValuesOrError.PropertyValuesOrErrors == null) {
-                    continue;
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    new
+                    {
+                        elements = elements.Elements,
+                        properties = properties.Properties
+                    },
+                    ToAddOn,
+                    JHelp.Deserialize<PropertyValuesForElements>,
+                    out PropertyValuesForElements response))
+            {
+                return;
+            }
+
+            var elementIds = new DataTree<ElementGuidWrapper>();
+            var values = new DataTree<string>();
+
+            for (var i = 0; i < response.PropertyValuesOrErrors.Count; i++)
+            {
+                var propertyValues = response.PropertyValuesOrErrors[i];
+
+                if (propertyValues.PropertyValuesOrErrors == null)
+                {
+                    throw new Exception(
+                        $"No property found for {elements.Elements[i]}!");
                 }
 
-                for (int propertyIndex = 0; propertyIndex < propertyValuesOrError.PropertyValuesOrErrors.Count; propertyIndex++) {
-                    elementIds.Add (elements.Elements[elementIndex], new GH_Path (propertyIndex));
+                for (var pIndex = 0;
+                     pIndex < propertyValues.PropertyValuesOrErrors.Count;
+                     pIndex++)
+                {
+                    var path = new GH_Path(pIndex);
+                    var valueOrError =
+                        propertyValues.PropertyValuesOrErrors[pIndex];
 
-                    PropertyValueOrError propertyValueOrError = propertyValuesOrError.PropertyValuesOrErrors[propertyIndex];
-                    values.Add (propertyValueOrError.PropertyValue == null ? null : propertyValueOrError.PropertyValue.Value, new GH_Path (propertyIndex));
+                    elementIds.Add(
+                        elements.Elements[i],
+                        path);
+
+                    values.Add(
+                        valueOrError.PropertyValue?.Value,
+                        path);
                 }
             }
 
-            DA.SetDataTree (0, elementIds);
-            DA.SetDataTree (1, values);
+            da.SetDataTree(
+                0,
+                elementIds);
+
+            da.SetDataTree(
+                1,
+                values);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.GetPropertyValues;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.GetPropertyValues;
 
-        public override Guid ComponentGuid => new Guid ("c2a0a175-5cbc-4ec3-b5e2-744cd1be280d");
+        public override Guid ComponentGuid =>
+            new Guid("c2a0a175-5cbc-4ec3-b5e2-744cd1be280d");
     }
 }

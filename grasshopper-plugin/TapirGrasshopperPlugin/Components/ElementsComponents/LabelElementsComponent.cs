@@ -1,71 +1,53 @@
 ﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Rhino.Geometry;
 using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using System.Linq;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class LabelData
-    {
-        [JsonProperty ("parentElementId")]
-        public ElementIdObj ParentElementId;
-    }
-
-    public class CreateLabelsParameters
-    {
-        [JsonProperty ("labelsData")]
-        public List<LabelData> LabelsData;
-    }
-
     public class LabelElementsComponent : ArchicadExecutorComponent
     {
-        public LabelElementsComponent ()
-          : base (
-                "Label Elements",
+        public override string CommandName => "CreateLabels";
+
+        public LabelElementsComponent()
+            : base(
                 "LabelElements",
                 "Label elements",
-                "Elements"
-            )
+                GroupNames.Elements)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element ids to create label for.", GH_ParamAccess.list);
+            InGenerics(
+                "ElementGuids",
+                "IDs of Elements to create labels for.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            ElementsObj elements = ElementsObj.Create (DA, 0);
-            if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            if (!da.TryCreateFromList(
+                    0,
+                    out ElementsObject elements))
+            {
                 return;
             }
 
-            JObject parametersObj = JObject.FromObject (new CreateLabelsParameters () {
-                LabelsData = elements.Elements.ConvertAll (element => new LabelData () { ParentElementId = element.ElementId })
-            });
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "CreateLabels", parametersObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
+            SetCadValues(
+                CommandName,
+                new
+                {
+                    labelsData = elements
+                        .Elements.Select(element =>
+                            new { parentElementId = element.ElementId })
+                        .ToList()
+                },
+                ToAddOn);
         }
 
-        // protected override System.Drawing.Bitmap Icon => TapirGrasshopperPlugin.Properties.Resources.LabelElements;
-
-        public override Guid ComponentGuid => new Guid ("ecdb0a59-f928-4ed3-88e1-cd9aea737b39");
+        public override Guid ComponentGuid =>
+            new Guid("ecdb0a59-f928-4ed3-88e1-cd9aea737b39");
     }
 }

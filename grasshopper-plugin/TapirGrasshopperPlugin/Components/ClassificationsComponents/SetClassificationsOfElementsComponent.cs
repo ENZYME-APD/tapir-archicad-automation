@@ -1,102 +1,130 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Data;
-using TapirGrasshopperPlugin.Utilities;
+using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
-    public class SetClassificationsOfElementsComponent : ArchicadExecutorComponent
+    public class SetClassificationsOfElementsComponent
+        : ArchicadExecutorComponent
     {
-        public SetClassificationsOfElementsComponent ()
-          : base (
-                "Set Classifications",
+        public override string CommandName => "SetClassificationsOfElements";
+
+        public SetClassificationsOfElementsComponent()
+            : base(
                 "SetClassifications",
-                "Set classifications of elements.",
-                "Classifications"
-            )
+                "Sets the classifications of elements. " +
+                "In order to set the classification of an element to unclassified, " +
+                "omit the classificationItemId field. " +
+                "It works for subelements of hierarchal elements also.",
+                GroupNames.Classifications)
         {
         }
 
-        protected override void RegisterInputParams (GH_InputParamManager pManager)
+        protected override void AddInputs()
         {
-            pManager.AddGenericParameter ("ClassificationSystemGuid", "ClsSystemGuid", "The Guid of a classification system.", GH_ParamAccess.item);
-            pManager.AddGenericParameter ("ClassificationItemGuids", "ClsItemGuids", "The Guids of classification items to assign for the given elements.", GH_ParamAccess.list);
-            pManager.AddGenericParameter ("ElementGuids", "ElementGuids", "Element Guids to set the classification for.", GH_ParamAccess.list);
+            InGeneric(
+                "ClassificationSystemGuid",
+                "The Guid of a Classification system.");
+
+            InGenerics(
+                "ClassificationItemGuids",
+                "The Guids of Classification items to assign for the given elements.");
+
+            InGenerics(
+                "ElementGuids",
+                "Elements Guids to set the classification for.");
         }
 
-        protected override void RegisterOutputParams (GH_OutputParamManager pManager)
+        public override void AddedToDocument(
+            GH_Document document)
         {
+            AddAsSource<ClassificationSystemValueList>(
+                document,
+                0);
         }
 
-        public override void AddedToDocument (GH_Document document)
+        protected override void Solve(
+            IGH_DataAccess da)
         {
-            base.AddedToDocument (document);
-
-            new ClassificationSystemValueList ().AddAsSource (this, 0);
-        }
-
-        protected override void Solve (IGH_DataAccess DA)
-        {
-            ClassificationIdObj classificationSystemId = ClassificationIdObj.Create (DA, 0);
-            if (classificationSystemId == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ClsSystemGuid failed to collect data.");
+            if (!da.TryCreate(
+                    0,
+                    out ClassificationGuid systemId))
+            {
                 return;
             }
 
-            List<GH_ObjectWrapper> inputItemIds = new List<GH_ObjectWrapper> ();
-            if (!DA.GetDataList (1, inputItemIds)) {
+            if (!da.TryGetList(
+                    1,
+                    out List<GH_ObjectWrapper> wrappers))
+            {
                 return;
             }
 
-            List<ClassificationIdObj> classificationItemIds = new List<ClassificationIdObj> ();
-            foreach (GH_ObjectWrapper obj in inputItemIds) {
-                ClassificationIdObj itemId = ClassificationIdObj.Create (obj);
-                if (itemId != null) {
-                    classificationItemIds.Add (itemId);
+            var guids = new List<ClassificationGuid>();
+
+            foreach (var wrapper in wrappers)
+            {
+                var itemId = ClassificationGuid.CreateFromWrapper(wrapper);
+                if (itemId != null)
+                {
+                    guids.Add(itemId);
                 }
             }
 
-            ElementsObj elements = ElementsObj.Create (DA, 2);
-            if (elements == null) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "Input ElementGuids failed to collect data.");
+            if (!da.TryCreateFromList(
+                    2,
+                    out ElementsObject elements))
+            {
                 return;
             }
 
-            if (classificationItemIds.Count != 1 && elements.Elements.Count != classificationItemIds.Count) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, "The count of ClsItemGuids must be 1 or the same as the count of ElementGuids.");
+            if (guids.Count != 1 && elements.Elements.Count != guids.Count)
+            {
+                this.AddError(
+                    "ClassificationGuid to ElementGuid count mismatch!");
                 return;
             }
 
-            ElementClassificationsObj elementClassifications = new ElementClassificationsObj () {
-                ElementClassifications = new List<ElementClassificationObj> ()
-            };
+            var elementClassifications = new List<ElementClassificationObj>();
 
-            for (int i = 0; i < elements.Elements.Count; i++) {
-                ElementIdItemObj elementId = elements.Elements[i];
-                ElementClassificationObj elementClassification = new ElementClassificationObj () {
+            for (var i = 0; i < elements.Elements.Count; i++)
+            {
+                var elementId = elements.Elements[i];
+
+                var elementClassification = new ElementClassificationObj
+                {
                     ElementId = elementId.ElementId,
-                    Classification = new ClassificationObj () {
-                        ClassificationSystemId = classificationSystemId
+                    Classification = new ClassificationObj
+                    {
+                        ClassificationSystemId = systemId
                     }
                 };
-                ClassificationIdObj classificationItemId = classificationItemIds.Count == 1 ? classificationItemIds[0] : classificationItemIds[i];
-                elementClassification.Classification.ClassificationItemId = classificationItemId.IsNullGuid () ? null : classificationItemId;
-                elementClassifications.ElementClassifications.Add (elementClassification);
+
+                var classificationItemId = guids.Count == 1
+                    ? guids[0]
+                    : guids[i];
+
+                elementClassification.Classification.ClassificationItemId =
+                    classificationItemId.IsNullGuid()
+                        ? null
+                        : classificationItemId;
+
+                elementClassifications.Add(elementClassification);
             }
 
-            JObject elementClassificationsObj = JObject.FromObject (elementClassifications);
-            CommandResponse response = SendArchicadAddOnCommand ("TapirCommand", "SetClassificationsOfElements", elementClassificationsObj);
-            if (!response.Succeeded) {
-                AddRuntimeMessage (GH_RuntimeMessageLevel.Error, response.GetErrorMessage ());
-                return;
-            }
+            SetCadValues(
+                CommandName,
+                new { elementClassifications },
+                ToAddOn);
         }
 
-        protected override System.Drawing.Bitmap Icon => Properties.Resources.SetClassifications;
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.SetClassifications;
 
-        public override Guid ComponentGuid => new Guid ("d5f807eb-ba90-4616-bd31-325c1701506a");
+        public override Guid ComponentGuid =>
+            new Guid("d5f807eb-ba90-4616-bd31-325c1701506a");
     }
 }
