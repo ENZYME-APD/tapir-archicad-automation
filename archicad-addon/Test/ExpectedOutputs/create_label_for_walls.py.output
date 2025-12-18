@@ -1,0 +1,99 @@
+Command: CreateLabels
+Parameters:
+{
+    "labelsData": [
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        },
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        },
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        },
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        },
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        },
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        },
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        },
+        {
+            "parentElementId": {
+                "guid": "<GUID>"
+            },
+            "text": "ElemID: <PROPERTY-<GUID>> \nHeight: <PROPERTY-<GUID>> \nWidth: <PROPERTY-<GUID>> \nThickness: <PROPERTY-<GUID>>"
+        }
+    ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
