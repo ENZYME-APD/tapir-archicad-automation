@@ -5,6 +5,9 @@
 #include "CoordTypedef.hpp"
 #include "ModelEdge.hpp"
 #include "ModelMeshBody.hpp"
+#include "NativeImage.hpp"
+#include "MemoryOChannel32.hpp"
+#include "Base64Converter.hpp"
 #ifdef ServerMainVers_2800
 #include "ACAPI/ZoneBoundaryQuery.hpp"
 #endif
@@ -1368,30 +1371,30 @@ GS::ObjectState GetZoneBoundariesCommand::Execute (
     }
 
 #ifdef ServerMainVers_2800
-	ACAPI::ZoneBoundaryQuery query = ACAPI::CreateZoneBoundaryQuery ();
+    ACAPI::ZoneBoundaryQuery query = ACAPI::CreateZoneBoundaryQuery ();
 
-	ACAPI::Result updateResult = query.Modify (
-		[&] (ACAPI::ZoneBoundaryQuery::Modifier& modifier) -> GSErrCode {
-			ACAPI::Result<void> result = modifier.Update (processControl);
-			return result.IsOk () ? NoError : result.UnwrapErr ().kind;
-		}
-	);
+    ACAPI::Result updateResult = query.Modify (
+        [&] (ACAPI::ZoneBoundaryQuery::Modifier& modifier) -> GSErrCode {
+            ACAPI::Result<void> result = modifier.Update (processControl);
+            return result.IsOk () ? NoError : result.UnwrapErr ().kind;
+        }
+    );
 
-	if (updateResult.IsErr ()) {
-		return CreateErrorResponse (updateResult.UnwrapErr ().kind, "Failed to execute zone boundary query");
+    if (updateResult.IsErr ()) {
+        return CreateErrorResponse (updateResult.UnwrapErr ().kind, "Failed to execute zone boundary query");
     }
 
     GS::ObjectState response;
     const auto& zoneBoundaries = response.AddList<GS::ObjectState> ("zoneBoundaries");
 
     const API_Guid zoneGuid = GetGuidFromObjectState (*zoneElementId);
-	const ACAPI::Result<std::vector<ACAPI::ZoneBoundary>> boundaries = query.GetZoneBoundaries (zoneGuid);
+    const ACAPI::Result<std::vector<ACAPI::ZoneBoundary>> boundaries = query.GetZoneBoundaries (zoneGuid);
 
     if (boundaries.IsErr ()) {
-		return CreateErrorResponse (boundaries.UnwrapErr ().kind, "Failed to get zone boundary");
+        return CreateErrorResponse (boundaries.UnwrapErr ().kind, "Failed to get zone boundary");
     }
 
-	for (const ACAPI::ZoneBoundary& boundary : boundaries.Unwrap ()) {
+    for (const ACAPI::ZoneBoundary& boundary : boundaries.Unwrap ()) {
         GS::ObjectState boundaryOS;
         boundaryOS.Add ("connectedElementId", CreateGuidObjectState (boundary.GetElemId ()));
         boundaryOS.Add ("isExternal", boundary.IsExternal ());
@@ -1536,9 +1539,9 @@ GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters
     parameters.Get ("elementsGroup2", elementsGroup2);
 
     API_CollisionDetectionSettings collisionSettings = {};
-	collisionSettings.volumeTolerance = 0.001;
-	collisionSettings.performSurfaceCheck = false;
-	collisionSettings.surfaceTolerance = 0.001;
+    collisionSettings.volumeTolerance = 0.001;
+    collisionSettings.performSurfaceCheck = false;
+    collisionSettings.surfaceTolerance = 0.001;
     GS::ObjectState settings;
     if (parameters.Get ("settings", settings)) {
         settings.Get ("volumeTolerance", collisionSettings.volumeTolerance);
@@ -2056,4 +2059,251 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to delete elements.");
+}
+
+GetElementPreviewImageCommand::GetElementPreviewImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementPreviewImageCommand::GetName () const
+{
+    return "GetElementPreviewImage";
+}
+
+GS::Optional<GS::UniString> GetElementPreviewImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "imageType": {
+                "type": "string",
+                "description": "The type of the preview image. Default is 3D.",
+                "enum": ["2D", "Section", "3D"]
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 128."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 128."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementPreviewImageCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "previewImage": {
+                "type": "string",
+                "description": "The base64 encoded preview image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "previewImage"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementPreviewImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_VisualOverriddenImage image = {};
+    image.view = APIImage_Model3D;
+    GS::UniString imageTypeStr;
+    if (parameters.Get ("imageType", imageTypeStr)) {
+        if (imageTypeStr == "2D") {
+            image.view = APIImage_Model2D;
+        } else if (imageTypeStr == "Section") {
+            image.view = APIImage_Section;
+        } else if (imageTypeStr == "3D") {
+            image.view = APIImage_Model3D;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid imageType parameter.");
+        }
+    }
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid format parameter.");
+        }
+    }
+
+    UInt32 width = 128;
+    UInt32 height = 128;
+    parameters.Get ("width", width);
+    parameters.Get ("height", height);
+
+    NewDisplay::NativeImage nativeImage (width, height, 32, nullptr);
+    image.nativeImagePtr = &nativeImage;
+    GSErrCode err = ACAPI_GraphicalOverride_GetVisualOverriddenImage (GetGuidFromElementsArrayItem (parameters), &image);
+    BMhFree (image.vectorImageHandle);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get element preview image.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to encode element preview image.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar(char('\n')));
+    return GS::ObjectState ("previewImage", str);
+}
+
+GetRoomImageCommand::GetRoomImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRoomImageCommand::GetName () const
+{
+    return "GetRoomImage";
+}
+
+GS::Optional<GS::UniString> GetRoomImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zoneId": {
+                "$ref": "#/ElementId"
+            },
+            "imageType": {
+                "type": "string",
+                "description": "The type of the preview image. Default is 3D.",
+                "enum": ["2D", "Section", "3D"]
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 256."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 256."
+            },
+            "offset": {
+                "type": "number",
+                "description": "Offset of the clip polygon from the edge of the zone. Default is 0.001."
+            },
+            "scale": {
+                "type": "number",
+                "description": "Scale of the view (e.g. 0.005 for 1:200). Default is 0.005."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "Background color of the generated image. Default is white (1.0, 1.0, 1.0)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetRoomImageCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "roomImage": {
+                "type": "string",
+                "description": "The base64 encoded room image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roomImage"
+        ]
+    })";
+}
+
+GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_RoomImage image = {};
+    image.roomGuid = GetGuidFromArrayItem ("zoneId", parameters);
+    image.viewType = APIImage_Model3D;
+    GS::UniString imageTypeStr;
+    if (parameters.Get ("imageType", imageTypeStr)) {
+        if (imageTypeStr == "2D") {
+            image.viewType = APIImage_Model2D;
+        } else if (imageTypeStr == "Section") {
+            image.viewType = APIImage_Section;
+        } else if (imageTypeStr == "3D") {
+            image.viewType = APIImage_Model3D;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid imageType parameter.");
+        }
+    }
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid format parameter.");
+        }
+    }
+
+    UInt32 width = 256;
+    UInt32 height = 256;
+    parameters.Get ("width", width);
+    parameters.Get ("height", height);
+
+    image.offset = 0.001;
+    parameters.Get ("offset", image.offset);
+
+    image.scale = 0.005;
+    parameters.Get ("scale", image.scale);
+
+    image.backgroundColor = {1.0, 1.0, 1.0};
+    GetColor(parameters, "backgroundColor", image.backgroundColor);
+
+    NewDisplay::NativeImage nativeImage (width, height, 32, nullptr);
+    image.nativeImagePtr = &nativeImage;
+    GSErrCode err = ACAPI_Element_GetRoomImage (&image);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get room image.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to encode room image.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar(char('\n')));
+    return GS::ObjectState ("roomImage", str);
 }
