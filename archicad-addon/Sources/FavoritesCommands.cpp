@@ -138,7 +138,7 @@ GS::Optional<GS::UniString> GetFavoritePreviewImageCommand::GetResponseSchema ()
 GS::ObjectState GetFavoritePreviewImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString favorite;
-    if (parameters.Get ("favorite", favorite)) {
+    if (!parameters.Get ("favorite", favorite)) {
         return CreateErrorResponse (APIERR_BADPARS, "Missing favorite parameter.");
     }
 
