@@ -2192,11 +2192,6 @@ GS::Optional<GS::UniString> GetRoomImageCommand::GetInputParametersSchema () con
             "zoneId": {
                 "$ref": "#/ElementId"
             },
-            "imageType": {
-                "type": "string",
-                "description": "The type of the preview image. Default is 3D.",
-                "enum": ["2D", "Section", "3D"]
-            },
             "format": {
                 "type": "string",
                 "description": "The image format. Default is png.",
@@ -2251,19 +2246,7 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
 {
     API_RoomImage image = {};
     image.roomGuid = GetGuidFromArrayItem ("zoneId", parameters);
-    image.viewType = APIImage_Model3D;
-    GS::UniString imageTypeStr;
-    if (parameters.Get ("imageType", imageTypeStr)) {
-        if (imageTypeStr == "2D") {
-            image.viewType = APIImage_Model2D;
-        } else if (imageTypeStr == "Section") {
-            image.viewType = APIImage_Section;
-        } else if (imageTypeStr == "3D") {
-            image.viewType = APIImage_Model3D;
-        } else {
-            return CreateErrorResponse (APIERR_BADPARS, "Invalid imageType parameter.");
-        }
-    }
+    image.viewType = APIImage_Model2D;
 
     NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
     GS::UniString formatStr;

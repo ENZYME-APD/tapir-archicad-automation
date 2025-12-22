@@ -1748,11 +1748,6 @@ var gCommands = [{
             "zoneId": {
                 "$ref": "#/ElementId"
             },
-            "imageType": {
-                "type": "string",
-                "description": "The type of the preview image. Default is 3D.",
-                "enum": ["2D", "Section", "3D"]
-            },
             "format": {
                 "type": "string",
                 "description": "The image format. Default is png.",
