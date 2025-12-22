@@ -1,5 +1,8 @@
 #include "FavoritesCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NativeImage.hpp"
+#include "MemoryOChannel32.hpp"
+#include "Base64Converter.hpp"
 
 
 GetFavoritesByTypeCommand::GetFavoritesByTypeCommand () :
@@ -68,6 +71,122 @@ GS::ObjectState GetFavoritesByTypeCommand::Execute (const GS::ObjectState& param
         favorites (favoriteName);
     }
     return response;
+}
+
+GetFavoritePreviewImageCommand::GetFavoritePreviewImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFavoritePreviewImageCommand::GetName () const
+{
+    return "GetFavoritePreviewImage";
+}
+
+GS::Optional<GS::UniString> GetFavoritePreviewImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorite": {
+                "type": "string",
+                "description": "The name of the favorite."
+            },
+            "imageType": {
+                "type": "string",
+                "description": "The type of the preview image. Default is 3D.",
+                "enum": ["2D", "Section", "3D"]
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 128."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 128."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorite"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFavoritePreviewImageCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "previewImage": {
+                "type": "string",
+                "description": "The base64 encoded preview image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "previewImage"
+        ]
+    })";
+}
+
+GS::ObjectState GetFavoritePreviewImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString favorite;
+    if (!parameters.Get ("favorite", favorite)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing favorite parameter.");
+    }
+
+    API_ImageViewID viewType = APIImage_Model3D;
+    GS::UniString imageTypeStr;
+    if (parameters.Get ("imageType", imageTypeStr)) {
+        if (imageTypeStr == "2D") {
+            viewType = APIImage_Model2D;
+        } else if (imageTypeStr == "Section") {
+            viewType = APIImage_Section;
+        } else if (imageTypeStr == "3D") {
+            viewType = APIImage_Model3D;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid imageType parameter.");
+        }
+    }
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid format parameter.");
+        }
+    }
+
+    UInt32 width = 128;
+    UInt32 height = 128;
+    parameters.Get ("width", width);
+    parameters.Get ("height", height);
+
+    NewDisplay::NativeImage nativeImage (width, height, 32, nullptr);
+    GSErrCode err = ACAPI_Favorite_GetPreviewImage (favorite, viewType, &nativeImage);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get favorite preview image.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to encode favorite preview image.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar(char('\n')));
+    return GS::ObjectState ("previewImage", str);
 }
 
 ApplyFavoritesToElementDefaultsCommand::ApplyFavoritesToElementDefaultsCommand () :

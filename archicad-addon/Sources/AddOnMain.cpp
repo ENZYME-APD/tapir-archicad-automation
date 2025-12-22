@@ -292,6 +292,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.5",
             "Creates Label elements based on the given parameters."
         );
+        err |= RegisterCommand<GetElementPreviewImageCommand> (
+            elementCommands, "1.2.7",
+            "Returns the preview image of the given element."
+        );
+        err |= RegisterCommand<GetRoomImageCommand> (
+            elementCommands, "1.2.7",
+            "Returns the room image of the given zone."
+        );
         AddCommandGroup (elementCommands);
     }
 
@@ -300,6 +308,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetFavoritesByTypeCommand> (
             favoritesCommands, "1.2.2",
             "Returns a list of the names of all favorites with the given element type"
+        );
+        err |= RegisterCommand<GetFavoritePreviewImageCommand> (
+            favoritesCommands, "1.2.7",
+            "Returns the preview image of the given favorite."
         );
         err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
             favoritesCommands, "1.1.2",
