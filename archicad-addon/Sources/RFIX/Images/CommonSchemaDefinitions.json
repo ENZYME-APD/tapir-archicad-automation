@@ -215,6 +215,13 @@
             "location"
         ]
     },
+    "SetGDLParameterArray": {
+        "type": "array",
+        "description": "The list of GDL parameters.",
+        "items": {
+            "$ref": "#/SetGDLParameterDetails"
+        }
+    },
     "GDLParameterArray": {
         "type": "array",
         "description": "The list of GDL parameters.",
@@ -244,7 +251,7 @@
                 "description": "The name of the parameter."
             },
             "index": {
-                "type": "string",
+                "type": "integer",
                 "description": "The index of the parameter."
             },
             "type": {
@@ -252,11 +259,11 @@
                 "description": "The type of the parameter."
             },
             "dimension1": {
-                "type": "number",
+                "type": "integer",
                 "description": "The 1st dimension of array (in case of array value)."
             },
             "dimension2": {
-                "type": "number",
+                "type": "integer",
                 "description": "The 2nd dimension of array (in case of array value)."
             },
             "value": {
@@ -265,9 +272,58 @@
         },
         "additionalProperties": false,
         "required": [
+            "name",
             "index",
             "type",
+            "dimension1",
+            "dimension2",
             "value"
+        ]
+    },
+    "SetGDLParameterByNameDetails": {
+        "type": "object",
+        "description": "Details of a GDL parameter.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ]
+    },
+    "SetGDLParameterByIndexDetails": {
+        "type": "object",
+        "description": "Details of a GDL parameter.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the parameter."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "value"
+        ]
+    },
+    "SetGDLParameterDetails": {
+        "oneOf": [
+            {
+                "$ref": "#/SetGDLParameterByNameDetails"
+            },
+            {
+                "$ref": "#/SetGDLParameterByIndexDetails"
+            }
         ]
     },
     "PolyArc": {

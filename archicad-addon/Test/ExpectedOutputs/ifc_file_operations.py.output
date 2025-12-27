@@ -1,0 +1,39 @@
+Command: IFCFileOperation
+Parameters:
+{
+    "ifcFilePath": "<PATH>filename.ifc",
+    "method": "save"
+}
+Response:
+{
+    "success": true
+}
+Command: IFCFileOperation
+Parameters:
+{
+    "ifcFilePath": "<PATH>filename.ifc",
+    "method": "merge"
+}
+Response:
+{
+    "success": true
+}
+Command: IFCFileOperation
+Parameters:
+{
+    "ifcFilePath": "<PATH>filename.ifc",
+    "method": "open"
+}
+Response:
+{
+    "error": {
+        "code": -7003,
+        "message": "Failed to execute the IFC operation"
+    },
+    "success": false
+}
+Error:
+{
+    "code": -7003,
+    "message": "Failed to execute the IFC operation"
+}
