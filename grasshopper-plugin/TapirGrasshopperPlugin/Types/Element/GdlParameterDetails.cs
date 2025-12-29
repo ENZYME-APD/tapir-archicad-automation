@@ -9,7 +9,7 @@ namespace TapirGrasshopperPlugin.Types.Element
         public string Name;
 
         [JsonProperty("index")]
-        public string Index;
+        public int Index;
 
         [JsonProperty("type")]
         public string Type;
@@ -22,6 +22,41 @@ namespace TapirGrasshopperPlugin.Types.Element
 
         [JsonProperty("value")]
         public object Value;
+    }
+
+    public class SetGdlParameterDetails
+    {
+        [JsonProperty("name",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Name;
+
+        [JsonProperty("index",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public int Index;
+    }
+
+    public class SetGdlParameterDetailsInteger : SetGdlParameterDetails
+    {
+        [JsonProperty("value")]
+        public int Value;
+    }
+
+    public class SetGdlParameterDetailsDouble : SetGdlParameterDetails
+    {
+        [JsonProperty("value")]
+        public double Value;
+    }
+
+    public class SetGdlParameterDetailsString : SetGdlParameterDetails
+    {
+        [JsonProperty("value")]
+        public string Value;
+    }
+
+    public class SetGdlParameterDetailsBoolean : SetGdlParameterDetails
+    {
+        [JsonProperty("value")]
+        public bool Value;
     }
 
     public class ElementsWithGDLParametersInput
@@ -40,7 +75,11 @@ namespace TapirGrasshopperPlugin.Types.Element
         public ElementGuid ElementId { get; set; }
 
         [JsonProperty("gdlParameters")]
-        public GdlParameterArray GdlParameterList { get; set; }
+        public SetGdlParameterArray GdlParameterList { get; set; }
+    }
+
+    public class SetGdlParameterArray : List<SetGdlParameterDetails>
+    {
     }
 
     public class GdlParameterArray : List<GdlParameterDetails>
