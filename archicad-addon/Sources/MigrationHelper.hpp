@@ -70,6 +70,9 @@
 #define ACAPI_AddOnAddOnCommunication_Call ACAPI_Command_Call
 
 #define ACAPI_GraphicalOverride_GetVisualOverriddenImage ACAPI_Element_GetVisualOverriddenImage
+#define ACAPI_Element_InstallElementObserver ACAPI_Notify_InstallElementObserver
+#define ACAPI_Element_CatchNewElement ACAPI_Notify_CatchNewElement
+#define ACAPI_Notification_GetParentElement ACAPI_Notify_GetParentElement
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {

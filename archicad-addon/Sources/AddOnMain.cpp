@@ -27,6 +27,7 @@
 #include "MigrationHelper.hpp"
 #include "NavigatorCommands.hpp"
 #include "RevisionCommands.hpp"
+#include "NotificationCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -299,6 +300,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetRoomImageCommand> (
             elementCommands, "1.2.7",
             "Returns the room image of the given zone."
+        );
+        err |= RegisterCommand<SetElementNotificationClientCommand> (
+            elementCommands, "1.2.7",
+            "Sets up a notification client to receive element events."
         );
         AddCommandGroup (elementCommands);
     }
