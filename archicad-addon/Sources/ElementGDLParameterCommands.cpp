@@ -234,9 +234,9 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         paramOwner.libInd = -1;
         paramOwner.guid = GetGuidFromObjectState (*elementId);
 
-        API_Element element = {};
-        element.header.guid = paramOwner.guid;
-        GSErrCode err = ACAPI_Element_Get (&element);
+        API_Element apiElement = {};
+        apiElement.header.guid = paramOwner.guid;
+        GSErrCode err = ACAPI_Element_Get (&apiElement);
         if (err != NoError) {
             const GS::UniString errorMsg = GS::UniString::Printf ("Not found element with guid %T!", APIGuidToString (paramOwner.guid).ToPrintf ());
             elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
@@ -244,9 +244,9 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         }
 
 #ifdef ServerMainVers_2600
-        paramOwner.type = element.header.type;
+        paramOwner.type = apiElement.header.type;
 #else
-        paramOwner.typeID = element.header.typeID;
+        paramOwner.typeID = apiElement.header.typeID;
 #endif
 
         API_GetParamsType getParams = {};
@@ -262,30 +262,30 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
         }
 
         Int32 libInd = -1;
-        if (GetElemTypeId (element.header) == API_ObjectID) {
-            libInd = element.object.libInd;
-        } else if (GetElemTypeId (element.header) == API_LampID) {
-            libInd = element.lamp.libInd;
-        } else if (GetElemTypeId (element.header) == API_WindowID) {
-            libInd = element.window.openingBase.libInd;
-        } else if (GetElemTypeId (element.header) == API_DoorID) {
-            libInd = element.door.openingBase.libInd;
-        } else if (GetElemTypeId (element.header) == API_SkylightID) {
-            libInd = element.skylight.openingBase.libInd;
-        } else if (GetElemTypeId (element.header) == API_ZoneID) {
-            libInd = element.zone.libInd;
-        } else if (GetElemTypeId (element.header) == API_LabelID) {
-            libInd = element.label.u.symbol.libInd;
-        } else if (GetElemTypeId (element.header) == API_DrawingID) {
-            libInd = element.drawing.title.libInd;
-        } else if (GetElemTypeId (element.header) == API_CurtainWallFrameID) {
-            libInd = element.cwFrame.libInd;
-        } else if (GetElemTypeId (element.header) == API_CurtainWallPanelID) {
-            libInd = element.cwPanel.libInd;
-        } else if (GetElemTypeId (element.header) == API_CurtainWallJunctionID) {
-            libInd = element.cwJunction.libInd;
-        } else if (GetElemTypeId (element.header) == API_CurtainWallAccessoryID) {
-            libInd = element.cwAccessory.libInd;
+        if (GetElemTypeId (apiElement.header) == API_ObjectID) {
+            libInd = apiElement.object.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_LampID) {
+            libInd = apiElement.lamp.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_WindowID) {
+            libInd = apiElement.window.openingBase.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_DoorID) {
+            libInd = apiElement.door.openingBase.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_SkylightID) {
+            libInd = apiElement.skylight.openingBase.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_ZoneID) {
+            libInd = apiElement.zone.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_LabelID) {
+            libInd = apiElement.label.u.symbol.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_DrawingID) {
+            libInd = apiElement.drawing.title.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallFrameID) {
+            libInd = apiElement.cwFrame.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallPanelID) {
+            libInd = apiElement.cwPanel.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallJunctionID) {
+            libInd = apiElement.cwJunction.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallAccessoryID) {
+            libInd = apiElement.cwAccessory.libInd;
         }
 
         double a;
