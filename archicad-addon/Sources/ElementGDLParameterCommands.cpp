@@ -223,7 +223,6 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     GS::ObjectState response;
     const auto& elemGdlParameterListAdder = response.AddList<GS::ObjectState> ("gdlParametersOfElements");
 
-    API_Guid elemGuid;
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
@@ -231,38 +230,88 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             continue;
         }
 
-        elemGuid = GetGuidFromObjectState (*elementId);
-
         API_ParamOwnerType paramOwner = {};
-        paramOwner.libInd = 0;
-#ifdef ServerMainVers_2600
-        paramOwner.type = API_ObjectID;
-#else
-        paramOwner.typeID = API_ObjectID;
-#endif
-        paramOwner.guid = elemGuid;
+        paramOwner.libInd = -1;
+        paramOwner.guid = GetGuidFromObjectState (*elementId);
 
-        API_ElementMemo memo = {};
-        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-        const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars);
+        API_Element element = {};
+        element.header.guid = paramOwner.guid;
+        GSErrCode err = ACAPI_Element_Get (&element);
         if (err != NoError) {
-            const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+            const GS::UniString errorMsg = GS::UniString::Printf ("Not found element with guid %T!", APIGuidToString (paramOwner.guid).ToPrintf ());
             elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
             continue;
         }
 
-        const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
+#ifdef ServerMainVers_2600
+        paramOwner.type = element.header.type;
+#else
+        paramOwner.typeID = element.header.typeID;
+#endif
+
+        API_GetParamsType getParams = {};
+        err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
+        if (err == NoError) {
+            err = ACAPI_LibraryPart_GetActParameters (&getParams);
+        }
+
+        if (err != NoError) {
+            const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (paramOwner.guid).ToPrintf ());
+            elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
+            continue;
+        }
+
+        Int32 libInd = -1;
+        if (GetElemTypeId (element.header) == API_ObjectID) {
+            libInd = element.object.libInd;
+        } else if (GetElemTypeId (element.header) == API_LampID) {
+            libInd = element.lamp.libInd;
+        } else if (GetElemTypeId (element.header) == API_WindowID) {
+            libInd = element.window.openingBase.libInd;
+        } else if (GetElemTypeId (element.header) == API_DoorID) {
+            libInd = element.door.openingBase.libInd;
+        } else if (GetElemTypeId (element.header) == API_SkylightID) {
+            libInd = element.skylight.openingBase.libInd;
+        } else if (GetElemTypeId (element.header) == API_ZoneID) {
+            libInd = element.zone.libInd;
+        } else if (GetElemTypeId (element.header) == API_LabelID) {
+            libInd = element.label.u.symbol.libInd;
+        } else if (GetElemTypeId (element.header) == API_DrawingID) {
+            libInd = element.drawing.title.libInd;
+        } else if (GetElemTypeId (element.header) == API_CurtainWallFrameID) {
+            libInd = element.cwFrame.libInd;
+        } else if (GetElemTypeId (element.header) == API_CurtainWallPanelID) {
+            libInd = element.cwPanel.libInd;
+        } else if (GetElemTypeId (element.header) == API_CurtainWallJunctionID) {
+            libInd = element.cwJunction.libInd;
+        } else if (GetElemTypeId (element.header) == API_CurtainWallAccessoryID) {
+            libInd = element.cwAccessory.libInd;
+        }
+
+        double a;
+        double b;
+        Int32 addParNum;
+        API_AddParType** addPars;
+        ACAPI_LibraryPart_GetParams (libInd, &a, &b, &addParNum, &addPars);
+
+        const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
         GS::ObjectState gdlParameters;
         const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
         for (GSIndex ii = 0; ii < nParams; ++ii) {
-            const API_AddParType& actParam = (*memo.params)[ii];
+            const API_AddParType& actParam = (*getParams.params)[ii];
+            const API_AddParType& actLibPartParam = (*addPars)[ii];
 
             if (actParam.typeID == APIParT_Separator) {
                 continue;
             }
 
+            API_GetParamValuesType getValues = {};
+            getValues.index = actParam.index;
+            ACAPI_LibraryPart_GetParamValues (&getValues);
+
             GS::ObjectState gdlParameterDetails;
             gdlParameterDetails.Add ("name", actParam.name);
+            gdlParameterDetails.Add ("displayName", GS::UniString (actLibPartParam.uDescname));
             gdlParameterDetails.Add ("index", actParam.index);
             gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
             if (actParam.typeMod == API_ParArray) {
@@ -303,10 +352,83 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     break;
             }
 
+            GS::UniString valueDescription (actParam.valueDescription);
+            if (!valueDescription.IsEmpty ()) {
+                gdlParameterDetails.Add ("valueDescription", valueDescription);
+            }
+
+            gdlParameterDetails.Add ("isLocked", getValues.locked);
+
+            const auto& flags = gdlParameterDetails.AddList<GS::UniString> ("flags");
+            if (actParam.flags & API_ParFlg_Hidden) {
+                flags ("Hidden");
+            }
+            if (actParam.flags & API_ParFlg_SHidden) {
+                flags ("HiddenFromScript");
+            }
+            if (actParam.flags & API_ParFlg_Disabled) {
+                flags ("Disabled");
+            }
+            if (actParam.flags & API_ParFlg_Child) {
+                flags ("Child");
+            }
+            if (actParam.flags & API_ParFlg_Unique) {
+                flags ("Unique");
+            }
+            if (actParam.flags & API_ParFlg_Fixed) {
+                flags ("Fixed");
+            }
+
+            if (getValues.nVals > 0) {
+                if (actParam.typeID == APIParT_PenCol && getValues.nVals == 255) {
+                    BMhFree ((GSHandle)getValues.realValues);
+                } else {
+                    if (getValues.uStrValues != nullptr) {
+                        const auto& possibleValues = gdlParameterDetails.AddList<GS::UniString> ("possibleValues");
+                        GS::uchar_t *strPos = *getValues.uStrValues;
+                        for (GSIndex valIdx = 0; valIdx < getValues.nVals; ++valIdx) {
+                            GS::UniString tmpUStr (strPos);
+                            possibleValues (tmpUStr);
+                            strPos += GS::ucslen (strPos) + 1;
+                        }
+                        BMhFree ((GSHandle)getValues.uStrValues);
+                    } else if (getValues.realValues != nullptr) {
+                        const auto& possibleValues = gdlParameterDetails.AddList<GS::ObjectState> ("possibleValues");
+                        for (GSIndex valIdx = 0; valIdx < getValues.nVals; ++valIdx) {
+                            const auto& possibleValue = (*getValues.realValues)[valIdx];
+                             GS::ObjectState os;
+                            if (possibleValue.flags) {
+                                if (possibleValue.flags == APIVLVal_LowerLimit) {
+                                    os = GS::ObjectState ("value", possibleValue.lowerLimit, "flag", "GreaterThan");
+                                } else if (possibleValue.flags & APIVLVal_LowerEqual) {
+                                    os = GS::ObjectState ("value", possibleValue.lowerLimit, "flag", "GreaterThanOrEqual");
+                                } else if (possibleValue.flags == APIVLVal_UpperLimit) {
+                                    os = GS::ObjectState ("value", possibleValue.upperLimit, "flag", "LessThan");
+                                } else if (possibleValue.flags & APIVLVal_UpperEqual) {
+                                    os = GS::ObjectState ("value", possibleValue.upperLimit, "flag", "LessThanOrEqual");
+                                } else if (possibleValue.flags == APIVLVal_Step) {
+                                    os = GS::ObjectState ("value", possibleValue.stepBeg, "flag", "StepBegin");
+                                    os = GS::ObjectState ("value", possibleValue.stepVal, "flag", "StepValue");
+                                }
+                            } else {
+                                os = GS::ObjectState ("value", possibleValue.value);
+                            }
+                            GS::UniString valueDescription (possibleValue.valueDescription);
+                            if (!valueDescription.IsEmpty ()) {
+                                os.Add ("description", valueDescription);
+                            }
+                            possibleValues (os);
+                        }
+                        BMhFree ((GSHandle)getValues.realValues);
+                    }
+                    gdlParameterDetails.Add ("canHaveCustomValue", getValues.custom);
+                }
+            }
+
             parameterListAdder (gdlParameterDetails);
         }
         elemGdlParameterListAdder (gdlParameters);
-        ACAPI_DisposeAddParHdl (&memo.params);
+        ACAPI_DisposeAddParHdl (&getParams.params);
     }
 
     return response;

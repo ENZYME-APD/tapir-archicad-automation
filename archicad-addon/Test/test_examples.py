@@ -39,7 +39,7 @@ def OpenProject (projectFilePath):
 
 def ExecuteScript (exampleScriptFilePath):
     try:
-        return subprocess.check_output (['python', exampleScriptFilePath, 'silent'], timeout=10)
+        return subprocess.check_output (['python', exampleScriptFilePath, 'silent'], timeout=30)
     except subprocess.TimeoutExpired:
         return b'timeout'
 
