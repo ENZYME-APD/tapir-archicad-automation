@@ -1,24 +1,98 @@
 #include "NotificationCommands.hpp"
 
-#include	"HTTP/Client/ClientConnection.hpp"
-#include	"HTTP/Client/Request.hpp"
-#include	"HTTP/Client/Response.hpp"
-#include	"HTTP/Client/Authentication/BasicAuthentication.hpp"
-#include	"JSON/JDOMParser.hpp"
-#include	"IBinaryChannelUtilities.hpp"
-#include	"IOBinProtocolXs.hpp"
-#include	"IChannelX.hpp"
-#include    "ObjectStateJSONConversion.hpp"
+#include "HTTP/Client/ClientConnection.hpp"
+#include "HTTP/Client/Request.hpp"
+#include "HTTP/Client/Response.hpp"
+#include "HTTP/Client/Authentication/BasicAuthentication.hpp"
+#include "JSON/JDOMParser.hpp"
+#include "IBinaryChannelUtilities.hpp"
+#include "IOBinProtocolXs.hpp"
+#include "IChannelX.hpp"
+#include "ObjectStateJSONConversion.hpp"
 
 #include "MigrationHelper.hpp"
 
-#include <map>
+static
+GS::String ElementEventTypeToString (SetElementNotificationClientCommand::ElementEventType eventType)
+{
+    switch (eventType) {
+        case SetElementNotificationClientCommand::ElementEventType::New:
+            return "newElements";
+        case SetElementNotificationClientCommand::ElementEventType::Changed:
+            return "changedElements";
+        case SetElementNotificationClientCommand::ElementEventType::Deleted:
+            return "deletedElements";
+        default:
+            return "unknown";
+    }
+}
 
-std::vector<std::pair<GS::UniString, Int32>> SetElementNotificationClientCommand::clientConnections;
+class MessageSenderTask : public GS::Runnable {
+    SetElementNotificationClientCommand::EventQueue eventQueue;
+public:
+    MessageSenderTask (SetElementNotificationClientCommand::EventQueue& q)
+    {
+        std::swap (eventQueue, q);
+    }
+    virtual void Run ()
+    {
+        for (auto& kv : SetElementNotificationClientCommand::clients) {
+            auto& client = kv.second;
+
+            bool isEmptyMessage = true;
+            GS::ObjectState message;
+            for (const auto& kv : eventQueue) {
+                if (!client.acceptsNotificationsForEventType (kv.first)) {
+                    continue;
+                }
+
+                const auto& events = message.AddList<GS::ObjectState> (ElementEventTypeToString (kv.first));
+                for (const auto& os : kv.second) {
+                    events (os);
+                    isEmptyMessage = false;
+                }
+            }
+
+            if (isEmptyMessage) {
+                continue;
+            }
+
+            SetElementNotificationClientCommand::SendMessageToNotificationClient (client, message);
+        }
+    }
+};
+
+std::map<GS::UniString, SetElementNotificationClientCommand::Client> SetElementNotificationClientCommand::clients;
+bool SetElementNotificationClientCommand::hasClientToNotifyOnNew = false;
+bool SetElementNotificationClientCommand::hasClientToNotifyOnModification = false;
+std::unique_ptr<SetElementNotificationClientCommand::EventQueue> SetElementNotificationClientCommand::queuedEvents;
+GS::Thread SetElementNotificationClientCommand::messageSenderThread;
+
+void SetElementNotificationClientCommand::Client::Send(HTTP::Client::Request& request, const GS::UniString* body)
+{
+    try {
+        HTTP::Client::ClientConnection clientConnection (url);
+        clientConnection.SetKeepAlive (false);
+        clientConnection.SetTimeout (100); // 0.1 seconds
+        clientConnection.Connect ();
+        clientConnection.Send (request, body->ToCStr ().Get (), body->GetLength ());
+        clientConnection.Close (true);
+    } catch (const GS::Exception& e) {
+        e.Print (dbChannel);
+        isAvailable = false;
+    } catch (...) {
+        isAvailable = false;
+    }
+}
 
 SetElementNotificationClientCommand::SetElementNotificationClientCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
+}
+
+SetElementNotificationClientCommand::~SetElementNotificationClientCommand ()
+{
+    messageSenderThread.Join ();
 }
 
 GS::String SetElementNotificationClientCommand::GetName () const
@@ -31,13 +105,23 @@ GS::Optional<GS::UniString> SetElementNotificationClientCommand::GetInputParamet
     return R"({
         "type": "object",
         "properties": {
+            "host": {
+                "type": "string",
+                "description": "The host address of the notification client. If not provided, localhost is used."
+            },
             "port": {
                 "type": "integer",
                 "description": "The port number of the notification client."
             },
-            "host": {
-                "type": "string",
-                "description": "The host address of the notification client. If not provided, localhost is used."
+            "notifyOnNewElement": {
+                "type": "boolean",
+                "description": "Notify on creation of a new element.",
+                "default": true
+            },
+            "notifyOnModificationOfAnElement": {
+                "type": "boolean",
+                "description": "Notify on modification/deletion of an element.",
+                "default": true
             }
         },
         "additionalProperties": false,
@@ -61,155 +145,142 @@ GS::ObjectState SetElementNotificationClientCommand::Execute (const GS::ObjectSt
     GS::UniString host = "localhost";
     parameters.Get ("host", host);
 
-    clientConnections.emplace_back (host, port);
+    bool notifyOnNew = true;
+    parameters.Get ("notifyOnNew", notifyOnNew);
 
-    if (clientConnections.size () == 1) {
-        ACAPI_Element_CatchNewElement (nullptr, ElementEventHandlerProc);
-        ACAPI_Element_AttachObserver (APINULLGuid);
-        ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
+    bool notifyOnModification = true;
+    parameters.Get ("notifyOnModification", notifyOnModification);
+
+    const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
+    const IO::URI::URI connectionUrl (connectionUrlStr);
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification));
+    if (!result.second) {
+        result.first->second.notifyOnNew = notifyOnNew;
+        result.first->second.notifyOnModification = notifyOnModification;
+        result.first->second.isAvailable = true;
     }
+
+    if (notifyOnNew && !hasClientToNotifyOnNew) {
+        ACAPI_Element_CatchNewElement (nullptr, ElementEventHandlerProc);
+        hasClientToNotifyOnNew = true;
+    }
+
+    if (notifyOnModification && !hasClientToNotifyOnModification) {
+        GS::Array<API_Guid> elementIds;
+        ACAPI_Element_GetElemList (API_ZombieElemID, &elementIds);
+        for (const auto& elemId : elementIds) {
+            ACAPI_Element_AttachObserver (elemId);
+        }
+        hasClientToNotifyOnModification = true;
+    }
+
+    ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
 
     return CreateSuccessfulExecutionResult ();
 }
 
 void
-SetElementNotificationClientCommand::SendMessageToNotificationClient (const GS::ObjectState& os)
+SetElementNotificationClientCommand::SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os)
 {
-    for (const auto& hostAndPort : clientConnections) {
-        IO::URI::URI connectionUrl (GS::UniString::Printf ("http://%T:%d/", hostAndPort.first.ToPrintf (), hostAndPort.second));
-        HTTP::Client::ClientConnection clientConnection (connectionUrl);
-        clientConnection.Connect ();
-
-        HTTP::Client::Request postRequest (HTTP::MessageHeader::Method::Post, "");
-
-        GS::UniString postBody;
-        JSON::CreateFromObjectState (os, postBody);
-
-        postRequest.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::ContentType, "application/json");
-        postRequest.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::ContentLength, GS::UniString::Printf ("%zu", postBody.GetLength ()));
-
-        clientConnection.Send (postRequest, postBody.ToCStr ().Get (), postBody.GetLength ());
-        clientConnection.FinishReceive ();
-        clientConnection.Close (false);
+    if (queuedEvents) {
+        (*queuedEvents)[eventType].push_back (os);
+        return;
     }
+
+    GS::ObjectState message;
+    const auto& events = message.AddList<GS::ObjectState> (ElementEventTypeToString (eventType));
+    events (os);
+
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.acceptsNotificationsForEventType (eventType)) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+}
+
+void
+SetElementNotificationClientCommand::SendQueuedEventsToNotificationClient ()
+{
+    if (!queuedEvents) {
+        return;
+    }
+
+    messageSenderThread = GS::Thread (new MessageSenderTask (*queuedEvents), "ElementNotifications");
+    messageSenderThread.Start ();
+    queuedEvents.reset ();
+}
+
+void
+SetElementNotificationClientCommand::SendMessageToNotificationClient (Client& client, const GS::ObjectState& os)
+{
+    HTTP::Client::Request postRequest (HTTP::MessageHeader::Method::Post, "/element_notification");
+
+    GS::UniString postBody;
+    JSON::CreateFromObjectState (os, postBody);
+    if (postBody.GetLast () != '\n') {
+        postBody.Append ("\n");
+    }
+
+    postRequest.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::ContentType, "application/json");
+
+    client.Send (postRequest, &postBody);
 }
 
 GSErrCode
 SetElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyElementType *elemType)
 {
-    if (elemType->notifID == APINotifyElement_BeginEvents || elemType->notifID == APINotifyElement_EndEvents) {
-        return NoError;
+    if (elemType->notifID == APINotifyElement_BeginEvents) {
+        SendQueuedEventsToNotificationClient ();
+        queuedEvents.reset (new EventQueue ());
+    } else if (elemType->notifID == APINotifyElement_EndEvents) {
+        SendQueuedEventsToNotificationClient ();
     } else {
         API_Element	parentElement = {};
         ACAPI_Notification_GetParentElement (&parentElement, nullptr, 0, nullptr);
 
+        const API_ElemTypeID typeID = GetElemTypeId (elemType->elemHead);
+        GS::ObjectState message (
+            "elementId", CreateGuidObjectState (elemType->elemHead.guid),
+            "elementType", GetElementTypeNonLocalizedName (typeID));
+
         switch (elemType->notifID) {
             case APINotifyElement_New:
-                        if (parentElement.header.guid != APINULLGuid)
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementCopied",
-                                "newElementId", CreateGuidObjectState (elemType->elemHead.guid),
-                                "copiedElementId", CreateGuidObjectState (parentElement.header.guid)
-                            ));
-                        else
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementCreated",
-                                "newElementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-
-                        ACAPI_Element_AttachObserver (elemType->elemHead.guid);
-                        break;
-
             case APINotifyElement_Copy:
-                        if (parentElement.header.guid != APINULLGuid)
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementCopied",
-                                "newElementId", CreateGuidObjectState (elemType->elemHead.guid),
-                                "copiedElementId", CreateGuidObjectState (parentElement.header.guid)
-                            ));
-
-                        ACAPI_Element_AttachObserver (elemType->elemHead.guid);
-                        break;
+            case APINotifyElement_Undo_Deleted:
+            case APINotifyElement_Redo_Created:
+                if (parentElement.header.guid != APINULLGuid) {
+                    message.Add ("copiedElementId", CreateGuidObjectState (parentElement.header.guid));
+                }
+                SendEventToNotificationClient (ElementEventType::New, message);
+                if (hasClientToNotifyOnModification) {
+                    ACAPI_Element_AttachObserver (elemType->elemHead.guid);
+                }
+                break;
 
             case APINotifyElement_Change:
             case APINotifyElement_Edit:
-                        if (parentElement.header.guid != APINULLGuid)
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementChanged",
-                                "newElementId", CreateGuidObjectState (elemType->elemHead.guid),
-                                "oldElementId", CreateGuidObjectState (parentElement.header.guid)
-                            ));
-                        else
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementChanged",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
+            case APINotifyElement_Undo_Modified:
+            case APINotifyElement_Redo_Modified:
+            case APINotifyElement_PropertyValueChange:
+            case APINotifyElement_ClassificationChange:
+                if (parentElement.header.guid != APINULLGuid) {
+                    message.Add ("oldElementId", CreateGuidObjectState (parentElement.header.guid));
+                }
+                SendEventToNotificationClient (ElementEventType::Changed, message);
+                break;
 
             case APINotifyElement_Delete:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementDeleted",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
-
             case APINotifyElement_Undo_Created:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementUndoCreated",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
-
-            case APINotifyElement_Undo_Modified:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementUndoModified",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
-
-            case APINotifyElement_Undo_Deleted:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementUndoDeleted",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
-
-            case APINotifyElement_Redo_Created:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementRedoCreated",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
-
-            case APINotifyElement_Redo_Modified:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementRedoModified",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
-
             case APINotifyElement_Redo_Deleted:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementRedoDeleted",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
+                SendEventToNotificationClient (ElementEventType::Deleted, message);
+                break;
 
-            case APINotifyElement_PropertyValueChange:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementPropertyValueChange",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
-
-            case APINotifyElement_ClassificationChange:
-                            SendMessageToNotificationClient (GS::ObjectState(
-                                "event", "ElementClassificationChange",
-                                "elementId", CreateGuidObjectState (elemType->elemHead.guid)
-                            ));
-                        break;
             default:
-                        break;
+                SendEventToNotificationClient (ElementEventType::Unknown, message);
+                break;
         }
     }
 
