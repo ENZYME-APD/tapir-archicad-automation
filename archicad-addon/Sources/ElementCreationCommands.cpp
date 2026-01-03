@@ -1,6 +1,7 @@
 #include "ElementCreationCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
@@ -42,6 +43,10 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemTypeID);
     const Stories stories = GetStories ();
 
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
     ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
         API_Element element = {};
         API_ElementMemo memo = {};
@@ -72,6 +77,11 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            notification = {};
+            notification.notifID = APINotifyElement_New;
+            notification.elemHead = element.header;
+            AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
             elements (CreateElementIdObjectState (element.header.guid));
         }
 
@@ -79,6 +89,10 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
 
         return NoError;
     });
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
     return response;
 }

@@ -1,0 +1,61 @@
+Command: SetElementNotificationClient
+Parameters:
+{
+    "host": "localhost",
+    "port": 12345
+}
+Response:
+{
+    "success": true
+}
+Command: CreateColumns
+Parameters:
+{
+    "columnsData": [
+        {
+            "coordinates": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "coordinates": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            }
+        }
+    ]
+}
+{
+   "newElements": [
+      {
+         "elementId": {
+            "guid": "<GUID>"
+         },
+         "elementType": "Column"
+      },
+      {
+         "elementId": {
+            "guid": "<GUID>"
+         },
+         "elementType": "Column"
+      }
+   ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
