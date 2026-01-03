@@ -109,50 +109,64 @@ static void AddValueString (GS::ObjectState& gdlParameterDetails,
     }
 }
 
-static void SetParamValueInteger (API_ChangeParamType& changeParam,
+static bool SetParamValueInteger (API_ChangeParamType& changeParam,
                                   const GS::ObjectState& parameterDetails)
 {
     Int32 value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = value;
+    if (parameterDetails.Get (ParameterValueFieldName, value)) {
+        changeParam.realValue = value;
+        return true;
+    }
+    return false;
 }
 
-static void SetParamValueDouble (API_ChangeParamType& changeParam,
+static bool SetParamValueDouble (API_ChangeParamType& changeParam,
                                  const GS::ObjectState& parameterDetails)
 {
     double value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = value;
+    if (parameterDetails.Get (ParameterValueFieldName, value)) {
+        changeParam.realValue = value;
+        return true;
+    }
+    return false;
 }
 
-static void SetParamValueOnOff (API_ChangeParamType& changeParam,
+static bool SetParamValueOnOff (API_ChangeParamType& changeParam,
                                 const GS::ObjectState& parameterDetails)
 {
     GS::String value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = (value == "Off" ? 0 : 1);
+    if (parameterDetails.Get (ParameterValueFieldName, value)) {
+        changeParam.realValue = (value == "Off" ? 0 : 1);
+        return true;
+    }
+    return false;
 }
 
-static void SetParamValueBool (API_ChangeParamType& changeParam,
+static bool SetParamValueBool (API_ChangeParamType& changeParam,
                                const GS::ObjectState& parameterDetails)
 {
     bool value;
-    parameterDetails.Get (ParameterValueFieldName, value);
-    changeParam.realValue = (value ? 0 : 1);
+    if (parameterDetails.Get (ParameterValueFieldName, value)) {
+        changeParam.realValue = (value ? 1 : 0);
+        return true;
+    }
+    return false;
 }
 
-static void SetParamValueString (API_ChangeParamType& changeParam,
+static bool SetParamValueString (API_ChangeParamType& changeParam,
                                  const GS::ObjectState& parameterDetails)
 {
     GS::UniString value;
-    parameterDetails.Get (ParameterValueFieldName, value);
+    if (parameterDetails.Get (ParameterValueFieldName, value)) {
+        constexpr USize MaxStrValueLength = 512;
 
-    constexpr USize MaxStrValueLength = 512;
+        static GS::uchar_t strValuePtr[MaxStrValueLength];
+        GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength)).Get ());
 
-    static GS::uchar_t strValuePtr[MaxStrValueLength];
-    GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength)).Get ());
-
-    changeParam.uStrValue = strValuePtr;
+        changeParam.uStrValue = strValuePtr;
+        return true;
+    }
+    return false;
 }
 
 GetGDLParametersOfElementsCommand::GetGDLParametersOfElementsCommand () :
@@ -209,7 +223,6 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     GS::ObjectState response;
     const auto& elemGdlParameterListAdder = response.AddList<GS::ObjectState> ("gdlParametersOfElements");
 
-    API_Guid elemGuid;
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
@@ -217,38 +230,88 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             continue;
         }
 
-        elemGuid = GetGuidFromObjectState (*elementId);
-
         API_ParamOwnerType paramOwner = {};
-        paramOwner.libInd = 0;
-#ifdef ServerMainVers_2600
-        paramOwner.type = API_ObjectID;
-#else
-        paramOwner.typeID = API_ObjectID;
-#endif
-        paramOwner.guid = elemGuid;
+        paramOwner.libInd = -1;
+        paramOwner.guid = GetGuidFromObjectState (*elementId);
 
-        API_ElementMemo memo = {};
-        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-        const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars);
+        API_Element apiElement = {};
+        apiElement.header.guid = paramOwner.guid;
+        GSErrCode err = ACAPI_Element_Get (&apiElement);
         if (err != NoError) {
-            const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+            const GS::UniString errorMsg = GS::UniString::Printf ("Not found element with guid %T!", APIGuidToString (paramOwner.guid).ToPrintf ());
             elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
             continue;
         }
 
-        const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
+#ifdef ServerMainVers_2600
+        paramOwner.type = apiElement.header.type;
+#else
+        paramOwner.typeID = apiElement.header.typeID;
+#endif
+
+        API_GetParamsType getParams = {};
+        err = ACAPI_LibraryPart_OpenParameters (&paramOwner);
+        if (err == NoError) {
+            err = ACAPI_LibraryPart_GetActParameters (&getParams);
+        }
+
+        if (err != NoError) {
+            const GS::UniString errorMsg = GS::UniString::Printf ("Failed to get parameters of element with guid %T!", APIGuidToString (paramOwner.guid).ToPrintf ());
+            elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
+            continue;
+        }
+
+        Int32 libInd = -1;
+        if (GetElemTypeId (apiElement.header) == API_ObjectID) {
+            libInd = apiElement.object.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_LampID) {
+            libInd = apiElement.lamp.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_WindowID) {
+            libInd = apiElement.window.openingBase.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_DoorID) {
+            libInd = apiElement.door.openingBase.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_SkylightID) {
+            libInd = apiElement.skylight.openingBase.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_ZoneID) {
+            libInd = apiElement.zone.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_LabelID) {
+            libInd = apiElement.label.u.symbol.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_DrawingID) {
+            libInd = apiElement.drawing.title.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallFrameID) {
+            libInd = apiElement.cwFrame.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallPanelID) {
+            libInd = apiElement.cwPanel.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallJunctionID) {
+            libInd = apiElement.cwJunction.libInd;
+        } else if (GetElemTypeId (apiElement.header) == API_CurtainWallAccessoryID) {
+            libInd = apiElement.cwAccessory.libInd;
+        }
+
+        double a;
+        double b;
+        Int32 addParNum;
+        API_AddParType** addPars;
+        ACAPI_LibraryPart_GetParams (libInd, &a, &b, &addParNum, &addPars);
+
+        const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
         GS::ObjectState gdlParameters;
         const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
         for (GSIndex ii = 0; ii < nParams; ++ii) {
-            const API_AddParType& actParam = (*memo.params)[ii];
+            const API_AddParType& actParam = (*getParams.params)[ii];
+            const API_AddParType& actLibPartParam = (*addPars)[ii];
 
             if (actParam.typeID == APIParT_Separator) {
                 continue;
             }
 
+            API_GetParamValuesType getValues = {};
+            getValues.index = actParam.index;
+            ACAPI_LibraryPart_GetParamValues (&getValues);
+
             GS::ObjectState gdlParameterDetails;
             gdlParameterDetails.Add ("name", actParam.name);
+            gdlParameterDetails.Add ("displayName", GS::UniString (actLibPartParam.uDescname));
             gdlParameterDetails.Add ("index", actParam.index);
             gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
             if (actParam.typeMod == API_ParArray) {
@@ -289,10 +352,83 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     break;
             }
 
+            GS::UniString valueDescription (actParam.valueDescription);
+            if (!valueDescription.IsEmpty ()) {
+                gdlParameterDetails.Add ("valueDescription", valueDescription);
+            }
+
+            gdlParameterDetails.Add ("isLocked", getValues.locked);
+
+            const auto& flags = gdlParameterDetails.AddList<GS::UniString> ("flags");
+            if (actParam.flags & API_ParFlg_Hidden) {
+                flags ("Hidden");
+            }
+            if (actParam.flags & API_ParFlg_SHidden) {
+                flags ("HiddenFromScript");
+            }
+            if (actParam.flags & API_ParFlg_Disabled) {
+                flags ("Disabled");
+            }
+            if (actParam.flags & API_ParFlg_Child) {
+                flags ("Child");
+            }
+            if (actParam.flags & API_ParFlg_Unique) {
+                flags ("Unique");
+            }
+            if (actParam.flags & API_ParFlg_Fixed) {
+                flags ("Fixed");
+            }
+
+            if (getValues.nVals > 0) {
+                if (actParam.typeID == APIParT_PenCol && getValues.nVals == 255) {
+                    BMhFree ((GSHandle)getValues.realValues);
+                } else {
+                    if (getValues.uStrValues != nullptr) {
+                        const auto& possibleValues = gdlParameterDetails.AddList<GS::UniString> ("possibleValues");
+                        GS::uchar_t *strPos = *getValues.uStrValues;
+                        for (GSIndex valIdx = 0; valIdx < getValues.nVals; ++valIdx) {
+                            GS::UniString tmpUStr (strPos);
+                            possibleValues (tmpUStr);
+                            strPos += GS::ucslen (strPos) + 1;
+                        }
+                        BMhFree ((GSHandle)getValues.uStrValues);
+                    } else if (getValues.realValues != nullptr) {
+                        const auto& possibleValues = gdlParameterDetails.AddList<GS::ObjectState> ("possibleValues");
+                        for (GSIndex valIdx = 0; valIdx < getValues.nVals; ++valIdx) {
+                            const auto& possibleValue = (*getValues.realValues)[valIdx];
+                             GS::ObjectState os;
+                            if (possibleValue.flags) {
+                                if (possibleValue.flags == APIVLVal_LowerLimit) {
+                                    os = GS::ObjectState ("value", possibleValue.lowerLimit, "flag", "GreaterThan");
+                                } else if (possibleValue.flags & APIVLVal_LowerEqual) {
+                                    os = GS::ObjectState ("value", possibleValue.lowerLimit, "flag", "GreaterThanOrEqual");
+                                } else if (possibleValue.flags == APIVLVal_UpperLimit) {
+                                    os = GS::ObjectState ("value", possibleValue.upperLimit, "flag", "LessThan");
+                                } else if (possibleValue.flags & APIVLVal_UpperEqual) {
+                                    os = GS::ObjectState ("value", possibleValue.upperLimit, "flag", "LessThanOrEqual");
+                                } else if (possibleValue.flags == APIVLVal_Step) {
+                                    os = GS::ObjectState ("value", possibleValue.stepBeg, "flag", "StepBegin");
+                                    os = GS::ObjectState ("value", possibleValue.stepVal, "flag", "StepValue");
+                                }
+                            } else {
+                                os = GS::ObjectState ("value", possibleValue.value);
+                            }
+                            GS::UniString valueDescription (possibleValue.valueDescription);
+                            if (!valueDescription.IsEmpty ()) {
+                                os.Add ("description", valueDescription);
+                            }
+                            possibleValues (os);
+                        }
+                        BMhFree ((GSHandle)getValues.realValues);
+                    }
+                    gdlParameterDetails.Add ("canHaveCustomValue", getValues.custom);
+                }
+            }
+
             parameterListAdder (gdlParameterDetails);
         }
         elemGdlParameterListAdder (gdlParameters);
-        ACAPI_DisposeAddParHdl (&memo.params);
+        ACAPI_DisposeAddParHdl (&getParams.params);
     }
 
     return response;
@@ -323,7 +459,7 @@ GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetInputParameter
                         "$ref": "#/ElementId"
                     },
                     "gdlParameters": {
-                        "$ref": "#/GDLParameterArray"
+                        "$ref": "#/SetGDLParameterArray"
                     }
                 },
                 "additionalProperties": false,
@@ -395,10 +531,13 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                 if (err == NoError) {
                     const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
                     GS::HashTable<GS::String, API_AddParID> gdlParametersTypeDictionary;
+                    GS::HashTable<short, GS::String> gdlParametersIndexNameDictionary;
                     for (GSIndex ii = 0; ii < nParams; ++ii) {
                         const API_AddParType& actParam = (*getParams.params)[ii];
                         if (actParam.typeID != APIParT_Separator) {
-                            gdlParametersTypeDictionary.Add (GS::String (actParam.name), actParam.typeID);
+                            auto name = GS::String (actParam.name);
+                            gdlParametersIndexNameDictionary.Add (actParam.index, name);
+                            gdlParametersTypeDictionary.Add (name, actParam.typeID);
                         }
                     }
 
@@ -408,7 +547,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         if (elemGdlParametersItem.Get ("parameters", parameters)) {
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
-                                err = SetOneGDLParameter (parameter, elemGuid, changeParam, gdlParametersTypeDictionary, errMessage);
+                                err = SetOneGDLParameter (parameter, elemGuid, changeParam, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, errMessage);
                                 if (err != NoError) {
                                     break;
                                 }
@@ -417,7 +556,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 ACAPI_LibraryPart_GetActParameters (&getParams);
                             }
                         } else {
-                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, changeParam, gdlParametersTypeDictionary, errMessage);
+                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, changeParam, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, errMessage);
                             if (err != NoError) {
                                 break;
                             }
@@ -488,20 +627,40 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
     return response;
 }
 
-GSErrCode SetGDLParametersOfElementsCommand::SetOneGDLParameter (const GS::ObjectState& parameter, const API_Guid& elemGuid, API_ChangeParamType& changeParam, const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary, GS::UniString& errMessage) const
+GSErrCode
+SetGDLParametersOfElementsCommand::SetOneGDLParameter (
+    const GS::ObjectState& parameter,
+    const API_Guid& elemGuid,
+    API_ChangeParamType& changeParam,
+    const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
+    const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
+    GS::UniString& errMessage)
 {
-    if (!SetCharProperty (&parameter, "name", changeParam.name)) {
-        errMessage = "Invalid input: name is missing!";
-        return APIERR_BADPARS;
+    GS::String name;
+    if (parameter.Get ("name", name)) {
+        CHTruncate (name.ToCStr (), changeParam.name, API_NameLen);
+        if (!gdlParametersTypeDictionary.ContainsKey (changeParam.name)) {
+            errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+    } else {
+        short index;
+        if (parameter.Get ("index", index)) {
+            if (gdlParametersIndexNameDictionary.ContainsKey (index)) {
+                CHTruncate (gdlParametersIndexNameDictionary[index].ToCStr (), changeParam.name, API_NameLen);
+            } else {
+                errMessage = GS::UniString::Printf ("Invalid input: no GDL parameter with index %d for element %T", index, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
+        } else {
+            errMessage = "Invalid input: both name and index are missing, one of them must be set!";
+            return APIERR_BADPARS;
+        }
     }
 
-    if (!gdlParametersTypeDictionary.ContainsKey (changeParam.name)) {
-        errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+    if (!parameter.Contains (ParameterValueFieldName)) {
+        errMessage = GS::UniString::Printf ("Invalid input: value is missing for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
-    }
-
-    if (parameter.Get ("dimension1", changeParam.ind1)) {
-        parameter.Get ("dimension2", changeParam.ind2);
     }
 
     switch (gdlParametersTypeDictionary[changeParam.name]) {
@@ -512,24 +671,39 @@ GSErrCode SetGDLParametersOfElementsCommand::SetOneGDLParameter (const GS::Objec
         case APIParT_FillPat:
         case APIParT_BuildingMaterial:
         case APIParT_Profile:
-            SetParamValueInteger (changeParam, parameter);
+            if (!SetParamValueInteger (changeParam, parameter)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not an integer for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
             break;
         case APIParT_ColRGB:
         case APIParT_Intens:
         case APIParT_Length:
         case APIParT_RealNum:
         case APIParT_Angle:
-            SetParamValueDouble (changeParam, parameter);
+            if (!SetParamValueDouble (changeParam, parameter)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a real number for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
             break;
         case APIParT_LightSw:
-            SetParamValueOnOff (changeParam, parameter);
+            if (!SetParamValueOnOff (changeParam, parameter)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not 'On' or 'Off' for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
             break;
         case APIParT_Boolean:
-            SetParamValueBool (changeParam, parameter);
+            if (!SetParamValueBool (changeParam, parameter)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a boolean for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
             break;
         case APIParT_CString:
         case APIParT_Title:
-            SetParamValueString (changeParam, parameter);
+            if (!SetParamValueString (changeParam, parameter)) {
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a string for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
             break;
         default:
         case APIParT_Dictionary:

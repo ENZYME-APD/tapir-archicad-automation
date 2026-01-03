@@ -6,36 +6,6 @@ namespace TapirGrasshopperPlugin.Helps
 {
     public static class GDLParameterHelps
     {
-        public static ElementsWithGDLParametersInput ToSetInput(
-            this List<GDLHolder> gdlHolders,
-            object value)
-        {
-            var result = new ElementsWithGDLParametersInput
-            {
-                ElementsWithGDLParameters =
-                    new List<ElementWithGDLParameters>()
-            };
-
-            foreach (var holder in gdlHolders)
-            {
-                var changedParameters = holder.GdlParameterDetails;
-                changedParameters.Value = value;
-
-                var item = new ElementWithGDLParameters
-                {
-                    ElementId = holder.ElementId,
-                    GdlParameterList = new GdlParameterArray
-                    {
-                        changedParameters
-                    }
-                };
-
-                result.ElementsWithGDLParameters.Add(item);
-            }
-
-            return result;
-        }
-
         public static List<GDLHolder> ToGdlHolders(
             this GDLParametersResponse response,
             List<ElementGuid> ids,

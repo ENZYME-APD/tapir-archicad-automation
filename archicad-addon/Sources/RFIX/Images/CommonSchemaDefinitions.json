@@ -215,6 +215,13 @@
             "location"
         ]
     },
+    "SetGDLParameterArray": {
+        "type": "array",
+        "description": "The list of GDL parameters.",
+        "items": {
+            "$ref": "#/SetGDLParameterDetails"
+        }
+    },
     "GDLParameterArray": {
         "type": "array",
         "description": "The list of GDL parameters.",
@@ -235,6 +242,38 @@
             "parameters"
         ]
     },
+    "PossibleStringValues": {
+        "type": "array",
+        "description": "The possible string values of a GDL parameter.",
+        "items": {
+            "type": "string"
+        }
+    },
+    "PossibleNumericValues": {
+        "type": "array",
+        "description": "The possible numeric values of a GDL parameter.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "number",
+                    "description": "The numeric value."
+                },
+                "flag": {
+                    "type": "string",
+                    "description": "The flag."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "The description of the value."
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "value"
+            ]
+        }
+    },
     "GDLParameterDetails": {
         "type": "object",
         "description": "Details of a GDL parameter.",
@@ -243,8 +282,12 @@
                 "type": "string",
                 "description": "The name of the parameter."
             },
-            "index": {
+            "displayName": {
                 "type": "string",
+                "description": "The display name of the parameter."
+            },
+            "index": {
+                "type": "integer",
                 "description": "The index of the parameter."
             },
             "type": {
@@ -252,12 +295,92 @@
                 "description": "The type of the parameter."
             },
             "dimension1": {
-                "type": "number",
+                "type": "integer",
                 "description": "The 1st dimension of array (in case of array value)."
             },
             "dimension2": {
-                "type": "number",
+                "type": "integer",
                 "description": "The 2nd dimension of array (in case of array value)."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            },
+            "valueDescription": {
+                "type": "string",
+                "description": "The value description for numeric parameter."
+            },
+            "isLocked": {
+                "type": "boolean",
+                "description": "The parameter is locked; i.e. the user cannot modify it"
+            },
+            "flags": {
+                "type": "array",
+                "description": "The flags of the parameter.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child",
+                        "Unique",
+                        "Fixed"
+                    ]
+                }
+            },
+            "possibleValues": {
+                "oneOf": [
+                    {
+                        "$ref": "#/PossibleStringValues"
+                    },
+                    {
+                        "$ref": "#/PossibleNumericValues"
+                    }
+                ]
+            },
+            "canHaveCustomValue": {
+                "type": "boolean",
+                "description": "The parameter can have a custom value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "displayName",
+            "index",
+            "type",
+            "dimension1",
+            "dimension2",
+            "value",
+            "isLocked",
+            "flags"
+        ]
+    },
+    "SetGDLParameterByNameDetails": {
+        "type": "object",
+        "description": "Details of a GDL parameter.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ]
+    },
+    "SetGDLParameterByIndexDetails": {
+        "type": "object",
+        "description": "Details of a GDL parameter.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the parameter."
             },
             "value": {
                 "description": "The value of the parameter."
@@ -266,8 +389,17 @@
         "additionalProperties": false,
         "required": [
             "index",
-            "type",
             "value"
+        ]
+    },
+    "SetGDLParameterDetails": {
+        "oneOf": [
+            {
+                "$ref": "#/SetGDLParameterByNameDetails"
+            },
+            {
+                "$ref": "#/SetGDLParameterByIndexDetails"
+            }
         ]
     },
     "PolyArc": {

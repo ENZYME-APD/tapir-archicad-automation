@@ -8,7 +8,7 @@ using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class SetGDLParametersComponent : ArchicadAccessorComponent
+    public class SetGDLParametersComponent : ArchicadExecutorComponent
     {
         public override string CommandName => "SetGDLParametersOfElements";
         public string GetCommandName => "GetGDLParametersOfElements";
@@ -48,7 +48,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             if (!da.TryCreateFromList(
                     0,
-                    out ElementsObject elementsObject))
+                    out ElementsObject elements))
             {
                 return;
             }
@@ -60,28 +60,102 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGet(
+            bool isString = false;
+            bool isInt = false;
+            bool isDouble = false;
+            bool isBool = false;
+            string stringValue = null;
+            int intValue = 0;
+            double doubleValue = 0;
+            bool boolValue = false;
+            if (da.TryGet(
                     2,
-                    out object value))
+                    out stringValue))
             {
+                isString = true;
+            }
+            else if (da.TryGet(
+                    2,
+                    out intValue))
+            {
+                isInt = true;
+            }
+            else if (da.TryGet(
+                    2,
+                    out doubleValue))
+            {
+                isDouble = true;
+            }
+            else if (da.TryGet(
+                    2,
+                    out boolValue))
+            {
+                isBool = true;
+            }
+            else
+            {
+                this.AddError(
+                    $"Value input must be string, integer or a real number");
+            }
+            this.ClearRuntimeMessages();
+
+            SetGdlParameterDetails setParametersInput = null;
+            if (isString)
+            {
+                setParametersInput = new SetGdlParameterDetailsString
+                {
+                    Name = parameterName,
+                    Value = stringValue
+                };
+            }
+            else if (isInt)
+            {
+                setParametersInput = new SetGdlParameterDetailsInteger
+                {
+                    Name = parameterName,
+                    Value = intValue
+                };
+            }
+            else if (isDouble)
+            {
+                setParametersInput = new SetGdlParameterDetailsDouble
+                {
+                    Name = parameterName,
+                    Value = doubleValue
+                };
+            }
+            else if (isBool)
+            {
+                setParametersInput = new SetGdlParameterDetailsBoolean
+                {
+                    Name = parameterName,
+                    Value = boolValue
+                };
+            }
+            else
+            {
+                this.AddError(
+                    $"Value input must be string, integer, real number or a boolean");
                 return;
             }
 
-            if (!TryGetConvertedCadValues(
-                    GetCommandName,
-                    elementsObject,
-                    ToAddOn,
-                    JHelp.Deserialize<GDLParametersResponse>,
-                    out GDLParametersResponse getResponse))
+            var input = new ElementsWithGDLParametersInput
             {
-                return;
+                ElementsWithGDLParameters =
+                    new List<ElementWithGDLParameters>()
+            };
+
+            foreach (var element in elements.Elements)
+            {
+                input.ElementsWithGDLParameters.Add(
+                    new ElementWithGDLParameters()
+                    {
+                        ElementId = element.ElementId,
+                        GdlParameterList = new SetGdlParameterArray()
+                    });
+                input.ElementsWithGDLParameters.Last().
+                    GdlParameterList.Add(setParametersInput);
             }
-
-            var gdlHolders = getResponse.ToGdlHolders(
-                elementsObject.Elements.Select(x => x.ElementId).ToList(),
-                parameterName);
-
-            var input = gdlHolders.ToSetInput(value);
 
             if (!TryGetConvertedCadValues(
                     CommandName,
