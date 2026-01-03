@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
-import aclib, threading, json
+import aclib, threading, json, time
 
 HOST = 'localhost'
 PORT = 12345
@@ -11,19 +11,22 @@ class NotificationHandler(BaseHTTPRequestHandler):
         if parsed_path.path == '/element_notification':
             post_data = self.rfile.read()
             notification = json.loads(post_data)
+            print(json.dumps(notification, indent=3))
             if 'newElements' in notification:
-                print('New elements:')
-                self.dump_elements(notification['newElements'])
+                for newElement in notification['newElements']:
+                    continue
             if 'changedElements' in notification:
-                print('Changed elements:')
-                self.dump_elements(notification['changedElements'])
+                for changedElement in notification['changedElements']:
+                    continue
             if 'deletedElements' in notification:
-                print('Deleted elements:')
-                self.dump_elements(notification['deletedElements'])
-
-    def dump_elements(self, elements):
-        for element in elements:
-            print(f"Element ID: {element['elementId']['guid']}, Type: {element['elementType']}")
+                for deletedElement in notification['deletedElements']:
+                    continue
+            if 'reservedElements' in notification:
+                for reservedElement in notification['reservedElements']:
+                    continue
+            if 'releasedElements' in notification:
+                for releasedElement in notification['releasedElements']:
+                    continue
 
 def RunNotificationHandler(host, port):
     server = HTTPServer((host, port), NotificationHandler)
@@ -31,5 +34,14 @@ def RunNotificationHandler(host, port):
 
 if __name__ == '__main__':
     threading.Thread(target=RunNotificationHandler, args=(HOST, PORT), daemon=True).start()
-    aclib.RunTapirCommand ('SetElementNotificationClient', {'host': HOST, 'port': PORT},debug=False)
-    input('Press Enter to stop...\n')
+    aclib.RunTapirCommand ('SetElementNotificationClient', {'host': HOST, 'port': PORT})
+
+    # Create some elements to trigger notifications
+    aclib.RunTapirCommand (
+        'CreateColumns', {
+            'columnsData': [
+                {'coordinates': {'x': 0.0, 'y': 0.0, 'z': 0.0}},
+                {'coordinates': {'x': 1.0, 'y': 1.0, 'z': 1.0}}
+            ]
+        })
+    time.sleep(1)
