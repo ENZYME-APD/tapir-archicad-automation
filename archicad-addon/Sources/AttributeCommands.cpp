@@ -429,7 +429,7 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
                 continue;
             }
         } else {
-            GSErrCode err = ACAPI_Attribute_Create (&attr, nullptr);
+            GSErrCode err = ACAPI_Attribute_Create (&attr, &attrDef);
             if (err != NoError) {
                 attributeIds (CreateErrorResponse (err, "Failed to create."));
                 continue;
