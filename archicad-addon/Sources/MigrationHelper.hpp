@@ -73,6 +73,7 @@
 #define ACAPI_Element_InstallElementObserver ACAPI_Notify_InstallElementObserver
 #define ACAPI_Element_CatchNewElement ACAPI_Notify_CatchNewElement
 #define ACAPI_Notification_GetParentElement ACAPI_Notify_GetParentElement
+#define ACAPI_Notification_CatchElementReservationChange ACAPI_Notify_CatchElementReservationChange
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {

@@ -13,30 +13,34 @@
 #include "MigrationHelper.hpp"
 
 static
-GS::String ElementEventTypeToString (SetElementNotificationClientCommand::ElementEventType eventType)
+GS::String ElementEventTypeToString (AddElementNotificationClientCommand::ElementEventType eventType)
 {
     switch (eventType) {
-        case SetElementNotificationClientCommand::ElementEventType::New:
+        case AddElementNotificationClientCommand::ElementEventType::New:
             return "newElements";
-        case SetElementNotificationClientCommand::ElementEventType::Changed:
+        case AddElementNotificationClientCommand::ElementEventType::Changed:
             return "changedElements";
-        case SetElementNotificationClientCommand::ElementEventType::Deleted:
+        case AddElementNotificationClientCommand::ElementEventType::Deleted:
             return "deletedElements";
+        case AddElementNotificationClientCommand::ElementEventType::Reserved:
+            return "reservedElements";
+        case AddElementNotificationClientCommand::ElementEventType::Released:
+            return "releasedElements";
         default:
             return "unknown";
     }
 }
 
 class MessageSenderTask : public GS::Runnable {
-    SetElementNotificationClientCommand::EventQueue eventQueue;
+    AddElementNotificationClientCommand::EventQueue eventQueue;
 public:
-    MessageSenderTask (SetElementNotificationClientCommand::EventQueue& q)
+    MessageSenderTask (AddElementNotificationClientCommand::EventQueue& q)
     {
         std::swap (eventQueue, q);
     }
     virtual void Run ()
     {
-        for (auto& kv : SetElementNotificationClientCommand::clients) {
+        for (auto& kv : AddElementNotificationClientCommand::clients) {
             auto& client = kv.second;
 
             bool isEmptyMessage = true;
@@ -57,18 +61,19 @@ public:
                 continue;
             }
 
-            SetElementNotificationClientCommand::SendMessageToNotificationClient (client, message);
+            AddElementNotificationClientCommand::SendMessageToNotificationClient (client, message);
         }
     }
 };
 
-std::map<GS::UniString, SetElementNotificationClientCommand::Client> SetElementNotificationClientCommand::clients;
-bool SetElementNotificationClientCommand::hasClientToNotifyOnNew = false;
-bool SetElementNotificationClientCommand::hasClientToNotifyOnModification = false;
-std::unique_ptr<SetElementNotificationClientCommand::EventQueue> SetElementNotificationClientCommand::queuedEvents;
-GS::Thread SetElementNotificationClientCommand::messageSenderThread;
+std::map<GS::UniString, AddElementNotificationClientCommand::Client> AddElementNotificationClientCommand::clients;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnNew = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnModification = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges = false;
+std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
+GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
-void SetElementNotificationClientCommand::Client::Send(HTTP::Client::Request& request, const GS::UniString* body)
+void AddElementNotificationClientCommand::Client::Send(HTTP::Client::Request& request, const GS::UniString* body)
 {
     try {
         HTTP::Client::ClientConnection clientConnection (url);
@@ -79,28 +84,26 @@ void SetElementNotificationClientCommand::Client::Send(HTTP::Client::Request& re
         clientConnection.Close (true);
     } catch (const GS::Exception& e) {
         e.Print (dbChannel);
-        isAvailable = false;
     } catch (...) {
-        isAvailable = false;
     }
 }
 
-SetElementNotificationClientCommand::SetElementNotificationClientCommand () :
+AddElementNotificationClientCommand::AddElementNotificationClientCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
 }
 
-SetElementNotificationClientCommand::~SetElementNotificationClientCommand ()
+AddElementNotificationClientCommand::~AddElementNotificationClientCommand ()
 {
     messageSenderThread.Join ();
 }
 
-GS::String SetElementNotificationClientCommand::GetName () const
+GS::String AddElementNotificationClientCommand::GetName () const
 {
     return "SetElementNotificationClient";
 }
 
-GS::Optional<GS::UniString> SetElementNotificationClientCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -122,6 +125,11 @@ GS::Optional<GS::UniString> SetElementNotificationClientCommand::GetInputParamet
                 "type": "boolean",
                 "description": "Notify on modification/deletion of an element.",
                 "default": true
+            },
+            "notifyOnReservationChanges": {
+                "type": "boolean",
+                "description": "Notify on reservation changes of an element.",
+                "default": true
             }
         },
         "additionalProperties": false,
@@ -131,7 +139,14 @@ GS::Optional<GS::UniString> SetElementNotificationClientCommand::GetInputParamet
     })";
 }
 
-GS::ObjectState SetElementNotificationClientCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     Int32 port = -1;
     if (parameters.Get ("port", port)) {
@@ -151,13 +166,16 @@ GS::ObjectState SetElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnModification = true;
     parameters.Get ("notifyOnModification", notifyOnModification);
 
+    bool notifyOnReservationChanges = true;
+    parameters.Get ("notifyOnReservationChanges", notifyOnReservationChanges);
+
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
-        result.first->second.isAvailable = true;
+        result.first->second.notifyOnReservationChanges = notifyOnReservationChanges;
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -174,13 +192,18 @@ GS::ObjectState SetElementNotificationClientCommand::Execute (const GS::ObjectSt
         hasClientToNotifyOnModification = true;
     }
 
+    if (notifyOnReservationChanges && !hasClientToNotifyOnReservationChanges) {
+        ACAPI_Notification_CatchElementReservationChange (ElementReservationChangeHandler);
+        hasClientToNotifyOnReservationChanges = true;
+    }
+
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
 
     return CreateSuccessfulExecutionResult ();
 }
 
 void
-SetElementNotificationClientCommand::SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os)
+AddElementNotificationClientCommand::SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os)
 {
     if (queuedEvents) {
         (*queuedEvents)[eventType].push_back (os);
@@ -202,7 +225,7 @@ SetElementNotificationClientCommand::SendEventToNotificationClient (ElementEvent
 }
 
 void
-SetElementNotificationClientCommand::SendQueuedEventsToNotificationClient ()
+AddElementNotificationClientCommand::SendQueuedEventsToNotificationClient ()
 {
     if (!queuedEvents) {
         return;
@@ -214,7 +237,7 @@ SetElementNotificationClientCommand::SendQueuedEventsToNotificationClient ()
 }
 
 void
-SetElementNotificationClientCommand::SendMessageToNotificationClient (Client& client, const GS::ObjectState& os)
+AddElementNotificationClientCommand::SendMessageToNotificationClient (Client& client, const GS::ObjectState& os)
 {
     HTTP::Client::Request postRequest (HTTP::MessageHeader::Method::Post, "/element_notification");
 
@@ -230,7 +253,7 @@ SetElementNotificationClientCommand::SendMessageToNotificationClient (Client& cl
 }
 
 GSErrCode
-SetElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyElementType *elemType)
+AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyElementType *elemType)
 {
     if (elemType->notifID == APINotifyElement_BeginEvents) {
         SendQueuedEventsToNotificationClient ();
@@ -285,4 +308,115 @@ SetElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
     }
 
     return NoError;
+}
+
+static API_ElemTypeID
+GetElemTypeID (const API_Guid& elemGuid)
+{
+    API_Elem_Head elemHead = {};
+    elemHead.guid = elemGuid;
+    ACAPI_Element_GetHeader (&elemHead);
+    return GetElemTypeId (elemHead);
+}
+
+GSErrCode
+AddElementNotificationClientCommand::ElementReservationChangeHandler (
+    const GS::HashTable<API_Guid, short>& reserved,
+    const GS::HashSet<API_Guid>&          released,
+    const GS::HashSet<API_Guid>&          /*deleted*/)
+{
+    std::map<short, GS::UniString> userIdToNameMap;
+    for (const auto& kv : reserved) {
+#ifdef ServerMainVers_2800
+        const auto& userId = kv.value;
+#else
+        const auto& userId = *kv.value;
+#endif
+        ACAPI_Teamwork_GetUsernameFromId (userId, &userIdToNameMap[userId]);
+    }
+    for (const auto& kv : reserved) {
+#ifdef ServerMainVers_2800
+        const auto& guid = kv.key;
+        const auto& userId = kv.value;
+#else
+        const auto& guid = *kv.key;
+        const auto& userId = *kv.value;
+#endif
+        GS::ObjectState message (
+            "elementId", CreateGuidObjectState (guid),
+            "elementType", GetElementTypeNonLocalizedName (GetElemTypeID (guid)),
+            "reservedBy", userIdToNameMap[userId]);
+
+        SendEventToNotificationClient (ElementEventType::Reserved, message);
+    }
+    for (const auto& guid : released) {
+        GS::ObjectState message (
+            "elementId", CreateGuidObjectState (guid),
+            "elementType", GetElementTypeNonLocalizedName (GetElemTypeID (guid)));
+
+        SendEventToNotificationClient (ElementEventType::Released, message);
+    }
+
+    return NoError;
+}
+
+RemoveElementNotificationClientCommand::RemoveElementNotificationClientCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String RemoveElementNotificationClientCommand::GetName () const
+{
+    return "RemoveElementNotificationClient";
+}
+
+GS::Optional<GS::UniString> RemoveElementNotificationClientCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "host": {
+                "type": "string",
+                "description": "The host address of the notification client. If not provided, localhost is used."
+            },
+            "port": {
+                "type": "integer",
+                "description": "The port number of the notification client."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "port"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemoveElementNotificationClientCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    Int32 port = -1;
+    if (parameters.Get ("port", port)) {
+        if (port <= 0 || port > 65535) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid port number.");
+        }
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Port number is required.");
+    }
+
+    GS::UniString host = "localhost";
+    parameters.Get ("host", host);
+
+    const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
+
+    if (AddElementNotificationClientCommand::clients.erase (connectionUrlStr) == 0) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No such notification client registered.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
 }

@@ -301,9 +301,13 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.7",
             "Returns the room image of the given zone."
         );
-        err |= RegisterCommand<SetElementNotificationClientCommand> (
-            elementCommands, "1.2.7",
-            "Sets up a notification client to receive element events."
+        err |= RegisterCommand<AddElementNotificationClientCommand> (
+            elementCommands, "1.2.8",
+            "Sets up a new notification client to receive element events."
+        );
+        err |= RegisterCommand<RemoveElementNotificationClientCommand> (
+            elementCommands, "1.2.8",
+            "Removes an element notification client."
         );
         AddCommandGroup (elementCommands);
     }
