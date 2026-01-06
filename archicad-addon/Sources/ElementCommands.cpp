@@ -1932,6 +1932,82 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*para
 
 #endif
 
+
+static API_Coord3D TransformPoint (const API_Coord3D& pt, const API_Tranmat& tm)
+{
+    API_Coord3D res;
+    res.x = (pt.x * tm.tmx[0]) + (pt.y * tm.tmx[1]) + (pt.z * tm.tmx[2]) + tm.tmx[3];
+    res.y = (pt.x * tm.tmx[4]) + (pt.y * tm.tmx[5]) + (pt.z * tm.tmx[6]) + tm.tmx[7];
+    res.z = (pt.x * tm.tmx[8]) + (pt.y * tm.tmx[9]) + (pt.z * tm.tmx[10]) + tm.tmx[11];
+    return res;
+}
+
+static void UpdateGlobalBoundsWithPoint (API_Box3D& globalBounds, const API_Coord3D& pt)
+{
+    if (pt.x < globalBounds.xMin) globalBounds.xMin = pt.x;
+    if (pt.x > globalBounds.xMax) globalBounds.xMax = pt.x;
+    if (pt.y < globalBounds.yMin) globalBounds.yMin = pt.y;
+    if (pt.y > globalBounds.yMax) globalBounds.yMax = pt.y;
+    if (pt.z < globalBounds.zMin) globalBounds.zMin = pt.z;
+    if (pt.z > globalBounds.zMax) globalBounds.zMax = pt.z;
+}
+
+static void GetLocalBodyCorners (const API_BodyType& body, API_Coord3D (&corners)[8])
+{
+    corners[0] = { body.xmin, body.ymin, body.zmin };
+    corners[1] = { body.xmax, body.ymin, body.zmin };
+    corners[2] = { body.xmin, body.ymax, body.zmin };
+    corners[3] = { body.xmax, body.ymax, body.zmin };
+    corners[4] = { body.xmin, body.ymin, body.zmax };
+    corners[5] = { body.xmax, body.ymin, body.zmax };
+    corners[6] = { body.xmin, body.ymax, body.zmax };
+    corners[7] = { body.xmax, body.ymax, body.zmax };
+}
+
+static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& outBounds)
+{
+    outBounds.xMin = outBounds.yMin = outBounds.zMin = 1e30;
+    outBounds.xMax = outBounds.yMax = outBounds.zMax = -1e30;
+
+    API_ElemInfo3D info3D = {};
+    GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+    if (err != NoError) {
+        return err;
+    }
+
+    bool foundSolidBody = false;
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D bodyComp = {};
+        bodyComp.header.typeID = API_BodyID;
+        bodyComp.header.index = iBody;
+
+        if (ACAPI_ModelAccess_GetComponent (&bodyComp) != NoError) {
+            continue;
+        }
+
+        if (bodyComp.body.nPgon == 0) { // Skip non-solid bodies
+            continue;
+        }
+
+        foundSolidBody = true;
+
+        API_Coord3D corners[8];
+        GetLocalBodyCorners (bodyComp.body, corners);
+
+        for (int k = 0; k < 8; ++k) {
+            const API_Coord3D globalPt = TransformPoint (corners[k], bodyComp.body.tranmat);
+            UpdateGlobalBoundsWithPoint (outBounds, globalPt);
+        }
+    }
+
+    if (!foundSolidBody) {
+        return APIERR_GENERAL;
+    }
+
+    return NoError;
+}
+
 Get3DBoundingBoxesCommand::Get3DBoundingBoxesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1991,8 +2067,19 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
 
         API_Elem_Head elemHead = {};
         elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            boundingBoxes3D (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
         API_Box3D box3D = {};
-        GSErrCode err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        if (elemHead.type.typeID == API_RoofID || 
+            elemHead.type.typeID == API_ZoneID) {
+            err = CalculateSolidBodyBounds (elemHead, box3D);
+        } else {
+            err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        }
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
             continue;
