@@ -1970,7 +1970,11 @@ static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Bo
     outBounds.xMax = outBounds.yMax = outBounds.zMax = -1e30;
 
     API_ElemInfo3D info3D = {};
+#if defined(ServerMainVers_2700)
     GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+#else
+    GSErrCode err = ACAPI_Element_Get3DInfo (elemHead, &info3D);
+#endif
     if (err != NoError) {
         return err;
     }
@@ -1982,9 +1986,11 @@ static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Bo
         bodyComp.header.typeID = API_BodyID;
         bodyComp.header.index = iBody;
 
-        if (ACAPI_ModelAccess_GetComponent (&bodyComp) != NoError) {
-            continue;
-        }
+#if defined(ServerMainVers_2700)
+        if (ACAPI_ModelAccess_GetComponent (&bodyComp) != NoError) continue;
+#else
+        if (ACAPI_3D_GetComponent (&bodyComp) != NoError) continue;
+#endif
 
         if (bodyComp.body.nPgon == 0) { // Skip non-solid bodies
             continue;
@@ -2072,10 +2078,10 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             boundingBoxes3D (CreateErrorResponse (err, "Failed to find element in Archicad"));
             continue;
         }
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
 
         API_Box3D box3D = {};
-        if (elemHead.type.typeID == API_RoofID || 
-            elemHead.type.typeID == API_ZoneID) {
+        if (typeID == API_RoofID || typeID == API_ZoneID) {
             err = CalculateSolidBodyBounds (elemHead, box3D);
         } else {
             err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
