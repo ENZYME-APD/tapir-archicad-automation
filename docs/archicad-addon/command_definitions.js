@@ -1792,6 +1792,69 @@ var gCommands = [{
             "roomImage"
         ]
     }
+            },{
+                "name": "SetElementNotificationClient",
+                "version": "1.2.8",
+                "description": "Sets up a new notification client to receive element events.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "host": {
+                "type": "string",
+                "description": "The host address of the notification client. If not provided, localhost is used."
+            },
+            "port": {
+                "type": "integer",
+                "description": "The port number of the notification client."
+            },
+            "notifyOnNewElement": {
+                "type": "boolean",
+                "description": "Notify on creation of a new element.",
+                "default": true
+            },
+            "notifyOnModificationOfAnElement": {
+                "type": "boolean",
+                "description": "Notify on modification/deletion of an element.",
+                "default": true
+            },
+            "notifyOnReservationChanges": {
+                "type": "boolean",
+                "description": "Notify on reservation changes of an element.",
+                "default": true
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "port"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "RemoveElementNotificationClient",
+                "version": "1.2.8",
+                "description": "Removes an element notification client.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "host": {
+                "type": "string",
+                "description": "The host address of the notification client. If not provided, localhost is used."
+            },
+            "port": {
+                "type": "integer",
+                "description": "The port number of the notification client."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "port"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Favorites Commands",
