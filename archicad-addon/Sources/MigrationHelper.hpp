@@ -77,6 +77,10 @@
 #define ACAPI_Notification_GetParentElement ACAPI_Notify_GetParentElement
 #define ACAPI_Notification_CatchElementReservationChange ACAPI_Notify_CatchElementReservationChange
 
+#define ACAPI_ModelAccess_Get3DInfo ACAPI_Element_Get3DInfo
+#define ACAPI_ModelAccess_GetComponent ACAPI_3D_GetComponent
+
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;
