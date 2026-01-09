@@ -1970,11 +1970,7 @@ static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Bo
     outBounds.xMax = outBounds.yMax = outBounds.zMax = -1e30;
 
     API_ElemInfo3D info3D = {};
-#if defined(ServerMainVers_2700)
     GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
-#else
-    GSErrCode err = ACAPI_Element_Get3DInfo (elemHead, &info3D);
-#endif
     if (err != NoError) {
         return err;
     }
@@ -1986,11 +1982,7 @@ static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Bo
         bodyComp.header.typeID = API_BodyID;
         bodyComp.header.index = iBody;
 
-#if defined(ServerMainVers_2700)
         if (ACAPI_ModelAccess_GetComponent (&bodyComp) != NoError) continue;
-#else
-        if (ACAPI_3D_GetComponent (&bodyComp) != NoError) continue;
-#endif
 
         if (bodyComp.body.nPgon == 0) { // Skip non-solid bodies
             continue;
