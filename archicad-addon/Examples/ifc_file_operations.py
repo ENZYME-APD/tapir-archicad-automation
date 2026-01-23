@@ -2,19 +2,24 @@ import aclib
 import os
 
 cwd = os.getcwd()
-ifcFilePath = os.path.join(cwd, 'filename.ifc')
+ifcFilePath = os.path.join(cwd, 'filename.ifcxml')
 
-aclib.RunTapirCommand ('IFCFileOperation', {
-    'ifcFilePath': ifcFilePath,
-    'method': 'save'
+response = aclib.RunTapirCommand ('GetIFCTranslators', {
+    'type': 'Export'
 })
 
-aclib.RunTapirCommand ('IFCFileOperation', {
+ifcExportTranslators = response['ifcTranslators']
+
+aclib.RunTapirCommand ('SaveIFC', {
     'ifcFilePath': ifcFilePath,
-    'method': 'merge'
+    'fileType': 'ifcxmlzip',
+    'translator': ifcExportTranslators[1]
 })
 
-aclib.RunTapirCommand ('IFCFileOperation', {
-    'ifcFilePath': ifcFilePath,
-    'method': 'open'
+aclib.RunTapirCommand ('MergeIFC', {
+    'ifcFilePath': ifcFilePath
+})
+
+aclib.RunTapirCommand ('OpenIFC', {
+    'ifcFilePath': ifcFilePath
 })

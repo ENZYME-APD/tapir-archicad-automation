@@ -10,68 +10,78 @@
 
 #ifndef ServerMainVers_2700
 
-#define ACAPI_MenuItem_RegisterMenu ACAPI_Register_Menu
-#define ACAPI_MenuItem_InstallMenuHandler ACAPI_Install_MenuHandler
-#define ACAPI_MenuItem_GetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_GetMenuItemFlagsID, par1, par2);
-#define ACAPI_MenuItem_SetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_SetMenuItemFlagsID, par1, par2);
-
-#define ACAPI_Markup_Create ACAPI_MarkUp_Create
-#define ACAPI_Markup_Delete ACAPI_MarkUp_Delete
-#define ACAPI_Markup_GetList ACAPI_MarkUp_GetList
-#define ACAPI_Markup_AttachElements ACAPI_MarkUp_AttachElements
-#define ACAPI_Markup_DetachElements ACAPI_MarkUp_DetachElements
-#define ACAPI_Markup_GetAttachedElements ACAPI_MarkUp_GetAttachedElements
-#define ACAPI_Markup_AddComment ACAPI_MarkUp_AddComment
-#define ACAPI_Markup_GetComments ACAPI_MarkUp_GetComments
-#define ACAPI_Markup_ExportToBCF ACAPI_MarkUp_ExportToBCF
-#define ACAPI_Markup_ImportFromBCF ACAPI_MarkUp_ImportFromBCF
-
+#define ACAPI_AddOnAddOnCommunication_Call ACAPI_Command_Call
 #define ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler ACAPI_Install_AddOnCommandHandler
-
-#define ACAPI_Element_NeigIDToElemType ACAPI_Goodies_NeigIDToElemType
-
+#define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
+#define ACAPI_AutoText_GetAutoTextFlag(par1) ACAPI_Goodies(APIAny_GetAutoTextFlagID,par1)
+#define ACAPI_AutoText_GetAutoTexts(par1, par2) ACAPI_Goodies(APIAny_GetAutoTextsID, (void*) par1, (void*) par2)
+#define ACAPI_AutoText_SetAnAutoText(par1, par2) ACAPI_Goodies(APIAny_SetAnAutoTextID, (void*) par1, (void*) par2)
 #define ACAPI_Command_GetHttpConnectionPort(par1) ACAPI_Goodies (APIAny_GetHttpConnectionPortID, par1)
-
-#define ACAPI_Teamwork_ReceiveChanges ACAPI_TeamworkControl_ReceiveChanges
-#define ACAPI_Teamwork_SendChanges ACAPI_TeamworkControl_SendChanges
-#define ACAPI_Teamwork_ReserveElements ACAPI_TeamworkControl_ReserveElements
-#define ACAPI_Teamwork_ReleaseElements ACAPI_TeamworkControl_ReleaseElements
-#define ACAPI_Teamwork_GetUsernameFromId ACAPI_TeamworkControl_GetUsernameFromId
-
-#define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
-#define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
-
-#define ACAPI_Selection_Select ACAPI_Element_Select
-#define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
-
-#define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
-#define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
-#define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
-
+#define ACAPI_Database_ChangeCurrentDatabase(par1) ACAPI_Database (APIDb_ChangeCurrentDatabaseID, (void*) par1)
+#define ACAPI_Database_GetCurrentDatabase(par1) ACAPI_Database (APIDb_GetCurrentDatabaseID, (void*) par1)
 #define ACAPI_Element_CalcBounds(par1,par2) ACAPI_Database (APIDb_CalcBoundsID, par1, par2)
-#define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
-
-#define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
-#define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
-#define ACAPI_Revision_GetRVMDocumentRevisions(par1) ACAPI_Database (APIDb_GetRVMDocumentRevisionsID, par1)
-#define ACAPI_Revision_GetRVMIssueDocumentRevisions(par1, par2) ACAPI_Database (APIDb_GetRVMIssueDocumentRevisionsID, (void*)par1, par2)
-#define ACAPI_Revision_GetRVMDocumentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMDocumentRevisionChangesID, (void*)par1, par2)
-#define ACAPI_Revision_GetRVMChangeFirstIssue(par1, par2) ACAPI_Database (APIDb_GetRVMChangeFirstIssueID, (void*)par1, par2)
-#define ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMLayoutCurrentRevisionChangesID, (void*)par1, par2)
-#define ACAPI_Revision_GetRVMElemChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMElemChangeIdsID, (void*)par1, par2)
-#define ACAPI_Revision_GetRVMChangesFromChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMChangesFromChangeIdsID, (void*)par1, par2)
-
-#define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
+#define ACAPI_Element_GetRoomImage(par1) ACAPI_Goodies(APIAny_GetRoomImageID,par1)
+#define ACAPI_Element_NeigIDToElemType ACAPI_Goodies_NeigIDToElemType
+#define ACAPI_Element_UI2ElemPriority(par1, par2) ACAPI_Goodies (APIAny_UI2ElemPriorityID, par1, par2)
+#define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
+#define ACAPI_GraphicalOverride_GetVisualOverriddenImage ACAPI_Element_GetVisualOverriddenImage
+#define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
+#define ACAPI_Hotlink_GetHotlinkNodeTree(par1, par2) ACAPI_Database(APIDb_GetHotlinkNodeTreeID, (void*) par1, (void*) par2)
+#define ACAPI_Hotlink_GetHotlinkRootNodeGuid(par1, par2) ACAPI_Database(APIDb_GetHotlinkRootNodeGuidID, (void*) par1, (void*) par2)
+#define ACAPI_LibraryPart_ChangeAParameter(par1) ACAPI_Goodies (APIAny_ChangeAParameterID, par1)
+#define ACAPI_LibraryPart_Get(par1) ACAPI_LibPart_Get (par1)
+#define ACAPI_LibraryPart_GetActParameters(par1) ACAPI_Goodies (APIAny_GetActParametersID, par1)
+#define ACAPI_LibraryPart_GetBuiltInLibpartUnId (par1, par2) ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)par1, par2)
 #define ACAPI_LibraryPart_GetParams ACAPI_LibPart_GetParams
 #define ACAPI_LibraryPart_GetParamValues(par1) ACAPI_Goodies(APIAny_GetParamValuesID,par1)
-
-#define ACAPI_AutoText_GetAutoTextFlag(par1) ACAPI_Goodies(APIAny_GetAutoTextFlagID,par1)
-#define ACAPI_AutoText_ChangeAutoTextFlag(par1) ACAPI_Goodies(APIAny_ChangeAutoTextFlagID,par1)
-#define ACAPI_Element_GetRoomImage(par1) ACAPI_Goodies(APIAny_GetRoomImageID,par1)
-
-#define ACAPI_AddOnAddOnCommunication_Call ACAPI_Command_Call
-
-#define ACAPI_GraphicalOverride_GetVisualOverriddenImage ACAPI_Element_GetVisualOverriddenImage
+#define ACAPI_LibraryPart_OpenParameters(par1) ACAPI_Goodies (APIAny_OpenParametersID, par1)
+#define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
+#define ACAPI_Markup_AddComment ACAPI_MarkUp_AddComment
+#define ACAPI_Markup_AttachElements ACAPI_MarkUp_AttachElements
+#define ACAPI_Markup_Create ACAPI_MarkUp_Create
+#define ACAPI_Markup_Delete ACAPI_MarkUp_Delete
+#define ACAPI_Markup_DetachElements ACAPI_MarkUp_DetachElements
+#define ACAPI_Markup_ExportToBCF ACAPI_MarkUp_ExportToBCF
+#define ACAPI_Markup_GetAttachedElements ACAPI_MarkUp_GetAttachedElements
+#define ACAPI_Markup_GetComments ACAPI_MarkUp_GetComments
+#define ACAPI_Markup_GetList ACAPI_MarkUp_GetList
+#define ACAPI_Markup_ImportFromBCF ACAPI_MarkUp_ImportFromBCF
+#define ACAPI_MenuItem_GetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_GetMenuItemFlagsID, par1, par2)
+#define ACAPI_MenuItem_InstallMenuHandler ACAPI_Install_MenuHandler
+#define ACAPI_MenuItem_RegisterMenu ACAPI_Register_Menu
+#define ACAPI_MenuItem_SetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_SetMenuItemFlagsID, par1, par2)
+#define ACAPI_Navigator_ChangeNavigatorView(par1, par2) ACAPI_Navigator(APINavigator_ChangeNavigatorViewID, (void*) par1, (void*) par2)
+#define ACAPI_Navigator_GetNavigatorItem(par1, par2) ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2)
+#define ACAPI_Navigator_GetNavigatorSet(par1, par2) ACAPI_Navigator(APINavigator_GetNavigatorSetID, (void*) par1, (void*) par2)
+#define ACAPI_Navigator_GetNavigatorSetNum(par1) ACAPI_Navigator(APINavigator_GetNavigatorSetNumID, (void*) par1)
+#define ACAPI_Navigator_GetNavigatorView(par1, par2) ACAPI_Navigator(APINavigator_GetNavigatorViewID, (void*) par1, (void*) par2)
+#define ACAPI_ProjectOperation_Open(par1) ACAPI_Automate(APIDo_OpenID, (void*) par1)
+#define ACAPI_ProjectOperation_Project(par1) ACAPI_Environment(APIEnv_ProjectID, par1)
+#define ACAPI_ProjectOperation_Save(par1, par2) ACAPI_Automate(APIDo_SaveID, par1, par2)
+#define ACAPI_ProjectSetting_ChangeStorySettings(par1) ACAPI_Environment (APIEnv_ChangeStorySettingsID, par1, nullptr)
+#define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
+#define ACAPI_ProjectSetting_GetStorySettings(par1) ACAPI_Environment (APIEnv_GetStorySettingsID, par1, nullptr)
+#define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
+#define ACAPI_Revision_GetRVMChangeFirstIssue(par1, par2) ACAPI_Database (APIDb_GetRVMChangeFirstIssueID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMChanges(par1) ACAPI_Database (APIDb_GetRVMChangesID, par1)
+#define ACAPI_Revision_GetRVMChangesFromChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMChangesFromChangeIdsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMDocumentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMDocumentRevisionChangesID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMDocumentRevisions(par1) ACAPI_Database (APIDb_GetRVMDocumentRevisionsID, par1)
+#define ACAPI_Revision_GetRVMElemChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMElemChangeIdsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMIssueDocumentRevisions(par1, par2) ACAPI_Database (APIDb_GetRVMIssueDocumentRevisionsID, (void*)par1, par2)
+#define ACAPI_Revision_GetRVMIssues(par1) ACAPI_Database (APIDb_GetRVMIssuesID, par1)
+#define ACAPI_Revision_GetRVMLayoutCurrentRevisionChanges(par1, par2) ACAPI_Database (APIDb_GetRVMLayoutCurrentRevisionChangesID, (void*)par1, par2)
+#define ACAPI_Selection_Select ACAPI_Element_Select
+#define ACAPI_Teamwork_GetUsernameFromId ACAPI_TeamworkControl_GetUsernameFromId
+#define ACAPI_Teamwork_ReceiveChanges ACAPI_TeamworkControl_ReceiveChanges
+#define ACAPI_Teamwork_ReleaseElements ACAPI_TeamworkControl_ReleaseElements
+#define ACAPI_Teamwork_ReserveElements ACAPI_TeamworkControl_ReserveElements
+#define ACAPI_Teamwork_SendChanges ACAPI_TeamworkControl_SendChanges
+#define ACAPI_UserInput_ClearElementHighlight ACAPI_Interface_ClearElementHighlight
+#define ACAPI_UserInput_SetElementHighlight ACAPI_Interface_SetElementHighlight
+#define ACAPI_View_GetZoom(par1, par2) ACAPI_Database (APIDb_GetZoomID, par1, par2)
+#define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database(APIDb_GetCurrentWindowID, (void*) par1)
+#define ACAPI_Window_GetDatabaseInfo(par1) ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr)
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
@@ -84,74 +94,9 @@ inline GSErrCode ACAPI_ProjectOperation_Quit (Int32 magicCode)
     return ACAPI_Automate (APIDo_QuitID, reinterpret_cast<void*> (magicCode64));
 }
 
-inline GSErrCode ACAPI_ProjectOperation_Project (API_ProjectInfo* projectInfo)
-{
-    return ACAPI_Environment (APIEnv_ProjectID, projectInfo);
-}
-
 inline GSErrCode ACAPI_ProjectOperation_ReloadLibraries ()
 {
     return ACAPI_Automate (APIDo_ReloadLibrariesID);
-}
-
-inline GSErrCode ACAPI_ProjectOperation_Publish (const API_PublishPars* publishPars, const GS::Array<API_Guid>* selectedLinks = nullptr)
-{
-    return ACAPI_Automate (APIDo_PublishID, (void*) publishPars, (void*) selectedLinks);
-}
-
-inline GSErrCode ACAPI_ProjectOperation_Open (const API_FileOpenPars* fileOpenPars)
-{
-    return ACAPI_Automate (APIDo_OpenID, (void*) fileOpenPars);
-}
-
-inline GSErrCode ACAPI_AutoText_GetAutoTexts (GS::Array<GS::ArrayFB<GS::UniString, 3>>* autotexts, API_AutotextType autotextType)
-{
-    return ACAPI_Goodies (APIAny_GetAutoTextsID, autotexts, (void*) (GS::IntPtr) autotextType);
-}
-
-inline GSErrCode ACAPI_AutoText_SetAnAutoText (const GS::UniString* autotextDbKey = nullptr, const GS::UniString* autotextValue = nullptr)
-{
-    return ACAPI_Goodies (APIAny_SetAnAutoTextID, (void*) autotextDbKey, (void*) autotextValue);
-}
-
-inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
-{
-    return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);
-}
-
-inline GSErrCode ACAPI_Hotlink_GetHotlinkRootNodeGuid (const API_HotlinkTypeID* type, API_Guid* rootNodeGuid)
-{
-    return ACAPI_Database (APIDb_GetHotlinkRootNodeGuidID, (void*) type, (void*) rootNodeGuid);
-}
-
-inline GSErrCode ACAPI_Hotlink_GetHotlinkNodeTree (const API_Guid* hotlinkNodeGuid, GS::HashTable<API_Guid, GS::Array<API_Guid>>* hotlinkNodeTree)
-{
-    return ACAPI_Database (APIDb_GetHotlinkNodeTreeID, (void*) hotlinkNodeGuid, (void*) hotlinkNodeTree);
-}
-
-inline GSErrCode ACAPI_Window_GetCurrentWindow (API_WindowInfo* windowInfo)
-{
-    return ACAPI_Database (APIDb_GetCurrentWindowID, (void*) windowInfo);
-}
-
-inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
-{
-    return ACAPI_Navigator (APINavigator_GetNavigatorSetNumID, setNum);
-}
-
-inline GSErrCode ACAPI_Navigator_GetNavigatorSet (API_NavigatorSet* navigatorSet, Int32* index = nullptr)
-{
-    return ACAPI_Navigator (APINavigator_GetNavigatorSetID, navigatorSet, index);
-}
-
-inline GSErrCode ACAPI_Navigator_GetNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView)
-{
-    return ACAPI_Navigator (APINavigator_GetNavigatorViewID, navigatorItem, navigatorView);
-}
-
-inline GSErrCode ACAPI_Navigator_ChangeNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView)
-{
-    return ACAPI_Navigator (APINavigator_ChangeNavigatorViewID, navigatorItem, navigatorView);
 }
 
 inline GSErrCode ACAPI_View_Redraw ()
@@ -159,29 +104,23 @@ inline GSErrCode ACAPI_View_Redraw ()
     return ACAPI_Automate (APIDo_RedrawID);
 }
 
-inline GSErrCode ACAPI_Element_UI2ElemPriority (GS::Int32* uiPriority, GS::Int32* elemPriority)
+inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
 {
-    return ACAPI_Goodies (APIAny_UI2ElemPriorityID, uiPriority, elemPriority);
+    return ACAPI_Goodies (APIAny_CloseParametersID);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_Publish (const API_PublishPars* publishPars, const GS::Array<API_Guid>* selectedLinks = nullptr)
+{
+    return ACAPI_Automate (APIDo_PublishID, (void*) publishPars, (void*) selectedLinks);
+}
+
+inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
+{
+    return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);
+}
 inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo>* activeLibs, Int32* embeddedLibraryIndex = nullptr)
 {
     return ACAPI_Environment (APIEnv_GetLibrariesID, activeLibs, embeddedLibraryIndex);
-}
-
-inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
-{
-    return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
-}
-
-inline GSErrCode ACAPI_ProjectSetting_ChangeStorySettings (API_StoryCmdType* storyCmd)
-{
-    return ACAPI_Environment (APIEnv_ChangeStorySettingsID, storyCmd, nullptr);
-}
-
-inline GSErrCode ACAPI_LibraryPart_Get (API_LibPart* libpart)
-{
-    return ACAPI_LibPart_Get (libpart);
 }
 
 inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfMissing, bool onlyPlaceable = false)
@@ -189,64 +128,12 @@ inline GSErrCode ACAPI_LibraryPart_Search (API_LibPart* ancestor, bool createIfM
     return ACAPI_LibPart_Search (ancestor, createIfMissing, onlyPlaceable);
 }
 
-inline GSErrCode ACAPI_LibraryPart_OpenParameters (API_ParamOwnerType* paramOwner)
-{
-    return ACAPI_Goodies (APIAny_OpenParametersID, paramOwner);
-}
-
-inline GSErrCode ACAPI_LibraryPart_GetActParameters (API_GetParamsType* theParams)
-{
-    return ACAPI_Goodies (APIAny_GetActParametersID, theParams);
-}
-
-inline GSErrCode ACAPI_LibraryPart_ChangeAParameter (API_ChangeParamType* changeParamType)
-{
-    return ACAPI_Goodies (APIAny_ChangeAParameterID, changeParamType);
-}
-
-inline GSErrCode ACAPI_LibraryPart_CloseParameters ()
-{
-    return ACAPI_Goodies (APIAny_CloseParametersID);
-}
-
-inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unId)
-{
-    return ACAPI_Goodies (APIAny_GetBuiltInLibpartUnIdID, (void*)(Int64)resId, unId);
-}
-
-inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
-{
-    return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
-}
-
-inline GSErrCode ACAPI_Database_ChangeCurrentDatabase (API_DatabaseInfo* par1)
-{
-    return ACAPI_Database (APIDb_ChangeCurrentDatabaseID, (void*) par1);
-}
-
-inline GSErrCode ACAPI_Database_GetCurrentDatabase (API_DatabaseInfo* par1)
-{
-    return ACAPI_Database (APIDb_GetCurrentDatabaseID, (void*) par1);
-}
-
-inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
-{
-    return ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr);
-}
-
 #endif
 
 #ifndef ServerMainVers_2600
 
-inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier ifcTranslator, API_IFCRelationshipData ifcRelationshipData)
-{
-    return ACAPI_Goodies (APIAny_GetIFCRelationshipDataID, &ifcTranslator, &ifcRelationshipData);
-}
-
-inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators)
-{
-    return ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &ifcExportTranslators);
-}
+#define ACAPI_IFC_GetIFCRelationshipData(par1, par2) ACAPI_Goodies (APIAny_GetIFCRelationshipDataID, &par1, &par2)
+#define ACAPI_IFC_GetIFCExportTranslatorsList(par1) ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &par1)
 
 inline GSErrCode ACAPI_MarkUp_ExportToBCF (const IO::Location& bcfFileLoc, const GS::Array<API_Guid>& issueIds, const bool useExternalId, const bool alignBySurveyPoint)
 {

@@ -1,5 +1,7 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "MemoryIChannel32.hpp"
+#include "Ref.hpp"
 
 GetProjectInfoCommand::GetProjectInfoCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -783,26 +785,108 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
                 "mapZone", apiGeoLocation.geoReferenceData.mapZone)));
 }
 
-IFCFileOperationCommand::IFCFileOperationCommand () :
+GetIFCTranslatorsCommand::GetIFCTranslatorsCommand () :
     CommandBase (CommonSchema::Used)
 {
 }
 
-GS::String IFCFileOperationCommand::GetName () const
+GS::String GetIFCTranslatorsCommand::GetName () const
 {
-    return "IFCFileOperation";
+    return "GetIFCTranslators";
 }
 
-GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> GetIFCTranslatorsCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
         "properties": {
-            "method": {
+            "type": {
                 "type": "string",
-                "description": "The file operation method to use.",
-                "enum": ["save", "merge", "open"]
-            },
+                "enum": [
+                    "Import",
+                    "Export"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCTranslatorsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ifcTranslators": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "description": "The name of an IFC export translator."
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ifcTranslators"
+        ]
+    })";
+}
+
+GS::ObjectState GetIFCTranslatorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    enum IOType {
+        Undefined,
+        Open,
+        Save
+    };
+
+    GS::UniString type;
+    if (!parameters.Get ("type", type)) {
+        return CreateErrorResponse (APIERR_BADPARS, "type is required parameter");
+    }
+
+    IOType ioType = IOType::Undefined;
+    if (type == "Import") {
+        ioType = IOType::Open;
+    } else if (type == "Export") {
+        ioType = IOType::Save;
+    }
+
+    GS::Array<API_IFCTranslatorIdentifier> translators;
+    API_ModulID moduleID = { 1198731108, 138575850 };
+    const GSErrCode err = ACAPI_AddOnAddOnCommunication_Call (&moduleID, 'GTNL', 1, reinterpret_cast<GSHandle>(&ioType), reinterpret_cast<GSPtr>(&translators), true);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the IFC translators");
+    }
+
+    GS::ObjectState response;
+    const auto& ifcTranslators = response.AddList<GS::UniString> ("ifcTranslators");
+
+    for (const auto& translator : translators) {
+        ifcTranslators (translator.name);
+    }
+
+    return response;
+}
+
+SaveIFCCommand::SaveIFCCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveIFCCommand::GetName () const
+{
+    return "SaveIFC";
+}
+
+GS::Optional<GS::UniString> SaveIFCCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
             "ifcFilePath": {
                 "type": "string",
                 "description": "The target IFC file to use."
@@ -811,52 +895,62 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
                 "type": "string",
                 "description": "The type of the IFC file. The default is 'ifc'.",
                 "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            },
+            "translator": {
+                "type": "string",
+                "description": "The name of the IFC export translator."
+            },
+            "elementsToExport": {
+                "type": "string",
+                "enum": [
+                    "EntireProject",
+                    "VisibleElementsOnAllStories",
+                    "AllElementsOnCurrentStorey",
+                    "VisibleElementsOnCurrentStorey",
+                    "SelectedElementsOnly",
+                    "FilteredElements"
+                ]
+            },
+            "filteredElements": {
+                "description": "Export the given elements only. Ignored if elementsToExport is not FilteredElements.",
+                "$ref": "#/Elements"
             }
         },
         "additionalProperties": false,
         "required": [
-            "method",
-            "ifcFilePath"
+            "ifcFilePath",
+            "translator"
         ]
     })";
 }
 
-GS::Optional<GS::UniString> IFCFileOperationCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> SaveIFCCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
     })";
 }
 
-GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+struct GSGuidHolder {
+    GS::Guid guid;
+};
+
+static GS::ObjectState ExecuteIFCIOHiddenCommand (short method, const GS::ObjectState& parameters)
 {
     GS::UniString ifcFilePath;
     if (!parameters.Get ("ifcFilePath", ifcFilePath)) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is missing");
     }
 
-    GS::UniString methodStr;
-    if (!parameters.Get ("method", methodStr)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "method parameter is missing");
-    }
-
     API_IOParams ioParams = {};
     ioParams.fileTypeID = APIFType_IfcFile;
-    if (methodStr == "open") {
-        ioParams.method = IO_OPEN;
-    } else if (methodStr == "merge") {
-        ioParams.method = IO_MERGE;
-    } else if (methodStr == "save") {
-        ioParams.method = IO_SAVEAS;
-    } else {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "method parameter is invalid");
-    }
+    ioParams.method = method;
+    ioParams.refCon = 1;
 
-    GS::UniString fileTypeStr;
-    if (!parameters.Get ("fileType", fileTypeStr)) {
-        ioParams.refCon = 1;
-    } else {
-        if (fileTypeStr == "ifc") {
+    if (method == IO_SAVEAS) {
+        GS::UniString fileTypeStr;
+        parameters.Get ("fileType", fileTypeStr);
+        if (fileTypeStr.IsEmpty () || fileTypeStr == "ifc") {
             ioParams.refCon = 1;
         } else if (fileTypeStr == "ifcxml") {
             ioParams.refCon = 2;
@@ -886,4 +980,235 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+void IFCTranslatorInnerHandleToGuidHolder (GSConstHandle innerHandle, GSGuidHolder& guidHolder)
+{
+    GS::MemoryIChannel32 memoryChannel (*innerHandle, BMhGetSize (innerHandle));
+    guidHolder.guid.Read (memoryChannel);
+}
+
+GS::ObjectState SaveIFCCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    /*
+    GS::UniString ifcFilePath;
+    if (!parameters.Get ("ifcFilePath", ifcFilePath)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is missing");
+    }
+
+    GS::UniString fileTypeStr;
+    parameters.Get ("fileType", fileTypeStr);
+
+    std::unique_ptr<GS::Array<API_Guid>> elementsPtr;
+
+    GS::UniString translator;
+    if (!parameters.Get ("translator", translator)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is missing");
+    }
+    API_SavePars_Ifc saveParsIfc = {};
+
+    if (fileTypeStr.IsEmpty () || fileTypeStr == "ifc") {
+        saveParsIfc.subType = API_IFC;
+    } else if (fileTypeStr == "ifcxml") {
+        saveParsIfc.subType = API_IFCXML;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "fileType parameter is invalid");
+    }
+
+    GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators;
+    ACAPI_IFC_GetIFCExportTranslatorsList (ifcExportTranslators);
+
+    for (const auto& translatorIdentifier : ifcExportTranslators) {
+        if (translatorIdentifier.name == translator) {
+            saveParsIfc.translatorIdentifier = translatorIdentifier;
+            break;
+        }
+    }
+    if (saveParsIfc.translatorIdentifier.innerReference == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Not found IFC export translator with the given name");
+    }
+
+    GS::UniString elementsToExport;
+    parameters.Get ("elementsToExport", elementsToExport);
+
+    if (elementsToExport.IsEmpty () || elementsToExport == "EntireProject") {
+        saveParsIfc.elementsToIfcExport = API_EntireProject;
+    } else if (elementsToExport == "VisibleElementsOnAllStories") {
+        saveParsIfc.elementsToIfcExport = API_VisibleElementsOnAllStories;
+    } else if (elementsToExport == "AllElementsOnCurrentStorey") {
+        saveParsIfc.elementsToIfcExport = API_AllElementsOnCurrentStorey;
+    } else if (elementsToExport == "AllElementsOnCurrentStorey") {
+        saveParsIfc.elementsToIfcExport = API_AllElementsOnCurrentStorey;
+    } else if (elementsToExport == "VisibleElementsOnCurrentStorey") {
+        saveParsIfc.elementsToIfcExport = API_VisibleElementsOnCurrentStorey;
+    } else if (elementsToExport == "SelectedElementsOnly") {
+        saveParsIfc.elementsToIfcExport = API_SelectedElementsOnly;
+    } else if (elementsToExport == "FilteredElements") {
+        saveParsIfc.elementsToIfcExport = API_FilteredElements;
+        GS::Array<GS::ObjectState> filteredElements;
+        if (parameters.Get ("filteredElements", filteredElements)) {
+            elementsPtr.reset (new GS::Array<API_Guid> (filteredElements.Transform<API_Guid> (GetGuidFromElementsArrayItem)));
+            saveParsIfc.elementsSet = elementsPtr.get ();
+        } else {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "filteredElements parameter is required when elementsToExport is FilteredElements");
+        }
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport parameter is invalid");
+    }
+
+    IO::Location ifcFileLocation (ifcFilePath);
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = APIFType_IfcFile;
+    fileSavePars.file = &ifcFileLocation;
+    
+    const GSErrCode err = ACAPI_ProjectOperation_Save (&fileSavePars, &saveParsIfc);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to execute the IFC operation");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+    */
+
+    API_IFCTranslatorIdentifier ifcTranslatorIdentifier = {};
+    GS::UniString translator;
+    if (parameters.Get ("translator", translator)) {
+        GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators;
+        ACAPI_IFC_GetIFCExportTranslatorsList (ifcExportTranslators);
+
+        for (const auto& translatorIdentifier : ifcExportTranslators) {
+            if (translatorIdentifier.name == translator) {
+                ifcTranslatorIdentifier = translatorIdentifier;
+                break;
+            }
+        }
+        if (ifcTranslatorIdentifier.innerReference == nullptr) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "Not found IFC export translator with the given name");
+        }
+    }
+
+    API_ElementsToIfcExportID elementsToIfcExport = API_EntireProject;
+    std::unique_ptr<GS::Array<API_Guid>> elementsPtr;
+    GS::UniString elementsToExport;
+    if (parameters.Get ("elementsToExport", elementsToExport)) {
+        if (elementsToExport == "EntireProject") {
+            elementsToIfcExport = API_EntireProject;
+        } else if (elementsToExport == "VisibleElementsOnAllStories") {
+            elementsToIfcExport = API_VisibleElementsOnAllStories;
+        } else if (elementsToExport == "AllElementsOnCurrentStorey") {
+            elementsToIfcExport = API_AllElementsOnCurrentStorey;
+        } else if (elementsToExport == "AllElementsOnCurrentStorey") {
+            elementsToIfcExport = API_AllElementsOnCurrentStorey;
+        } else if (elementsToExport == "VisibleElementsOnCurrentStorey") {
+            elementsToIfcExport = API_VisibleElementsOnCurrentStorey;
+        } else if (elementsToExport == "SelectedElementsOnly") {
+            elementsToIfcExport = API_SelectedElementsOnly;
+        } else if (elementsToExport == "FilteredElements") {
+            elementsToIfcExport = API_FilteredElements;
+            GS::Array<GS::ObjectState> filteredElements;
+            if (parameters.Get ("filteredElements", filteredElements)) {
+                elementsPtr.reset (new GS::Array<API_Guid> (filteredElements.Transform<API_Guid> (GetGuidFromElementsArrayItem)));
+            } else {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "filteredElements parameter is required when elementsToExport is FilteredElements");
+            }
+        } else {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport parameter is invalid");
+        }
+    }
+
+    GSGuidHolder translatorGuidHolder;
+    IFCTranslatorInnerHandleToGuidHolder (ifcTranslatorIdentifier.innerReference, translatorGuidHolder);
+
+    GS::Pair<API_ElementsToIfcExportID, const GS::Array<GS::Guid>*> elementsConfig;
+    elementsConfig.first = elementsToIfcExport;
+    elementsConfig.second = (elementsPtr ? reinterpret_cast<const GS::Array<GS::Guid>*>(elementsPtr.get ()) : nullptr);
+    GS::Pair<GSGuidHolder, GS::Pair<API_ElementsToIfcExportID, const GS::Array<GS::Guid>*>> configParams = {translatorGuidHolder, elementsConfig};
+    struct DummyData {
+        char data[512];
+    };
+    GS::Ref<DummyData> resultRef = nullptr;
+    API_ModulID moduleID = { 1198731108, 138575850 };
+    const GSErrCode err = ACAPI_AddOnAddOnCommunication_Call (&moduleID, 'CDID', 1, reinterpret_cast<GSHandle>(&configParams), reinterpret_cast<GSPtr>(&resultRef), true);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to execute the IFC operation");
+    }
+
+    return ExecuteIFCIOHiddenCommand (IO_SAVEAS, parameters);
+}
+
+MergeIFCCommand::MergeIFCCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MergeIFCCommand::GetName () const
+{
+    return "MergeIFC";
+}
+
+GS::Optional<GS::UniString> MergeIFCCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ifcFilePath": {
+                "type": "string",
+                "description": "The target IFC file to use."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ifcFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MergeIFCCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState MergeIFCCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteIFCIOHiddenCommand (IO_MERGE, parameters);
+}
+
+OpenIFCCommand::OpenIFCCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String OpenIFCCommand::GetName () const
+{
+    return "OpenIFC";
+}
+
+GS::Optional<GS::UniString> OpenIFCCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "ifcFilePath": {
+                "type": "string",
+                "description": "The target IFC file to use."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ifcFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> OpenIFCCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState OpenIFCCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteIFCIOHiddenCommand (IO_OPEN, parameters);
 }

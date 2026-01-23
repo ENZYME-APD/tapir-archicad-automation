@@ -179,9 +179,21 @@ GSErrCode Initialize (void)
             projectCommands, "1.1.6",
             "Gets the project location details."
         );
-        err |= RegisterCommand<IFCFileOperationCommand> (
-            projectCommands, "1.2.6",
-            "Executes an IFC file operation."
+        err |= RegisterCommand<GetIFCTranslatorsCommand> (
+            projectCommands, "1.2.8",
+            "Lists the IFC translators."
+        );
+        err |= RegisterCommand<SaveIFCCommand> (
+            projectCommands, "1.2.8",
+            "Executes an IFC export operation."
+        );
+        err |= RegisterCommand<MergeIFCCommand> (
+            projectCommands, "1.2.8",
+            "Executes an IFC merge operation."
+        );
+        err |= RegisterCommand<OpenIFCCommand> (
+            projectCommands, "1.2.8",
+            "Executes an IFC open operation."
         );
         AddCommandGroup (projectCommands);
     }
