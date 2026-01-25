@@ -20,45 +20,7 @@ GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetInputParameters
         "type": "object",
         "properties": {
             "files": {
-                "type": "array",
-                "description": "A list of files",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "inputPath": {
-                            "type": "string",
-                            "description": "The path to the input file."
-                        },
-                        "outputPath": {
-                            "type": "string",
-                            "description": "The relative path to the new file inside embedded library."
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "The type of the library part. By default 'Pict'.",
-                            "enum": [
-                                "Window",
-                                "Door",
-                                "Object",
-                                "Lamp",
-                                "Room",
-                                "Property",
-                                "PlanSign",
-                                "Label",
-                                "Macro",
-                                "Pict",
-                                "ListScheme",
-                                "Skylight",
-                                "OpeningSymbol"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "inputPath",
-                        "outputPath"
-                    ]
-                }
+                "$ref": "#/LibraryFileAdditions"
             }
         },
         "additionalProperties": false,

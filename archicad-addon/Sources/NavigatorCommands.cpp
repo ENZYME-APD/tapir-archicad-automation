@@ -45,7 +45,7 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
             },
             "outputPath": {
                 "type": "string",
-                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publiser set will be used.",
+                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publisher set will be used.",
                 "minLength": 1
             }
         },

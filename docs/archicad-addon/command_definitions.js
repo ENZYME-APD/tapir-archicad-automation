@@ -113,25 +113,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "fields": {
-                "type": "array",
-                "description": "A list of project info fields.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoId": {
-                            "type": "string",
-                            "description": "The id of the project info field."
-                        },
-                        "projectInfoName": {
-                            "type": "string",
-                            "description": "The name of the project info field visible on UI."
-                        },
-                        "projectInfoValue": {
-                            "type": "string",
-                            "description": "The value of the project info field."
-                        }
-                    }
-                }
+                "$ref": "#/ProjectInfoFields"
             }
         },
         "additionalProperties": false,
@@ -825,7 +807,9 @@ var gCommands = [{
                         "columnSegments": {
                             "$ref": "#/Elements"
                         }
-                    }
+                    },
+                    "additionalProperties": false,
+                    "required": []
                 }
             }
         },
@@ -1453,7 +1437,7 @@ var gCommands = [{
                 "properties" : {
                     "floorInd": {
                         "type": "number",
-                        "description" : "The identifier of the floor. Optinal parameter, by default the current floor is used."	
+                        "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
                     },
                     "coordinates": { 
                         "type": "array",
@@ -2827,39 +2811,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "properties" : {
-                "type": "array",
-                "description" : "Physical properties list.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "properties": {
-                            "type": "object",
-                            "description": "Physical properties.",
-                            "properties": {
-                                "thermalConductivity": {
-                                    "type": "number",
-                                    "description": "Thermal Conductivity."
-                                },
-                                "density": {
-                                    "type": "number",
-                                    "description": "Density."
-                                },
-                                "heatCapacity": {
-                                    "type": "number",
-                                    "description": "Heat Capacity."
-                                },
-                                "embodiedEnergy": {
-                                    "type": "number",
-                                    "description": "Embodied Energy."
-                                },
-                                "embodiedCarbon": {
-                                    "type": "number",
-                                    "description": "Embodied Carbon."
-                                }
-                            }
-                        }
-                    }
-                }
+                "$ref": "#/BuildingMaterialPhysicalPropertiesList"
             }
         },
         "additionalProperties": false,
@@ -2976,45 +2928,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "files": {
-                "type": "array",
-                "description": "A list of files",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "inputPath": {
-                            "type": "string",
-                            "description": "The path to the input file."
-                        },
-                        "outputPath": {
-                            "type": "string",
-                            "description": "The relative path to the new file inside embedded library."
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "The type of the library part. By default 'Pict'.",
-                            "enum": [
-                                "Window",
-                                "Door",
-                                "Object",
-                                "Lamp",
-                                "Room",
-                                "Property",
-                                "PlanSign",
-                                "Label",
-                                "Macro",
-                                "Pict",
-                                "ListScheme",
-                                "Skylight",
-                                "OpeningSymbol"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "inputPath",
-                        "outputPath"
-                    ]
-                }
+                "$ref": "#/LibraryFileAdditions"
             }
         },
         "additionalProperties": false,
@@ -3149,7 +3063,7 @@ var gCommands = [{
             },
             "outputPath": {
                 "type": "string",
-                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publiser set will be used.",
+                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publisher set will be used.",
                 "minLength": 1
             }
         },
