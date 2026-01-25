@@ -3580,17 +3580,16 @@ var gSchemaDefinitions = {
             "embodiedCarbon": {
                 "type": "number",
                 "description": "Embodied Carbon."
-            },
-            "additionalProperties": false,
-            "required": [
-                "thermalConductivity",
-                "density",
-                "heatCapacity",
-                "embodiedEnergy",
-                "embodiedCarbon"
-            ]
-
-        }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "thermalConductivity",
+            "density",
+            "heatCapacity",
+            "embodiedEnergy",
+            "embodiedCarbon"
+        ]
     },
     "ProjectInfoFields": {
         "type": "array",
