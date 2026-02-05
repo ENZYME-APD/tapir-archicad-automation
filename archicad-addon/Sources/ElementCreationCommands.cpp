@@ -281,9 +281,11 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
 
 GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    parameters.Get ("level", element.slab.level);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (element.slab.level, stories);
+    double inputLevel = 0.0;
+    parameters.Get ("level", inputLevel);
+    const auto floorIndexAndOffset = GetFloorIndexAndOffset (inputLevel, stories);
     element.header.floorInd = floorIndexAndOffset.first;
+    element.slab.level = floorIndexAndOffset.second;
 
     GS::Array<GS::ObjectState> polygonCoordinates;
     GS::Array<GS::ObjectState> polygonArcs;
