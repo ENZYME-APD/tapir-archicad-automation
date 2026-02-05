@@ -33,16 +33,7 @@ GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetInputParametersSchema 
 GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "favorites": {
-              "$ref": "#/Favorites"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "favorites"
-        ]
+        "$ref": "#/GetFavoritesByTypeResponseOrError"
     })";
 }
 
@@ -52,6 +43,10 @@ GS::ObjectState GetFavoritesByTypeCommand::Execute (const GS::ObjectState& param
     GS::UniString elementTypeStr;
     if (parameters.Get ("elementType", elementTypeStr)) {
         elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (elemType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
     }
 
     GS::Array< GS::UniString > names;
