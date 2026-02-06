@@ -123,24 +123,20 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema (
 GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            },
-            "executionResultForDatabases": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
+        "$ref": "#/GetElementsByTypeResponseOrError"
     })";
 }
 
 GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{   
+{
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        if (GetElementTypeFromNonLocalizedName (elementTypeStr) == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+    }
+
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
@@ -1261,28 +1257,7 @@ GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchem
 GS::Optional<GS::UniString> GetConnectedElementsCommand::GetResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "connectedElements": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "elements": {
-                            "$ref": "#/Elements"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elements"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "connectedElements"
-        ]
+        "$ref": "#/GetConnectedElementsResponseOrError"
     })";
 }
 
@@ -1295,6 +1270,10 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
     GS::UniString elementTypeStr;
     if (parameters.Get ("connectedElementType", elementTypeStr)) {
         elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (elemType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid connectedElementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
     }
 
     GS::ObjectState response;
