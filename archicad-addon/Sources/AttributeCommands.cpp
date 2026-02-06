@@ -138,39 +138,7 @@ GS::Optional<GS::UniString> GetBuildingMaterialPhysicalPropertiesCommand::GetRes
         "type": "object",
         "properties": {
             "properties" : {
-                "type": "array",
-                "description" : "Physical properties list.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "properties": {
-                            "type": "object",
-                            "description": "Physical properties.",
-                            "properties": {
-                                "thermalConductivity": {
-                                    "type": "number",
-                                    "description": "Thermal Conductivity."
-                                },
-                                "density": {
-                                    "type": "number",
-                                    "description": "Density."
-                                },
-                                "heatCapacity": {
-                                    "type": "number",
-                                    "description": "Heat Capacity."
-                                },
-                                "embodiedEnergy": {
-                                    "type": "number",
-                                    "description": "Embodied Energy."
-                                },
-                                "embodiedCarbon": {
-                                    "type": "number",
-                                    "description": "Embodied Carbon."
-                                }
-                            }
-                        }
-                    }
-                }
+                "$ref": "#/BuildingMaterialPhysicalPropertiesList"
             }
         },
         "additionalProperties": false,

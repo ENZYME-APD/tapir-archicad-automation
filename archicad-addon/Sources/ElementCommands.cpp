@@ -1129,7 +1129,9 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResp
                         "columnSegments": {
                             "$ref": "#/Elements"
                         }
-                    }
+                    },
+                    "additionalProperties": false,
+                    "required": []
                 }
             }
         },
