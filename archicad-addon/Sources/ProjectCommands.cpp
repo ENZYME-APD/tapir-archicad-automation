@@ -90,25 +90,7 @@ GS::Optional<GS::UniString> GetProjectInfoFieldsCommand::GetResponseSchema () co
         "type": "object",
         "properties": {
             "fields": {
-                "type": "array",
-                "description": "A list of project info fields.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoId": {
-                            "type": "string",
-                            "description": "The id of the project info field."
-                        },
-                        "projectInfoName": {
-                            "type": "string",
-                            "description": "The name of the project info field visible on UI."
-                        },
-                        "projectInfoValue": {
-                            "type": "string",
-                            "description": "The value of the project info field."
-                        }
-                    }
-                }
+                "$ref": "#/ProjectInfoFields"
             }
         },
         "additionalProperties": false,
