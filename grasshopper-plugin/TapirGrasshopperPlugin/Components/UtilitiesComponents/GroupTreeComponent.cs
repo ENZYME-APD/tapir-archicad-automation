@@ -116,7 +116,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 // Group data by values
                 for (var i = 0; i < dataList.Count; i++)
                 {
-                    var valueKey = valuesList[i].ToString();
+                    var valueKey = (valuesList[i] == null) ? "null" : valuesList[i].ToString();
                     if (!groups.ContainsKey(valueKey))
                     {
                         groups[valueKey] = new List<IGH_Goo>();
@@ -147,26 +147,20 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
                 // Format message
                 message =
                     $"Created {groups.Count} branches from {dataList.Count} items\n";
-                message += "Items per branch: \n";
+                message += "Items per branch:";
 
-                // Format items per branch with wrapping
-                var branchInfo = new List<string>();
-                for (var i = 0; i < uniqueValues.Count; i++)
-                {
-                    branchInfo.Add($"{uniqueValues[i]}({branchCounts[i]})");
-                }
-
-                var itemsMessage = string.Join(
-                    ", ",
-                    branchInfo);
+                var maxItemsToDump = 10;
                 var maxLineLength = 40;
-                var wrappedLines = WrapText(
-                    itemsMessage,
-                    maxLineLength);
-
-                message += string.Join(
-                    "\n",
-                    wrappedLines);
+                for (var i = 0; i < Math.Min(uniqueValues.Count, maxItemsToDump); i++)
+                {
+                    var valueKey = (uniqueValues[i] == null) ? "null" : uniqueValues[i].ToString();
+                    var itemMessage = $"{valueKey}({branchCounts[i]})";
+                    if (itemMessage.Length > maxLineLength)
+                    {
+                        itemMessage = itemMessage.Substring(0, maxLineLength);
+                    }
+                    message += "\n" + itemMessage;
+                }
             }
             catch (Exception e)
             {
@@ -189,46 +183,6 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
 
             // Update component message
             Message = message;
-        }
-
-        private List<string> WrapText(
-            string text,
-            int maxLength)
-        {
-            var lines = new List<string>();
-            var currentLine = "";
-
-            foreach (var item in text.Split(
-                         new[]
-                         {
-                             ", "
-                         },
-                         StringSplitOptions.None))
-            {
-                if (currentLine.Length + item.Length + 2 <=
-                    maxLength) // +2 for ", "
-                {
-                    currentLine += item + ", ";
-                }
-                else
-                {
-                    lines.Add(
-                        currentLine.TrimEnd(
-                            ' ',
-                            ','));
-                    currentLine = item + ", ";
-                }
-            }
-
-            if (!string.IsNullOrEmpty(currentLine))
-            {
-                lines.Add(
-                    currentLine.TrimEnd(
-                        ' ',
-                        ','));
-            }
-
-            return lines;
         }
 
         protected override System.Drawing.Bitmap Icon =>
