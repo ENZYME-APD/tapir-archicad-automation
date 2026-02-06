@@ -72,39 +72,7 @@ GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetInputParametersSchema
 GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "attributes" : {
-                "type": "array",
-                "description" : "Details of attributes.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "index": {
-                            "type": "number",
-                            "description": "Index of the attribute."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "Name of the attribute."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "index",
-                        "name"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "attributes"
-        ]
+        "$ref": "#/GetAttributesByTypeResponseOrError"
     })";
 }
 
@@ -114,6 +82,10 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
     parameters.Get ("attributeType", typeStr);
 
     API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+    if (typeID == API_ZombieAttrID) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ()));
+    }
 
     GS::ObjectState response;
     const auto& attributes = response.AddList<GS::ObjectState> ("attributes");

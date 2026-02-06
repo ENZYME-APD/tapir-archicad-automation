@@ -3649,7 +3649,7 @@
         },
         "additionalProperties": false,
         "required": [
-            "inputPath",
+             "inputPath",
             "outputPath"
         ]
     },
@@ -3670,6 +3670,144 @@
             "ListScheme",
             "Skylight",
             "OpeningSymbol"
+        ]
+    },
+    "GetElementsByTypeResponse": {
+        "type": "object",
+        "description": "The response of the GetElementsByType command.",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+    "GetElementsByTypeResponseOrError": {
+        "type": "object",
+        "description": "The response of the GetElementsByType command or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GetElementsByTypeResponse"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GetFavoritesByTypeResponse": {
+        "type": "object",
+        "description": "The response of the GetFavoritesByType command.",
+        "properties": {
+            "favorites": {
+                "$ref": "#/Favorites"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    },
+    "GetFavoritesByTypeResponseOrError": {
+        "type": "object",
+        "description": "The response of the GetFavoritesByType command or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GetFavoritesByTypeResponse"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GetConnectedElementsResponse": {
+        "type": "object",
+        "description": "The response of the GetConnectedElements command.",
+        "properties": {
+            "connectedElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectedElements"
+        ]
+    },
+    "GetConnectedElementsResponseOrError": {
+        "type": "object",
+        "description": "The response of the GetConnectedElements command or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GetConnectedElementsResponse"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "GetAttributesByTypeResponse": {
+        "type": "object",
+        "description": "The response of the GetAttributesByType command.",
+        "properties": {
+            "attributes": {
+                "type": "array",
+                "description": "Details of attributes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "index": {
+                            "type": "number",
+                            "description": "Index of the attribute."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the attribute."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "index",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    },
+    "GetAttributesByTypeResponseOrError": {
+        "type": "object",
+        "description": "The response of the GetAttributesByType command or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GetAttributesByTypeResponse"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
         ]
     }
 }
