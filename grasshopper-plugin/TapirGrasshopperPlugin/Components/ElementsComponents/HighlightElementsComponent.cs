@@ -1,10 +1,11 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using Rhino.Geometry;
 using System;
-using System.Windows.Forms;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
 
@@ -102,11 +103,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "NonHighligtedWireframe",
                 "Switch non-highlighted elements in the 3D window to wireframe",
                 true);
-
-            InNumber(
-                "Transparency",
-                "Sets the transparency of the highlight (0.0: opaque, 1.0: transparent).",
-                0.5);
         }
 
         protected override void Solve(
@@ -139,12 +135,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!colorTree.EqualsTo(elementTree))
+            var colorTreeContainsOnlyOneColor = colorTree.Branches.Count == 1 && colorTree.Branches[0].Count == 1;
+            if (!colorTreeContainsOnlyOneColor && !colorTree.EqualsTo(elementTree))
             {
                 this.AddError("Unequal tree structures!");
                 return;
             }
-
 
             if (!da.TryGet(
                     3,
@@ -160,33 +156,19 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGet(
-                    5,
-                    out double transparency))
-            {
-                return;
-            }
+            var highlightedColors = colorTreeContainsOnlyOneColor
+                ? Enumerable.Repeat(
+                    colorTree.Branches[0][0],
+                    input.Elements.Count)
+                : colorTree.FlattenData();
 
-            if (transparency < 0.0)
-            {
-                transparency = 0.0;
-            }
-            else if (transparency > 1.0)
-            {
-                transparency = 1.0;
-            }
-
-            // There is an error in the Archicad API implementation: the transparency
-            // always comes from the non-highlighted element color.
             var highlightElements = new HighlightElementsObj
             {
                 Elements = input.Elements,
                 HighlightedColors = Helps.Convert.ToRgb(
-                    colorTree.FlattenData(),
-                    255),
+                    highlightedColors),
                 NonHighlightedColor = Helps.Convert.ToRgb(
-                    nonHighlightedColor,
-                    System.Convert.ToInt32(transparency * 255.0)),
+                    nonHighlightedColor),
                 Wireframe3D = wireframe3D
             };
 
