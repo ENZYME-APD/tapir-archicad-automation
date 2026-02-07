@@ -180,6 +180,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.1.6",
             "Gets the project location details."
         );
+        err |= RegisterCommand<SetGeoLocationCommand> (
+            projectCommands, "1.2.9",
+            "Sets the project location details."
+        );
         err |= RegisterCommand<IFCFileOperationCommand> (
             projectCommands, "1.2.6",
             "Executes an IFC file operation."
