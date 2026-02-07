@@ -13,25 +13,21 @@ namespace TapirGrasshopperPlugin.Helps
         public const double Epsilon = 1E-5;
 
         public static List<int> ToRgb(
-            GH_Colour color,
-            int alpha)
+            GH_Colour color)
         {
             return color == null
                 ? null
                 : new List<int>
                 {
-                    color.Value.R, color.Value.G, color.Value.B, alpha
+                    color.Value.R, color.Value.G, color.Value.B, color.Value.A
                 };
         }
 
         public static List<List<int>> ToRgb(
-            List<GH_Colour> ghColors,
-            int alpha)
+            IEnumerable<GH_Colour> ghColors)
         {
             return ghColors
-                ?.Select(x => ToRgb(
-                    x,
-                    alpha))
+                ?.Select(x => ToRgb(x))
                 .ToList();
         }
 
