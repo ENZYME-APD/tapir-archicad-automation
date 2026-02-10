@@ -45,6 +45,7 @@
 #define ACAPI_Grouping_GetConnectedElements ACAPI_Element_GetConnectedElements
 
 #define ACAPI_GeoLocation_GetGeoLocation(par1) ACAPI_Environment (APIEnv_GetGeoLocationID, par1)
+#define ACAPI_GeoLocation_SetGeoLocation(par1) ACAPI_Environment (APIEnv_SetGeoLocationID, par1)
 #define ACAPI_ProjectSetting_GetProjectNotes(par1) ACAPI_Environment (APIEnv_GetProjectNotesID, par1)
 #define ACAPI_ProjectSettings_GetSpecFolder(par1, par2) ACAPI_Environment (APIEnv_GetSpecFolderID, par1, par2)
 
