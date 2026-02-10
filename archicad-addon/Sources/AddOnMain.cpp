@@ -28,6 +28,7 @@
 #include "NavigatorCommands.hpp"
 #include "RevisionCommands.hpp"
 #include "NotificationCommands.hpp"
+#include "DesignOptionCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -554,6 +555,23 @@ GSErrCode Initialize (void)
             "Retrieves the changes belong to the given elements."
         );
         AddCommandGroup (issueCommands);
+    }
+
+    { // Design Options Commands
+        CommandGroup designOptionsCommands ("Design Options Commands");
+        err |= RegisterCommand<GetDesignOptionsCommand> (
+            designOptionsCommands, "1.2.9",
+            "Retrieves information about existing design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetDesignOptionSetsCommand> (
+            designOptionsCommands, "1.2.9",
+            "Retrieves information about existing design option sets. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.2.9",
+            "Retrieves information about existing design option combinations."
+        );
+        AddCommandGroup (designOptionsCommands);
     }
 
     { // Developer Commands

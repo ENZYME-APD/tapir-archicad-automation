@@ -5,7 +5,7 @@ Response:
 {
     "isUntitled": false,
     "isTeamwork": false,
-    "projectLocation": "c:\\Users\\loran\\GitRepos\\tapir-archicad-automation\\archicad-addon\\Test\\TestProject.pla",
+    "projectLocation": "<PATH>TestProject.pla",
     "projectPath": "<PATH>TestProject.pla",
     "projectName": "TestProject"
 }

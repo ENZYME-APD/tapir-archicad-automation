@@ -3349,42 +3349,42 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "Exhaust Air"
+            "name": "Exhaust Air [Ductwork]"
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 2,
-            "name": "Fresh Air"
+            "name": "Fresh Air [Ductwork]"
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "Heating"
+            "name": "Heating [Pipework]"
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "Cooling"
+            "name": "Cooling [Pipework]"
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "Cabling"
+            "name": "Cabling [Cable Tray]"
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 6,
-            "name": "Sprinkler"
+            "name": "Sprinkler [Pipework]"
         }
     ]
 }

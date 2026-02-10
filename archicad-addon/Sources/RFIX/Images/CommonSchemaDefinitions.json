@@ -95,6 +95,31 @@
             "guid"
         ]
     },
+    "GuidId": {
+        "type": "object",
+        "description": "Identifier.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "DesignOptionIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/GuidId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId"
+        ]
+    },
     "LayersOfLayerCombination": {
         "type": "array",
         "description": "List of Layers included in the Layer Combination.",
