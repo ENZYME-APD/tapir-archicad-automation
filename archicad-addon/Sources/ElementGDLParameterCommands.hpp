@@ -22,5 +22,11 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
 private:
-    GSErrCode SetOneGDLParameter (const GS::ObjectState& parameter, const API_Guid& elemGuid, API_ChangeParamType& changeParam, const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary, GS::UniString& errMessage) const;
+    static GSErrCode SetOneGDLParameter (
+        const GS::ObjectState& parameter,
+        const API_Guid& elemGuid,
+        API_ChangeParamType& changeParam,
+        const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
+        const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
+        GS::UniString& errMessage);
 };

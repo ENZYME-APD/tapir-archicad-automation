@@ -1,1181 +1,3 @@
-Command: GetGDLParametersOfElements
-Parameters:
-{
-    "elements": [
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        }
-    ]
-}
-Response:
-{
-    "gdlParametersOfElements": [
-        {
-            "parameters": [
-                {
-                    "name": "A",
-                    "index": 0,
-                    "type": "Length",
-                    "value": 0.7
-                },
-                {
-                    "name": "B",
-                    "index": 1,
-                    "type": "Length",
-                    "value": 0.6
-                },
-                {
-                    "name": "ZZYZX",
-                    "index": 2,
-                    "type": "Length",
-                    "value": 0.8
-                },
-                {
-                    "name": "AC_show2DHotspotsIn3D",
-                    "index": 3,
-                    "type": "Boolean",
-                    "value": false
-                },
-                {
-                    "name": "ac_bottomlevel",
-                    "index": 4,
-                    "type": "Length",
-                    "value": 1
-                },
-                {
-                    "name": "ac_toplevel",
-                    "index": 5,
-                    "type": "Length",
-                    "value": 0
-                },
-                {
-                    "name": "gs_seat_height",
-                    "index": 6,
-                    "type": "Length",
-                    "value": 0.45
-                },
-                {
-                    "name": "gs_2D_representation",
-                    "index": 7,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "iDetlevel2D",
-                    "index": 8,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "iChairSymbolType",
-                    "index": 9,
-                    "type": "Integer",
-                    "value": 4
-                },
-                {
-                    "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 4
-                },
-                {
-                    "name": "gs_fill_type",
-                    "index": 11,
-                    "type": "FillPattern",
-                    "value": 65
-                },
-                {
-                    "name": "gs_fill_pen",
-                    "index": 12,
-                    "type": "PenColor",
-                    "value": 19
-                },
-                {
-                    "name": "gs_back_pen",
-                    "index": 13,
-                    "type": "PenColor",
-                    "value": 19
-                },
-                {
-                    "name": "gs_min_space",
-                    "index": 14,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "MSFront",
-                    "index": 15,
-                    "type": "Length",
-                    "value": 0.03
-                },
-                {
-                    "name": "MSSide",
-                    "index": 16,
-                    "type": "Length",
-                    "value": 0.15
-                },
-                {
-                    "name": "MSRear",
-                    "index": 17,
-                    "type": "Length",
-                    "value": 0.3
-                },
-                {
-                    "name": "gs_3D_representation",
-                    "index": 18,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "iDetlevel3D",
-                    "index": 19,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "gs_resol",
-                    "index": 20,
-                    "type": "Integer",
-                    "value": 24
-                },
-                {
-                    "name": "gs_shadow",
-                    "index": 21,
-                    "type": "Boolean",
-                    "value": true
-                },
-                {
-                    "name": "gs_material",
-                    "index": 22,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "gs_seat_mat",
-                    "index": 23,
-                    "type": "Material",
-                    "value": 3
-                },
-                {
-                    "name": "gs_frame_mat",
-                    "index": 24,
-                    "type": "Material",
-                    "value": 15
-                },
-                {
-                    "name": "gs_back_mat",
-                    "index": 25,
-                    "type": "Material",
-                    "value": 66
-                },
-                {
-                    "name": "gs_list",
-                    "index": 26,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_cost",
-                    "index": 27,
-                    "type": "RealNumber",
-                    "value": 0
-                },
-                {
-                    "name": "gs_list_manufacturer",
-                    "index": 28,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_note",
-                    "index": 29,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_location",
-                    "index": 30,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_accessories",
-                    "index": 31,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_Type",
-                    "index": 32,
-                    "type": "String",
-                    "value": "Furniture"
-                },
-                {
-                    "name": "iFMType",
-                    "index": 33,
-                    "type": "Integer",
-                    "value": 16
-                },
-                {
-                    "name": "FM_InventoryNumber",
-                    "index": 34,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_SerialNumber",
-                    "index": 35,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_ProductionYear",
-                    "index": 36,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_ObjectWeight",
-                    "index": 37,
-                    "type": "RealNumber",
-                    "value": 0
-                },
-                {
-                    "name": "FM_ObjectWeightUnit",
-                    "index": 38,
-                    "type": "String",
-                    "value": "kg"
-                },
-                {
-                    "name": "gs_list_custom1",
-                    "index": 39,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom2",
-                    "index": 40,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom3",
-                    "index": 41,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom4",
-                    "index": 42,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom5",
-                    "index": 43,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_ui_current_page",
-                    "index": 44,
-                    "type": "Integer",
-                    "value": 2
-                }
-            ]
-        },
-        {
-            "parameters": [
-                {
-                    "name": "A",
-                    "index": 0,
-                    "type": "Length",
-                    "value": 0.45
-                },
-                {
-                    "name": "B",
-                    "index": 1,
-                    "type": "Length",
-                    "value": 0.4
-                },
-                {
-                    "name": "ZZYZX",
-                    "index": 2,
-                    "type": "Length",
-                    "value": 0.6
-                },
-                {
-                    "name": "AC_show2DHotspotsIn3D",
-                    "index": 3,
-                    "type": "Boolean",
-                    "value": false
-                },
-                {
-                    "name": "ac_bottomlevel",
-                    "index": 4,
-                    "type": "Length",
-                    "value": 1
-                },
-                {
-                    "name": "ac_toplevel",
-                    "index": 5,
-                    "type": "Length",
-                    "value": 0
-                },
-                {
-                    "name": "numDrawer",
-                    "index": 6,
-                    "type": "Integer",
-                    "value": 2
-                },
-                {
-                    "name": "tDoorPanel",
-                    "index": 7,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "iPanelGroup",
-                    "index": 8,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "iPanelStyle",
-                    "index": 9,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "iFrameJoinery",
-                    "index": 10,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "iFrameBevel",
-                    "index": 11,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "panelFrameWidth",
-                    "index": 12,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0.02
-                    ]
-                },
-                {
-                    "name": "mullionWidth",
-                    "index": 13,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0.01
-                    ]
-                },
-                {
-                    "name": "nVerticalMullion",
-                    "index": 14,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "nHorizontalMullion",
-                    "index": 15,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "doorCustomPanelName",
-                    "index": 16,
-                    "type": "String",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        ""
-                    ]
-                },
-                {
-                    "name": "bKnob",
-                    "index": 17,
-                    "type": "Boolean",
-                    "value": true
-                },
-                {
-                    "name": "iKnobGroup",
-                    "index": 18,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "iKnobStyle",
-                    "index": 19,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "iKnobOnSide",
-                    "index": 20,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "bDoubleKnob",
-                    "index": 21,
-                    "type": "Boolean",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        false
-                    ]
-                },
-                {
-                    "name": "iKnobOrientation",
-                    "index": 22,
-                    "type": "Integer",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        1
-                    ]
-                },
-                {
-                    "name": "knobLength",
-                    "index": 23,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0.2
-                    ]
-                },
-                {
-                    "name": "knobPosDrawerX",
-                    "index": 24,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0
-                    ]
-                },
-                {
-                    "name": "knobPosDrawerY",
-                    "index": 25,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0
-                    ]
-                },
-                {
-                    "name": "doorCustomKnobName",
-                    "index": 26,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "customHandleLength",
-                    "index": 27,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0.1
-                    ]
-                },
-                {
-                    "name": "customHandleHeight",
-                    "index": 28,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0.1
-                    ]
-                },
-                {
-                    "name": "customHandleDepth",
-                    "index": 29,
-                    "type": "Length",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        0.1
-                    ]
-                },
-                {
-                    "name": "gs_2D_representation",
-                    "index": 30,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "iDetlevel2D",
-                    "index": 31,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "iSymbolStyle",
-                    "index": 32,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "gs_cont_pen",
-                    "index": 33,
-                    "type": "PenColor",
-                    "value": 4
-                },
-                {
-                    "name": "gs_fill_type",
-                    "index": 34,
-                    "type": "FillPattern",
-                    "value": 65
-                },
-                {
-                    "name": "gs_fill_pen",
-                    "index": 35,
-                    "type": "PenColor",
-                    "value": 19
-                },
-                {
-                    "name": "gs_back_pen",
-                    "index": 36,
-                    "type": "PenColor",
-                    "value": 19
-                },
-                {
-                    "name": "gs_min_space",
-                    "index": 37,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "MSFront",
-                    "index": 38,
-                    "type": "Length",
-                    "value": 0.6
-                },
-                {
-                    "name": "gs_3D_representation",
-                    "index": 39,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "iDetlevel3D",
-                    "index": 40,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "gs_resol",
-                    "index": 41,
-                    "type": "Integer",
-                    "value": 24
-                },
-                {
-                    "name": "gs_shadow",
-                    "index": 42,
-                    "type": "Boolean",
-                    "value": true
-                },
-                {
-                    "name": "tSurfaces",
-                    "index": 43,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "matCabinet",
-                    "index": 44,
-                    "type": "Material",
-                    "value": 15
-                },
-                {
-                    "name": "knobMat",
-                    "index": 45,
-                    "type": "Material",
-                    "value": 13
-                },
-                {
-                    "name": "tPanelSurf",
-                    "index": 46,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "panelFrameMat",
-                    "index": 47,
-                    "type": "Material",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        15
-                    ]
-                },
-                {
-                    "name": "insetMat1",
-                    "index": 48,
-                    "type": "Material",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        15
-                    ]
-                },
-                {
-                    "name": "insetMat2",
-                    "index": 49,
-                    "type": "Material",
-                    "dimension1": 1,
-                    "dimension2": 1,
-                    "value": [
-                        15
-                    ]
-                },
-                {
-                    "name": "gs_list",
-                    "index": 50,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_cost",
-                    "index": 51,
-                    "type": "RealNumber",
-                    "value": 0
-                },
-                {
-                    "name": "gs_list_manufacturer",
-                    "index": 52,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_note",
-                    "index": 53,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_location",
-                    "index": 54,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_accessories",
-                    "index": 55,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_Type",
-                    "index": 56,
-                    "type": "String",
-                    "value": "Furniture"
-                },
-                {
-                    "name": "iFMType",
-                    "index": 57,
-                    "type": "Integer",
-                    "value": 16
-                },
-                {
-                    "name": "FM_InventoryNumber",
-                    "index": 58,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_SerialNumber",
-                    "index": 59,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_ProductionYear",
-                    "index": 60,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_ObjectWeight",
-                    "index": 61,
-                    "type": "RealNumber",
-                    "value": 0
-                },
-                {
-                    "name": "FM_ObjectWeightUnit",
-                    "index": 62,
-                    "type": "String",
-                    "value": "kg"
-                },
-                {
-                    "name": "gs_list_custom1",
-                    "index": 63,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom2",
-                    "index": 64,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom3",
-                    "index": 65,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom4",
-                    "index": 66,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom5",
-                    "index": 67,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_Title",
-                    "index": 68,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_dimensions",
-                    "index": 69,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_manufacturer",
-                    "index": 70,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_baseheight_value",
-                    "index": 71,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_baseheight",
-                    "index": 72,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_assemblydate",
-                    "index": 73,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_customtext1",
-                    "index": 74,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_customtext2",
-                    "index": 75,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_aks",
-                    "index": 76,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_product",
-                    "index": 77,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_leistungbuch",
-                    "index": 78,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_description",
-                    "index": 79,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_number",
-                    "index": 80,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_id",
-                    "index": 81,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_admission",
-                    "index": 82,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_modification",
-                    "index": 83,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_onorm_tozonenumber",
-                    "index": 84,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_ui_current_page",
-                    "index": 85,
-                    "type": "Integer",
-                    "value": 10
-                }
-            ]
-        },
-        {
-            "parameters": [
-                {
-                    "name": "A",
-                    "index": 0,
-                    "type": "Length",
-                    "value": 0.7
-                },
-                {
-                    "name": "B",
-                    "index": 1,
-                    "type": "Length",
-                    "value": 0.6
-                },
-                {
-                    "name": "ZZYZX",
-                    "index": 2,
-                    "type": "Length",
-                    "value": 0.8
-                },
-                {
-                    "name": "AC_show2DHotspotsIn3D",
-                    "index": 3,
-                    "type": "Boolean",
-                    "value": false
-                },
-                {
-                    "name": "ac_bottomlevel",
-                    "index": 4,
-                    "type": "Length",
-                    "value": 1
-                },
-                {
-                    "name": "ac_toplevel",
-                    "index": 5,
-                    "type": "Length",
-                    "value": 0
-                },
-                {
-                    "name": "gs_seat_height",
-                    "index": 6,
-                    "type": "Length",
-                    "value": 0.45
-                },
-                {
-                    "name": "gs_2D_representation",
-                    "index": 7,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "iDetlevel2D",
-                    "index": 8,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "iChairSymbolType",
-                    "index": 9,
-                    "type": "Integer",
-                    "value": 4
-                },
-                {
-                    "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 4
-                },
-                {
-                    "name": "gs_fill_type",
-                    "index": 11,
-                    "type": "FillPattern",
-                    "value": 65
-                },
-                {
-                    "name": "gs_fill_pen",
-                    "index": 12,
-                    "type": "PenColor",
-                    "value": 19
-                },
-                {
-                    "name": "gs_back_pen",
-                    "index": 13,
-                    "type": "PenColor",
-                    "value": 19
-                },
-                {
-                    "name": "gs_min_space",
-                    "index": 14,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "MSFront",
-                    "index": 15,
-                    "type": "Length",
-                    "value": 0.03
-                },
-                {
-                    "name": "MSSide",
-                    "index": 16,
-                    "type": "Length",
-                    "value": 0.15
-                },
-                {
-                    "name": "MSRear",
-                    "index": 17,
-                    "type": "Length",
-                    "value": 0.3
-                },
-                {
-                    "name": "gs_3D_representation",
-                    "index": 18,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "iDetlevel3D",
-                    "index": 19,
-                    "type": "Integer",
-                    "value": 1
-                },
-                {
-                    "name": "gs_resol",
-                    "index": 20,
-                    "type": "Integer",
-                    "value": 24
-                },
-                {
-                    "name": "gs_shadow",
-                    "index": 21,
-                    "type": "Boolean",
-                    "value": true
-                },
-                {
-                    "name": "gs_material",
-                    "index": 22,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "gs_seat_mat",
-                    "index": 23,
-                    "type": "Material",
-                    "value": 3
-                },
-                {
-                    "name": "gs_frame_mat",
-                    "index": 24,
-                    "type": "Material",
-                    "value": 15
-                },
-                {
-                    "name": "gs_back_mat",
-                    "index": 25,
-                    "type": "Material",
-                    "value": 66
-                },
-                {
-                    "name": "gs_list",
-                    "index": 26,
-                    "type": "Title",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_cost",
-                    "index": 27,
-                    "type": "RealNumber",
-                    "value": 0
-                },
-                {
-                    "name": "gs_list_manufacturer",
-                    "index": 28,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_note",
-                    "index": 29,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_location",
-                    "index": 30,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_accessories",
-                    "index": 31,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_Type",
-                    "index": 32,
-                    "type": "String",
-                    "value": "Furniture"
-                },
-                {
-                    "name": "iFMType",
-                    "index": 33,
-                    "type": "Integer",
-                    "value": 16
-                },
-                {
-                    "name": "FM_InventoryNumber",
-                    "index": 34,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_SerialNumber",
-                    "index": 35,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_ProductionYear",
-                    "index": 36,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "FM_ObjectWeight",
-                    "index": 37,
-                    "type": "RealNumber",
-                    "value": 0
-                },
-                {
-                    "name": "FM_ObjectWeightUnit",
-                    "index": 38,
-                    "type": "String",
-                    "value": "kg"
-                },
-                {
-                    "name": "gs_list_custom1",
-                    "index": 39,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom2",
-                    "index": 40,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom3",
-                    "index": 41,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom4",
-                    "index": 42,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_list_custom5",
-                    "index": 43,
-                    "type": "String",
-                    "value": ""
-                },
-                {
-                    "name": "gs_ui_current_page",
-                    "index": 44,
-                    "type": "Integer",
-                    "value": 2
-                }
-            ]
-        }
-    ]
-}
 Command: SetGDLParametersOfElements
 Parameters:
 {
@@ -1187,8 +9,6 @@ Parameters:
             "gdlParameters": [
                 {
                     "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
                     "value": 95
                 }
             ]
@@ -1200,8 +20,6 @@ Parameters:
             "gdlParameters": [
                 {
                     "name": "gs_cont_pen",
-                    "index": 33,
-                    "type": "PenColor",
                     "value": 95
                 }
             ]
@@ -1213,86 +31,6 @@ Parameters:
             "gdlParameters": [
                 {
                     "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 95
-                }
-            ]
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            },
-            "gdlParameters": [
-                {
-                    "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 95
-                }
-            ]
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            },
-            "gdlParameters": [
-                {
-                    "name": "gs_cont_pen",
-                    "index": 33,
-                    "type": "PenColor",
-                    "value": 95
-                }
-            ]
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            },
-            "gdlParameters": [
-                {
-                    "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 95
-                }
-            ]
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            },
-            "gdlParameters": [
-                {
-                    "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
-                    "value": 95
-                }
-            ]
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            },
-            "gdlParameters": [
-                {
-                    "name": "gs_cont_pen",
-                    "index": 33,
-                    "type": "PenColor",
-                    "value": 95
-                }
-            ]
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            },
-            "gdlParameters": [
-                {
-                    "name": "gs_cont_pen",
-                    "index": 10,
-                    "type": "PenColor",
                     "value": 95
                 }
             ]
@@ -1309,32 +47,6 @@ Response:
             "success": true
         },
         {
-            "success": true
-        },
-        {
-            "success": true
-        },
-        {
-            "success": true
-        },
-        {
-            "success": true
-        },
-        {
-            "error": {
-                "code": -2130312912,
-                "message": "Failed to change parameters of element with guid <GUID>"
-            },
-            "success": false
-        },
-        {
-            "error": {
-                "code": -2130312912,
-                "message": "Failed to change parameters of element with guid <GUID>"
-            },
-            "success": false
-        },
-        {
             "error": {
                 "code": -2130312912,
                 "message": "Failed to change parameters of element with guid <GUID>"
@@ -1371,273 +83,783 @@ Response:
             "parameters": [
                 {
                     "name": "A",
+                    "displayName": "Width",
                     "index": 0,
                     "type": "Length",
-                    "value": 0.7
+                    "value": 0.7,
+                    "isLocked": false,
+                    "flags": [],
+                    "possibleValues": [
+                        {
+                            "value": 0.37,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "B",
+                    "displayName": "Depth",
                     "index": 1,
                     "type": "Length",
-                    "value": 0.6
+                    "value": 0.6,
+                    "isLocked": false,
+                    "flags": [],
+                    "possibleValues": [
+                        {
+                            "value": 0.403875775,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "ZZYZX",
+                    "displayName": "Height",
                     "index": 2,
                     "type": "Length",
-                    "value": 0.8
+                    "value": 0.8,
+                    "isLocked": false,
+                    "flags": [
+                        "Disabled"
+                    ]
                 },
                 {
                     "name": "AC_show2DHotspotsIn3D",
+                    "displayName": "Show 2D Hotspots in 3D",
                     "index": 3,
                     "type": "Boolean",
-                    "value": false
+                    "value": false,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "ac_bottomlevel",
+                    "displayName": "Bottom Level",
                     "index": 4,
                     "type": "Length",
-                    "value": 1
+                    "value": 1,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "ac_toplevel",
+                    "displayName": "Top Level",
                     "index": 5,
                     "type": "Length",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_seat_height",
+                    "displayName": "Seat Height",
                     "index": 6,
                     "type": "Length",
-                    "value": 0.45
+                    "value": 0.45,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0.21,
+                            "flag": "GreaterThan"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_2D_representation",
+                    "displayName": "2D Representation",
                     "index": 7,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iDetlevel2D",
+                    "displayName": "2D Detail Level",
                     "index": 8,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "by MVO",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "by MVO"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Full"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Medium"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Low"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Symbolic"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iChairSymbolType",
+                    "displayName": "Symbol Type",
                     "index": 9,
                     "type": "Integer",
-                    "value": 4
+                    "value": 4,
+                    "valueDescription": "Rectangle with Backrest 1",
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Circle"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Circle with Backrest"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Rectangle"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Rectangle with Backrest 1"
+                        },
+                        {
+                            "value": 10,
+                            "description": "Rectangle with Backrest 2"
+                        },
+                        {
+                            "value": 9,
+                            "description": "Rectangle with Backrest 3"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Trapezoid"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Trapezoid with Backrest"
+                        },
+                        {
+                            "value": 7,
+                            "description": "Curved"
+                        },
+                        {
+                            "value": 8,
+                            "description": "Curved with Backrest"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_cont_pen",
+                    "displayName": "Contour Pen",
                     "index": 10,
                     "type": "PenColor",
-                    "value": 95
+                    "value": 95,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_fill_type",
+                    "displayName": "Fill Type",
                     "index": 11,
                     "type": "FillPattern",
-                    "value": 65
+                    "value": 65,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_fill_pen",
+                    "displayName": "Fill Pen",
                     "index": 12,
                     "type": "PenColor",
-                    "value": 19
+                    "value": 19,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_back_pen",
+                    "displayName": "Fill Background Pen",
                     "index": 13,
                     "type": "PenColor",
-                    "value": 19
+                    "value": 19,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_min_space",
+                    "displayName": "Minimal Space",
                     "index": 14,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "MSFront",
+                    "displayName": "Minimal Space in Front",
                     "index": 15,
                     "type": "Length",
-                    "value": 0.03
+                    "value": 0.03,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "MSSide",
+                    "displayName": "Minimal Space on Sides",
                     "index": 16,
                     "type": "Length",
-                    "value": 0.15
+                    "value": 0.15,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "MSRear",
+                    "displayName": "Minimal Space Behind",
                     "index": 17,
                     "type": "Length",
-                    "value": 0.3
+                    "value": 0.3,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_3D_representation",
+                    "displayName": "3D Representation",
                     "index": 18,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iDetlevel3D",
+                    "displayName": "3D Detail Level",
                     "index": 19,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "by MVO",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "by MVO"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Full"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Simplified"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Schematic"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Off"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_resol",
+                    "displayName": "Resolution",
                     "index": 20,
                     "type": "Integer",
-                    "value": 24
+                    "value": 24,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 4,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_shadow",
+                    "displayName": "Shadow",
                     "index": 21,
                     "type": "Boolean",
-                    "value": true
+                    "value": true,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_material",
+                    "displayName": "Surfaces",
                     "index": 22,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_seat_mat",
+                    "displayName": "Seating",
                     "index": 23,
                     "type": "Material",
-                    "value": 3
+                    "value": 3,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_frame_mat",
+                    "displayName": "Seating Frame",
                     "index": 24,
                     "type": "Material",
-                    "value": 15
+                    "value": 15,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_back_mat",
+                    "displayName": "Backrest",
                     "index": 25,
                     "type": "Material",
-                    "value": 66
+                    "value": 66,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list",
+                    "displayName": "Description",
                     "index": 26,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_list_cost",
+                    "displayName": "Cost",
                     "index": 27,
                     "type": "RealNumber",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_manufacturer",
+                    "displayName": "Manufacturer",
                     "index": 28,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_note",
+                    "displayName": "Note/Remarks",
                     "index": 29,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_location",
+                    "displayName": "Location",
                     "index": 30,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_accessories",
+                    "displayName": "Accessories",
                     "index": 31,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_Type",
+                    "displayName": "Group Type",
                     "index": 32,
                     "type": "String",
-                    "value": "Furniture"
+                    "value": "Furniture",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        "Default Objects",
+                        "Default Lamps",
+                        "People",
+                        "Elevators",
+                        "Security and Escapes",
+                        "Stairs",
+                        "Work Spaces",
+                        "Electric Facilities",
+                        "Distribution Panels",
+                        "Measuring Places",
+                        "Lamps",
+                        "HVAC Equipment",
+                        "Sanitation",
+                        "Locks",
+                        "Built-in Wardrobes",
+                        "Furniture",
+                        "Ceilings",
+                        "Floors",
+                        "Outdoor Objects",
+                        "Computers",
+                        "Monitors",
+                        "Software",
+                        "Phones",
+                        "Containers",
+                        "Others"
+                    ],
+                    "canHaveCustomValue": true
                 },
                 {
                     "name": "iFMType",
+                    "displayName": "Group Type",
                     "index": 33,
                     "type": "Integer",
-                    "value": 16
+                    "value": 16,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 2
+                        },
+                        {
+                            "value": 3
+                        },
+                        {
+                            "value": 4
+                        },
+                        {
+                            "value": 5
+                        },
+                        {
+                            "value": 6
+                        },
+                        {
+                            "value": 7
+                        },
+                        {
+                            "value": 8
+                        },
+                        {
+                            "value": 9
+                        },
+                        {
+                            "value": 10
+                        },
+                        {
+                            "value": 11
+                        },
+                        {
+                            "value": 12
+                        },
+                        {
+                            "value": 13
+                        },
+                        {
+                            "value": 14
+                        },
+                        {
+                            "value": 15
+                        },
+                        {
+                            "value": 16
+                        },
+                        {
+                            "value": 17
+                        },
+                        {
+                            "value": 18
+                        },
+                        {
+                            "value": 19
+                        },
+                        {
+                            "value": 20
+                        },
+                        {
+                            "value": 21
+                        },
+                        {
+                            "value": 22
+                        },
+                        {
+                            "value": 23
+                        },
+                        {
+                            "value": 24
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 999
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "FM_InventoryNumber",
+                    "displayName": "Inventory Number",
                     "index": 34,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_SerialNumber",
+                    "displayName": "Serial Number",
                     "index": 35,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ProductionYear",
+                    "displayName": "Production Year",
                     "index": 36,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ObjectWeight",
+                    "displayName": "Object Weight",
                     "index": 37,
                     "type": "RealNumber",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ObjectWeightUnit",
+                    "displayName": "Object Weight Unit",
                     "index": 38,
                     "type": "String",
-                    "value": "kg"
+                    "value": "kg",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom1",
+                    "displayName": "User Defined 1",
                     "index": 39,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom2",
+                    "displayName": "User Defined 2",
                     "index": 40,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom3",
+                    "displayName": "User Defined 3",
                     "index": 41,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom4",
+                    "displayName": "User Defined 4",
                     "index": 42,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom5",
+                    "displayName": "User Defined 5",
                     "index": 43,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_ui_current_page",
+                    "displayName": "",
                     "index": 44,
                     "type": "Integer",
-                    "value": 2
+                    "value": 2,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 }
             ]
         },
@@ -1645,603 +867,1562 @@ Response:
             "parameters": [
                 {
                     "name": "A",
+                    "displayName": "Width",
                     "index": 0,
                     "type": "Length",
-                    "value": 0.45
+                    "value": 0.45,
+                    "isLocked": false,
+                    "flags": [],
+                    "possibleValues": [
+                        {
+                            "value": 0.3,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "B",
+                    "displayName": "Depth",
                     "index": 1,
                     "type": "Length",
-                    "value": 0.4
+                    "value": 0.4,
+                    "isLocked": false,
+                    "flags": [],
+                    "possibleValues": [
+                        {
+                            "value": 0.2,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "ZZYZX",
+                    "displayName": "Height",
                     "index": 2,
                     "type": "Length",
-                    "value": 0.6
+                    "value": 0.6,
+                    "isLocked": false,
+                    "flags": [],
+                    "possibleValues": [
+                        {
+                            "value": 0.4,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "AC_show2DHotspotsIn3D",
+                    "displayName": "Show 2D Hotspots in 3D",
                     "index": 3,
                     "type": "Boolean",
-                    "value": false
+                    "value": false,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "ac_bottomlevel",
+                    "displayName": "Bottom Level",
                     "index": 4,
                     "type": "Length",
-                    "value": 1
+                    "value": 1,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "ac_toplevel",
+                    "displayName": "Top Level",
                     "index": 5,
                     "type": "Length",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "numDrawer",
+                    "displayName": "Number of Drawers",
                     "index": 6,
                     "type": "Integer",
-                    "value": 2
+                    "value": 2,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 2
+                        },
+                        {
+                            "value": 3
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "tDoorPanel",
+                    "displayName": "Drawer",
                     "index": 7,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iPanelGroup",
+                    "displayName": "Panel Group",
                     "index": 8,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 2
+                        },
+                        {
+                            "value": 9
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iPanelStyle",
+                    "displayName": "Panel Style",
                     "index": 9,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Solid"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Vertical Frames"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Horizontal Frames"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Mosaic"
+                        },
+                        {
+                            "value": 11,
+                            "description": "Full Framed"
+                        },
+                        {
+                            "value": 12,
+                            "description": "Inset"
+                        },
+                        {
+                            "value": 13,
+                            "description": "Mullions"
+                        },
+                        {
+                            "value": 14,
+                            "description": "Two Paneled"
+                        },
+                        {
+                            "value": 15,
+                            "description": "Three Paneled"
+                        },
+                        {
+                            "value": 16,
+                            "description": "Four Paneled"
+                        },
+                        {
+                            "value": 17,
+                            "description": "Four Paneled 2"
+                        },
+                        {
+                            "value": 18,
+                            "description": "Louver"
+                        },
+                        {
+                            "value": 19,
+                            "description": "Divided Louver"
+                        },
+                        {
+                            "value": 99,
+                            "description": "Custom"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iFrameJoinery",
+                    "displayName": "Frame Joinery",
                     "index": 10,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Mitered Joint"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Butt Joint"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Flat Joint"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iFrameBevel",
+                    "displayName": "Frame Bevel",
                     "index": 11,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "None"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Diagonal"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Round"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "panelFrameWidth",
+                    "displayName": "Frame Width",
                     "index": 12,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0.02
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThan"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "mullionWidth",
+                    "displayName": "Mullion Width",
                     "index": 13,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0.01
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThan"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "nVerticalMullion",
+                    "displayName": "No. of Vertical Grids",
                     "index": 14,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "nHorizontalMullion",
+                    "displayName": "No. of Horizontal Grids",
                     "index": 15,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "doorCustomPanelName",
+                    "displayName": "Custom Panel Name",
                     "index": 16,
                     "type": "String",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         ""
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        ""
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "bKnob",
+                    "displayName": "Knob",
                     "index": 17,
                     "type": "Boolean",
-                    "value": true
+                    "value": true,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iKnobGroup",
+                    "displayName": "Knob Group",
                     "index": 18,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 2
+                        },
+                        {
+                            "value": 3
+                        },
+                        {
+                            "value": 4
+                        },
+                        {
+                            "value": 9
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iKnobStyle",
+                    "displayName": "Knob Style",
                     "index": 19,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "Cylinder",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Cylinder"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Square"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Mushroom"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Triangle"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Ring"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Flat"
+                        },
+                        {
+                            "value": 7,
+                            "description": "Half Sphere"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iKnobOnSide",
+                    "displayName": "Side of Knob",
                     "index": 20,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Top"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Bottom"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Top and Bottom"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "bDoubleKnob",
+                    "displayName": "Double Knob",
                     "index": 21,
                     "type": "Boolean",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         false
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
                     ]
                 },
                 {
                     "name": "iKnobOrientation",
+                    "displayName": "Orientation",
                     "index": 22,
                     "type": "Integer",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Horizontal"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Vertical"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "knobLength",
+                    "displayName": "Length",
                     "index": 23,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0.2
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0.045,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "knobPosDrawerX",
+                    "displayName": "Position X",
                     "index": 24,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
                     ]
                 },
                 {
                     "name": "knobPosDrawerY",
+                    "displayName": "Position Y",
                     "index": 25,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
                     ]
                 },
                 {
                     "name": "doorCustomKnobName",
+                    "displayName": "Custom Knob Name",
                     "index": 26,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "customHandleLength",
+                    "displayName": "Length",
                     "index": 27,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0.1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThan"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "customHandleHeight",
+                    "displayName": "Height",
                     "index": 28,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0.1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThan"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "customHandleDepth",
+                    "displayName": "Depth",
                     "index": 29,
                     "type": "Length",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         0.1
-                    ]
+                    ],
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThan"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_2D_representation",
+                    "displayName": "2D Representation",
                     "index": 30,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iDetlevel2D",
+                    "displayName": "2D Detail Level",
                     "index": 31,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "by MVO",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "by MVO"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Symbolic"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iSymbolStyle",
+                    "displayName": "2D Symbol Style",
                     "index": 32,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "Style 1",
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Style 1"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Style 2"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Style 3"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Style 6"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_cont_pen",
+                    "displayName": "Contour Pen",
                     "index": 33,
                     "type": "PenColor",
-                    "value": 95
+                    "value": 95,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_fill_type",
+                    "displayName": "Fill Type",
                     "index": 34,
                     "type": "FillPattern",
-                    "value": 65
+                    "value": 65,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_fill_pen",
+                    "displayName": "Fill Pen",
                     "index": 35,
                     "type": "PenColor",
-                    "value": 19
+                    "value": 19,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_back_pen",
+                    "displayName": "Fill Background Pen",
                     "index": 36,
                     "type": "PenColor",
-                    "value": 19
+                    "value": 19,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_min_space",
+                    "displayName": "Minimal Space",
                     "index": 37,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "MSFront",
+                    "displayName": "Minimal Space in Front",
                     "index": 38,
                     "type": "Length",
-                    "value": 0.6
+                    "value": 0.6,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_3D_representation",
+                    "displayName": "3D Representation",
                     "index": 39,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iDetlevel3D",
+                    "displayName": "3D Detail Level",
                     "index": 40,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "by MVO",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "by MVO"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Full"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Simplified"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Schematic"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Off"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_resol",
+                    "displayName": "Resolution",
                     "index": 41,
                     "type": "Integer",
-                    "value": 24
+                    "value": 24,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 3,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_shadow",
+                    "displayName": "Shadow",
                     "index": 42,
                     "type": "Boolean",
-                    "value": true
+                    "value": true,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "tSurfaces",
+                    "displayName": "Surfaces",
                     "index": 43,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "matCabinet",
+                    "displayName": "Cabinet",
                     "index": 44,
                     "type": "Material",
-                    "value": 15
+                    "value": 15,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "knobMat",
+                    "displayName": "Knob",
                     "index": 45,
                     "type": "Material",
-                    "value": 13
+                    "value": 13,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "tPanelSurf",
+                    "displayName": "",
                     "index": 46,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "panelFrameMat",
+                    "displayName": "Panel",
                     "index": 47,
                     "type": "Material",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         15
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
                     ]
                 },
                 {
                     "name": "insetMat1",
+                    "displayName": "Panel Inset 1",
                     "index": 48,
                     "type": "Material",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         15
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
                     ]
                 },
                 {
                     "name": "insetMat2",
+                    "displayName": "Panel Inset 2",
                     "index": 49,
                     "type": "Material",
                     "dimension1": 1,
                     "dimension2": 1,
                     "value": [
                         15
+                    ],
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
                     ]
                 },
                 {
                     "name": "gs_list",
+                    "displayName": "Description",
                     "index": 50,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_list_cost",
+                    "displayName": "Cost",
                     "index": 51,
                     "type": "RealNumber",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_manufacturer",
+                    "displayName": "Manufacturer",
                     "index": 52,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_note",
+                    "displayName": "Note/Remarks",
                     "index": 53,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_location",
+                    "displayName": "Location",
                     "index": 54,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_accessories",
+                    "displayName": "Accessories",
                     "index": 55,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_Type",
+                    "displayName": "Group Type",
                     "index": 56,
                     "type": "String",
-                    "value": "Furniture"
+                    "value": "Furniture",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        "Default Objects",
+                        "Default Lamps",
+                        "People",
+                        "Elevators",
+                        "Security and Escapes",
+                        "Stairs",
+                        "Work Spaces",
+                        "Electric Facilities",
+                        "Distribution Panels",
+                        "Measuring Places",
+                        "Lamps",
+                        "HVAC Equipment",
+                        "Sanitation",
+                        "Locks",
+                        "Built-in Wardrobes",
+                        "Furniture",
+                        "Ceilings",
+                        "Floors",
+                        "Outdoor Objects",
+                        "Computers",
+                        "Monitors",
+                        "Software",
+                        "Phones",
+                        "Containers",
+                        "Others"
+                    ],
+                    "canHaveCustomValue": true
                 },
                 {
                     "name": "iFMType",
+                    "displayName": "Group Type",
                     "index": 57,
                     "type": "Integer",
-                    "value": 16
+                    "value": 16,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 2
+                        },
+                        {
+                            "value": 3
+                        },
+                        {
+                            "value": 4
+                        },
+                        {
+                            "value": 5
+                        },
+                        {
+                            "value": 6
+                        },
+                        {
+                            "value": 7
+                        },
+                        {
+                            "value": 8
+                        },
+                        {
+                            "value": 9
+                        },
+                        {
+                            "value": 10
+                        },
+                        {
+                            "value": 11
+                        },
+                        {
+                            "value": 12
+                        },
+                        {
+                            "value": 13
+                        },
+                        {
+                            "value": 14
+                        },
+                        {
+                            "value": 15
+                        },
+                        {
+                            "value": 16
+                        },
+                        {
+                            "value": 17
+                        },
+                        {
+                            "value": 18
+                        },
+                        {
+                            "value": 19
+                        },
+                        {
+                            "value": 20
+                        },
+                        {
+                            "value": 21
+                        },
+                        {
+                            "value": 22
+                        },
+                        {
+                            "value": 23
+                        },
+                        {
+                            "value": 24
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 999
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "FM_InventoryNumber",
+                    "displayName": "Inventory Number",
                     "index": 58,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_SerialNumber",
+                    "displayName": "Serial Number",
                     "index": 59,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ProductionYear",
+                    "displayName": "Production Year",
                     "index": 60,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ObjectWeight",
+                    "displayName": "Object Weight",
                     "index": 61,
                     "type": "RealNumber",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ObjectWeightUnit",
+                    "displayName": "Object Weight Unit",
                     "index": 62,
                     "type": "String",
-                    "value": "kg"
+                    "value": "kg",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom1",
+                    "displayName": "User Defined 1",
                     "index": 63,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom2",
+                    "displayName": "User Defined 2",
                     "index": 64,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom3",
+                    "displayName": "User Defined 3",
                     "index": 65,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom4",
+                    "displayName": "User Defined 4",
                     "index": 66,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom5",
+                    "displayName": "User Defined 5",
                     "index": 67,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_Title",
+                    "displayName": "Additional Listing Parameters",
                     "index": 68,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_onorm_dimensions",
+                    "displayName": "Width/Depth/Height",
                     "index": 69,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_manufacturer",
+                    "displayName": "Additional Manufacturer",
                     "index": 70,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_baseheight_value",
+                    "displayName": "Base Height Value",
                     "index": 71,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_baseheight",
+                    "displayName": "Additional Base Height",
                     "index": 72,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_assemblydate",
+                    "displayName": "Assembly Date",
                     "index": 73,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_customtext1",
+                    "displayName": "Additional Information 1",
                     "index": 74,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_customtext2",
+                    "displayName": "Additional Information 2",
                     "index": 75,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_aks",
+                    "displayName": "AKS Number",
                     "index": 76,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_product",
+                    "displayName": "Product Name",
                     "index": 77,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_leistungbuch",
+                    "displayName": "Collection of Specifications ID",
                     "index": 78,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_description",
+                    "displayName": "Additional Description",
                     "index": 79,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_number",
+                    "displayName": "Additional Number",
                     "index": 80,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_id",
+                    "displayName": "ID Number",
                     "index": 81,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_admission",
+                    "displayName": "Admission Date",
                     "index": 82,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_modification",
+                    "displayName": "Modification Date",
                     "index": 83,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_onorm_tozonenumber",
+                    "displayName": "To Zone Number",
                     "index": 84,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_ui_current_page",
+                    "displayName": "",
                     "index": 85,
                     "type": "Integer",
-                    "value": 10
+                    "value": 10,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 }
             ]
         },
@@ -2249,273 +2430,783 @@ Response:
             "parameters": [
                 {
                     "name": "A",
+                    "displayName": "Width",
                     "index": 0,
                     "type": "Length",
-                    "value": 0.7
+                    "value": 0.7,
+                    "isLocked": false,
+                    "flags": [],
+                    "possibleValues": [
+                        {
+                            "value": 0.37,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "B",
+                    "displayName": "Depth",
                     "index": 1,
                     "type": "Length",
-                    "value": 0.6
+                    "value": 0.6,
+                    "isLocked": false,
+                    "flags": [],
+                    "possibleValues": [
+                        {
+                            "value": 0.403875775,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "ZZYZX",
+                    "displayName": "Height",
                     "index": 2,
                     "type": "Length",
-                    "value": 0.8
+                    "value": 0.8,
+                    "isLocked": false,
+                    "flags": [
+                        "Disabled"
+                    ]
                 },
                 {
                     "name": "AC_show2DHotspotsIn3D",
+                    "displayName": "Show 2D Hotspots in 3D",
                     "index": 3,
                     "type": "Boolean",
-                    "value": false
+                    "value": false,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "ac_bottomlevel",
+                    "displayName": "Bottom Level",
                     "index": 4,
                     "type": "Length",
-                    "value": 1
+                    "value": 1,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "ac_toplevel",
+                    "displayName": "Top Level",
                     "index": 5,
                     "type": "Length",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_seat_height",
+                    "displayName": "Seat Height",
                     "index": 6,
                     "type": "Length",
-                    "value": 0.45
+                    "value": 0.45,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0.21,
+                            "flag": "GreaterThan"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_2D_representation",
+                    "displayName": "2D Representation",
                     "index": 7,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iDetlevel2D",
+                    "displayName": "2D Detail Level",
                     "index": 8,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "by MVO",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "by MVO"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Full"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Medium"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Low"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Symbolic"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "iChairSymbolType",
+                    "displayName": "Symbol Type",
                     "index": 9,
                     "type": "Integer",
-                    "value": 4
+                    "value": 4,
+                    "valueDescription": "Rectangle with Backrest 1",
+                    "isLocked": true,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "Circle"
+                        },
+                        {
+                            "value": 2,
+                            "description": "Circle with Backrest"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Rectangle"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Rectangle with Backrest 1"
+                        },
+                        {
+                            "value": 10,
+                            "description": "Rectangle with Backrest 2"
+                        },
+                        {
+                            "value": 9,
+                            "description": "Rectangle with Backrest 3"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Trapezoid"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Trapezoid with Backrest"
+                        },
+                        {
+                            "value": 7,
+                            "description": "Curved"
+                        },
+                        {
+                            "value": 8,
+                            "description": "Curved with Backrest"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_cont_pen",
+                    "displayName": "Contour Pen",
                     "index": 10,
                     "type": "PenColor",
-                    "value": 4
+                    "value": 4,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_fill_type",
+                    "displayName": "Fill Type",
                     "index": 11,
                     "type": "FillPattern",
-                    "value": 65
+                    "value": 65,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_fill_pen",
+                    "displayName": "Fill Pen",
                     "index": 12,
                     "type": "PenColor",
-                    "value": 19
+                    "value": 19,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_back_pen",
+                    "displayName": "Fill Background Pen",
                     "index": 13,
                     "type": "PenColor",
-                    "value": 19
+                    "value": 19,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_min_space",
+                    "displayName": "Minimal Space",
                     "index": 14,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "MSFront",
+                    "displayName": "Minimal Space in Front",
                     "index": 15,
                     "type": "Length",
-                    "value": 0.03
+                    "value": 0.03,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "MSSide",
+                    "displayName": "Minimal Space on Sides",
                     "index": 16,
                     "type": "Length",
-                    "value": 0.15
+                    "value": 0.15,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "MSRear",
+                    "displayName": "Minimal Space Behind",
                     "index": 17,
                     "type": "Length",
-                    "value": 0.3
+                    "value": 0.3,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 0,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_3D_representation",
+                    "displayName": "3D Representation",
                     "index": 18,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "iDetlevel3D",
+                    "displayName": "3D Detail Level",
                     "index": 19,
                     "type": "Integer",
-                    "value": 1
+                    "value": 1,
+                    "valueDescription": "by MVO",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1,
+                            "description": "by MVO"
+                        },
+                        {
+                            "value": 3,
+                            "description": "Full"
+                        },
+                        {
+                            "value": 4,
+                            "description": "Simplified"
+                        },
+                        {
+                            "value": 5,
+                            "description": "Schematic"
+                        },
+                        {
+                            "value": 6,
+                            "description": "Off"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_resol",
+                    "displayName": "Resolution",
                     "index": 20,
                     "type": "Integer",
-                    "value": 24
+                    "value": 24,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 4,
+                            "flag": "GreaterThanOrEqual"
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "gs_shadow",
+                    "displayName": "Shadow",
                     "index": 21,
                     "type": "Boolean",
-                    "value": true
+                    "value": true,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_material",
+                    "displayName": "Surfaces",
                     "index": 22,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_seat_mat",
+                    "displayName": "Seating",
                     "index": 23,
                     "type": "Material",
-                    "value": 3
+                    "value": 3,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_frame_mat",
+                    "displayName": "Seating Frame",
                     "index": 24,
                     "type": "Material",
-                    "value": 15
+                    "value": 15,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_back_mat",
+                    "displayName": "Backrest",
                     "index": 25,
                     "type": "Material",
-                    "value": 66
+                    "value": 66,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list",
+                    "displayName": "Description",
                     "index": 26,
                     "type": "Title",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript"
+                    ]
                 },
                 {
                     "name": "gs_list_cost",
+                    "displayName": "Cost",
                     "index": 27,
                     "type": "RealNumber",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_manufacturer",
+                    "displayName": "Manufacturer",
                     "index": 28,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_note",
+                    "displayName": "Note/Remarks",
                     "index": 29,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_location",
+                    "displayName": "Location",
                     "index": 30,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_accessories",
+                    "displayName": "Accessories",
                     "index": 31,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_Type",
+                    "displayName": "Group Type",
                     "index": 32,
                     "type": "String",
-                    "value": "Furniture"
+                    "value": "Furniture",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        "Default Objects",
+                        "Default Lamps",
+                        "People",
+                        "Elevators",
+                        "Security and Escapes",
+                        "Stairs",
+                        "Work Spaces",
+                        "Electric Facilities",
+                        "Distribution Panels",
+                        "Measuring Places",
+                        "Lamps",
+                        "HVAC Equipment",
+                        "Sanitation",
+                        "Locks",
+                        "Built-in Wardrobes",
+                        "Furniture",
+                        "Ceilings",
+                        "Floors",
+                        "Outdoor Objects",
+                        "Computers",
+                        "Monitors",
+                        "Software",
+                        "Phones",
+                        "Containers",
+                        "Others"
+                    ],
+                    "canHaveCustomValue": true
                 },
                 {
                     "name": "iFMType",
+                    "displayName": "Group Type",
                     "index": 33,
                     "type": "Integer",
-                    "value": 16
+                    "value": 16,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Child"
+                    ],
+                    "possibleValues": [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 2
+                        },
+                        {
+                            "value": 3
+                        },
+                        {
+                            "value": 4
+                        },
+                        {
+                            "value": 5
+                        },
+                        {
+                            "value": 6
+                        },
+                        {
+                            "value": 7
+                        },
+                        {
+                            "value": 8
+                        },
+                        {
+                            "value": 9
+                        },
+                        {
+                            "value": 10
+                        },
+                        {
+                            "value": 11
+                        },
+                        {
+                            "value": 12
+                        },
+                        {
+                            "value": 13
+                        },
+                        {
+                            "value": 14
+                        },
+                        {
+                            "value": 15
+                        },
+                        {
+                            "value": 16
+                        },
+                        {
+                            "value": 17
+                        },
+                        {
+                            "value": 18
+                        },
+                        {
+                            "value": 19
+                        },
+                        {
+                            "value": 20
+                        },
+                        {
+                            "value": 21
+                        },
+                        {
+                            "value": 22
+                        },
+                        {
+                            "value": 23
+                        },
+                        {
+                            "value": 24
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 999
+                        }
+                    ],
+                    "canHaveCustomValue": false
                 },
                 {
                     "name": "FM_InventoryNumber",
+                    "displayName": "Inventory Number",
                     "index": 34,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_SerialNumber",
+                    "displayName": "Serial Number",
                     "index": 35,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ProductionYear",
+                    "displayName": "Production Year",
                     "index": 36,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ObjectWeight",
+                    "displayName": "Object Weight",
                     "index": 37,
                     "type": "RealNumber",
-                    "value": 0
+                    "value": 0,
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "FM_ObjectWeightUnit",
+                    "displayName": "Object Weight Unit",
                     "index": 38,
                     "type": "String",
-                    "value": "kg"
+                    "value": "kg",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom1",
+                    "displayName": "User Defined 1",
                     "index": 39,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom2",
+                    "displayName": "User Defined 2",
                     "index": 40,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom3",
+                    "displayName": "User Defined 3",
                     "index": 41,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom4",
+                    "displayName": "User Defined 4",
                     "index": 42,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_list_custom5",
+                    "displayName": "User Defined 5",
                     "index": 43,
                     "type": "String",
-                    "value": ""
+                    "value": "",
+                    "isLocked": false,
+                    "flags": [
+                        "HiddenFromScript",
+                        "Child"
+                    ]
                 },
                 {
                     "name": "gs_ui_current_page",
+                    "displayName": "",
                     "index": 44,
                     "type": "Integer",
-                    "value": 2
+                    "value": 2,
+                    "isLocked": false,
+                    "flags": [
+                        "Hidden",
+                        "HiddenFromScript"
+                    ]
                 }
             ]
         }

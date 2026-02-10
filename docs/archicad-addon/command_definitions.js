@@ -113,25 +113,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "fields": {
-                "type": "array",
-                "description": "A list of project info fields.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoId": {
-                            "type": "string",
-                            "description": "The id of the project info field."
-                        },
-                        "projectInfoName": {
-                            "type": "string",
-                            "description": "The name of the project info field visible on UI."
-                        },
-                        "projectInfoValue": {
-                            "type": "string",
-                            "description": "The value of the project info field."
-                        }
-                    }
-                }
+                "$ref": "#/ProjectInfoFields"
             }
         },
         "additionalProperties": false,
@@ -825,7 +807,9 @@ var gCommands = [{
                         "columnSegments": {
                             "$ref": "#/Elements"
                         }
-                    }
+                    },
+                    "additionalProperties": false,
+                    "required": []
                 }
             }
         },
@@ -1160,7 +1144,7 @@ var gCommands = [{
                         "$ref": "#/ElementId"
                     },
                     "gdlParameters": {
-                        "$ref": "#/GDLParameterArray"
+                        "$ref": "#/SetGDLParameterArray"
                     }
                 },
                 "additionalProperties": false,
@@ -1453,7 +1437,7 @@ var gCommands = [{
                 "properties" : {
                     "floorInd": {
                         "type": "number",
-                        "description" : "The identifier of the floor. Optinal parameter, by default the current floor is used."	
+                        "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
                     },
                     "coordinates": { 
                         "type": "array",
@@ -1691,6 +1675,170 @@ var gCommands = [{
             "elements"
         ]
     }
+            },{
+                "name": "GetElementPreviewImage",
+                "version": "1.2.7",
+                "description": "Returns the preview image of the given element.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "imageType": {
+                "type": "string",
+                "description": "The type of the preview image. Default is 3D.",
+                "enum": ["2D", "Section", "3D"]
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 128."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 128."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "previewImage": {
+                "type": "string",
+                "description": "The base64 encoded preview image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "previewImage"
+        ]
+    }
+            },{
+                "name": "GetRoomImage",
+                "version": "1.2.7",
+                "description": "Returns the room image of the given zone.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "zoneId": {
+                "$ref": "#/ElementId"
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 256."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 256."
+            },
+            "offset": {
+                "type": "number",
+                "description": "Offset of the clip polygon from the edge of the zone. Default is 0.001."
+            },
+            "scale": {
+                "type": "number",
+                "description": "Scale of the view (e.g. 0.005 for 1:200). Default is 0.005."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "Background color of the generated image. Default is white (1.0, 1.0, 1.0)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneId"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "roomImage": {
+                "type": "string",
+                "description": "The base64 encoded room image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roomImage"
+        ]
+    }
+            },{
+                "name": "SetElementNotificationClient",
+                "version": "1.2.8",
+                "description": "Sets up a new notification client to receive element events.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "host": {
+                "type": "string",
+                "description": "The host address of the notification client. If not provided, localhost is used."
+            },
+            "port": {
+                "type": "integer",
+                "description": "The port number of the notification client."
+            },
+            "notifyOnNewElement": {
+                "type": "boolean",
+                "description": "Notify on creation of a new element.",
+                "default": true
+            },
+            "notifyOnModificationOfAnElement": {
+                "type": "boolean",
+                "description": "Notify on modification/deletion of an element.",
+                "default": true
+            },
+            "notifyOnReservationChanges": {
+                "type": "boolean",
+                "description": "Notify on reservation changes of an element.",
+                "default": true
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "port"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "RemoveElementNotificationClient",
+                "version": "1.2.8",
+                "description": "Removes an element notification client.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "host": {
+                "type": "string",
+                "description": "The host address of the notification client. If not provided, localhost is used."
+            },
+            "port": {
+                "type": "integer",
+                "description": "The port number of the notification client."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "port"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Favorites Commands",
@@ -1720,6 +1868,54 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "favorites"
+        ]
+    }
+            },{
+                "name": "GetFavoritePreviewImage",
+                "version": "1.2.7",
+                "description": "Returns the preview image of the given favorite.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "favorite": {
+                "type": "string",
+                "description": "The name of the favorite."
+            },
+            "imageType": {
+                "type": "string",
+                "description": "The type of the preview image. Default is 3D.",
+                "enum": ["2D", "Section", "3D"]
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 128."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 128."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorite"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "previewImage": {
+                "type": "string",
+                "description": "The base64 encoded preview image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "previewImage"
         ]
     }
             },{
@@ -2615,39 +2811,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "properties" : {
-                "type": "array",
-                "description" : "Physical properties list.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "properties": {
-                            "type": "object",
-                            "description": "Physical properties.",
-                            "properties": {
-                                "thermalConductivity": {
-                                    "type": "number",
-                                    "description": "Thermal Conductivity."
-                                },
-                                "density": {
-                                    "type": "number",
-                                    "description": "Density."
-                                },
-                                "heatCapacity": {
-                                    "type": "number",
-                                    "description": "Heat Capacity."
-                                },
-                                "embodiedEnergy": {
-                                    "type": "number",
-                                    "description": "Embodied Energy."
-                                },
-                                "embodiedCarbon": {
-                                    "type": "number",
-                                    "description": "Embodied Carbon."
-                                }
-                            }
-                        }
-                    }
-                }
+                "$ref": "#/BuildingMaterialPhysicalPropertiesList"
             }
         },
         "additionalProperties": false,
@@ -2764,45 +2928,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "files": {
-                "type": "array",
-                "description": "A list of files",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "inputPath": {
-                            "type": "string",
-                            "description": "The path to the input file."
-                        },
-                        "outputPath": {
-                            "type": "string",
-                            "description": "The relative path to the new file inside embedded library."
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "The type of the library part. By default 'Pict'.",
-                            "enum": [
-                                "Window",
-                                "Door",
-                                "Object",
-                                "Lamp",
-                                "Room",
-                                "Property",
-                                "PlanSign",
-                                "Label",
-                                "Macro",
-                                "Pict",
-                                "ListScheme",
-                                "Skylight",
-                                "OpeningSymbol"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "inputPath",
-                        "outputPath"
-                    ]
-                }
+                "$ref": "#/LibraryFileAdditions"
             }
         },
         "additionalProperties": false,
@@ -2937,7 +3063,7 @@ var gCommands = [{
             },
             "outputPath": {
                 "type": "string",
-                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publiser set will be used.",
+                "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publisher set will be used.",
                 "minLength": 1
             }
         },

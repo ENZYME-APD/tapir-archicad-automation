@@ -72,39 +72,7 @@ GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetInputParametersSchema
 GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "attributes" : {
-                "type": "array",
-                "description" : "Details of attributes.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "index": {
-                            "type": "number",
-                            "description": "Index of the attribute."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "Name of the attribute."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "index",
-                        "name"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "attributes"
-        ]
+        "$ref": "#/GetAttributesByTypeResponseOrError"
     })";
 }
 
@@ -114,6 +82,10 @@ GS::ObjectState GetAttributesByTypeCommand::Execute (const GS::ObjectState& para
     parameters.Get ("attributeType", typeStr);
 
     API_AttrTypeID typeID = ConvertAttributeTypeStringToID (typeStr);
+    if (typeID == API_ZombieAttrID) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ()));
+    }
 
     GS::ObjectState response;
     const auto& attributes = response.AddList<GS::ObjectState> ("attributes");
@@ -166,39 +138,7 @@ GS::Optional<GS::UniString> GetBuildingMaterialPhysicalPropertiesCommand::GetRes
         "type": "object",
         "properties": {
             "properties" : {
-                "type": "array",
-                "description" : "Physical properties list.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "properties": {
-                            "type": "object",
-                            "description": "Physical properties.",
-                            "properties": {
-                                "thermalConductivity": {
-                                    "type": "number",
-                                    "description": "Thermal Conductivity."
-                                },
-                                "density": {
-                                    "type": "number",
-                                    "description": "Density."
-                                },
-                                "heatCapacity": {
-                                    "type": "number",
-                                    "description": "Heat Capacity."
-                                },
-                                "embodiedEnergy": {
-                                    "type": "number",
-                                    "description": "Embodied Energy."
-                                },
-                                "embodiedCarbon": {
-                                    "type": "number",
-                                    "description": "Embodied Carbon."
-                                }
-                            }
-                        }
-                    }
-                }
+                "$ref": "#/BuildingMaterialPhysicalPropertiesList"
             }
         },
         "additionalProperties": false,
@@ -429,7 +369,7 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
                 continue;
             }
         } else {
-            GSErrCode err = ACAPI_Attribute_Create (&attr, nullptr);
+            GSErrCode err = ACAPI_Attribute_Create (&attr, &attrDef);
             if (err != NoError) {
                 attributeIds (CreateErrorResponse (err, "Failed to create."));
                 continue;

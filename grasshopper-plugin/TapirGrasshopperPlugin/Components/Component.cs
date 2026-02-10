@@ -3,12 +3,15 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Attributes;
 using Newtonsoft.Json.Linq;
+using Rhino.Commands;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.ArchiCad;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components
 {
@@ -761,6 +764,24 @@ namespace TapirGrasshopperPlugin.Components
             try
             {
                 response = deserializer.Invoke(cadResponse);
+                if (response is ExecutionResultResponse)
+                {
+                    var result = response as ExecutionResultResponse;
+                    if (!result.ExecutionResult.Success)
+                    {
+                        this.AddError(
+                            $"Failed execution: {result.ExecutionResult.Message()}");
+                    }
+                }
+                else if (response is ExecutionResultsResponse)
+                {
+                    var results = response as ExecutionResultsResponse;
+                    if (results.ExecutionResults.All(x => !x.Success))
+                    {
+                        this.AddError(
+                            $"Failed executions, the first error message: {results.ExecutionResults.First().Message()}");
+                    }
+                }
                 return true;
             }
             catch (Exception ex)
@@ -977,7 +998,7 @@ namespace TapirGrasshopperPlugin.Components
 
         public override void CreateAttributes()
         {
-            this.m_attributes = new ButtonAttributes (this, 1, _additionalWidth);
+            this.m_attributes = new ButtonAttributes(this, 1, _additionalWidth);
         }
 
         public abstract void OnCapsuleButtonPressed(

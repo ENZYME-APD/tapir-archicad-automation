@@ -27,6 +27,7 @@
 #include "MigrationHelper.hpp"
 #include "NavigatorCommands.hpp"
 #include "RevisionCommands.hpp"
+#include "NotificationCommands.hpp"
 #include "DesignOptionCommands.hpp"
 
 template <typename CommandType>
@@ -180,6 +181,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.1.6",
             "Gets the project location details."
         );
+        err |= RegisterCommand<SetGeoLocationCommand> (
+            projectCommands, "1.2.9",
+            "Sets the project location details."
+        );
         err |= RegisterCommand<IFCFileOperationCommand> (
             projectCommands, "1.2.6",
             "Executes an IFC file operation."
@@ -293,6 +298,22 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.5",
             "Creates Label elements based on the given parameters."
         );
+        err |= RegisterCommand<GetElementPreviewImageCommand> (
+            elementCommands, "1.2.7",
+            "Returns the preview image of the given element."
+        );
+        err |= RegisterCommand<GetRoomImageCommand> (
+            elementCommands, "1.2.7",
+            "Returns the room image of the given zone."
+        );
+        err |= RegisterCommand<AddElementNotificationClientCommand> (
+            elementCommands, "1.2.8",
+            "Sets up a new notification client to receive element events."
+        );
+        err |= RegisterCommand<RemoveElementNotificationClientCommand> (
+            elementCommands, "1.2.8",
+            "Removes an element notification client."
+        );
         AddCommandGroup (elementCommands);
     }
 
@@ -301,6 +322,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetFavoritesByTypeCommand> (
             favoritesCommands, "1.2.2",
             "Returns a list of the names of all favorites with the given element type"
+        );
+        err |= RegisterCommand<GetFavoritePreviewImageCommand> (
+            favoritesCommands, "1.2.7",
+            "Returns the preview image of the given favorite."
         );
         err |= RegisterCommand<ApplyFavoritesToElementDefaultsCommand> (
             favoritesCommands, "1.1.2",

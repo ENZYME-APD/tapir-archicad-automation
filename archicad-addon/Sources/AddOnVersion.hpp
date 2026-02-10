@@ -1,3 +1,3 @@
 #pragma once
 
-#define ADDON_VERSION "1.2.7"
+#define ADDON_VERSION "1.2.9"

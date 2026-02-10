@@ -90,25 +90,7 @@ GS::Optional<GS::UniString> GetProjectInfoFieldsCommand::GetResponseSchema () co
         "type": "object",
         "properties": {
             "fields": {
-                "type": "array",
-                "description": "A list of project info fields.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoId": {
-                            "type": "string",
-                            "description": "The id of the project info field."
-                        },
-                        "projectInfoName": {
-                            "type": "string",
-                            "description": "The name of the project info field visible on UI."
-                        },
-                        "projectInfoValue": {
-                            "type": "string",
-                            "description": "The value of the project info field."
-                        }
-                    }
-                }
+                "$ref": "#/ProjectInfoFields"
             }
         },
         "additionalProperties": false,
@@ -781,6 +763,166 @@ GS::ObjectState GetGeoLocationCommand::Execute (const GS::ObjectState& /*paramet
                 "verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum,
                 "mapProjection", apiGeoLocation.geoReferenceData.mapProjection,
                 "mapZone", apiGeoLocation.geoReferenceData.mapZone)));
+}
+
+SetGeoLocationCommand::SetGeoLocationCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetGeoLocationCommand::GetName () const
+{
+    return "SetGeoLocation";
+}
+
+GS::Optional<GS::UniString> SetGeoLocationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectLocation": {
+                "type": "object",
+                "properties": {
+                    "longitude": {
+                        "type": "number",
+                        "description": "longitude in degrees"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "description": "latitude in degrees"
+                    },
+                    "altitude": {
+                        "type": "number",
+                        "description": "altitude in meters"
+                    },
+                    "north": {
+                        "type": "number",
+                        "description": "north direction in radians"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                ]
+            },
+            "surveyPoint": {
+                "type": "object",
+                "properties": {
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "eastings": {
+                                "type": "number",
+                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+                            },
+                            "northings": {
+                                "type": "number",
+                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+                            },
+                            "elevation": {
+                                "type": "number",
+                                "description": "Orthogonal height relative to the vertical datum specified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                        ]
+                    },
+                    "geoReferencingParameters": {
+                        "type": "object",
+                        "properties": {
+                            "crsName": {
+                                "type": "string",
+                                "description": "Name by which the coordinate reference system is identified."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Informal description of this coordinate reference system."
+                            },
+                            "geodeticDatum": {
+                                "type": "string",
+                                "description": "Name by which this datum is identified."
+                            },
+                            "verticalDatum": {
+                                "type": "string",
+                                "description": "Name by which the vertical datum is identified."
+                            },
+                            "mapProjection": {
+                                "type": "string",
+                                "description": "Name by which the map projection is identified."
+                            },
+                            "mapZone": {
+                                "type": "string",
+                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetGeoLocationCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_GeoLocation apiGeoLocation = {};
+    ACAPI_GeoLocation_GetGeoLocation (&apiGeoLocation);
+
+    bool hasAnyInput = false;
+
+    GS::ObjectState projectLocation;
+    if (parameters.Get ("projectLocation", projectLocation)) {
+        hasAnyInput |= projectLocation.Get ("longitude", apiGeoLocation.placeInfo.longitude);
+        hasAnyInput |= projectLocation.Get ("latitude", apiGeoLocation.placeInfo.latitude);
+        hasAnyInput |= projectLocation.Get ("altitude", apiGeoLocation.placeInfo.altitude);
+        hasAnyInput |= projectLocation.Get ("north", apiGeoLocation.placeInfo.north);
+    }
+    GS::ObjectState surveyPoint;
+    if (parameters.Get ("surveyPoint", surveyPoint)) {
+        GS::ObjectState position;
+        if (surveyPoint.Get ("position", position)) {
+            hasAnyInput |= position.Get ("eastings", apiGeoLocation.geoReferenceData.eastings);
+            hasAnyInput |= position.Get ("northings", apiGeoLocation.geoReferenceData.northings);
+            hasAnyInput |= position.Get ("elevation", apiGeoLocation.geoReferenceData.orthogonalHeight);
+        }
+        GS::ObjectState geoReferencingParameters;
+        if (surveyPoint.Get ("geoReferencingParameters", geoReferencingParameters)) {
+            hasAnyInput |= geoReferencingParameters.Get ("crsName", apiGeoLocation.geoReferenceData.name);
+            hasAnyInput |= geoReferencingParameters.Get ("description", apiGeoLocation.geoReferenceData.description);
+            hasAnyInput |= geoReferencingParameters.Get ("geodeticDatum", apiGeoLocation.geoReferenceData.geodeticDatum);
+            hasAnyInput |= geoReferencingParameters.Get ("verticalDatum", apiGeoLocation.geoReferenceData.verticalDatum);
+            hasAnyInput |= geoReferencingParameters.Get ("mapProjection", apiGeoLocation.geoReferenceData.mapProjection);
+            hasAnyInput |= geoReferencingParameters.Get ("mapZone", apiGeoLocation.geoReferenceData.mapZone);
+        }
+    }
+
+    if (!hasAnyInput) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No valid input parameters provided to update geolocation.");
+    }
+
+	GSErrCode err = ACAPI_CallUndoableCommand ("Change GeoLocation", [&] () -> GSErrCode {
+        return ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set geolocation.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
 }
 
 IFCFileOperationCommand::IFCFileOperationCommand () :

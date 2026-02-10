@@ -5,6 +5,9 @@
 #include "CoordTypedef.hpp"
 #include "ModelEdge.hpp"
 #include "ModelMeshBody.hpp"
+#include "NativeImage.hpp"
+#include "MemoryOChannel32.hpp"
+#include "Base64Converter.hpp"
 #ifdef ServerMainVers_2800
 #include "ACAPI/ZoneBoundaryQuery.hpp"
 #endif
@@ -120,24 +123,20 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema (
 GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            },
-            "executionResultForDatabases": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
+        "$ref": "#/GetElementsByTypeResponseOrError"
     })";
 }
 
 GS::ObjectState GetElementsByTypeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{   
+{
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        if (GetElementTypeFromNonLocalizedName (elementTypeStr) == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+    }
+
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
 
@@ -1130,7 +1129,9 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResp
                         "columnSegments": {
                             "$ref": "#/Elements"
                         }
-                    }
+                    },
+                    "additionalProperties": false,
+                    "required": []
                 }
             }
         },
@@ -1258,28 +1259,7 @@ GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchem
 GS::Optional<GS::UniString> GetConnectedElementsCommand::GetResponseSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "connectedElements": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "elements": {
-                            "$ref": "#/Elements"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elements"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "connectedElements"
-        ]
+        "$ref": "#/GetConnectedElementsResponseOrError"
     })";
 }
 
@@ -1292,6 +1272,10 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
     GS::UniString elementTypeStr;
     if (parameters.Get ("connectedElementType", elementTypeStr)) {
         elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (elemType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid connectedElementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
     }
 
     GS::ObjectState response;
@@ -1368,30 +1352,30 @@ GS::ObjectState GetZoneBoundariesCommand::Execute (
     }
 
 #ifdef ServerMainVers_2800
-	ACAPI::ZoneBoundaryQuery query = ACAPI::CreateZoneBoundaryQuery ();
+    ACAPI::ZoneBoundaryQuery query = ACAPI::CreateZoneBoundaryQuery ();
 
-	ACAPI::Result updateResult = query.Modify (
-		[&] (ACAPI::ZoneBoundaryQuery::Modifier& modifier) -> GSErrCode {
-			ACAPI::Result<void> result = modifier.Update (processControl);
-			return result.IsOk () ? NoError : result.UnwrapErr ().kind;
-		}
-	);
+    ACAPI::Result updateResult = query.Modify (
+        [&] (ACAPI::ZoneBoundaryQuery::Modifier& modifier) -> GSErrCode {
+            ACAPI::Result<void> result = modifier.Update (processControl);
+            return result.IsOk () ? NoError : result.UnwrapErr ().kind;
+        }
+    );
 
-	if (updateResult.IsErr ()) {
-		return CreateErrorResponse (updateResult.UnwrapErr ().kind, "Failed to execute zone boundary query");
+    if (updateResult.IsErr ()) {
+        return CreateErrorResponse (updateResult.UnwrapErr ().kind, "Failed to execute zone boundary query");
     }
 
     GS::ObjectState response;
     const auto& zoneBoundaries = response.AddList<GS::ObjectState> ("zoneBoundaries");
 
     const API_Guid zoneGuid = GetGuidFromObjectState (*zoneElementId);
-	const ACAPI::Result<std::vector<ACAPI::ZoneBoundary>> boundaries = query.GetZoneBoundaries (zoneGuid);
+    const ACAPI::Result<std::vector<ACAPI::ZoneBoundary>> boundaries = query.GetZoneBoundaries (zoneGuid);
 
     if (boundaries.IsErr ()) {
-		return CreateErrorResponse (boundaries.UnwrapErr ().kind, "Failed to get zone boundary");
+        return CreateErrorResponse (boundaries.UnwrapErr ().kind, "Failed to get zone boundary");
     }
 
-	for (const ACAPI::ZoneBoundary& boundary : boundaries.Unwrap ()) {
+    for (const ACAPI::ZoneBoundary& boundary : boundaries.Unwrap ()) {
         GS::ObjectState boundaryOS;
         boundaryOS.Add ("connectedElementId", CreateGuidObjectState (boundary.GetElemId ()));
         boundaryOS.Add ("isExternal", boundary.IsExternal ());
@@ -1536,9 +1520,9 @@ GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters
     parameters.Get ("elementsGroup2", elementsGroup2);
 
     API_CollisionDetectionSettings collisionSettings = {};
-	collisionSettings.volumeTolerance = 0.001;
-	collisionSettings.performSurfaceCheck = false;
-	collisionSettings.surfaceTolerance = 0.001;
+    collisionSettings.volumeTolerance = 0.001;
+    collisionSettings.performSurfaceCheck = false;
+    collisionSettings.surfaceTolerance = 0.001;
     GS::ObjectState settings;
     if (parameters.Get ("settings", settings)) {
         settings.Get ("volumeTolerance", collisionSettings.volumeTolerance);
@@ -1929,6 +1913,80 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*para
 
 #endif
 
+
+static API_Coord3D TransformPoint (const API_Coord3D& pt, const API_Tranmat& tm)
+{
+    API_Coord3D res;
+    res.x = (pt.x * tm.tmx[0]) + (pt.y * tm.tmx[1]) + (pt.z * tm.tmx[2]) + tm.tmx[3];
+    res.y = (pt.x * tm.tmx[4]) + (pt.y * tm.tmx[5]) + (pt.z * tm.tmx[6]) + tm.tmx[7];
+    res.z = (pt.x * tm.tmx[8]) + (pt.y * tm.tmx[9]) + (pt.z * tm.tmx[10]) + tm.tmx[11];
+    return res;
+}
+
+static void UpdateGlobalBoundsWithPoint (API_Box3D& globalBounds, const API_Coord3D& pt)
+{
+    if (pt.x < globalBounds.xMin) globalBounds.xMin = pt.x;
+    if (pt.x > globalBounds.xMax) globalBounds.xMax = pt.x;
+    if (pt.y < globalBounds.yMin) globalBounds.yMin = pt.y;
+    if (pt.y > globalBounds.yMax) globalBounds.yMax = pt.y;
+    if (pt.z < globalBounds.zMin) globalBounds.zMin = pt.z;
+    if (pt.z > globalBounds.zMax) globalBounds.zMax = pt.z;
+}
+
+static void GetLocalBodyCorners (const API_BodyType& body, API_Coord3D (&corners)[8])
+{
+    corners[0] = { body.xmin, body.ymin, body.zmin };
+    corners[1] = { body.xmax, body.ymin, body.zmin };
+    corners[2] = { body.xmin, body.ymax, body.zmin };
+    corners[3] = { body.xmax, body.ymax, body.zmin };
+    corners[4] = { body.xmin, body.ymin, body.zmax };
+    corners[5] = { body.xmax, body.ymin, body.zmax };
+    corners[6] = { body.xmin, body.ymax, body.zmax };
+    corners[7] = { body.xmax, body.ymax, body.zmax };
+}
+
+static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& outBounds)
+{
+    outBounds.xMin = outBounds.yMin = outBounds.zMin = 1e30;
+    outBounds.xMax = outBounds.yMax = outBounds.zMax = -1e30;
+
+    API_ElemInfo3D info3D = {};
+    GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
+    if (err != NoError) {
+        return err;
+    }
+
+    bool foundSolidBody = false;
+
+    for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
+        API_Component3D bodyComp = {};
+        bodyComp.header.typeID = API_BodyID;
+        bodyComp.header.index = iBody;
+
+        if (ACAPI_ModelAccess_GetComponent (&bodyComp) != NoError) continue;
+
+        if (bodyComp.body.nPgon == 0) { // Skip non-solid bodies
+            continue;
+        }
+
+        foundSolidBody = true;
+
+        API_Coord3D corners[8];
+        GetLocalBodyCorners (bodyComp.body, corners);
+
+        for (int k = 0; k < 8; ++k) {
+            const API_Coord3D globalPt = TransformPoint (corners[k], bodyComp.body.tranmat);
+            UpdateGlobalBoundsWithPoint (outBounds, globalPt);
+        }
+    }
+
+    if (!foundSolidBody) {
+        return APIERR_GENERAL;
+    }
+
+    return NoError;
+}
+
 Get3DBoundingBoxesCommand::Get3DBoundingBoxesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1988,8 +2046,19 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
 
         API_Elem_Head elemHead = {};
         elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            boundingBoxes3D (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+        const API_ElemTypeID typeID = GetElemTypeId (elemHead);
+
         API_Box3D box3D = {};
-        GSErrCode err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        if (typeID == API_RoofID || typeID == API_ZoneID) {
+            err = CalculateSolidBodyBounds (elemHead, box3D);
+        } else {
+            err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+        }
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
             continue;
@@ -2056,4 +2125,234 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to delete elements.");
+}
+
+GetElementPreviewImageCommand::GetElementPreviewImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementPreviewImageCommand::GetName () const
+{
+    return "GetElementPreviewImage";
+}
+
+GS::Optional<GS::UniString> GetElementPreviewImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "imageType": {
+                "type": "string",
+                "description": "The type of the preview image. Default is 3D.",
+                "enum": ["2D", "Section", "3D"]
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 128."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 128."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementPreviewImageCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "previewImage": {
+                "type": "string",
+                "description": "The base64 encoded preview image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "previewImage"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementPreviewImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_VisualOverriddenImage image = {};
+    image.view = APIImage_Model3D;
+    GS::UniString imageTypeStr;
+    if (parameters.Get ("imageType", imageTypeStr)) {
+        if (imageTypeStr == "2D") {
+            image.view = APIImage_Model2D;
+        } else if (imageTypeStr == "Section") {
+            image.view = APIImage_Section;
+        } else if (imageTypeStr == "3D") {
+            image.view = APIImage_Model3D;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid imageType parameter.");
+        }
+    }
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid format parameter.");
+        }
+    }
+
+    UInt32 width = 128;
+    UInt32 height = 128;
+    parameters.Get ("width", width);
+    parameters.Get ("height", height);
+
+    NewDisplay::NativeImage nativeImage (width, height, 32, nullptr);
+    image.nativeImagePtr = &nativeImage;
+    GSErrCode err = ACAPI_GraphicalOverride_GetVisualOverriddenImage (GetGuidFromElementsArrayItem (parameters), &image);
+    BMhFree (image.vectorImageHandle);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get element preview image.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to encode element preview image.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar(char('\n')));
+    return GS::ObjectState ("previewImage", str);
+}
+
+GetRoomImageCommand::GetRoomImageCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRoomImageCommand::GetName () const
+{
+    return "GetRoomImage";
+}
+
+GS::Optional<GS::UniString> GetRoomImageCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zoneId": {
+                "$ref": "#/ElementId"
+            },
+            "format": {
+                "type": "string",
+                "description": "The image format. Default is png.",
+                "enum": ["png", "jpg"]
+            },
+            "width": {
+                "type": "integer",
+                "description": "The width of the preview image in pixels. Default is 256."
+            },
+            "height": {
+                "type": "integer",
+                "description": "The height of the preview image in pixels. Default is 256."
+            },
+            "offset": {
+                "type": "number",
+                "description": "Offset of the clip polygon from the edge of the zone. Default is 0.001."
+            },
+            "scale": {
+                "type": "number",
+                "description": "Scale of the view (e.g. 0.005 for 1:200). Default is 0.005."
+            },
+            "backgroundColor": {
+                "$ref": "#/ColorRGB",
+                "description": "Background color of the generated image. Default is white (1.0, 1.0, 1.0)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetRoomImageCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "roomImage": {
+                "type": "string",
+                "description": "The base64 encoded room image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roomImage"
+        ]
+    })";
+}
+
+GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_RoomImage image = {};
+    image.roomGuid = GetGuidFromArrayItem ("zoneId", parameters);
+    image.viewType = APIImage_Model2D;
+
+    NewDisplay::NativeImage::Encoding encoding = NewDisplay::NativeImage::Encoding::PNG;
+    GS::UniString formatStr;
+    if (parameters.Get ("format", formatStr)) {
+        if (formatStr == "png") {
+            encoding = NewDisplay::NativeImage::Encoding::PNG;
+        } else if (formatStr == "jpg") {
+            encoding = NewDisplay::NativeImage::Encoding::JPEG;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid format parameter.");
+        }
+    }
+
+    UInt32 width = 256;
+    UInt32 height = 256;
+    parameters.Get ("width", width);
+    parameters.Get ("height", height);
+
+    image.offset = 0.001;
+    parameters.Get ("offset", image.offset);
+
+    image.scale = 0.005;
+    parameters.Get ("scale", image.scale);
+
+    image.backgroundColor = {1.0, 1.0, 1.0};
+    GetColor(parameters, "backgroundColor", image.backgroundColor);
+
+    NewDisplay::NativeImage nativeImage (width, height, 32, nullptr);
+    image.nativeImagePtr = &nativeImage;
+    GSErrCode err = ACAPI_Element_GetRoomImage (&image);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get room image.");
+    }
+
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    if (!nativeImage.Encode (memChannel, encoding)) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to encode room image.");
+    }
+
+    auto str = Base64Converter::Encode (memChannel.GetDestination (), memChannel.GetDataSize ());
+    str.DeleteAll (GS::UniChar(char('\n')));
+    return GS::ObjectState ("roomImage", str);
 }

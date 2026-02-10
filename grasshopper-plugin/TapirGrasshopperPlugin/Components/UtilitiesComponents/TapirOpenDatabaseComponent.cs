@@ -7,7 +7,7 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
     public class TapirOpenDatabaseComponent : ButtonComponent
     {
         public static string WebsiteURL =
-            "https://app.teable.io/invite?invitationId=invgOX6hmfzc7LrBfsM&invitationCode=8dc6c46ad990e79239f36e071dc1264fc378581b86c109b268d6ca9cdc6fa544";
+            "https://appqhvdzwg8xn8ghcy6.teable.app/";
 
         public TapirOpenDatabaseComponent()
             : base(

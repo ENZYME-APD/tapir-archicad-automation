@@ -53,49 +53,49 @@ namespace TapirGrasshopperPlugin.Types.Project
 
     public class Location
     {
-        [JsonProperty("longitude")]
-        public double Longitude;
+        [JsonProperty("longitude", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Longitude;
 
-        [JsonProperty("latitude")]
-        public double Latitude;
+        [JsonProperty("latitude", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Latitude;
 
-        [JsonProperty("altitude")]
-        public double Altitude;
+        [JsonProperty("altitude", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Altitude;
 
-        [JsonProperty("north")]
-        public double North;
+        [JsonProperty("north", NullValueHandling = NullValueHandling.Ignore)]
+        public double? North;
     }
 
     public class SurveyPointPosition
     {
-        [JsonProperty("eastings")]
-        public double Eastings;
+        [JsonProperty("eastings", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Eastings;
 
-        [JsonProperty("northings")]
-        public double Northings;
+        [JsonProperty("northings", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Northings;
 
-        [JsonProperty("elevation")]
-        public double Elevation;
+        [JsonProperty("elevation", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Elevation;
     }
 
     public class GeoReferencingParameters
     {
-        [JsonProperty("crsName")]
+        [JsonProperty("crsName", NullValueHandling = NullValueHandling.Ignore)]
         public string CrsName;
 
-        [JsonProperty("description")]
+        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
         public string Description;
 
-        [JsonProperty("geodeticDatum")]
+        [JsonProperty("geodeticDatum", NullValueHandling = NullValueHandling.Ignore)]
         public string GeodeticDatum;
 
-        [JsonProperty("verticalDatum")]
+        [JsonProperty("verticalDatum", NullValueHandling = NullValueHandling.Ignore)]
         public string VerticalDatum;
 
-        [JsonProperty("mapProjection")]
+        [JsonProperty("mapProjection", NullValueHandling = NullValueHandling.Ignore)]
         public string MapProjection;
 
-        [JsonProperty("mapZone")]
+        [JsonProperty("mapZone", NullValueHandling = NullValueHandling.Ignore)]
         public string MapZone;
     }
 

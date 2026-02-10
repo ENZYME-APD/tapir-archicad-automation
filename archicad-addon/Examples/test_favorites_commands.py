@@ -21,6 +21,11 @@ aclib.RunTapirCommand (
     })
 
 aclib.RunTapirCommand (
+    'GetFavoritePreviewImage', {
+        'favorite': 'ColumnFromPython'
+    })
+
+aclib.RunTapirCommand (
     'ApplyFavoritesToElementDefaults', {
         'favorites': ['ColumnFromPython']
     })

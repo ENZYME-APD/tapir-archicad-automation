@@ -1,6 +1,7 @@
 #include "ElementCreationCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 CreateElementsCommandBase::CreateElementsCommandBase (const GS::String& commandNameIn, API_ElemTypeID elemTypeIDIn, const GS::String& arrayFieldNameIn)
     : CommandBase (CommonSchema::Used)
@@ -42,6 +43,10 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemTypeID);
     const Stories stories = GetStories ();
 
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
     ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
         API_Element element = {};
         API_ElementMemo memo = {};
@@ -72,6 +77,11 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            notification = {};
+            notification.notifID = APINotifyElement_New;
+            notification.elemHead = element.header;
+            AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
             elements (CreateElementIdObjectState (element.header.guid));
         }
 
@@ -79,6 +89,10 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
 
         return NoError;
     });
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
     return response;
 }
@@ -267,9 +281,11 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
 
 GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    parameters.Get ("level", element.slab.level);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (element.slab.level, stories);
+    double inputLevel = 0.0;
+    parameters.Get ("level", inputLevel);
+    const auto floorIndexAndOffset = GetFloorIndexAndOffset (inputLevel, stories);
     element.header.floorInd = floorIndexAndOffset.first;
+    element.slab.level = floorIndexAndOffset.second;
 
     GS::Array<GS::ObjectState> polygonCoordinates;
     GS::Array<GS::ObjectState> polygonArcs;
@@ -500,7 +516,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                 "properties" : {
                     "floorInd": {
                         "type": "number",
-                        "description" : "The identifier of the floor. Optinal parameter, by default the current floor is used."	
+                        "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
                     },
                     "coordinates": { 
                         "type": "array",

@@ -123,7 +123,7 @@ var gSchemaDefinitions = {
                 }
             },
             "additionalProperties": false,
-            "required" : [
+            "required": [
                 "attributeId",
                 "isHidden",
                 "isLocked",
@@ -153,7 +153,7 @@ var gSchemaDefinitions = {
             }
         },
         "additionalProperties": false,
-        "required" : [
+        "required": [
             "attributeId",
             "name",
             "layers"
@@ -168,7 +168,7 @@ var gSchemaDefinitions = {
             }
         },
         "additionalProperties": false,
-        "required" : [
+        "required": [
             "layerCombination"
         ]
     },
@@ -215,6 +215,13 @@ var gSchemaDefinitions = {
             "location"
         ]
     },
+    "SetGDLParameterArray": {
+        "type": "array",
+        "description": "The list of GDL parameters.",
+        "items": {
+            "$ref": "#/SetGDLParameterDetails"
+        }
+    },
     "GDLParameterArray": {
         "type": "array",
         "description": "The list of GDL parameters.",
@@ -235,6 +242,38 @@ var gSchemaDefinitions = {
             "parameters"
         ]
     },
+    "PossibleStringValues": {
+        "type": "array",
+        "description": "The possible string values of a GDL parameter.",
+        "items": {
+            "type": "string"
+        }
+    },
+    "PossibleNumericValues": {
+        "type": "array",
+        "description": "The possible numeric values of a GDL parameter.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "number",
+                    "description": "The numeric value."
+                },
+                "flag": {
+                    "type": "string",
+                    "description": "The flag."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "The description of the value."
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "value"
+            ]
+        }
+    },
     "GDLParameterDetails": {
         "type": "object",
         "description": "Details of a GDL parameter.",
@@ -243,8 +282,12 @@ var gSchemaDefinitions = {
                 "type": "string",
                 "description": "The name of the parameter."
             },
-            "index": {
+            "displayName": {
                 "type": "string",
+                "description": "The display name of the parameter."
+            },
+            "index": {
+                "type": "integer",
                 "description": "The index of the parameter."
             },
             "type": {
@@ -252,12 +295,92 @@ var gSchemaDefinitions = {
                 "description": "The type of the parameter."
             },
             "dimension1": {
-                "type": "number",
+                "type": "integer",
                 "description": "The 1st dimension of array (in case of array value)."
             },
             "dimension2": {
-                "type": "number",
+                "type": "integer",
                 "description": "The 2nd dimension of array (in case of array value)."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            },
+            "valueDescription": {
+                "type": "string",
+                "description": "The value description for numeric parameter."
+            },
+            "isLocked": {
+                "type": "boolean",
+                "description": "The parameter is locked; i.e. the user cannot modify it"
+            },
+            "flags": {
+                "type": "array",
+                "description": "The flags of the parameter.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child",
+                        "Unique",
+                        "Fixed"
+                    ]
+                }
+            },
+            "possibleValues": {
+                "oneOf": [
+                    {
+                        "$ref": "#/PossibleStringValues"
+                    },
+                    {
+                        "$ref": "#/PossibleNumericValues"
+                    }
+                ]
+            },
+            "canHaveCustomValue": {
+                "type": "boolean",
+                "description": "The parameter can have a custom value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "displayName",
+            "index",
+            "type",
+            "dimension1",
+            "dimension2",
+            "value",
+            "isLocked",
+            "flags"
+        ]
+    },
+    "SetGDLParameterByNameDetails": {
+        "type": "object",
+        "description": "Details of a GDL parameter.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "value": {
+                "description": "The value of the parameter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ]
+    },
+    "SetGDLParameterByIndexDetails": {
+        "type": "object",
+        "description": "Details of a GDL parameter.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the parameter."
             },
             "value": {
                 "description": "The value of the parameter."
@@ -266,8 +389,17 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "index",
-            "type",
             "value"
+        ]
+    },
+    "SetGDLParameterDetails": {
+        "oneOf": [
+            {
+                "$ref": "#/SetGDLParameterByNameDetails"
+            },
+            {
+                "$ref": "#/SetGDLParameterByIndexDetails"
+            }
         ]
     },
     "PolyArc": {
@@ -2537,6 +2669,17 @@ var gSchemaDefinitions = {
             "frames"
         ]
     },
+    "CurtainWallFrameType": {
+        "type": "string",
+        "description": "Enumeration of available curtain wall frame types.",
+        "enum": [
+            "Deleted",
+            "Division",
+            "Corner",
+            "Boundary",
+            "Custom"
+        ]
+    },
     "CurtainWallFrameDetails": {
         "type": "object",
         "properties": {
@@ -2605,14 +2748,7 @@ var gSchemaDefinitions = {
                 "type": "string"
             },
             "type": {
-                "type": "string",
-                "enum": [
-                    "Deleted",
-                    "Division",
-                    "Corner",
-                    "Boundary",
-                    "Custom"
-                ]
+                "$ref": "#/CurtainWallFrameType"
             }
         },
         "additionalProperties": false,
@@ -2982,7 +3118,7 @@ var gSchemaDefinitions = {
             },
             "changes": {
                 "type": "array",
-                "description": "All changes belong to the given document revision.",
+                "description": "All changes belonging to the given document revision.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -3360,7 +3496,7 @@ var gSchemaDefinitions = {
                         },
                         "neighbouringZoneElementId": {
                             "$ref": "#/ElementId",
-                            "description": "Returns the unique identifer of the other Zone the element connects to if the boundary is internal. Please note that this boundary does not represent the boundary of the element with the other Zone."
+                            "description": "Returns the unique identifier of the other Zone the element connects to if the boundary is internal. Please note that this boundary does not represent the boundary of the element with the other Zone."
                         },
                         "area": {
                             "type": "number",
@@ -3400,6 +3536,140 @@ var gSchemaDefinitions = {
             {
                 "$ref": "#/ErrorItem"
             }
+        ]
+    },
+    "BuildingMaterialPhysicalPropertiesList": {
+        "type": "array",
+        "description": "A list of building material physical properties",
+        "items": {
+            "$ref": "#/BuildingMaterialPhysicalPropertiesArrayItem"
+        }
+    },
+    "BuildingMaterialPhysicalPropertiesArrayItem": {
+        "type": "object",
+        "properties": {
+            "properties": {
+                "$ref": "#/BuildingMaterialPhysicalProperties"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    },
+    "BuildingMaterialPhysicalProperties": {
+        "type": "object",
+        "description": "The physical properties of a single building material.",
+        "properties": {
+            "thermalConductivity": {
+                "type": "number",
+                "description": "Thermal Conductivity."
+            },
+            "density": {
+                "type": "number",
+                "description": "Density."
+            },
+            "heatCapacity": {
+                "type": "number",
+                "description": "Heat Capacity."
+            },
+            "embodiedEnergy": {
+                "type": "number",
+                "description": "Embodied Energy."
+            },
+            "embodiedCarbon": {
+                "type": "number",
+                "description": "Embodied Carbon."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "thermalConductivity",
+            "density",
+            "heatCapacity",
+            "embodiedEnergy",
+            "embodiedCarbon"
+        ]
+    },
+    "ProjectInfoFields": {
+        "type": "array",
+        "description": "A list of project info fields.",
+        "items": {
+            "$ref": "#/ProjectInfoField"
+        }
+    },
+    "ProjectInfoField": {
+        "type": "object",
+        "properties": {
+            "projectInfoId": {
+                "type": "string",
+                "description": "The id of the project info field."
+            },
+            "projectInfoName": {
+                "type": "string",
+                "description": "The name of the project info field visible on UI."
+            },
+            "projectInfoValue": {
+                "type": "string",
+                "description": "The value of the project info field."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoId",
+            "projectInfoName",
+            "projectInfoValue"
+        ]
+    },
+    "LibraryFileAdditions": {
+        "type": "array",
+        "description": "A list of library file additions to the embedded library",
+        "items": {
+            "$ref": "#/LibraryFileAddition"
+        }
+    },
+    "LibraryFileAddition": {
+        "type": "object",
+        "properties": {
+            "inputPath": {
+                "type": "string",
+                "description": "The path to the input file."
+            },
+            "outputPath": {
+                "type": "string",
+                "description": "The relative path to the new file inside embedded library."
+            },
+            "type": {
+                "description": "The type of the library part. By default 'Pict'.",
+                "default": "Pict",
+                "allOf": [
+                    { "$ref": "#/LibraryPartType" }
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "inputPath",
+            "outputPath"
+        ]
+    },
+    "LibraryPartType": {
+        "type": "string",
+        "description": "Enumeration of available library part types.",
+        "enum": [
+            "Window",
+            "Door",
+            "Object",
+            "Lamp",
+            "Room",
+            "Property",
+            "PlanSign",
+            "Label",
+            "Macro",
+            "Pict",
+            "ListScheme",
+            "Skylight",
+            "OpeningSymbol"
         ]
     }
 };
