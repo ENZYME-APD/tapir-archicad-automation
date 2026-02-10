@@ -354,6 +354,105 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "SetGeoLocation",
+                "version": "1.2.9",
+                "description": "Sets the project location details.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "projectLocation": {
+                "type": "object",
+                "properties": {
+                    "longitude": {
+                        "type": "number",
+                        "description": "longitude in degrees"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "description": "latitude in degrees"
+                    },
+                    "altitude": {
+                        "type": "number",
+                        "description": "altitude in meters"
+                    },
+                    "north": {
+                        "type": "number",
+                        "description": "north direction in radians"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                ]
+            },
+            "surveyPoint": {
+                "type": "object",
+                "properties": {
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "eastings": {
+                                "type": "number",
+                                "description": "Location along the easting of the coordinate system of the target map coordinate reference system."
+                            },
+                            "northings": {
+                                "type": "number",
+                                "description": "Location along the northing of the coordinate system of the target map coordinate reference system."
+                            },
+                            "elevation": {
+                                "type": "number",
+                                "description": "Orthogonal height relative to the vertical datum specified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                        ]
+                    },
+                    "geoReferencingParameters": {
+                        "type": "object",
+                        "properties": {
+                            "crsName": {
+                                "type": "string",
+                                "description": "Name by which the coordinate reference system is identified."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Informal description of this coordinate reference system."
+                            },
+                            "geodeticDatum": {
+                                "type": "string",
+                                "description": "Name by which this datum is identified."
+                            },
+                            "verticalDatum": {
+                                "type": "string",
+                                "description": "Name by which the vertical datum is identified."
+                            },
+                            "mapProjection": {
+                                "type": "string",
+                                "description": "Name by which the map projection is identified."
+                            },
+                            "mapZone": {
+                                "type": "string",
+                                "description": "Name by which the map zone, relating to the MapProjection, is identified."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "IFCFileOperation",
                 "version": "1.2.6",
                 "description": "Executes an IFC file operation.",
@@ -431,19 +530,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            },
-            "executionResultForDatabases": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
+        "$ref": "#/GetElementsByTypeResponseOrError"
     }
             },{
                 "name": "GetAllElements",
@@ -467,19 +554,7 @@ var gCommands = [{
         "required": []
     },
                 "outputScheme": {
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            },
-            "executionResultForDatabases": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
+        "$ref": "#/GetElementsByTypeResponseOrError"
     }
             },{
                 "name": "ChangeSelectionOfElements",
@@ -839,28 +914,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "type": "object",
-        "properties": {
-            "connectedElements": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "elements": {
-                            "$ref": "#/Elements"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elements"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "connectedElements"
-        ]
+        "$ref": "#/GetConnectedElementsResponseOrError"
     }
             },{
                 "name": "GetZoneBoundaries",
@@ -1859,16 +1913,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "type": "object",
-        "properties": {
-            "favorites": {
-              "$ref": "#/Favorites"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "favorites"
-        ]
+        "$ref": "#/GetFavoritesByTypeResponseOrError"
     }
             },{
                 "name": "GetFavoritePreviewImage",
@@ -2289,39 +2334,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "type": "object",
-        "properties": {
-            "attributes" : {
-                "type": "array",
-                "description" : "Details of attributes.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "index": {
-                            "type": "number",
-                            "description": "Index of the attribute."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "Name of the attribute."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "index",
-                        "name"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "attributes"
-        ]
+        "$ref": "#/GetAttributesByTypeResponseOrError"
     }
             },{
                 "name": "CreateLayers",
@@ -3729,6 +3742,139 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "revisionChangesOfElements"
+        ]
+    }
+            }]
+        },{
+            "name": "Design Options Commands",
+            "commands": [{
+                "name": "GetDesignOptions",
+                "version": "1.2.7",
+                "description": "Retrieves information about existing design options. Available from Archicad 29.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionId": {
+                            "$ref": "#/GuidId",
+                            "description": "The guid identifier of the design option."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the design option."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "The string id of the design option."
+                        },
+                        "ownerSetName": {
+                            "type": "string",
+                            "description": "The name of the owner design option set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionId",
+                        "name",
+                        "id",
+                        "ownerSetName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptions"
+        ]
+    }
+            },{
+                "name": "GetDesignOptionSets",
+                "version": "1.2.7",
+                "description": "Retrieves information about existing design option sets. Available from Archicad 29.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionSets": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionSetId": {
+                            "$ref": "#/GuidId",
+                            "description": "The guid identifier of the design option set."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the design option set."
+                        },
+                        "designOptions": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/DesignOptionIdArrayItem"
+                            },
+                            "description": "The list of design options in the set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionSetId",
+                        "name",
+                        "designOptions"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSets"
+        ]
+    }
+            },{
+                "name": "GetDesignOptionCombinations",
+                "version": "1.2.7",
+                "description": "Retrieves information about existing design option combinations.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionCombinationId": {
+                            "$ref": "#/GuidId",
+                            "description": "The guid identifier of the design option combination."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the design option combination."
+                        },
+                        "activeDesignOptions": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/DesignOptionIdArrayItem"
+                            },
+                            "description": "The list of active design options in the combination. Available from Archicad 29."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionCombinationId",
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinations"
         ]
     }
             }]

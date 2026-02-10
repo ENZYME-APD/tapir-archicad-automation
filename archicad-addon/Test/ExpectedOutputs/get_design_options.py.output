@@ -1,0 +1,21 @@
+Command: GetDesignOptions
+Parameters:
+{}
+Response:
+{
+    "designOptions": []
+}
+Command: GetDesignOptionSets
+Parameters:
+{}
+Response:
+{
+    "designOptionSets": []
+}
+Command: GetDesignOptionCombinations
+Parameters:
+{}
+Response:
+{
+    "designOptionCombinations": []
+}

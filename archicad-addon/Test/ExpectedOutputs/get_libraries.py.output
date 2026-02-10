@@ -5,8 +5,8 @@ Response:
 {
     "libraries": [
         {
-            "name": "BuiltInLibraryParts.lcf",
-            "path": "<PATH>BuiltInLibraryParts.lcf",
+            "name": "BuiltInLibraryParts.libpack",
+            "path": "<PATH>BuiltInLibraryParts.libpack",
             "type": "BuiltInLibrary",
             "available": true,
             "readOnly": true,

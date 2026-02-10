@@ -12934,6 +12934,18 @@ Response:
             },
             "propertyType": "StaticBuiltIn",
             "propertyGroupName": "Floor Plan and Section",
+            "propertyName": "Arrowhead Pen",
+            "propertyCollectionType": "List",
+            "propertyValueType": "Integer",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "Floor Plan and Section",
             "propertyName": "Angle Dimension Pointer Pen (Archicad 21)",
             "propertyCollectionType": "Single",
             "propertyValueType": "Integer",
@@ -14725,6 +14737,30 @@ Response:
             "propertyName": "Thermal Conductivity",
             "propertyCollectionType": "Single",
             "propertyValueType": "Real",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "View Group",
+            "propertyName": "Placed on Layout",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Boolean",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "View Group",
+            "propertyName": "Included in Publisher Set",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Boolean",
             "propertyMeasureType": "Default",
             "propertyIsEditable": false
         },
@@ -17698,6 +17734,18 @@ Response:
             },
             "propertyType": "StaticBuiltIn",
             "propertyGroupName": "MEP",
+            "propertyName": "Open MEP Connection",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Boolean",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
             "propertyName": "Length (MEP)",
             "propertyCollectionType": "Single",
             "propertyValueType": "Real",
@@ -17770,7 +17818,7 @@ Response:
             },
             "propertyType": "StaticBuiltIn",
             "propertyGroupName": "MEP",
-            "propertyName": "Branch Width (MEP)",
+            "propertyName": "2nd Width (MEP)",
             "propertyCollectionType": "Single",
             "propertyValueType": "Real",
             "propertyMeasureType": "Length",
@@ -17782,7 +17830,7 @@ Response:
             },
             "propertyType": "StaticBuiltIn",
             "propertyGroupName": "MEP",
-            "propertyName": "Branch Height (MEP)",
+            "propertyName": "2nd Height (MEP)",
             "propertyCollectionType": "Single",
             "propertyValueType": "Real",
             "propertyMeasureType": "Length",
@@ -17794,10 +17842,154 @@ Response:
             },
             "propertyType": "StaticBuiltIn",
             "propertyGroupName": "MEP",
-            "propertyName": "Branch Diameter (MEP)",
+            "propertyName": "2nd Diameter (MEP)",
             "propertyCollectionType": "Single",
             "propertyValueType": "Real",
             "propertyMeasureType": "Length",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "Custom Angle (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Angle",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "Material Name (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "String",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "Wall Thickness (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Length",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "Angle (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Angle",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "DN (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Integer",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "Description (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "String",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "Elbow Radius (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Length",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "MEP",
+            "propertyName": "2nd DN (MEP)",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Integer",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "Ventilation",
+            "propertyName": "Air Volume Flow",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "Ventilation",
+            "propertyName": "Ventilation Velocity",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "Ventilation",
+            "propertyName": "Ventilation Air Supply",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Default",
+            "propertyIsEditable": false
+        },
+        {
+            "propertyId": {
+                "guid": "<GUID>"
+            },
+            "propertyType": "StaticBuiltIn",
+            "propertyGroupName": "Ventilation",
+            "propertyName": "Ventilation Exhaust",
+            "propertyCollectionType": "Single",
+            "propertyValueType": "Real",
+            "propertyMeasureType": "Default",
             "propertyIsEditable": false
         },
         {
