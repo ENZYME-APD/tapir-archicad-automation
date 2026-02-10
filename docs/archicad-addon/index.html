@@ -52,6 +52,14 @@ print (response)</code></pre>
             <script type="text/javascript">
                 let commandsDiv = document.getElementById ('commands');
                 RenderCommands (commandsDiv, gCommands, gSchemaDefinitions);
+                function openTarget() {
+                    var hash = location.hash.substring(1);
+                    if(hash) var details = document.getElementById(hash);
+                    if(details && details.tagName.toLowerCase() === 'details') details.open = true;
+                }
+                window.addEventListener('onload', openTarget);
+                window.addEventListener('load', openTarget);
+                window.addEventListener('hashchange', openTarget);
             </script>
         </div>
     </div>

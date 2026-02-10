@@ -52,6 +52,14 @@ function CreateSchemaElement(parentElement, title, schema, schemaDefinitions) {
 }
 
 function RenderCommand(parentElement, command, schemaDefinitions) {
+    parentElement.setAttribute("id", command.name);
+    parentElement.addEventListener("toggle", function() {
+        if(parentElement.open) {
+            window.location.hash = command.name;
+        } else {
+            window.location.hash = '';
+        }
+    })
     let headerElement = CreateElement(parentElement, 'summary', 'command_header', null);
     CreateElement(headerElement, 'span', 'command_name', command.name);
     CreateElement(headerElement, 'span', 'command_version', command.version);
