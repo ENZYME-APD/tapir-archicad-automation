@@ -560,15 +560,15 @@ GSErrCode Initialize (void)
     { // Design Options Commands
         CommandGroup designOptionsCommands ("Design Options Commands");
         err |= RegisterCommand<GetDesignOptionsCommand> (
-            designOptionsCommands, "1.2.7",
+            designOptionsCommands, "1.2.9",
             "Retrieves information about existing design options. Available from Archicad 29."
         );
         err |= RegisterCommand<GetDesignOptionSetsCommand> (
-            designOptionsCommands, "1.2.7",
+            designOptionsCommands, "1.2.9",
             "Retrieves information about existing design option sets. Available from Archicad 29."
         );
         err |= RegisterCommand<GetDesignOptionCombinationsCommand> (
-            designOptionsCommands, "1.2.7",
+            designOptionsCommands, "1.2.9",
             "Retrieves information about existing design option combinations."
         );
         AddCommandGroup (designOptionsCommands);
