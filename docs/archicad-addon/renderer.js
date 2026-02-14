@@ -53,11 +53,11 @@ function CreateSchemaElement(parentElement, title, schema, schemaDefinitions) {
 
 function RenderCommand(parentElement, command, schemaDefinitions) {
     parentElement.setAttribute("id", command.name);
-    parentElement.addEventListener("toggle", function() {
-        if(parentElement.open) {
-            window.location.hash = command.name;
+    parentElement.addEventListener("toggle", function () {
+        if (parentElement.open) {
+            history.pushState(null, '', window.location.pathname + '#' + command.name);
         } else {
-            window.location.hash = '';
+            history.replaceState(null, '', window.location.pathname);
         }
     })
     let headerElement = CreateElement(parentElement, 'summary', 'command_header', null);
