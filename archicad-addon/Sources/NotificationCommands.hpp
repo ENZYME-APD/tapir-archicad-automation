@@ -57,7 +57,6 @@ public:
 
 public:
     AddElementNotificationClientCommand ();
-    ~AddElementNotificationClientCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;

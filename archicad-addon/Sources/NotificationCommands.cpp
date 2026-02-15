@@ -93,11 +93,6 @@ AddElementNotificationClientCommand::AddElementNotificationClientCommand () :
 {
 }
 
-AddElementNotificationClientCommand::~AddElementNotificationClientCommand ()
-{
-    messageSenderThread.Join ();
-}
-
 GS::String AddElementNotificationClientCommand::GetName () const
 {
     return "SetElementNotificationClient";
@@ -118,18 +113,15 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnNewElement": {
                 "type": "boolean",
-                "description": "Notify on creation of a new element.",
-                "default": true
+                "description": "Notify on creation of a new element. Optional parameter, by default true."
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element.",
-                "default": true
+                "description": "Notify on modification/deletion of an element. Optional parameter, by default true."
             },
             "notifyOnReservationChanges": {
                 "type": "boolean",
-                "description": "Notify on reservation changes of an element.",
-                "default": true
+                "description": "Notify on reservation changes of an element. Optional parameter, by default true."
             }
         },
         "additionalProperties": false,
@@ -161,10 +153,10 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     parameters.Get ("host", host);
 
     bool notifyOnNew = true;
-    parameters.Get ("notifyOnNew", notifyOnNew);
+    parameters.Get ("notifyOnNewElement", notifyOnNew);
 
     bool notifyOnModification = true;
-    parameters.Get ("notifyOnModification", notifyOnModification);
+    parameters.Get ("notifyOnModificationOfAnElement", notifyOnModification);
 
     bool notifyOnReservationChanges = true;
     parameters.Get ("notifyOnReservationChanges", notifyOnReservationChanges);

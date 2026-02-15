@@ -3666,15 +3666,12 @@
             },
             "type": {
                 "description": "The type of the library part. By default 'Pict'.",
-                "default": "Pict",
-                "allOf": [
-                    { "$ref": "#/LibraryPartType" }
-                ]
+                "$ref": "#/LibraryPartType"
             }
         },
         "additionalProperties": false,
         "required": [
-             "inputPath",
+            "inputPath",
             "outputPath"
         ]
     },
