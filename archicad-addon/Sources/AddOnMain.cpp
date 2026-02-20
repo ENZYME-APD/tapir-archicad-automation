@@ -8,6 +8,10 @@
 #include "ResourceIds.hpp"
 #include "DeveloperTools.hpp"
 
+#include "3DCutPlaneCommands.hpp"
+
+
+
 #include "AboutDialog.hpp"
 #include "TapirPalette.hpp"
 #include "VersionChecker.hpp"
@@ -124,7 +128,7 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_PALETTE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_UPDATE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
-	err |= TapirPalette::RegisterPaletteControlCallBack ();
+    err |= TapirPalette::RegisterPaletteControlCallBack ();
 
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
@@ -483,6 +487,11 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetView2DTransformationsCommand> (
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"
+        );
+
+        err |= RegisterCommand<Set3DCutPlanesCommand> (
+            navigatorCommands, "1.3.0",
+            "Sets the 3D cut planes."
         );
         AddCommandGroup (navigatorCommands);
     }
