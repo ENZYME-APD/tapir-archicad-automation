@@ -26,7 +26,7 @@ GSErrCode _Set3DCutPlanes (int shapesCount = 2, GS::Array<GS::ObjectState>* shap
 
         cutInfo.isCutPlanes = true;
         cutInfo.useCustom = false;
-        cutInfo.nShapes = shapesCount;
+        cutInfo.nShapes = (short)shapesCount;
         cutInfo.shapes = reinterpret_cast<API_3DCutShapeType**> (BMAllocateHandle (cutInfo.nShapes * sizeof (API_3DCutShapeType), ALLOCATE_CLEAR, 0));
         if (cutInfo.shapes != nullptr) {
 
