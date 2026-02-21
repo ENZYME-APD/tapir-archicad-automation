@@ -12,6 +12,7 @@
 #include "ACAPI/ZoneBoundaryQuery.hpp"
 #endif
 
+
 #include <algorithm>
 
 static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
@@ -2352,6 +2353,62 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
 
 
 
+
+// ACAPI_Grouping_Tool Commands
+
+
+GSErrCode Use_ACAPI_Grouping_Tool (const GS::Array<API_Guid>& elementGuids, API_ToolCmdID action)
+{
+    GSErrCode err = ACAPI_Grouping_Tool (elementGuids, action, nullptr);
+    if (err != NoError) {
+        return err;
+    } else {
+        return NoError;
+    }
+}
+
+static GS::ObjectState ExecuteGroupingToolCommand (
+    const GS::ObjectState& parameters,
+    API_ToolCmdID action,
+    const char* undoableCommandName,
+    const char* errorMessage
+)
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    GS::Array<API_Guid> elementGuids;
+
+    GSErrCode err = NoError;
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "elementId is missing for one of the elements.");
+        }
+
+        API_Element elem = {};
+        elem.header.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&elem.header) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Failed to find element in Archicad for one of the elements.");
+        }
+        GSErrCode err = ACAPI_Element_Get (&elem);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to find element in Archicad for one of the elements.");
+        }
+        elementGuids.Push (elem.header.guid);
+    }
+
+    ACAPI_CallUndoableCommand (undoableCommandName, [&]() -> GSErrCode {
+        err = Use_ACAPI_Grouping_Tool (elementGuids, action);
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, errorMessage);
+}
+
+
 GS::String LockElementsCommand::GetName () const
 {
     return "LockElements";
@@ -2389,53 +2446,23 @@ GS::Optional<GS::UniString> LockElementsCommand::GetResponseSchema () const
 
 
 
-GSErrCode _LockElements (const GS::Array<API_Guid>& elementGuids)
-{
-    GSErrCode err = ACAPI_Grouping_Tool (elementGuids, APITool_Lock, nullptr);
-    if (err != NoError) {
-        return err;
-    } else {
-        return NoError;
-    }
-
-
-}
+static const GS::UniString ACAPI_GroupingToolCommands_InputSchema = R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
 
 
 GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elements;
-    parameters.Get ("elements", elements);
-    GS::Array<API_Guid> elementsToLock;
-
-    GSErrCode err = NoError;
-
-    for (const GS::ObjectState& element : elements) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            return CreateErrorResponse (APIERR_BADPARS, "elementId is missing for one of the elements.");
-        }
-
-        API_Element elem = {};
-        elem.header.guid = GetGuidFromObjectState (*elementId);
-        if (ACAPI_Element_GetHeader (&elem.header) != NoError) {
-            return CreateErrorResponse (APIERR_BADPARS, "Failed to find element in Archicad for one of the elements.");
-        }
-        GSErrCode err = ACAPI_Element_Get (&elem);
-        if (err != NoError) {
-            return CreateErrorResponse (err, "Failed to find element in Archicad for one of the elements.");
-        }
-        elementsToLock.Push (elem.header.guid);
-    }
-
-    ACAPI_CallUndoableCommand ("Lock Elements", [&]() -> GSErrCode {
-        err = _LockElements (elementsToLock);
-        return err;
-    });
-
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to lock elements.");
+    return ExecuteGroupingToolCommand (parameters, APITool_Lock, "Lock Elements", "Failed to lock elements.");
 }
 
 
@@ -2450,18 +2477,7 @@ UnlockElementsCommand::UnlockElementsCommand () :
 
 GS::Optional<GS::UniString> UnlockElementsCommand::GetInputParametersSchema () const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
-    })";
+    return ACAPI_GroupingToolCommands_InputSchema;
 }
 
 GS::Optional<GS::UniString> UnlockElementsCommand::GetResponseSchema () const
@@ -2471,48 +2487,60 @@ GS::Optional<GS::UniString> UnlockElementsCommand::GetResponseSchema () const
     })";
 }
 
-GSErrCode _UnlockElements (const GS::Array<API_Guid>& elementGuids)
-{
-    GSErrCode err = ACAPI_Grouping_Tool (elementGuids, APITool_Unlock, nullptr);
-    if (err != NoError) {
-        return err;
-    } else {
-        return NoError;
-    }
-}
 
 GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elements;
-    parameters.Get ("elements", elements);
-    GS::Array<API_Guid> elementsToUnlock;
+    return ExecuteGroupingToolCommand (parameters, APITool_Unlock, "Unlock Elements", "Failed to unlock elements.");
+}
 
-    GSErrCode err = NoError;
+GS::String GroupElementsCommand::GetName () const
+{
+    return "GroupElements";
+}
 
-    for (const GS::ObjectState& element : elements) {
-        const GS::ObjectState* elementId = element.Get ("elementId");
-        if (elementId == nullptr) {
-            return CreateErrorResponse (APIERR_BADPARS, "elementId is missing for one of the elements.");
-        }
+GroupElementsCommand::GroupElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
 
-        API_Element elem = {};
-        elem.header.guid = GetGuidFromObjectState (*elementId);
-        if (ACAPI_Element_GetHeader (&elem.header) != NoError) {
-            return CreateErrorResponse (APIERR_BADPARS, "Failed to find element in Archicad for one of the elements.");
-        }
-        GSErrCode err = ACAPI_Element_Get (&elem);
-        if (err != NoError) {
-            return CreateErrorResponse (err, "Failed to find element in Archicad for one of the elements.");
-        }
-        elementsToUnlock.Push (elem.header.guid);
-    }
+GS::Optional<GS::UniString> GroupElementsCommand::GetInputParametersSchema () const
+{
+    return ACAPI_GroupingToolCommands_InputSchema;
+}
 
-    ACAPI_CallUndoableCommand ("Unlock Elements", [&]() -> GSErrCode {
-        err = _UnlockElements (elementsToUnlock);
-        return err;
-    });
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to unlock elements.");
+GS::Optional<GS::UniString> GroupElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState GroupElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteGroupingToolCommand (parameters, APITool_Group, "Group Elements", "Failed to group elements.");
+}
+
+GS::String UngroupElementsCommand::GetName () const
+{
+    return "UngroupElements";
+}
+UngroupElementsCommand::UngroupElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::Optional<GS::UniString> UngroupElementsCommand::GetInputParametersSchema () const
+{
+    return ACAPI_GroupingToolCommands_InputSchema;
+}
+
+GS::Optional<GS::UniString> UngroupElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState UngroupElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteGroupingToolCommand (parameters, APITool_Ungroup, "Ungroup Elements", "Failed to ungroup elements.");
 }
