@@ -318,6 +318,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.8",
             "Removes an element notification client."
         );
+        err |= RegisterCommand<LockElementsCommand> (
+            elementCommands, "1.3.0",
+            "Locks elements."
+        );
         AddCommandGroup (elementCommands);
     }
 
