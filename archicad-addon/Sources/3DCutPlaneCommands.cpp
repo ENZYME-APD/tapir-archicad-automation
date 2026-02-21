@@ -15,7 +15,7 @@ Set3DCutPlanesCommand::Set3DCutPlanesCommand () :
 {}
 
 
-GSErrCode _Set3DCutPlanes (int shapesCount = 2, GS::Array<GS::ObjectState>* shapeCoordinates = nullptr)
+GSErrCode _Set3DCutPlanes (GS::Array<GS::ObjectState>& shapeCoordinates)
 {
     API_3DCutPlanesInfo cutInfo {};
 
@@ -26,7 +26,7 @@ GSErrCode _Set3DCutPlanes (int shapesCount = 2, GS::Array<GS::ObjectState>* shap
 
         cutInfo.isCutPlanes = true;
         cutInfo.useCustom = false;
-        cutInfo.nShapes = (short) shapesCount;
+        cutInfo.nShapes = (short) shapeCoordinates.GetSize ();
         cutInfo.shapes = reinterpret_cast<API_3DCutShapeType**> (BMAllocateHandle (cutInfo.nShapes * sizeof (API_3DCutShapeType), ALLOCATE_CLEAR, 0));
         if (cutInfo.shapes != nullptr) {
 
@@ -34,17 +34,17 @@ GSErrCode _Set3DCutPlanes (int shapesCount = 2, GS::Array<GS::ObjectState>* shap
             // you can look it up here:
             // https://graphisoft.github.io/archicad-api-devkit/struct_a_p_i__3_d_cut_shape_type.html
             // for now, we only pass coordinates
-            if (shapeCoordinates != nullptr) {
-                for (int i = 0; i < shapesCount; ++i) {
+            if (!shapeCoordinates.IsEmpty ()) {
+                for (int i = 0; i < cutInfo.nShapes; ++i) {
                     double pa;
                     double pb;
                     double pc;
                     double pd;
 
-                    (*shapeCoordinates)[i].Get ("pa", pa);
-                    (*shapeCoordinates)[i].Get ("pb", pb);
-                    (*shapeCoordinates)[i].Get ("pc", pc);
-                    (*shapeCoordinates)[i].Get ("pd", pd);
+                    shapeCoordinates[i].Get ("pa", pa);
+                    shapeCoordinates[i].Get ("pb", pb);
+                    shapeCoordinates[i].Get ("pc", pc);
+                    shapeCoordinates[i].Get ("pd", pd);
 
                     (*cutInfo.shapes)[i].pa = pa;
                     (*cutInfo.shapes)[i].pb = pb;
@@ -76,25 +76,33 @@ GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetInputParametersSchema () c
     return R"({
     "type": "object",
     "properties": {
-        "shapesCount": {
-            "type": "integer",
-            "minimum": 1
-        },
         "shapeCoordinates": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
-                    "pa": {"type": "number"},
-                    "pb": {"type": "number"},
-                    "pc": {"type": "number"},
-                    "pd": {"type": "number"}
+                    "pa": {
+                        "type": "number"
+                    },
+                    "pb": {
+                        "type": "number"
+                    },
+                    "pc": {
+                        "type": "number"
+                    },
+                    "pd": {
+                        "type": "number"
+                    }
                 },
-                "required": ["pa", "pb", "pc", "pd"],
+                "required": [
+                    "pa",
+                    "pb",
+                    "pc",
+                    "pd"
+                ],
                 "minItems": 4,
                 "maxItems": 4,
                 "additionalProperties": false
-            }
             }
         }
     },
@@ -114,10 +122,6 @@ GS::ObjectState Set3DCutPlanesCommand::Execute (const GS::ObjectState& parameter
 {
     GSErrCode err = NoError;
 
-    int shapesCount = 0;
-    if (!parameters.Get ("shapesCount", shapesCount)) {
-        return CreateFailedExecutionResult (err, "Missing required parameter: shapesCount.");
-    }
     GS::Array<GS::ObjectState> shapeCoordinates;
     if (!parameters.Get ("shapeCoordinates", shapeCoordinates)) {
         return CreateFailedExecutionResult (err, "Invalid parameter: shapeCoordinates.");
@@ -125,7 +129,7 @@ GS::ObjectState Set3DCutPlanesCommand::Execute (const GS::ObjectState& parameter
 
 
     ACAPI_CallUndoableCommand ("Set3DCutPlanesCommand", [&]() -> GSErrCode {
-        err = _Set3DCutPlanes (shapesCount, &shapeCoordinates);
+        err = _Set3DCutPlanes (shapeCoordinates);
         return err;
     });
 
