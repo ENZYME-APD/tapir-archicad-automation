@@ -81,6 +81,10 @@
 #define ACAPI_ModelAccess_Get3DInfo ACAPI_Element_Get3DInfo
 #define ACAPI_ModelAccess_GetComponent ACAPI_3D_GetComponent
 
+#define ACAPI_View_Get3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Get3DCuttingPlanesID, par1)
+#define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
+#define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
+#define ACAPI_Window_ChangeWindow(par1) ACAPI_Database (APIDb_ChangeCurrentDatabaseID, par1)
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
@@ -136,11 +140,6 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkRootNodeGuid (const API_HotlinkTypeID* 
 inline GSErrCode ACAPI_Hotlink_GetHotlinkNodeTree (const API_Guid* hotlinkNodeGuid, GS::HashTable<API_Guid, GS::Array<API_Guid>>* hotlinkNodeTree)
 {
     return ACAPI_Database (APIDb_GetHotlinkNodeTreeID, (void*) hotlinkNodeGuid, (void*) hotlinkNodeTree);
-}
-
-inline GSErrCode ACAPI_Window_GetCurrentWindow (API_WindowInfo* windowInfo)
-{
-    return ACAPI_Database (APIDb_GetCurrentWindowID, (void*) windowInfo);
 }
 
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
