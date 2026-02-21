@@ -161,6 +161,71 @@ static GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
     }
 }
 
+static API_WindowTypeID ConvertWindowTypeToString (GS::UniString typeStr)
+{
+    if ("FloorPlan" == typeStr) {
+        return APIWind_FloorPlanID;
+    }
+    if ("Section" == typeStr) {
+        return APIWind_SectionID;
+    }
+    if ("Details" == typeStr) {
+        return APIWind_DetailID;
+    }
+    if ("3DModel" == typeStr) {
+        return APIWind_3DModelID;
+    }
+    if ("Layout" == typeStr) {
+        return APIWind_LayoutID;
+    }
+    if ("Drawing" == typeStr) {
+        return APIWind_DrawingID;
+    }
+    if ("CustomText" == typeStr) {
+        return APIWind_MyTextID;
+    }
+    if ("CustomDraw" == typeStr) {
+        return APIWind_MyDrawID;
+    }
+    if ("MasterLayout" == typeStr) {
+        return APIWind_MasterLayoutID;
+    }
+    if ("Elevation" == typeStr) {
+        return APIWind_ElevationID;
+    }
+    if ("InteriorElevation" == typeStr) {
+        return APIWind_InteriorElevationID;
+    }
+    if ("Worksheet" == typeStr) {
+        return APIWind_WorksheetID;
+    }
+    if ("Report" == typeStr) {
+        return APIWind_ReportID;
+    }
+    if ("3DDocument" == typeStr) {
+        return APIWind_DocumentFrom3DID;
+    }
+    if ("External3D" == typeStr) {
+        return APIWind_External3DID;
+    }
+    if ("Movie3D" == typeStr) {
+        return APIWind_Movie3DID;
+    }
+    if ("MovieRendering" == typeStr) {
+        return APIWind_MovieRenderingID;
+    }
+    if ("Rendering" == typeStr) {
+        return APIWind_RenderingID;
+    }
+    if ("ModelCompare" == typeStr) {
+        return APIWind_ModelCompareID;
+    }
+    if ("Interactive Schedule" == typeStr) {
+        return APIWind_IESCommonDrawingID;
+    }
+    return API_ZombieWindowID;
+}
+
 GS::ObjectState GetCurrentWindowTypeCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_WindowInfo windowInfo;
@@ -169,4 +234,52 @@ GS::ObjectState GetCurrentWindowTypeCommand::Execute (const GS::ObjectState& /*p
         return CreateErrorResponse (err, "Failed to get the current window!");
     }
     return GS::ObjectState ("currentWindowType", ConvertWindowTypeToString (windowInfo.typeID));
+}
+
+ChangeWindowCommand::ChangeWindowCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeWindowCommand::GetName () const
+{
+    return "ChangeWindow";
+}
+
+GS::Optional<GS::UniString> ChangeWindowCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "windowType": {
+                "$ref": "#/WindowType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "windowType"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeWindowCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString windowTypeStr;
+    if (!parameters.Get ("windowType", windowTypeStr)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType.");
+    }
+
+    API_WindowInfo windowInfo = {};
+    windowInfo.typeID = ConvertWindowTypeToString (windowTypeStr);
+    GSErrCode err = ACAPI_Window_ChangeWindow (&windowInfo);
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateErrorResponse (err, "Failed to change the window!");
 }
