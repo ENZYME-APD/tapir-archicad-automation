@@ -63,6 +63,25 @@ var gCommands = [{
             "currentWindowType"
         ]
     }
+            },{
+                "name": "ChangeWindow",
+                "version": "1.3.1",
+                "description": "Changes the current (active) window to the given window.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "windowType": {
+                "$ref": "#/WindowType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "windowType"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Project Commands",
@@ -1847,18 +1866,15 @@ var gCommands = [{
             },
             "notifyOnNewElement": {
                 "type": "boolean",
-                "description": "Notify on creation of a new element.",
-                "default": true
+                "description": "Notify on creation of a new element. Optional parameter, by default true."
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element.",
-                "default": true
+                "description": "Notify on modification/deletion of an element. Optional parameter, by default true."
             },
             "notifyOnReservationChanges": {
                 "type": "boolean",
-                "description": "Notify on reservation changes of an element.",
-                "default": true
+                "description": "Notify on reservation changes of an element. Optional parameter, by default true."
             }
         },
         "additionalProperties": false,
@@ -3267,6 +3283,52 @@ var gCommands = [{
         "transformations"
     ]
 }
+            },{
+                "name": "Set3DCutPlanes",
+                "version": "1.3.1",
+                "description": "Sets the 3D cut planes.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "cutPlanes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "description": "Defines a 3D cut plane using the plane equation: pa*x + pb*y + pc*z + pd = 0",
+                "properties": {
+                    "pa": {
+                        "type": "number",
+                        "description": "Coefficient of x in the plane equation. The x coordinate of the normal vector of the plane."
+                    },
+                    "pb": {
+                        "type": "number",
+                        "description": "Coefficient of y in the plane equation. The y coordinate of the normal vector of the plane."
+                    },
+                    "pc": {
+                        "type": "number",
+                        "description": "Coefficient of z in the plane equation. The z coordinate of the normal vector of the plane."
+                    },
+                    "pd": {
+                        "type": "number",
+                        "description": "Constant term in the plane equation. The distance of the plane from the origin along the normal vector."
+                    }
+                },
+                "required": [
+                    "pa",
+                    "pb",
+                    "pc",
+                    "pd"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "additionalProperties": false
+},
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
             }]
         },{
             "name": "Issue Management Commands",
@@ -3749,7 +3811,7 @@ var gCommands = [{
             "name": "Design Options Commands",
             "commands": [{
                 "name": "GetDesignOptions",
-                "version": "1.2.7",
+                "version": "1.2.9",
                 "description": "Retrieves information about existing design options. Available from Archicad 29.",
                 "inputScheme": null,
                 "outputScheme": {
@@ -3794,7 +3856,7 @@ var gCommands = [{
     }
             },{
                 "name": "GetDesignOptionSets",
-                "version": "1.2.7",
+                "version": "1.2.9",
                 "description": "Retrieves information about existing design option sets. Available from Archicad 29.",
                 "inputScheme": null,
                 "outputScheme": {
@@ -3837,7 +3899,7 @@ var gCommands = [{
     }
             },{
                 "name": "GetDesignOptionCombinations",
-                "version": "1.2.7",
+                "version": "1.2.9",
                 "description": "Retrieves information about existing design option combinations.",
                 "inputScheme": null,
                 "outputScheme": {
