@@ -26,6 +26,6 @@ namespace TapirGrasshopperPlugin
             "https://github.com/ENZYME-APD/tapir-archicad-automation";
 
         //Return a string representing the version.  This returns the same version as the assembly.
-        public override string AssemblyVersion => "1.3.0";
+        public override string AssemblyVersion => "1.3.1";
     }
 }
