@@ -8,7 +8,7 @@ walls = aclib.RunTapirCommand(
 )
 
 response = aclib.RunTapirCommand(
-    "LockElements",
+    "GroupElements",
     walls,
-    debug=True
+    debug=False
 )

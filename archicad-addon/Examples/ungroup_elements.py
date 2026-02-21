@@ -1,3 +1,4 @@
+
 import aclib
 
 
@@ -8,7 +9,7 @@ walls = aclib.RunTapirCommand(
 )
 
 response = aclib.RunTapirCommand(
-    "LockElements",
+    "UngroupElements",
     walls,
-    debug=True
+    debug=False
 )

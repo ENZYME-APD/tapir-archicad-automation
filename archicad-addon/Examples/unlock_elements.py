@@ -8,7 +8,7 @@ walls = aclib.RunTapirCommand(
 )
 
 response = aclib.RunTapirCommand(
-    "LockElements",
+    "UnlockElements",
     walls,
     debug=True
 )
