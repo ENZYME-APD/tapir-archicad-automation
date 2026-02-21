@@ -2351,6 +2351,7 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
 }
 
 
+
 GS::String LockElementsCommand::GetName () const
 {
     return "LockElements";
@@ -2391,13 +2392,7 @@ GS::Optional<GS::UniString> LockElementsCommand::GetResponseSchema () const
 GSErrCode _LockElements (const GS::Array<API_Guid>& elementGuids)
 {
     GSErrCode err = ACAPI_Grouping_Tool (elementGuids, APITool_Lock, nullptr);
-    GS::UniString message;
-    message = GS::UniString::Printf ("_LockElements: Attempted to lock %d elements. ", elementGuids.GetSize ());
-    ACAPI_WriteReport ("%T", false, message.ToPrintf ());
-
     if (err != NoError) {
-        message = GS::UniString::Printf ("_LockElements: Failed to lock elements. Error code: %d", err);
-        ACAPI_WriteReport ("%T", false, message.ToPrintf ());
         return err;
     } else {
         return NoError;
@@ -2414,7 +2409,6 @@ GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters,
     GS::Array<API_Guid> elementsToLock;
 
     GSErrCode err = NoError;
-
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -2434,14 +2428,6 @@ GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters,
         elementsToLock.Push (elem.header.guid);
     }
 
-    ACAPI_WriteReport ("Sample of elements to lock:\n", false);
-    GS::UniString sampleGuids;
-    for (USize i = 0; i < std::min (elementsToLock.GetSize (), static_cast<USize> (5)); ++i) {
-        sampleGuids += APIGuidToString (elementsToLock[i]) + "\n";
-    }
-    ACAPI_WriteReport ("%T", false, sampleGuids.ToPrintf ());
-
-    ACAPI_WriteReport ("Starting to lock elements...\n", false);
     ACAPI_CallUndoableCommand ("Lock Elements", [&]() -> GSErrCode {
         err = _LockElements (elementsToLock);
         return err;
@@ -2450,4 +2436,83 @@ GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters,
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to lock elements.");
+}
+
+
+GS::String UnlockElementsCommand::GetName () const
+{
+    return "UnlockElements";
+}
+
+UnlockElementsCommand::UnlockElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::Optional<GS::UniString> UnlockElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UnlockElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GSErrCode _UnlockElements (const GS::Array<API_Guid>& elementGuids)
+{
+    GSErrCode err = ACAPI_Grouping_Tool (elementGuids, APITool_Unlock, nullptr);
+    if (err != NoError) {
+        return err;
+    } else {
+        return NoError;
+    }
+}
+
+GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    GS::Array<API_Guid> elementsToUnlock;
+
+    GSErrCode err = NoError;
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "elementId is missing for one of the elements.");
+        }
+
+        API_Element elem = {};
+        elem.header.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&elem.header) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Failed to find element in Archicad for one of the elements.");
+        }
+        GSErrCode err = ACAPI_Element_Get (&elem);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to find element in Archicad for one of the elements.");
+        }
+        elementsToUnlock.Push (elem.header.guid);
+    }
+
+    ACAPI_CallUndoableCommand ("Unlock Elements", [&]() -> GSErrCode {
+        err = _UnlockElements (elementsToUnlock);
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to unlock elements.");
 }
