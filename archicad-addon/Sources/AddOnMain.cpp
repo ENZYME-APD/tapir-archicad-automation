@@ -322,6 +322,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.3.0",
             "Locks elements."
         );
+        err |= RegisterCommand<UnlockElementsCommand> (
+            elementCommands, "1.3.0",
+            "Unlocks elements."
+        );
         AddCommandGroup (elementCommands);
     }
 
