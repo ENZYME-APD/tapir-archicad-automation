@@ -318,6 +318,7 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.8",
             "Removes an element notification client."
         );
+        // ACAPI_Grouping_Tools
         err |= RegisterCommand<LockElementsCommand> (
             elementCommands, "1.3.0",
             "Locks elements."
@@ -325,6 +326,15 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<UnlockElementsCommand> (
             elementCommands, "1.3.0",
             "Unlocks elements."
+        );
+
+        err |= RegisterCommand<GroupElementsCommand> (
+            elementCommands, "1.3.0",
+            "Groups elements."
+        );
+        err |= RegisterCommand<UngroupElementsCommand> (
+            elementCommands, "1.3.0",
+            "Ungroups elements."
         );
         AddCommandGroup (elementCommands);
     }
