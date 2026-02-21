@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     response = aclib.RunTapirCommand(
         "Set3DCutPlanes",
-        {"shapesCount": len(coordinates), "shapeCoordinates": coordinates},
+        {"shapeCoordinates": coordinates},
         debug=True
     )
     print(response)
