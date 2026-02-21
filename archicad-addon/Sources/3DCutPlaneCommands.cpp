@@ -1,6 +1,6 @@
 #include "GSUnID.hpp"
 #include "3DCutPlaneCommands.hpp"
-
+#include "MigrationHelper.hpp"
 
 GS::String Set3DCutPlanesCommand::GetName () const
 {
