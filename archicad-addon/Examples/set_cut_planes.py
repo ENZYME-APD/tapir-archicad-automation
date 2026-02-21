@@ -38,23 +38,28 @@ def get_union_bbox(bboxes):
     return union_box
 
 
-if __name__ == "__main__":
-    selected_elements = aclib.RunTapirCommand("GetSelectedElements", {})
-    if selected_elements["elements"] == []:
-        print("No elements selected.")
-        raise SystemExit(1)
+elements = aclib.RunCommand (
+    'API.GetElementsByType', {
+        'elementType': 'Wall'
+    })
+if elements["elements"] == []:
+    print("No elements selected.")
+    raise SystemExit(1)
 
-    bboxes = aclib.RunTapirCommand(
-        "Get3DBoundingBoxes", selected_elements)["boundingBoxes3D"]
-    offset = 0.5
-    union_box = get_union_bbox(bboxes)
-    planes = cut_planes_from_aabb(union_box, offset)
-    coordinates = [{"pa": p.pa, "pb": p.pb, "pc": p.pc, "pd": p.pd}
-                   for p in planes]
+bboxes = aclib.RunTapirCommand(
+    "Get3DBoundingBoxes", elements)["boundingBoxes3D"]
+offset = 0.5
+union_box = get_union_bbox(bboxes)
+planes = cut_planes_from_aabb(union_box, offset)
+cutPlanes = [{"pa": p.pa, "pb": p.pb, "pc": p.pc, "pd": p.pd}
+                for p in planes]
 
-    response = aclib.RunTapirCommand(
-        "Set3DCutPlanes",
-        {"shapeCoordinates": coordinates},
-        debug=True
-    )
-    print(response)
+response = aclib.RunTapirCommand(
+    "Set3DCutPlanes",
+    {"cutPlanes": cutPlanes}
+)
+
+aclib.RunTapirCommand(
+    "ChangeWindow",
+    { "windowType": "3DModel" }
+) # Switch to 3D to see the new cut planes
