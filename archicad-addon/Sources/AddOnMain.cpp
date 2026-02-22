@@ -340,6 +340,17 @@ GSErrCode Initialize (void)
             elementCommands, "1.3.0",
             "Ungroups elements."
         );
+
+        err |= RegisterCommand<GetUserDataOfElementsCommand> (
+            elementCommands, "1.3.1",
+            "Gets the user data of elements."
+        );
+
+        err |= RegisterCommand<SetUserDataOfElementsCommand> (
+            elementCommands, "1.3.1",
+            "Sets the user data of elements."
+        );
+
         AddCommandGroup (elementCommands);
     }
 
