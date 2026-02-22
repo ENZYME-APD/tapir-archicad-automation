@@ -2356,17 +2356,6 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
 
 // ACAPI_Grouping_Tool Commands
 
-
-GSErrCode Use_ACAPI_Grouping_Tool (const GS::Array<API_Guid>& elementGuids, API_ToolCmdID action)
-{
-    GSErrCode err = ACAPI_Grouping_Tool (elementGuids, action, nullptr);
-    if (err != NoError) {
-        return err;
-    } else {
-        return NoError;
-    }
-}
-
 static GS::ObjectState ExecuteGroupingToolCommand (
     const GS::ObjectState& parameters,
     API_ToolCmdID action,
@@ -2377,35 +2366,38 @@ static GS::ObjectState ExecuteGroupingToolCommand (
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
     GS::Array<API_Guid> elementGuids;
-
-    GSErrCode err = NoError;
+    GS::Array<GS::ObjectState> executionResults;
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
-            return CreateErrorResponse (APIERR_BADPARS, "elementId is missing for one of the elements.");
+            executionResults.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing for one of the elements."));
+            continue;
         }
 
         API_Element elem = {};
         elem.header.guid = GetGuidFromObjectState (*elementId);
-        if (ACAPI_Element_GetHeader (&elem.header) != NoError) {
-            return CreateErrorResponse (APIERR_BADPARS, "Failed to find element in Archicad for one of the elements.");
-        }
-        GSErrCode err = ACAPI_Element_Get (&elem);
-        if (err != NoError) {
-            return CreateErrorResponse (err, "Failed to find element in Archicad for one of the elements.");
+        if (ACAPI_Element_GetHeader (&elem.header) != NoError || ACAPI_Element_Get (&elem) != NoError) {
+            executionResults.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to find element in Archicad for one of the elements."));
+            continue;
         }
         elementGuids.Push (elem.header.guid);
+        executionResults.Push (CreateSuccessfulExecutionResult ());
     }
 
-    ACAPI_CallUndoableCommand (undoableCommandName, [&]() -> GSErrCode {
-        err = Use_ACAPI_Grouping_Tool (elementGuids, action);
+    GSErrCode err = ACAPI_CallUndoableCommand (undoableCommandName, [&]() -> GSErrCode {
+        GSErrCode err = ACAPI_Grouping_Tool (elementGuids, action, nullptr);
         return err;
+
     });
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, errorMessage);
+    GS::ObjectState response;
+    response.Add ("executionResults", executionResults);
+
+    if (err == NoError)
+        return response;
+    else
+        return CreateFailedExecutionResult (err, errorMessage);
 }
 
 
