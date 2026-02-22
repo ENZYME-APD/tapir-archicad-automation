@@ -7,6 +7,7 @@
 #include "ModelMeshBody.hpp"
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
+#include "MemoryIChannel32.hpp"
 #include "Base64Converter.hpp"
 #ifdef ServerMainVers_2800
 #include "ACAPI/ZoneBoundaryQuery.hpp"
@@ -2541,4 +2542,187 @@ GS::Optional<GS::UniString> UngroupElementsCommand::GetResponseSchema () const
 GS::ObjectState UngroupElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     return ExecuteGroupingToolCommand (parameters, APITool_Ungroup, "Ungroup Elements", "Failed to ungroup elements.");
+}
+
+
+
+GS::String SetUserDataOfElementsCommand::GetName () const
+{
+    return "SetUserDataOfElements";
+}
+
+SetUserDataOfElementsCommand::SetUserDataOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::Optional<GS::UniString> SetUserDataOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "userData": {
+                "type": "object",
+                "description": "The user data to set for the elements. The value of each property will be converted to string and stored as user data."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "userData"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+static GSErrCode _SetUserDataOfElement (const API_Guid& elemGuid, const GS::ObjectState& userData)
+{
+    API_Elem_Head element = {};
+    element.guid = elemGuid;
+
+    API_UserData apiUserData = {};
+    apiUserData.dataVersion = 1;
+    apiUserData.platformSign = GS::Act_Platform_Sign;
+    apiUserData.flags = APIUserDataFlag_FillWith | APIUserDataFlag_Pickup;
+
+    // chatgpt suggests to convert it to a bytestream
+    GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
+    userData.Write (memChannel);
+
+    GSHandle handle = BMAllocateHandle (memChannel.GetDataSize (), ALLOCATE_CLEAR, 0);
+    memcpy (*handle, memChannel.GetDestination (), memChannel.GetDataSize ());
+    apiUserData.dataHdl = handle;
+
+    GSErrCode err = ACAPI_CallUndoableCommand ("Set user data to element", [&]() -> GSErrCode {
+        return ACAPI_Element_SetUserData (&element, &apiUserData);
+    });
+
+    BMKillHandle (&apiUserData.dataHdl);
+
+    return err;
+}
+
+
+GS::ObjectState SetUserDataOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState userData;
+    parameters.Get ("userData", userData);
+    GSErrCode err = NoError;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            err = APIERR_BADPARS;
+            break;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        err = _SetUserDataOfElement (elemGuid, userData);
+        if (err != NoError) {
+            break;
+        }
+    }
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to set user data of elements.");
+}
+
+
+GS::String GetUserDataOfElementsCommand::GetName () const
+{
+    return "GetUserDataOfElements";
+}
+
+GetUserDataOfElementsCommand::GetUserDataOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::Optional<GS::UniString> GetUserDataOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "userDataOfElements": {
+            "type": "array",
+             "items": {
+                "type": "object",
+                "properties": {
+                    "userDataOfElement": {
+                        "type": "object",
+            "description": "The user data of the elements. The value of each property is stored as string in Archicad."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "userData"
+    ]
+})";
+}
+
+static GS::ObjectState _GetUserDataOfElement (const API_Guid& elemGuid)
+{
+    API_Elem_Head element = {};
+    element.guid = elemGuid;
+
+    API_UserData userData = {};
+    GSErrCode err = ACAPI_Element_GetUserData (&element, &userData);
+    GS::ObjectState result;
+
+    if (err == NoError && userData.dataHdl != nullptr) {
+        GS::MemoryIChannel32 memChannel (*userData.dataHdl, BMGetHandleSize (userData.dataHdl));
+        result.Read (memChannel);
+    }
+
+    BMKillHandle (&userData.dataHdl);
+    return result;
+}
+
+GS::ObjectState GetUserDataOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::Array<GS::ObjectState> userDataList;
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            userDataList.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing for one of the elements."));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        const GS::ObjectState userData = _GetUserDataOfElement (elemGuid);
+        userDataList.Push (GS::ObjectState ("userDataOfElement", userData));
+    }
+    ACAPI_WriteReport (GS::UniString::Printf ("GetUserDataOfElementsCommand: Retrieved user data of %d elements. ", userDataList.GetSize ()), false);
+    GS::ObjectState response;
+    response.Add ("userDataOfElements", userDataList);
+    return response;
 }
