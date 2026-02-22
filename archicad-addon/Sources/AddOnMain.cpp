@@ -148,6 +148,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window."
         );
+        err |= RegisterCommand<ChangeWindowCommand> (
+            applicationCommands, "1.3.1",
+            "Changes the current (active) window to the given window."
+        );
         AddCommandGroup (applicationCommands);
     }
 
@@ -508,7 +512,7 @@ GSErrCode Initialize (void)
         );
 
         err |= RegisterCommand<Set3DCutPlanesCommand> (
-            navigatorCommands, "1.3.0",
+            navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
         );
         AddCommandGroup (navigatorCommands);
