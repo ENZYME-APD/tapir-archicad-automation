@@ -2401,41 +2401,6 @@ static GS::ObjectState ExecuteGroupingToolCommand (
 }
 
 
-GS::String LockElementsCommand::GetName () const
-{
-    return "LockElements";
-}
-
-LockElementsCommand::LockElementsCommand () :
-    CommandBase (CommonSchema::Used)
-{}
-
-
-GS::Optional<GS::UniString> LockElementsCommand::GetInputParametersSchema ()const
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements"
-        ]
-    })";
-}
-
-
-
-GS::Optional<GS::UniString> LockElementsCommand::GetResponseSchema () const
-{
-    return R"({
-        "$ref": "#/ExecutionResult"
-    })";
-}
-
 
 
 static const GS::UniString ACAPI_GroupingToolCommands_InputSchema = R"({
@@ -2452,12 +2417,40 @@ static const GS::UniString ACAPI_GroupingToolCommands_InputSchema = R"({
 })";
 
 
+// LockElementsCommand
+GS::String LockElementsCommand::GetName () const
+{
+    return "LockElements";
+}
+
+LockElementsCommand::LockElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+
+GS::Optional<GS::UniString> LockElementsCommand::GetInputParametersSchema ()const
+{
+    return ACAPI_GroupingToolCommands_InputSchema;
+}
+
+
+
+GS::Optional<GS::UniString> LockElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+
+
 GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     return ExecuteGroupingToolCommand (parameters, APITool_Lock, "Lock Elements", "Failed to lock elements.");
 }
 
 
+// UnlockElementsCommand
 GS::String UnlockElementsCommand::GetName () const
 {
     return "UnlockElements";
@@ -2485,6 +2478,8 @@ GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameter
     return ExecuteGroupingToolCommand (parameters, APITool_Unlock, "Unlock Elements", "Failed to unlock elements.");
 }
 
+
+// GroupElementsCommand
 GS::String GroupElementsCommand::GetName () const
 {
     return "GroupElements";
@@ -2512,6 +2507,8 @@ GS::ObjectState GroupElementsCommand::Execute (const GS::ObjectState& parameters
     return ExecuteGroupingToolCommand (parameters, APITool_Group, "Group Elements", "Failed to group elements.");
 }
 
+
+// UngroupElementsCommand
 GS::String UngroupElementsCommand::GetName () const
 {
     return "UngroupElements";
