@@ -2544,12 +2544,7 @@ GS::ObjectState UngroupElementsCommand::Execute (const GS::ObjectState& paramete
     return ExecuteGroupingToolCommand (parameters, APITool_Ungroup, "Ungroup Elements", "Failed to ungroup elements.");
 }
 
-
-
-
 // Get & Set UserDataOfElements
-
-
 
 // in order to distinguish to other userData setted by other plugins or user, we use a unique key to store the user data of elements for TapirAddOn.
 // The user data is stored as a GS::ObjectState serialized into a bytestream, and the key is used to identify and retrieve the user data for elements when needed.
