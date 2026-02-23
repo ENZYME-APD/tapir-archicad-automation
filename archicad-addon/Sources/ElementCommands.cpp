@@ -2537,6 +2537,18 @@ GS::ObjectState UngroupElementsCommand::Execute (const GS::ObjectState& paramete
 
 
 
+
+// Get & Set UserDataOfElements
+
+
+
+// in order to distinguish to other userData setted by other plugins or user, we use a unique key to store the user data of elements for TapirAddOn.
+// The user data is stored as a GS::ObjectState serialized into a bytestream, and the key is used to identify and retrieve the user data for elements when needed.
+// we could also metadata about the userData, like lastModified etc.
+
+// We could ensure that the root key is always there, to prevent APIERR_NOUSERDATA ? 
+const GS::String TapirAddOnUserData_RootKey = "TapirAddOnUserDataOfElements";
+
 GS::String SetUserDataOfElementsCommand::GetName () const
 {
     return "SetUserDataOfElements";
@@ -2582,9 +2594,10 @@ static GSErrCode _SetUserDataOfElement (const API_Guid& elemGuid, const GS::Obje
     API_UserData apiUserData = {};
     apiUserData.dataVersion = 1;
     apiUserData.platformSign = GS::Act_Platform_Sign;
+
+    //TODO check other flags
     apiUserData.flags = APIUserDataFlag_FillWith | APIUserDataFlag_Pickup;
 
-    // chatgpt suggests to convert it to a bytestream
     GS::MemoryOChannel32 memChannel (GS::MemoryOChannel32::BMAllocation);
     userData.Write (memChannel);
 
@@ -2609,6 +2622,11 @@ GS::ObjectState SetUserDataOfElementsCommand::Execute (const GS::ObjectState& pa
 
     GS::ObjectState userData;
     parameters.Get ("userData", userData);
+
+    GS::ObjectState rootUserData;
+    rootUserData.Add (TapirAddOnUserData_RootKey, userData);
+
+
     GSErrCode err = NoError;
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -2618,11 +2636,13 @@ GS::ObjectState SetUserDataOfElementsCommand::Execute (const GS::ObjectState& pa
         }
 
         const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-        err = _SetUserDataOfElement (elemGuid, userData);
+        err = _SetUserDataOfElement (elemGuid, rootUserData);
         if (err != NoError) {
             break;
         }
     }
+
+
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to set user data of elements.");
@@ -2657,42 +2677,56 @@ GS::Optional<GS::UniString> GetUserDataOfElementsCommand::GetInputParametersSche
 GS::Optional<GS::UniString> GetUserDataOfElementsCommand::GetResponseSchema () const
 {
     return R"({
-    "type": "object",
-    "properties": {
-        "userDataOfElements": {
-            "type": "array",
-             "items": {
-                "type": "object",
-                "properties": {
-                    "userDataOfElement": {
-                        "type": "object",
-            "description": "The user data of the elements. The value of each property is stored as string in Archicad."
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "userData"
-    ]
-})";
+        "type": "object",
+        "properties": {
+            "userDataOfElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "userDataOfElement": {
+                            "type": "object"
+                        }
+                    },
+                    "required": ["userDataOfElement"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userDataOfElements"
+        ]
+    })";
 }
+
 
 static GS::ObjectState _GetUserDataOfElement (const API_Guid& elemGuid)
 {
     API_Elem_Head element = {};
     element.guid = elemGuid;
 
-    API_UserData userData = {};
-    GSErrCode err = ACAPI_Element_GetUserData (&element, &userData);
+    API_UserData userData {};
     GS::ObjectState result;
 
-    if (err == NoError && userData.dataHdl != nullptr) {
-        GS::MemoryIChannel32 memChannel (*userData.dataHdl, BMGetHandleSize (userData.dataHdl));
-        result.Read (memChannel);
-    }
 
-    BMKillHandle (&userData.dataHdl);
+
+    GSErrCode err = ACAPI_Element_GetUserData (&element, &userData);
+    if (err == NoError && userData.dataHdl != nullptr && BMGetHandleSize (userData.dataHdl) > 0) {
+        try {
+            GS::MemoryIChannel32 memChannel (*userData.dataHdl, BMGetHandleSize (userData.dataHdl));
+            GS::ObjectState root;
+            root.Read (memChannel);
+            root.Get (TapirAddOnUserData_RootKey, result);
+        } catch (...) {
+            // If there is an error during reading, return empty user data
+            result = GS::ObjectState ();
+        }
+    }
+    if (userData.dataHdl != nullptr) {
+        BMKillHandle (&userData.dataHdl);
+    }
     return result;
-}
+};
 
 GS::ObjectState GetUserDataOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
@@ -2712,8 +2746,7 @@ GS::ObjectState GetUserDataOfElementsCommand::Execute (const GS::ObjectState& pa
         const GS::ObjectState userData = _GetUserDataOfElement (elemGuid);
         userDataList.Push (GS::ObjectState ("userDataOfElement", userData));
     }
-    ACAPI_WriteReport (GS::UniString::Printf ("GetUserDataOfElementsCommand: Retrieved user data of %d elements. ", userDataList.GetSize ()), false);
     GS::ObjectState response;
     response.Add ("userDataOfElements", userDataList);
     return response;
-}
+};
