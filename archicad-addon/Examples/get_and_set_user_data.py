@@ -14,8 +14,8 @@ response = aclib.RunTapirCommand(
 )
 
 
-# response = aclib.RunTapirCommand(
-#     "GetUserDataOfElements",
-#     {"elements": walls},
-#     debug=True
-# )
+response = aclib.RunTapirCommand(
+    "GetUserDataOfElements",
+    {"elements": walls},
+    debug=True
+)
