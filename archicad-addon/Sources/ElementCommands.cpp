@@ -2357,7 +2357,6 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     return GS::ObjectState ("roomImage", str);
 }
 
-
 // ACAPI_Grouping_Tool Commands
 
 static GS::ObjectState ExecuteGroupingToolCommand (
@@ -2511,7 +2510,7 @@ GS::Optional<GS::UniString> GroupElementsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::UniString> GroupElementsCommand::GetResponseSchema () const
 {
-return ACAPI_GroupingToolCommands_ResponseSchema;
+    return ACAPI_GroupingToolCommands_ResponseSchema;
 }
 
 GS::ObjectState GroupElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
