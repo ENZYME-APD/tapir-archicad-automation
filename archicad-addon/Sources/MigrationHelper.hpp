@@ -86,6 +86,8 @@
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
 #define ACAPI_Window_ChangeWindow(par1) ACAPI_Database (APIDb_ChangeCurrentDatabaseID, par1)
 
+#define ACAPI_Grouping_Tool(par1,par2,par3) ACAPI_Element_Tool(par1,par2,par3)
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;
@@ -246,7 +248,7 @@ inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
 
 #ifndef ServerMainVers_2600
 
-#define ACAPI_GroupingTool(par1) ACAPI_Element_Tool(par1)
+
 inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier ifcTranslator, API_IFCRelationshipData ifcRelationshipData)
 {
     return ACAPI_Goodies (APIAny_GetIFCRelationshipDataID, &ifcTranslator, &ifcRelationshipData);
