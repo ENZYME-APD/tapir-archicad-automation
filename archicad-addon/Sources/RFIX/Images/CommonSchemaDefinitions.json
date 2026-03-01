@@ -3503,7 +3503,7 @@
             "description": "The name of a favorite."
         }
     },
-    "ZoneBoundariesResponse": {
+    "ZoneBoundariesWrapper": {
         "type": "object",
         "properties": {
             "zoneBoundaries": {
@@ -3551,12 +3551,12 @@
             "zoneBoundaries"
         ]
     },
-    "ZoneBoundariesResponseOrError": {
+    "ZoneBoundariesOrError": {
         "type": "object",
         "description": "The response of the zone boundaries command or an error.",
         "oneOf": [
             {
-                "$ref": "#/ZoneBoundariesResponse"
+                "$ref": "#/ZoneBoundariesWrapper"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -3694,7 +3694,7 @@
             "OpeningSymbol"
         ]
     },
-    "GetElementsByTypeResponse": {
+    "ElementsWithExecutionResults": {
         "type": "object",
         "description": "The response of the GetElementsByType command.",
         "properties": {
@@ -3710,19 +3710,19 @@
             "elements"
         ]
     },
-    "GetElementsByTypeResponseOrError": {
+    "ElementsWithExecutionResultsOrError": {
         "type": "object",
         "description": "The response of the GetElementsByType command or an error.",
         "oneOf": [
             {
-                "$ref": "#/GetElementsByTypeResponse"
+                "$ref": "#/ElementsWithExecutionResults"
             },
             {
                 "$ref": "#/ErrorItem"
             }
         ]
     },
-    "GetFavoritesByTypeResponse": {
+    "FavoritesWrapper": {
         "type": "object",
         "description": "The response of the GetFavoritesByType command.",
         "properties": {
@@ -3735,19 +3735,19 @@
             "favorites"
         ]
     },
-    "GetFavoritesByTypeResponseOrError": {
+    "FavoritesOrError": {
         "type": "object",
         "description": "The response of the GetFavoritesByType command or an error.",
         "oneOf": [
             {
-                "$ref": "#/GetFavoritesByTypeResponse"
+                "$ref": "#/FavoritesWrapper"
             },
             {
                 "$ref": "#/ErrorItem"
             }
         ]
     },
-    "GetConnectedElementsResponse": {
+    "ConnectedElementsWrapper": {
         "type": "object",
         "description": "The response of the GetConnectedElements command.",
         "properties": {
@@ -3772,47 +3772,51 @@
             "connectedElements"
         ]
     },
-    "GetConnectedElementsResponseOrError": {
+    "ConnectedElementsOrError": {
         "type": "object",
         "description": "The response of the GetConnectedElements command or an error.",
         "oneOf": [
             {
-                "$ref": "#/GetConnectedElementsResponse"
+                "$ref": "#/ConnectedElementsWrapper"
             },
             {
                 "$ref": "#/ErrorItem"
             }
         ]
     },
-    "GetAttributesByTypeResponse": {
+    "AttributeHeaders": {
+        "type": "array",
+        "description": "Details of attributes.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "attributeId": {
+                    "$ref": "#/AttributeId"
+                },
+                "index": {
+                    "type": "number",
+                    "description": "Index of the attribute."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the attribute."
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "attributeId",
+                "index",
+                "name"
+            ]
+
+        }
+    },
+    "AttributeHeadersWrapper": {
         "type": "object",
         "description": "The response of the GetAttributesByType command.",
         "properties": {
             "attributes": {
-                "type": "array",
-                "description": "Details of attributes.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "index": {
-                            "type": "number",
-                            "description": "Index of the attribute."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "Name of the attribute."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "index",
-                        "name"
-                    ]
-                }
+                "$ref": "#/AttributeHeaders"
             }
         },
         "additionalProperties": false,
@@ -3820,12 +3824,12 @@
             "attributes"
         ]
     },
-    "GetAttributesByTypeResponseOrError": {
+    "AttributeHeadersOrError": {
         "type": "object",
         "description": "The response of the GetAttributesByType command or an error.",
         "oneOf": [
             {
-                "$ref": "#/GetAttributesByTypeResponse"
+                "$ref": "#/AttributeHeadersWrapper"
             },
             {
                 "$ref": "#/ErrorItem"

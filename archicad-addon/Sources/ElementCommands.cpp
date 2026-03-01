@@ -123,7 +123,7 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema (
 GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "$ref": "#/GetElementsByTypeResponseOrError"
+        "$ref": "#/ElementsWithExecutionResultsOrError"
     })";
 }
 
@@ -1259,7 +1259,7 @@ GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchem
 GS::Optional<GS::UniString> GetConnectedElementsCommand::GetResponseSchema () const
 {
     return R"({
-        "$ref": "#/GetConnectedElementsResponseOrError"
+        "$ref": "#/ConnectedElementsOrError"
     })";
 }
 
@@ -1334,7 +1334,7 @@ GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetInputParametersSchema (
 GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetResponseSchema () const
 {
     return R"({
-        "$ref": "#/ZoneBoundariesResponseOrError"
+        "$ref": "#/ZoneBoundariesOrError"
     })";
 }
 
