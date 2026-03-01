@@ -33,7 +33,7 @@ GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetInputParametersSchema 
 GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "$ref": "#/GetFavoritesByTypeResponseOrError"
+        "$ref": "#/FavoritesOrError"
     })";
 }
 
