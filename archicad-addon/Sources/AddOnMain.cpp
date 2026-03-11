@@ -510,11 +510,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<FitInWindowCommand> (
             navigatorCommands, "1.3.2",
-            "Fits the current view in the window."
-        );
-        err |= RegisterCommand<ZoomToSelectedCommand> (
-            navigatorCommands, "1.3.2",
-            "Zooms to selected elements."
+            "Zooms to the given elements or fits everything in the window."
         );
         AddCommandGroup (navigatorCommands);
     }
