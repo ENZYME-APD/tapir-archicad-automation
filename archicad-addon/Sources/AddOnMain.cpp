@@ -185,6 +185,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.0.7",
             "Opens the given project."
         );
+        err |= RegisterCommand<CloseProjectCommand> (
+            projectCommands, "1.3.2",
+            "Closes the currently opened project."
+        );
+        err |= RegisterCommand<SaveProjectCommand> (
+            projectCommands, "1.3.2",
+            "Saves the currently opened project."
+        );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
             "Gets the project location details."
@@ -196,6 +204,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<IFCFileOperationCommand> (
             projectCommands, "1.2.6",
             "Executes an IFC file operation."
+        );
+        err |= RegisterCommand<PrintViewCommand> (
+            projectCommands, "1.3.2",
+            "Prints from the current view."
         );
         AddCommandGroup (projectCommands);
     }
@@ -492,10 +504,13 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"
         );
-
         err |= RegisterCommand<Set3DCutPlanesCommand> (
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
+        );
+        err |= RegisterCommand<FitInWindowCommand> (
+            navigatorCommands, "1.3.2",
+            "Zooms to the given elements or fits everything in the window."
         );
         AddCommandGroup (navigatorCommands);
     }

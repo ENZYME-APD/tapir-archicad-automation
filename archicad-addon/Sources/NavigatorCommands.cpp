@@ -587,3 +587,55 @@ GS::ObjectState GetView2DTransformationsCommand::Execute (const GS::ObjectState&
 
     return response;
 }
+
+FitInWindowCommand::FitInWindowCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String FitInWindowCommand::GetName () const
+{
+    return "FitInWindow";
+}
+
+GS::Optional<GS::UniString> FitInWindowCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> FitInWindowCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    GSErrCode err = NoError;
+
+    if (parameters.Get ("elements", elements) && !elements.IsEmpty ()) {
+        const GS::Array<API_Guid> elemIds = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+        err = ACAPI_View_ZoomToElements (&elemIds);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to zoom to elements.");
+        }
+    } else {
+        err = ACAPI_View_Zoom ();
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to fit in window. There might be no project open.");
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
