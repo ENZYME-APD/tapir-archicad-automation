@@ -117,6 +117,31 @@ inline GSErrCode ACAPI_ProjectOperation_Open (const API_FileOpenPars* fileOpenPa
     return ACAPI_Automate (APIDo_OpenID, (void*) fileOpenPars);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_Close ()
+{
+    return ACAPI_Automate (APIDo_CloseID);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Save ()
+{
+    return ACAPI_Automate (APIDo_SaveID);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_Print (const API_PrintPars* printPars)
+{
+    return ACAPI_Automate (APIDo_PrintID, (void*) printPars);
+}
+
+inline GSErrCode ACAPI_View_Zoom ()
+{
+    return ACAPI_Automate (APIDo_ZoomID);
+}
+
+inline GSErrCode ACAPI_View_ZoomToElements (const GS::Array<API_Guid>* elemIds)
+{
+    return ACAPI_Automate (APIDo_ZoomToElementsID, (void*) elemIds);
+}
+
 inline GSErrCode ACAPI_AutoText_GetAutoTexts (GS::Array<GS::ArrayFB<GS::UniString, 3>>* autotexts, API_AutotextType autotextType)
 {
     return ACAPI_Goodies (APIAny_GetAutoTextsID, autotexts, (void*) (GS::IntPtr) autotextType);
