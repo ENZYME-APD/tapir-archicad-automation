@@ -72,7 +72,7 @@ GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetInputParametersSchema
 GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetResponseSchema () const
 {
     return R"({
-        "$ref": "#/GetAttributesByTypeResponseOrError"
+        "$ref": "#/AttributeHeadersOrError"
     })";
 }
 

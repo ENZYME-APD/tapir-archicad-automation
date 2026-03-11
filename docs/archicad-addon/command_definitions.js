@@ -549,7 +549,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/GetElementsByTypeResponseOrError"
+        "$ref": "#/ElementsWithExecutionResultsOrError"
     }
             },{
                 "name": "GetAllElements",
@@ -573,7 +573,7 @@ var gCommands = [{
         "required": []
     },
                 "outputScheme": {
-        "$ref": "#/GetElementsByTypeResponseOrError"
+        "$ref": "#/ElementsWithExecutionResultsOrError"
     }
             },{
                 "name": "ChangeSelectionOfElements",
@@ -933,7 +933,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/GetConnectedElementsResponseOrError"
+        "$ref": "#/ConnectedElementsOrError"
     }
             },{
                 "name": "GetZoneBoundaries",
@@ -952,7 +952,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/ZoneBoundariesResponseOrError"
+        "$ref": "#/ZoneBoundariesOrError"
     }
             },{
                 "name": "GetCollisions",
@@ -1929,7 +1929,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/GetFavoritesByTypeResponseOrError"
+        "$ref": "#/FavoritesOrError"
     }
             },{
                 "name": "GetFavoritePreviewImage",
@@ -2350,7 +2350,7 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/GetAttributesByTypeResponseOrError"
+        "$ref": "#/AttributeHeadersOrError"
     }
             },{
                 "name": "CreateLayers",
