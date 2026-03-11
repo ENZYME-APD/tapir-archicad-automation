@@ -2356,3 +2356,189 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     str.DeleteAll (GS::UniChar(char('\n')));
     return GS::ObjectState ("roomImage", str);
 }
+
+// ACAPI_Grouping_Tool Commands
+
+static GS::ObjectState ExecuteGroupingToolCommand (
+    const GS::ObjectState& parameters,
+    API_ToolCmdID action,
+    const char* undoableCommandName,
+    const char* errorMessage
+)
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    GS::Array<API_Guid> elementGuids;
+    GS::Array<GS::ObjectState> executionResults;
+
+    GSErrCode err = ACAPI_CallUndoableCommand (undoableCommandName, [&]() -> GSErrCode {
+
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing for one of the elements."));
+                continue;
+            }
+
+            API_Element elem = {};
+            elem.header.guid = GetGuidFromObjectState (*elementId);
+            if (ACAPI_Element_GetHeader (&elem.header) != NoError || ACAPI_Element_Get (&elem) != NoError) {
+                executionResults.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to find element in Archicad for one of the elements."));
+                continue;
+            }
+            elementGuids.Push (elem.header.guid);
+            executionResults.Push (CreateSuccessfulExecutionResult ());
+        }
+
+        GSErrCode err = ACAPI_Grouping_Tool (elementGuids, action, nullptr);
+        return err;
+
+    });
+
+    GS::ObjectState response;
+    response.Add ("executionResults", executionResults);
+
+    if (err == NoError)
+        return response;
+    else
+        return CreateFailedExecutionResult (err, errorMessage);
+}
+
+
+
+
+static const GS::UniString ACAPI_GroupingToolCommands_InputSchema = R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+
+
+static const GS::UniString ACAPI_GroupingToolCommands_ResponseSchema = R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+
+// LockElementsCommand
+GS::String LockElementsCommand::GetName () const
+{
+    return "LockElements";
+}
+
+LockElementsCommand::LockElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+
+GS::Optional<GS::UniString> LockElementsCommand::GetInputParametersSchema ()const
+{
+    return ACAPI_GroupingToolCommands_InputSchema;
+}
+
+
+
+GS::Optional<GS::UniString> LockElementsCommand::GetResponseSchema () const
+{
+    return ACAPI_GroupingToolCommands_ResponseSchema;
+}
+
+
+
+GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteGroupingToolCommand (parameters, APITool_Lock, "Lock Elements", "Failed to lock elements.");
+}
+
+
+// UnlockElementsCommand
+GS::String UnlockElementsCommand::GetName () const
+{
+    return "UnlockElements";
+}
+
+UnlockElementsCommand::UnlockElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::Optional<GS::UniString> UnlockElementsCommand::GetInputParametersSchema () const
+{
+    return ACAPI_GroupingToolCommands_InputSchema;
+}
+
+GS::Optional<GS::UniString> UnlockElementsCommand::GetResponseSchema () const
+{
+    return ACAPI_GroupingToolCommands_ResponseSchema;
+}
+
+
+GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteGroupingToolCommand (parameters, APITool_Unlock, "Unlock Elements", "Failed to unlock elements.");
+}
+
+
+// GroupElementsCommand
+GS::String GroupElementsCommand::GetName () const
+{
+    return "GroupElements";
+}
+
+GroupElementsCommand::GroupElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::Optional<GS::UniString> GroupElementsCommand::GetInputParametersSchema () const
+{
+    return ACAPI_GroupingToolCommands_InputSchema;
+}
+
+
+GS::Optional<GS::UniString> GroupElementsCommand::GetResponseSchema () const
+{
+    return ACAPI_GroupingToolCommands_ResponseSchema;
+}
+
+GS::ObjectState GroupElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteGroupingToolCommand (parameters, APITool_Group, "Group Elements", "Failed to group elements.");
+}
+
+
+// UngroupElementsCommand
+GS::String UngroupElementsCommand::GetName () const
+{
+    return "UngroupElements";
+}
+UngroupElementsCommand::UngroupElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::Optional<GS::UniString> UngroupElementsCommand::GetInputParametersSchema () const
+{
+    return ACAPI_GroupingToolCommands_InputSchema;
+}
+
+GS::Optional<GS::UniString> UngroupElementsCommand::GetResponseSchema () const
+{
+    return ACAPI_GroupingToolCommands_ResponseSchema;
+}
+
+GS::ObjectState UngroupElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteGroupingToolCommand (parameters, APITool_Ungroup, "Ungroup Elements", "Failed to ungroup elements.");
+}
