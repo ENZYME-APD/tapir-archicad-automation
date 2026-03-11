@@ -617,6 +617,58 @@ GS::ObjectState OpenProjectCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
+CloseProjectCommand::CloseProjectCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String CloseProjectCommand::GetName () const
+{
+    return "CloseProject";
+}
+
+GS::Optional<GS::UniString> CloseProjectCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState CloseProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_ProjectOperation_Close ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to close the project. There might be none currently open.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+SaveProjectCommand::SaveProjectCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String SaveProjectCommand::GetName () const
+{
+    return "SaveProject";
+}
+
+GS::Optional<GS::UniString> SaveProjectCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_ProjectOperation_Save ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to save the project.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetGeoLocationCommand::GetGeoLocationCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1025,6 +1077,85 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
     const GSErrCode err = ACAPI_AddOnAddOnCommunication_Call (&moduleID, 'IFCI', 1, reinterpret_cast<GSHandle>(&ioParams), nullptr, ioParams.noDialog);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to execute the IFC operation");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+PrintViewCommand::PrintViewCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String PrintViewCommand::GetName () const
+{
+    return "PrintView";
+}
+
+GS::Optional<GS::UniString> PrintViewCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "grid": {
+                "type": "boolean",
+                "description": "Print the grid. The default is false."
+            },
+            "fixText": {
+                "type": "boolean",
+                "description": "Use fixed text size. The default is false."
+            },
+            "scale": {
+                "type": "integer",
+                "description": "Print scale. The default is 100."
+            },
+            "printArea": {
+                "type": "string",
+                "description": "The area to print. The default is 'currentView'.",
+                "enum": ["currentView", "entireDrawing", "marquee"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> PrintViewCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState PrintViewCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_PrintPars pi = {};
+
+    GS::UniString printAreaStr;
+    if (!parameters.Get ("printArea", printAreaStr) || printAreaStr == "currentView") {
+        pi.printArea = PrintArea_CurrentView;
+    } else if (printAreaStr == "entireDrawing") {
+        pi.printArea = PrintArea_EntireDrawing;
+    } else if (printAreaStr == "marquee") {
+        pi.printArea = PrintArea_Marquee;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "printArea parameter is invalid");
+    }
+
+    if (!parameters.Get ("grid", pi.grid)) {
+        pi.grid = false;
+    }
+    if (!parameters.Get ("fixText", pi.fixText)) {
+        pi.fixText = false;
+    }
+    if (!parameters.Get ("scale", pi.scale)) {
+        pi.scale = 100;
+    }
+
+    const GSErrCode err = ACAPI_ProjectOperation_Print (&pi);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to print the current view.");
     }
 
     return CreateSuccessfulExecutionResult ();

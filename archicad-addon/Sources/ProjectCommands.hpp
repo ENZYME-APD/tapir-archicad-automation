@@ -67,6 +67,24 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class CloseProjectCommand : public CommandBase
+{
+public:
+    CloseProjectCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SaveProjectCommand : public CommandBase
+{
+public:
+    SaveProjectCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetGeoLocationCommand : public CommandBase
 {
 public:
@@ -90,6 +108,16 @@ class IFCFileOperationCommand : public CommandBase
 {
 public:
     IFCFileOperationCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class PrintViewCommand : public CommandBase
+{
+public:
+    PrintViewCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;

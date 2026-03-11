@@ -587,3 +587,55 @@ GS::ObjectState GetView2DTransformationsCommand::Execute (const GS::ObjectState&
 
     return response;
 }
+
+FitInWindowCommand::FitInWindowCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String FitInWindowCommand::GetName () const
+{
+    return "FitInWindow";
+}
+
+GS::Optional<GS::UniString> FitInWindowCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_View_Zoom ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to fit in window. There might be no project open.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+ZoomToSelectedCommand::ZoomToSelectedCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ZoomToSelectedCommand::GetName () const
+{
+    return "ZoomToSelected";
+}
+
+GS::Optional<GS::UniString> ZoomToSelectedCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState ZoomToSelectedCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GSErrCode err = ACAPI_View_ZoomToSelected ();
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to zoom to selected. There might be no project open or no elements selected.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
