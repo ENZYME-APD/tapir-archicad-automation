@@ -186,11 +186,11 @@ GSErrCode Initialize (void)
             "Opens the given project."
         );
         err |= RegisterCommand<CloseProjectCommand> (
-            projectCommands, "1.3.2",
+            projectCommands, "1.3.1",
             "Closes the currently opened project."
         );
         err |= RegisterCommand<SaveProjectCommand> (
-            projectCommands, "1.3.2",
+            projectCommands, "1.3.1",
             "Saves the currently opened project."
         );
         err |= RegisterCommand<GetGeoLocationCommand> (
@@ -206,7 +206,7 @@ GSErrCode Initialize (void)
             "Executes an IFC file operation."
         );
         err |= RegisterCommand<PrintViewCommand> (
-            projectCommands, "1.3.2",
+            projectCommands, "1.3.1",
             "Prints from the current view."
         );
         AddCommandGroup (projectCommands);
@@ -509,7 +509,7 @@ GSErrCode Initialize (void)
             "Sets the 3D cut planes."
         );
         err |= RegisterCommand<FitInWindowCommand> (
-            navigatorCommands, "1.3.2",
+            navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
         );
         AddCommandGroup (navigatorCommands);
