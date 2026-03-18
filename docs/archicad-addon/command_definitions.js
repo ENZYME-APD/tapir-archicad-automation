@@ -259,6 +259,22 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "CloseProject",
+                "version": "1.3.1",
+                "description": "Closes the currently opened project.",
+                "inputScheme": null,
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "SaveProject",
+                "version": "1.3.1",
+                "description": "Saves the currently opened project.",
+                "inputScheme": null,
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "GetGeoLocation",
                 "version": "1.1.6",
                 "description": "Gets the project location details.",
@@ -497,6 +513,38 @@ var gCommands = [{
         "required": [
             "method",
             "ifcFilePath"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "PrintView",
+                "version": "1.3.1",
+                "description": "Prints from the current view.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "grid": {
+                "type": "boolean",
+                "description": "Print the grid. The default is false."
+            },
+            "fixText": {
+                "type": "boolean",
+                "description": "Use fixed text size. The default is false."
+            },
+            "scale": {
+                "type": "integer",
+                "description": "Print scale. The default is 100."
+            },
+            "printArea": {
+                "type": "string",
+                "description": "The area to print. The default is 'currentView'.",
+                "enum": ["currentView", "entireDrawing", "marquee"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
         ]
     },
                 "outputScheme": {
@@ -3326,6 +3374,23 @@ var gCommands = [{
     },
     "additionalProperties": false
 },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "FitInWindow",
+                "version": "1.3.1",
+                "description": "Zooms to the given elements or fits everything in the window.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
     }
