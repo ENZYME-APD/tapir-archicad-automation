@@ -137,6 +137,15 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                                 "y",
                                 "z"
                             ]
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "Optional column height.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "axisRotationAngle": {
+                            "type": "number",
+                            "description": "Optional column rotation angle in radians."
                         }
                     },
                     "additionalProperties": false,
@@ -164,6 +173,8 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     element.column.bottomOffset = floorIndexAndOffset.second;
     element.column.origoPos.x = apiCoordinate.x;
     element.column.origoPos.y = apiCoordinate.y;
+    parameters.Get ("height", element.column.height);
+    parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
 
     return {};
 }
@@ -188,6 +199,11 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     "level": {
                         "type": "number",
                         "description" : "The Z coordinate value of the reference line of the slab."	
+                    },
+                    "thickness": {
+                        "type": "number",
+                        "description": "Optional slab thickness.",
+                        "exclusiveMinimum": 0.0
                     },
                     "polygonCoordinates": { 
                         "type": "array",
@@ -286,6 +302,7 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     const auto floorIndexAndOffset = GetFloorIndexAndOffset (inputLevel, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.slab.level = floorIndexAndOffset.second;
+    parameters.Get ("thickness", element.slab.thickness);
 
     GS::Array<GS::ObjectState> polygonCoordinates;
     GS::Array<GS::ObjectState> polygonArcs;
@@ -518,6 +535,22 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "type": "number",
                         "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
                     },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description" : "Layer attribute index to place the polyline on. Optional parameter, by default the current layer is used."
+                    },
+                    "linePenIndex": {
+                        "type": "integer",
+                        "description" : "Pen index of the polyline contour. Optional parameter, by default the current pen is used."
+                    },
+                    "lineTypeIndex": {
+                        "type": "integer",
+                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used."
+                    },
+                    "penWeightMm": {
+                        "type": "number",
+                        "description" : "Optional pen weight override in mm."
+                    },
                     "coordinates": { 
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
@@ -577,6 +610,27 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coordinates,
 GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
+
+    Int32 layerIndex = 0;
+    if (parameters.Get ("layerIndex", layerIndex) && layerIndex > 0) {
+        element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+    }
+
+    short linePenIndex = 0;
+    if (parameters.Get ("linePenIndex", linePenIndex) && linePenIndex > 0) {
+        element.polyLine.linePen.penIndex = linePenIndex;
+        element.polyLine.linePen.colorOverridePenIndex = 0;
+    }
+
+    Int32 lineTypeIndex = 0;
+    if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
+        element.polyLine.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+    }
+
+    double penWeightMm = API_DefPenWeigth;
+    if (parameters.Get ("penWeightMm", penWeightMm)) {
+        element.polyLine.penWeight = penWeightMm;
+    }
 
     GS::Array<GS::ObjectState> coordinates;
     GS::Array<GS::ObjectState> arcs;

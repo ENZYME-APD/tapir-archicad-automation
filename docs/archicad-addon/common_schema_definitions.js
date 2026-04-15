@@ -2280,6 +2280,23 @@ var gSchemaDefinitions = {
                 "items": {
                     "$ref": "#/PolyArc"
                 }
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [
+                    "Basic",
+                    "Composite",
+                    "Profile"
+                ]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "profileId": {
+                "$ref": "#/AttributeId"
             }
         },
         "additionalProperties": false,
@@ -2372,6 +2389,19 @@ var gSchemaDefinitions = {
             },
             "holes": {
                 "$ref": "#/Holes2D"
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [
+                    "Basic",
+                    "Composite"
+                ]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
             }
         },
         "additionalProperties": false,
@@ -3836,4 +3866,5 @@ var gSchemaDefinitions = {
             }
         ]
     }
-};
+}
+;
