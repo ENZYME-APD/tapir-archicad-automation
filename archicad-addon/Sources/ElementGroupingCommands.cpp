@@ -1,24 +1,18 @@
 #include "ElementGroupingCommands.hpp"
 #include "MigrationHelper.hpp"
 
-#ifdef ServerMainVers_2700
+#ifdef ServerMainVers_2600
 static GS::UniString GetGroupCreationErrorMessage(const GS::Array<API_Guid>& elemGuids, GSErrCode /*originalErr*/)
 {
     if (elemGuids.GetSize() < 2) {
         return "At least two elements or groups are required to create a group.";
     }
 
-    bool hasGroupedElements = false;
     for (const API_Guid& guid : elemGuids) {
         API_Guid currentGroup = APINULLGuid;
         if (ACAPI_Grouping_GetGroup(guid, &currentGroup) == NoError && currentGroup != APINULLGuid) {
-            hasGroupedElements = true;
-            break;
+            return "Failed to create group. One or more elements are already part of an existing group.";
         }
-    }
-
-    if (hasGroupedElements) {
-        return "Failed to create group. One or more elements are already part of an existing group.";
     }
 
     return "Failed to create group.";
@@ -83,7 +77,7 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
     GS::ObjectState response;
     const auto& groupGuids = response.AddList<GS::ObjectState>("groupGuids");
 
-#ifdef ServerMainVers_2700
+#ifdef ServerMainVers_2600
 
     ACAPI_CallUndoableCommand("Create Element Groups", [&]() -> GSErrCode {
         for (const GS::ObjectState& groupParam : elementGroups) {
@@ -130,7 +124,7 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
         return NoError;
         });
 #else
-    GS::UniString notSupportedMsg = "The Create Groups command is not supported in Archicad 26 or older.";
+    GS::UniString notSupportedMsg = "The Create Groups command is not supported in Archicad 25 or older.";
     groupGuids (CreateErrorResponse (APIERR_NOTSUPPORTED, notSupportedMsg));
 #endif
     return response;

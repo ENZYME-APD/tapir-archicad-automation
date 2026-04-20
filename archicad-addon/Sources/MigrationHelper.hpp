@@ -86,6 +86,12 @@
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
 #define ACAPI_Window_ChangeWindow(par1) ACAPI_Database (APIDb_ChangeCurrentDatabaseID, par1)
 
+#define ACAPI_Grouping_CreateGroup          ACAPI_ElementGroup_Create
+#define ACAPI_Grouping_GetGroup             ACAPI_ElementGroup_GetGroup
+#define ACAPI_Grouping_GetRootGroup         ACAPI_ElementGroup_GetRootGroup
+#define ACAPI_Grouping_GetGroupedElems      ACAPI_ElementGroup_GetGroupedElems
+#define ACAPI_Grouping_GetAllGroupedElems   ACAPI_ElementGroup_GetAllGroupedElems
+
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {
     return index;
