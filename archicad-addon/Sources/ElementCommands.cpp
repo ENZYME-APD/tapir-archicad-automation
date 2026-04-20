@@ -2356,3 +2356,98 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     str.DeleteAll (GS::UniChar(char('\n')));
     return GS::ObjectState ("roomImage", str);
 }
+
+CreateGroupsCommand::CreateGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CreateGroupsCommand::GetName () const
+{
+    return "CreateGroups";
+}
+
+GS::Optional<GS::UniString> CreateGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementGroups": {
+                "type": "array",
+                "description": "A list of element groups to create.",
+                "items": {
+                    "$ref": "#/ElementGroupParameters"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required":[
+            "elementGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateGroupsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groupGuids": {
+                "type": "array",
+                "description": "The results of the group creation operations.",
+                "items": {
+                    "$ref": "#/GroupIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groupGuids"
+        ]
+    })";
+}
+
+GS::ObjectState CreateGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementGroups;
+    parameters.Get ("elementGroups", elementGroups);
+
+    GS::ObjectState response;
+    const auto& groupGuids = response.AddList<GS::ObjectState> ("groupGuids");
+
+    ACAPI_CallUndoableCommand ("Create Element Groups", [&]() -> GSErrCode {
+        for (const GS::ObjectState& groupParam : elementGroups) {
+
+            GS::Array<GS::ObjectState> elements;
+            if (!groupParam.Get ("elements", elements) || elements.IsEmpty ()) {
+                groupGuids (CreateErrorResponse (APIERR_BADPARS, "Elements array is missing or empty."));
+                continue;
+            }
+
+            GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+            API_Guid parentGroupGuid = APINULLGuid;
+            const GS::ObjectState* parentGroupId = groupParam.Get ("parentGroupId");
+            if (parentGroupId != nullptr) {
+                parentGroupGuid = GetGuidFromObjectState (*parentGroupId);
+            }
+
+            API_Guid newGroupGuid = APINULLGuid;
+            GSErrCode err = ACAPI_Grouping_CreateGroup (
+                elemGuids,
+                &newGroupGuid,
+                parentGroupGuid == APINULLGuid ? nullptr : &parentGroupGuid
+            );
+
+            if (err != NoError) {
+                groupGuids (CreateErrorResponse (err, "Failed to create group."));
+            } else {
+                GS::ObjectState successResult;
+                successResult.Add ("groupId", CreateGuidObjectState (newGroupGuid));
+                groupGuids (successResult);
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}

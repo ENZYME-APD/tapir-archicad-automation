@@ -334,6 +334,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.8",
             "Removes an element notification client."
         );
+        err |= RegisterCommand<CreateGroupsCommand> (
+            elementCommands, "1.3.2",
+            "Creates groups of the passed elements"
+        );
         AddCommandGroup (elementCommands);
     }
 
