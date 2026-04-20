@@ -3874,13 +3874,33 @@
             }
         ]
     },
+    "ElementOrGroupId": {
+        "type": "object",
+        "description": "An identifier representing either an Element or a Group.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIdArrayItem"
+            },
+            {
+                "$ref": "#/GroupIdArrayItem"
+            }
+        ]
+    },
+    "ElementOrGroupIds": {
+        "type": "array",
+        "description": "A list of element and/or group identifiers.",
+        "items": {
+            "$ref": "#/ElementOrGroupId"
+        },
+        "minItems": 2
+    },
     "ElementGroupParameters": {
         "type": "object",
         "description": "The parameters for creating a single group",
         "properties": {
             "elements": {
-                "$ref": "#/Elements",
-                "description": "The elements to be grouped."
+                "$ref": "#/ElementOrGroupIds",
+                "description": "The elements or child groups to be grouped."
             },
             "parentGroupId": {
                 "$ref": "#/GroupId",
