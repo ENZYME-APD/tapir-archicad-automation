@@ -2089,6 +2089,43 @@
             "graphicOverrideCombination": {
                 "type": "string",
                 "description": "The name of the graphic override combination. If empty, the view has custom graphic override combination."
+            },
+            "drawingScale": {
+                "type": "integer",
+                "description": "The drawing scale stored on the view, if enabled."
+            },
+            "saveZoom": {
+                "type": "boolean",
+                "description": "Whether the zoom box is stored in the view."
+            },
+            "ignoreSavedZoom": {
+                "type": "boolean",
+                "description": "Whether changing to the view should ignore its stored zoom."
+            },
+            "zoom": {
+                "type": "object",
+                "description": "Stored zoom box in model coordinates. Used only when saveZoom is true.",
+                "properties": {
+                    "xMin": {
+                        "type": "number"
+                    },
+                    "yMin": {
+                        "type": "number"
+                    },
+                    "xMax": {
+                        "type": "number"
+                    },
+                    "yMax": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "xMin",
+                    "yMin",
+                    "xMax",
+                    "yMax"
+                ]
             }
         },
         "additionalProperties": false,
@@ -2280,6 +2317,23 @@
                 "items": {
                     "$ref": "#/PolyArc"
                 }
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [
+                    "Basic",
+                    "Composite",
+                    "Profile"
+                ]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "profileId": {
+                "$ref": "#/AttributeId"
             }
         },
         "additionalProperties": false,
@@ -2372,6 +2426,19 @@
             },
             "holes": {
                 "$ref": "#/Holes2D"
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [
+                    "Basic",
+                    "Composite"
+                ]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
             }
         },
         "additionalProperties": false,
