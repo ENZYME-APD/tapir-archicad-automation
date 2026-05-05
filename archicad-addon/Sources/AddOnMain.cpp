@@ -30,6 +30,7 @@
 #include "FavoritesCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NavigatorCommands.hpp"
+#include "DocumentCreationCommands.hpp"
 #include "RevisionCommands.hpp"
 #include "NotificationCommands.hpp"
 #include "DesignOptionCommands.hpp"
@@ -487,6 +488,26 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetDatabaseIdFromNavigatorItemIdCommand> (
             navigatorCommands, "1.1.4",
             "Gets the ID of the database associated with the supplied navigator item id"
+        );
+        err |= RegisterCommand<CreateDetailsCommand> (
+            navigatorCommands, "1.4.0",
+            "Creates independent Detail databases."
+        );
+        err |= RegisterCommand<CreateWorksheetsCommand> (
+            navigatorCommands, "1.4.0",
+            "Creates independent Worksheet databases."
+        );
+        err |= RegisterCommand<CreateLayoutsCommand> (
+            navigatorCommands, "1.4.0",
+            "Creates Layouts and their backing master layouts."
+        );
+        err |= RegisterCommand<CreateSubsetsCommand> (
+            navigatorCommands, "1.4.0",
+            "Creates Layout Book subsets."
+        );
+        err |= RegisterCommand<CreateDrawingsCommand> (
+            navigatorCommands, "1.4.0",
+            "Creates Drawing elements on the specified or active layout from navigator items."
         );
         err |= RegisterCommand<GetModelViewOptionsCommand> (
             navigatorCommands, "1.1.4",

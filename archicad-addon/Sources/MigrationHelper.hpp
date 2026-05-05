@@ -85,6 +85,13 @@
 #define ACAPI_View_Change3DCuttingPlanes(par1) ACAPI_Environment (APIEnv_Change3DCuttingPlanesID, par1)
 #define ACAPI_Window_GetCurrentWindow(par1) ACAPI_Database (APIDb_GetCurrentWindowID, par1)
 #define ACAPI_Window_ChangeWindow(par1) ACAPI_Database (APIDb_ChangeCurrentDatabaseID, par1)
+#define ACAPI_Database_GetLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetLayoutDatabasesID, par1, par2)
+#define ACAPI_Database_GetMasterLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetMasterLayoutDatabasesID, par1, par2)
+#define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
+#define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
+#define ACAPI_Navigator_CreateLayout(par1, par2) ACAPI_Environment (APIEnv_CreateLayoutID, par1, par2)
+#define ACAPI_Navigator_GetSubSetDefault(par1) ACAPI_Database (APIDb_GetSubSetDefaultID, par1)
+#define ACAPI_Navigator_CreateSubSet(par1, par2) ACAPI_Database (APIDb_CreateSubSetID, par1, (void*)par2)
 
 inline API_AttributeIndex ACAPI_CreateAttributeIndex (Int32 index)
 {

@@ -253,6 +253,9 @@ GS::Optional<GS::UniString> ChangeWindowCommand::GetInputParametersSchema () con
         "properties": {
             "windowType": {
                 "$ref": "#/WindowType"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId"
             }
         },
         "additionalProperties": false,
@@ -278,6 +281,30 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
 
     API_WindowInfo windowInfo = {};
     windowInfo.typeID = ConvertWindowTypeToString (windowTypeStr);
+    if (windowInfo.typeID == API_ZombieWindowID) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
+    }
+
+    const GS::ObjectState* databaseId = parameters.Get ("databaseId");
+    if (databaseId != nullptr) {
+        API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
+        GSErrCode err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to resolve target database.");
+        }
+
+        if (targetDatabase.typeID != windowInfo.typeID) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "databaseId does not belong to the requested windowType.");
+        }
+
+        err = ACAPI_Database_ChangeCurrentDatabase (&targetDatabase);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to change current database.");
+        }
+
+        windowInfo = targetDatabase;
+    }
+
     GSErrCode err = ACAPI_Window_ChangeWindow (&windowInfo);
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
