@@ -36,17 +36,15 @@ bool GetItems (const GS::ObjectState& parameters, const char* fieldName, GS::Arr
 GS::Array<API_Guid> GetLayoutDatabaseGuids ()
 {
     GS::Array<API_Guid> guids;
-    API_DatabaseUnId* dbases = nullptr;
-    if (ACAPI_Database_GetLayoutDatabases (&dbases) == NoError && dbases != nullptr) {
-        const GSSize nDbases = BMpGetSize (reinterpret_cast<GSPtr> (dbases)) / Sizeof32 (API_DatabaseUnId);
-        for (GSSize i = 0; i < nDbases; ++i) {
+    GS::Array<API_DatabaseUnId> dbases;
+    if (ACAPI_Database_GetLayoutDatabases (nullptr, &dbases) == NoError) {
+        for (const auto& db : dbases) {
             API_DatabaseInfo info = {};
             info.typeID = APIWind_LayoutID;
-            info.databaseUnId = dbases[i];
+            info.databaseUnId = db;
             guids.Push (DatabaseIdResolver::Instance ().GetIdOfDatabase (info));
         }
     }
-    BMpKill (reinterpret_cast<GSPtr*> (&dbases));
     return guids;
 }
 
@@ -63,16 +61,13 @@ GS::Optional<API_Guid> FindNewLayoutDatabaseGuid (const GS::Array<API_Guid>& bef
 
 GS::Optional<API_DatabaseInfo> FindMasterLayoutDatabaseByName (const GS::UniString& masterLayoutName)
 {
-    API_DatabaseUnId* dbases = nullptr;
     GS::Optional<API_DatabaseInfo> foundMasterLayout;
-
-    if (ACAPI_Database_GetMasterLayoutDatabases (&dbases) == NoError && dbases != nullptr) {
-        const GSSize nDbases = BMpGetSize (reinterpret_cast<GSPtr> (dbases)) / Sizeof32 (API_DatabaseUnId);
-        for (GSSize i = 0; i < nDbases; ++i) {
+    GS::Array<API_DatabaseUnId> dbases;
+    if (ACAPI_Database_GetMasterLayoutDatabases (nullptr, &dbases) == NoError) {
+        for (const auto& db : dbases) {
             API_DatabaseInfo candidate = {};
             candidate.typeID = APIWind_MasterLayoutID;
-            candidate.databaseUnId = dbases[i];
-
+            candidate.databaseUnId = db;
             if (ACAPI_Window_GetDatabaseInfo (&candidate) == NoError && GS::UniString (candidate.name) == masterLayoutName) {
                 foundMasterLayout = candidate;
                 break;
@@ -80,22 +75,19 @@ GS::Optional<API_DatabaseInfo> FindMasterLayoutDatabaseByName (const GS::UniStri
         }
     }
 
-    BMpKill (reinterpret_cast<GSPtr*> (&dbases));
     return foundMasterLayout;
 }
 
 GS::Optional<API_Guid> FindLayoutDatabaseGuidByName (const GS::UniString& layoutName)
 {
-    API_DatabaseUnId* dbases = nullptr;
     GS::Optional<API_Guid> foundLayoutGuid;
 
-    if (ACAPI_Database_GetLayoutDatabases (&dbases) == NoError && dbases != nullptr) {
-        const GSSize nDbases = BMpGetSize (reinterpret_cast<GSPtr> (dbases)) / Sizeof32 (API_DatabaseUnId);
-        for (GSSize i = 0; i < nDbases; ++i) {
+    GS::Array<API_DatabaseUnId> dbases;
+    if (ACAPI_Database_GetLayoutDatabases (nullptr, &dbases) == NoError) {
+        for (const auto& db : dbases) {
             API_DatabaseInfo candidate = {};
             candidate.typeID = APIWind_LayoutID;
-            candidate.databaseUnId = dbases[i];
-
+            candidate.databaseUnId = db;
             if (ACAPI_Window_GetDatabaseInfo (&candidate) == NoError && GS::UniString (candidate.name) == layoutName) {
                 foundLayoutGuid = DatabaseIdResolver::Instance ().GetIdOfDatabase (candidate);
                 break;
@@ -103,14 +95,13 @@ GS::Optional<API_Guid> FindLayoutDatabaseGuidByName (const GS::UniString& layout
         }
     }
 
-    BMpKill (reinterpret_cast<GSPtr*> (&dbases));
     return foundLayoutGuid;
 }
 
 bool GetLayoutInfoForDatabase (const API_DatabaseUnId& databaseUnId, API_LayoutInfo& layoutInfo)
 {
     BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
-    return ACAPI_Navigator_GetLayoutSets (&layoutInfo, const_cast<API_DatabaseUnId*> (&databaseUnId), nullptr) == NoError;
+    return ACAPI_Navigator_GetLayoutSets (&layoutInfo, const_cast<API_DatabaseUnId*> (&databaseUnId)) == NoError;
 }
 
 }
@@ -295,7 +286,8 @@ GS::ObjectState CreateLayoutsCommand::Execute (const GS::ObjectState& parameters
         item.Get ("masterLayoutName", masterLayoutName);
 
         API_DatabaseInfo masterLayoutDbInfo = {};
-        if (const auto existingMasterLayout = FindMasterLayoutDatabaseByName (masterLayoutName); existingMasterLayout.HasValue ()) {
+        const auto existingMasterLayout = FindMasterLayoutDatabaseByName (masterLayoutName);
+        if (existingMasterLayout.HasValue ()) {
             masterLayoutDbInfo = existingMasterLayout.Get ();
         } else {
             masterLayoutDbInfo.typeID = APIWind_MasterLayoutID;
@@ -309,7 +301,11 @@ GS::ObjectState CreateLayoutsCommand::Execute (const GS::ObjectState& parameters
         }
 
         API_LayoutInfo layoutInfo = {};
+#ifdef ServerMainVers_2600 
         SetUCharProperty (&item, "layoutName", layoutInfo.layoutName);
+#else
+        SetCharProperty (&item, "layoutName", layoutInfo.layoutName);
+#endif
 
         API_LayoutInfo masterLayoutInfo = {};
         if (GetLayoutInfoForDatabase (masterLayoutDbInfo.databaseUnId, masterLayoutInfo)) {
@@ -332,10 +328,13 @@ GS::ObjectState CreateLayoutsCommand::Execute (const GS::ObjectState& parameters
         const auto newLayoutGuid = FindNewLayoutDatabaseGuid (before);
         if (newLayoutGuid.HasValue ()) {
             databases.Push (CreateDatabaseIdObjectState (newLayoutGuid.Get ()));
-        } else if (const auto layoutGuid = FindLayoutDatabaseGuidByName (GS::UniString (layoutInfo.layoutName)); layoutGuid.HasValue ()) {
-            databases.Push (CreateDatabaseIdObjectState (layoutGuid.Get ()));
         } else {
-            databases.Push (CreateErrorResponse (APIERR_GENERAL, "Layout created but could not resolve its database id."));
+            const auto layoutGuid = FindLayoutDatabaseGuidByName (GS::UniString (layoutInfo.layoutName));
+            if (layoutGuid.HasValue ()) {
+                databases.Push (CreateDatabaseIdObjectState (layoutGuid.Get ()));
+            } else {
+                databases.Push (CreateErrorResponse (APIERR_GENERAL, "Layout created but could not resolve its database id."));
+            }
         }
     }
 
@@ -504,7 +503,11 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
             }
 
             API_Element element = {};
-            element.header.type = API_DrawingID;
+#ifdef ServerMainVers_2600
+            element.header.type   = API_DrawingID;
+#else
+            element.header.typeID = API_DrawingID;
+#endif
             GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
             if (err != NoError) {
                 elementResults.Push (CreateErrorResponse (err, "Failed to get drawing defaults."));
@@ -516,9 +519,7 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
             element.drawing.nameType = APIName_CustomName;
             element.drawing.anchorPoint = APIAnc_MM;
             element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
-            if (item.Contains ("scale")) {
-                item.Get ("scale", element.drawing.ratio);
-            } else {
+            if (!item.Get ("scale", element.drawing.ratio)) {
                 element.drawing.ratio = 1.0;
             }
 

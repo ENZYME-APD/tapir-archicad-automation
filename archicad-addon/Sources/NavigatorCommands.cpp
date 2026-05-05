@@ -506,26 +506,19 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         SetCharProperty (viewSettingsOS, "dimensionStyle", navigatorView.dimName);
         SetCharProperty (viewSettingsOS, "penSetName", navigatorView.penSetName);
         SetUCharProperty (viewSettingsOS, "graphicOverrideCombination", navigatorView.overrideCombination);
-        if (viewSettingsOS->Contains ("drawingScale")) {
-            Int32 drawingScale = navigatorView.drawingScale;
-            viewSettingsOS->Get ("drawingScale", drawingScale);
-            navigatorView.drawingScale = drawingScale;
+        if (viewSettingsOS->Get ("drawingScale", navigatorView.drawingScale)) {
             navigatorView.saveDScale = true;
         }
-        if (viewSettingsOS->Contains ("saveZoom")) {
-            viewSettingsOS->Get ("saveZoom", navigatorView.saveZoom);
-        }
-        if (viewSettingsOS->Contains ("ignoreSavedZoom")) {
-            viewSettingsOS->Get ("ignoreSavedZoom", navigatorView.ignoreSavedZoom);
-        }
-        if (const GS::ObjectState* zoomOS = viewSettingsOS->Get ("zoom"); zoomOS != nullptr) {
-            zoomOS->Get ("xMin", navigatorView.zoom.xMin);
-            zoomOS->Get ("yMin", navigatorView.zoom.yMin);
-            zoomOS->Get ("xMax", navigatorView.zoom.xMax);
-            zoomOS->Get ("yMax", navigatorView.zoom.yMax);
+        viewSettingsOS->Get ("saveZoom", navigatorView.saveZoom);
+        viewSettingsOS->Get ("ignoreSavedZoom", navigatorView.ignoreSavedZoom);
+        const GS::ObjectState* zoomOS = viewSettingsOS->Get ("zoom");
+        if (zoomOS != nullptr && 
+            zoomOS->Get ("xMin", navigatorView.zoom.xMin) &&
+            zoomOS->Get ("yMin", navigatorView.zoom.yMin) &&
+            zoomOS->Get ("xMax", navigatorView.zoom.xMax) &&
+            zoomOS->Get ("yMax", navigatorView.zoom.yMax)) {
             navigatorView.saveZoom = true;
         }
-
 
         err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
         if (err != NoError) {
