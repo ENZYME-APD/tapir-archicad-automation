@@ -72,6 +72,9 @@ var gCommands = [{
         "properties": {
             "windowType": {
                 "$ref": "#/WindowType"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId"
             }
         },
         "additionalProperties": false,
@@ -3142,6 +3145,10 @@ var gCommands = [{
                 "type": "string",
                 "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publisher set will be used.",
                 "minLength": 1
+            },
+            "selectedNavigatorItemIds": {
+                "$ref": "#/NavigatorItemIds",
+                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set."
             }
         },
         "additionalProperties": false,
@@ -3197,6 +3204,131 @@ var gCommands = [{
         "databases"
     ]
 }
+            },{
+                "name": "CreateDetails",
+                "version": "1.4.0",
+                "description": "Creates independent Detail databases.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "detailsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string", "minLength": 1 },
+                        "referenceId": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["name", "referenceId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["detailsData"]
+    },
+                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]}
+            },{
+                "name": "CreateWorksheets",
+                "version": "1.4.0",
+                "description": "Creates independent Worksheet databases.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "worksheetsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string", "minLength": 1 },
+                        "referenceId": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["name", "referenceId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["worksheetsData"]
+    },
+                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]}
+            },{
+                "name": "CreateLayouts",
+                "version": "1.4.0",
+                "description": "Creates Layouts and their backing master layouts.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "layoutsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "masterLayoutName": { "type": "string", "minLength": 1 },
+                        "layoutName": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["masterLayoutName", "layoutName"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["layoutsData"]
+    },
+                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]}
+            },{
+                "name": "CreateSubsets",
+                "version": "1.4.0",
+                "description": "Creates Layout Book subsets.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "subsetsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string", "minLength": 1 },
+                        "parentNavigatorItemId": { "$ref": "#/NavigatorItemId" },
+                        "ownPrefix": { "type": "string" },
+                        "customNumber": { "type": "string" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["name"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["subsetsData"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "CreateDrawings",
+                "version": "1.4.0",
+                "description": "Creates Drawing elements on the specified or active layout from navigator items.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "drawingsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": { "$ref": "#/NavigatorItemId" },
+                        "layoutDatabaseId": { "$ref": "#/DatabaseId" },
+                        "name": { "type": "string", "minLength": 1 },
+                        "position": { "$ref": "#/Coordinate2D" },
+                        "scale": { "type": "number", "exclusiveMinimum": 0.0 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["navigatorItemId", "name", "position"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["drawingsData"]
+    },
+                "outputScheme": {"type":"object","properties":{"elements":{"$ref":"#/Elements"}},"additionalProperties":false,"required":["elements"]}
             },{
                 "name": "GetModelViewOptions",
                 "version": "1.1.4",

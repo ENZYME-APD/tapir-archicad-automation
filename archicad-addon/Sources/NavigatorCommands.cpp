@@ -47,6 +47,10 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
                 "type": "string",
                 "description": "Full local or LAN path for publishing. Optional, by default the path set in the settings of the publisher set will be used.",
                 "minLength": 1
+            },
+            "selectedNavigatorItemIds": {
+                "$ref": "#/NavigatorItemIds",
+                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set."
             }
         },
         "additionalProperties": false,
@@ -75,7 +79,27 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         publishPars.path = new IO::Location(outputPath);
     }
 
-    GSErrCode err = ACAPI_ProjectOperation_Publish(&publishPars);
+    GS::Array<API_Guid> selectedLinks;
+    const GS::Array<API_Guid>* selectedLinksPtr = nullptr;
+    if (parameters.Contains("selectedNavigatorItemIds")) {
+        GS::Array<GS::ObjectState> selectedNavigatorItemIds;
+        parameters.Get("selectedNavigatorItemIds", selectedNavigatorItemIds);
+
+        for (const GS::ObjectState& navigatorItemIdArrayItem : selectedNavigatorItemIds) {
+            const API_Guid selectedGuid = GetGuidFromNavigatorItemIdArrayItem(navigatorItemIdArrayItem);
+            if (selectedGuid == APINULLGuid) {
+                delete publishPars.path;
+                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing.");
+            }
+            selectedLinks.Push(selectedGuid);
+        }
+
+        if (!selectedLinks.IsEmpty()) {
+            selectedLinksPtr = &selectedLinks;
+        }
+    }
+
+    GSErrCode err = ACAPI_ProjectOperation_Publish(&publishPars, selectedLinksPtr);
     delete publishPars.path;
 
     if (err != NoError) {
@@ -359,13 +383,25 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         }
 
         GS::UniString graphicOverrideCombinationName (navigatorView.overrideCombination);
-
-        viewSettings (GS::ObjectState (
+        GS::ObjectState viewSetting (
             "modelViewOptions", navigatorView.modelViewOptName,
             "layerCombination", navigatorView.layerCombination,
             "dimensionStyle", navigatorView.dimName,
             "penSetName", navigatorView.penSetName,
-            "graphicOverrideCombination", graphicOverrideCombinationName));
+            "graphicOverrideCombination", graphicOverrideCombinationName,
+            "drawingScale", navigatorView.drawingScale,
+            "saveZoom", navigatorView.saveZoom,
+            "ignoreSavedZoom", navigatorView.ignoreSavedZoom);
+
+        if (navigatorView.saveZoom) {
+            viewSetting.Add ("zoom", GS::ObjectState (
+                "xMin", navigatorView.zoom.xMin,
+                "yMin", navigatorView.zoom.yMin,
+                "xMax", navigatorView.zoom.xMax,
+                "yMax", navigatorView.zoom.yMax));
+        }
+
+        viewSettings (viewSetting);
     }
 
     return response;
@@ -470,7 +506,19 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         SetCharProperty (viewSettingsOS, "dimensionStyle", navigatorView.dimName);
         SetCharProperty (viewSettingsOS, "penSetName", navigatorView.penSetName);
         SetUCharProperty (viewSettingsOS, "graphicOverrideCombination", navigatorView.overrideCombination);
-
+        if (viewSettingsOS->Get ("drawingScale", navigatorView.drawingScale)) {
+            navigatorView.saveDScale = true;
+        }
+        viewSettingsOS->Get ("saveZoom", navigatorView.saveZoom);
+        viewSettingsOS->Get ("ignoreSavedZoom", navigatorView.ignoreSavedZoom);
+        const GS::ObjectState* zoomOS = viewSettingsOS->Get ("zoom");
+        if (zoomOS != nullptr && 
+            zoomOS->Get ("xMin", navigatorView.zoom.xMin) &&
+            zoomOS->Get ("yMin", navigatorView.zoom.yMin) &&
+            zoomOS->Get ("xMax", navigatorView.zoom.xMax) &&
+            zoomOS->Get ("yMax", navigatorView.zoom.yMax)) {
+            navigatorView.saveZoom = true;
+        }
 
         err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
         if (err != NoError) {
