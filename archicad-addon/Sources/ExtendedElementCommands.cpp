@@ -151,14 +151,23 @@ GS::Optional<GS::UniString> ParseStructureSelection (
     bool hasComposite = false;
     bool hasProfile = false;
 
-    if (auto err = TryResolveAttributeField (parameters, "buildingMaterialId", API_BuildingMaterialID, hasBuildingMaterial, selection.buildingMaterial); err.HasValue ()) {
-        return err;
+    {
+        auto err = TryResolveAttributeField (parameters, "buildingMaterialId", API_BuildingMaterialID, hasBuildingMaterial, selection.buildingMaterial);
+        if (err.HasValue ()) {
+            return err;
+        }
     }
-    if (auto err = TryResolveAttributeField (parameters, "compositeId", API_CompWallID, hasComposite, selection.composite); err.HasValue ()) {
-        return err;
+    {
+        auto err = TryResolveAttributeField (parameters, "compositeId", API_CompWallID, hasComposite, selection.composite);
+        if (err.HasValue ()) {
+            return err;
+        }
     }
-    if (auto err = TryResolveAttributeField (parameters, "profileId", API_ProfileID, hasProfile, selection.profile); err.HasValue ()) {
-        return err;
+    {
+        auto err = TryResolveAttributeField (parameters, "profileId", API_ProfileID, hasProfile, selection.profile);
+        if (err.HasValue ()) {
+            return err;
+        }
     }
 
     const int explicitlyProvidedKinds = static_cast<int> (hasBuildingMaterial) + static_cast<int> (hasComposite) + static_cast<int> (hasProfile);
@@ -216,18 +225,31 @@ void SetOpeningSizeMask (API_Element& mask)
     ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
 }
 
-GSErrCode LoadWall (const API_Guid& wallGuid, API_Element& wall)
+bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
 {
-    wall = {};
-    wall.header.guid = wallGuid;
-    return ACAPI_Element_Get (&wall);
+    elementHeader = {};
+    elementHeader.guid = elementGuid;
+    return ACAPI_Element_GetHeader (&elementHeader) == NoError;
+}
+
+bool DoesWallExist (const API_Guid& wallGuid)
+{
+    API_Elem_Head header = {};
+    if (!LoadElementHeaderByGuid (wallGuid, header)) {
+        return false;
+    }
+    return GetElemTypeId (header) == API_WallID;
 }
 
 GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker)
 {
     element = {};
     marker = {};
+#ifdef ServerMainVers_2600
     element.header.type = elemTypeId;
+#else
+    element.header.typeID = elemTypeId;
+#endif
     marker.subType = APISubElement_MainMarker;
 
     GSErrCode err = ACAPI_Element_GetDefaultsExt (&element, &memo, 1UL, &marker);
@@ -236,10 +258,12 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     }
 
     API_LibPart libPart = {};
+#ifdef ServerMainVers_2600
     err = ACAPI_LibraryPart_GetMarkerParent (element.header.type, libPart);
     if (err != NoError) {
         return err;
     }
+#endif
 
     err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
@@ -260,13 +284,6 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     marker.subElem.object.pen = 166;
     marker.subElem.object.useObjPens = true;
     return NoError;
-}
-
-bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
-{
-    elementHeader = {};
-    elementHeader.guid = elementGuid;
-    return ACAPI_Element_GetHeader (&elementHeader) == NoError;
 }
 
 void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoint, const API_Vector& direction)
@@ -317,7 +334,9 @@ GS::Optional<GS::UniString> ParseAssociativeDimensionPoint (const GS::ObjectStat
         point.nodeStatus = static_cast<short> (nodeStatus);
     }
 
-    if (auto nodeId = GetOptionalDouble (pointData, "nodeId"); nodeId.HasValue ()) {
+    auto nodeId = GetOptionalDouble (pointData, "nodeId");
+
+    if (nodeId.HasValue ()) {
         if (nodeId.Get () < 0.0 || nodeId.Get () > static_cast<double> (std::numeric_limits<UInt32>::max ())) {
             return "The 'nodeId' field must be between 0 and 4294967295.";
         }
@@ -341,7 +360,11 @@ GS::Optional<GS::UniString> PopulateAssociativeDimensionMemo (
     for (UIndex pointIndex = 0; pointIndex < points.GetSize (); ++pointIndex) {
         const AssociativeDimensionPoint& point = points[pointIndex];
         API_DimElem& dimElem = (*memo.dimElems)[pointIndex];
+#ifdef ServerMainVers_2600
         dimElem.base.base.type = API_ElemType (point.elementType);
+#else
+        dimElem.base.base.typeID = point.elementType;
+#endif
         dimElem.base.base.guid = point.elementGuid;
         dimElem.base.base.line = point.line;
         dimElem.base.base.inIndex = point.inIndex;
@@ -415,7 +438,9 @@ GS::Optional<GS::UniString> LoadSectionElementAndParent (
     }
 
     parentElement = {};
+#ifdef ServerMainVers_2600
     parentElement.header.type = sectionElement.sectElem.parentType;
+#endif
     parentElement.header.guid = sectionElement.sectElem.parentGuid;
     if (parentElement.header.guid == APINULLGuid || ACAPI_Element_Get (&parentElement) != NoError) {
         return "Failed to load the parent element for the referenced section element.";
@@ -458,7 +483,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
 
     API_Element sectionElement = {};
     API_Element parentElement = {};
-    if (auto error = LoadSectionElementAndParent (GetGuidFromObjectState (*sectionElementId), sectionElement, parentElement); error.HasValue ()) {
+    auto error = LoadSectionElementAndParent (GetGuidFromObjectState (*sectionElementId), sectionElement, parentElement);
+    if (error.HasValue ()) {
         return error;
     }
 
@@ -468,7 +494,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
     }
 
     SectionAssociativeDimensionPreset preset;
-    if (auto error = ParseSectionAssociativeDimensionPreset (presetName, preset); error.HasValue ()) {
+    auto error = ParseSectionAssociativeDimensionPreset (presetName, preset);
+    if (error.HasValue ()) {
         return error;
     }
 
@@ -484,7 +511,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
 
     switch (preset) {
         case SectionAssociativeDimensionPreset::WallCompositeFaces:
-            if (auto error = requireParentType ({API_WallID}, "The 'WallCompositeFaces' preset requires a wall section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_WallID}, "The 'WallCompositeFaces' preset requires a wall section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             defaultDirection = {1.0, 0.0};
@@ -496,7 +524,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             break;
 
         case SectionAssociativeDimensionPreset::WallSkinBorders: {
-            if (auto error = requireParentType ({API_WallID}, "The 'WallSkinBorders' preset requires a wall section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_WallID}, "The 'WallSkinBorders' preset requires a wall section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             GS::Array<Int32> skinBorderIndices;
@@ -511,7 +540,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
         }
 
         case SectionAssociativeDimensionPreset::SlabCompositeFaces:
-            if (auto error = requireParentType ({API_SlabID}, "The 'SlabCompositeFaces' preset requires a slab section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_SlabID}, "The 'SlabCompositeFaces' preset requires a slab section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             defaultDirection = {0.0, 1.0};
@@ -523,7 +553,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             break;
 
         case SectionAssociativeDimensionPreset::SlabSkinBorders: {
-            if (auto error = requireParentType ({API_SlabID}, "The 'SlabSkinBorders' preset requires a slab section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_SlabID}, "The 'SlabSkinBorders' preset requires a slab section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             GS::Array<Int32> skinBorderIndices;
@@ -538,7 +569,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
         }
 
         case SectionAssociativeDimensionPreset::BeamOrColumnRefLineEndPoints:
-            if (auto error = requireParentType ({API_BeamID, API_ColumnID}, "The 'BeamOrColumnRefLineEndPoints' preset requires a beam or column section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_BeamID, API_ColumnID}, "The 'BeamOrColumnRefLineEndPoints' preset requires a beam or column section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             defaultDirection = {1.0, 0.0};
@@ -547,7 +579,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             break;
 
         case SectionAssociativeDimensionPreset::BeamOrColumnBoundingBoxCorners: {
-            if (auto error = requireParentType ({API_BeamID, API_ColumnID}, "The 'BeamOrColumnBoundingBoxCorners' preset requires a beam or column section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_BeamID, API_ColumnID}, "The 'BeamOrColumnBoundingBoxCorners' preset requires a beam or column section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             bool beginPlane = true;
@@ -570,7 +603,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
         }
 
         case SectionAssociativeDimensionPreset::DoorWindowWallHoleCorners: {
-            if (auto error = requireParentType ({API_WindowID, API_DoorID}, "The 'DoorWindowWallHoleCorners' preset requires a door or window section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_WindowID, API_DoorID}, "The 'DoorWindowWallHoleCorners' preset requires a door or window section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             bool placeOnTop = false;
@@ -585,7 +619,8 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
         }
 
         case SectionAssociativeDimensionPreset::DoorWindowModelHotspots:
-            if (auto error = requireParentType ({API_WindowID, API_DoorID}, "The 'DoorWindowModelHotspots' preset requires a door or window section element."); error.HasValue ()) {
+            auto error = requireParentType ({API_WindowID, API_DoorID}, "The 'DoorWindowModelHotspots' preset requires a door or window section element.");
+            if (error.HasValue ()) {
                 return error;
             }
             defaultDirection = {1.0, 0.0};
@@ -837,7 +872,8 @@ GS::Optional<GS::UniString> ApplyWallStructure (
     bool& changed)
 {
     StructureSelection selection;
-    if (auto error = ParseStructureSelection (details, true, true, selection); error.HasValue ()) {
+    auto error = ParseStructureSelection (details, true, true, selection);
+    if (error.HasValue ()) {
         return error;
     }
 
@@ -896,7 +932,8 @@ GS::Optional<GS::UniString> ApplyRoofStructure (
     bool& changed)
 {
     StructureSelection selection;
-    if (auto error = ParseStructureSelection (details, true, false, selection); error.HasValue ()) {
+    auto error = ParseStructureSelection (details, true, false, selection);
+    if (error.HasValue ()) {
         return error;
     }
 
@@ -939,7 +976,8 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     bool& changed)
 {
     StructureSelection selection;
-    if (auto error = ParseStructureSelection (details, true, false, selection); error.HasValue ()) {
+    auto error = ParseStructureSelection (details, true, false, selection);
+    if (error.HasValue ()) {
         return error;
     }
 
@@ -978,32 +1016,38 @@ GS::Optional<GS::UniString> ApplySlabStructure (
 bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {
     bool changed = false;
-    if (auto begCoordinate = GetOptionalCoordinate2D (details, "begCoordinate"); begCoordinate.HasValue ()) {
+    auto begCoordinate = GetOptionalCoordinate2D (details, "begCoordinate");
+    if (begCoordinate.HasValue ()) {
         element.wall.begC = begCoordinate.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, begC);
         changed = true;
     }
-    if (auto endCoordinate = GetOptionalCoordinate2D (details, "endCoordinate"); endCoordinate.HasValue ()) {
+    auto endCoordinate = GetOptionalCoordinate2D (details, "endCoordinate");
+    if (endCoordinate.HasValue ()) {
         element.wall.endC = endCoordinate.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, endC);
         changed = true;
     }
-    if (auto height = GetOptionalDouble (details, "height"); height.HasValue ()) {
+    auto height = GetOptionalDouble (details, "height");
+    if (height.HasValue ()) {
         element.wall.height = height.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, height);
         changed = true;
     }
-    if (auto offset = GetOptionalDouble (details, "offset"); offset.HasValue ()) {
+    auto offset = GetOptionalDouble (details, "offset");
+    if (offset.HasValue ()) {
         element.wall.offset = offset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, offset);
         changed = true;
     }
-    if (auto thickness = GetOptionalDouble (details, "thickness"); thickness.HasValue ()) {
+    auto thickness = GetOptionalDouble (details, "thickness");
+    if (thickness.HasValue ()) {
         element.wall.thickness = thickness.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness);
         changed = true;
     }
-    if (auto bottomOffset = GetOptionalDouble (details, "bottomOffset"); bottomOffset.HasValue ()) {
+    auto bottomOffset = GetOptionalDouble (details, "bottomOffset");
+    if (bottomOffset.HasValue ()) {
         element.wall.bottomOffset = bottomOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, bottomOffset);
         changed = true;
@@ -1053,13 +1097,16 @@ GS::Optional<GS::UniString> ApplyRoofLevels (API_Element& element, API_Element* 
 bool ApplySlabDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, const Stories& stories)
 {
     bool changed = false;
-    if (auto thickness = GetOptionalDouble (details, "thickness"); thickness.HasValue ()) {
+    auto thickness = GetOptionalDouble (details, "thickness");
+    if (thickness.HasValue ()) {
         element.slab.thickness = thickness.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, thickness);
         changed = true;
     }
 
-    if (auto zCoordinate = GetOptionalDouble (details, "zCoordinate"); zCoordinate.HasValue ()) {
+    auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+
+    if (zCoordinate.HasValue ()) {
         const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.slab.level = floorIndexAndOffset.second;
@@ -1078,7 +1125,8 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
     const Stories& stories,
     bool& changed)
 {
-    if (auto thickness = GetOptionalDouble (details, "thickness"); thickness.HasValue ()) {
+    auto thickness = GetOptionalDouble (details, "thickness");
+    if (thickness.HasValue ()) {
         element.roof.shellBase.thickness = thickness.Get ();
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET ((*mask), API_RoofType, shellBase.thickness);
@@ -1086,7 +1134,9 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
         changed = true;
     }
 
-    if (auto level = GetOptionalDouble (details, "level"); level.HasValue ()) {
+    auto level = GetOptionalDouble (details, "level");
+
+    if (level.HasValue ()) {
         const auto floorIndexAndOffset = GetFloorIndexAndOffset (level.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.roof.shellBase.level = floorIndexAndOffset.second;
@@ -1097,7 +1147,9 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
         changed = true;
     }
 
-    if (auto eavesOverhang = GetOptionalDouble (details, "eavesOverhang"); eavesOverhang.HasValue ()) {
+    auto eavesOverhang = GetOptionalDouble (details, "eavesOverhang");
+
+    if (eavesOverhang.HasValue ()) {
         element.roof.u.polyRoof.overHangType = API_OffsetOverhang;
         element.roof.u.polyRoof.eavesOverHang = eavesOverhang.Get ();
         if (mask != nullptr) {
@@ -1113,12 +1165,14 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
 bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, const Stories& stories)
 {
     bool changed = false;
-    if (auto origin = GetOptionalCoordinate2D (details, "origin"); origin.HasValue ()) {
+    auto origin = GetOptionalCoordinate2D (details, "origin");
+    if (origin.HasValue ()) {
         element.column.origoPos = origin.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, origoPos);
         changed = true;
     }
-    if (auto zCoordinate = GetOptionalDouble (details, "zCoordinate"); zCoordinate.HasValue ()) {
+    auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+    if (zCoordinate.HasValue ()) {
         const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.column.bottomOffset = floorIndexAndOffset.second;
@@ -1126,17 +1180,20 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, bottomOffset);
         changed = true;
     }
-    if (auto height = GetOptionalDouble (details, "height"); height.HasValue ()) {
+    auto height = GetOptionalDouble (details, "height");
+    if (height.HasValue ()) {
         element.column.height = height.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, height);
         changed = true;
     }
-    if (auto bottomOffset = GetOptionalDouble (details, "bottomOffset"); bottomOffset.HasValue ()) {
+    auto bottomOffset = GetOptionalDouble (details, "bottomOffset");
+    if (bottomOffset.HasValue ()) {
         element.column.bottomOffset = bottomOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, bottomOffset);
         changed = true;
     }
-    if (auto axisRotationAngle = GetOptionalDouble (details, "axisRotationAngle"); axisRotationAngle.HasValue ()) {
+    auto axisRotationAngle = GetOptionalDouble (details, "axisRotationAngle");
+    if (axisRotationAngle.HasValue ()) {
         element.column.axisRotationAngle = axisRotationAngle.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, axisRotationAngle);
         changed = true;
@@ -1147,37 +1204,44 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
 bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {
     bool changed = false;
-    if (auto begCoordinate = GetOptionalCoordinate2D (details, "begCoordinate"); begCoordinate.HasValue ()) {
+    auto begCoordinate = GetOptionalCoordinate2D (details, "begCoordinate");
+    if (begCoordinate.HasValue ()) {
         element.beam.begC = begCoordinate.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, begC);
         changed = true;
     }
-    if (auto endCoordinate = GetOptionalCoordinate2D (details, "endCoordinate"); endCoordinate.HasValue ()) {
+    auto endCoordinate = GetOptionalCoordinate2D (details, "endCoordinate");
+    if (endCoordinate.HasValue ()) {
         element.beam.endC = endCoordinate.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, endC);
         changed = true;
     }
-    if (auto level = GetOptionalDouble (details, "level"); level.HasValue ()) {
+    auto level = GetOptionalDouble (details, "level");
+    if (level.HasValue ()) {
         element.beam.level = level.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, level);
         changed = true;
     }
-    if (auto offset = GetOptionalDouble (details, "offset"); offset.HasValue ()) {
+    auto offset = GetOptionalDouble (details, "offset");
+    if (offset.HasValue ()) {
         element.beam.offset = offset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, offset);
         changed = true;
     }
-    if (auto slantAngle = GetOptionalDouble (details, "slantAngle"); slantAngle.HasValue ()) {
+    auto slantAngle = GetOptionalDouble (details, "slantAngle");
+    if (slantAngle.HasValue ()) {
         element.beam.slantAngle = slantAngle.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, slantAngle);
         changed = true;
     }
-    if (auto arcAngle = GetOptionalDouble (details, "arcAngle"); arcAngle.HasValue ()) {
+    auto arcAngle = GetOptionalDouble (details, "arcAngle");
+    if (arcAngle.HasValue ()) {
         element.beam.curveAngle = arcAngle.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, curveAngle);
         changed = true;
     }
-    if (auto curveHeight = GetOptionalDouble (details, "verticalCurveHeight"); curveHeight.HasValue ()) {
+    auto curveHeight = GetOptionalDouble (details, "verticalCurveHeight");
+    if (curveHeight.HasValue ()) {
         element.beam.verticalCurveHeight = curveHeight.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, verticalCurveHeight);
         changed = true;
@@ -1248,22 +1312,26 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
 bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {
     bool changed = false;
-    if (auto width = GetOptionalDouble (details, "width"); width.HasValue ()) {
+    auto width = GetOptionalDouble (details, "width");
+    if (width.HasValue ()) {
         element.window.openingBase.width = width.Get ();
         SetOpeningSizeMask (mask);
         changed = true;
     }
-    if (auto height = GetOptionalDouble (details, "height"); height.HasValue ()) {
+    auto height = GetOptionalDouble (details, "height");
+    if (height.HasValue ()) {
         element.window.openingBase.height = height.Get ();
         SetOpeningSizeMask (mask);
         changed = true;
     }
-    if (auto sillHeight = GetOptionalDouble (details, "sillHeight"); sillHeight.HasValue ()) {
+    auto sillHeight = GetOptionalDouble (details, "sillHeight");
+    if (sillHeight.HasValue ()) {
         element.window.lower = sillHeight.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, lower);
         changed = true;
     }
-    if (auto centerOffset = GetOptionalDouble (details, "centerOffset"); centerOffset.HasValue ()) {
+    auto centerOffset = GetOptionalDouble (details, "centerOffset");
+    if (centerOffset.HasValue ()) {
         element.window.objLoc = centerOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, objLoc);
         changed = true;
@@ -1333,7 +1401,9 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     element.wall.modelElemStructureType = API_BasicStructure;
     element.wall.offset = 0.0;
 
-    if (auto offset = GetOptionalDouble (parameters, "offset"); offset.HasValue ()) {
+    auto offset = GetOptionalDouble (parameters, "offset");
+
+    if (offset.HasValue ()) {
         element.wall.offset = offset.Get ();
     }
 
@@ -1342,7 +1412,8 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     element.wall.bottomOffset = floorIndexAndOffset.second;
 
     bool structureChanged = false;
-    if (auto error = ApplyWallStructure (element, nullptr, parameters, structureChanged); error.HasValue ()) {
+    auto error = ApplyWallStructure (element, nullptr, parameters, structureChanged);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -1393,16 +1464,21 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     element.header.floorInd = floorIndexAndOffset.first;
     element.beam.level = floorIndexAndOffset.second;
 
-    if (auto offset = GetOptionalDouble (parameters, "offset"); offset.HasValue ()) {
+    auto offset = GetOptionalDouble (parameters, "offset");
+
+    if (offset.HasValue ()) {
         element.beam.offset = offset.Get ();
     }
-    if (auto slantAngle = GetOptionalDouble (parameters, "slantAngle"); slantAngle.HasValue ()) {
+    auto slantAngle = GetOptionalDouble (parameters, "slantAngle");
+    if (slantAngle.HasValue ()) {
         element.beam.slantAngle = slantAngle.Get ();
     }
-    if (auto arcAngle = GetOptionalDouble (parameters, "arcAngle"); arcAngle.HasValue ()) {
+    auto arcAngle = GetOptionalDouble (parameters, "arcAngle");
+    if (arcAngle.HasValue ()) {
         element.beam.curveAngle = arcAngle.Get ();
     }
-    if (auto curveHeight = GetOptionalDouble (parameters, "verticalCurveHeight"); curveHeight.HasValue ()) {
+    auto curveHeight = GetOptionalDouble (parameters, "verticalCurveHeight");
+    if (curveHeight.HasValue ()) {
         element.beam.verticalCurveHeight = curveHeight.Get ();
     }
 
@@ -1462,15 +1538,15 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetResponseSchema () const
 GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> windowsData;
-    if (auto error = GetElementArray (parameters, "windowsData", windowsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "windowsData", windowsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
     return ExecuteCreateWithElements ("Create Windows", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : windowsData) {
-            API_Element wall = {};
             const API_Guid wallGuid = GetGuidFromObjectState (*data.Get ("ownerWallId"));
-            if (LoadWall (wallGuid, wall) != NoError) {
+            if (!DoesWallExist (wallGuid)) {
                 elements.Push (CreateErrorResponse (APIERR_BADID, "Failed to load owner wall."));
                 continue;
             }
@@ -1493,13 +1569,16 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            if (auto sillHeight = GetOptionalDouble (data, "sillHeight"); sillHeight.HasValue ()) {
+            auto sillHeight = GetOptionalDouble (data, "sillHeight");
+            if (sillHeight.HasValue ()) {
                 element.window.lower = sillHeight.Get ();
             }
-            if (auto width = GetOptionalDouble (data, "width"); width.HasValue ()) {
+            auto width = GetOptionalDouble (data, "width");
+            if (width.HasValue ()) {
                 element.window.openingBase.width = width.Get ();
             }
-            if (auto height = GetOptionalDouble (data, "height"); height.HasValue ()) {
+            auto height = GetOptionalDouble (data, "height");
+            if (height.HasValue ()) {
                 element.window.openingBase.height = height.Get ();
             }
 
@@ -1566,15 +1645,15 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetResponseSchema () const
 GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> doorsData;
-    if (auto error = GetElementArray (parameters, "doorsData", doorsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "doorsData", doorsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
     return ExecuteCreateWithElements ("Create Doors", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : doorsData) {
-            API_Element wall = {};
             const API_Guid wallGuid = GetGuidFromObjectState (*data.Get ("ownerWallId"));
-            if (LoadWall (wallGuid, wall) != NoError) {
+            if (!DoesWallExist (wallGuid)) {
                 elements.Push (CreateErrorResponse (APIERR_BADID, "Failed to load owner wall."));
                 continue;
             }
@@ -1597,13 +1676,16 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            if (auto sillHeight = GetOptionalDouble (data, "sillHeight"); sillHeight.HasValue ()) {
+            auto sillHeight = GetOptionalDouble (data, "sillHeight");
+            if (sillHeight.HasValue ()) {
                 element.window.lower = sillHeight.Get ();
             }
-            if (auto width = GetOptionalDouble (data, "width"); width.HasValue ()) {
+            auto width = GetOptionalDouble (data, "width");
+            if (width.HasValue ()) {
                 element.window.openingBase.width = width.Get ();
             }
-            if (auto height = GetOptionalDouble (data, "height"); height.HasValue ()) {
+            auto height = GetOptionalDouble (data, "height");
+            if (height.HasValue ()) {
                 element.window.openingBase.height = height.Get ();
             }
 
@@ -1669,20 +1751,26 @@ GS::Optional<GS::UniString> CreateOpeningsCommand::GetResponseSchema () const
 GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> openingsData;
-    if (auto error = GetElementArray (parameters, "openingsData", openingsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "openingsData", openingsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
     return ExecuteCreateWithElements ("Create Openings", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : openingsData) {
             API_Element element = {};
+            #ifdef ServerMainVers_2600
             element.header.type = API_OpeningID;
+            #else
+            element.header.typeID = API_OpeningID;
+            #endif
             GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare opening defaults."));
                 continue;
             }
 
+#ifndef ServerMainVers_2900
             element.opening.owner = GetGuidFromObjectState (*data.Get ("ownerElementId"));
             const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*data.Get ("basePoint"));
             element.opening.extrusionGeometryData.frame.basePoint = basePoint;
@@ -1690,12 +1778,19 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             element.opening.extrusionGeometryData.frame.axisY = {0.0, 0.0, 1.0};
             element.opening.extrusionGeometryData.frame.axisZ = {0.0, 1.0, 0.0};
 
-            if (auto width = GetOptionalDouble (data, "width"); width.HasValue ()) {
+            auto width = GetOptionalDouble (data, "width");
+            if (width.HasValue ()) {
                 element.opening.extrusionGeometryData.parameters.width = width.Get ();
             }
-            if (auto height = GetOptionalDouble (data, "height"); height.HasValue ()) {
+            auto height = GetOptionalDouble (data, "height");
+            if (height.HasValue ()) {
                 element.opening.extrusionGeometryData.parameters.height = height.Get ();
             }
+#else
+            (void) data;
+            elements.Push (CreateErrorResponse (APIERR_GENERAL, "CreateOpenings is not yet supported in Archicad 29."));
+            continue;
+#endif
 
             err = ACAPI_Element_Create (&element, nullptr);
             if (err != NoError) {
@@ -1758,14 +1853,19 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetResponseSchema () const
 GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> morphsData;
-    if (auto error = GetElementArray (parameters, "morphsData", morphsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "morphsData", morphsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
     return ExecuteCreateWithElements ("Create Morphs", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : morphsData) {
             API_Element element = {};
+            #ifdef ServerMainVers_2600
             element.header.type = API_MorphID;
+            #else
+            element.header.typeID = API_MorphID;
+            #endif
             GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare morph defaults."));
@@ -1779,7 +1879,9 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
-            if (auto buildingMaterialId = GetOptionalObjectState (data, "buildingMaterialId"); buildingMaterialId.HasValue ()) {
+            auto buildingMaterialId = GetOptionalObjectState (data, "buildingMaterialId");
+
+            if (buildingMaterialId.HasValue ()) {
                 API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
                 if (!ResolveAttributeIndex (buildingMaterialId.Get (), API_BuildingMaterialID, buildingMaterialIndex)) {
                     elements.Push (CreateErrorResponse (APIERR_BADPARS, "Invalid morph building material."));
@@ -1888,7 +1990,8 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetResponseSchema () const
 GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> roofsData;
-    if (auto error = GetElementArray (parameters, "roofsData", roofsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "roofsData", roofsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -1897,7 +2000,11 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
     return ExecuteCreateWithElements ("Create Roofs", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : roofsData) {
             API_Element element = {};
+            #ifdef ServerMainVers_2600
             element.header.type = API_RoofID;
+            #else
+            element.header.typeID = API_RoofID;
+            #endif
             element.roof.roofClass = API_PolyRoofID;
             GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
             if (err != NoError) {
@@ -1906,11 +2013,15 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             bool changed = false;
-            if (auto error = ApplyRoofStructure (element, nullptr, data, changed); error.HasValue ()) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
-                continue;
+            {
+                auto error = ApplyRoofStructure (element, nullptr, data, changed);
+                if (error.HasValue ()) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
+                    continue;
+                }
             }
-            if (auto error = ApplyRoofDetails (element, nullptr, data, stories, changed); error.HasValue ()) {
+            auto error = ApplyRoofDetails (element, nullptr, data, stories, changed);
+            if (error.HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
                 continue;
             }
@@ -1926,7 +2037,8 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
             const GS::OnExit cleanup ([&]() {
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
-            if (auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes); error.HasValue ()) {
+            auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
+            if (error.HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
                 continue;
             }
@@ -2010,14 +2122,16 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetResponseSchem
 GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> dimensionsData;
-    if (auto error = GetElementArray (parameters, "dimensionsData", dimensionsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "dimensionsData", dimensionsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
     return ExecuteCreateWithElements ("Create Associative Dimensions", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : dimensionsData) {
             GS::Array<GS::ObjectState> witnessPointsData;
-            if (auto error = GetElementArray (data, "witnessPoints", witnessPointsData); error.HasValue ()) {
+            auto error = GetElementArray (data, "witnessPoints", witnessPointsData);
+            if (error.HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
                 continue;
             }
@@ -2032,7 +2146,8 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             bool invalidWitnessPoint = false;
             for (const auto& witnessPointData : witnessPointsData) {
                 AssociativeDimensionPoint witnessPoint;
-                if (auto error = ParseAssociativeDimensionPoint (witnessPointData, witnessPoint); error.HasValue ()) {
+                auto error = ParseAssociativeDimensionPoint (witnessPointData, witnessPoint);
+                if (error.HasValue ()) {
                     elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
                     invalidWitnessPoint = true;
                     break;
@@ -2049,7 +2164,11 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
+            #ifdef ServerMainVers_2600
             element.header.type = API_DimensionID;
+            #else
+            element.header.typeID = API_DimensionID;
+            #endif
             GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare associative dimension defaults."));
@@ -2063,7 +2182,9 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 {directionCoord.x, directionCoord.y}
             );
 
-            if (auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo); error.HasValue ()) {
+            auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
+
+            if (error.HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_MEMFULL, error.Get ()));
                 continue;
             }
@@ -2151,7 +2272,8 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetResp
 GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> dimensionsData;
-    if (auto error = GetElementArray (parameters, "dimensionsData", dimensionsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "dimensionsData", dimensionsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2159,13 +2281,15 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
         for (const auto& data : dimensionsData) {
             GS::Array<AssociativeDimensionPoint> witnessPoints;
             API_Vector defaultDirection = {1.0, 0.0};
-            if (auto error = BuildSectionAssociativeDimensionPoints (data, witnessPoints, defaultDirection); error.HasValue ()) {
+            auto error = BuildSectionAssociativeDimensionPoints (data, witnessPoints, defaultDirection);
+            if (error.HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
                 continue;
             }
 
             API_Coord directionCoord = {defaultDirection.x, defaultDirection.y};
-            if (auto overrideDirection = GetOptionalCoordinate2D (data, "direction"); overrideDirection.HasValue ()) {
+            auto overrideDirection = GetOptionalCoordinate2D (data, "direction");
+            if (overrideDirection.HasValue ()) {
                 directionCoord = overrideDirection.Get ();
             }
             if (directionCoord.x == 0.0 && directionCoord.y == 0.0) {
@@ -2179,7 +2303,11 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
+            #ifdef ServerMainVers_2600
             element.header.type = API_DimensionID;
+            #else
+            element.header.typeID = API_DimensionID;
+            #endif
             GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare section associative dimension defaults."));
@@ -2192,7 +2320,9 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 {directionCoord.x, directionCoord.y}
             );
 
-            if (auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo); error.HasValue ()) {
+            auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
+
+            if (error.HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_MEMFULL, error.Get ()));
                 continue;
             }
@@ -2259,7 +2389,8 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetResponseSch
 GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> dimensionsData;
-    if (auto error = GetElementArray (parameters, "dimensionsData", dimensionsData); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "dimensionsData", dimensionsData);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2285,7 +2416,11 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
+            #ifdef ServerMainVers_2600
             element.header.type = API_DimensionID;
+            #else
+            element.header.typeID = API_DimensionID;
+            #endif
             err = ACAPI_Element_GetDefaults (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare dimension defaults."));
@@ -2388,7 +2523,8 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetResponseSchema () const
 GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "wallsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "wallsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2405,7 +2541,8 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool changed = ApplyWallDetails (element, mask, item);
-            if (auto error = ApplyWallStructure (element, &mask, item, changed); error.HasValue ()) {
+            auto error = ApplyWallStructure (element, &mask, item, changed);
+            if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
             }
@@ -2467,7 +2604,8 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetResponseSchema () const
 GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "beamsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "beamsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2553,7 +2691,8 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetResponseSchema () const
 GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "slabsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "slabsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2572,7 +2711,8 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool changed = ApplySlabDetails (element, mask, item, stories);
-            if (auto error = ApplySlabStructure (element, &mask, item, changed); error.HasValue ()) {
+            auto error = ApplySlabStructure (element, &mask, item, changed);
+            if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
             }
@@ -2591,7 +2731,8 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
 
                 GS::Array<GS::ObjectState> outline;
                 item.Get ("polygonOutline", outline);
-                if (auto error = BuildSlabMemoFromGeometry (element, memo, outline, polygonArcs, holes); error.HasValue ()) {
+                auto error = BuildSlabMemoFromGeometry (element, memo, outline, polygonArcs, holes);
+                if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
                 }
@@ -2685,7 +2826,8 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetResponseSchema () const
 GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "roofsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "roofsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2708,11 +2850,15 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool changed = false;
-            if (auto error = ApplyRoofStructure (element, &mask, item, changed); error.HasValue ()) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                continue;
+            {
+                auto error = ApplyRoofStructure (element, &mask, item, changed);
+                if (error.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                    continue;
+                }
             }
-            if (auto error = ApplyRoofDetails (element, &mask, item, stories, changed); error.HasValue ()) {
+            auto error = ApplyRoofDetails (element, &mask, item, stories, changed);
+            if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
             }
@@ -2731,7 +2877,8 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
 
                 GS::Array<GS::ObjectState> outline;
                 item.Get ("polygonOutline", outline);
-                if (auto error = BuildRoofMemoFromGeometry (element, memo, outline, polygonArcs, holes); error.HasValue ()) {
+                auto error = BuildRoofMemoFromGeometry (element, memo, outline, polygonArcs, holes);
+                if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
                 }
@@ -2797,7 +2944,8 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetResponseSchema () const
 GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "columnsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "columnsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2871,7 +3019,8 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetResponseSchema () const
 GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "windowsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "windowsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -2943,7 +3092,8 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetResponseSchema () const
 GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "doorsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "doorsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -3014,7 +3164,8 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetResponseSchema () const
 GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
-    if (auto error = GetElementArray (parameters, "morphsWithDetails", items); error.HasValue ()) {
+    auto error = GetElementArray (parameters, "morphsWithDetails", items);
+    if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
@@ -3032,7 +3183,9 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool changed = false;
 
-            if (auto translation = GetOptionalCoordinate3D (item, "translation"); translation.HasValue ()) {
+            auto translation = GetOptionalCoordinate3D (item, "translation");
+
+            if (translation.HasValue ()) {
                 element.morph.tranmat.tmx[3] += translation->x;
                 element.morph.tranmat.tmx[7] += translation->y;
                 element.morph.tranmat.tmx[11] += translation->z;
@@ -3040,7 +3193,9 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 changed = true;
             }
 
-            if (auto rotationDegrees = GetOptionalDouble (item, "rotationDegreesZ"); rotationDegrees.HasValue ()) {
+            auto rotationDegrees = GetOptionalDouble (item, "rotationDegreesZ");
+
+            if (rotationDegrees.HasValue ()) {
                 const double radians = rotationDegrees.Get () * DegreesToRadians;
                 const double cosAngle = std::cos (radians);
                 const double sinAngle = std::sin (radians);
@@ -3053,7 +3208,9 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 changed = true;
             }
 
-            if (auto buildingMaterialId = GetOptionalObjectState (item, "buildingMaterialId"); buildingMaterialId.HasValue ()) {
+            auto buildingMaterialId = GetOptionalObjectState (item, "buildingMaterialId");
+
+            if (buildingMaterialId.HasValue ()) {
                 API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
                 if (!ResolveAttributeIndex (buildingMaterialId.Get (), API_BuildingMaterialID, buildingMaterialIndex)) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid morph building material."));

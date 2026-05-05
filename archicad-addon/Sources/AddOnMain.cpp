@@ -321,23 +321,23 @@ GSErrCode Initialize (void)
             "Creates Opening elements in the given host elements."
         );
         err |= RegisterCommand<CreateMorphsCommand> (
-            elementCommands, "1.4.1",
+            elementCommands, "1.4.0",
             "Creates Morph elements from simple box definitions."
         );
         err |= RegisterCommand<CreateRoofsCommand> (
-            elementCommands, "1.4.2",
+            elementCommands, "1.4.0",
             "Creates multi-plane Roof elements based on footprint, level and roof profile data."
         );
         err |= RegisterCommand<CreateAssociativeDimensionsCommand> (
-            elementCommands, "1.4.3",
+            elementCommands, "1.4.0",
             "Creates associative linear dimensions from explicit witness point references."
         );
         err |= RegisterCommand<CreateAssociativeDimensionsOnSectionCommand> (
-            elementCommands, "1.4.3",
+            elementCommands, "1.4.0",
             "Creates associative linear dimensions on section elements using common wall, slab, beam, column and opening presets."
         );
         err |= RegisterCommand<CreateWallThicknessDimensionsCommand> (
-            elementCommands, "1.4.1",
+            elementCommands, "1.4.0",
             "Creates associative wall thickness dimensions for the given walls."
         );
         err |= RegisterCommand<CreateZonesCommand> (
@@ -369,11 +369,11 @@ GSErrCode Initialize (void)
             "Modifies Beam elements based on the given parameters."
         );
         err |= RegisterCommand<ModifySlabsCommand> (
-            elementCommands, "1.4.1",
+            elementCommands, "1.4.0",
             "Modifies Slab elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyColumnsCommand> (
-            elementCommands, "1.4.1",
+            elementCommands, "1.4.0",
             "Modifies Column elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyWindowsCommand> (
@@ -385,11 +385,11 @@ GSErrCode Initialize (void)
             "Modifies Door elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyMorphsCommand> (
-            elementCommands, "1.4.1",
+            elementCommands, "1.4.0",
             "Modifies Morph elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyRoofsCommand> (
-            elementCommands, "1.4.2",
+            elementCommands, "1.4.0",
             "Modifies multi-plane Roof elements based on the given parameters."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
