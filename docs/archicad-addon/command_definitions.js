@@ -1962,6 +1962,45 @@ var gCommands = [{
     }
             }]
         },{
+            "name": "Element grouping Commands",
+            "commands": [{
+                "name": "CreateGroups",
+                "version": "1.3.2",
+                "description": "Creates groups of the passed elements",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementGroups": {
+                "type": "array",
+                "description": "A list of element groups to create.",
+                "items": {
+                    "$ref": "#/ElementGroupParameters"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required":[
+            "elementGroups"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "groupGuids": {
+                "type": "array",
+                "description": "The results of the group creation operations.",
+                "items": {
+                    "$ref": "#/GroupIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groupGuids"
+        ]
+    }
+            }]
+        },{
             "name": "Favorites Commands",
             "commands": [{
                 "name": "GetFavoritesByType",

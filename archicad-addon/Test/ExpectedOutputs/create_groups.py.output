@@ -1,0 +1,149 @@
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Beam"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Slab"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Stair"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: CreateGroups
+Parameters:
+{
+    "elementGroups": [
+        {
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Response:
+{
+    "groupGuids": [
+        {
+            "groupId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "groupId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "error": {
+                "code": -2130313112,
+                "message": "At least two elements or groups are required to create a group."
+            }
+        }
+    ]
+}
+Command: CreateGroups
+Parameters:
+{
+    "elementGroups": [
+        {
+            "elements": [
+                {
+                    "groupId": {
+                        "guid": "<GUID>"
+                    }
+                },
+                {
+                    "groupId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Response:
+{
+    "groupGuids": [
+        {
+            "groupId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
