@@ -483,9 +483,11 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
 
     API_Element sectionElement = {};
     API_Element parentElement = {};
-    auto error = LoadSectionElementAndParent (GetGuidFromObjectState (*sectionElementId), sectionElement, parentElement);
-    if (error.HasValue ()) {
-        return error;
+    {
+        auto error = LoadSectionElementAndParent (GetGuidFromObjectState (*sectionElementId), sectionElement, parentElement);
+        if (error.HasValue ()) {
+            return error;
+        }
     }
 
     GS::UniString presetName;
@@ -510,7 +512,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
     };
 
     switch (preset) {
-        case SectionAssociativeDimensionPreset::WallCompositeFaces:
+        case SectionAssociativeDimensionPreset::WallCompositeFaces: {
             auto error = requireParentType ({API_WallID}, "The 'WallCompositeFaces' preset requires a wall section element.");
             if (error.HasValue ()) {
                 return error;
@@ -522,6 +524,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             AddSectionAssociativePoint (points, sectionElement.header.guid, true, 130, 768, 0);
             AddSectionAssociativePoint (points, sectionElement.header.guid, true, 131, 0, 0);
             break;
+        }
 
         case SectionAssociativeDimensionPreset::WallSkinBorders: {
             auto error = requireParentType ({API_WallID}, "The 'WallSkinBorders' preset requires a wall section element.");
@@ -539,7 +542,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             break;
         }
 
-        case SectionAssociativeDimensionPreset::SlabCompositeFaces:
+        case SectionAssociativeDimensionPreset::SlabCompositeFaces: {
             auto error = requireParentType ({API_SlabID}, "The 'SlabCompositeFaces' preset requires a slab section element.");
             if (error.HasValue ()) {
                 return error;
@@ -551,6 +554,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             AddSectionAssociativePoint (points, sectionElement.header.guid, true, 130, 768, 0);
             AddSectionAssociativePoint (points, sectionElement.header.guid, true, 131, 0, 0);
             break;
+        }
 
         case SectionAssociativeDimensionPreset::SlabSkinBorders: {
             auto error = requireParentType ({API_SlabID}, "The 'SlabSkinBorders' preset requires a slab section element.");
@@ -568,7 +572,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             break;
         }
 
-        case SectionAssociativeDimensionPreset::BeamOrColumnRefLineEndPoints:
+        case SectionAssociativeDimensionPreset::BeamOrColumnRefLineEndPoints: {
             auto error = requireParentType ({API_BeamID, API_ColumnID}, "The 'BeamOrColumnRefLineEndPoints' preset requires a beam or column section element.");
             if (error.HasValue ()) {
                 return error;
@@ -577,6 +581,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 1049586);
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 2099172);
             break;
+        }
 
         case SectionAssociativeDimensionPreset::BeamOrColumnBoundingBoxCorners: {
             auto error = requireParentType ({API_BeamID, API_ColumnID}, "The 'BeamOrColumnBoundingBoxCorners' preset requires a beam or column section element.");
@@ -618,7 +623,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             break;
         }
 
-        case SectionAssociativeDimensionPreset::DoorWindowModelHotspots:
+        case SectionAssociativeDimensionPreset::DoorWindowModelHotspots: {
             auto error = requireParentType ({API_WindowID, API_DoorID}, "The 'DoorWindowModelHotspots' preset requires a door or window section element.");
             if (error.HasValue ()) {
                 return error;
@@ -627,6 +632,7 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 11111);
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 11113);
             break;
+        }
     }
 
     return {};
@@ -1292,8 +1298,8 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     ACAPI_Body_AddEdge (bodyData, vertices[2], vertices[6], edges[10]);
     ACAPI_Body_AddEdge (bodyData, vertices[3], vertices[7], edges[11]);
 
-    API_OverriddenAttribute material;
-    material = buildingMaterial;
+    API_OverriddenAttribute material = {};
+    material.attributeIndex = buildingMaterial;
     UInt32 polygon = 0;
     ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[1], edges[2], edges[3]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[4], edges[5], edges[6], edges[7]}, 0, material, polygon);
@@ -2020,10 +2026,12 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
             }
-            auto error = ApplyRoofDetails (element, nullptr, data, stories, changed);
-            if (error.HasValue ()) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
-                continue;
+            {
+                auto error = ApplyRoofDetails (element, nullptr, data, stories, changed);
+                if (error.HasValue ()) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
+                    continue;
+                }
             }
 
             GS::Array<GS::ObjectState> polygonOutline;
@@ -2130,10 +2138,12 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
     return ExecuteCreateWithElements ("Create Associative Dimensions", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : dimensionsData) {
             GS::Array<GS::ObjectState> witnessPointsData;
-            auto error = GetElementArray (data, "witnessPoints", witnessPointsData);
-            if (error.HasValue ()) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
-                continue;
+            {
+                auto error = GetElementArray (data, "witnessPoints", witnessPointsData);
+                if (error.HasValue ()) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
+                    continue;
+                }
             }
 
             const API_Coord directionCoord = Get2DCoordinateFromObjectState (*data.Get ("direction"));
@@ -2183,7 +2193,6 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             );
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
-
             if (error.HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_MEMFULL, error.Get ()));
                 continue;
@@ -2281,10 +2290,12 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
         for (const auto& data : dimensionsData) {
             GS::Array<AssociativeDimensionPoint> witnessPoints;
             API_Vector defaultDirection = {1.0, 0.0};
-            auto error = BuildSectionAssociativeDimensionPoints (data, witnessPoints, defaultDirection);
-            if (error.HasValue ()) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
-                continue;
+            {
+                auto error = BuildSectionAssociativeDimensionPoints (data, witnessPoints, defaultDirection);
+                if (error.HasValue ()) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
+                    continue;
+                }
             }
 
             API_Coord directionCoord = {defaultDirection.x, defaultDirection.y};
