@@ -81,15 +81,6 @@ GS::Optional<GS::UniString> GetElementArray (const GS::ObjectState& parameters, 
     return {};
 }
 
-GS::Optional<Int32> GetOptionalInt32 (const GS::ObjectState& parameters, const char* fieldName)
-{
-    Int32 value = 0;
-    if (parameters.Get (fieldName, value)) {
-        return value;
-    }
-    return {};
-}
-
 GS::Optional<API_Coord3D> GetOptionalCoordinate3D (const GS::ObjectState& parameters, const char* fieldName)
 {
     const GS::ObjectState* coord = parameters.Get (fieldName);
@@ -1302,6 +1293,7 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     API_OverriddenAttribute material;
     material = buildingMaterial;
 #else
+    (void) buildingMaterial;
     API_OverriddenAttribute material = {};
 #endif
     UInt32 polygon = 0;
