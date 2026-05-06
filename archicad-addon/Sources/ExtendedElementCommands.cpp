@@ -258,7 +258,7 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     }
 
     API_LibPart libPart = {};
-#ifdef ServerMainVers_2600
+#ifdef ServerMainVers_2700
     err = ACAPI_LibraryPart_GetMarkerParent (element.header.type, libPart);
     if (err != NoError) {
         return err;
@@ -1298,8 +1298,12 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     ACAPI_Body_AddEdge (bodyData, vertices[2], vertices[6], edges[10]);
     ACAPI_Body_AddEdge (bodyData, vertices[3], vertices[7], edges[11]);
 
+#ifdef ServerMainVers_2700
     API_OverriddenAttribute material;
     material = buildingMaterial;
+#else
+    API_OverriddenAttribute material = {};
+#endif
     UInt32 polygon = 0;
     ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[1], edges[2], edges[3]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[4], edges[5], edges[6], edges[7]}, 0, material, polygon);
@@ -1792,11 +1796,6 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             if (height.HasValue ()) {
                 element.opening.extrusionGeometryData.parameters.height = height.Get ();
             }
-#else
-            (void) data;
-            elements.Push (CreateErrorResponse (APIERR_GENERAL, "CreateOpenings is not yet supported in Archicad 29."));
-            continue;
-#endif
 
             err = ACAPI_Element_Create (&element, nullptr);
             if (err != NoError) {
@@ -1804,6 +1803,11 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
             elements.Push (CreateElementIdObjectState (element.header.guid));
+#else
+            (void) data;
+            elements.Push (CreateErrorResponse (APIERR_GENERAL, "CreateOpenings is not yet supported in Archicad 29."));
+            continue;
+#endif
         }
     });
 }
@@ -2458,7 +2462,11 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
             const Int32 wallInIndices[2] = {11, 21};
             for (Int32 dimElemIndex = 0; dimElemIndex < element.dimension.nDimElem; ++dimElemIndex) {
                 API_DimElem& dimElem = (*memo.dimElems)[dimElemIndex];
+#ifdef ServerMainVers_2600
                 dimElem.base.base.type = API_ElemType (API_WallID);
+#else
+                dimElem.base.base.typeID = API_WallID;
+#endif
                 dimElem.base.base.guid = wall.header.guid;
                 dimElem.base.base.line = true;
                 dimElem.base.base.inIndex = wallInIndices[dimElemIndex];
