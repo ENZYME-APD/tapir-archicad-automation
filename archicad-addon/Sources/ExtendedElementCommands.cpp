@@ -1298,8 +1298,8 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     ACAPI_Body_AddEdge (bodyData, vertices[2], vertices[6], edges[10]);
     ACAPI_Body_AddEdge (bodyData, vertices[3], vertices[7], edges[11]);
 
-    API_OverriddenAttribute material = {};
-    material.attributeIndex = buildingMaterial;
+    API_OverriddenAttribute material;
+    material = buildingMaterial;
     UInt32 polygon = 0;
     ACAPI_Body_AddPolygon (bodyData, {edges[0], edges[1], edges[2], edges[3]}, 0, material, polygon);
     ACAPI_Body_AddPolygon (bodyData, {edges[4], edges[5], edges[6], edges[7]}, 0, material, polygon);
