@@ -22,6 +22,7 @@
 #include "ElementGDLParameterCommands.hpp"
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
+#include "ElementGroupingCommands.hpp"
 #include "AttributeCommands.hpp"
 #include "TeamworkCommands.hpp"
 #include "IssueCommands.hpp"
@@ -409,6 +410,15 @@ GSErrCode Initialize (void)
             "Removes an element notification client."
         );
         AddCommandGroup (elementCommands);
+    }
+
+    { // Element grouping Commands
+        CommandGroup elementGroupingCommands ("Element grouping Commands");
+        err |= RegisterCommand<CreateGroupsCommand> (
+            elementGroupingCommands, "1.3.2",
+            "Creates groups of the passed elements"
+        );
+        AddCommandGroup (elementGroupingCommands);
     }
 
     { // Favorites Commands

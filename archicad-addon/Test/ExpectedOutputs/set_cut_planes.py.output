@@ -1,0 +1,174 @@
+Command: Get3DBoundingBoxes
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "boundingBoxes3D": [
+        {
+            "boundingBox3D": {
+                "xMin": 0,
+                "xMax": 1.234,
+                "yMin": -0.05,
+                "yMax": 0.25,
+                "zMin": 0,
+                "zMax": 3
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 0,
+                "xMax": 1.234,
+                "yMin": 0.4,
+                "yMax": 0.65,
+                "zMin": 3.2,
+                "zMax": 6
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 1.35,
+                "xMax": 2.584,
+                "yMin": 0.4,
+                "yMax": 0.65,
+                "zMin": 3,
+                "zMax": 5.5
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 4.084816738,
+                "xMax": 5.212474801,
+                "yMin": 1.273521209,
+                "yMax": 2.622139298,
+                "zMin": 0,
+                "zMax": 3
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 5.863901967,
+                "xMax": 7.27215771,
+                "yMin": 0.272771563,
+                "yMax": 0.572771563,
+                "zMin": 0,
+                "zMax": 3
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 7.060025675,
+                "xMax": 7.563817024,
+                "yMin": 0.272771563,
+                "yMax": 1.681027306,
+                "zMin": 0,
+                "zMax": 3
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 5.863901967,
+                "xMax": 7.27215771,
+                "yMin": 1.381027306,
+                "yMax": 1.681027306,
+                "zMin": 0,
+                "zMax": 3
+            }
+        },
+        {
+            "boundingBox3D": {
+                "xMin": 5.863901967,
+                "xMax": 6.163901967,
+                "yMin": 0.272771563,
+                "yMax": 1.681027306,
+                "zMin": 0,
+                "zMax": 3
+            }
+        }
+    ]
+}
+Command: Set3DCutPlanes
+Parameters:
+{
+    "cutPlanes": [
+        {
+            "pa": 1,
+            "pb": 0,
+            "pc": 0,
+            "pd": 8.063817024
+        },
+        {
+            "pa": -1,
+            "pb": 0,
+            "pc": 0,
+            "pd": 0.5
+        },
+        {
+            "pa": 0,
+            "pb": 1,
+            "pc": 0,
+            "pd": 3.122139298
+        },
+        {
+            "pa": 0,
+            "pb": -1,
+            "pc": 0,
+            "pd": 0.55
+        }
+    ]
+}
+Response:
+{
+    "success": true
+}
+Command: ChangeWindow
+Parameters:
+{
+    "windowType": "3DModel"
+}
+Response:
+{
+    "success": true
+}
