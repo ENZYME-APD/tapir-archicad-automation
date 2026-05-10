@@ -251,10 +251,14 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     API_LibPart libPart = {};
 #ifdef ServerMainVers_2700
     err = ACAPI_LibraryPart_GetMarkerParent (element.header.type, libPart);
-    if (err != NoError) {
-        return err;
-    }
+#elif ServerMainVers_2600
+    err = ACAPI_Goodies_GetMarkerParent (element.header.type, libPart);
+#else
+    err = ACAPI_Goodies (APIAny_GetMarkerParentID, (void*)&element.header.typeID, (void*)&libPart);
 #endif
+    if (err != NoError) {
+        return NoError;
+    }
 
     err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
@@ -1760,34 +1764,29 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
 
     return ExecuteCreateWithElements ("Create Openings", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : openingsData) {
+            const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*data.Get ("basePoint"));
+
+#ifndef ServerMainVers_2900
             API_Element element = {};
-            #ifdef ServerMainVers_2600
-            element.header.type = API_OpeningID;
-            #else
+#ifdef ServerMainVers_2600
+            element.header.type   = API_OpeningID;
+#else
             element.header.typeID = API_OpeningID;
-            #endif
+#endif
             GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare opening defaults."));
                 continue;
             }
 
-#ifndef ServerMainVers_2900
             element.opening.owner = GetGuidFromObjectState (*data.Get ("ownerElementId"));
-            const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*data.Get ("basePoint"));
             element.opening.extrusionGeometryData.frame.basePoint = basePoint;
             element.opening.extrusionGeometryData.frame.axisX = {-1.0, 0.0, 0.0};
             element.opening.extrusionGeometryData.frame.axisY = {0.0, 0.0, 1.0};
             element.opening.extrusionGeometryData.frame.axisZ = {0.0, 1.0, 0.0};
 
-            auto width = GetOptionalDouble (data, "width");
-            if (width.HasValue ()) {
-                element.opening.extrusionGeometryData.parameters.width = width.Get ();
-            }
-            auto height = GetOptionalDouble (data, "height");
-            if (height.HasValue ()) {
-                element.opening.extrusionGeometryData.parameters.height = height.Get ();
-            }
+            data.Get ("width", element.opening.extrusionGeometryData.parameters.width);
+            data.Get ("height", element.opening.extrusionGeometryData.parameters.height);
 
             err = ACAPI_Element_Create (&element, nullptr);
             if (err != NoError) {
@@ -1796,9 +1795,26 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             }
             elements.Push (CreateElementIdObjectState (element.header.guid));
 #else
-            (void) data;
-            elements.Push (CreateErrorResponse (APIERR_GENERAL, "CreateOpenings is not yet supported in Archicad 29."));
-            continue;
+            ACAPI::Result<ACAPI::Element::OpeningDefault> openingDefault = ACAPI::Element::CreateOpeningDefault ();
+            if (openingDefault.IsErr ()) {
+                elements.Push (CreateErrorResponse (openingDefault.UnwrapErr ().kind, openingDefault.UnwrapErr ().text));
+                continue;
+            }
+
+            double width = 0.0;
+            double height = 0.0;
+            data.Get ("width", width);
+            data.Get ("height", height);
+            GS::Array<Point2D> polygonCorners { {0, 0}, {width, 0}, {width, height}, {0, height} };
+            Geometry::Polygon2D polygon = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/).PopLargest ();
+
+            ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*data.Get ("ownerElementId"))), ACAPI_GetToken ());
+            ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->PlacePolygonal (parentElemId, basePoint, polygon);
+            if (resultId.IsErr ()) {
+                elements.Push (CreateErrorResponse (resultId.UnwrapErr ().kind, GS::UniString (resultId.UnwrapErr ().text.c_str())));
+                continue;
+            }
+            elements.Push (CreateElementIdObjectState (GSGuid2APIGuid (resultId.Unwrap ().GetGuid ())));
 #endif
         }
     });
