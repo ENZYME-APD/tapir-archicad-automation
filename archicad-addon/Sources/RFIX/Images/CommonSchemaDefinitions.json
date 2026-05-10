@@ -3835,5 +3835,81 @@
                 "$ref": "#/ErrorItem"
             }
         ]
+    },
+    "GroupId": {
+        "type": "object",
+        "description": "The identifier of a group.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "GroupIdArrayItem": {
+        "type": "object",
+        "description": "A wrapper containing the group identifier.",
+        "properties": {
+            "groupId": {
+                "$ref": "#/GroupId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groupId"
+        ]
+    },
+    "GroupIdOrError": {
+        "type": "object",
+        "description": "A groupId or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/GroupIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementOrGroupId": {
+        "type": "object",
+        "description": "An identifier representing either an Element or a Group.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIdArrayItem"
+            },
+            {
+                "$ref": "#/GroupIdArrayItem"
+            }
+        ]
+    },
+    "ElementOrGroupIds": {
+        "type": "array",
+        "description": "A list of element and/or group identifiers.",
+        "items": {
+            "$ref": "#/ElementOrGroupId"
+        },
+        "minItems": 2
+    },
+    "ElementGroupParameters": {
+        "type": "object",
+        "description": "The parameters for creating a single group",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementOrGroupIds",
+                "description": "The elements or child groups to be grouped."
+            },
+            "parentGroupId": {
+                "$ref": "#/GroupId",
+                "description": "Optional parent group ID to nest this group under."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
     }
 }
