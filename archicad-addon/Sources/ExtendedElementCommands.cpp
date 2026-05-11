@@ -3,6 +3,12 @@
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 
+#ifdef ServerMainVers_2900
+#include	"ACAPI/Element/Opening/OpeningDefault.hpp"
+#include	"ACAPI/Element/Opening/Opening.hpp"
+#include "Polygon2D.hpp"
+#endif
+
 #include <cmath>
 #include <limits>
 
