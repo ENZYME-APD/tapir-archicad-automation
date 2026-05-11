@@ -1803,7 +1803,7 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
 #else
             ACAPI::Result<ACAPI::Element::OpeningDefault> openingDefault = ACAPI::Element::CreateOpeningDefault ();
             if (openingDefault.IsErr ()) {
-                elements.Push (CreateErrorResponse (openingDefault.UnwrapErr ().kind, openingDefault.UnwrapErr ().text));
+                elements.Push (CreateErrorResponse (openingDefault.UnwrapErr ().kind, GS::UniString (openingDefault.UnwrapErr ().text.c_str ())));
                 continue;
             }
 
