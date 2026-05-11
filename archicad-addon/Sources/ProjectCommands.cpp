@@ -977,6 +977,145 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     return CreateSuccessfulExecutionResult ();
 }
 
+GetCalculationUnitsCommand::GetCalculationUnitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCalculationUnitsCommand::GetName () const
+{
+    return "GetCalculationUnits";
+}
+
+GS::Optional<GS::UniString> GetCalculationUnitsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Fractional inches."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "decimals",
+                    "accuracy"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "length",
+            "area",
+            "volume",
+            "angle"
+        ]
+    })";
+}
+
+GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_CalcUnitPrefs unitPrefs;
+    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
+
+    return GS::ObjectState (
+        "length", GS::ObjectState (
+            "unit", unitPrefs.length.unit,
+            "accuracy", unitPrefs.length.accuracy,
+            "decimals", unitPrefs.length.decimals),
+        "area", GS::ObjectState (
+            "unit", unitPrefs.area.unit,
+            "accuracy", unitPrefs.area.accuracy,
+            "decimals", unitPrefs.area.decimals),
+        "volume", GS::ObjectState (
+            "unit", unitPrefs.volume.unit,
+            "accuracy", unitPrefs.volume.accuracy,
+            "decimals", unitPrefs.volume.decimals),
+        "angle", GS::ObjectState (
+            "unit", unitPrefs.angle.unit,
+            "decimals", unitPrefs.angle.decimals,
+            "accuracy", unitPrefs.angle.accuracy));
+}
+
 IFCFileOperationCommand::IFCFileOperationCommand () :
     CommandBase (CommonSchema::Used)
 {

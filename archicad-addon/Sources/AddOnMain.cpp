@@ -195,6 +195,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.3.1",
             "Saves the currently opened project."
         );
+        err |= RegisterCommand<GetCalculationUnitsCommand> (
+            projectCommands, "1.4.0",
+            "Gets the project calculation units."
+        );
         err |= RegisterCommand<GetGeoLocationCommand> (
             projectCommands, "1.1.6",
             "Gets the project location details."

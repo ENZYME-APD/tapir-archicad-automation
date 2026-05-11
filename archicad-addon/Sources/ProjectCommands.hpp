@@ -104,6 +104,15 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetCalculationUnitsCommand : public CommandBase
+{
+public:
+    GetCalculationUnitsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class IFCFileOperationCommand : public CommandBase
 {
 public:
