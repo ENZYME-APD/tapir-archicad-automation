@@ -2744,6 +2744,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Composite",
                 "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 0,
@@ -2768,6 +2769,7 @@ Response:
                 "geometryType": "Trapezoid",
                 "begThickness": 0.2,
                 "endThickness": 0.25,
+                "structureType": "Basic",
                 "zCoordinate": 3.2,
                 "begCoordinate": {
                     "x": 0,
@@ -2812,6 +2814,7 @@ Response:
                         "y": 0.4
                     }
                 ],
+                "structureType": "Basic",
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 1.35,
@@ -2856,6 +2859,7 @@ Response:
                         "y": 1.273521209
                     }
                 ],
+                "structureType": "Basic",
                 "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 4.328634698,
@@ -2879,6 +2883,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Basic",
                 "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 5.863901967,
@@ -2902,6 +2907,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 1.570796327,
+                "structureType": "Basic",
                 "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 7.27215771,
@@ -2925,6 +2931,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Basic",
                 "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 7.27215771,
@@ -2948,6 +2955,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Basic",
                 "zCoordinate": 0,
                 "begCoordinate": {
                     "x": 5.863901967,
@@ -7787,6 +7795,7 @@ Response:
             "drawIndex": 7,
             "id": "SLA - 001",
             "details": {
+                "structureType": "Composite",
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,
@@ -7827,6 +7836,7 @@ Response:
             "drawIndex": 7,
             "id": "SLA - 002",
             "details": {
+                "structureType": "Composite",
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,
@@ -15535,6 +15545,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Composite",
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 0.4,
@@ -15559,6 +15570,7 @@ Response:
                 "geometryType": "Trapezoid",
                 "begThickness": 0.2,
                 "endThickness": 0.25,
+                "structureType": "Basic",
                 "zCoordinate": 6.2,
                 "begCoordinate": {
                     "x": 0.4,
@@ -15603,6 +15615,7 @@ Response:
                         "y": 0.4
                     }
                 ],
+                "structureType": "Basic",
                 "zCoordinate": 6,
                 "begCoordinate": {
                     "x": 1.35,
@@ -15647,6 +15660,7 @@ Response:
                         "y": 1.273521209
                     }
                 ],
+                "structureType": "Basic",
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 4.328634698,
@@ -15670,6 +15684,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Basic",
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 6.263901967,
@@ -15693,6 +15708,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 1.570796327,
+                "structureType": "Basic",
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 7.67215771,
@@ -15716,6 +15732,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Basic",
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 7.67215771,
@@ -15739,6 +15756,7 @@ Response:
             "details": {
                 "geometryType": "Straight",
                 "arcAngle": 0,
+                "structureType": "Basic",
                 "zCoordinate": 3,
                 "begCoordinate": {
                     "x": 6.263901967,
@@ -20578,6 +20596,7 @@ Response:
             "drawIndex": 7,
             "id": "SLA - 001",
             "details": {
+                "structureType": "Composite",
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,
@@ -20618,6 +20637,7 @@ Response:
             "drawIndex": 7,
             "id": "SLA - 002",
             "details": {
+                "structureType": "Composite",
                 "thickness": 0.3,
                 "level": 0,
                 "offsetFromTop": 0.1,

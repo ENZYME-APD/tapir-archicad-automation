@@ -278,6 +278,112 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "GetCalculationUnits",
+                "version": "1.4.0",
+                "description": "Gets the project calculation units.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Fractional inches."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "decimals",
+                    "accuracy"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "length",
+            "area",
+            "volume",
+            "angle"
+        ]
+    }
+            },{
                 "name": "GetGeoLocation",
                 "version": "1.1.6",
                 "description": "Gets the project location details.",
@@ -1394,6 +1500,15 @@ var gCommands = [{
                                 "y",
                                 "z"
                             ]
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "Optional column height.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "axisRotationAngle": {
+                            "type": "number",
+                            "description": "Optional column rotation angle in radians."
                         }
                     },
                     "additionalProperties": false,
@@ -1407,6 +1522,92 @@ var gCommands = [{
         "required": [
             "columnsData"
         ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "CreateWalls",
+                "version": "1.4.0",
+                "description": "Creates Wall elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "wallsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "begCoordinate": { "$ref": "#/Coordinate2D" },
+                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "zCoordinate": { "type": "number" },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "offset": { "type": "number" },
+                        "structureType": {
+                            "type": "string",
+                            "enum": ["Basic", "Composite", "Profile"]
+                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" },
+                        "profileId": { "$ref": "#/AttributeId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["begCoordinate", "endCoordinate", "zCoordinate", "height", "thickness"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["wallsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "CreateBeams",
+                "version": "1.4.0",
+                "description": "Creates Beam elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "beamsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "begCoordinate": { "$ref": "#/Coordinate2D" },
+                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "zCoordinate": { "type": "number" },
+                        "offset": { "type": "number" },
+                        "slantAngle": { "type": "number" },
+                        "arcAngle": { "type": "number" },
+                        "verticalCurveHeight": { "type": "number" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["begCoordinate", "endCoordinate", "zCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["beamsData"]
     },
                 "outputScheme": {
         "type": "object",
@@ -1437,6 +1638,11 @@ var gCommands = [{
                     "level": {
                         "type": "number",
                         "description" : "The Z coordinate value of the reference line of the slab."	
+                    },
+                    "thickness": {
+                        "type": "number",
+                        "description": "Optional slab thickness.",
+                        "exclusiveMinimum": 0.0
                     },
                     "polygonCoordinates": { 
                         "type": "array",
@@ -1481,6 +1687,352 @@ var gCommands = [{
         "required": [
             "elements"
         ]
+    }
+            },{
+                "name": "CreateWindows",
+                "version": "1.4.0",
+                "description": "Creates Window elements in host walls based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "windowsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "ownerWallId": { "$ref": "#/ElementId" },
+                        "centerOffset": { "type": "number", "minimum": 0.0 },
+                        "sillHeight": { "type": "number" },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["ownerWallId", "centerOffset"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["windowsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateDoors",
+                "version": "1.4.0",
+                "description": "Creates Door elements in host walls based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "doorsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "ownerWallId": { "$ref": "#/ElementId" },
+                        "centerOffset": { "type": "number", "minimum": 0.0 },
+                        "sillHeight": { "type": "number" },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["ownerWallId", "centerOffset"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["doorsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateOpenings",
+                "version": "1.4.0",
+                "description": "Creates Opening elements in the given host elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "openingsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "ownerElementId": { "$ref": "#/ElementId" },
+                        "basePoint": { "$ref": "#/Coordinate3D" },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["ownerElementId", "basePoint"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["openingsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateMorphs",
+                "version": "1.4.0",
+                "description": "Creates Morph elements from simple box definitions.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "morphsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "basePoint": { "$ref": "#/Coordinate3D" },
+                        "size": { "$ref": "#/Dimensions3D" },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["basePoint", "size"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["morphsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateRoofs",
+                "version": "1.4.0",
+                "description": "Creates multi-plane Roof elements based on footprint, level and roof profile data.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "roofsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "level": { "type": "number" },
+                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "polygonCoordinates": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "holes": { "$ref": "#/Holes2D" },
+                        "eavesOverhang": { "type": "number" },
+                        "levels": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 16,
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "levelHeight": { "type": "number" },
+                                    "levelAngle": { "type": "number", "exclusiveMinimum": 0.0 }
+                                },
+                                "additionalProperties": false,
+                                "required": ["levelHeight", "levelAngle"]
+                            }
+                        },
+                        "structureType": {
+                            "type": "string",
+                            "enum": ["Basic", "Composite"]
+                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["level", "polygonCoordinates"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["roofsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateAssociativeDimensions",
+                "version": "1.4.0",
+                "description": "Creates associative linear dimensions from explicit witness point references.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "dimensionsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "referencePoint": { "$ref": "#/Coordinate2D" },
+                        "direction": { "$ref": "#/Coordinate2D" },
+                        "floorIndex": { "type": "number" },
+                        "witnessPoints": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "elementId": { "$ref": "#/ElementId" },
+                                    "line": { "type": "boolean" },
+                                    "inIndex": { "type": "integer" },
+                                    "special": { "type": "integer" },
+                                    "nodeType": { "type": "integer" },
+                                    "nodeStatus": { "type": "integer" },
+                                    "nodeId": { "type": "number", "minimum": 0.0 }
+                                },
+                                "additionalProperties": false,
+                                "required": ["elementId"]
+                            },
+                            "minItems": 2
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["referencePoint", "direction", "witnessPoints"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["dimensionsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateAssociativeDimensionsOnSection",
+                "version": "1.4.0",
+                "description": "Creates associative linear dimensions on section elements using common wall, slab, beam, column and opening presets.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "dimensionsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "sectionElementId": { "$ref": "#/ElementId" },
+                        "referencePoint": { "$ref": "#/Coordinate2D" },
+                        "preset": {
+                            "type": "string",
+                            "enum": [
+                                "WallCompositeFaces",
+                                "WallSkinBorders",
+                                "SlabCompositeFaces",
+                                "SlabSkinBorders",
+                                "BeamOrColumnRefLineEndPoints",
+                                "BeamOrColumnBoundingBoxCorners",
+                                "DoorWindowWallHoleCorners",
+                                "DoorWindowModelHotspots"
+                            ]
+                        },
+                        "direction": { "$ref": "#/Coordinate2D" },
+                        "skinBorderIndices": {
+                            "type": "array",
+                            "items": { "type": "integer" },
+                            "minItems": 1
+                        },
+                        "beginPlane": { "type": "boolean" },
+                        "totalSizePlane": { "type": "boolean" },
+                        "placeOnTop": { "type": "boolean" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["sectionElementId", "referencePoint", "preset"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["dimensionsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateWallThicknessDimensions",
+                "version": "1.4.0",
+                "description": "Creates associative wall thickness dimensions for the given walls.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "dimensionsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "wallId": { "$ref": "#/ElementId" },
+                        "referencePoint": { "$ref": "#/Coordinate2D" },
+                        "direction": { "$ref": "#/Coordinate2D" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["wallId", "referencePoint", "direction"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["dimensionsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
     }
             },{
                 "name": "CreateZones",
@@ -1562,6 +2114,22 @@ var gCommands = [{
                     "floorInd": {
                         "type": "number",
                         "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description" : "Layer attribute index to place the polyline on. Optional parameter, by default the current layer is used."
+                    },
+                    "linePenIndex": {
+                        "type": "integer",
+                        "description" : "Pen index of the polyline contour. Optional parameter, by default the current pen is used."
+                    },
+                    "lineTypeIndex": {
+                        "type": "integer",
+                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used."
+                    },
+                    "penWeightMm": {
+                        "type": "number",
+                        "description" : "Optional pen weight override in mm."
                     },
                     "coordinates": { 
                         "type": "array",
@@ -1800,6 +2368,277 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "ModifyWalls",
+                "version": "1.4.0",
+                "description": "Modifies Wall elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "wallsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "begCoordinate": { "$ref": "#/Coordinate2D" },
+                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "bottomOffset": { "type": "number" },
+                        "offset": { "type": "number" },
+                        "structureType": {
+                            "type": "string",
+                            "enum": ["Basic", "Composite", "Profile"]
+                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" },
+                        "profileId": { "$ref": "#/AttributeId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["wallsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "ModifyBeams",
+                "version": "1.4.0",
+                "description": "Modifies Beam elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "beamsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "begCoordinate": { "$ref": "#/Coordinate2D" },
+                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "level": { "type": "number" },
+                        "offset": { "type": "number" },
+                        "slantAngle": { "type": "number" },
+                        "arcAngle": { "type": "number" },
+                        "verticalCurveHeight": { "type": "number" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["beamsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "ModifySlabs",
+                "version": "1.4.0",
+                "description": "Modifies Slab elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "slabsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "zCoordinate": { "type": "number" },
+                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "structureType": {
+                            "type": "string",
+                            "enum": ["Basic", "Composite"]
+                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" },
+                        "polygonOutline": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "holes": { "$ref": "#/Holes2D" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["slabsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "ModifyColumns",
+                "version": "1.4.0",
+                "description": "Modifies Column elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "columnsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "origin": { "$ref": "#/Coordinate2D" },
+                        "zCoordinate": { "type": "number" },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "bottomOffset": { "type": "number" },
+                        "axisRotationAngle": { "type": "number" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["columnsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "ModifyWindows",
+                "version": "1.4.0",
+                "description": "Modifies Window elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "windowsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "sillHeight": { "type": "number" },
+                        "centerOffset": { "type": "number", "minimum": 0.0 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["windowsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "ModifyDoors",
+                "version": "1.4.0",
+                "description": "Modifies Door elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "doorsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "sillHeight": { "type": "number" },
+                        "centerOffset": { "type": "number", "minimum": 0.0 }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["doorsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "ModifyMorphs",
+                "version": "1.4.0",
+                "description": "Modifies Morph elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "morphsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "translation": { "$ref": "#/Coordinate3D" },
+                        "rotationDegreesZ": { "type": "number" },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["morphsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
+                "name": "ModifyRoofs",
+                "version": "1.4.0",
+                "description": "Modifies multi-plane Roof elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "roofsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "level": { "type": "number" },
+                        "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "eavesOverhang": { "type": "number" },
+                        "levels": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 16,
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "levelHeight": { "type": "number" },
+                                    "levelAngle": { "type": "number", "exclusiveMinimum": 0.0 }
+                                },
+                                "additionalProperties": false,
+                                "required": ["levelHeight", "levelAngle"]
+                            }
+                        },
+                        "structureType": {
+                            "type": "string",
+                            "enum": ["Basic", "Composite"]
+                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" },
+                        "polygonOutline": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "holes": { "$ref": "#/Holes2D" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["roofsWithDetails"]
+    },
+                "outputScheme": {"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]}
+            },{
                 "name": "GetElementPreviewImage",
                 "version": "1.2.7",
                 "description": "Returns the preview image of the given element.",
@@ -1965,7 +2804,7 @@ var gCommands = [{
             "name": "Element grouping Commands",
             "commands": [{
                 "name": "CreateGroups",
-                "version": "1.3.2",
+                "version": "1.4.0",
                 "description": "Creates groups of the passed elements",
                 "inputScheme": {
         "type": "object",

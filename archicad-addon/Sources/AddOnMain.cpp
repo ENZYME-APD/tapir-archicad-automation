@@ -419,7 +419,7 @@ GSErrCode Initialize (void)
     { // Element grouping Commands
         CommandGroup elementGroupingCommands ("Element grouping Commands");
         err |= RegisterCommand<CreateGroupsCommand> (
-            elementGroupingCommands, "1.3.2",
+            elementGroupingCommands, "1.4.0",
             "Creates groups of the passed elements"
         );
         AddCommandGroup (elementGroupingCommands);

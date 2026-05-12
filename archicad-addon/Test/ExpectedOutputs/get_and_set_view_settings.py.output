@@ -63,35 +63,50 @@ Response:
             "layerCombination": "01 Site",
             "dimensionStyle": "Plain Meter",
             "penSetName": "02 Site 500",
-            "graphicOverrideCombination": "Site Plan"
+            "graphicOverrideCombination": "Site Plan",
+            "drawingScale": 500,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "03 Building Plans",
             "layerCombination": "02 Drafting",
             "dimensionStyle": "Plain Meter",
             "penSetName": "03 Architectural 100",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "03 Building Plans",
             "layerCombination": "02 Drafting",
             "dimensionStyle": "Plain Meter",
             "penSetName": "03 Architectural 100",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "03 Building Plans",
             "layerCombination": "02 Drafting",
             "dimensionStyle": "Plain Meter",
             "penSetName": "03 Architectural 100",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "03 Building Plans",
             "layerCombination": "02 Drafting",
             "dimensionStyle": "Plain Meter",
             "penSetName": "03 Architectural 100",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "error": {
@@ -104,7 +119,16 @@ Response:
             "layerCombination": "02 Drafting",
             "dimensionStyle": "Plain Millimeter",
             "penSetName": "03 Architectural 100",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": true,
+            "ignoreSavedZoom": false,
+            "zoom": {
+                "xMin": 26.538925338,
+                "yMin": 26.538925338,
+                "xMax": 699.5,
+                "yMax": -421
+            }
         },
         {
             "error": {
@@ -374,35 +398,50 @@ Response:
             "layerCombination": "06 Plans - Mechanical",
             "dimensionStyle": "US Architect",
             "penSetName": "11 Archicad 9",
-            "graphicOverrideCombination": "Site Plan"
+            "graphicOverrideCombination": "Site Plan",
+            "drawingScale": 500,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "03 Building Plans",
             "layerCombination": "07 Plans - Structural",
             "dimensionStyle": "US Architect",
             "penSetName": "11 Archicad 9",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "04 Ceiling Plans",
             "layerCombination": "09 Layouting",
             "dimensionStyle": "US Architect",
             "penSetName": "11 Archicad 9",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "01 Site",
             "layerCombination": "01 Site",
             "dimensionStyle": "US Architect",
             "penSetName": "11 Archicad 9",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "modelViewOptions": "02 Drafting",
             "layerCombination": "04 Plans - Approval",
             "dimensionStyle": "US Architect",
             "penSetName": "11 Archicad 9",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": false,
+            "ignoreSavedZoom": true
         },
         {
             "error": {
@@ -415,7 +454,16 @@ Response:
             "layerCombination": "05 Plans - Detailed",
             "dimensionStyle": "Plain Millimeter",
             "penSetName": "11 Archicad 9",
-            "graphicOverrideCombination": "No Overrides"
+            "graphicOverrideCombination": "No Overrides",
+            "drawingScale": 100,
+            "saveZoom": true,
+            "ignoreSavedZoom": false,
+            "zoom": {
+                "xMin": 26.538925338,
+                "yMin": 26.538925338,
+                "xMax": 699.5,
+                "yMax": -421
+            }
         },
         {
             "error": {

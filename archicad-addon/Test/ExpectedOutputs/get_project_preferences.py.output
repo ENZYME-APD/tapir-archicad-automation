@@ -1,0 +1,26 @@
+Command: GetCalculationUnits
+Parameters:
+{}
+Response:
+{
+    "length": {
+        "unit": "Meter",
+        "accuracy": "Off",
+        "decimals": 2
+    },
+    "area": {
+        "unit": "SquareMeter",
+        "accuracy": "Off",
+        "decimals": 2
+    },
+    "volume": {
+        "unit": "CubicMeter",
+        "accuracy": "Off",
+        "decimals": 2
+    },
+    "angle": {
+        "unit": "DecimalDegree",
+        "decimals": 0,
+        "accuracy": 2
+    }
+}

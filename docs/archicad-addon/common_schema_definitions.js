@@ -813,6 +813,69 @@ var gSchemaDefinitions = {
             "Unknown"
         ]
     },
+    "LengthType": {
+        "type": "string",
+        "description": "The type of the length measurement unit.",
+        "enum": [
+            "Meter",
+            "Decimeter",
+            "Centimeter",
+            "Millimeter",
+            "FootFracInch",
+            "FootDecInch",
+            "DecFoot",
+            "FracInch",
+            "DecInch"
+        ]
+    },
+    "AreaType": {
+        "type": "string",
+        "description": "The type of the area measurement unit.",
+        "enum": [
+            "SquareMeter",
+            "SquareCentimeter",
+            "SquareMillimeter",
+            "SquareFoot",
+            "SquareInch"
+        ]
+    },
+    "VolumeType": {
+        "type": "string",
+        "description": "The type of the volume measurement unit.",
+        "enum": [
+            "CubicMeter",
+            "Liter",
+            "CubicCentimeter",
+            "CubicMillimeter",
+            "CubicFoot",
+            "CubicInch",
+            "CubicYard",
+            "Gallon"
+        ]
+    },
+    "AngleType": {
+        "type": "string",
+        "description": "The type of the angle measurement unit.",
+        "enum": [
+            "DecimalDegree",
+            "DegreeMinSec",
+            "Grad",
+            "Radian",
+            "Surveyors"
+        ]
+    },
+    "AccuracyType": {
+        "type": "string",
+        "description": "Methods for rounding decimal values.",
+        "enum": [
+            "Off",
+            "ShowSmall5",
+            "ShowSmall25",
+            "ShowSmall1",
+            "ShowSmall01",
+            "InchCaseFractions"
+        ]
+    },
     "IssueId": {
         "type": "object",
         "description": "The identifier of an issue.",
@@ -2089,6 +2152,43 @@ var gSchemaDefinitions = {
             "graphicOverrideCombination": {
                 "type": "string",
                 "description": "The name of the graphic override combination. If empty, the view has custom graphic override combination."
+            },
+            "drawingScale": {
+                "type": "integer",
+                "description": "The drawing scale stored on the view, if enabled."
+            },
+            "saveZoom": {
+                "type": "boolean",
+                "description": "Whether the zoom box is stored in the view."
+            },
+            "ignoreSavedZoom": {
+                "type": "boolean",
+                "description": "Whether changing to the view should ignore its stored zoom."
+            },
+            "zoom": {
+                "type": "object",
+                "description": "Stored zoom box in model coordinates. Used only when saveZoom is true.",
+                "properties": {
+                    "xMin": {
+                        "type": "number"
+                    },
+                    "yMin": {
+                        "type": "number"
+                    },
+                    "xMax": {
+                        "type": "number"
+                    },
+                    "yMax": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "xMin",
+                    "yMin",
+                    "xMax",
+                    "yMax"
+                ]
             }
         },
         "additionalProperties": false,
@@ -2280,6 +2380,23 @@ var gSchemaDefinitions = {
                 "items": {
                     "$ref": "#/PolyArc"
                 }
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [
+                    "Basic",
+                    "Composite",
+                    "Profile"
+                ]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "profileId": {
+                "$ref": "#/AttributeId"
             }
         },
         "additionalProperties": false,
@@ -2372,6 +2489,19 @@ var gSchemaDefinitions = {
             },
             "holes": {
                 "$ref": "#/Holes2D"
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [
+                    "Basic",
+                    "Composite"
+                ]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
             }
         },
         "additionalProperties": false,
@@ -3912,4 +4042,5 @@ var gSchemaDefinitions = {
             "elements"
         ]
     }
-};
+}
+;
