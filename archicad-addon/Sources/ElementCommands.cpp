@@ -55,6 +55,20 @@ static API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
     return element.sectElem.parentGuid;
 }
 
+static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
+{
+    switch (structureType) {
+        case API_BasicStructure:
+            return "Basic";
+        case API_CompositeStructure:
+            return "Composite";
+        case API_ProfileStructure:
+            return "Profile";
+        default:
+            return "Basic";
+    }
+}
+
 template <typename ListProxyType>
 static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
@@ -415,6 +429,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             break;
                         }
                 }
+                typeSpecificDetails.Add ("structureType", StructureTypeToString (elem.wall.modelElemStructureType));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.wall.bottomOffset, stories));
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.wall.begC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.wall.endC));
@@ -435,6 +450,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
 
             case API_SlabID:
+                typeSpecificDetails.Add ("structureType", StructureTypeToString (elem.slab.modelElemStructureType));
                 typeSpecificDetails.Add ("thickness", elem.slab.thickness);
                 typeSpecificDetails.Add ("level", elem.slab.level);
                 typeSpecificDetails.Add ("offsetFromTop", elem.slab.offsetFromTop);
