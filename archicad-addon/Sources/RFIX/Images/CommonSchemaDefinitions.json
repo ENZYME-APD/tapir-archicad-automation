@@ -813,6 +813,69 @@
             "Unknown"
         ]
     },
+    "LengthType": {
+        "type": "string",
+        "description": "The type of the length measurement unit.",
+        "enum": [
+            "Meter",
+            "Decimeter",
+            "Centimeter",
+            "Millimeter",
+            "FootFracInch",
+            "FootDecInch",
+            "DecFoot",
+            "FracInch",
+            "DecInch"
+        ]
+    },
+    "AreaType": {
+        "type": "string",
+        "description": "The type of the area measurement unit.",
+        "enum": [
+            "SquareMeter",
+            "SquareCentimeter",
+            "SquareMillimeter",
+            "SquareFoot",
+            "SquareInch"
+        ]
+    },
+    "VolumeType": {
+        "type": "string",
+        "description": "The type of the volume measurement unit.",
+        "enum": [
+            "CubicMeter",
+            "Liter",
+            "CubicCentimeter",
+            "CubicMillimeter",
+            "CubicFoot",
+            "CubicInch",
+            "CubicYard",
+            "Gallon"
+        ]
+    },
+    "AngleType": {
+        "type": "string",
+        "description": "The type of the angle measurement unit.",
+        "enum": [
+            "DecimalDegree",
+            "DegreeMinSec",
+            "Grad",
+            "Radian",
+            "Surveyors"
+        ]
+    },
+    "AccuracyType": {
+        "type": "string",
+        "description": "Methods for rounding decimal values.",
+        "enum": [
+            "Off",
+            "ShowSmall5",
+            "ShowSmall25",
+            "ShowSmall1",
+            "ShowSmall01",
+            "InchCaseFractions"
+        ]
+    },
     "IssueId": {
         "type": "object",
         "description": "The identifier of an issue.",

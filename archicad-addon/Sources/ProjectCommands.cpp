@@ -977,6 +977,213 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
     return CreateSuccessfulExecutionResult ();
 }
 
+GetCalculationUnitsCommand::GetCalculationUnitsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetCalculationUnitsCommand::GetName () const
+{
+    return "GetCalculationUnits";
+}
+
+GS::Optional<GS::UniString> GetCalculationUnitsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "length": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/LengthType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for length values."
+                    },
+                    "roundInch": {
+                        "type": "integer",
+                        "description": "Fractional inches."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "area": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AreaType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for area values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "volume": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/VolumeType"
+                    },
+                    "accuracy": {
+                        "$ref": "#/AccuracyType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for volume values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "accuracy",
+                    "decimals"
+                ]
+            },
+            "angle": {
+                "type": "object",
+                "properties": {
+                    "unit": {
+                        "$ref": "#/AngleType"
+                    },
+                    "decimals": {
+                        "type": "integer",
+                        "description": "Number of decimals to display for angle values."
+                    },
+                    "accuracy": {
+                        "type": "integer",
+                        "description": "Accuracy for angle values."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "unit",
+                    "decimals",
+                    "accuracy"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "length",
+            "area",
+            "volume",
+            "angle"
+        ]
+    })";
+}
+
+static GS::UniString ConvertAPILengthType (API_LengthTypeID apiLengthUnit)
+{
+    switch (apiLengthUnit) {
+        case API_LengthTypeID::Meter: return "Meter";
+        case API_LengthTypeID::Decimeter: return "Decimeter";
+        case API_LengthTypeID::Centimeter: return "Centimeter";
+        case API_LengthTypeID::Millimeter: return "Millimeter";
+        case API_LengthTypeID::FootFracInch: return "FootFracInch";
+        case API_LengthTypeID::FootDecInch: return "FootDecInch";
+        case API_LengthTypeID::DecFoot: return "DecFoot";
+        case API_LengthTypeID::FracInch: return "FracInch";
+        case API_LengthTypeID::DecInch: return "DecInch";
+        default: return "Unknown";
+    }
+}
+
+static GS::UniString ConvertAPIAreaType (API_AreaTypeID apiAreaUnit)
+{
+    switch (apiAreaUnit) {
+        case API_AreaTypeID::SquareMeter: return "SquareMeter";
+        case API_AreaTypeID::SquareCentimeter: return "SquareCentimeter";
+        case API_AreaTypeID::SquareMillimeter: return "SquareMillimeter";
+        case API_AreaTypeID::SquareFoot: return "SquareFoot";
+        case API_AreaTypeID::SquareInch: return "SquareInch";
+        default: return "Unknown";
+    }
+}
+
+static GS::UniString ConvertAPIVolumeType (API_VolumeTypeID apiVolumeUnit)
+{
+    switch (apiVolumeUnit) {
+        case API_VolumeTypeID::CubicMeter: return "CubicMeter";
+        case API_VolumeTypeID::Liter: return "Liter";
+        case API_VolumeTypeID::CubicCentimeter: return "CubicCentimeter";
+        case API_VolumeTypeID::CubicMillimeter: return "CubicMillimeter";
+        case API_VolumeTypeID::CubicFoot: return "CubicFoot";
+        case API_VolumeTypeID::CubicInch: return "CubicInch";
+        case API_VolumeTypeID::CubicYard: return "CubicYard";
+        case API_VolumeTypeID::Gallon: return "Gallon";
+        default: return "Unknown";
+    }
+}
+
+static GS::UniString ConvertAPIAngleType (API_AngleTypeID apiAngleUnit)
+{
+    switch (apiAngleUnit) {
+        case API_AngleTypeID::DecimalDegree: return "DecimalDegree";
+        case API_AngleTypeID::DegreeMinSec: return "DegreeMinSec";
+        case API_AngleTypeID::Grad: return "Grad";
+        case API_AngleTypeID::Radian: return "Radian";
+        case API_AngleTypeID::Surveyors: return "Surveyors";
+        default: return "Unknown";
+    }
+}
+
+static GS::UniString ConvertAPIExtraAccuracyType (API_ExtraAccuracyID apiExtraAccuracy)
+{
+    switch (apiExtraAccuracy) {
+        case API_ExtraAccuracyID::APIExtAc_Off: return "Off";
+        case API_ExtraAccuracyID::APIExtAc_Small5: return "ShowSmall5";
+        case API_ExtraAccuracyID::APIExtAc_Small25: return "ShowSmall25";
+        case API_ExtraAccuracyID::APIExtAc_Small1: return "ShowSmall1";
+        case API_ExtraAccuracyID::APIExtAc_Small01: return "ShowSmall01";
+        case API_ExtraAccuracyID::APIExtAc_Fractions: return "InchCaseFractions";
+        default: return "Unknown";
+    }
+}
+
+GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_CalcUnitPrefs unitPrefs;
+    ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_CalcUnitsID);
+
+    return GS::ObjectState (
+        "length", GS::ObjectState (
+            "unit", ConvertAPILengthType (unitPrefs.length.unit),
+            "accuracy", ConvertAPIExtraAccuracyType (unitPrefs.length.accuracy),
+            "decimals", unitPrefs.length.decimals),
+        "area", GS::ObjectState (
+            "unit", ConvertAPIAreaType (unitPrefs.area.unit),
+            "accuracy", ConvertAPIExtraAccuracyType (unitPrefs.area.accuracy),
+            "decimals", unitPrefs.area.decimals),
+        "volume", GS::ObjectState (
+            "unit", ConvertAPIVolumeType (unitPrefs.volume.unit),
+            "accuracy", ConvertAPIExtraAccuracyType (unitPrefs.volume.accuracy),
+            "decimals", unitPrefs.volume.decimals),
+        "angle", GS::ObjectState (
+            "unit", ConvertAPIAngleType (unitPrefs.angle.unit),
+            "decimals", unitPrefs.angle.decimals,
+            "accuracy", unitPrefs.angle.accuracy));
+}
+
 IFCFileOperationCommand::IFCFileOperationCommand () :
     CommandBase (CommonSchema::Used)
 {
