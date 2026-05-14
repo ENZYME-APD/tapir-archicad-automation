@@ -238,7 +238,7 @@ bool DoesWallExist (const API_Guid& wallGuid)
     return GetElemTypeId (header) == API_WallID;
 }
 
-GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker)
+GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, const GS::Optional<API_Guid>& explicitLibPartGuid = GS::NoValue)
 {
     element = {};
     marker = {};
@@ -255,21 +255,32 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     }
 
     API_LibPart libPart = {};
+    if (explicitLibPartGuid.HasValue ()) {
+        libPart.ownUnID = explicitLibPartGuid.Get ();
+        err = ACAPI_LibraryPart_Search (&libPart, false, true);
+        delete libPart.location;
+        if (err != NoError) {
+            return err;
+        }
+        // Bind the requested GDL to the element so ACAPI_Element_CreateExt
+        // can instantiate the right panel.
+        element.window.openingBase.libInd = libPart.index;
+    } else {
 #ifdef ServerMainVers_2700
-    err = ACAPI_LibraryPart_GetMarkerParent (element.header.type, libPart);
+        err = ACAPI_LibraryPart_GetMarkerParent (element.header.type, libPart);
 #elif ServerMainVers_2600
-    err = ACAPI_Goodies_GetMarkerParent (element.header.type, libPart);
+        err = ACAPI_Goodies_GetMarkerParent (element.header.type, libPart);
 #else
-    err = ACAPI_Goodies (APIAny_GetMarkerParentID, (void*)&element.header.typeID, (void*)&libPart);
+        err = ACAPI_Goodies (APIAny_GetMarkerParentID, (void*)&element.header.typeID, (void*)&libPart);
 #endif
-    if (err != NoError) {
-        return NoError;
-    }
-
-    err = ACAPI_LibraryPart_Search (&libPart, false, true);
-    delete libPart.location;
-    if (err != NoError) {
-        return err;
+        if (err != NoError) {
+            return NoError;
+        }
+        err = ACAPI_LibraryPart_Search (&libPart, false, true);
+        delete libPart.location;
+        if (err != NoError) {
+            return err;
+        }
     }
 
     double a = 0.0;
@@ -1521,7 +1532,23 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "libraryPart": {
+                            "type": "object",
+                            "description": "Optional explicit library part to instantiate. Required when AC has no default for this element type.",
+                            "properties": {
+                                "guid": { "type": "string", "description": "GUID of the GDL library part." }
+                            },
+                            "required": ["guid"]
+                        },
+                        "libraryPart": {
+                            "type": "object",
+                            "description": "Optional explicit library part to instantiate. Required when AC has no default for this element type.",
+                            "properties": {
+                                "guid": { "type": "string", "description": "GUID of the GDL library part." }
+                            },
+                            "required": ["guid"]
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["ownerWallId", "centerOffset"]
@@ -1571,7 +1598,15 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            GSErrCode err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker);
+            GS::Optional<API_Guid> libPartGuid;
+            const GS::ObjectState* libPart = data.Get ("libraryPart");
+            if (libPart != nullptr) {
+                GS::UniString guidStr;
+                if (libPart->Get ("guid", guidStr)) {
+                    libPartGuid = APIGuidFromString (guidStr.ToCStr ());
+                }
+            }
+            GSErrCode err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker, libPartGuid);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare window defaults."));
                 continue;
@@ -1678,7 +1713,15 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            GSErrCode err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker);
+            GS::Optional<API_Guid> libPartGuid;
+            const GS::ObjectState* libPart = data.Get ("libraryPart");
+            if (libPart != nullptr) {
+                GS::UniString guidStr;
+                if (libPart->Get ("guid", guidStr)) {
+                    libPartGuid = APIGuidFromString (guidStr.ToCStr ());
+                }
+            }
+            GSErrCode err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker, libPartGuid);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare door defaults."));
                 continue;

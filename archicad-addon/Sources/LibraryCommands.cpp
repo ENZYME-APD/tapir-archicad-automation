@@ -291,3 +291,108 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
 
     return CreateSuccessfulExecutionResult ();
 }
+
+GetAvailableLibraryPartsCommand::GetAvailableLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAvailableLibraryPartsCommand::GetName () const
+{
+    return "GetAvailableLibraryParts";
+}
+
+GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "filterByTypeId": {
+                "type": "string",
+                "description": "Optional element-type filter. Examples: 'Door', 'Window', 'Object', 'Lamp', 'Stair'."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "index": { "type": "integer" },
+                        "documentName": { "type": "string" },
+                        "fileName": { "type": "string" },
+                        "typeId": { "type": "string" }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["libraryParts"]
+    })";
+}
+
+static GS::UniString LibPartTypeIdToString (Int32 typeID)
+{
+    switch (typeID) {
+        case API_ZombieLibID:    return "Zombie";
+        case API_WindowID:       return "Window";
+        case API_DoorID:         return "Door";
+        case API_ObjectID:       return "Object";
+        case API_LampID:         return "Lamp";
+        case API_RoomID:         return "Room";
+        case API_LabelID:        return "Label";
+        case API_MacroID:        return "Macro";
+        case API_PictID:         return "Picture";
+        case API_ListSchemeID:   return "ListScheme";
+        default:                 return GS::UniString::Printf ("Type%d", typeID);
+    }
+}
+
+GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString filterTypeId;
+    parameters.Get ("filterByTypeId", filterTypeId);
+
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to enumerate library parts.");
+    }
+
+    GS::ObjectState response;
+    const auto& adder = response.AddList<GS::ObjectState> ("libraryParts");
+
+    for (Int32 i = 1; i <= partCount; ++i) {
+        API_LibPart libPart = {};
+        libPart.index = i;
+        err = ACAPI_LibraryPart_Get (&libPart);
+        if (err != NoError) {
+            continue;
+        }
+
+        GS::UniString typeId = LibPartTypeIdToString (libPart.typeID);
+        if (!filterTypeId.IsEmpty () && typeId != filterTypeId) {
+            continue;
+        }
+
+        GS::ObjectState entry;
+        entry.Add ("guid", APIGuidToString (libPart.ownUnID));
+        entry.Add ("index", static_cast<Int32> (libPart.index));
+        entry.Add ("documentName", GS::UniString (libPart.docu_Name));
+        entry.Add ("fileName", GS::UniString (libPart.file_UName));
+        entry.Add ("typeId", typeId);
+        adder (entry);
+    }
+
+    return response;
+}
+

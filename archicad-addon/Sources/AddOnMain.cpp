@@ -314,12 +314,12 @@ GSErrCode Initialize (void)
             "Creates Slab elements based on the given parameters."
         );
         err |= RegisterCommand<CreateWindowsCommand> (
-            elementCommands, "1.4.0",
-            "Creates Window elements in host walls based on the given parameters."
+            elementCommands, "1.5.0",
+            "Creates Window elements in host walls. Accepts optional libraryPart {guid} to bypass AC defaults."
         );
         err |= RegisterCommand<CreateDoorsCommand> (
-            elementCommands, "1.4.0",
-            "Creates Door elements in host walls based on the given parameters."
+            elementCommands, "1.5.0",
+            "Creates Door elements in host walls. Accepts optional libraryPart {guid} to bypass AC defaults."
         );
         err |= RegisterCommand<CreateOpeningsCommand> (
             elementCommands, "1.4.0",
@@ -537,6 +537,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<AddFilesToEmbeddedLibraryCommand> (
             libraryCommands, "1.2.2",
             "Adds the given files into the embedded library."
+        );
+        err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
+            libraryCommands, "1.0.0",
+            "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window')."
         );
         AddCommandGroup (libraryCommands);
     }
