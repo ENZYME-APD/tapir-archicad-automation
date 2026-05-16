@@ -808,6 +808,102 @@ GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (A
     return {};
 }
 
+// CreateLamps — parallel to CreateObjects but for AC subtype Lamp.
+// API_LampType is a typedef alias of API_ObjectType in APIdefs_Elements.h
+// (line 5713), so the field layout and per-element placement logic are
+// identical. The only difference is the element typeID — `API_LampID` —
+// which routes AC's element-create code through the lamp-specific path
+// instead of the generic object path. Without this command, lamp
+// libparts (Lampe, Lampe de chevet, Lustre, Applique murale, …) cannot
+// be placed via Tapir — `CreateObjects` rejects them with
+// `-2130313112 Failed to create new Object`.
+CreateLampsCommand::CreateLampsCommand () :
+    CreateElementsCommandBase ("CreateLamps", API_LampID, "lampsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateLampsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "lampsData": {
+                "type": "array",
+                "description": "Array of data to create Lamps.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Lamp.",
+                    "properties": {
+                        "libraryPartName": {
+                            "type": "string",
+                            "description" : "The name of the lamp library part to use."
+                        },
+                        "coordinates": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensions": {
+                            "$ref": "#/Dimensions3D"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "libraryPartName",
+                        "coordinates"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lampsData"
+        ]
+    })";
+}
+
+GS::Optional<GS::ObjectState> CreateLampsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    // Identical logic to CreateObjects since API_LampType == API_ObjectType.
+    // We access via `element.lamp.*` to make the intent explicit at the
+    // call site, but the underlying memory and field offsets are the same.
+    GS::UniString uName;
+    parameters.Get ("libraryPartName", uName);
+
+    API_LibPart libPart = {};
+    GS::ucscpy (libPart.docu_UName, uName.ToUStr ());
+
+    GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+    delete libPart.location;
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Not found library part with name '%T'", uName.ToPrintf ()));
+    }
+
+    element.lamp.libInd = libPart.index;
+
+    GS::ObjectState coordinates;
+    if (parameters.Get ("coordinates", coordinates)) {
+        const API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
+
+        element.lamp.pos.x = apiCoordinate.x;
+        element.lamp.pos.y = apiCoordinate.y;
+
+        const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+        element.header.floorInd = floorIndexAndOffset.first;
+        element.lamp.level = floorIndexAndOffset.second;
+    }
+
+    if (parameters.Get ("dimensions", coordinates)) {
+        const API_Coord3D dimensions = Get3DCoordinateFromObjectState (coordinates);
+
+        element.lamp.xRatio = dimensions.x;
+        element.lamp.yRatio = dimensions.y;
+        GS::ObjectState os (ParameterValueFieldName, dimensions.z);
+        ChangeParams (memo.params, {{"ZZYZX", os}});
+    }
+
+    return {};
+}
+
 CreateMeshesCommand::CreateMeshesCommand () :
     CreateElementsCommandBase ("CreateMeshes", API_MeshID, "meshesData")
 {}

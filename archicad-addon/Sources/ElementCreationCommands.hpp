@@ -57,6 +57,14 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+class CreateLampsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateLampsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
 class CreateMeshesCommand : public CreateElementsCommandBase
 {
 public:
