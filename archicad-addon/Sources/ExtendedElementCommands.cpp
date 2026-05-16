@@ -287,6 +287,121 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     return NoError;
 }
 
+// Apply a named FAVORITE to the Door/Window tool defaults BEFORE
+// the caller clones element/memo/marker via PrepareWindowOrDoorDefaults.
+//
+// The parameter is a FAVORITE name (as returned by `GetFavoritesByType
+// (elementType=Door|Window)`), NOT a libpart `docu_UName`. Real
+// libpart-by-name lookup against AC29's Door/Window library is not
+// viable: the favorite name is the only stable identifier exposed to
+// API callers.
+//
+// This is the workaround for `-2130313110 Failed to create door` /
+// `Failed to create window` on a fresh project where the user has
+// never opened the Door / Window tool — without the favorite-apply,
+// `PrepareWindowOrDoorDefaults` clones empty/invalid tool defaults
+// that AC's `ACAPI_Element_CreateExt` rejects. Calling this helper
+// first pushes a known-good defaults snapshot into the tool, then
+// the caller's PrepareWindowOrDoorDefaults clones the favorite-applied
+// state (libpart, marker memo, all openingBase fields).
+//
+// Flow (mirrors `ApplyFavoritesToElementDefaultsCommand`):
+//   1. `ACAPI_Favorite_Get(&favorite)` by name
+//   2. `ACAPI_Element_ChangeDefaultsExt` with mask FULL — also passes
+//      the favorite's `elementMarker` / `memoMarker` as a Main Marker
+//      sub-element when present, since AC25+ recommends ChangeDefaultsExt
+//      for markered element types (Door / Window).
+//   3. Replay classifications, category values, user properties via
+//      the existing TAPIR_Element_* helpers in `MigrationHelper.hpp`.
+//      Required: some Door favorites (e.g. `Porte d'entrée`) still
+//      return REFUSEDPAR after ChangeDefaultsExt alone if the
+//      classifications are missing.
+//
+// IMPORTANT: must be invoked BEFORE PrepareWindowOrDoorDefaults so
+// the marker built from `ACAPI_LibraryPart_GetMarkerParent` matches
+// the favorite-applied libpart. Calling it AFTER leaves the outer
+// marker stale and CreateExt fails with REFUSEDPAR.
+//
+// Returns NoError on success or when `favoriteName` is absent
+// (caller falls back to the cloned tool defaults). Returns the
+// underlying Favorite_Get / ChangeDefaultsExt error code on failure.
+static GSErrCode ApplyWindowOrDoorFavoriteToDefaults (const GS::ObjectState& data)
+{
+    GS::UniString favoriteName;
+    if (!data.Get ("favoriteName", favoriteName)) {
+        return NoError; // field absent — keep tool defaults as-is
+    }
+    if (favoriteName.IsEmpty ()) {
+        return NoError;
+    }
+
+    API_Favorite favorite;
+    favorite.name = favoriteName;
+    favorite.memo.New ();
+    favorite.elementMarker.New ();
+    favorite.memoMarker.New ();
+    favorite.properties.New ();
+    favorite.classifications.New ();
+    favorite.elemCategoryValues.New ();
+
+    GSErrCode err = ACAPI_Favorite_Get (&favorite);
+    const auto disposeFavoriteMemos = [&]() {
+        ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+        if (favorite.memoMarker.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+        }
+    };
+    if (err != NoError) {
+        disposeFavoriteMemos ();
+        return err;
+    }
+
+    // Push the favorite's full element state into the Door/Window tool
+    // defaults. AC25+ recommends `ACAPI_Element_ChangeDefaultsExt` for
+    // markered element types (API_DoorID / API_WindowID) so the marker
+    // sub-element is updated in lock-step with the main element. If the
+    // favorite carries a marker (`elementMarker` / `memoMarker`), pass
+    // it as a Main Marker sub-element; otherwise pass `nSubElems = 0`
+    // and the existing tool marker is preserved.
+    API_Element mask;
+    ACAPI_ELEMENT_MASK_SETFULL (mask);
+
+    API_SubElement markerSubElement = {};
+    UInt32 nSubElems = 0;
+    API_SubElement* subElemsPtr = nullptr;
+    if (favorite.elementMarker.HasValue () && favorite.memoMarker.HasValue ()) {
+        markerSubElement.subType = APISubElement_MainMarker;
+        markerSubElement.subElem = favorite.elementMarker.Get ();
+        markerSubElement.memo = favorite.memoMarker.Get ();
+        ACAPI_ELEMENT_MASK_SETFULL (markerSubElement.mask);
+        nSubElems = 1;
+        subElemsPtr = &markerSubElement;
+    }
+
+    err = ACAPI_Element_ChangeDefaultsExt (&favorite.element, favorite.memo.GetPtr (), &mask, nSubElems, subElemsPtr);
+    disposeFavoriteMemos ();
+    if (err != NoError) {
+        return err;
+    }
+
+    // Mirror the full ApplyFavoritesToElementDefaultsCommand flow so the
+    // tool defaults include the favorite's classifications, category
+    // values and user-defined properties. Some Door favorites (e.g.
+    // "Porte d'entrée") will not survive a subsequent CreateExt without
+    // this extra metadata: ChangeDefaults alone gets accepted, but the
+    // create fails with APIERR_REFUSEDPAR because mandatory classification
+    // or category fields remain unset on the tool defaults.
+    for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
+        TAPIR_Element_AddClassificationItemDefault (favorite.element.header, pair.second);
+    }
+    for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+        TAPIR_Element_SetCategoryValueDefault (favorite.element.header, categoryValue);
+    }
+    TAPIR_Element_SetPropertiesOfDefaultElem (favorite.element.header, *favorite.properties);
+
+    return NoError;
+}
+
 void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoint, const API_Vector& direction)
 {
     element.dimension.dimAppear = APIApp_Normal;
@@ -1521,7 +1636,11 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["ownerWallId", "centerOffset"]
@@ -1571,7 +1690,19 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            GSErrCode err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker);
+            // Apply the favorite to the Window tool defaults FIRST so
+            // that PrepareWindowOrDoorDefaults clones the favorite-applied
+            // libpart and builds a matching marker. Calling
+            // PrepareWindowOrDoorDefaults first and applying the favorite
+            // after leaves the marker pointing at the previous libpart,
+            // causing CreateExt to fail with -2130313110.
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for window."));
+                continue;
+            }
+
+            err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare window defaults."));
                 continue;
@@ -1628,7 +1759,11 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["ownerWallId", "centerOffset"]
@@ -1678,7 +1813,19 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            GSErrCode err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker);
+            // Apply the favorite to the Door tool defaults FIRST so
+            // that PrepareWindowOrDoorDefaults clones the favorite-applied
+            // libpart and builds a matching marker. Calling
+            // PrepareWindowOrDoorDefaults first and applying the favorite
+            // after leaves the marker pointing at the previous libpart,
+            // causing CreateExt to fail with -2130313110.
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for door."));
+                continue;
+            }
+
+            err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare door defaults."));
                 continue;
