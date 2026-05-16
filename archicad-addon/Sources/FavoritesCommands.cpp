@@ -519,6 +519,18 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     GS::UniString firstConflictName;
     const GSErrCode err = ACAPI_Favorite_Import (
         location, targetFolder, importFolders, policy, &firstConflictName);
+
+    // On conflictPolicy=Error + name collision, ACAPI returns
+    // APIERR_NAMEALREADYUSED AND fills firstConflictName. We must NOT
+    // collapse this into a generic error response, because the caller
+    // (the MCP wrapper) special-cases firstConflictName to surface
+    // ok=False with the name. Translate it to a structured success-
+    // shape response so the field reaches the caller.
+    if (err == APIERR_NAMEALREADYUSED && !firstConflictName.IsEmpty ()) {
+        GS::ObjectState response;
+        response.Add ("firstConflictName", firstConflictName);
+        return response;
+    }
     if (err != NoError) {
         return CreateErrorResponse (err, "ACAPI_Favorite_Import failed.");
     }
