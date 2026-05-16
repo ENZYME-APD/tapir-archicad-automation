@@ -334,10 +334,25 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetResponseSchema (
                         "typeId": { "type": "string" }
                     }
                 }
+            },
+            "skippedCount": {
+                "type": "integer",
+                "description": "Library parts that ACAPI_LibraryPart_Get failed to read. Non-zero means the inventory is partial."
+            },
+            "skippedSample": {
+                "type": "array",
+                "description": "First five failed indices with their ACAPI error code, for diagnostic.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": { "type": "integer" },
+                        "code": { "type": "integer" }
+                    }
+                }
             }
         },
         "additionalProperties": false,
-        "required": ["libraryParts"]
+        "required": ["libraryParts", "skippedCount"]
     })";
 }
 
@@ -375,7 +390,11 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
     }
 
     GS::ObjectState response;
-    const auto& adder = response.AddList<GS::ObjectState> ("libraryParts");
+    const auto& libpartAdder = response.AddList<GS::ObjectState> ("libraryParts");
+    const auto& skippedAdder = response.AddList<GS::ObjectState> ("skippedSample");
+
+    Int32 skippedCount = 0;
+    constexpr Int32 maxSkippedSample = 5;
 
     for (Int32 i = 1; i <= partCount; ++i) {
         API_LibPart libPart = {};
@@ -383,6 +402,13 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
         err = ACAPI_LibraryPart_Get (&libPart);
         if (err != NoError) {
             // libPart.location is not allocated on failure.
+            if (skippedCount < maxSkippedSample) {
+                GS::ObjectState skipEntry;
+                skipEntry.Add ("index", i);
+                skipEntry.Add ("code", static_cast<Int32> (err));
+                skippedAdder (skipEntry);
+            }
+            ++skippedCount;
             continue;
         }
 
@@ -396,7 +422,7 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
             entry.Add ("documentName", GS::UniString (libPart.docu_UName));
             entry.Add ("fileName", GS::UniString (libPart.file_UName));
             entry.Add ("typeId", typeId);
-            adder (entry);
+            libpartAdder (entry);
         }
 
         // ACAPI_LibraryPart_Get allocates libPart.location; free it on
@@ -405,6 +431,8 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
         delete libPart.location;
         libPart.location = nullptr;
     }
+
+    response.Add ("skippedCount", skippedCount);
 
     return response;
 }
