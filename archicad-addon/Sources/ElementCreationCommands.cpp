@@ -809,14 +809,12 @@ GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (A
 }
 
 // CreateLamps — parallel to CreateObjects but for AC subtype Lamp.
-// API_LampType is a typedef alias of API_ObjectType in APIdefs_Elements.h
-// (line 5713), so the field layout and per-element placement logic are
-// identical. The only difference is the element typeID — `API_LampID` —
-// which routes AC's element-create code through the lamp-specific path
-// instead of the generic object path. Without this command, lamp
-// libparts (Lampe, Lampe de chevet, Lustre, Applique murale, …) cannot
-// be placed via Tapir — `CreateObjects` rejects them with
-// `-2130313112 Failed to create new Object`.
+// `API_LampType` is a typedef alias of `API_ObjectType` in
+// `APIdefs_Elements.h`, so the field layout and per-element placement
+// logic are identical. The only difference is the element typeID
+// (`API_LampID`), which routes AC through the lamp-specific create
+// path. Without this command, lamp libparts cannot be placed via
+// Tapir — `CreateObjects` rejects them with `APIERR_NOTSUPPORTED`.
 CreateLampsCommand::CreateLampsCommand () :
     CreateElementsCommandBase ("CreateLamps", API_LampID, "lampsData")
 {
