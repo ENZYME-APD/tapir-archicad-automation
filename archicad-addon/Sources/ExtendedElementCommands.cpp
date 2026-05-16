@@ -323,9 +323,12 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
 // marker stale and CreateExt fails with REFUSEDPAR.
 //
 // Returns NoError on success or when `favoriteName` is absent
-// (caller falls back to the cloned tool defaults). Returns the
-// underlying Favorite_Get / ChangeDefaultsExt error code on failure.
-static GSErrCode ApplyWindowOrDoorFavoriteToDefaults (const GS::ObjectState& data)
+// (caller falls back to the cloned tool defaults). Returns
+// APIERR_REFUSEDPAR when the favorite resolves to a different
+// element type than `expectedTypeId` (e.g. passing a Window favorite
+// to CreateDoors). Otherwise returns the underlying Favorite_Get /
+// ChangeDefaultsExt error code.
+static GSErrCode ApplyWindowOrDoorFavoriteToDefaults (const GS::ObjectState& data, API_ElemTypeID expectedTypeId)
 {
     GS::UniString favoriteName;
     if (!data.Get ("favoriteName", favoriteName)) {
@@ -354,6 +357,20 @@ static GSErrCode ApplyWindowOrDoorFavoriteToDefaults (const GS::ObjectState& dat
     if (err != NoError) {
         disposeFavoriteMemos ();
         return err;
+    }
+
+    // Guard against type mismatch: a Window favorite applied to the
+    // Door tool defaults (or vice versa) would silently corrupt the
+    // tool state and leave the caller's PrepareWindowOrDoorDefaults
+    // operating on the wrong subtype. Reject early.
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID favoriteTypeId = favorite.element.header.type.typeID;
+#else
+    const API_ElemTypeID favoriteTypeId = favorite.element.header.typeID;
+#endif
+    if (favoriteTypeId != expectedTypeId) {
+        disposeFavoriteMemos ();
+        return APIERR_REFUSEDPAR;
     }
 
     // Push the favorite's full element state into the Door/Window tool
@@ -1696,7 +1713,7 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             // PrepareWindowOrDoorDefaults first and applying the favorite
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
-            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data);
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_WindowID);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for window."));
                 continue;
@@ -1819,7 +1836,7 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             // PrepareWindowOrDoorDefaults first and applying the favorite
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
-            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data);
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_DoorID);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for door."));
                 continue;
