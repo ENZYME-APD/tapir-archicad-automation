@@ -4,6 +4,7 @@
 #include "Folder.hpp"
 #include "File.hpp"
 #include "FileSystem.hpp"
+#include "GSUnID.hpp"
 
 AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
     CommandBase (CommonSchema::Used)
@@ -291,3 +292,113 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
 
     return CreateSuccessfulExecutionResult ();
 }
+
+GetAvailableLibraryPartsCommand::GetAvailableLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAvailableLibraryPartsCommand::GetName () const
+{
+    return "GetAvailableLibraryParts";
+}
+
+GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "filterByTypeId": {
+                "type": "string",
+                "description": "Optional element-type filter. Examples: 'Door', 'Window', 'Object', 'Lamp', 'Stair'."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "index": { "type": "integer" },
+                        "documentName": { "type": "string" },
+                        "fileName": { "type": "string" },
+                        "typeId": { "type": "string" }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["libraryParts"]
+    })";
+}
+
+static GS::UniString LibPartTypeIdToString (Int32 typeID)
+{
+    switch (typeID) {
+        case API_ZombieLibID:        return "Zombie";
+        case APILib_SpecID:          return "Spec";
+        case APILib_WindowID:        return "Window";
+        case APILib_DoorID:          return "Door";
+        case APILib_ObjectID:        return "Object";
+        case APILib_LampID:          return "Lamp";
+        case APILib_RoomID:          return "Room";
+        case APILib_PropertyID:      return "Property";
+        case APILib_PlanSignID:      return "PlanSign";
+        case APILib_LabelID:         return "Label";
+        case APILib_MacroID:         return "Macro";
+        case APILib_PictID:          return "Picture";
+        case APILib_ListSchemeID:    return "ListScheme";
+        case APILib_SkylightID:      return "Skylight";
+        case APILib_OpeningSymbolID: return "OpeningSymbol";
+        default:                     return GS::UniString::Printf ("Type%d", typeID);
+    }
+}
+
+GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString filterTypeId;
+    parameters.Get ("filterByTypeId", filterTypeId);
+
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to enumerate library parts.");
+    }
+
+    GS::ObjectState response;
+    const auto& adder = response.AddList<GS::ObjectState> ("libraryParts");
+
+    for (Int32 i = 1; i <= partCount; ++i) {
+        API_LibPart libPart = {};
+        libPart.index = i;
+        err = ACAPI_LibraryPart_Get (&libPart);
+        if (err != NoError) {
+            continue;
+        }
+
+        GS::UniString typeId = LibPartTypeIdToString (libPart.typeID);
+        if (!filterTypeId.IsEmpty () && typeId != filterTypeId) {
+            continue;
+        }
+
+        GS::ObjectState entry;
+        entry.Add ("guid", GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
+        entry.Add ("index", static_cast<Int32> (libPart.index));
+        entry.Add ("documentName", GS::UniString (libPart.docu_UName));
+        entry.Add ("fileName", GS::UniString (libPart.file_UName));
+        entry.Add ("typeId", typeId);
+        adder (entry);
+    }
+
+    return response;
+}
+

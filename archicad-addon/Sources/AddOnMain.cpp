@@ -538,6 +538,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.2.2",
             "Adds the given files into the embedded library."
         );
+        err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
+            libraryCommands, "1.0.0",
+            "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
+        );
         AddCommandGroup (libraryCommands);
     }
 
