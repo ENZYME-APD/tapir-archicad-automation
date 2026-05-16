@@ -358,7 +358,7 @@ GSErrCode Initialize (void)
             "Creates Object elements based on the given parameters."
         );
         err |= RegisterCommand<CreateLampsCommand> (
-            elementCommands, "1.0.0",
+            elementCommands, "1.4.1",
             "Creates Lamp elements (e.g. ceiling lights, wall sconces, table lamps) based on the given parameters. Parallel to CreateObjects but uses AC subtype API_LampID, which is required for libparts that AC classifies as Lamp rather than Object (Lampe, Lampe de chevet, Lustre, Applique murale, etc.)."
         );
         err |= RegisterCommand<CreateMeshesCommand> (
