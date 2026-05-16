@@ -310,7 +310,7 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetInputParametersS
         "properties": {
             "filterByTypeId": {
                 "type": "string",
-                "description": "Optional element-type filter. Examples: 'Door', 'Window', 'Object', 'Lamp', 'Stair'."
+                "description": "Optional element-type filter. Examples: 'Door', 'Window', 'Object', 'Lamp', 'Macro', 'Picture'."
             }
         },
         "additionalProperties": false
@@ -382,23 +382,29 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
         libPart.index = i;
         err = ACAPI_LibraryPart_Get (&libPart);
         if (err != NoError) {
+            // libPart.location is not allocated on failure.
             continue;
         }
 
-        GS::UniString typeId = LibPartTypeIdToString (libPart.typeID);
-        if (!filterTypeId.IsEmpty () && typeId != filterTypeId) {
-            continue;
+        const GS::UniString typeId = LibPartTypeIdToString (libPart.typeID);
+        const bool matchesFilter = filterTypeId.IsEmpty () || typeId == filterTypeId;
+
+        if (matchesFilter) {
+            GS::ObjectState entry;
+            entry.Add ("guid", GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
+            entry.Add ("index", static_cast<Int32> (libPart.index));
+            entry.Add ("documentName", GS::UniString (libPart.docu_UName));
+            entry.Add ("fileName", GS::UniString (libPart.file_UName));
+            entry.Add ("typeId", typeId);
+            adder (entry);
         }
 
-        GS::ObjectState entry;
-        entry.Add ("guid", GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
-        entry.Add ("index", static_cast<Int32> (libPart.index));
-        entry.Add ("documentName", GS::UniString (libPart.docu_UName));
-        entry.Add ("fileName", GS::UniString (libPart.file_UName));
-        entry.Add ("typeId", typeId);
-        adder (entry);
+        // ACAPI_LibraryPart_Get allocates libPart.location; free it on
+        // every successful Get to avoid leaking ~one IO::Location per
+        // libpart (thousands per call).
+        delete libPart.location;
+        libPart.location = nullptr;
     }
 
     return response;
 }
-
