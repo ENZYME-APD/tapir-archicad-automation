@@ -496,23 +496,17 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     }
 
     API_FavoriteFolderHierarchy targetFolder;
-    if (parameters.Contains ("targetFolder")) {
-        GS::Array<GS::UniString> folders;
-        parameters.Get ("targetFolder", folders);
-        for (const GS::UniString& f : folders) {
-            targetFolder.Push (f);
-        }
+    GS::Array<GS::UniString> folders;
+    parameters.Get ("targetFolder", folders);
+    for (const GS::UniString& f : folders) {
+        targetFolder.Push (f);
     }
 
     bool importFolders = false;
-    if (parameters.Contains ("importFolders")) {
-        parameters.Get ("importFolders", importFolders);
-    }
+    parameters.Get ("importFolders", importFolders);
 
     GS::UniString policyStr = "Overwrite";
-    if (parameters.Contains ("conflictPolicy")) {
-        parameters.Get ("conflictPolicy", policyStr);
-    }
+    parameters.Get ("conflictPolicy", policyStr);
     const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
 
     const IO::Location location = LocationFromPath (path);
@@ -591,9 +585,8 @@ GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& paramete
     const IO::Location location = LocationFromPath (path);
 
     GSErrCode err = NoError;
-    if (parameters.Contains ("names")) {
-        GS::Array<GS::UniString> names;
-        parameters.Get ("names", names);
+    GS::Array<GS::UniString> names;
+    if (parameters.Get ("names", names)) {
         err = ACAPI_Favorite_Export (location, &names);
     } else {
         err = ACAPI_Favorite_Export (location, nullptr);

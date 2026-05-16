@@ -444,11 +444,11 @@ GSErrCode Initialize (void)
             "Create favorites from the given elements."
         );
         err |= RegisterCommand<ImportFavoritesCommand> (
-            favoritesCommands, "1.0.0",
+            favoritesCommands, "1.4.1",
             "Import Favorites from a .prefs file or folder into the current project."
         );
         err |= RegisterCommand<ExportFavoritesCommand> (
-            favoritesCommands, "1.0.0",
+            favoritesCommands, "1.4.1",
             "Export the project's Favorites to a .prefs file or folder."
         );
         AddCommandGroup (favoritesCommands);
@@ -547,7 +547,7 @@ GSErrCode Initialize (void)
             "Adds the given files into the embedded library."
         );
         err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
-            libraryCommands, "1.0.0",
+            libraryCommands, "1.4.1",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
         AddCommandGroup (libraryCommands);

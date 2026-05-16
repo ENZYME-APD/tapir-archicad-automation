@@ -63,6 +63,7 @@
 #define ACAPI_Revision_GetRVMChangesFromChangeIds(par1, par2) ACAPI_Database (APIDb_GetRVMChangesFromChangeIdsID, (void*)par1, par2)
 
 #define ACAPI_LibraryPart_Register(par1) ACAPI_LibPart_Register(par1)
+#define ACAPI_LibraryPart_GetNum(par1) ACAPI_LibPart_GetNum(par1)
 #define ACAPI_LibraryPart_GetParams ACAPI_LibPart_GetParams
 #define ACAPI_LibraryPart_GetParamValues(par1) ACAPI_Goodies(APIAny_GetParamValuesID,par1)
 

@@ -309,8 +309,8 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetInputParametersS
         "type": "object",
         "properties": {
             "filterByTypeId": {
-                "type": "string",
-                "description": "Optional element-type filter. Examples: 'Door', 'Window', 'Object', 'Lamp', 'Macro', 'Picture'."
+                "$ref": "#/LibraryPartType",
+                "description": "Optional. Filter by libpart type (matches the value returned by LibPartTypeIdToString)."
             }
         },
         "additionalProperties": false
@@ -331,7 +331,7 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetResponseSchema (
                         "index": { "type": "integer" },
                         "documentName": { "type": "string" },
                         "fileName": { "type": "string" },
-                        "typeId": { "type": "string" }
+                        "typeId": { "$ref": "#/LibraryPartType" }
                     }
                 }
             },
