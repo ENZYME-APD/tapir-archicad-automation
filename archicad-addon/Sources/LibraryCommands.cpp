@@ -111,7 +111,7 @@ GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState
                 libPart.typeID = APILib_LabelID;
             } else if (typeStr == "Macro") {
                 libPart.typeID = APILib_MacroID;
-            } else if (typeStr == "Pict") {
+            } else if (typeStr == "Pict" || typeStr == "Picture") {
                 libPart.typeID = APILib_PictID;
             } else if (typeStr == "ListScheme") {
                 libPart.typeID = APILib_ListSchemeID;
@@ -382,6 +382,13 @@ GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState&
 {
     GS::UniString filterTypeId;
     parameters.Get ("filterByTypeId", filterTypeId);
+    // `LibPartTypeIdToString` emits "Picture" for APILib_PictID, but the
+    // shared LibraryPartType enum keeps both "Pict" (legacy
+    // AddFilesToEmbeddedLibrary input) and "Picture" (this output).
+    // Normalise so callers can filter by either spelling.
+    if (filterTypeId == "Pict") {
+        filterTypeId = "Picture";
+    }
 
     Int32 partCount = 0;
     GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
