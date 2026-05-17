@@ -645,26 +645,29 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
     return {};
 }
 
-CreateObjectsCommand::CreateObjectsCommand () :
-    CreateElementsCommandBase ("CreateObjects", API_ObjectID, "objectsData")
+// Shared schema builder for CreateObjects and CreateLamps.
+//
+// API_LampType is a typedef alias of API_ObjectType in APIdefs_Elements.h
+// (verified across AC25..29), so the two commands differ only in name,
+// elemTypeID, JSON array field name, and the singular noun / description
+// used in the schema.
+static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
+                                                  const char* elementSingularName,
+                                                  const char* libraryPartNameDescription)
 {
-}
-
-GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () const
-{
-    return R"({
+    return GS::UniString::Printf (R"({
         "type": "object",
         "properties": {
-            "objectsData": {
+            "%s": {
                 "type": "array",
-                "description": "Array of data to create Objects.",
+                "description": "Array of data to create %ss.",
                 "items": {
                     "type": "object",
-                    "description": "The parameters of the new Object.",
+                    "description": "The parameters of the new %s.",
                     "properties": {
                         "libraryPartName": {
                             "type": "string",
-                            "description" : "The name of the library part to use."	
+                            "description" : "%s"
                         },
                         "coordinates": {
                             "$ref": "#/Coordinate3D"
@@ -683,9 +686,22 @@ GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () co
         },
         "additionalProperties": false,
         "required": [
-            "objectsData"
+            "%s"
         ]
-    })";
+    })",
+    arrayFieldName, elementSingularName, elementSingularName,
+    libraryPartNameDescription, arrayFieldName);
+}
+
+CreateObjectsCommand::CreateObjectsCommand () :
+    CreateElementsCommandBase ("CreateObjects", API_ObjectID, "objectsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () const
+{
+    return BuildLibraryPartBasedSchema ("objectsData", "Object",
+                                        "The name of the library part to use.");
 }
 
 constexpr const char* ParameterValueFieldName = "value";
@@ -767,7 +783,15 @@ static void ChangeParams (API_AddParType**& params, const GS::HashTable<GS::Stri
 	}
 }
 
-GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+// Shared placement logic for CreateObjects and CreateLamps.
+//
+// element.object and element.lamp alias the same union storage in
+// API_Element (API_LampType is a typedef of API_ObjectType across the
+// AC25..29 SDKs we target), so writing through element.object.* is
+// correct for both API_ObjectID and API_LampID code paths.
+static GS::Optional<GS::ObjectState> SetLibraryPartElementParameters (
+    API_Element& element, API_ElementMemo& memo,
+    const Stories& stories, const GS::ObjectState& parameters)
 {
     GS::UniString uName;
     parameters.Get ("libraryPartName", uName);
@@ -779,7 +803,7 @@ GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (A
     delete libPart.location;
 
     if (err != NoError) {
-        return CreateErrorResponse (err, GS::UniString::Printf ("Not found library part with name '%T'", uName.ToPrintf()));
+        return CreateErrorResponse (err, GS::UniString::Printf ("Not found library part with name '%T'", uName.ToPrintf ()));
     }
 
     element.object.libInd = libPart.index;
@@ -802,10 +826,36 @@ GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (A
         element.object.xRatio = dimensions.x;
         element.object.yRatio = dimensions.y;
         GS::ObjectState os (ParameterValueFieldName, dimensions.z);
-        ChangeParams(memo.params, {{"ZZYZX", os}});
+        ChangeParams (memo.params, {{"ZZYZX", os}});
     }
 
     return {};
+}
+
+GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    return SetLibraryPartElementParameters (element, memo, stories, parameters);
+}
+
+// CreateLamps — parallel to CreateObjects but for AC subtype Lamp.
+// Without this command, lamp libparts cannot be placed via Tapir —
+// CreateObjects rejects them with APIERR_NOTSUPPORTED. The schema and
+// placement logic are shared via BuildLibraryPartBasedSchema and
+// SetLibraryPartElementParameters above.
+CreateLampsCommand::CreateLampsCommand () :
+    CreateElementsCommandBase ("CreateLamps", API_LampID, "lampsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateLampsCommand::GetInputParametersSchema () const
+{
+    return BuildLibraryPartBasedSchema ("lampsData", "Lamp",
+                                        "The name of the lamp library part to use.");
+}
+
+GS::Optional<GS::ObjectState> CreateLampsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    return SetLibraryPartElementParameters (element, memo, stories, parameters);
 }
 
 CreateMeshesCommand::CreateMeshesCommand () :

@@ -357,6 +357,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.3",
             "Creates Object elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateLampsCommand> (
+            elementCommands, "1.4.1",
+            "Creates Lamp elements based on the given parameters."
+        );
         err |= RegisterCommand<CreateMeshesCommand> (
             elementCommands, "1.1.9",
             "Creates Mesh elements based on the given parameters."
