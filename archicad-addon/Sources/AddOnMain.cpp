@@ -216,6 +216,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.3.1",
             "Prints from the current view."
         );
+        err |= RegisterCommand<RebuildViewCommand> (
+            projectCommands, "1.4.1",
+            "Rebuilds the current view."
+        );
         AddCommandGroup (projectCommands);
     }
 

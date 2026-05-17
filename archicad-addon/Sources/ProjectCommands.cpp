@@ -1290,7 +1290,7 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
 }
 
 PrintViewCommand::PrintViewCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -1363,6 +1363,53 @@ GS::ObjectState PrintViewCommand::Execute (const GS::ObjectState& parameters, GS
     const GSErrCode err = ACAPI_ProjectOperation_Print (&pi);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to print the current view.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+RebuildViewCommand::RebuildViewCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RebuildViewCommand::GetName () const
+{
+    return "RebuildView";
+}
+
+GS::Optional<GS::UniString> RebuildViewCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "regenerate": {
+                "type": "boolean",
+                "description": "Regenerate the view. The default is false, meaning the view will not be regenerated, but rebuilt."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RebuildViewCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool regenerate = false;
+    parameters.Get ("regenerate", regenerate);
+
+    GSErrCode err = ACAPI_View_Rebuild (&regenerate);
+
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to rebuild the view.");
     }
 
     return CreateSuccessfulExecutionResult ();
