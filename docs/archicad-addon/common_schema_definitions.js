@@ -3807,8 +3807,9 @@ var gSchemaDefinitions = {
     },
     "LibraryPartType": {
         "type": "string",
-        "description": "Enumeration of available library part types.",
+        "description": "Enumeration of available library part types. 'Unknown' is the schema-valid catch-all returned for any libpart whose typeID is not one of the named values (rare ACAPI sentinels and any future SDK subtype).",
         "enum": [
+            "Spec",
             "Window",
             "Door",
             "Object",
@@ -3819,9 +3820,11 @@ var gSchemaDefinitions = {
             "Label",
             "Macro",
             "Pict",
+            "Picture",
             "ListScheme",
             "Skylight",
-            "OpeningSymbol"
+            "OpeningSymbol",
+            "Unknown"
         ]
     },
     "ElementsWithExecutionResults": {

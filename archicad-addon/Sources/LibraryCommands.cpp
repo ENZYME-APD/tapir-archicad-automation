@@ -359,7 +359,6 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetResponseSchema (
 static GS::UniString LibPartTypeIdToString (Int32 typeID)
 {
     switch (typeID) {
-        case API_ZombieLibID:        return "Zombie";
         case APILib_SpecID:          return "Spec";
         case APILib_WindowID:        return "Window";
         case APILib_DoorID:          return "Door";
@@ -374,7 +373,12 @@ static GS::UniString LibPartTypeIdToString (Int32 typeID)
         case APILib_ListSchemeID:    return "ListScheme";
         case APILib_SkylightID:      return "Skylight";
         case APILib_OpeningSymbolID: return "OpeningSymbol";
-        default:                     return GS::UniString::Printf ("Type%d", typeID);
+        // API_ZombieLibID (ACAPI's uninitialized / General-Object
+        // sentinel) and any future ACAPI subtype fall through here.
+        // We return the schema-valid catch-all "Unknown" rather than a
+        // dynamic "TypeN" value so callers can validate the response
+        // against the LibraryPartType enum without surprises.
+        default:                     return "Unknown";
     }
 }
 
