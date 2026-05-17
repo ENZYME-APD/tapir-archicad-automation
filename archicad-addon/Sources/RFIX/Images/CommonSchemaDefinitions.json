@@ -3809,6 +3809,8 @@
         "type": "string",
         "description": "Enumeration of available library part types.",
         "enum": [
+            "Zombie",
+            "Spec",
             "Window",
             "Door",
             "Object",
@@ -3819,6 +3821,7 @@
             "Label",
             "Macro",
             "Pict",
+            "Picture",
             "ListScheme",
             "Skylight",
             "OpeningSymbol"

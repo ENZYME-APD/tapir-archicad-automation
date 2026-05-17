@@ -411,3 +411,192 @@ GS::ObjectState CreateFavoritesFromElementsCommand::Execute (const GS::ObjectSta
 
     return response;
 }
+
+
+// ============================================================================
+// ImportFavorites / ExportFavorites — wrap ACAPI_Favorite_Import / _Export
+// so a caller can load a .prefs file into the project (replicating known-
+// good GDL defaults across installs) or back the current Favorites database
+// out to a file, both without going through AC's UI.
+// ============================================================================
+
+static IO::Location LocationFromPath (const GS::UniString& path)
+{
+    return IO::Location (path);
+}
+
+static API_FavoriteNameConflictResolutionPolicy ParseConflictPolicy (
+    const GS::UniString& s, API_FavoriteNameConflictResolutionPolicy fallback)
+{
+    if (s == "Error")     return API_FavoriteError;
+    if (s == "Skip")      return API_FavoriteSkip;
+    if (s == "Overwrite") return API_FavoriteOverwrite;
+    if (s == "Append")    return API_FavoriteAppend;
+    return fallback;
+}
+
+ImportFavoritesCommand::ImportFavoritesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ImportFavoritesCommand::GetName () const
+{
+    return "ImportFavorites";
+}
+
+GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path on the AC host to a Favorites file (.prefs) or folder."
+            },
+            "targetFolder": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Folder hierarchy under which to import. Empty = root."
+            },
+            "importFolders": {
+                "type": "boolean",
+                "description": "If true and `path` is a folder, the folder structure is preserved."
+            },
+            "conflictPolicy": {
+                "type": "string",
+                "enum": ["Error", "Skip", "Overwrite", "Append"],
+                "description": "How to resolve name conflicts. Default Overwrite."
+            }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> ImportFavoritesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "firstConflictName": {
+                "type": "string",
+                "description": "Set when conflictPolicy=Error and a name collided; absent otherwise."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString path;
+    parameters.Get ("path", path);
+    if (path.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "path is required");
+    }
+
+    API_FavoriteFolderHierarchy targetFolder;
+    GS::Array<GS::UniString> folders;
+    parameters.Get ("targetFolder", folders);
+    for (const GS::UniString& f : folders) {
+        targetFolder.Push (f);
+    }
+
+    bool importFolders = false;
+    parameters.Get ("importFolders", importFolders);
+
+    GS::UniString policyStr = "Overwrite";
+    parameters.Get ("conflictPolicy", policyStr);
+    const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
+
+    const IO::Location location = LocationFromPath (path);
+    GS::UniString firstConflictName;
+    const GSErrCode err = ACAPI_Favorite_Import (
+        location, targetFolder, importFolders, policy, &firstConflictName);
+
+    // On conflictPolicy=Error + name collision, ACAPI returns
+    // APIERR_NAMEALREADYUSED AND fills firstConflictName. We must NOT
+    // collapse this into a generic error response, because the caller
+    // (the MCP wrapper) special-cases firstConflictName to surface
+    // ok=False with the name. Translate it to a structured success-
+    // shape response so the field reaches the caller.
+    if (err == APIERR_NAMEALREADYUSED && !firstConflictName.IsEmpty ()) {
+        GS::ObjectState response;
+        response.Add ("firstConflictName", firstConflictName);
+        return response;
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "ACAPI_Favorite_Import failed.");
+    }
+
+    GS::ObjectState response;
+    if (!firstConflictName.IsEmpty ()) {
+        response.Add ("firstConflictName", firstConflictName);
+    }
+    return response;
+}
+
+ExportFavoritesCommand::ExportFavoritesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ExportFavoritesCommand::GetName () const
+{
+    return "ExportFavorites";
+}
+
+GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path on the AC host. If extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder."
+            },
+            "names": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Optional subset of Favorites to export. Default: export all."
+            }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> ExportFavoritesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString path;
+    parameters.Get ("path", path);
+    if (path.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "path is required");
+    }
+
+    const IO::Location location = LocationFromPath (path);
+
+    GSErrCode err = NoError;
+    GS::Array<GS::UniString> names;
+    if (parameters.Get ("names", names)) {
+        err = ACAPI_Favorite_Export (location, &names);
+    } else {
+        err = ACAPI_Favorite_Export (location, nullptr);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "ACAPI_Favorite_Export failed.");
+    }
+
+    // Empty response satisfies the schema (`additionalProperties: false`).
+    // CreateSuccessfulExecutionResult() would inject `{"success": true}`
+    // which the schema validator rejects for top-level command responses.
+    return GS::ObjectState ();
+}

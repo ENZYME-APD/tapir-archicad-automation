@@ -4,6 +4,7 @@
 #include "Folder.hpp"
 #include "File.hpp"
 #include "FileSystem.hpp"
+#include "GSUnID.hpp"
 
 AddFilesToEmbeddedLibraryCommand::AddFilesToEmbeddedLibraryCommand () :
     CommandBase (CommonSchema::Used)
@@ -110,7 +111,7 @@ GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState
                 libPart.typeID = APILib_LabelID;
             } else if (typeStr == "Macro") {
                 libPart.typeID = APILib_MacroID;
-            } else if (typeStr == "Pict") {
+            } else if (typeStr == "Pict" || typeStr == "Picture") {
                 libPart.typeID = APILib_PictID;
             } else if (typeStr == "ListScheme") {
                 libPart.typeID = APILib_ListSchemeID;
@@ -290,4 +291,155 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+GetAvailableLibraryPartsCommand::GetAvailableLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAvailableLibraryPartsCommand::GetName () const
+{
+    return "GetAvailableLibraryParts";
+}
+
+GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "filterByTypeId": {
+                "$ref": "#/LibraryPartType",
+                "description": "Optional. Filter by libpart type (matches the value returned by LibPartTypeIdToString)."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "index": { "type": "integer" },
+                        "documentName": { "type": "string" },
+                        "fileName": { "type": "string" },
+                        "typeId": { "$ref": "#/LibraryPartType" }
+                    }
+                }
+            },
+            "skippedCount": {
+                "type": "integer",
+                "description": "Library parts that ACAPI_LibraryPart_Get failed to read. Non-zero means the inventory is partial."
+            },
+            "skippedSample": {
+                "type": "array",
+                "description": "First five failed indices with their ACAPI error code, for diagnostic.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": { "type": "integer" },
+                        "code": { "type": "integer" }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["libraryParts", "skippedCount"]
+    })";
+}
+
+static GS::UniString LibPartTypeIdToString (Int32 typeID)
+{
+    switch (typeID) {
+        case API_ZombieLibID:        return "Zombie";
+        case APILib_SpecID:          return "Spec";
+        case APILib_WindowID:        return "Window";
+        case APILib_DoorID:          return "Door";
+        case APILib_ObjectID:        return "Object";
+        case APILib_LampID:          return "Lamp";
+        case APILib_RoomID:          return "Room";
+        case APILib_PropertyID:      return "Property";
+        case APILib_PlanSignID:      return "PlanSign";
+        case APILib_LabelID:         return "Label";
+        case APILib_MacroID:         return "Macro";
+        case APILib_PictID:          return "Picture";
+        case APILib_ListSchemeID:    return "ListScheme";
+        case APILib_SkylightID:      return "Skylight";
+        case APILib_OpeningSymbolID: return "OpeningSymbol";
+        default:                     return GS::UniString::Printf ("Type%d", typeID);
+    }
+}
+
+GS::ObjectState GetAvailableLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString filterTypeId;
+    parameters.Get ("filterByTypeId", filterTypeId);
+    // `LibPartTypeIdToString` emits "Picture" for APILib_PictID, but the
+    // shared LibraryPartType enum keeps both "Pict" (legacy
+    // AddFilesToEmbeddedLibrary input) and "Picture" (this output).
+    // Normalise so callers can filter by either spelling.
+    if (filterTypeId == "Pict") {
+        filterTypeId = "Picture";
+    }
+
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to enumerate library parts.");
+    }
+
+    GS::ObjectState response;
+    const auto& libpartAdder = response.AddList<GS::ObjectState> ("libraryParts");
+    const auto& skippedAdder = response.AddList<GS::ObjectState> ("skippedSample");
+
+    Int32 skippedCount = 0;
+    constexpr Int32 maxSkippedSample = 5;
+
+    for (Int32 i = 1; i <= partCount; ++i) {
+        API_LibPart libPart = {};
+        libPart.index = i;
+        err = ACAPI_LibraryPart_Get (&libPart);
+        if (err != NoError) {
+            // libPart.location is not allocated on failure.
+            if (skippedCount < maxSkippedSample) {
+                GS::ObjectState skipEntry;
+                skipEntry.Add ("index", i);
+                skipEntry.Add ("code", static_cast<Int32> (err));
+                skippedAdder (skipEntry);
+            }
+            ++skippedCount;
+            continue;
+        }
+
+        const GS::UniString typeId = LibPartTypeIdToString (libPart.typeID);
+        const bool matchesFilter = filterTypeId.IsEmpty () || typeId == filterTypeId;
+
+        if (matchesFilter) {
+            GS::ObjectState entry;
+            entry.Add ("guid", GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
+            entry.Add ("index", static_cast<Int32> (libPart.index));
+            entry.Add ("documentName", GS::UniString (libPart.docu_UName));
+            entry.Add ("fileName", GS::UniString (libPart.file_UName));
+            entry.Add ("typeId", typeId);
+            libpartAdder (entry);
+        }
+
+        // ACAPI_LibraryPart_Get allocates libPart.location; free it on
+        // every successful Get to avoid leaking ~one IO::Location per
+        // libpart (thousands per call).
+        delete libPart.location;
+        libPart.location = nullptr;
+    }
+
+    response.Add ("skippedCount", skippedCount);
+
+    return response;
 }
