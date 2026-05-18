@@ -216,6 +216,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.3.1",
             "Prints from the current view."
         );
+        err |= RegisterCommand<RebuildViewCommand> (
+            projectCommands, "1.4.1",
+            "Rebuilds the current view."
+        );
         AddCommandGroup (projectCommands);
     }
 
@@ -357,6 +361,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.3",
             "Creates Object elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateLampsCommand> (
+            elementCommands, "1.4.1",
+            "Creates Lamp elements based on the given parameters."
+        );
         err |= RegisterCommand<CreateMeshesCommand> (
             elementCommands, "1.1.9",
             "Creates Mesh elements based on the given parameters."
@@ -442,6 +450,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateFavoritesFromElementsCommand> (
             favoritesCommands, "1.1.2",
             "Create favorites from the given elements."
+        );
+        err |= RegisterCommand<ImportFavoritesCommand> (
+            favoritesCommands, "1.4.1",
+            "Import Favorites from a .prefs file or folder into the current project."
+        );
+        err |= RegisterCommand<ExportFavoritesCommand> (
+            favoritesCommands, "1.4.1",
+            "Export the project's Favorites to a .prefs file or folder."
         );
         AddCommandGroup (favoritesCommands);
     }
@@ -537,6 +553,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<AddFilesToEmbeddedLibraryCommand> (
             libraryCommands, "1.2.2",
             "Adds the given files into the embedded library."
+        );
+        err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
+            libraryCommands, "1.4.1",
+            "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
         AddCommandGroup (libraryCommands);
     }
