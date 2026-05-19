@@ -2932,6 +2932,182 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
     });
 }
 
+// ============================================================================
+// GetDimensionData
+// ============================================================================
+
+GetDimensionDataCommand::GetDimensionDataCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDimensionDataCommand::GetName () const
+{
+    return "GetDimensionData";
+}
+
+GS::Optional<GS::UniString> GetDimensionDataCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "The identifier of the dimension elements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetDimensionDataCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dimensionsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "direction": { "$ref": "#/Coordinate2D" },
+                        "dimensionLinePosition": { "$ref": "#/Coordinate2D" },
+                        "witnessPoints": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "coordinate": { "$ref": "#/Coordinate2D" },
+                                    "coordinate3D": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": { "type": "number" },
+                                            "y": { "type": "number" },
+                                            "z": { "type": "number" }
+                                        }
+                                    },
+                                    "dimensionPosition": { "$ref": "#/Coordinate2D" },
+                                    "dimensionValue": { "type": "number" },
+                                    "witnessForm": { "type": "string" },
+                                    "witnessVal": { "type": "number" },
+                                    "baseElementId": { "$ref": "#/ElementId" }
+                                }
+                            }
+                        },
+                        "error": { "type": "string" }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["dimensionsData"]
+    })";
+}
+
+static GS::UniString WitnessFormToString (API_WitnessID witnessForm)
+{
+    switch (witnessForm) {
+        case APIWtn_None:   return "None";
+        case APIWtn_Small:  return "Small";
+        case APIWtn_Large:  return "Large";
+        case APIWtn_Fix:    return "Fix";
+        default:            return "Unknown";
+    }
+}
+
+GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& dimensionsData = response.AddList<GS::ObjectState> ("dimensionsData");
+
+    for (const GS::ObjectState& elementObj : elements) {
+        const GS::ObjectState* elementId = elementObj.Get ("elementId");
+        if (elementId == nullptr) {
+            GS::ObjectState errorResult;
+            errorResult.Add ("error", GS::UniString ("elementId is missing"));
+            dimensionsData (errorResult);
+            continue;
+        }
+
+        API_Element element = {};
+        element.header.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_Get (&element);
+        if (err != NoError) {
+            GS::ObjectState errorResult;
+            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
+            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element. Error code: %d", static_cast<int> (err)));
+            dimensionsData (errorResult);
+            continue;
+        }
+
+        const API_ElemTypeID typeID = GetElemTypeId (element.header);
+        if (typeID != API_DimensionID) {
+            GS::ObjectState errorResult;
+            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
+            errorResult.Add ("error", GS::UniString ("Element is not a Dimension."));
+            dimensionsData (errorResult);
+            continue;
+        }
+
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        err = ACAPI_Element_GetMemo (element.header.guid, &memo);
+        if (err != NoError) {
+            GS::ObjectState errorResult;
+            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
+            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element memo. Error code: %d", static_cast<int> (err)));
+            dimensionsData (errorResult);
+            continue;
+        }
+
+        GS::ObjectState dimensionData;
+        dimensionData.Add ("elementId", CreateGuidObjectState (element.header.guid));
+        dimensionData.Add ("direction", Create2DCoordinateObjectState (element.dimension.direction));
+        dimensionData.Add ("dimensionLinePosition", Create2DCoordinateObjectState (element.dimension.refC));
+
+        const auto& witnessPoints = dimensionData.AddList<GS::ObjectState> ("witnessPoints");
+
+        if (memo.dimElems != nullptr && *memo.dimElems != nullptr) {
+            for (Int32 i = 0; i < element.dimension.nDimElem; ++i) {
+                const API_DimElem& dimElem = (*memo.dimElems)[i];
+
+                GS::ObjectState witnessPoint;
+
+                witnessPoint.Add ("coordinate", Create2DCoordinateObjectState (dimElem.base.loc));
+                witnessPoint.Add ("coordinate3D", Create3DCoordinateObjectState (dimElem.base.loc3D));
+                witnessPoint.Add ("dimensionPosition", Create2DCoordinateObjectState (dimElem.pos));
+                witnessPoint.Add ("dimensionValue", dimElem.dimVal);
+                witnessPoint.Add ("witnessForm", WitnessFormToString (dimElem.witnessForm));
+                witnessPoint.Add ("witnessVal", dimElem.witnessVal);
+
+                const API_Guid& baseGuid = dimElem.base.base.guid;
+                if (baseGuid != APINULLGuid) {
+                    witnessPoint.Add ("baseElementId", CreateGuidObjectState (baseGuid));
+                }
+
+                witnessPoints (witnessPoint);
+            }
+        }
+
+        dimensionsData (dimensionData);
+    }
+
+    return response;
+}
+
 ModifyColumnsCommand::ModifyColumnsCommand () :
     CommandBase (CommonSchema::Used)
 {
