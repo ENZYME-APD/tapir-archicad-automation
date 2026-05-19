@@ -1453,7 +1453,17 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
                         "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" }
+                        "verticalCurveHeight": { "type": "number" },
+                        "width": {
+                            "type": "number",
+                            "description": "Cross section width of the beam. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "Cross section height of the beam. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["begCoordinate", "endCoordinate", "zCoordinate"]
@@ -1465,7 +1475,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
+GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
     element.beam.begC = Get2DCoordinateFromObjectState (*parameters.Get ("begCoordinate"));
     element.beam.endC = Get2DCoordinateFromObjectState (*parameters.Get ("endCoordinate"));
@@ -1492,6 +1502,21 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     auto curveHeight = GetOptionalDouble (parameters, "verticalCurveHeight");
     if (curveHeight.HasValue ()) {
         element.beam.verticalCurveHeight = curveHeight.Get ();
+    }
+
+    auto width = GetOptionalDouble (parameters, "width");
+    auto height = GetOptionalDouble (parameters, "height");
+
+    if ((width.HasValue () || height.HasValue ()) && memo.beamSegments != nullptr) {
+        GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
+        for (GSSize i = 0; i < nSegments; ++i) {
+            if (width.HasValue ()) {
+                memo.beamSegments[i].assemblySegmentData.nominalWidth = width.Get ();
+            }
+            if (height.HasValue ()) {
+                memo.beamSegments[i].assemblySegmentData.nominalHeight = height.Get ();
+            }
+        }
     }
 
     return {};
