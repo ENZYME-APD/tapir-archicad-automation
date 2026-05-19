@@ -3048,7 +3048,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         if (err != NoError) {
             GS::ObjectState errorResult;
             errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString (GS::UniString ("Failed to get element. Error code: ") + GS::ValueToUniString (err)));
+            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element. Error code: %d", static_cast<int> (err)));
             dimensionsData (errorResult);
             continue;
         }
@@ -3068,7 +3068,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         if (err != NoError) {
             GS::ObjectState errorResult;
             errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString (GS::UniString ("Failed to get element memo. Error code: ") + GS::ValueToUniString (err)));
+            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element memo. Error code: %d", static_cast<int> (err)));
             dimensionsData (errorResult);
             continue;
         }
