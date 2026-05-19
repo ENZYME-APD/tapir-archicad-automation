@@ -313,6 +313,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates Beam elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateStairsCommand> (
+            elementCommands, "1.5.0",
+            "Creates Stair elements based on the given baseline and parameters."
+        );
         err |= RegisterCommand<CreateSlabsCommand> (
             elementCommands, "1.0.3",
             "Creates Slab elements based on the given parameters."
