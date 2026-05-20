@@ -3327,8 +3327,10 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
         for (const auto& data : sectionsData) {
             API_Element element = {};
             API_ElementMemo memo = {};
+            API_SubElement marker = {};
             const GS::OnExit cleanup ([&]() {
                 ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
 #ifdef ServerMainVers_2600
@@ -3336,8 +3338,9 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
 #else
             element.header.typeID = API_CutPlaneID;
 #endif
+            marker.subType = static_cast<API_SubElementType> (APISubElement_MainMarker);
 
-            GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+            GSErrCode err = ACAPI_Element_GetDefaultsExt (&element, &memo, 1UL, &marker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare section defaults."));
                 continue;
@@ -3346,17 +3349,10 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
             const API_Coord startCoord = Get2DCoordinateFromObjectState (*data.Get ("startCoordinate"));
             const API_Coord endCoord = Get2DCoordinateFromObjectState (*data.Get ("endCoordinate"));
 
-            GS::Optional<double> floorIndex;
             double floorIndexVal = 0.0;
             if (data.Get ("floorIndex", floorIndexVal)) {
                 element.header.floorInd = static_cast<short> (floorIndexVal);
             }
-
-            double depth = 1.0;
-            data.Get ("depth", depth);
-            element.cutPlane.segment.horizRange = APIHorRange_Limited;
-            element.cutPlane.segment.begMark = true;
-            element.cutPlane.segment.endMark = true;
 
             GS::UniString name;
             if (data.Get ("name", name)) {
@@ -3371,23 +3367,34 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
+            double depth = 1.0;
+            data.Get ("depth", depth);
+
             const double nx = -dy / lineLength;
             const double ny = dx / lineLength;
 
-            ACAPI_DisposeElemMemoHdls (&memo);
-            BNZeroMemory (&memo, sizeof (API_ElementMemo));
+            element.cutPlane.segment.nMainCoord = 2;
+            element.cutPlane.segment.nDepthCoord = 2;
+            element.cutPlane.linkData.sourceMarker = true;
+            marker.subType = APISubElement_MainMarker;
 
-            memo.sectionSegmentMainCoords = reinterpret_cast<API_Coord*> (BMAllocatePtr (2 * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+            if (memo.sectionSegmentMainCoords != nullptr) {
+                BMpFree (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords));
+            }
+            memo.sectionSegmentMainCoords = reinterpret_cast<API_Coord*> (BMpAll (2 * sizeof (API_Coord)));
             memo.sectionSegmentMainCoords[0] = startCoord;
             memo.sectionSegmentMainCoords[1] = endCoord;
 
-            memo.sectionSegmentDepthCoords = reinterpret_cast<API_Coord*> (BMAllocatePtr (2 * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+            if (memo.sectionSegmentDepthCoords != nullptr) {
+                BMpFree (reinterpret_cast<GSPtr> (memo.sectionSegmentDepthCoords));
+            }
+            memo.sectionSegmentDepthCoords = reinterpret_cast<API_Coord*> (BMpAll (2 * sizeof (API_Coord)));
             memo.sectionSegmentDepthCoords[0].x = startCoord.x + nx * depth;
             memo.sectionSegmentDepthCoords[0].y = startCoord.y + ny * depth;
             memo.sectionSegmentDepthCoords[1].x = endCoord.x + nx * depth;
             memo.sectionSegmentDepthCoords[1].y = endCoord.y + ny * depth;
 
-            err = ACAPI_Element_Create (&element, &memo);
+            err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, GS::UniString::Printf ("Failed to create section. Error code: %d", static_cast<int> (err))));
                 continue;
