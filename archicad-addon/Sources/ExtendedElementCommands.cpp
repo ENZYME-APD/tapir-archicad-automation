@@ -3264,3 +3264,135 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
         }
     });
 }
+
+CreateSectionsCommand::CreateSectionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateSectionsCommand::GetName () const
+{
+    return "CreateSections";
+}
+
+GS::Optional<GS::UniString> CreateSectionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "sectionsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "startCoordinate": { "$ref": "#/Coordinate2D" },
+                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "depth": { "type": "number" },
+                        "name": { "type": "string" },
+                        "floorIndex": { "type": "integer" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["startCoordinate", "endCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["sectionsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateSectionsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> sectionsData;
+    auto error = GetElementArray (parameters, "sectionsData", sectionsData);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteCreateWithElements ("Create Sections", [&](GS::Array<GS::ObjectState>& elements) {
+        for (const auto& data : sectionsData) {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit cleanup ([&]() {
+                ACAPI_DisposeElemMemoHdls (&memo);
+            });
+
+#ifdef ServerMainVers_2600
+            element.header.type = API_CutPlaneID;
+#else
+            element.header.typeID = API_CutPlaneID;
+#endif
+
+            GSErrCode err = ACAPI_Element_GetDefaults (&element, &memo);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to prepare section defaults."));
+                continue;
+            }
+
+            const API_Coord startCoord = Get2DCoordinateFromObjectState (*data.Get ("startCoordinate"));
+            const API_Coord endCoord = Get2DCoordinateFromObjectState (*data.Get ("endCoordinate"));
+
+            GS::Optional<double> floorIndex;
+            double floorIndexVal = 0.0;
+            if (data.Get ("floorIndex", floorIndexVal)) {
+                element.header.floorInd = static_cast<short> (floorIndexVal);
+            }
+
+            double depth = 1.0;
+            data.Get ("depth", depth);
+            element.cutPlane.segment.horizRange = APIHorRange_Limited;
+            element.cutPlane.segment.begMark = true;
+            element.cutPlane.segment.endMark = true;
+
+            GS::UniString name;
+            if (data.Get ("name", name)) {
+                GS::ucscpy (element.cutPlane.segment.cutPlName, name.ToUStr ().Get ());
+            }
+
+            const double dx = endCoord.x - startCoord.x;
+            const double dy = endCoord.y - startCoord.y;
+            const double lineLength = sqrt (dx * dx + dy * dy);
+            if (lineLength < 1e-6) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Start and end coordinates are too close."));
+                continue;
+            }
+
+            const double nx = -dy / lineLength;
+            const double ny = dx / lineLength;
+
+            ACAPI_DisposeElemMemoHdls (&memo);
+            BNZeroMemory (&memo, sizeof (API_ElementMemo));
+
+            memo.sectionSegmentMainCoords = reinterpret_cast<API_Coord*> (BMAllocatePtr (2 * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+            memo.sectionSegmentMainCoords[0] = startCoord;
+            memo.sectionSegmentMainCoords[1] = endCoord;
+
+            memo.sectionSegmentDepthCoords = reinterpret_cast<API_Coord*> (BMAllocatePtr (2 * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+            memo.sectionSegmentDepthCoords[0].x = startCoord.x + nx * depth;
+            memo.sectionSegmentDepthCoords[0].y = startCoord.y + ny * depth;
+            memo.sectionSegmentDepthCoords[1].x = endCoord.x + nx * depth;
+            memo.sectionSegmentDepthCoords[1].y = endCoord.y + ny * depth;
+
+            err = ACAPI_Element_Create (&element, &memo);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, GS::UniString::Printf ("Failed to create section. Error code: %d", static_cast<int> (err))));
+                continue;
+            }
+            elements.Push (CreateElementIdObjectState (element.header.guid));
+        }
+    });
+}
