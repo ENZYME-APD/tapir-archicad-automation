@@ -1221,3 +1221,136 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
 
     return {};
 }
+
+CreateTextsCommand::CreateTextsCommand () :
+    CreateElementsCommandBase ("CreateTexts", API_TextID, "textsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "textsData": {
+            "type": "array",
+            "description": "Array of data to create Texts.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Text element.",
+                "properties": {
+                    "coordinate": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The text content. Newlines create multiple lines."
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "The character height in millimeters. Optional; defaults to the Text tool default."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "Optional pen attribute index."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Optional rotation angle in radians."
+                    },
+                    "justification": {
+                        "type": "string",
+                        "description": "Optional text justification.",
+                        "enum": ["Left", "Center", "Right", "Full"]
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "coordinate",
+                    "text"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "textsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    const GS::ObjectState* coordinateOS = parameters.Get ("coordinate");
+    if (coordinateOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'coordinate' parameter");
+    }
+    API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (*coordinateOS);
+
+    short floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = floorIndex;
+    } else {
+        const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+        element.header.floorInd = floorIndexAndOffset.first;
+    }
+
+    element.text.loc.x = apiCoordinate.x;
+    element.text.loc.y = apiCoordinate.y;
+
+    parameters.Get ("height", element.text.size);
+    parameters.Get ("pen", element.text.pen);
+    parameters.Get ("angle", element.text.angle);
+
+    GS::UniString justification;
+    if (parameters.Get ("justification", justification)) {
+        if (justification == "Left") {
+            element.text.just = APIJust_Left;
+        } else if (justification == "Center") {
+            element.text.just = APIJust_Center;
+        } else if (justification == "Right") {
+            element.text.just = APIJust_Right;
+        } else if (justification == "Full") {
+            element.text.just = APIJust_Full;
+        }
+    }
+
+    GS::UniString text;
+    if (!parameters.Get ("text", text)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' parameter");
+    }
+
+#ifdef ServerMainVers_2800
+    delete memo.textContent;
+    memo.textContent = new GS::UniString { text };
+#else
+    memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
+    GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
+#endif
+
+    const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
+    element.text.nLine = text.Count (newlineChar) + 1;
+    const Int32 numOfParagraphs = 1;
+    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
+    SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, 1, element.text.nLine);
+    SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), element.text.pen, element.text.faceBits, element.text.font, element.text.effectsBits, element.text.size);
+    Int32 lastEolPos = 0;
+    for (Int32 eolIndex = 0; eolIndex < element.text.nLine; ++eolIndex) {
+        Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
+        Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
+        lastEolPos = eolPos;
+        SetEOL (memo.paragraphs, 0, eolIndex, offset);
+    }
+
+    element.text.width = 0;
+    element.text.height = 0;
+    element.text.nonBreaking = true;
+    element.text.useEolPos = true;
+
+    return {};
+}

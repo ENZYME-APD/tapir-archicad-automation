@@ -373,6 +373,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.5",
             "Creates Label elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateTextsCommand> (
+            elementCommands, "1.4.2",
+            "Creates standalone Text elements based on the given parameters."
+        );
         err |= RegisterCommand<ModifyWallsCommand> (
             elementCommands, "1.4.0",
             "Modifies Wall elements based on the given parameters."
