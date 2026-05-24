@@ -1151,6 +1151,48 @@ static GSErrCode SetEOL (API_ParagraphType** paragraph, UInt32 parNum, UInt32 eo
 	return NoError;
 }
 
+static API_JustID ParseJustificationString (const GS::UniString& justification)
+{
+    if (justification == "Center") {
+        return APIJust_Center;
+    } else if (justification == "Right") {
+        return APIJust_Right;
+    } else if (justification == "Full") {
+        return APIJust_Full;
+    }
+    return APIJust_Left;
+}
+
+static void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text)
+{
+#ifdef ServerMainVers_2800
+    delete memo.textContent;
+    memo.textContent = new GS::UniString { text };
+#else
+    memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
+    GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
+#endif
+
+    const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
+    textData.nLine = text.Count (newlineChar) + 1;
+    const Int32 numOfParagraphs = 1;
+    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
+    SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, 1, textData.nLine);
+    SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size);
+    Int32 lastEolPos = 0;
+    for (Int32 eolIndex = 0; eolIndex < textData.nLine; ++eolIndex) {
+        Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
+        Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
+        lastEolPos = eolPos;
+        SetEOL (memo.paragraphs, 0, eolIndex, offset);
+    }
+
+    textData.width = 0;
+    textData.height = 0;
+    textData.nonBreaking = true;
+    textData.useEolPos = true;
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -1191,32 +1233,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         if (!parameters.Get ("text", text)) {
             return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' parameter for text label");
         }
-#ifdef ServerMainVers_2800
-        delete memo.textContent;
-        memo.textContent = new GS::UniString { text };
-#else
-        memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
-        GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
-#endif
-
-        const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
-        element.label.u.text.nLine = text.Count(newlineChar) + 1;
-	    const Int32 numOfParagraphs = 1;
-	    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
-        SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, 1, element.label.u.text.nLine);
-        SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), element.label.u.text.pen, element.label.u.text.faceBits, element.label.u.text.font, element.label.u.text.effectsBits, element.label.u.text.size);
-        Int32 lastEolPos = 0;
-        for (Int32 eolIndex = 0; eolIndex < element.label.u.text.nLine; ++eolIndex) {
-            Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
-            Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
-            lastEolPos = eolPos;
-            SetEOL (memo.paragraphs, 0, eolIndex, offset);
-        }
-
-        element.label.u.text.width  = 0;
-        element.label.u.text.height = 0;
-        element.label.u.text.nonBreaking = true;
-        element.label.u.text.useEolPos = true;
+        SetTextContentAndParagraphs (memo, element.label.u.text, text);
     }
 
     return {};
@@ -1309,15 +1326,7 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
 
     GS::UniString justification;
     if (parameters.Get ("justification", justification)) {
-        if (justification == "Left") {
-            element.text.just = APIJust_Left;
-        } else if (justification == "Center") {
-            element.text.just = APIJust_Center;
-        } else if (justification == "Right") {
-            element.text.just = APIJust_Right;
-        } else if (justification == "Full") {
-            element.text.just = APIJust_Full;
-        }
+        element.text.just = ParseJustificationString (justification);
     }
 
     GS::UniString text;
@@ -1325,32 +1334,7 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
         return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' parameter");
     }
 
-#ifdef ServerMainVers_2800
-    delete memo.textContent;
-    memo.textContent = new GS::UniString { text };
-#else
-    memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
-    GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
-#endif
-
-    const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
-    element.text.nLine = text.Count (newlineChar) + 1;
-    const Int32 numOfParagraphs = 1;
-    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
-    SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, 1, element.text.nLine);
-    SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), element.text.pen, element.text.faceBits, element.text.font, element.text.effectsBits, element.text.size);
-    Int32 lastEolPos = 0;
-    for (Int32 eolIndex = 0; eolIndex < element.text.nLine; ++eolIndex) {
-        Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
-        Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
-        lastEolPos = eolPos;
-        SetEOL (memo.paragraphs, 0, eolIndex, offset);
-    }
-
-    element.text.width = 0;
-    element.text.height = 0;
-    element.text.nonBreaking = true;
-    element.text.useEolPos = true;
+    SetTextContentAndParagraphs (memo, element.text, text);
 
     return {};
 }
