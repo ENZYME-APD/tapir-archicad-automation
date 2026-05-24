@@ -3525,9 +3525,9 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
             const API_Coord startCoord = Get2DCoordinateFromObjectState (*data.Get ("startCoordinate"));
             const API_Coord endCoord = Get2DCoordinateFromObjectState (*data.Get ("endCoordinate"));
 
-            double floorIndexVal = 0.0;
-            if (data.Get ("floorIndex", floorIndexVal)) {
-                element.header.floorInd = static_cast<short> (floorIndexVal);
+            short floorIndex = 0;
+            if (data.Get ("floorIndex", floorIndex)) {
+                element.header.floorInd = floorIndex;
             }
 
             GS::UniString name;
@@ -3572,7 +3572,7 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
 
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, GS::UniString::Printf ("Failed to create section. Error code: %d", static_cast<int> (err))));
+                elements.Push (CreateErrorResponse (err, "Failed to create section."));
                 continue;
             }
             elements.Push (CreateElementIdObjectState (element.header.guid));
