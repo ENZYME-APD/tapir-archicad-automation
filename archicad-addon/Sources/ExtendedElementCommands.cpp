@@ -1654,6 +1654,158 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+CreateStairsCommand::CreateStairsCommand () :
+    CreateElementsCommandBase ("CreateStairs", API_StairID, "stairsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stairsData": {
+                "type": "array",
+                "description": "Array of data to create Stair elements.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Stair.",
+                    "properties": {
+                        "baseLinePoints": {
+                            "type": "array",
+                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "zCoordinate": {
+                            "type": "number",
+                            "description": "The Z coordinate (absolute elevation) of the stair base."
+                        },
+                        "totalHeight": {
+                            "type": "number",
+                            "description": "Total height of the stair.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flightWidth": {
+                            "type": "number",
+                            "description": "Width of the stair flight.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "stepNum": {
+                            "type": "integer",
+                            "description": "Number of risers (steps).",
+                            "minimum": 1
+                        },
+                        "riserHeight": {
+                            "type": "number",
+                            "description": "Height of each riser.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "treadDepth": {
+                            "type": "number",
+                            "description": "Depth (going) of each tread.",
+                            "exclusiveMinimum": 0.0
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["baseLinePoints", "zCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairsData"]
+    })";
+}
+
+GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> baseLinePoints;
+    parameters.Get ("baseLinePoints", baseLinePoints);
+    if (baseLinePoints.GetSize () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "baseLinePoints must have at least 2 points.");
+    }
+
+    double zCoordinate = 0.0;
+    parameters.Get ("zCoordinate", zCoordinate);
+    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    element.header.floorInd = floorIndexAndOffset.first;
+
+    auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
+    if (totalHeight.HasValue ()) {
+        element.stair.totalHeight = totalHeight.Get ();
+    }
+    auto flightWidth = GetOptionalDouble (parameters, "flightWidth");
+    if (flightWidth.HasValue ()) {
+        element.stair.flightWidth = flightWidth.Get ();
+    }
+
+    Int32 stepNum = 0;
+    if (parameters.Get ("stepNum", stepNum)) {
+        element.stair.stepNum = static_cast<UInt32> (stepNum);
+    }
+
+    auto riserHeight = GetOptionalDouble (parameters, "riserHeight");
+    if (riserHeight.HasValue ()) {
+        element.stair.riserHeight = riserHeight.Get ();
+    }
+    auto treadDepth = GetOptionalDouble (parameters, "treadDepth");
+    if (treadDepth.HasValue ()) {
+        element.stair.treadDepth = treadDepth.Get ();
+    }
+
+    // Build the baseline polyline in the memo
+    const Int32 nCoords = static_cast<Int32> (baseLinePoints.GetSize ());
+
+    // Free existing baseline handles from defaults
+    if (memo.stairBaseLine.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*>(&memo.stairBaseLine.coords));
+    }
+    if (memo.stairBaseLine.pends != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*>(&memo.stairBaseLine.pends));
+    }
+    if (memo.stairBaseLine.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*>(&memo.stairBaseLine.parcs));
+    }
+    if (memo.stairBaseLine.edgeData != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*>(&memo.stairBaseLine.edgeData));
+    }
+    if (memo.stairBaseLine.vertexData != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*>(&memo.stairBaseLine.vertexData));
+    }
+
+    // Allocate new baseline: polyline (not polygon), so no closing vertex needed
+    // Coords: index 1..nCoords (1-based), index 0 unused
+    memo.stairBaseLine.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.edgeData = reinterpret_cast<API_StairPolylineEdgeData*> (BMAllocatePtr (nCoords * sizeof (API_StairPolylineEdgeData), ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.vertexData = reinterpret_cast<API_StairPolylineVertexData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineVertexData), ALLOCATE_CLEAR, 0));
+
+    for (Int32 i = 0; i < nCoords; ++i) {
+        (*memo.stairBaseLine.coords)[i + 1] = Get2DCoordinateFromObjectState (baseLinePoints[i]);
+
+        // Set vertex data
+        memo.stairBaseLine.vertexData[i + 1].type = APISP_BaseLine;
+        memo.stairBaseLine.vertexData[i + 1].geometryType = APISG_Vertex;
+        memo.stairBaseLine.vertexData[i + 1].subElemId = 0;
+
+        // Set edge data (between vertices, so nCoords-1 edges)
+        if (i < nCoords - 1) {
+            memo.stairBaseLine.edgeData[i].type = APISP_BaseLine;
+            memo.stairBaseLine.edgeData[i].geometryType = APISG_Edge;
+            memo.stairBaseLine.edgeData[i].subElemId = 0;
+        }
+    }
+
+    (*memo.stairBaseLine.pends)[1] = nCoords;
+
+    memo.stairBaseLine.polygon.nCoords = nCoords;
+    memo.stairBaseLine.polygon.nSubPolys = 1;
+    memo.stairBaseLine.polygon.nArcs = 0;
+
+    return {};
+}
+
 CreateWindowsCommand::CreateWindowsCommand () :
     CommandBase (CommonSchema::Used)
 {
