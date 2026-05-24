@@ -2977,35 +2977,7 @@ GS::Optional<GS::UniString> GetDimensionDataCommand::GetResponseSchema () const
             "dimensionsData": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "direction": { "$ref": "#/Coordinate2D" },
-                        "dimensionLinePosition": { "$ref": "#/Coordinate2D" },
-                        "witnessPoints": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "coordinate": { "$ref": "#/Coordinate2D" },
-                                    "coordinate3D": {
-                                        "type": "object",
-                                        "properties": {
-                                            "x": { "type": "number" },
-                                            "y": { "type": "number" },
-                                            "z": { "type": "number" }
-                                        }
-                                    },
-                                    "dimensionPosition": { "$ref": "#/Coordinate2D" },
-                                    "dimensionValue": { "type": "number" },
-                                    "witnessForm": { "type": "string" },
-                                    "witnessVal": { "type": "number" },
-                                    "baseElementId": { "$ref": "#/ElementId" }
-                                }
-                            }
-                        },
-                        "error": { "type": "string" }
-                    }
+                    "$ref": "#/DimensionDataOrError"
                 }
             }
         },
