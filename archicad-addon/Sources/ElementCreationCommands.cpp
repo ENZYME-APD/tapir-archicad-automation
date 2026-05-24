@@ -146,6 +146,16 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "axisRotationAngle": {
                             "type": "number",
                             "description": "Optional column rotation angle in radians."
+                        },
+                        "width": {
+                            "type": "number",
+                            "description": "Cross section width of the column. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "depth": {
+                            "type": "number",
+                            "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns.",
+                            "exclusiveMinimum": 0.0
                         }
                     },
                     "additionalProperties": false,
@@ -162,7 +172,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
+GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
     GS::ObjectState coordinates;
     parameters.Get ("coordinates", coordinates);
@@ -175,6 +185,23 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     element.column.origoPos.y = apiCoordinate.y;
     parameters.Get ("height", element.column.height);
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
+
+    double width = 0.0;
+    double depth = 0.0;
+    bool hasWidth = parameters.Get ("width", width);
+    bool hasDepth = parameters.Get ("depth", depth);
+
+    if ((hasWidth || hasDepth) && memo.columnSegments != nullptr) {
+        GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+        for (GSSize i = 0; i < nSegments; ++i) {
+            if (hasWidth) {
+                memo.columnSegments[i].assemblySegmentData.nominalWidth = width;
+            }
+            if (hasDepth) {
+                memo.columnSegments[i].assemblySegmentData.nominalHeight = depth;
+            }
+        }
+    }
 
     return {};
 }
