@@ -3008,9 +3008,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
     for (const GS::ObjectState& elementObj : elements) {
         const GS::ObjectState* elementId = elementObj.Get ("elementId");
         if (elementId == nullptr) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("error", GS::UniString ("elementId is missing"));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
             continue;
         }
 
@@ -3018,19 +3016,13 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         element.header.guid = GetGuidFromObjectState (*elementId);
         GSErrCode err = ACAPI_Element_Get (&element);
         if (err != NoError) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element. Error code: %d", static_cast<int> (err)));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (err, "Failed to get element"));
             continue;
         }
 
         const API_ElemTypeID typeID = GetElemTypeId (element.header);
         if (typeID != API_DimensionID) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString ("Element is not a Dimension."));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (APIERR_BADID, "Element is not a Dimension"));
             continue;
         }
 
@@ -3038,10 +3030,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
         err = ACAPI_Element_GetMemo (element.header.guid, &memo);
         if (err != NoError) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element memo. Error code: %d", static_cast<int> (err)));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (err, "Failed to get element memo"));
             continue;
         }
 

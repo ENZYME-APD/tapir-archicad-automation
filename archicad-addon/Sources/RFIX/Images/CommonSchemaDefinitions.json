@@ -4076,7 +4076,8 @@
                             "type": "number"
                         },
                         "witnessForm": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["None", "Small", "Large", "Fix", "Unknown"]
                         },
                         "witnessVal": {
                             "type": "number"
