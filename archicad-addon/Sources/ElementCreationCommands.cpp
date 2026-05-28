@@ -1013,14 +1013,14 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
         element.mesh.showLines = showLines ? 1 : 0;
     }
 
-    Int32 contourPen = 0;
+    short contourPen = 0;
     if (parameters.Get ("contourPen", contourPen) && contourPen > 0) {
-        element.mesh.contPen = static_cast<short> (contourPen);
+        element.mesh.contPen = contourPen;
     }
 
-    Int32 levelPen = 0;
+    short levelPen = 0;
     if (parameters.Get ("levelPen", levelPen) && levelPen > 0) {
-        element.mesh.levelPen = static_cast<short> (levelPen);
+        element.mesh.levelPen = levelPen;
     }
 
     Int32 lineTypeIndex = 0;
