@@ -353,6 +353,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates associative wall thickness dimensions for the given walls."
         );
+        err |= RegisterCommand<GetDimensionDataCommand> (
+            elementCommands, "1.5.0",
+            "Gets witness point data (coordinates, measured values) from existing dimension chains."
+        );
         err |= RegisterCommand<CreateZonesCommand> (
             elementCommands, "1.1.8",
             "Creates Zone elements based on the given parameters."
