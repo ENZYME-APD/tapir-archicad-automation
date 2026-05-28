@@ -80,10 +80,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class OpenViewCommand : public CommandBase
+class GoToViewCommand : public CommandBase
 {
 public:
-    OpenViewCommand ();
+    GoToViewCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;

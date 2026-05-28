@@ -16,8 +16,8 @@ viewMapTree = aclib.RunCommand('API.GetNavigatorItemTree', {'navigatorTreeId': {
 firstView = findFirstLeafView(viewMapTree['navigatorTree']['rootItem']['children'])
 
 if firstView is None:
-    print('No saved views found in the View Map; nothing to open.')
+    print('No saved views found in the View Map; nothing to go to.')
 else:
-    print(f"Opening view: {firstView.get('name', '<unnamed>')}")
-    result = aclib.RunTapirCommand('OpenView', {'navigatorItemId': firstView['navigatorItemId']})
+    print(f"Going to view: {firstView.get('name', '<unnamed>')}")
+    result = aclib.RunTapirCommand('GoToView', {'navigatorItemId': firstView['navigatorItemId']})
     print(result)

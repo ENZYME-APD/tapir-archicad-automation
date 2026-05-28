@@ -688,16 +688,16 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
     return CreateSuccessfulExecutionResult ();
 }
 
-OpenViewCommand::OpenViewCommand () :
+GoToViewCommand::GoToViewCommand () :
     CommandBase (CommonSchema::Used)
 {}
 
-GS::String OpenViewCommand::GetName () const
+GS::String GoToViewCommand::GetName () const
 {
-    return "OpenView";
+    return "GoToView";
 }
 
-GS::Optional<GS::UniString> OpenViewCommand::GetInputParametersSchema () const
+GS::Optional<GS::UniString> GoToViewCommand::GetInputParametersSchema () const
 {
     return R"({
         "type": "object",
@@ -713,17 +713,16 @@ GS::Optional<GS::UniString> OpenViewCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::Optional<GS::UniString> OpenViewCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GoToViewCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
     })";
 }
 
-GS::ObjectState OpenViewCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GoToViewCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    // ACAPI_View_GoToView is absent from the AC25 and AC26 API DevKits.
-    // Guard at 2700 so the all-versions CI matrix compiles.
+    // ACAPI_View_GoToView is AC27+.
 #if defined (ServerMainVers_2700)
     const GS::ObjectState* navigatorItemIdOS = parameters.Get ("navigatorItemId");
     if (navigatorItemIdOS == nullptr) {
@@ -751,7 +750,7 @@ GS::ObjectState OpenViewCommand::Execute (const GS::ObjectState& parameters, GS:
         case API_MasterFolderNavItem:
         case API_SubSetNavItem:
         case API_FolderNavItem:
-            return CreateFailedExecutionResult (APIERR_BADPARS, "OpenView requires a savable view item; the given navigator item is a container or folder");
+            return CreateFailedExecutionResult (APIERR_BADPARS, "GoToView requires a savable view item; the given navigator item is a container or folder");
         default:
             break;
     }
@@ -765,6 +764,6 @@ GS::ObjectState OpenViewCommand::Execute (const GS::ObjectState& parameters, GS:
     return CreateSuccessfulExecutionResult ();
 #else
     (void) parameters;
-    return CreateFailedExecutionResult (APIERR_GENERAL, "OpenView requires Archicad 27 or later.");
+    return CreateFailedExecutionResult (APIERR_GENERAL, "GoToView requires Archicad 27 or later.");
 #endif
 }
