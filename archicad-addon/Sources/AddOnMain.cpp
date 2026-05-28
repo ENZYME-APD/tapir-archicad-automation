@@ -648,6 +648,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.3.1",
             "Zooms to the given elements or fits everything in the window."
         );
+        err |= RegisterCommand<OpenViewCommand> (
+            navigatorCommands, "1.4.2",
+            "Activates a saved view by its navigator item id."
+        );
         AddCommandGroup (navigatorCommands);
     }
 

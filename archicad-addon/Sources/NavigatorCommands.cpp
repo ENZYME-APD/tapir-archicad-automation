@@ -687,3 +687,84 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
 
     return CreateSuccessfulExecutionResult ();
 }
+
+OpenViewCommand::OpenViewCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String OpenViewCommand::GetName () const
+{
+    return "OpenView";
+}
+
+GS::Optional<GS::UniString> OpenViewCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemId"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> OpenViewCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState OpenViewCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // ACAPI_View_GoToView is absent from the AC25 and AC26 API DevKits.
+    // Guard at 2700 so the all-versions CI matrix compiles.
+#if defined (ServerMainVers_2700)
+    const GS::ObjectState* navigatorItemIdOS = parameters.Get ("navigatorItemId");
+    if (navigatorItemIdOS == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId is missing");
+    }
+
+    API_Guid navGuid = GetGuidFromObjectState (*navigatorItemIdOS);
+    if (navGuid == APINULLGuid) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId is corrupt or missing");
+    }
+
+    API_NavigatorItem navigatorItem = {};
+    GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get navigator item from guid");
+    }
+
+    switch (navigatorItem.itemType) {
+        case API_UndefinedNavItem:
+        case API_ProjectNavItem:
+        case API_CameraSetNavItem:
+        case API_InfoNavItem:
+        case API_HelpNavItem:
+        case API_BookNavItem:
+        case API_MasterFolderNavItem:
+        case API_SubSetNavItem:
+        case API_FolderNavItem:
+            return CreateFailedExecutionResult (APIERR_BADPARS, "OpenView requires a savable view item; the given navigator item is a container or folder");
+        default:
+            break;
+    }
+
+    const GS::UniString guidStr = APIGuidToString (navGuid);
+    err = ACAPI_View_GoToView (guidStr.ToCStr ().Get ());
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to activate the view");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_GENERAL, "OpenView requires Archicad 27 or later.");
+#endif
+}
