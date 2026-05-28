@@ -915,7 +915,28 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "number",
                         "description": "The height of the skirt."
                     },
-                    "polygonCoordinates": { 
+                    "ridges": {
+                        "type": "string",
+                        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
+                        "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                    },
+                    "showLines": {
+                        "type": "boolean",
+                        "description": "Whether to show secondary mesh lines (level lines other than the user-defined ones) on plan."
+                    },
+                    "contourPen": {
+                        "type": "integer",
+                        "description": "Optional pen attribute index for the mesh's contour line."
+                    },
+                    "levelPen": {
+                        "type": "integer",
+                        "description": "Optional pen attribute index for the mesh's level lines."
+                    },
+                    "lineTypeIndex": {
+                        "type": "integer",
+                        "description": "Optional line type attribute index for the mesh's contour."
+                    },
+                    "polygonCoordinates": {
                         "type": "array",
                         "description": "The 3D coordinates of the outline polygon of the mesh.",
                         "items": {
@@ -976,6 +997,37 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("skirtLevel", element.mesh.skirtLevel);
     GS::UniString skirtType;
     parameters.Get ("skirtType", skirtType);
+    GS::UniString ridges;
+    if (parameters.Get ("ridges", ridges)) {
+        if (ridges == "AllSharp") {
+            element.mesh.smoothRidges = APIRidge_AllSharp;
+        } else if (ridges == "AllSmooth") {
+            element.mesh.smoothRidges = APIRidge_AllSmooth;
+        } else if (ridges == "UserDefined") {
+            element.mesh.smoothRidges = APIRidge_UserSharp;
+        }
+    }
+
+    bool showLines = false;
+    if (parameters.Get ("showLines", showLines)) {
+        element.mesh.showLines = showLines ? 1 : 0;
+    }
+
+    short contourPen = 0;
+    if (parameters.Get ("contourPen", contourPen) && contourPen > 0) {
+        element.mesh.contPen = contourPen;
+    }
+
+    short levelPen = 0;
+    if (parameters.Get ("levelPen", levelPen) && levelPen > 0) {
+        element.mesh.levelPen = levelPen;
+    }
+
+    Int32 lineTypeIndex = 0;
+    if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
+        element.mesh.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+    }
+
     if (skirtType == "SurfaceOnlyWithoutSkirt") {
         element.mesh.skirt = 3;
     } else if (skirtType == "WithSkirt") {
