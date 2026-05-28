@@ -287,6 +287,138 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     return NoError;
 }
 
+// Apply a named FAVORITE to the Door/Window tool defaults BEFORE
+// the caller clones element/memo/marker via PrepareWindowOrDoorDefaults.
+//
+// The parameter is a FAVORITE name (as returned by `GetFavoritesByType
+// (elementType=Door|Window)`), NOT a libpart `docu_UName`. Real
+// libpart-by-name lookup against AC29's Door/Window library is not
+// viable: the favorite name is the only stable identifier exposed to
+// API callers.
+//
+// This is the workaround for `-2130313110 Failed to create door` /
+// `Failed to create window` on a fresh project where the user has
+// never opened the Door / Window tool — without the favorite-apply,
+// `PrepareWindowOrDoorDefaults` clones empty/invalid tool defaults
+// that AC's `ACAPI_Element_CreateExt` rejects. Calling this helper
+// first pushes a known-good defaults snapshot into the tool, then
+// the caller's PrepareWindowOrDoorDefaults clones the favorite-applied
+// state (libpart, marker memo, all openingBase fields).
+//
+// Flow (mirrors `ApplyFavoritesToElementDefaultsCommand`):
+//   1. `ACAPI_Favorite_Get(&favorite)` by name
+//   2. `ACAPI_Element_ChangeDefaultsExt` with mask FULL — also passes
+//      the favorite's `elementMarker` / `memoMarker` as a Main Marker
+//      sub-element when present, since AC25+ recommends ChangeDefaultsExt
+//      for markered element types (Door / Window).
+//   3. Replay classifications, category values, user properties via
+//      the existing TAPIR_Element_* helpers in `MigrationHelper.hpp`.
+//      Required: some Door favorites (e.g. `Porte d'entrée`) still
+//      return REFUSEDPAR after ChangeDefaultsExt alone if the
+//      classifications are missing.
+//
+// IMPORTANT: must be invoked BEFORE PrepareWindowOrDoorDefaults so
+// the marker built from `ACAPI_LibraryPart_GetMarkerParent` matches
+// the favorite-applied libpart. Calling it AFTER leaves the outer
+// marker stale and CreateExt fails with REFUSEDPAR.
+//
+// Returns NoError on success or when `favoriteName` is absent
+// (caller falls back to the cloned tool defaults). Returns
+// APIERR_REFUSEDPAR when the favorite resolves to a different
+// element type than `expectedTypeId` (e.g. passing a Window favorite
+// to CreateDoors). Otherwise returns the underlying Favorite_Get /
+// ChangeDefaultsExt error code.
+static GSErrCode ApplyWindowOrDoorFavoriteToDefaults (const GS::ObjectState& data, API_ElemTypeID expectedTypeId)
+{
+    GS::UniString favoriteName;
+    if (!data.Get ("favoriteName", favoriteName)) {
+        return NoError; // field absent — keep tool defaults as-is
+    }
+    if (favoriteName.IsEmpty ()) {
+        return NoError;
+    }
+
+    API_Favorite favorite;
+    favorite.name = favoriteName;
+    favorite.memo.New ();
+    favorite.elementMarker.New ();
+    favorite.memoMarker.New ();
+    favorite.properties.New ();
+    favorite.classifications.New ();
+    favorite.elemCategoryValues.New ();
+
+    GSErrCode err = ACAPI_Favorite_Get (&favorite);
+    const auto disposeFavoriteMemos = [&]() {
+        ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+        if (favorite.memoMarker.HasValue ()) {
+            ACAPI_DisposeElemMemoHdls (&favorite.memoMarker.Get ());
+        }
+    };
+    if (err != NoError) {
+        disposeFavoriteMemos ();
+        return err;
+    }
+
+    // Guard against type mismatch: a Window favorite applied to the
+    // Door tool defaults (or vice versa) would silently corrupt the
+    // tool state and leave the caller's PrepareWindowOrDoorDefaults
+    // operating on the wrong subtype. Reject early.
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID favoriteTypeId = favorite.element.header.type.typeID;
+#else
+    const API_ElemTypeID favoriteTypeId = favorite.element.header.typeID;
+#endif
+    if (favoriteTypeId != expectedTypeId) {
+        disposeFavoriteMemos ();
+        return APIERR_REFUSEDPAR;
+    }
+
+    // Push the favorite's full element state into the Door/Window tool
+    // defaults. AC25+ recommends `ACAPI_Element_ChangeDefaultsExt` for
+    // markered element types (API_DoorID / API_WindowID) so the marker
+    // sub-element is updated in lock-step with the main element. If the
+    // favorite carries a marker (`elementMarker` / `memoMarker`), pass
+    // it as a Main Marker sub-element; otherwise pass `nSubElems = 0`
+    // and the existing tool marker is preserved.
+    API_Element mask;
+    ACAPI_ELEMENT_MASK_SETFULL (mask);
+
+    API_SubElement markerSubElement = {};
+    UInt32 nSubElems = 0;
+    API_SubElement* subElemsPtr = nullptr;
+    if (favorite.elementMarker.HasValue () && favorite.memoMarker.HasValue ()) {
+        markerSubElement.subType = APISubElement_MainMarker;
+        markerSubElement.subElem = favorite.elementMarker.Get ();
+        markerSubElement.memo = favorite.memoMarker.Get ();
+        ACAPI_ELEMENT_MASK_SETFULL (markerSubElement.mask);
+        nSubElems = 1;
+        subElemsPtr = &markerSubElement;
+    }
+
+    err = ACAPI_Element_ChangeDefaultsExt (&favorite.element, favorite.memo.GetPtr (), &mask, nSubElems, subElemsPtr);
+    disposeFavoriteMemos ();
+    if (err != NoError) {
+        return err;
+    }
+
+    // Mirror the full ApplyFavoritesToElementDefaultsCommand flow so the
+    // tool defaults include the favorite's classifications, category
+    // values and user-defined properties. Some Door favorites (e.g.
+    // "Porte d'entrée") will not survive a subsequent CreateExt without
+    // this extra metadata: ChangeDefaults alone gets accepted, but the
+    // create fails with APIERR_REFUSEDPAR because mandatory classification
+    // or category fields remain unset on the tool defaults.
+    for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
+        TAPIR_Element_AddClassificationItemDefault (favorite.element.header, pair.second);
+    }
+    for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+        TAPIR_Element_SetCategoryValueDefault (favorite.element.header, categoryValue);
+    }
+    TAPIR_Element_SetPropertiesOfDefaultElem (favorite.element.header, *favorite.properties);
+
+    return NoError;
+}
+
 void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoint, const API_Vector& direction)
 {
     element.dimension.dimAppear = APIApp_Normal;
@@ -1453,7 +1585,17 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
                         "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" }
+                        "verticalCurveHeight": { "type": "number" },
+                        "width": {
+                            "type": "number",
+                            "description": "Cross section width of the beam. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "Cross section height of the beam. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["begCoordinate", "endCoordinate", "zCoordinate"]
@@ -1465,7 +1607,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
+GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
     element.beam.begC = Get2DCoordinateFromObjectState (*parameters.Get ("begCoordinate"));
     element.beam.endC = Get2DCoordinateFromObjectState (*parameters.Get ("endCoordinate"));
@@ -1494,6 +1636,173 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
         element.beam.verticalCurveHeight = curveHeight.Get ();
     }
 
+    auto width = GetOptionalDouble (parameters, "width");
+    auto height = GetOptionalDouble (parameters, "height");
+
+    if ((width.HasValue () || height.HasValue ()) && memo.beamSegments != nullptr) {
+        GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
+        for (GSSize i = 0; i < nSegments; ++i) {
+            if (width.HasValue ()) {
+                memo.beamSegments[i].assemblySegmentData.nominalWidth = width.Get ();
+            }
+            if (height.HasValue ()) {
+                memo.beamSegments[i].assemblySegmentData.nominalHeight = height.Get ();
+            }
+        }
+    }
+
+    return {};
+}
+
+CreateStairsCommand::CreateStairsCommand () :
+    CreateElementsCommandBase ("CreateStairs", API_StairID, "stairsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stairsData": {
+                "type": "array",
+                "description": "Array of data to create Stair elements.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Stair.",
+                    "properties": {
+                        "baseLinePoints": {
+                            "type": "array",
+                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "zCoordinate": {
+                            "type": "number",
+                            "description": "The Z coordinate (absolute elevation) of the stair base."
+                        },
+                        "totalHeight": {
+                            "type": "number",
+                            "description": "Total height of the stair.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flightWidth": {
+                            "type": "number",
+                            "description": "Width of the stair flight.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "stepNum": {
+                            "type": "integer",
+                            "description": "Number of risers (steps).",
+                            "minimum": 1
+                        },
+                        "riserHeight": {
+                            "type": "number",
+                            "description": "Height of each riser.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "treadDepth": {
+                            "type": "number",
+                            "description": "Depth (going) of each tread.",
+                            "exclusiveMinimum": 0.0
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["baseLinePoints", "zCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairsData"]
+    })";
+}
+
+GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> baseLinePoints;
+    parameters.Get ("baseLinePoints", baseLinePoints);
+    if (baseLinePoints.GetSize () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "baseLinePoints must have at least 2 points.");
+    }
+
+    double zCoordinate = 0.0;
+    parameters.Get ("zCoordinate", zCoordinate);
+    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    element.header.floorInd = floorIndexAndOffset.first;
+
+    auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
+    if (totalHeight.HasValue ()) {
+        element.stair.totalHeight = totalHeight.Get ();
+    }
+    auto flightWidth = GetOptionalDouble (parameters, "flightWidth");
+    if (flightWidth.HasValue ()) {
+        element.stair.flightWidth = flightWidth.Get ();
+    }
+
+    Int32 stepNum = 0;
+    if (parameters.Get ("stepNum", stepNum)) {
+        element.stair.stepNum = static_cast<UInt32> (stepNum);
+    }
+
+    auto riserHeight = GetOptionalDouble (parameters, "riserHeight");
+    if (riserHeight.HasValue ()) {
+        element.stair.riserHeight = riserHeight.Get ();
+    }
+    auto treadDepth = GetOptionalDouble (parameters, "treadDepth");
+    if (treadDepth.HasValue ()) {
+        element.stair.treadDepth = treadDepth.Get ();
+    }
+
+    // Build the baseline polyline in the memo
+    const Int32 nCoords = static_cast<Int32> (baseLinePoints.GetSize ());
+
+    // Free existing baseline handles from defaults
+    if (memo.stairBaseLine.coords != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*>(&memo.stairBaseLine.coords));
+    }
+    if (memo.stairBaseLine.pends != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*>(&memo.stairBaseLine.pends));
+    }
+    if (memo.stairBaseLine.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*>(&memo.stairBaseLine.parcs));
+    }
+    if (memo.stairBaseLine.edgeData != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*>(&memo.stairBaseLine.edgeData));
+    }
+    if (memo.stairBaseLine.vertexData != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*>(&memo.stairBaseLine.vertexData));
+    }
+
+    // Allocate new baseline: polyline (not polygon), so no closing vertex needed
+    // Coords: index 1..nCoords (1-based), index 0 unused
+    memo.stairBaseLine.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.edgeData = reinterpret_cast<API_StairPolylineEdgeData*> (BMAllocatePtr (nCoords * sizeof (API_StairPolylineEdgeData), ALLOCATE_CLEAR, 0));
+    memo.stairBaseLine.vertexData = reinterpret_cast<API_StairPolylineVertexData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineVertexData), ALLOCATE_CLEAR, 0));
+
+    for (Int32 i = 0; i < nCoords; ++i) {
+        (*memo.stairBaseLine.coords)[i + 1] = Get2DCoordinateFromObjectState (baseLinePoints[i]);
+
+        // Set vertex data
+        memo.stairBaseLine.vertexData[i + 1].type = APISP_BaseLine;
+        memo.stairBaseLine.vertexData[i + 1].geometryType = APISG_Vertex;
+        memo.stairBaseLine.vertexData[i + 1].subElemId = 0;
+
+        // Set edge data (between vertices, so nCoords-1 edges)
+        if (i < nCoords - 1) {
+            memo.stairBaseLine.edgeData[i].type = APISP_BaseLine;
+            memo.stairBaseLine.edgeData[i].geometryType = APISG_Edge;
+            memo.stairBaseLine.edgeData[i].subElemId = 0;
+        }
+    }
+
+    (*memo.stairBaseLine.pends)[1] = nCoords;
+
+    memo.stairBaseLine.polygon.nCoords = nCoords;
+    memo.stairBaseLine.polygon.nSubPolys = 1;
+    memo.stairBaseLine.polygon.nArcs = 0;
+
     return {};
 }
 
@@ -1521,7 +1830,11 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["ownerWallId", "centerOffset"]
@@ -1571,7 +1884,19 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            GSErrCode err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker);
+            // Apply the favorite to the Window tool defaults FIRST so
+            // that PrepareWindowOrDoorDefaults clones the favorite-applied
+            // libpart and builds a matching marker. Calling
+            // PrepareWindowOrDoorDefaults first and applying the favorite
+            // after leaves the marker pointing at the previous libpart,
+            // causing CreateExt to fail with -2130313110.
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_WindowID);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for window."));
+                continue;
+            }
+
+            err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare window defaults."));
                 continue;
@@ -1628,7 +1953,11 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["ownerWallId", "centerOffset"]
@@ -1678,7 +2007,19 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            GSErrCode err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker);
+            // Apply the favorite to the Door tool defaults FIRST so
+            // that PrepareWindowOrDoorDefaults clones the favorite-applied
+            // libpart and builds a matching marker. Calling
+            // PrepareWindowOrDoorDefaults first and applying the favorite
+            // after leaves the marker pointing at the previous libpart,
+            // causing CreateExt to fail with -2130313110.
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_DoorID);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for door."));
+                continue;
+            }
+
+            err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare door defaults."));
                 continue;
@@ -2977,35 +3318,7 @@ GS::Optional<GS::UniString> GetDimensionDataCommand::GetResponseSchema () const
             "dimensionsData": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "direction": { "$ref": "#/Coordinate2D" },
-                        "dimensionLinePosition": { "$ref": "#/Coordinate2D" },
-                        "witnessPoints": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "coordinate": { "$ref": "#/Coordinate2D" },
-                                    "coordinate3D": {
-                                        "type": "object",
-                                        "properties": {
-                                            "x": { "type": "number" },
-                                            "y": { "type": "number" },
-                                            "z": { "type": "number" }
-                                        }
-                                    },
-                                    "dimensionPosition": { "$ref": "#/Coordinate2D" },
-                                    "dimensionValue": { "type": "number" },
-                                    "witnessForm": { "type": "string" },
-                                    "witnessVal": { "type": "number" },
-                                    "baseElementId": { "$ref": "#/ElementId" }
-                                }
-                            }
-                        },
-                        "error": { "type": "string" }
-                    }
+                    "$ref": "#/DimensionDataOrError"
                 }
             }
         },
@@ -3036,9 +3349,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
     for (const GS::ObjectState& elementObj : elements) {
         const GS::ObjectState* elementId = elementObj.Get ("elementId");
         if (elementId == nullptr) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("error", GS::UniString ("elementId is missing"));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
             continue;
         }
 
@@ -3046,19 +3357,13 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         element.header.guid = GetGuidFromObjectState (*elementId);
         GSErrCode err = ACAPI_Element_Get (&element);
         if (err != NoError) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element. Error code: %d", static_cast<int> (err)));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (err, "Failed to get element"));
             continue;
         }
 
         const API_ElemTypeID typeID = GetElemTypeId (element.header);
         if (typeID != API_DimensionID) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString ("Element is not a Dimension."));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (APIERR_BADID, "Element is not a Dimension"));
             continue;
         }
 
@@ -3066,10 +3371,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
         err = ACAPI_Element_GetMemo (element.header.guid, &memo);
         if (err != NoError) {
-            GS::ObjectState errorResult;
-            errorResult.Add ("elementId", CreateGuidObjectState (element.header.guid));
-            errorResult.Add ("error", GS::UniString::Printf ("Failed to get element memo. Error code: %d", static_cast<int> (err)));
-            dimensionsData (errorResult);
+            dimensionsData (CreateErrorResponse (err, "Failed to get element memo"));
             continue;
         }
 

@@ -313,6 +313,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates Beam elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateStairsCommand> (
+            elementCommands, "1.5.0",
+            "Creates Stair elements based on the given baseline and parameters."
+        );
         err |= RegisterCommand<CreateSlabsCommand> (
             elementCommands, "1.0.3",
             "Creates Slab elements based on the given parameters."
@@ -349,6 +353,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Creates associative wall thickness dimensions for the given walls."
         );
+        err |= RegisterCommand<GetDimensionDataCommand> (
+            elementCommands, "1.5.0",
+            "Gets witness point data (coordinates, measured values) from existing dimension chains."
+        );
         err |= RegisterCommand<CreateZonesCommand> (
             elementCommands, "1.1.8",
             "Creates Zone elements based on the given parameters."
@@ -372,6 +380,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLabelsCommand> (
             elementCommands, "1.2.5",
             "Creates Label elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateTextsCommand> (
+            elementCommands, "1.4.2",
+            "Creates standalone Text elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyWallsCommand> (
             elementCommands, "1.4.0",

@@ -4044,5 +4044,61 @@
         "required": [
             "elements"
         ]
+    },
+    "DimensionData": {
+        "type": "object",
+        "description": "Dimension element data including witness points and geometry.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "direction": {
+                "$ref": "#/Coordinate2D"
+            },
+            "dimensionLinePosition": {
+                "$ref": "#/Coordinate2D"
+            },
+            "witnessPoints": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "coordinate": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "coordinate3D": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensionPosition": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "dimensionValue": {
+                            "type": "number"
+                        },
+                        "witnessForm": {
+                            "type": "string",
+                            "enum": ["None", "Small", "Large", "Fix", "Unknown"]
+                        },
+                        "witnessVal": {
+                            "type": "number"
+                        },
+                        "baseElementId": {
+                            "$ref": "#/ElementId"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "DimensionDataOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/DimensionData"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 }
