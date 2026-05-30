@@ -249,22 +249,7 @@ GS::String ChangeWindowCommand::GetName () const
 GS::Optional<GS::UniString> ChangeWindowCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "windowType": {
-                "$ref": "#/WindowType"
-            },
-            "databaseId": {
-                "$ref": "#/DatabaseId"
-            },
-            "navigatorItemId": {
-                "$ref": "#/NavigatorItemId"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "windowType"
-        ]
+        "$ref": "#/NavigatorItemIdOrDatabaseIdAndWindowType"
     })";
 }
 
@@ -277,24 +262,7 @@ GS::Optional<GS::UniString> ChangeWindowCommand::GetResponseSchema () const
 
 GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::UniString windowTypeStr;
-    if (!parameters.Get ("windowType", windowTypeStr)) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType.");
-    }
-
-    API_WindowInfo windowInfo = {};
-    windowInfo.typeID = ConvertWindowTypeToString (windowTypeStr);
-    if (windowInfo.typeID == API_ZombieWindowID) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
-    }
-
-    const GS::ObjectState* databaseId = parameters.Get ("databaseId");
     const GS::ObjectState* navigatorItemId = parameters.Get ("navigatorItemId");
-
-    if (databaseId != nullptr && navigatorItemId != nullptr) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Specify either databaseId or navigatorItemId, not both.");
-    }
-
     if (navigatorItemId != nullptr) {
 #if defined (ServerMainVers_2700)
         API_Guid navGuid = GetGuidFromObjectState (*navigatorItemId);
@@ -323,10 +291,6 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
                 break;
         }
 
-        if (navigatorItem.db.typeID != windowInfo.typeID) {
-            return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId's database does not belong to the requested windowType.");
-        }
-
         // ACAPI_View_GoToView applies the view's saved settings (layer combo,
         // scale, MVO, dim, zoom). The whole point of accepting navigatorItemId
         // is to apply those settings, so AC25/26 (without GoToView) rejects
@@ -339,7 +303,21 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
 #else
         return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "navigatorItemId requires Archicad 27 or later; use databaseId instead.");
 #endif
-    } else if (databaseId != nullptr) {
+    }
+
+    GS::UniString windowTypeStr;
+    if (!parameters.Get ("windowType", windowTypeStr)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType.");
+    }
+
+    API_WindowInfo windowInfo = {};
+    windowInfo.typeID = ConvertWindowTypeToString (windowTypeStr);
+    if (windowInfo.typeID == API_ZombieWindowID) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
+    }
+
+    const GS::ObjectState* databaseId = parameters.Get ("databaseId");
+    if (databaseId != nullptr) {
         API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
         GSErrCode err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
         if (err != NoError) {

@@ -27,7 +27,6 @@ else:
     result = aclib.RunTapirCommand(
         'ChangeWindow',
         {
-            'windowType': 'FloorPlan',
             'navigatorItemId': firstView['navigatorItemId'],
         }
     )
