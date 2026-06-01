@@ -293,14 +293,6 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.8",
             "Sets the given GDL parameters of the given elements."
         );
-        err |= RegisterCommand<GetClassificationsOfElementsCommand> (
-            elementCommands, "1.0.7",
-            "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
-        );
-        err |= RegisterCommand<SetClassificationsOfElementsCommand> (
-            elementCommands, "1.0.7",
-            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
-        );
         err |= RegisterCommand<CreateColumnsCommand> (
             elementCommands, "1.0.3",
             "Creates Column elements based on the given parameters."
@@ -513,6 +505,28 @@ GSErrCode Initialize (void)
             "Deletes the given Custom Property Definitions."
         );
         AddCommandGroup (propertyCommands);
+    }
+
+
+    { // Classification Commands
+        CommandGroup classificationCommands ("Classification Commands");
+        err |= RegisterCommand<GetClassificationsOfElementsCommand> (
+            classificationCommands, "1.0.7",
+            "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<SetClassificationsOfElementsCommand> (
+            classificationCommands, "1.0.7",
+            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<CreateClassificationSystemsCommand> (
+            classificationCommands, "1.5.0",
+            "Creates Classification Systems including Classification Items based on the given parameters."
+        );
+        err |= RegisterCommand<CreateClassificationItemsCommand> (
+            classificationCommands, "1.5.0",
+            "Creates Classification Items in the given Classification Systems based on the given parameters."
+        );
+        AddCommandGroup (classificationCommands);
     }
 
     { // Attribute Commands
