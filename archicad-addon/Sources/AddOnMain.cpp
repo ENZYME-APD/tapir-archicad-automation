@@ -520,7 +520,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateClassificationSystemsCommand> (
             classificationCommands, "1.5.0",
-            "Creates Classification Systems based on the given parameters."
+            "Creates Classification Systems including Classification Items based on the given parameters."
+        );
+        err |= RegisterCommand<CreateClassificationItemsCommand> (
+            classificationCommands, "1.5.0",
+            "Creates Classification Items in the given Classification Systems based on the given parameters."
         );
         AddCommandGroup (classificationCommands);
     }

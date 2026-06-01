@@ -1877,11 +1877,87 @@
         "date"
       ]
     },
-    "ClassificationSystems": {
+    "ClassificationItemDetails": {
+        "type": "object",
+        "description": "The details of a classification item.",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "The unique identifier of the classification item as specified by the user."
+            },
+            "name": {
+                "type": "string",
+                "description": "The display name of the classification item."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification item."
+            },
+            "children": {
+                "type": "array",
+                "description": "A list of classification items.",
+                "items": {
+                    "$ref": "#/definitions/ClassificationItemDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "id",
+            "name",
+            "description"
+        ]
+    },
+    "ClassificationSystemsWithItems": {
       "type": "array",
-      "description": "A list of classification systems.",
+      "description": "Classification systems with items.",
       "items": {
-        "$ref": "#/ClassificationSystemDetails"
+        "type": "object",
+        "properties": {
+            "classificationSystem": {
+                "$ref": "#/ClassificationSystemDetails"
+            },
+            "classificationItems": {
+                "type": "array",
+                "description": "A list of classification items in the classification system.",
+                "items": {
+                    "$ref": "#/ClassificationItemDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystem",
+            "classificationItems"
+        ]
+      }
+    },
+    "NewClassificationItems": {
+      "type": "array",
+      "description": "Classification systems with items.",
+      "items": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "classificationItemDetails": {
+                "$ref": "#/ClassificationItemDetails"
+            },
+            "parentClassificationItemId": {
+                "description": "The identifier of the parent classification item. If not specified, the new classification item will be created as a child of the root.",
+                "$ref": "#/ClassificationItemId"
+            },
+            "nextClassificationItemId": {
+                "description": "The identifier of the next sibling classification item. If not specified, the new classification item will be created as the last child of its parent.",
+                "$ref": "#/ClassificationItemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId",
+            "classificationItemDetails"
+        ]
       }
     },
     "ClassificationItemId": {

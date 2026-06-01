@@ -1,20 +1,79 @@
 import aclib
 
 aclib.RunTapirCommand("CreateClassificationSystems", {
-    "classificationSystems" : [
+    "classificationSystemsWithItems" : [
         {
-            "name" : "My Classification System #1",
-            "description" : "This is #1 my classification system.",
-            "source" : "My Company",
-            "version" : "1.0",
-            "date" : "2024-06-01"
+            "classificationSystem" : {
+                "name" : "My Classification System #1",
+                "description" : "This is #1 my classification system.",
+                "source" : "My Company",
+                "version" : "1.0",
+                "date" : "2024-06-01"
+            },
+            "classificationItems" : [
+                {
+                    "id" : "CI-1",
+                    "name" : "Classification Item 1",
+                    "description" : "This is classification item 1.",
+                    "children" : [
+                        {
+                            "id": "CI-1.1",
+                            "name" : "Classification Item 1.1",
+                            "description" : "This is classification item 1.1."
+                        },
+                        {
+                            "id": "CI-1.2",
+                            "name" : "Classification Item 1.2",
+                            "description" : "This is classification item 1.2.",
+                            "children" : [
+                                {
+                                    "id": "CI-1.2.1",
+                                    "name" : "Classification Item 1.2.1",
+                                    "description" : "This is classification item 1.2.1."
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id" : "CI-2",
+                    "name" : "Classification Item 2",
+                    "description" : "This is classification item 2."
+                }
+            ]
         },
         {
-            "name" : "My Classification System #2",
-            "description" : "This is #2 my classification system.",
-            "source" : "My Company",
-            "version" : "1.0",
-            "date" : "2024-06-01"
+            "classificationSystem" : {
+                "name" : "My Classification System #2",
+                "description" : "This is #2 my classification system.",
+                "source" : "My Company",
+                "version" : "1.0",
+                "date" : "2024-06-01"
+            },
+            "classificationItems" : [
+                {
+                    "id" : "2CI-1",
+                    "name" : "Classification Item 1 In System 2",
+                    "description" : "This is classification item 1 in system 2."
+                },
+                {
+                    "id" : "2CI-2",
+                    "name" : "Classification Item 2 In System 2",
+                    "description" : "This is classification item 2 in system 2.",
+                    "children" : [
+                        {
+                            "id": "2CI-2.1",
+                            "name" : "Classification Item 2.1 In System 2",
+                            "description" : "This is classification item 2.1 in system 2."
+                        },
+                        {
+                            "id": "2CI-2.2",
+                            "name" : "Classification Item 2.2 In System 2",
+                            "description" : "This is classification item 2.2 in system 2."
+                        }
+                    ]
+                }
+            ]
         }
     ]
 })
