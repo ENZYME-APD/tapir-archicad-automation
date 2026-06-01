@@ -249,19 +249,7 @@ GS::String ChangeWindowCommand::GetName () const
 GS::Optional<GS::UniString> ChangeWindowCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "windowType": {
-                "$ref": "#/WindowType"
-            },
-            "databaseId": {
-                "$ref": "#/DatabaseId"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "windowType"
-        ]
+        "$ref": "#/NavigatorItemIdOrDatabaseIdAndWindowType"
     })";
 }
 
@@ -274,6 +262,49 @@ GS::Optional<GS::UniString> ChangeWindowCommand::GetResponseSchema () const
 
 GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    const GS::ObjectState* navigatorItemId = parameters.Get ("navigatorItemId");
+    if (navigatorItemId != nullptr) {
+#if defined (ServerMainVers_2700)
+        API_Guid navGuid = GetGuidFromObjectState (*navigatorItemId);
+        if (navGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId is corrupt or missing");
+        }
+
+        API_NavigatorItem navigatorItem = {};
+        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to get navigator item from guid");
+        }
+
+        switch (navigatorItem.itemType) {
+            case API_UndefinedNavItem:
+            case API_ProjectNavItem:
+            case API_CameraSetNavItem:
+            case API_InfoNavItem:
+            case API_HelpNavItem:
+            case API_BookNavItem:
+            case API_MasterFolderNavItem:
+            case API_SubSetNavItem:
+            case API_FolderNavItem:
+                return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId must be a view or viewpoint; got a container or folder");
+            default:
+                break;
+        }
+
+        // ACAPI_View_GoToView applies the view's saved settings (layer combo,
+        // scale, MVO, dim, zoom). The whole point of accepting navigatorItemId
+        // is to apply those settings, so AC25/26 (without GoToView) rejects
+        // rather than silently falling back to a plain database/window switch.
+        const GS::UniString guidStr = APIGuidToString (navGuid);
+        err = ACAPI_View_GoToView (guidStr.ToCStr ().Get ());
+        return err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateErrorResponse (err, "Failed to activate the view");
+#else
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "navigatorItemId requires Archicad 27 or later; use databaseId instead.");
+#endif
+    }
+
     GS::UniString windowTypeStr;
     if (!parameters.Get ("windowType", windowTypeStr)) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "Missing parameter: windowType.");

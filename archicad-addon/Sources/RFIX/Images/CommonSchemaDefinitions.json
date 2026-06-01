@@ -813,6 +813,29 @@
             "Unknown"
         ]
     },
+    "NavigatorItemIdOrDatabaseIdAndWindowType": {
+        "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId.",
+        "oneOf": [
+            {
+                "$ref": "#/NavigatorItemIdArrayItem"
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "windowType": {
+                        "$ref": "#/WindowType"
+                    },
+                    "databaseId": {
+                        "$ref": "#/DatabaseId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "windowType"
+                ]
+            }
+        ]
+    },
     "LengthType": {
         "type": "string",
         "description": "The type of the length measurement unit.",
