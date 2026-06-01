@@ -1,6 +1,10 @@
 #include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#ifdef ServerMainVers_2900
+#include <chrono>
+#endif
+
 GetClassificationsOfElementsCommand::GetClassificationsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -198,6 +202,84 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
             }
 
             executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+CreateClassificationSystemsCommand::CreateClassificationSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateClassificationSystemsCommand::GetName () const
+{
+    return "CreateClassificationSystems";
+}
+
+GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationSystems": {
+                "$ref": "#/ClassificationSystems"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+           "classificationSystems"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState CreateClassificationSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationSystems;
+    parameters.Get ("classificationSystems", classificationSystems);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("CreateClassificationSystemsCommand", [&] () -> GSErrCode {
+        for (const GS::ObjectState& classificationSystem : classificationSystems) {
+            API_ClassificationSystem apiClassificationSystem = {};
+            apiClassificationSystem.guid = APINULLGuid;
+            classificationSystem.Get ("name", apiClassificationSystem.name);
+            classificationSystem.Get ("description", apiClassificationSystem.description);
+            classificationSystem.Get ("source", apiClassificationSystem.source);
+            classificationSystem.Get ("version", apiClassificationSystem.editionVersion);
+            GS::UniString date;
+            classificationSystem.Get ("date", date);
+            unsigned int year, month, day;
+            date.SScanf ("%4u-%2u-%2u", &year, &month, &day);
+#ifdef ServerMainVers_2900
+            apiClassificationSystem.editionDate = std::chrono::year_month_day(std::chrono::year (year), std::chrono::month (month), std::chrono::day (day));
+#else
+            apiClassificationSystem.editionDate = GSDateRecord(year, month, day);
+#endif
+
+            const GSErrCode err = ACAPI_Classification_CreateClassificationSystem (apiClassificationSystem);
+            executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to create classification system"));
         }
 
         return NoError;

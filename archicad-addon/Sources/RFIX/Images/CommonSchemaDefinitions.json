@@ -1838,6 +1838,52 @@
             "$ref": "#/ClassificationSystemIdArrayItem"
         }
     },
+    "Date": {
+      "type": "string",
+      "description": "A date in its string representation as defined in ISO 8601: YYYY-MM-DD.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "ClassificationSystemDetails": {
+      "type": "object",
+      "description": "The details of a classification system.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The display name of the classification system."
+        },
+        "description": {
+          "type": "string",
+          "description": "The description of the classification system."
+        },
+        "source": {
+          "type": "string",
+          "description": "The source of the classification system (e.g. URL to a classification system standard)."
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the classification system."
+        },
+        "date": {
+          "$ref": "#/Date",
+          "description": "The release date of the classification system's current version."
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "source",
+        "version",
+        "date"
+      ]
+    },
+    "ClassificationSystems": {
+      "type": "array",
+      "description": "A list of classification systems.",
+      "items": {
+        "$ref": "#/ClassificationSystemDetails"
+      }
+    },
     "ClassificationItemId": {
         "type": "object",
         "description": "The identifier of a classification item.",
