@@ -217,7 +217,7 @@ GSErrCode Initialize (void)
             "Prints from the current view."
         );
         err |= RegisterCommand<RebuildViewCommand> (
-            projectCommands, "1.4.1",
+            projectCommands, "1.5.0",
             "Rebuilds the current view."
         );
         AddCommandGroup (projectCommands);
@@ -362,7 +362,7 @@ GSErrCode Initialize (void)
             "Creates Object elements based on the given parameters."
         );
         err |= RegisterCommand<CreateLampsCommand> (
-            elementCommands, "1.4.1",
+            elementCommands, "1.5.0",
             "Creates Lamp elements based on the given parameters."
         );
         err |= RegisterCommand<CreateMeshesCommand> (
@@ -374,7 +374,7 @@ GSErrCode Initialize (void)
             "Creates Label elements based on the given parameters."
         );
         err |= RegisterCommand<CreateTextsCommand> (
-            elementCommands, "1.4.2",
+            elementCommands, "1.5.0",
             "Creates standalone Text elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyWallsCommand> (
@@ -456,11 +456,11 @@ GSErrCode Initialize (void)
             "Create favorites from the given elements."
         );
         err |= RegisterCommand<ImportFavoritesCommand> (
-            favoritesCommands, "1.4.1",
+            favoritesCommands, "1.5.0",
             "Import Favorites from a .prefs file or folder into the current project."
         );
         err |= RegisterCommand<ExportFavoritesCommand> (
-            favoritesCommands, "1.4.1",
+            favoritesCommands, "1.5.0",
             "Export the project's Favorites to a .prefs file or folder."
         );
         AddCommandGroup (favoritesCommands);
@@ -581,7 +581,7 @@ GSErrCode Initialize (void)
             "Adds the given files into the embedded library."
         );
         err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
-            libraryCommands, "1.4.1",
+            libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
         AddCommandGroup (libraryCommands);

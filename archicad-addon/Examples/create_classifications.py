@@ -77,3 +77,15 @@ aclib.RunTapirCommand("CreateClassificationSystems", {
         }
     ]
 })
+
+def PrintChildrenClassificationItems (classificationItems, indent = 0):
+    for classificationItem in classificationItems:
+        print('{}Classification item id: {}'.format('\t' * indent, classificationItem['classificationItem']['id']))
+        if 'children' in classificationItem['classificationItem']:
+            PrintChildrenClassificationItems (classificationItem['classificationItem']['children'], indent + 1)
+
+allClassificationSystems = aclib.RunCommand ('API.GetAllClassificationSystems', {})['classificationSystems']
+for classificationSystem in allClassificationSystems:
+    print('Classification system name: {}'.format(classificationSystem['name']))
+    allClassificationsInSystem = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': classificationSystem['classificationSystemId']})['classificationItems']
+    PrintChildrenClassificationItems (allClassificationsInSystem, 1)

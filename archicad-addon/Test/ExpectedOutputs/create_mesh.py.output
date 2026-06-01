@@ -21219,3 +21219,91 @@ Response:
         }
     ]
 }
+Command: CreateMeshes
+Parameters:
+{
+    "meshesData": [
+        {
+            "floorIndex": 2,
+            "level": 0.0,
+            "polygonCoordinates": [
+                {
+                    "x": -20.0,
+                    "y": -20.0,
+                    "z": 0.0
+                },
+                {
+                    "x": -5.0,
+                    "y": -20.0,
+                    "z": 0.0
+                },
+                {
+                    "x": -5.0,
+                    "y": -5.0,
+                    "z": 2.0
+                },
+                {
+                    "x": -20.0,
+                    "y": -5.0,
+                    "z": 2.0
+                }
+            ],
+            "sublines": [
+                {
+                    "coordinates": [
+                        {
+                            "x": -20.0,
+                            "y": -19,
+                            "z": 1.0
+                        },
+                        {
+                            "x": -20.0,
+                            "y": -17,
+                            "z": 1.0
+                        },
+                        {
+                            "x": -20.0,
+                            "y": -15,
+                            "z": 1.0
+                        },
+                        {
+                            "x": -20.0,
+                            "y": -13,
+                            "z": 1.0
+                        },
+                        {
+                            "x": -20.0,
+                            "y": -11,
+                            "z": 1.0
+                        },
+                        {
+                            "x": -20.0,
+                            "y": -9,
+                            "z": 1.0
+                        },
+                        {
+                            "x": -20.0,
+                            "y": -7,
+                            "z": 1.0
+                        }
+                    ]
+                }
+            ],
+            "ridges": "UserDefined",
+            "showLines": false,
+            "contourPen": 2,
+            "levelPen": 4,
+            "lineTypeIndex": 2
+        }
+    ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}

@@ -68,19 +68,7 @@ var gCommands = [{
                 "version": "1.3.1",
                 "description": "Changes the current (active) window to the given window.",
                 "inputScheme": {
-        "type": "object",
-        "properties": {
-            "windowType": {
-                "$ref": "#/WindowType"
-            },
-            "databaseId": {
-                "$ref": "#/DatabaseId"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "windowType"
-        ]
+        "$ref": "#/NavigatorItemIdOrDatabaseIdAndWindowType"
     },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
@@ -650,6 +638,25 @@ var gCommands = [{
                 "type": "string",
                 "description": "The area to print. The default is 'currentView'.",
                 "enum": ["currentView", "entireDrawing", "marquee"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "RebuildView",
+                "version": "1.5.0",
+                "description": "Rebuilds the current view.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "regenerate": {
+                "type": "boolean",
+                "description": "Regenerate the view. The default is false, meaning the view will not be regenerated, but rebuilt."
             }
         },
         "additionalProperties": false,
@@ -1403,67 +1410,6 @@ var gCommands = [{
         ]
     }
             },{
-                "name": "GetClassificationsOfElements",
-                "version": "1.0.7",
-                "description": "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements"
-            },
-            "classificationSystemIds": {
-                "$ref": "#/ClassificationSystemIds"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements",
-            "classificationSystemIds"
-        ]
-    },
-                "outputScheme": {
-        "type": "object",
-        "properties": {
-            "elementClassifications": {
-                "$ref": "#/ElementClassificationsOrErrors",
-                "description": "The list of element classification item identifiers. Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elementClassifications"
-        ]
-    }
-            },{
-                "name": "SetClassificationsOfElements",
-                "version": "1.0.7",
-                "description": "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "elementClassifications": {
-                "$ref": "#/ElementClassifications"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elementClassifications"
-        ]
-    },
-                "outputScheme": {
-        "type": "object",
-        "properties": {
-            "executionResults": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "executionResults"
-        ]
-    }
-            },{
                 "name": "CreateColumns",
                 "version": "1.0.3",
                 "description": "Creates Column elements based on the given parameters.",
@@ -1509,6 +1455,16 @@ var gCommands = [{
                         "axisRotationAngle": {
                             "type": "number",
                             "description": "Optional column rotation angle in radians."
+                        },
+                        "width": {
+                            "type": "number",
+                            "description": "Cross section width of the column. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "depth": {
+                            "type": "number",
+                            "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns.",
+                            "exclusiveMinimum": 0.0
                         }
                     },
                     "additionalProperties": false,
@@ -1599,7 +1555,17 @@ var gCommands = [{
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
                         "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" }
+                        "verticalCurveHeight": { "type": "number" },
+                        "width": {
+                            "type": "number",
+                            "description": "Cross section width of the beam. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "Cross section height of the beam. Applied to all segments.",
+                            "exclusiveMinimum": 0.0
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["begCoordinate", "endCoordinate", "zCoordinate"]
@@ -1608,6 +1574,76 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": ["beamsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "CreateStairs",
+                "version": "1.5.0",
+                "description": "Creates Stair elements based on the given baseline and parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "stairsData": {
+                "type": "array",
+                "description": "Array of data to create Stair elements.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Stair.",
+                    "properties": {
+                        "baseLinePoints": {
+                            "type": "array",
+                            "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "zCoordinate": {
+                            "type": "number",
+                            "description": "The Z coordinate (absolute elevation) of the stair base."
+                        },
+                        "totalHeight": {
+                            "type": "number",
+                            "description": "Total height of the stair.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flightWidth": {
+                            "type": "number",
+                            "description": "Width of the stair flight.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "stepNum": {
+                            "type": "integer",
+                            "description": "Number of risers (steps).",
+                            "minimum": 1
+                        },
+                        "riserHeight": {
+                            "type": "number",
+                            "description": "Height of each riser.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "treadDepth": {
+                            "type": "number",
+                            "description": "Depth (going) of each tread.",
+                            "exclusiveMinimum": 0.0
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["baseLinePoints", "zCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairsData"]
     },
                 "outputScheme": {
         "type": "object",
@@ -1704,7 +1740,11 @@ var gCommands = [{
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["ownerWallId", "centerOffset"]
@@ -1740,7 +1780,11 @@ var gCommands = [{
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["ownerWallId", "centerOffset"]
@@ -2035,6 +2079,42 @@ var gCommands = [{
         "required": ["elements"]
     }
             },{
+                "name": "GetDimensionData",
+                "version": "1.5.0",
+                "description": "Gets witness point data (coordinates, measured values) from existing dimension chains.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "The identifier of the dimension elements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "dimensionsData": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DimensionDataOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["dimensionsData"]
+    }
+            },{
                 "name": "CreateZones",
                 "version": "1.1.8",
                 "description": "Creates Zone elements based on the given parameters.",
@@ -2187,7 +2267,7 @@ var gCommands = [{
                     "properties": {
                         "libraryPartName": {
                             "type": "string",
-                            "description" : "The name of the library part to use."	
+                            "description" : "The name of the library part to use."
                         },
                         "coordinates": {
                             "$ref": "#/Coordinate3D"
@@ -2207,6 +2287,56 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "objectsData"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "CreateLamps",
+                "version": "1.5.0",
+                "description": "Creates Lamp elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "lampsData": {
+                "type": "array",
+                "description": "Array of data to create Lamps.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Lamp.",
+                    "properties": {
+                        "libraryPartName": {
+                            "type": "string",
+                            "description" : "The name of the lamp library part to use."
+                        },
+                        "coordinates": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensions": {
+                            "$ref": "#/Dimensions3D"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "libraryPartName",
+                        "coordinates"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lampsData"
         ]
     },
                 "outputScheme": {
@@ -2249,7 +2379,28 @@ var gCommands = [{
                         "type": "number",
                         "description": "The height of the skirt."
                     },
-                    "polygonCoordinates": { 
+                    "ridges": {
+                        "type": "string",
+                        "description": "How ridges between mesh facets are displayed in 3D: 'AllSharp' shows all ridges, 'AllSmooth' hides them, 'UserDefined' shows only ridges along user-defined level lines (the drawing-set look for contour-line topography).",
+                        "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                    },
+                    "showLines": {
+                        "type": "boolean",
+                        "description": "Whether to show secondary mesh lines (level lines other than the user-defined ones) on plan."
+                    },
+                    "contourPen": {
+                        "type": "integer",
+                        "description": "Optional pen attribute index for the mesh's contour line."
+                    },
+                    "levelPen": {
+                        "type": "integer",
+                        "description": "Optional pen attribute index for the mesh's level lines."
+                    },
+                    "lineTypeIndex": {
+                        "type": "integer",
+                        "description": "Optional line type attribute index for the mesh's contour."
+                    },
+                    "polygonCoordinates": {
                         "type": "array",
                         "description": "The 3D coordinates of the outline polygon of the mesh.",
                         "items": {
@@ -2353,6 +2504,75 @@ var gCommands = [{
     "additionalProperties": false,
     "required": [
         "labelsData"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "CreateTexts",
+                "version": "1.5.0",
+                "description": "Creates standalone Text elements based on the given parameters.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "textsData": {
+            "type": "array",
+            "description": "Array of data to create Texts.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Text element.",
+                "properties": {
+                    "coordinate": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The text content. Newlines create multiple lines."
+                    },
+                    "height": {
+                        "type": "number",
+                        "description": "The character height in millimeters. Optional; defaults to the Text tool default."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "Optional pen attribute index."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Optional rotation angle in radians."
+                    },
+                    "justification": {
+                        "type": "string",
+                        "description": "Optional text justification.",
+                        "enum": ["Left", "Center", "Right", "Full"]
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "coordinate",
+                    "text"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "textsData"
     ]
 },
                 "outputScheme": {
@@ -2981,6 +3201,70 @@ var gCommands = [{
             "executionResults"
         ]
     }
+            },{
+                "name": "ImportFavorites",
+                "version": "1.5.0",
+                "description": "Import Favorites from a .prefs file or folder into the current project.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path on the AC host to a Favorites file (.prefs) or folder."
+            },
+            "targetFolder": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Folder hierarchy under which to import. Empty = root."
+            },
+            "importFolders": {
+                "type": "boolean",
+                "description": "If true and `path` is a folder, the folder structure is preserved."
+            },
+            "conflictPolicy": {
+                "type": "string",
+                "enum": ["Error", "Skip", "Overwrite", "Append"],
+                "description": "How to resolve name conflicts. Default Overwrite."
+            }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "firstConflictName": {
+                "type": "string",
+                "description": "Set when conflictPolicy=Error and a name collided; absent otherwise."
+            }
+        },
+        "additionalProperties": false
+    }
+            },{
+                "name": "ExportFavorites",
+                "version": "1.5.0",
+                "description": "Export the project's Favorites to a .prefs file or folder.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path on the AC host. If extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder."
+            },
+            "names": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Optional subset of Favorites to export. Default: export all."
+            }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+    }
             }]
         },{
             "name": "Property Commands",
@@ -3245,6 +3529,126 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "propertyIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            }]
+        },{
+            "name": "Classification Commands",
+            "commands": [{
+                "name": "GetClassificationsOfElements",
+                "version": "1.0.7",
+                "description": "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "classificationSystemIds": {
+                "$ref": "#/ClassificationSystemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "classificationSystemIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementClassifications": {
+                "$ref": "#/ElementClassificationsOrErrors",
+                "description": "The list of element classification item identifiers. Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementClassifications"
+        ]
+    }
+            },{
+                "name": "SetClassificationsOfElements",
+                "version": "1.0.7",
+                "description": "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementClassifications": {
+                "$ref": "#/ElementClassifications"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementClassifications"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreateClassificationSystems",
+                "version": "1.5.0",
+                "description": "Creates Classification Systems including Classification Items based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "classificationSystemsWithItems": {
+                "$ref": "#/ClassificationSystemsWithItems"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+           "classificationSystemsWithItems"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreateClassificationItems",
+                "version": "1.5.0",
+                "description": "Creates Classification Items in the given Classification Systems based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "newClassificationItems": {
+                "$ref": "#/NewClassificationItems"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+           "newClassificationItems"
         ]
     },
                 "outputScheme": {
@@ -3906,6 +4310,55 @@ var gCommands = [{
             "executionResults"
         ]
     }
+            },{
+                "name": "GetAvailableLibraryParts",
+                "version": "1.5.0",
+                "description": "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp').",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "filterByTypeId": {
+                "$ref": "#/LibraryPartType",
+                "description": "Optional. Filter by libpart type (matches the value returned by LibPartTypeIdToString)."
+            }
+        },
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "index": { "type": "integer" },
+                        "documentName": { "type": "string" },
+                        "fileName": { "type": "string" },
+                        "typeId": { "$ref": "#/LibraryPartType" }
+                    }
+                }
+            },
+            "skippedCount": {
+                "type": "integer",
+                "description": "Library parts that ACAPI_LibraryPart_Get failed to read. Non-zero means the inventory is partial."
+            },
+            "skippedSample": {
+                "type": "array",
+                "description": "First five failed indices with their ACAPI error code, for diagnostic.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": { "type": "integer" },
+                        "code": { "type": "integer" }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["libraryParts", "skippedCount"]
+    }
             }]
         },{
             "name": "Teamwork Commands",
@@ -4403,6 +4856,42 @@ var gCommands = [{
     },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "CreateSections",
+                "version": "1.5.0",
+                "description": "Creates Section elements on the floor plan.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "sectionsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "startCoordinate": { "$ref": "#/Coordinate2D" },
+                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "depth": { "type": "number" },
+                        "name": { "type": "string" },
+                        "floorIndex": { "type": "integer" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["startCoordinate", "endCoordinate"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["sectionsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
     }
             }]
         },{

@@ -813,6 +813,29 @@ var gSchemaDefinitions = {
             "Unknown"
         ]
     },
+    "NavigatorItemIdOrDatabaseIdAndWindowType": {
+        "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId.",
+        "oneOf": [
+            {
+                "$ref": "#/NavigatorItemIdArrayItem"
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "windowType": {
+                        "$ref": "#/WindowType"
+                    },
+                    "databaseId": {
+                        "$ref": "#/DatabaseId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "windowType"
+                ]
+            }
+        ]
+    },
     "LengthType": {
         "type": "string",
         "description": "The type of the length measurement unit.",
@@ -1837,6 +1860,128 @@ var gSchemaDefinitions = {
         "items": {
             "$ref": "#/ClassificationSystemIdArrayItem"
         }
+    },
+    "Date": {
+      "type": "string",
+      "description": "A date in its string representation as defined in ISO 8601: YYYY-MM-DD.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "ClassificationSystemDetails": {
+      "type": "object",
+      "description": "The details of a classification system.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The display name of the classification system."
+        },
+        "description": {
+          "type": "string",
+          "description": "The description of the classification system."
+        },
+        "source": {
+          "type": "string",
+          "description": "The source of the classification system (e.g. URL to a classification system standard)."
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the classification system."
+        },
+        "date": {
+          "$ref": "#/Date",
+          "description": "The release date of the classification system's current version."
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "source",
+        "version",
+        "date"
+      ]
+    },
+    "ClassificationItemDetails": {
+        "type": "object",
+        "description": "The details of a classification item.",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "The unique identifier of the classification item as specified by the user."
+            },
+            "name": {
+                "type": "string",
+                "description": "The display name of the classification item."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification item."
+            },
+            "children": {
+                "type": "array",
+                "description": "A list of classification items.",
+                "items": {
+                    "$ref": "#/definitions/ClassificationItemDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "id",
+            "name",
+            "description"
+        ]
+    },
+    "ClassificationSystemsWithItems": {
+      "type": "array",
+      "description": "Classification systems with items.",
+      "items": {
+        "type": "object",
+        "properties": {
+            "classificationSystem": {
+                "$ref": "#/ClassificationSystemDetails"
+            },
+            "classificationItems": {
+                "type": "array",
+                "description": "A list of classification items in the classification system.",
+                "items": {
+                    "$ref": "#/ClassificationItemDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystem",
+            "classificationItems"
+        ]
+      }
+    },
+    "NewClassificationItems": {
+      "type": "array",
+      "description": "Classification systems with items.",
+      "items": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "classificationItemDetails": {
+                "$ref": "#/ClassificationItemDetails"
+            },
+            "parentClassificationItemId": {
+                "description": "The identifier of the parent classification item. If not specified, the new classification item will be created as a child of the root.",
+                "$ref": "#/ClassificationItemId"
+            },
+            "nextClassificationItemId": {
+                "description": "The identifier of the next sibling classification item. If not specified, the new classification item will be created as the last child of its parent.",
+                "$ref": "#/ClassificationItemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId",
+            "classificationItemDetails"
+        ]
+      }
     },
     "ClassificationItemId": {
         "type": "object",
@@ -4043,6 +4188,62 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "elements"
+        ]
+    },
+    "DimensionData": {
+        "type": "object",
+        "description": "Dimension element data including witness points and geometry.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "direction": {
+                "$ref": "#/Coordinate2D"
+            },
+            "dimensionLinePosition": {
+                "$ref": "#/Coordinate2D"
+            },
+            "witnessPoints": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "coordinate": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "coordinate3D": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensionPosition": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "dimensionValue": {
+                            "type": "number"
+                        },
+                        "witnessForm": {
+                            "type": "string",
+                            "enum": ["None", "Small", "Large", "Fix", "Unknown"]
+                        },
+                        "witnessVal": {
+                            "type": "number"
+                        },
+                        "baseElementId": {
+                            "$ref": "#/ElementId"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "DimensionDataOrError": {
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/DimensionData"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
         ]
     }
 }
