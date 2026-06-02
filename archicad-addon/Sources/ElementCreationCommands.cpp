@@ -266,7 +266,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
 })";
 }
 
-static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs, Int32 iStart)
+GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs, Int32 iStart)
 {
     GS::Array<API_PolyArc> polyArcs;
     for (const GS::ObjectState& arc : arcs) {
@@ -282,14 +282,15 @@ static GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arc
     return polyArcs;
 }
 
-static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
+void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
                            const GS::Array<GS::ObjectState>& arcs,
                            Int32&                            iCoord,
                            Int32&                            iArc,
                            Int32&                            iPends,
                            API_ElementMemo&                  memo,
-                           const API_EdgeTrimID*             edgeTrimSideType = nullptr,
-                           const API_OverriddenAttribute*    sideMat = nullptr)
+                           const API_EdgeTrimID*             edgeTrimSideType,
+                           const API_OverriddenAttribute*    sideMat,
+                           bool                              processVertexIDs)
 {
     Int32 iStart = iCoord;
     for (const GS::ObjectState& coord : coords) {
@@ -303,9 +304,15 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
         if (memo.meshPolyZ != nullptr) {
             coord.Get ("z", (*memo.meshPolyZ)[iCoord]);
         }
+        if (processVertexIDs && memo.vertexIDs != nullptr) {
+            (*memo.vertexIDs)[iCoord] = (UInt32)iCoord;
+        }
         ++iCoord;
     }
     (*memo.coords)[iCoord] = (*memo.coords)[iStart];
+    if (processVertexIDs && memo.vertexIDs != nullptr) {
+        (*memo.vertexIDs)[iCoord] = (*memo.vertexIDs)[iStart];
+    }
     (*memo.pends)[iPends++] = iCoord;
     if (edgeTrimSideType != nullptr) {
         (*memo.edgeTrims)[iCoord].sideType = (*memo.edgeTrims)[iStart].sideType;
@@ -337,55 +344,10 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     parameters.Get ("polygonCoordinates", polygonCoordinates);
     parameters.Get ("polygonArcs", polygonArcs);
     parameters.Get ("holes", holes);
-    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
-        polygonCoordinates.Pop ();
-    }
-    element.slab.poly.nCoords	= polygonCoordinates.GetSize() + 1;
-    element.slab.poly.nSubPolys	= 1;
-    element.slab.poly.nArcs		= polygonArcs.GetSize ();
 
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            element.slab.poly.nCoords += holePolygonOutline.GetSize () + 1;
-            ++element.slab.poly.nSubPolys;
-            element.slab.poly.nArcs += holePolygonArcs.GetSize ();
-        }
-    }
-
-    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-    memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
-    memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
-    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.slab.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.slab.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-
-    Int32 iCoord = 1;
-    Int32 iArc = 0;
-    Int32 iPends = 1;
-    const API_EdgeTrimID edgeTrimSideType = APIEdgeTrim_Vertical; // Only vertical trim is supported yet by my code
-    AddPolyToMemo(polygonCoordinates,
-                  polygonArcs,
-                  iCoord,
-                  iArc,
-                  iPends,
-                  memo,
-                  &edgeTrimSideType,
-                  &element.slab.sideMat);
-
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            AddPolyToMemo (holePolygonOutline,
-                          holePolygonArcs,
-                          iCoord,
-                          iArc,
-                          iPends,
-                          memo,
-                          &edgeTrimSideType,
-                          &element.slab.sideMat);
-        }
+    auto slabMemoError = BuildSlabMemoFromGeometry (element, memo, polygonCoordinates, polygonArcs, holes);
+    if (slabMemoError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid slab geometry: " + slabMemoError.Get ());
     }
 
     return {};
