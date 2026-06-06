@@ -2844,7 +2844,7 @@
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
             },
-            "polygonCoordinates": {
+            "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
@@ -2873,7 +2873,7 @@
             "categoryAttributeId",
             "stampPosition",
             "isManual",
-            "polygonCoordinates",
+            "polygonOutline",
             "zCoordinate"
         ]
     },
