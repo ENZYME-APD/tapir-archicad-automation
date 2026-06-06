@@ -575,11 +575,6 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
         const auto& ifcProperties = elemIFCProperties.AddList<GS::ObjectState> ("ifcProperties");
 
 #ifdef ServerMainVers_2800
-        auto AddOptionalUniStringToObjectState = [](GS::ObjectState& objectState, const GS::String& fieldName, const std::optional<GS::UniString>& value) {
-            if (value.has_value ())
-                objectState.Add (fieldName, *value);
-        };
-
         auto objectID = IFCAPI::GetObjectAccessor ().CreateElementObjectID (elemHeader);
         if (objectID.IsErr ()) {
             elementIFCProperties (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
