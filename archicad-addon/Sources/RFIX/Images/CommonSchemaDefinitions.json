@@ -813,6 +813,29 @@
             "Unknown"
         ]
     },
+    "NavigatorItemIdOrDatabaseIdAndWindowType": {
+        "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId.",
+        "oneOf": [
+            {
+                "$ref": "#/NavigatorItemIdArrayItem"
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "windowType": {
+                        "$ref": "#/WindowType"
+                    },
+                    "databaseId": {
+                        "$ref": "#/DatabaseId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "windowType"
+                ]
+            }
+        ]
+    },
     "LengthType": {
         "type": "string",
         "description": "The type of the length measurement unit.",
@@ -1838,6 +1861,128 @@
             "$ref": "#/ClassificationSystemIdArrayItem"
         }
     },
+    "Date": {
+      "type": "string",
+      "description": "A date in its string representation as defined in ISO 8601: YYYY-MM-DD.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "ClassificationSystemDetails": {
+      "type": "object",
+      "description": "The details of a classification system.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The display name of the classification system."
+        },
+        "description": {
+          "type": "string",
+          "description": "The description of the classification system."
+        },
+        "source": {
+          "type": "string",
+          "description": "The source of the classification system (e.g. URL to a classification system standard)."
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the classification system."
+        },
+        "date": {
+          "$ref": "#/Date",
+          "description": "The release date of the classification system's current version."
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "source",
+        "version",
+        "date"
+      ]
+    },
+    "ClassificationItemDetails": {
+        "type": "object",
+        "description": "The details of a classification item.",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "The unique identifier of the classification item as specified by the user."
+            },
+            "name": {
+                "type": "string",
+                "description": "The display name of the classification item."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification item."
+            },
+            "children": {
+                "type": "array",
+                "description": "A list of classification items.",
+                "items": {
+                    "$ref": "#/definitions/ClassificationItemDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "id",
+            "name",
+            "description"
+        ]
+    },
+    "ClassificationSystemsWithItems": {
+      "type": "array",
+      "description": "Classification systems with items.",
+      "items": {
+        "type": "object",
+        "properties": {
+            "classificationSystem": {
+                "$ref": "#/ClassificationSystemDetails"
+            },
+            "classificationItems": {
+                "type": "array",
+                "description": "A list of classification items in the classification system.",
+                "items": {
+                    "$ref": "#/ClassificationItemDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystem",
+            "classificationItems"
+        ]
+      }
+    },
+    "NewClassificationItems": {
+      "type": "array",
+      "description": "Classification systems with items.",
+      "items": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "classificationItemDetails": {
+                "$ref": "#/ClassificationItemDetails"
+            },
+            "parentClassificationItemId": {
+                "description": "The identifier of the parent classification item. If not specified, the new classification item will be created as a child of the root.",
+                "$ref": "#/ClassificationItemId"
+            },
+            "nextClassificationItemId": {
+                "description": "The identifier of the next sibling classification item. If not specified, the new classification item will be created as the last child of its parent.",
+                "$ref": "#/ClassificationItemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId",
+            "classificationItemDetails"
+        ]
+      }
+    },
     "ClassificationItemId": {
         "type": "object",
         "description": "The identifier of a classification item.",
@@ -1937,6 +2082,170 @@
         "description": "A list of element classification identifiers or errors.",
         "items": {
             "$ref": "#/ElementClassificationOrError"
+        }
+    },
+    "ElementIFCProperty": {
+        "type": "object",
+        "description": "The details of an IFC property value of an element.",
+        "properties": {
+            "propertySetName": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "value": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertySetName",
+            "name",
+            "value"
+        ]
+    },
+    "ElementIFCProperties": {
+        "type": "object",
+        "description": "The IFC properties of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcProperties": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIFCProperty"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcProperties"
+        ]
+    },
+    "ElementIFCType": {
+        "type": "object",
+        "description": "The IFC type of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcType": {
+                "type": "string"
+            },
+            "typeObjectIFCType": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcType",
+            "typeObjectIFCType"
+        ]
+    },
+    "ElementIFCIds": {
+        "type": "object",
+        "description": "The IFC identifiers of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcId": {
+                "type": "string"
+            },
+            "externalIFCId": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcId",
+            "externalIFCId"
+        ]
+    },
+    "ElementIFCPropertiesOrError": {
+        "type": "object",
+        "description": "Element IFC properties or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCProperties"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCTypeOrError": {
+        "type": "object",
+        "description": "Element IFC type or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCType"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCIdsOrError": {
+        "type": "object",
+        "description": "Element IFC identifiers or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCIds"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCPropertiesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC properties of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCPropertiesOrError"
+        }
+    },
+    "ElementIFCTypesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC types of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCTypeOrError"
+        }
+    },
+    "ElementIFCIdsOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC identifiers of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCIdsOrError"
+        }
+    },
+    "ElementsByIFCIds": {
+        "type": "array",
+        "description": "A list of elements identified by their IFC identifiers or errors.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "ifcId": {
+                    "type": "string"
+                },
+                "elements": {
+                    "type": "array",
+                    "description": "A list of element identifiers having the given IFC identifier. If the given IFC identifier is an external identifier, the list can contain multiple elements as the IFC can be placed multiple times.",
+                    "items": {
+                        "$ref": "#/ElementIdArrayItem"
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "ifcId",
+                "elements"
+            ]
         }
     },
     "ElementClassification": {
@@ -2699,7 +3008,7 @@
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
             },
-            "polygonCoordinates": {
+            "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
@@ -2728,7 +3037,7 @@
             "categoryAttributeId",
             "stampPosition",
             "isManual",
-            "polygonCoordinates",
+            "polygonOutline",
             "zCoordinate"
         ]
     },

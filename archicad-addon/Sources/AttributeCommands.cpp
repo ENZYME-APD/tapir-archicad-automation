@@ -523,7 +523,7 @@ void CreateBuildingMaterialsCommand::SetTypeSpecificParameters (const GS::Object
 
     Int32 cutSurfaceIndex;
     if (parameters.Get ("cutSurfaceIndex", cutSurfaceIndex)) {
-        attribute.buildingMaterial.cutMaterial = ACAPI_CreateAttributeIndex (cutFillIndex);
+        attribute.buildingMaterial.cutMaterial = ACAPI_CreateAttributeIndex (cutSurfaceIndex);
     }
 
     double thermalConductivity;

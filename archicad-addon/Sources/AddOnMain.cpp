@@ -36,6 +36,7 @@
 #include "RevisionCommands.hpp"
 #include "NotificationCommands.hpp"
 #include "DesignOptionCommands.hpp"
+#include "IFCCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -208,16 +209,12 @@ GSErrCode Initialize (void)
             projectCommands, "1.2.9",
             "Sets the project location details."
         );
-        err |= RegisterCommand<IFCFileOperationCommand> (
-            projectCommands, "1.2.6",
-            "Executes an IFC file operation."
-        );
         err |= RegisterCommand<PrintViewCommand> (
             projectCommands, "1.3.1",
             "Prints from the current view."
         );
         err |= RegisterCommand<RebuildViewCommand> (
-            projectCommands, "1.4.1",
+            projectCommands, "1.5.0",
             "Rebuilds the current view."
         );
         AddCommandGroup (projectCommands);
@@ -293,14 +290,6 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.8",
             "Sets the given GDL parameters of the given elements."
         );
-        err |= RegisterCommand<GetClassificationsOfElementsCommand> (
-            elementCommands, "1.0.7",
-            "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
-        );
-        err |= RegisterCommand<SetClassificationsOfElementsCommand> (
-            elementCommands, "1.0.7",
-            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
-        );
         err |= RegisterCommand<CreateColumnsCommand> (
             elementCommands, "1.0.3",
             "Creates Column elements based on the given parameters."
@@ -370,7 +359,7 @@ GSErrCode Initialize (void)
             "Creates Object elements based on the given parameters."
         );
         err |= RegisterCommand<CreateLampsCommand> (
-            elementCommands, "1.4.1",
+            elementCommands, "1.5.0",
             "Creates Lamp elements based on the given parameters."
         );
         err |= RegisterCommand<CreateMeshesCommand> (
@@ -382,7 +371,7 @@ GSErrCode Initialize (void)
             "Creates Label elements based on the given parameters."
         );
         err |= RegisterCommand<CreateTextsCommand> (
-            elementCommands, "1.4.2",
+            elementCommands, "1.5.0",
             "Creates standalone Text elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyWallsCommand> (
@@ -464,11 +453,11 @@ GSErrCode Initialize (void)
             "Create favorites from the given elements."
         );
         err |= RegisterCommand<ImportFavoritesCommand> (
-            favoritesCommands, "1.4.1",
+            favoritesCommands, "1.5.0",
             "Import Favorites from a .prefs file or folder into the current project."
         );
         err |= RegisterCommand<ExportFavoritesCommand> (
-            favoritesCommands, "1.4.1",
+            favoritesCommands, "1.5.0",
             "Export the project's Favorites to a .prefs file or folder."
         );
         AddCommandGroup (favoritesCommands);
@@ -515,6 +504,28 @@ GSErrCode Initialize (void)
         AddCommandGroup (propertyCommands);
     }
 
+
+    { // Classification Commands
+        CommandGroup classificationCommands ("Classification Commands");
+        err |= RegisterCommand<GetClassificationsOfElementsCommand> (
+            classificationCommands, "1.0.7",
+            "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<SetClassificationsOfElementsCommand> (
+            classificationCommands, "1.0.7",
+            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
+        );
+        err |= RegisterCommand<CreateClassificationSystemsCommand> (
+            classificationCommands, "1.5.0",
+            "Creates Classification Systems including Classification Items based on the given parameters."
+        );
+        err |= RegisterCommand<CreateClassificationItemsCommand> (
+            classificationCommands, "1.5.0",
+            "Creates Classification Items in the given Classification Systems based on the given parameters."
+        );
+        AddCommandGroup (classificationCommands);
+    }
+
     { // Attribute Commands
         CommandGroup attributeCommands ("Attribute Commands");
         err |= RegisterCommand<GetAttributesByTypeCommand> (
@@ -552,6 +563,31 @@ GSErrCode Initialize (void)
         AddCommandGroup (attributeCommands);
     }
 
+    { // IFC Commands
+        CommandGroup ifcCommands ("IFC Commands");
+        err |= RegisterCommand<IFCFileOperationCommand> (
+            ifcCommands, "1.2.6",
+            "Executes an IFC file operation."
+        );
+        err |= RegisterCommand<GetElementsByIFCIdsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the elements by the given IFC identifiers."
+        );
+        err |= RegisterCommand<GetIFCIdsOfElementsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the IFC identifiers of the given elements."
+        );
+        err |= RegisterCommand<GetIFCTypeOfElementsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the IFC types of the given elements."
+        );
+        err |= RegisterCommand<GetIFCPropertiesOfElementsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the IFC properties of the given elements."
+        );
+        AddCommandGroup (ifcCommands);
+    }
+
     { // Library Commands
         CommandGroup libraryCommands ("Library Commands");
         err |= RegisterCommand<GetLibrariesCommand> (
@@ -567,7 +603,7 @@ GSErrCode Initialize (void)
             "Adds the given files into the embedded library."
         );
         err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
-            libraryCommands, "1.4.1",
+            libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
         );
         AddCommandGroup (libraryCommands);

@@ -2,40 +2,40 @@
 
 #include "CommandBase.hpp"
 
-class GetClassificationsOfElementsCommand : public CommandBase
+class GetElementsByIFCIdsCommand : public CommandBase
 {
 public:
-    GetClassificationsOfElementsCommand ();
+    GetElementsByIFCIdsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class SetClassificationsOfElementsCommand : public CommandBase
+class GetIFCIdsOfElementsCommand : public CommandBase
 {
 public:
-    SetClassificationsOfElementsCommand ();
+    GetIFCIdsOfElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class CreateClassificationSystemsCommand : public CommandBase
+class GetIFCTypeOfElementsCommand : public CommandBase
 {
 public:
-    CreateClassificationSystemsCommand ();
+    GetIFCTypeOfElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class CreateClassificationItemsCommand : public CommandBase
+class GetIFCPropertiesOfElementsCommand : public CommandBase
 {
 public:
-    CreateClassificationItemsCommand ();
+    GetIFCPropertiesOfElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;

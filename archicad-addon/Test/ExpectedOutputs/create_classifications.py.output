@@ -1,0 +1,949 @@
+Command: CreateClassificationSystems
+Parameters:
+{
+    "classificationSystemsWithItems": [
+        {
+            "classificationSystem": {
+                "name": "My Classification System #1",
+                "description": "This is #1 my classification system.",
+                "source": "My Company",
+                "version": "1.0",
+                "date": "2024-06-01"
+            },
+            "classificationItems": [
+                {
+                    "id": "CI-1",
+                    "name": "Classification Item 1",
+                    "description": "This is classification item 1.",
+                    "children": [
+                        {
+                            "id": "CI-1.1",
+                            "name": "Classification Item 1.1",
+                            "description": "This is classification item 1.1."
+                        },
+                        {
+                            "id": "CI-1.2",
+                            "name": "Classification Item 1.2",
+                            "description": "This is classification item 1.2.",
+                            "children": [
+                                {
+                                    "id": "CI-1.2.1",
+                                    "name": "Classification Item 1.2.1",
+                                    "description": "This is classification item 1.2.1."
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "CI-2",
+                    "name": "Classification Item 2",
+                    "description": "This is classification item 2."
+                }
+            ]
+        },
+        {
+            "classificationSystem": {
+                "name": "My Classification System #2",
+                "description": "This is #2 my classification system.",
+                "source": "My Company",
+                "version": "1.0",
+                "date": "2024-06-01"
+            },
+            "classificationItems": [
+                {
+                    "id": "2CI-1",
+                    "name": "Classification Item 1 In System 2",
+                    "description": "This is classification item 1 in system 2."
+                },
+                {
+                    "id": "2CI-2",
+                    "name": "Classification Item 2 In System 2",
+                    "description": "This is classification item 2 in system 2.",
+                    "children": [
+                        {
+                            "id": "2CI-2.1",
+                            "name": "Classification Item 2.1 In System 2",
+                            "description": "This is classification item 2.1 in system 2."
+                        },
+                        {
+                            "id": "2CI-2.2",
+                            "name": "Classification Item 2.2 In System 2",
+                            "description": "This is classification item 2.2 in system 2."
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Classification system name: Archicad Classification
+	Classification item id: Site
+		Classification item id: Geographic Element
+			Classification item id: Terrain
+			Classification item id: Site Geometry
+			Classification item id: Flora & Fauna
+		Classification item id: Massing
+			Classification item id: Morph
+		Classification item id: Civil Element
+	Classification item id: Space
+		Classification item id: External Space
+			Classification item id: Parking Space
+		Classification item id: Internal Space
+			Classification item id: Access Space
+			Classification item id: Commercial Space
+			Classification item id: Communication Space
+			Classification item id: Cultural Space
+			Classification item id: Educational Space
+			Classification item id: Equipment Space
+			Classification item id: Medical Space
+			Classification item id: Office Space
+			Classification item id: Production Space
+			Classification item id: Recreational Space
+			Classification item id: Research Space
+			Classification item id: Residential Space
+			Classification item id: Storage Space
+			Classification item id: Transport Space
+			Classification item id: General Floor Area Space
+	Classification item id: Elements
+		Classification item id: Construction Element
+			Classification item id: Building Element Proxy
+				Classification item id: Complex Building Element Proxy
+				Classification item id: Element Building Element Proxy
+				Classification item id: Partial Building Element Proxy
+				Classification item id: Provision for Space
+				Classification item id: Provision for Void
+			Classification item id: Wall
+				Classification item id: Elemented Wall
+				Classification item id: Movable Wall
+				Classification item id: Parapet Wall
+				Classification item id: Partitioning Wall
+				Classification item id: Plumbing Wall
+				Classification item id: Polygonal Wall
+				Classification item id: Shear Wall
+				Classification item id: Solid Wall
+				Classification item id: Standard Wall
+			Classification item id: Footing
+				Classification item id: Caisson Foundation
+				Classification item id: Footing Beam
+				Classification item id: Pad Footing
+				Classification item id: Pile Cap
+				Classification item id: Strip Footing
+			Classification item id: Column
+				Classification item id: Column Segment
+				Classification item id: Pilaster
+			Classification item id: Pile
+				Classification item id: Bored Pile
+				Classification item id: Cohesion Pile
+				Classification item id: Driven Pile
+				Classification item id: Friction Pile
+				Classification item id: Jetgrouting Pile
+				Classification item id: Support Pile
+			Classification item id: Beam
+				Classification item id: Beam Segment
+				Classification item id: Joist
+				Classification item id: Hollowcore
+				Classification item id: Lintel
+				Classification item id: Spandrel
+				Classification item id: T-Beam
+			Classification item id: Slab
+				Classification item id: Floor Slab
+				Classification item id: Roof Slab
+				Classification item id: Landing Slab
+				Classification item id: Base Slab
+			Classification item id: Roof
+				Classification item id: Flat Roof
+				Classification item id: Shed Roof
+				Classification item id: Gable Roof
+				Classification item id: Hip Roof
+				Classification item id: Hipped Gable Roof
+				Classification item id: Gambrel Roof
+				Classification item id: Mansard Roof
+				Classification item id: Barrel Roof
+				Classification item id: Rainbow Roof
+				Classification item id: Butterfly Roof
+				Classification item id: Pavilion Roof
+				Classification item id: Dome Roof
+				Classification item id: Freeform Roof
+			Classification item id: Shell
+			Classification item id: Covering
+				Classification item id: Ceiling
+				Classification item id: Cladding
+				Classification item id: Flooring
+				Classification item id: Insulation
+				Classification item id: Membrane
+				Classification item id: Molding
+				Classification item id: Roofing
+				Classification item id: Sleeving
+				Classification item id: Skirtingboard
+				Classification item id: Wrapping
+			Classification item id: Stair
+				Classification item id: Stair Finish
+					Classification item id: Stair Riser
+					Classification item id: Stair Tread
+				Classification item id: Stair Structure
+					Classification item id: Stair Flight
+						Classification item id: Curved Stair Flight
+						Classification item id: Freeform Stair Flight
+						Classification item id: Spiral Stair Flight
+						Classification item id: Straight Stair Flight
+						Classification item id: Winder Stair Flight
+					Classification item id: Stair Landing
+				Classification item id: Stair Layout
+					Classification item id: Curved-run Stair
+					Classification item id: Double-return Stair
+					Classification item id: Half-turn Stair
+					Classification item id: Half-winding Stair
+					Classification item id: Quarter-turn Stair
+					Classification item id: Quarter-winding Stair
+					Classification item id: Spiral Stair
+					Classification item id: Straight-run Stair
+					Classification item id: Three-quarter-turn Stair
+					Classification item id: Three-quarter-winding Stair
+					Classification item id: Two-curved-run Stair
+					Classification item id: Two-quarter-turn Stair
+					Classification item id: Two-quarter-winding Stair
+					Classification item id: Two-straight-run Stair
+			Classification item id: Ramp
+				Classification item id: Ramp Flight
+					Classification item id: Spiral Ramp Flight
+					Classification item id: Straight Ramp Flight
+				Classification item id: Ramp Landing
+				Classification item id: Half-turn Ramp
+				Classification item id: Quarter-turn Ramp
+				Classification item id: Spiral Ramp
+				Classification item id: Straight-run Ramp
+				Classification item id: Two-quarter-turn Ramp
+				Classification item id: Two-straight-run Ramp
+			Classification item id: Railing
+				Classification item id: Rail
+					Classification item id: Handrail
+					Classification item id: Guardrail
+				Classification item id: Railing Post
+				Classification item id: Railing Panel
+				Classification item id: Balustrade
+			Classification item id: Curtain Wall
+				Classification item id: Curtain Wall Panel
+				Classification item id: Curtain Wall Frame
+			Classification item id: Member
+				Classification item id: Brace
+				Classification item id: Chord
+				Classification item id: Collar
+				Classification item id: Mullion
+				Classification item id: Plate Member
+				Classification item id: Post
+				Classification item id: Purlin
+				Classification item id: Rafter
+				Classification item id: Stringer
+				Classification item id: Strut
+				Classification item id: Stud
+			Classification item id: Plate
+				Classification item id: Curtain Panel
+				Classification item id: Sheet
+			Classification item id: Shading Device
+				Classification item id: Awning
+				Classification item id: Jalousie
+				Classification item id: Shutter
+			Classification item id: Chimney
+		Classification item id: Opening
+			Classification item id: Door
+				Classification item id: Gate
+				Classification item id: Trapdoor
+			Classification item id: Window
+				Classification item id: Lightdome
+				Classification item id: Skylight
+			Classification item id: Recess
+			Classification item id: Empty Opening
+		Classification item id: Element Component
+			Classification item id: Discrete Accessory
+				Classification item id: Anchorplate
+				Classification item id: Bracket
+				Classification item id: Shoe
+			Classification item id: Fastener
+				Classification item id: Mechanical Fastener
+					Classification item id: Anchorbolt
+					Classification item id: Bolt
+					Classification item id: Dowel
+					Classification item id: Nail
+					Classification item id: Nailplate
+					Classification item id: Rivet
+					Classification item id: Screw
+					Classification item id: Shear Connector
+					Classification item id: Staple
+					Classification item id: Stud Shear Connector
+				Classification item id: Glue
+				Classification item id: Mortar Fastener
+				Classification item id: Weld
+			Classification item id: Reinforcement
+				Classification item id: Reinforcing Bar
+					Classification item id: Anchoring Reinforcing Bar
+					Classification item id: Edge Reinforcing Bar
+					Classification item id: Ligature Reinforcing Bar
+					Classification item id: Main Reinforcing Bar
+					Classification item id: Punching Reinforcing Bar
+					Classification item id: Ring Reinforcing Bar
+					Classification item id: Shear Reinforcing Bar
+					Classification item id: Stud Reinforcing Bar
+				Classification item id: Reinforcing Mesh
+				Classification item id: Tendon
+					Classification item id: Bar Tendon
+					Classification item id: Coated Tendon
+					Classification item id: Strand Tendon
+					Classification item id: Wire Tendon
+				Classification item id: Tendon Anchor
+					Classification item id: Coupler Tendon Anchor
+					Classification item id: Fixed-end Tendon Anchor
+					Classification item id: Tensioning-end Tendon Anchor
+			Classification item id: Vibration Isolator
+				Classification item id: Compression
+				Classification item id: Spring
+		Classification item id: Furnishing
+			Classification item id: Furniture
+				Classification item id: Bed
+				Classification item id: Chair
+				Classification item id: Desk
+				Classification item id: Filecabinet
+				Classification item id: Shelf
+				Classification item id: Sofa
+				Classification item id: Table
+			Classification item id: System Furniture
+				Classification item id: System Furniture Panel
+				Classification item id: Work Surface
+		Classification item id: MEP Element
+			Classification item id: Distribution Control Element
+				Classification item id: Actuator
+					Classification item id: Electric Actuator
+					Classification item id: Handoperated Actuator
+					Classification item id: Hydraulic Actuator
+					Classification item id: Pneumatic Actuator
+					Classification item id: Thermostatic Actuator
+				Classification item id: Alarm
+					Classification item id: Bell Alarm
+					Classification item id: Break Glass Button Alarm
+					Classification item id: Light Alarm
+					Classification item id: Manual Pull Box Alarm
+					Classification item id: Siren Alarm
+					Classification item id: Whistle Alarm
+				Classification item id: Controller
+					Classification item id: Floating Controller
+					Classification item id: Multiposition Controller
+					Classification item id: Programmable Controller
+					Classification item id: Proportional Controller
+					Classification item id: Two Position Controller
+				Classification item id: Flow Instrument
+					Classification item id: Ammeter
+					Classification item id: Frequency Meter
+					Classification item id: Phase Angle Meter
+					Classification item id: Power Factor Meter
+					Classification item id: Pressure Gauge
+					Classification item id: Thermometer
+					Classification item id: Voltmeter Peak
+					Classification item id: Voltmeter RMS
+				Classification item id: Protective Device Tripping Unit
+					Classification item id: Electromagnetic Protective Device
+					Classification item id: Electronic Protective Device
+					Classification item id: Residual Current Protective Device
+					Classification item id: Thermal Protective Device
+				Classification item id: Sensor
+					Classification item id: CO2 Sensor
+					Classification item id: Conductance Sensor
+					Classification item id: Contact Sensor
+					Classification item id: CO Sensor
+					Classification item id: Fire Sensor
+					Classification item id: Flow Sensor
+					Classification item id: Frost Sensor
+					Classification item id: Gas Sensor
+					Classification item id: Heat Sensor
+					Classification item id: Humidity Sensor
+					Classification item id: Identifier Sensor
+					Classification item id: Ionconcentration Sensor
+					Classification item id: Level Sensor
+					Classification item id: Light Sensor
+					Classification item id: Moisture Sensor
+					Classification item id: Movement Sensor
+					Classification item id: PH Sensor
+					Classification item id: Pressure Sensor
+					Classification item id: Radiation Sensor
+					Classification item id: Radioactivity Sensor
+					Classification item id: Smoke Sensor
+					Classification item id: Sound Sensor
+					Classification item id: Temperature Sensor
+					Classification item id: Wind Sensor
+				Classification item id: Unitary Control Element
+					Classification item id: Alarm Panel
+					Classification item id: Control Panel
+					Classification item id: Gas Detection Panel
+					Classification item id: Humidistat
+					Classification item id: Indicator Panel
+					Classification item id: Mimic Panel
+					Classification item id: Thermostat
+					Classification item id: Weather Station
+			Classification item id: Distribution Flow Element
+				Classification item id: Distribution Chamber Element
+					Classification item id: Formed Duct
+					Classification item id: Inspection Chamber
+					Classification item id: Inspection Pit
+					Classification item id: Manhole
+					Classification item id: Meter Chamber
+					Classification item id: Sump
+					Classification item id: Trench
+					Classification item id: Valve Chamber
+				Classification item id: Energy Conversion Device
+					Classification item id: Air to Air Heat Recovery
+						Classification item id: Fixed-Plate Counter-Flow Exchanger
+						Classification item id: Fixed-Plate Cross-Flow Exchanger
+						Classification item id: Fixed-Plate Parallel-Flow Exchanger
+						Classification item id: Heat Pipe
+						Classification item id: Rotary Wheel Heat Recovery
+						Classification item id: Run-Around Coil Loop
+						Classification item id: Thermosiphon Coiltype Heat Exchanger
+						Classification item id: Thermosiphon Sealed Tube Heat Exchanger
+						Classification item id: Twin Tower Enthalpy Recovery Loop
+					Classification item id: Boiler
+						Classification item id: Steam Boiler
+						Classification item id: Water Boiler
+					Classification item id: Burner
+					Classification item id: Chiller
+						Classification item id: Air Cooled Chiller
+						Classification item id: Heat Recovery Chiller
+						Classification item id: Water Cooled Chiller
+					Classification item id: Coil
+						Classification item id: DX Cooling Coil
+						Classification item id: Electric Heating Coil
+						Classification item id: Gas Heating Coil
+						Classification item id: Hydronic Coil
+						Classification item id: Steam Heating Coil
+						Classification item id: Water Cooling Coil
+						Classification item id: Water Heating Coil
+					Classification item id: Condenser
+						Classification item id: Air Cooled Condenser
+						Classification item id: Evaporative Cooled Condenser
+						Classification item id: Water Cooled Condenser
+						Classification item id: Water Cooled Brazed Plate Condenser
+						Classification item id: Water Cooled Shell Coil Condenser
+						Classification item id: Water Cooled Shell Tube Condenser
+						Classification item id: Water Cooled Tube in Tube Condenser
+					Classification item id: Cooled Beam
+						Classification item id: Active Cooled Beam
+						Classification item id: Passive Cooled Beam
+					Classification item id: Cooling Tower
+						Classification item id: Mechanical Forced-Draft Cooling Tower
+						Classification item id: Mechanical Induced-Draft Cooling Tower
+						Classification item id: Natural Draft Cooling Tower
+					Classification item id: Electric Generator
+						Classification item id: CHP
+						Classification item id: Engine Generator
+						Classification item id: Standalone Electric Generator
+					Classification item id: Electric Motor
+						Classification item id: DC Electric Motor
+						Classification item id: Induction Electric Motor
+						Classification item id: Polyphase Electric Motor
+						Classification item id: Reluctance Synchronous Electric Motor
+						Classification item id: Synchronous Electric Motor
+					Classification item id: Engine
+						Classification item id: External Combustion Engine
+						Classification item id: Internal Combustion Engine
+					Classification item id: Evaporative Cooler
+						Classification item id: Direct Evaporative Air Washer
+						Classification item id: Direct Evaporative Packaged Rotary Air Cooler
+						Classification item id: Direct Evaporative Random Media Air Cooler
+						Classification item id: Direct Evaporative Rigid Media Air Cooler
+						Classification item id: Direct Evaporative Slingers Packaged Air Cooler
+						Classification item id: Indirect Direct Combination
+						Classification item id: Indirect Evaporative Cooling Tower
+						Classification item id: Indirect Evaporative Package Air Cooler
+						Classification item id: Indirect Evaporative Wet Coil
+					Classification item id: Evaporator
+						Classification item id: Direct Expansion Evaporator
+						Classification item id: Direct Expansion Brazed Plate Evaporator
+						Classification item id: Direct Expansion Shell and Tube Evaporator
+						Classification item id: Direct Expansion Tube in Tube Evaporator
+						Classification item id: Flooded Shell and Tube Evaporator
+						Classification item id: Shell and Coil Evaporator
+					Classification item id: Heat Exchanger
+						Classification item id: Plate Heat Exchanger
+						Classification item id: Shell and Tube Heat Exchanger
+					Classification item id: Humidifier
+						Classification item id: Adiabatic Air Washer
+						Classification item id: Adiabatic Atomizing Humidifier
+						Classification item id: Adiabatic Compressed Air Nozzle
+						Classification item id: Adiabatic Pan
+						Classification item id: Adiabatic Rigid Media
+						Classification item id: Adiabatic Ultrasonic Humidifier
+						Classification item id: Adiabatic Wetted Element
+						Classification item id: Assisted Butane Humidifier
+						Classification item id: Assisted Electric Humidifier
+						Classification item id: Assisted Natural Gas Humidifier
+						Classification item id: Assisted Propane Humidifier
+						Classification item id: Assisted Steam Humidifier
+						Classification item id: Steam Injection Humidifier
+					Classification item id: Motor Connection
+						Classification item id: Belt Drive Motor Connection
+						Classification item id: Coupling Motor Connection
+						Classification item id: Direct Drive Motor Connection
+					Classification item id: Solar Device
+						Classification item id: Solar Collector
+						Classification item id: Solar Panel
+					Classification item id: Transformer
+						Classification item id: Current Transformer
+						Classification item id: Frequency Transformer
+						Classification item id: Inverter Transformer
+						Classification item id: Rectifier Transformer
+						Classification item id: Voltage Transformer
+					Classification item id: Tube Bundle
+						Classification item id: Finned Tube Bundle
+					Classification item id: Unitary Equipment
+						Classification item id: Air Conditioning Unit
+						Classification item id: Air Handler
+						Classification item id: Dehumidifier
+						Classification item id: Rooftop Unit
+						Classification item id: Split System
+				Classification item id: Flow Controller
+					Classification item id: Air Terminal Box
+						Classification item id: Constant Flow Air Terminal Box
+						Classification item id: Variable Flow Pressure Dependant Air Terminal Box
+						Classification item id: Variable Flow Pressure Independant Air Terminal Box
+					Classification item id: Damper
+						Classification item id: Backdraft Damper
+						Classification item id: Balancing Damper
+						Classification item id: Blast Damper
+						Classification item id: Control Damper
+						Classification item id: Fire Damper
+						Classification item id: Fire Smoke Damper
+						Classification item id: Fume Hood Exhaust Damper
+						Classification item id: Gravity Damper
+						Classification item id: Gravity Relief Damper
+						Classification item id: Relief Damper
+						Classification item id: Smoke Damper
+					Classification item id: Electric Distribution Board
+						Classification item id: Consumer Unit
+						Classification item id: Distribution Board
+						Classification item id: Motor Control Centre
+						Classification item id: Switch Board
+					Classification item id: Electric Time Control
+						Classification item id: Relay Electric Time Control
+						Classification item id: Time Clock
+						Classification item id: Time Delay
+					Classification item id: Flow Meter
+						Classification item id: Energy Meter
+						Classification item id: Gas Meter
+						Classification item id: Oil Meter
+						Classification item id: Water Meter
+					Classification item id: Protective Device
+						Classification item id: Circuit Breaker
+						Classification item id: Earthing Switch
+						Classification item id: Earth Leakage Circuit Breaker
+						Classification item id: Fuse Disconnector
+						Classification item id: Residual Current Circuit Breaker
+						Classification item id: Residual Current Switch
+						Classification item id: Varistor
+					Classification item id: Switching Device
+						Classification item id: Contactor
+						Classification item id: Dimmer Switch
+						Classification item id: Emergency Stop
+						Classification item id: Keypad
+						Classification item id: Momentary Switch
+						Classification item id: Selector Switch
+						Classification item id: Starter
+						Classification item id: Switch Disconnector
+						Classification item id: Toggle Switch
+					Classification item id: Valve
+						Classification item id: Air Release Valve
+						Classification item id: Anti-vacuum Valve
+						Classification item id: Changeover Valve
+						Classification item id: Check Valve
+						Classification item id: Commissioning Valve
+						Classification item id: Diverting Valve
+						Classification item id: Double Check Valve
+						Classification item id: Double Regulating Valve
+						Classification item id: Draw-off Cock Valve
+						Classification item id: Faucet Valve
+						Classification item id: Flushing Valve
+						Classification item id: Gas Cock Valve
+						Classification item id: Gas Tap Valve
+						Classification item id: Isolating Valve
+						Classification item id: Mixing Valve
+						Classification item id: Pressure Reducing Valve
+						Classification item id: Pressure Relief Valve
+						Classification item id: Regulating Valve
+						Classification item id: Safety Cut-off Valve
+						Classification item id: Steam Trap Valve
+						Classification item id: Stop Cock Valve
+				Classification item id: Flow Fitting
+					Classification item id: Cable Carrier Fitting
+						Classification item id: Bend Cable Carrier Fitting
+						Classification item id: Cross Cable Carrier Fitting
+						Classification item id: Reducer Cable Carrier Fitting
+						Classification item id: Tee Cable Carrier Fitting
+					Classification item id: Cable Fitting
+						Classification item id: Connector Cable Fitting
+						Classification item id: Entry Cable Fitting
+						Classification item id: Exit Cable Fitting
+						Classification item id: Junction Cable Fitting
+						Classification item id: Transition Cable Fitting
+					Classification item id: Duct Fitting
+						Classification item id: Bend Duct Fitting
+						Classification item id: Connector Duct Fitting
+						Classification item id: Entry Duct Fitting
+						Classification item id: Exit Duct Fitting
+						Classification item id: Junction Duct Fitting
+						Classification item id: Obstruction Duct Fitting
+						Classification item id: Transition Duct Fitting
+					Classification item id: Junction Box
+						Classification item id: Data Junction Box
+						Classification item id: Power Junction Box
+					Classification item id: Pipe Fitting
+						Classification item id: Bend Pipe Fitting
+						Classification item id: Connector Pipe Fitting
+						Classification item id: Entry Pipe Fitting
+						Classification item id: Exit Pipe Fitting
+						Classification item id: Junction Pipe Fitting
+						Classification item id: Obstruction Pipe Fitting
+						Classification item id: Transition Pipe Fitting
+				Classification item id: Flow Moving Device
+					Classification item id: Compressor
+						Classification item id: Booster Compressor
+						Classification item id: Dynamic Compressor
+						Classification item id: Hermetic Compressor
+						Classification item id: Open-type Compressor
+						Classification item id: Reciprocating Compressor
+						Classification item id: Rolling Piston Compressor
+						Classification item id: Rotary Compressor
+						Classification item id: Rotary Vane Compressor
+						Classification item id: Scroll Compressor
+						Classification item id: Semi-hermetic Compressor
+						Classification item id: Single Screw Compressor
+						Classification item id: Single Stage Compressor
+						Classification item id: Trochoidal Compressor
+						Classification item id: Twinscrew Compressor
+						Classification item id: Welded Shell Hermetic Compressor
+					Classification item id: Fan
+						Classification item id: Centrifugal Air Foil Fan
+						Classification item id: Centrifugal Backward Inclined Curved Fan
+						Classification item id: Centrifugal Forward Curved Fan
+						Classification item id: Centrifugal Radial Fan
+						Classification item id: Propellor Axial Fan
+						Classification item id: Tube Axial Fan
+						Classification item id: Vane Axial Fan
+					Classification item id: Pump
+						Classification item id: Circulator Pump
+						Classification item id: End Suction Pump
+						Classification item id: Split Case Pump
+						Classification item id: Submersible Pump
+						Classification item id: Sump Pump
+						Classification item id: Vertical Inline Pump
+						Classification item id: Vertical Turbine Pump
+				Classification item id: Flow Segment
+					Classification item id: Cable Carrier Segment
+						Classification item id: Cable Ladder Segment
+						Classification item id: Cable Tray Segment
+						Classification item id: Cable Trunking Segment
+						Classification item id: Conduit Segment
+					Classification item id: Cable Segment
+						Classification item id: Busbar Segment
+						Classification item id: Conductor Segment
+						Classification item id: Core Segment
+					Classification item id: Duct Segment
+						Classification item id: Flexible Duct Segment
+						Classification item id: Rigid Duct Segment
+					Classification item id: Pipe Segment
+						Classification item id: Culvert
+						Classification item id: Flexible Pipe Segment
+						Classification item id: Gutter Pipe Segment
+						Classification item id: Rigid Pipe Segment
+						Classification item id: Spool Pipe Segment
+				Classification item id: Flow Storage Device
+					Classification item id: Electric Flow Storage Device
+						Classification item id: Battery
+						Classification item id: Capacitor Bank
+						Classification item id: Harmonic Filter
+						Classification item id: Inductor Bank
+						Classification item id: UPS
+					Classification item id: Tank
+						Classification item id: Basin Tank
+						Classification item id: Break Pressure Tank
+						Classification item id: Expansion Tank
+						Classification item id: Feed and Expansion Tank
+						Classification item id: Pressure Vessel Tank
+						Classification item id: Storage Tank
+						Classification item id: Vessel Tank
+				Classification item id: Flow Terminal
+					Classification item id: Air Terminal
+						Classification item id: Diffuser
+						Classification item id: Grille
+						Classification item id: Louvre
+						Classification item id: Register
+					Classification item id: Audio Visual Appliance
+						Classification item id: Amplifier
+						Classification item id: Camera
+						Classification item id: Display
+						Classification item id: Microphone
+						Classification item id: Player
+						Classification item id: Projector
+						Classification item id: Receiver
+						Classification item id: Speaker
+						Classification item id: Switcher
+						Classification item id: Telephone
+						Classification item id: Tuner
+					Classification item id: Communications Appliance
+						Classification item id: Antenna
+						Classification item id: Computer
+						Classification item id: Fax
+						Classification item id: Gateway
+						Classification item id: Modem
+						Classification item id: Network Appliance
+						Classification item id: Network Bridge
+						Classification item id: Network Hub
+						Classification item id: Printer
+						Classification item id: Repeater
+						Classification item id: Router
+						Classification item id: Scanner
+					Classification item id: Electric Appliance
+						Classification item id: Dishwasher
+						Classification item id: Electric Cooker
+						Classification item id: Freestanding Electric Heater
+						Classification item id: Freestanding Fan
+						Classification item id: Freestanding Water Cooler
+						Classification item id: Freestanding Water Heater
+						Classification item id: Freezer
+						Classification item id: Fridge-Freezer
+						Classification item id: Hand Dryer
+						Classification item id: Kitchen Machine
+						Classification item id: Microwave
+						Classification item id: Photocopier
+						Classification item id: Refrigerator
+						Classification item id: Tumble Dryer
+						Classification item id: Vending Machine
+						Classification item id: Washing Machine
+					Classification item id: Electric Heater
+					Classification item id: Fire Suppression Terminal
+						Classification item id: Breeching Inlet
+						Classification item id: Fire Hydrant
+						Classification item id: Hose Reel
+						Classification item id: Sprinkler
+						Classification item id: Sprinkler Deflector
+					Classification item id: Gas Terminal
+					Classification item id: Lamp
+						Classification item id: Compact Fluorescent Lamp
+						Classification item id: Fluorescent Lamp
+						Classification item id: Halogen Lamp
+						Classification item id: High-pressure Mercury Lamp
+						Classification item id: High-pressure Sodium Lamp
+						Classification item id: Led Lamp
+						Classification item id: Metal Halide Lamp
+						Classification item id: Oled Lamp
+						Classification item id: Tungsten Filament Lamp
+					Classification item id: Light Fixture
+						Classification item id: Direction Source
+						Classification item id: Point Source
+						Classification item id: Security Lighting
+					Classification item id: Medical Device
+						Classification item id: Air Station
+						Classification item id: Feed Air Unit
+						Classification item id: Oxygen Generator
+						Classification item id: Oxygen Plant
+						Classification item id: Vacuum Station
+					Classification item id: Outlet
+						Classification item id: Audiovisual Outlet
+						Classification item id: Communications Outlet
+						Classification item id: Data Outlet
+						Classification item id: Power Outlet
+						Classification item id: Telephone Outlet
+					Classification item id: Sanitary Terminal
+						Classification item id: Bath
+						Classification item id: Bidet
+						Classification item id: Cistern
+						Classification item id: Sanitary Fountain
+						Classification item id: Shower
+						Classification item id: Sink
+						Classification item id: Toilet Pan
+						Classification item id: Urinal
+						Classification item id: Wash-hand Basin
+						Classification item id: WC Seat
+					Classification item id: Space Heater
+						Classification item id: Convector
+						Classification item id: Radiator
+					Classification item id: Stack Terminal
+						Classification item id: Bird Cage
+						Classification item id: Cowl
+						Classification item id: Rainwater Hopper
+					Classification item id: Waste Terminal
+						Classification item id: Floor Trap
+						Classification item id: Floor Waste
+						Classification item id: Gully Sump
+						Classification item id: Gully Trap
+						Classification item id: Roof Drain
+						Classification item id: Waste Disposal Unit
+						Classification item id: Waste Trap
+				Classification item id: Flow Treatment Device
+					Classification item id: Duct Silencer
+						Classification item id: Flat Oval
+						Classification item id: Rectangular
+						Classification item id: Round
+					Classification item id: Filter
+						Classification item id: Air Particle Filter
+						Classification item id: Compressed Air Filter
+						Classification item id: Odor Filter
+						Classification item id: Oil Filter
+						Classification item id: Strainer Filter
+						Classification item id: Water Filter
+					Classification item id: Interceptor
+						Classification item id: Cyclonic Interceptor
+						Classification item id: Grease Interceptor
+						Classification item id: Oil Interceptor
+						Classification item id: Petrol Interceptor
+		Classification item id: Transport Element
+			Classification item id: Elevator
+			Classification item id: Escalator
+			Classification item id: Moving Walkway
+			Classification item id: Craneway
+			Classification item id: Lifting Gear
+	Classification item id: Components
+		Classification item id: Structural
+		Classification item id: Filler
+		Classification item id: Insulation Component
+		Classification item id: Airgap
+		Classification item id: Cladding Component
+		Classification item id: Finishes
+	Classification item id: Materials
+		Classification item id: Generic Material
+			Classification item id: Generic Structural Material
+				Classification item id: Generic Prefabricated Material
+				Classification item id: Generic In-situ Material
+			Classification item id: Generic Cladding & Finishes
+				Classification item id: Generic Internal Cladding & Finishes
+				Classification item id: Generic External Cladding & Finishes
+			Classification item id: Generic Insulation Material
+				Classification item id: Generic Waterproofing
+				Classification item id: Generic Thermal Insulation
+				Classification item id: Generic Fireproofing
+				Classification item id: Generic Air Gap
+			Classification item id: Generic Masonry
+				Classification item id: Generic Brick
+				Classification item id: Generic Block
+			Classification item id: Generic Filler Material
+				Classification item id: Generic Prefab Filler
+				Classification item id: Generic In-situ Filler
+			Classification item id: Generic Interior Material
+		Classification item id: Ceramic
+			Classification item id: Ceramic Cladding & Finishes
+				Classification item id: Ceramic Roof Tiles
+				Classification item id: Ceramic Floor Tiles
+				Classification item id: Ceramic Wall Tiles
+			Classification item id: Ceramic Fitting
+			Classification item id: Ceramic Masonry
+		Classification item id: Concrete
+			Classification item id: Structural Concrete
+				Classification item id: Structural In Situ Concrete
+				Classification item id: Structural Prefab Concrete
+			Classification item id: Concrete Masonry
+				Classification item id: Concrete Block
+				Classification item id: Concrete Brick
+			Classification item id: Concrete Cladding & Finishes
+				Classification item id: Sprayed Concrete
+				Classification item id: Concrete Roofing Tile
+				Classification item id: Concrete Floor Tile
+				Classification item id: Concrete Floor Layer
+		Classification item id: Burnt Clay
+			Classification item id: Burnt Clay Masonry
+				Classification item id: Clay Brick
+				Classification item id: Clay Block
+				Classification item id: Straw Bale
+			Classification item id: Burnt Clay Cladding & Finishes
+				Classification item id: Clay Roof Tile
+				Classification item id: Clay Floor Finish
+		Classification item id: Glass
+			Classification item id: Glazing Glass
+			Classification item id: Glass Block
+			Classification item id: Structural Glass
+			Classification item id: Glass Wool
+		Classification item id: Gypsum
+			Classification item id: Gypsum Masonry
+				Classification item id: Gypsum Bricks
+				Classification item id: Gypsum Blocks
+			Classification item id: Gypsum Cladding & Finishes
+				Classification item id: Gypsum Plaster
+			Classification item id: Gypsum Partitioning
+		Classification item id: Metal
+			Classification item id: Structural Metal
+				Classification item id: Metal Framing
+				Classification item id: Metal Carcassing
+			Classification item id: Metal Cladding & Finishes
+				Classification item id: Sheet Metal
+				Classification item id: Metal Finish
+			Classification item id: Metal Insulation
+			Classification item id: Ironmongery
+			Classification item id: Plumbing Metal
+		Classification item id: Mineral
+			Classification item id: Mineral Thermal Insulation
+			Classification item id: Mineral Waterproofing
+			Classification item id: Mineral Coating & Finishes
+				Classification item id: Mineral Plaster
+		Classification item id: Nature
+			Classification item id: Air
+			Classification item id: Terrain Materials
+			Classification item id: Flora & Fauna Material
+			Classification item id: Paving Material
+			Classification item id: Body of Water
+		Classification item id: Plastic
+			Classification item id: Plastic Glazing
+			Classification item id: Plastic Thermal Insulation
+			Classification item id: Plastic Waterproofing
+			Classification item id: Plastic Sealants
+			Classification item id: Plastic Claddings & Finishes
+		Classification item id: Stone
+			Classification item id: Stone Masonry
+				Classification item id: Stones - Fabricated
+					Classification item id: Stone Bricks
+					Classification item id: Stone Blocks
+				Classification item id: Stones - Ashlar & Rubble
+					Classification item id: Natural Stones
+					Classification item id: Cast Stones
+			Classification item id: Stone Cladding & Finishes
+				Classification item id: Stone - Flooring
+				Classification item id: Stone - Wall Cladding
+		Classification item id: Wood
+			Classification item id: Structural Timber
+				Classification item id: Framing Timber
+					Classification item id: Glued-Laminated Timber
+				Classification item id: Carcassing Timber
+					Classification item id: Plywood
+			Classification item id: Timber Cladding & Finishes
+				Classification item id: Wood Flooring
+				Classification item id: Wood Shingles
+				Classification item id: Wood Wall Boarding
+				Classification item id: Practicle Board
+				Classification item id: Fibreboard
+			Classification item id: Interior & Furniture Wood
+				Classification item id: Softwood
+				Classification item id: Hardwood
+			Classification item id: Wood Fills & Insulations
+				Classification item id: Wood Fibre
+				Classification item id: Wood Wool
+				Classification item id: Sawdust
+		Classification item id: Coverings
+			Classification item id: Textiles
+			Classification item id: Papers
+			Classification item id: Leather
+Classification system name: My Classification System #1
+	Classification item id: CI-1
+		Classification item id: CI-1.1
+		Classification item id: CI-1.2
+			Classification item id: CI-1.2.1
+	Classification item id: CI-2
+Classification system name: My Classification System #2
+	Classification item id: 2CI-1
+	Classification item id: 2CI-2
+		Classification item id: 2CI-2.1
+		Classification item id: 2CI-2.2

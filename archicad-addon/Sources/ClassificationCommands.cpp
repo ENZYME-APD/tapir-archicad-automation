@@ -1,6 +1,10 @@
 #include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#ifdef ServerMainVers_2900
+#include <chrono>
+#endif
+
 GetClassificationsOfElementsCommand::GetClassificationsOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -198,6 +202,221 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
             }
 
             executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+CreateClassificationSystemsCommand::CreateClassificationSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateClassificationSystemsCommand::GetName () const
+{
+    return "CreateClassificationSystems";
+}
+
+GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationSystemsWithItems": {
+                "$ref": "#/ClassificationSystemsWithItems"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+           "classificationSystemsWithItems"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GSErrCode CreateClassificationItemsRecursively (const GS::Array<GS::ObjectState>& classificationItems, const API_Guid& classificationSystemGuid, const API_Guid& currentParentGuid)
+{
+    for (const GS::ObjectState& classificationItem : classificationItems) {
+        API_ClassificationItem apiClassificationItem = {};
+        apiClassificationItem.guid = APINULLGuid;
+        classificationItem.Get ("name", apiClassificationItem.name);
+        classificationItem.Get ("description", apiClassificationItem.description);
+        classificationItem.Get ("id", apiClassificationItem.id);
+        GSErrCode err = ACAPI_Classification_CreateClassificationItem(apiClassificationItem, classificationSystemGuid, currentParentGuid, APINULLGuid);
+        if (err != NoError) {
+            return err;
+        }
+        GS::Array<GS::ObjectState> childItems;
+        if (classificationItem.Get ("children", childItems) && childItems.GetSize() > 0) {
+            CreateClassificationItemsRecursively(childItems, classificationSystemGuid, apiClassificationItem.guid);
+        }
+    }
+
+    return NoError;
+}
+
+GS::ObjectState CreateClassificationSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationSystemsWithItems;
+    parameters.Get ("classificationSystemsWithItems", classificationSystemsWithItems);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("CreateClassificationSystemsCommand", [&] () -> GSErrCode {
+        for (const GS::ObjectState& classificationSystemWithItems : classificationSystemsWithItems) {
+            GS::ObjectState classificationSystem;
+            if (!classificationSystemWithItems.Get ("classificationSystem", classificationSystem)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to get classification system details"));
+                continue;
+            }
+
+            API_ClassificationSystem apiClassificationSystem = {};
+            apiClassificationSystem.guid = APINULLGuid;
+            classificationSystem.Get ("name", apiClassificationSystem.name);
+            classificationSystem.Get ("description", apiClassificationSystem.description);
+            classificationSystem.Get ("source", apiClassificationSystem.source);
+            classificationSystem.Get ("version", apiClassificationSystem.editionVersion);
+            GS::UniString date;
+            classificationSystem.Get ("date", date);
+            unsigned int year, month, day;
+            date.SScanf ("%4u-%2u-%2u", &year, &month, &day);
+#ifdef ServerMainVers_2900
+            apiClassificationSystem.editionDate = std::chrono::year_month_day(std::chrono::year (year), std::chrono::month (month), std::chrono::day (day));
+#else
+            apiClassificationSystem.editionDate = GSDateRecord((unsigned short)year, (unsigned short)month, (unsigned short)day);
+#endif
+
+            GSErrCode err = ACAPI_Classification_CreateClassificationSystem (apiClassificationSystem);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to create classification system"));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> classificationItems;
+            if (!classificationSystemWithItems.Get ("classificationItems", classificationItems) || classificationItems.GetSize() == 0) {
+                continue;
+            }
+
+            err = CreateClassificationItemsRecursively(classificationItems, apiClassificationSystem.guid, APINULLGuid);
+            if (err == NoError) {
+                executionResults (CreateSuccessfulExecutionResult ());
+            } else {
+                executionResults (CreateFailedExecutionResult (err, "Failed to create items into classification system"));
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+CreateClassificationItemsCommand::CreateClassificationItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateClassificationItemsCommand::GetName () const
+{
+    return "CreateClassificationItems";
+}
+
+GS::Optional<GS::UniString> CreateClassificationItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "newClassificationItems": {
+                "$ref": "#/NewClassificationItems"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+           "newClassificationItems"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateClassificationItemsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState CreateClassificationItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> newClassificationItems;
+    if (!parameters.Get ("newClassificationItems", newClassificationItems) || newClassificationItems.GetSize() == 0) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "newClassificationItems is missing or invalid");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("CreateClassificationItemsCommand", [&] () -> GSErrCode {
+        for (const GS::ObjectState& newClassificationItem : newClassificationItems) {
+            GS::ObjectState classificationItemDetails;
+            if (!newClassificationItem.Get ("classificationItemDetails", classificationItemDetails)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to get classification item details"));
+                continue;
+            }
+
+            const GS::ObjectState* classificationSystemId = newClassificationItem.Get ("classificationSystemId");
+            if (classificationSystemId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* parentClassificationItemId = newClassificationItem.Get ("parentClassificationItemId");
+            const GS::ObjectState* nextClassificationItemId = newClassificationItem.Get ("nextClassificationItemId");
+
+            const API_Guid classificationSystemGuid = GetGuidFromObjectState (*classificationSystemId);
+            const API_Guid currentParentGuid = parentClassificationItemId ? GetGuidFromObjectState (*parentClassificationItemId) : APINULLGuid;
+            const API_Guid nextClassificationGuid = nextClassificationItemId ? GetGuidFromObjectState (*nextClassificationItemId) : APINULLGuid;
+
+            API_ClassificationItem apiClassificationItem = {};
+            apiClassificationItem.guid = APINULLGuid;
+            classificationItemDetails.Get ("name", apiClassificationItem.name);
+            classificationItemDetails.Get ("description", apiClassificationItem.description);
+            classificationItemDetails.Get ("id", apiClassificationItem.id);
+            GSErrCode err = ACAPI_Classification_CreateClassificationItem(apiClassificationItem, classificationSystemGuid, currentParentGuid, nextClassificationGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to create classification item"));
+                continue;
+            }
+            GS::Array<GS::ObjectState> childItems;
+            if (classificationItemDetails.Get ("children", childItems) && childItems.GetSize() > 0) {
+                CreateClassificationItemsRecursively(childItems, classificationSystemGuid, apiClassificationItem.guid);
+            }
         }
 
         return NoError;

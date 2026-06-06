@@ -164,3 +164,6 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
     GS::Array<GS::ObjectState>& polygonOutline,
     const GS::Array<GS::ObjectState>& polygonArcs,
     const GS::Array<GS::ObjectState>& holes);
+
+bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
+bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
