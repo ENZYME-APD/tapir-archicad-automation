@@ -222,20 +222,9 @@ void SetOpeningSizeMask (API_Element& mask)
     ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
 }
 
-bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
-{
-    elementHeader = {};
-    elementHeader.guid = elementGuid;
-    return ACAPI_Element_GetHeader (&elementHeader) == NoError;
-}
-
 bool DoesWallExist (const API_Guid& wallGuid)
 {
-    API_Elem_Head header = {};
-    if (!LoadElementHeaderByGuid (wallGuid, header)) {
-        return false;
-    }
-    return GetElemTypeId (header) == API_WallID;
+    return DoesElementExist (wallGuid, API_WallID);
 }
 
 GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker)
