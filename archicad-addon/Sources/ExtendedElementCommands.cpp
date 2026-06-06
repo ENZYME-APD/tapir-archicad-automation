@@ -814,67 +814,14 @@ GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, Func&& 
     return CreateExecutionResultResponse (results);
 }
 
-GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs, Int32 startIndex)
-{
-    GS::Array<API_PolyArc> polyArcs;
-    for (const GS::ObjectState& arc : arcs) {
-        API_PolyArc polyArc = {};
-        if (arc.Get ("begIndex", polyArc.begIndex) &&
-            arc.Get ("endIndex", polyArc.endIndex) &&
-            arc.Get ("arcAngle", polyArc.arcAngle)) {
-            polyArc.begIndex += startIndex;
-            polyArc.endIndex += startIndex;
-            polyArcs.Push (polyArc);
-        }
-    }
-    return polyArcs;
-}
-
-void AddPolyToMemo (
-    const GS::Array<GS::ObjectState>& coords,
-    const GS::Array<GS::ObjectState>& arcs,
-    Int32& iCoord,
-    Int32& iArc,
-    Int32& iPends,
-    API_ElementMemo& memo,
-    const API_EdgeTrimID* edgeTrimSideType = nullptr,
-    const API_OverriddenAttribute* sideMaterial = nullptr)
-{
-    const Int32 startIndex = iCoord;
-    for (const GS::ObjectState& coord : coords) {
-        (*memo.coords)[iCoord] = Get2DCoordinateFromObjectState (coord);
-        if (edgeTrimSideType != nullptr) {
-            (*memo.edgeTrims)[iCoord].sideType = *edgeTrimSideType;
-        }
-        if (sideMaterial != nullptr) {
-            memo.sideMaterials[iCoord] = *sideMaterial;
-        }
-        ++iCoord;
-    }
-
-    (*memo.coords)[iCoord] = (*memo.coords)[startIndex];
-    (*memo.pends)[iPends++] = iCoord;
-    if (edgeTrimSideType != nullptr) {
-        (*memo.edgeTrims)[iCoord].sideType = (*memo.edgeTrims)[startIndex].sideType;
-        (*memo.edgeTrims)[iCoord].sideAngle = (*memo.edgeTrims)[startIndex].sideAngle;
-    }
-    if (sideMaterial != nullptr) {
-        memo.sideMaterials[iCoord] = memo.sideMaterials[startIndex];
-    }
-    ++iCoord;
-
-    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, startIndex);
-    for (const API_PolyArc& polyArc : polyArcs) {
-        (*memo.parcs)[iArc++] = polyArc;
-    }
 }
 
 GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
     API_Element& element,
     API_ElementMemo& memo,
-    GS::Array<GS::ObjectState> polygonOutline,
-    GS::Array<GS::ObjectState> polygonArcs,
-    GS::Array<GS::ObjectState> holes)
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes)
 {
     if (polygonOutline.GetSize () < 3) {
         return "'polygonOutline' must contain at least 3 coordinates.";
@@ -884,6 +831,7 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         polygonOutline.Pop ();
     }
 
+    const API_Polygon oldPoly = element.slab.poly;
     element.slab.poly.nCoords = polygonOutline.GetSize () + 1;
     element.slab.poly.nSubPolys = 1;
     element.slab.poly.nArcs = polygonArcs.GetSize ();
@@ -898,28 +846,40 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         }
     }
 
-    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-    memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
-    memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
-    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.slab.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.slab.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    if (oldPoly.nCoords != element.slab.poly.nCoords) {
+        memo.coords = reinterpret_cast<API_Coord**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords), (element.slab.poly.nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
+        memo.vertexIDs = reinterpret_cast<UInt32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.vertexIDs), (element.slab.poly.nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
+        memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.edgeTrims), (element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), REALLOC_CLEAR, 0));
+        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMReallocPtr (reinterpret_cast<GSPtr> (memo.sideMaterials), (element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), REALLOC_CLEAR, 0));
+    }
+    if (oldPoly.nSubPolys != element.slab.poly.nSubPolys) {
+        memo.pends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (element.slab.poly.nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
+    }
+    if (oldPoly.nArcs != element.slab.poly.nArcs) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), element.slab.poly.nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    }
+    const bool needToProcessVertexIDs =
+        oldPoly.nCoords != element.slab.poly.nCoords ||
+        oldPoly.nSubPolys != element.slab.poly.nSubPolys;
 
     const API_EdgeTrimID edgeTrimSideType = APIEdgeTrim_Vertical;
     Int32 iCoord = 1;
     Int32 iArc = 0;
     Int32 iPends = 1;
-    AddPolyToMemo (polygonOutline, polygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat);
+    AddPolyToMemo (polygonOutline, polygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, needToProcessVertexIDs);
 
     for (const GS::ObjectState& hole : holes) {
         GS::Array<GS::ObjectState> holePolygonOutline;
         GS::Array<GS::ObjectState> holePolygonArcs;
         if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            AddPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat);
+            AddPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, needToProcessVertexIDs);
         }
     }
 
     return {};
 }
+
+namespace {
 
 void AddAdditionalPolyToMemo (
     const GS::Array<GS::ObjectState>& coords,
@@ -947,9 +907,9 @@ void AddAdditionalPolyToMemo (
 GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
     API_Element& element,
     API_ElementMemo& memo,
-    GS::Array<GS::ObjectState> polygonOutline,
-    GS::Array<GS::ObjectState> polygonArcs,
-    GS::Array<GS::ObjectState> holes)
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes)
 {
     if (polygonOutline.GetSize () < 3) {
         return "'polygonOutline' must contain at least 3 coordinates.";
@@ -973,9 +933,9 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         }
     }
 
-    memo.additionalPolyCoords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.roof.u.polyRoof.pivotPolygon.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-    memo.additionalPolyPends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.roof.u.polyRoof.pivotPolygon.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.additionalPolyParcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.roof.u.polyRoof.pivotPolygon.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    memo.additionalPolyCoords = reinterpret_cast<API_Coord**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyCoords), (element.roof.u.polyRoof.pivotPolygon.nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
+    memo.additionalPolyPends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyPends), (element.roof.u.polyRoof.pivotPolygon.nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
+    memo.additionalPolyParcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyParcs), element.roof.u.polyRoof.pivotPolygon.nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
 
     Int32 iCoord = 1;
     Int32 iArc = 0;
@@ -3080,21 +3040,24 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
-            const GS::ObjectState* polygonOutline = item.Get ("polygonOutline");
-            GS::Array<GS::ObjectState> polygonArcs;
-            GS::Array<GS::ObjectState> holes;
-            item.Get ("polygonArcs", polygonArcs);
-            item.Get ("holes", holes);
+            GS::Array<GS::ObjectState> polygonOutline;
+            if (item.Get ("polygonOutline", polygonOutline)) {
+                if (polygonOutline.GetSize () < 3) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
+                    continue;
+                }
 
-            if (polygonOutline != nullptr) {
                 API_ElementMemo memo = {};
                 const GS::OnExit cleanup ([&]() {
                     ACAPI_DisposeElemMemoHdls (&memo);
                 });
+                ACAPI_Element_GetMemo (element.header.guid, &memo);
 
-                GS::Array<GS::ObjectState> outline;
-                item.Get ("polygonOutline", outline);
-                auto error = BuildSlabMemoFromGeometry (element, memo, outline, polygonArcs, holes);
+                GS::Array<GS::ObjectState> polygonArcs;
+                GS::Array<GS::ObjectState> holes;
+                item.Get ("polygonArcs", polygonArcs);
+                item.Get ("holes", holes);
+                auto error = BuildSlabMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
@@ -3225,22 +3188,25 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
             }
+\
+            GS::Array<GS::ObjectState> polygonOutline;
+            if (item.Get ("polygonOutline", polygonOutline)) {
+                if (polygonOutline.GetSize () < 3) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
+                    continue;
+                }
 
-            const GS::ObjectState* polygonOutline = item.Get ("polygonOutline");
-            GS::Array<GS::ObjectState> polygonArcs;
-            GS::Array<GS::ObjectState> holes;
-            item.Get ("polygonArcs", polygonArcs);
-            item.Get ("holes", holes);
-
-            if (polygonOutline != nullptr) {
                 API_ElementMemo memo = {};
                 const GS::OnExit cleanup ([&]() {
                     ACAPI_DisposeElemMemoHdls (&memo);
                 });
+                ACAPI_Element_GetMemo (element.header.guid, &memo);
 
-                GS::Array<GS::ObjectState> outline;
-                item.Get ("polygonOutline", outline);
-                auto error = BuildRoofMemoFromGeometry (element, memo, outline, polygonArcs, holes);
+                GS::Array<GS::ObjectState> polygonArcs;
+                GS::Array<GS::ObjectState> holes;
+                item.Get ("polygonArcs", polygonArcs);
+                item.Get ("holes", holes);
+                auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;

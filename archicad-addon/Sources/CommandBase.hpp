@@ -145,5 +145,25 @@ bool SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::u
     return false;
 }
 
+GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs, Int32 startIndex);
+
+void AddPolyToMemo (
+    const GS::Array<GS::ObjectState>& coords,
+    const GS::Array<GS::ObjectState>& arcs,
+    Int32& iCoord,
+    Int32& iArc,
+    Int32& iPends,
+    API_ElementMemo& memo,
+    const API_EdgeTrimID* edgeTrimSideType = nullptr,
+    const API_OverriddenAttribute* sideMaterial = nullptr,
+    bool processVertexIDs = false);
+
+GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
+    API_Element& element,
+    API_ElementMemo& memo,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes);
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
