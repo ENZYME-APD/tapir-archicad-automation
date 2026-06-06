@@ -637,3 +637,19 @@ GSErrCode ExecuteActionForEachDatabase (
     }
     return NoError;
 }
+
+bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader)
+{
+    elementHeader = {};
+    elementHeader.guid = elementGuid;
+    return ACAPI_Element_GetHeader (&elementHeader) == NoError;
+}
+
+bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId)
+{
+    API_Elem_Head header = {};
+    if (!LoadElementHeaderByGuid (elementGuid, header)) {
+        return false;
+    }
+    return GetElemTypeId (header) == expectedTypeId;
+}

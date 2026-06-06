@@ -144,3 +144,6 @@ bool SetUCharProperty (const GS::ObjectState* os, const char* propertyKey, GS::u
 
     return false;
 }
+
+bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
+bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);

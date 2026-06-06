@@ -36,6 +36,7 @@
 #include "RevisionCommands.hpp"
 #include "NotificationCommands.hpp"
 #include "DesignOptionCommands.hpp"
+#include "IFCCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -207,10 +208,6 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetGeoLocationCommand> (
             projectCommands, "1.2.9",
             "Sets the project location details."
-        );
-        err |= RegisterCommand<IFCFileOperationCommand> (
-            projectCommands, "1.2.6",
-            "Executes an IFC file operation."
         );
         err |= RegisterCommand<PrintViewCommand> (
             projectCommands, "1.3.1",
@@ -564,6 +561,31 @@ GSErrCode Initialize (void)
             "Returns the details of layer combination attributes."
         );
         AddCommandGroup (attributeCommands);
+    }
+
+    { // IFC Commands
+        CommandGroup ifcCommands ("IFC Commands");
+        err |= RegisterCommand<IFCFileOperationCommand> (
+            ifcCommands, "1.2.6",
+            "Executes an IFC file operation."
+        );
+        err |= RegisterCommand<GetElementsByIFCIdsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the elements by the given IFC identifiers."
+        );
+        err |= RegisterCommand<GetIFCIdsOfElementsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the IFC identifiers of the given elements."
+        );
+        err |= RegisterCommand<GetIFCTypeOfElementsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the IFC types of the given elements."
+        );
+        err |= RegisterCommand<GetIFCPropertiesOfElementsCommand> (
+            ifcCommands, "1.5.1",
+            "Retrieves the IFC properties of the given elements."
+        );
+        AddCommandGroup (ifcCommands);
     }
 
     { // Library Commands
