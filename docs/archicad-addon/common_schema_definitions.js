@@ -108,16 +108,41 @@ var gSchemaDefinitions = {
             "guid"
         ]
     },
+    "DesignOptionId": {
+        "type": "object",
+        "description": "The identifier of a design option.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
     "DesignOptionIdArrayItem": {
         "type": "object",
         "properties": {
             "designOptionId": {
-                "$ref": "#/GuidId"
+                "$ref": "#/DesignOptionId"
             }
         },
         "additionalProperties": false,
         "required": [
             "designOptionId"
+        ]
+    },
+    "DesignOptionCombinationIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationId": {
+                "$ref": "#/DesignOptionCombinationId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationId"
         ]
     },
     "LayersOfLayerCombination": {
@@ -2048,11 +2073,49 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "DesignOptionIdOrError": {
+        "type": "object",
+        "description": "A design option identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/DesignOptionIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "DesignOptionCombinationIdOrError": {
+        "type": "object",
+        "description": "A design option combination identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/DesignOptionCombinationIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "ClassificationIdsOrErrors": {
         "type": "array",
         "description": "A list of element classification identifiers or errors.",
         "items": {
             "$ref": "#/ClassificationIdOrError"
+        }
+    },
+    "DesignOptionIdsOrErrors": {
+        "type": "array",
+        "description": "A list of design option identifiers or errors.",
+        "items": {
+            "$ref": "#/DesignOptionIdOrError"
+        }
+    },
+    "DesignOptionCombinationIdsOrErrors": {
+        "type": "array",
+        "description": "A list of design option combination identifiers or errors.",
+        "items": {
+            "$ref": "#/DesignOptionCombinationIdOrError"
         }
     },
     "ElementClassificationItemArray": {
@@ -2082,6 +2145,170 @@ var gSchemaDefinitions = {
         "description": "A list of element classification identifiers or errors.",
         "items": {
             "$ref": "#/ElementClassificationOrError"
+        }
+    },
+    "ElementIFCProperty": {
+        "type": "object",
+        "description": "The details of an IFC property value of an element.",
+        "properties": {
+            "propertySetName": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "value": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertySetName",
+            "name",
+            "value"
+        ]
+    },
+    "ElementIFCProperties": {
+        "type": "object",
+        "description": "The IFC properties of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcProperties": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIFCProperty"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcProperties"
+        ]
+    },
+    "ElementIFCType": {
+        "type": "object",
+        "description": "The IFC type of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcType": {
+                "type": "string"
+            },
+            "typeObjectIFCType": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcType",
+            "typeObjectIFCType"
+        ]
+    },
+    "ElementIFCIds": {
+        "type": "object",
+        "description": "The IFC identifiers of an element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "ifcId": {
+                "type": "string"
+            },
+            "externalIFCId": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "ifcId",
+            "externalIFCId"
+        ]
+    },
+    "ElementIFCPropertiesOrError": {
+        "type": "object",
+        "description": "Element IFC properties or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCProperties"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCTypeOrError": {
+        "type": "object",
+        "description": "Element IFC type or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCType"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCIdsOrError": {
+        "type": "object",
+        "description": "Element IFC identifiers or error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIFCIds"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIFCPropertiesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC properties of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCPropertiesOrError"
+        }
+    },
+    "ElementIFCTypesOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC types of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCTypeOrError"
+        }
+    },
+    "ElementIFCIdsOrErrors": {
+        "type": "array",
+        "description": "A list of the IFC identifiers of elements or errors.",
+        "items": {
+            "$ref": "#/ElementIFCIdsOrError"
+        }
+    },
+    "ElementsByIFCIds": {
+        "type": "array",
+        "description": "A list of elements identified by their IFC identifiers or errors.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "ifcId": {
+                    "type": "string"
+                },
+                "elements": {
+                    "type": "array",
+                    "description": "A list of element identifiers having the given IFC identifier. If the given IFC identifier is an external identifier, the list can contain multiple elements as the IFC can be placed multiple times.",
+                    "items": {
+                        "$ref": "#/ElementIdArrayItem"
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "ifcId",
+                "elements"
+            ]
         }
     },
     "ElementClassification": {
@@ -2844,7 +3071,7 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
             },
-            "polygonCoordinates": {
+            "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
                 "items": {
@@ -2873,7 +3100,7 @@ var gSchemaDefinitions = {
             "categoryAttributeId",
             "stampPosition",
             "isManual",
-            "polygonCoordinates",
+            "polygonOutline",
             "zCoordinate"
         ]
     },
@@ -4062,6 +4289,34 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "ElementsOfDesignOption": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId"
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId",
+            "elements"
+        ]
+    },
+    "ElementsOfDesignOptionOrError": {
+        "type": "object",
+        "description": "The elements of the design option or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementsOfDesignOption"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "AttributeHeaders": {
         "type": "array",
         "description": "Details of attributes.",
@@ -4244,6 +4499,46 @@ var gSchemaDefinitions = {
             {
                 "$ref": "#/ErrorItem"
             }
+        ]
+    },
+    "DesignOptionCombinationId": {
+        "type": "object",
+        "description": "The identifier of a design option combination.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "DesignOptionDetails": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the design option."
+            },
+            "id": {
+                "type": "string",
+                "description": "The string id of the design option."
+            },
+            "ownerSetName": {
+                "type": "string",
+                "description": "The name of the owner design option set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId",
+            "name",
+            "id",
+            "ownerSetName"
         ]
     }
 }

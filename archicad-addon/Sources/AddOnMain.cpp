@@ -779,6 +779,34 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.2.9",
             "Retrieves information about existing design option combinations."
         );
+        err |= RegisterCommand<GetElementsOfDesignOptionsCommand> (
+            designOptionsCommands, "1.5.1",
+            "Retrieves the elements associated with the given design options. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetDesignOptionForElementsCommand> (
+            designOptionsCommands, "1.5.1",
+            "Retrieves the design option association for the specified elements. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateDesignOptionSetsCommand> (
+            designOptionsCommands, "1.5.1",
+            "Creates new design option sets with the given names. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateDesignOptionsCommand> (
+            designOptionsCommands, "1.5.1",
+            "Creates new design options with the given parameters. Available from Archicad 29."
+        );
+        err |= RegisterCommand<CreateDesignOptionCombinationsCommand> (
+            designOptionsCommands, "1.5.1",
+            "Creates new design option combinations with the given parameters. Available from Archicad 29."
+        );
+        err |= RegisterCommand<SetActiveDesignOptionsInCombinationsCommand> (
+            designOptionsCommands, "1.5.1",
+            "Sets active design options in the given combinations. Available from Archicad 29."
+        );
+        err |= RegisterCommand<MoveElementsToDesignOptionsCommand> (
+            designOptionsCommands, "1.5.1",
+            "Moves the given elements into the given design options. Use NULLGuid for design option to remove the element from any design options and move it to the main model. Available from Archicad 29."
+        );
         AddCommandGroup (designOptionsCommands);
     }
 

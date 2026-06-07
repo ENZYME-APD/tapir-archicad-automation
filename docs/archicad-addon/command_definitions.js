@@ -585,37 +585,6 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
-                "name": "IFCFileOperation",
-                "version": "1.2.6",
-                "description": "Executes an IFC file operation.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "method": {
-                "type": "string",
-                "description": "The file operation method to use.",
-                "enum": ["save", "merge", "open"]
-            },
-            "ifcFilePath": {
-                "type": "string",
-                "description": "The target IFC file to use."
-            },
-            "fileType": {
-                "type": "string",
-                "description": "The type of the IFC file. The default is 'ifc'.",
-                "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "method",
-            "ifcFilePath"
-        ]
-    },
-                "outputScheme": {
-        "$ref": "#/ExecutionResult"
-    }
-            },{
                 "name": "PrintView",
                 "version": "1.3.1",
                 "description": "Prints from the current view.",
@@ -4215,6 +4184,156 @@ var gCommands = [{
     }
             }]
         },{
+            "name": "IFC Commands",
+            "commands": [{
+                "name": "IFCFileOperation",
+                "version": "1.2.6",
+                "description": "Executes an IFC file operation.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "method": {
+                "type": "string",
+                "description": "The file operation method to use.",
+                "enum": ["save", "merge", "open"]
+            },
+            "ifcFilePath": {
+                "type": "string",
+                "description": "The target IFC file to use."
+            },
+            "fileType": {
+                "type": "string",
+                "description": "The type of the IFC file. The default is 'ifc'.",
+                "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "method",
+            "ifcFilePath"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "GetElementsByIFCIds",
+                "version": "1.5.1",
+                "description": "Retrieves the elements by the given IFC identifiers.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "ifcIds": {
+                "type": "array",
+                "description": "A list of IFC identifiers to get the corresponding elements for.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ifcIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementsByIFCIds": {
+                "$ref": "#/ElementsByIFCIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsByIFCIds"
+        ]
+    }
+            },{
+                "name": "GetIFCIdsOfElements",
+                "version": "1.5.1",
+                "description": "Retrieves the IFC identifiers of the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementIFCIds": {
+                "$ref": "#/ElementIFCIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCIds"
+        ]
+    }
+            },{
+                "name": "GetIFCTypeOfElements",
+                "version": "1.5.1",
+                "description": "Retrieves the IFC types of the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementIFCTypes": {
+                "$ref": "#/ElementIFCTypesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCTypes"
+        ]
+    }
+            },{
+                "name": "GetIFCPropertiesOfElements",
+                "version": "1.5.1",
+                "description": "Retrieves the IFC properties of the given elements.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementIFCProperties": {
+                "$ref": "#/ElementIFCPropertiesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCProperties"
+        ]
+    }
+            }]
+        },{
             "name": "Library Commands",
             "commands": [{
                 "name": "GetLibraries",
@@ -5384,32 +5503,7 @@ var gCommands = [{
             "designOptions": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionId": {
-                            "$ref": "#/GuidId",
-                            "description": "The guid identifier of the design option."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the design option."
-                        },
-                        "id": {
-                            "type": "string",
-                            "description": "The string id of the design option."
-                        },
-                        "ownerSetName": {
-                            "type": "string",
-                            "description": "The name of the owner design option set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionId",
-                        "name",
-                        "id",
-                        "ownerSetName"
-                    ]
+                    "$ref": "#/DesignOptionDetails"
                 }
             }
         },
@@ -5501,6 +5595,328 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "designOptionCombinations"
+        ]
+    }
+            },{
+                "name": "GetElementsOfDesignOptions",
+                "version": "1.5.1",
+                "description": "Retrieves the elements associated with the given design options. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionId": {
+                            "$ref": "#/DesignOptionId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptions"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementsOfDesignOptions": {
+                "type": "array",
+                "items": {
+                    "#ref": "#/ElementsOfDesignOptionOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsOfDesignOptions"
+        ]
+    }
+            },{
+                "name": "GetDesignOptionForElements",
+                "version": "1.5.1",
+                "description": "Retrieves the design option association for the specified elements. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionForElements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of the element."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "The type of the associated design option.",
+                            "enum": [
+                                "NotExistingElement",
+                                "MissingDesignOption",
+                                "NotLinkedToAnyDesignOption",
+                                "LinkedToDesignOption"
+                            ]
+                        },
+                        "designOption": {
+                            "$ref": "#/DesignOptionDetails"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "type"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionForElements"
+        ]
+    }
+            },{
+                "name": "CreateDesignOptionSets",
+                "version": "1.5.1",
+                "description": "Creates new design option sets with the given names. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionSets": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSets"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "CreateDesignOptions",
+                "version": "1.5.1",
+                "description": "Creates new design options with the given parameters. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the design option."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "The string id of the design option."
+                        },
+                        "ownerSetName": {
+                            "type": "string",
+                            "description": "The name of the owner design option set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "id",
+                        "ownerSetName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptions"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionIdsOrErrors": {
+                "$ref": "#/DesignOptionIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionIdsOrErrors"
+        ]
+    }
+            },{
+                "name": "CreateDesignOptionCombinations",
+                "version": "1.5.1",
+                "description": "Creates new design option combinations with the given parameters. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the design option combination."
+                        },
+                        "activeDesignOptions": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/DesignOptionIdArrayItem"
+                            },
+                            "description": "The list of active design options in the combination."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "activeDesignOptions"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinations"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationIdsOrErrors": {
+                "$ref": "#/DesignOptionCombinationIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationIdsOrErrors"
+        ]
+    }
+            },{
+                "name": "SetActiveDesignOptionsInCombinations",
+                "version": "1.5.1",
+                "description": "Sets active design options in the given combinations. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "activeDesignOptionsInCombinations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionCombinationId": {
+                            "$ref": "#/DesignOptionCombinationId"
+                        },
+                        "activeDesignOptions": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/DesignOptionIdArrayItem"
+                            },
+                            "description": "The list of active design options in the combination."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "designOptionCombinationId",
+                        "activeDesignOptions"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "activeDesignOptionsInCombinations"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "MoveElementsToDesignOptions",
+                "version": "1.5.1",
+                "description": "Moves the given elements into the given design options. Use NULLGuid for design option to remove the element from any design options and move it to the main model. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementDesignOptionPairs": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "designOptionId": {
+                            "description": "The identifier of the design option to move the element into. Use NULLGuid to remove the element from any design option and move it to the main model.",
+                            "$ref": "#/DesignOptionId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "designOptionId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementDesignOptionPairs"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
         ]
     }
             }]
