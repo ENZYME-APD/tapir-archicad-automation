@@ -108,16 +108,41 @@
             "guid"
         ]
     },
+    "DesignOptionId": {
+        "type": "object",
+        "description": "The identifier of a design option.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
     "DesignOptionIdArrayItem": {
         "type": "object",
         "properties": {
             "designOptionId": {
-                "$ref": "#/GuidId"
+                "$ref": "#/DesignOptionId"
             }
         },
         "additionalProperties": false,
         "required": [
             "designOptionId"
+        ]
+    },
+    "DesignOptionCombinationIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationId": {
+                "$ref": "#/DesignOptionCombinationId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationId"
         ]
     },
     "LayersOfLayerCombination": {
@@ -2048,11 +2073,49 @@
             }
         ]
     },
+    "DesignOptionIdOrError": {
+        "type": "object",
+        "description": "A design option identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/DesignOptionIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "DesignOptionCombinationIdOrError": {
+        "type": "object",
+        "description": "A design option combination identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/DesignOptionCombinationIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "ClassificationIdsOrErrors": {
         "type": "array",
         "description": "A list of element classification identifiers or errors.",
         "items": {
             "$ref": "#/ClassificationIdOrError"
+        }
+    },
+    "DesignOptionIdsOrErrors": {
+        "type": "array",
+        "description": "A list of design option identifiers or errors.",
+        "items": {
+            "$ref": "#/DesignOptionIdOrError"
+        }
+    },
+    "DesignOptionCombinationIdsOrErrors": {
+        "type": "array",
+        "description": "A list of design option combination identifiers or errors.",
+        "items": {
+            "$ref": "#/DesignOptionCombinationIdOrError"
         }
     },
     "ElementClassificationItemArray": {
@@ -4226,6 +4289,34 @@
             }
         ]
     },
+    "ElementsOfDesignOption": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId"
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId",
+            "elements"
+        ]
+    },
+    "ElementsOfDesignOptionOrError": {
+        "type": "object",
+        "description": "The elements of the design option or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementsOfDesignOption"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "AttributeHeaders": {
         "type": "array",
         "description": "Details of attributes.",
@@ -4408,6 +4499,46 @@
             {
                 "$ref": "#/ErrorItem"
             }
+        ]
+    },
+    "DesignOptionCombinationId": {
+        "type": "object",
+        "description": "The identifier of a design option combination.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "DesignOptionDetails": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the design option."
+            },
+            "id": {
+                "type": "string",
+                "description": "The string id of the design option."
+            },
+            "ownerSetName": {
+                "type": "string",
+                "description": "The name of the owner design option set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId",
+            "name",
+            "id",
+            "ownerSetName"
         ]
     }
 }
