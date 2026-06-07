@@ -419,7 +419,7 @@ GS::Optional<GS::UniString> GetDesignOptionForElementsCommand::GetResponseSchema
                         },
                         "type": {
                             "type": "string",
-                            "description": "The type of the associated design option."
+                            "description": "The type of the associated design option.",
                             "enum": [
                                 "NotExistingElement",
                                 "MissingDesignOption",
