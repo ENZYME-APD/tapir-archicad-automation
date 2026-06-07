@@ -807,6 +807,10 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.5.1",
             "Moves the given elements into the given design options. Use NULLGuid for design option to remove the element from any design options and move it to the main model. Available from Archicad 29."
         );
+        err |= RegisterCommand<MoveDesignOptionsToAnotherSetCommand> (
+            designOptionsCommands, "1.5.1",
+            "Moves the given design options to another sets. Available from Archicad 29."
+        );
         AddCommandGroup (designOptionsCommands);
     }
 

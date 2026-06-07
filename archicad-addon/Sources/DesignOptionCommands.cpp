@@ -1103,3 +1103,132 @@ GS::ObjectState MoveElementsToDesignOptionsCommand::Execute (const GS::ObjectSta
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
 #endif
 }
+
+MoveDesignOptionsToAnotherSetCommand::MoveDesignOptionsToAnotherSetCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MoveDesignOptionsToAnotherSetCommand::GetName () const
+{
+    return "MoveDesignOptionsToAnotherSet";
+}
+
+GS::Optional<GS::UniString> MoveDesignOptionsToAnotherSetCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "designOptionAndSetPairs": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionId": {
+                            "description": "The identifier of the design option to move.",
+                            "$ref": "#/DesignOptionId"
+                        },
+                        "setName": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "setName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionAndSetPairs"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveDesignOptionsToAnotherSetCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState MoveDesignOptionsToAnotherSetCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to modify design options.");
+    }
+
+    GS::Array<GS::ObjectState> designOptionAndSetPairs;
+    if (!parameters.Get ("designOptionAndSetPairs", designOptionAndSetPairs)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'designOptionAndSetPairs' parameter.");
+    }
+
+	auto designOptions = manager->GetAllDesignOptions ();
+	if (designOptions.IsErr ()) {
+        return CreateErrorResponse (designOptions.UnwrapErr ().kind, "Unable to modify design options.");
+	}
+
+	auto sets = manager->GetDesignOptionSets ();
+	if (sets.IsErr ()) {
+        return CreateErrorResponse (sets.UnwrapErr ().kind, "Unable to modify design options.");
+	}
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Move Design Options to Another Set", [&]() -> GSErrCode {
+        for (auto&& designOptionAndSetPair : designOptionAndSetPairs) {
+            DesignOption* optionPtr = nullptr;
+            GS::Guid designOptionGuid = APIGuid2GSGuid (GetGuidFromArrayItem ("designOptionId", designOptionAndSetPair));
+            if (!designOptionGuid.IsNull()) {
+                for (auto&& designOption : *designOptions) {
+                    if (designOption.GetGuid () == designOptionGuid) {
+                        optionPtr = &designOption;
+                        break;
+                    }
+                }
+                if (optionPtr == nullptr) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADID, "Not found design option with the given 'designOptionId' parameter"));
+                    continue;
+                }
+            }
+            GS::UniString setName;
+            if (!designOptionAndSetPair.Get ("setName", setName)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Missing or invalid 'setName' parameter"));
+            }
+            DesignOptionSet* setPtr = nullptr;
+            for (auto&& set : *sets) {
+                if (set.GetName () == setName) {
+                    setPtr = &set;
+                    break;
+                }
+            }
+            if (setPtr == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "Not found design option set with the given 'setName'"));
+                continue;
+            }
+            auto result = manager->MoveDesignOptionToOtherSet (*optionPtr, *setPtr);
+            executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to move design option."));
+        }
+        return NoError;
+    });
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}

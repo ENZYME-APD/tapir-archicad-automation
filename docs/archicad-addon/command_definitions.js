@@ -5919,6 +5919,51 @@ var gCommands = [{
             "executionResults"
         ]
     }
+            },{
+                "name": "MoveDesignOptionsToAnotherSet",
+                "version": "1.5.1",
+                "description": "Moves the given design options to another sets. Available from Archicad 29.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "designOptionAndSetPairs": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "designOptionId": {
+                            "description": "The identifier of the design option to move.",
+                            "$ref": "#/DesignOptionId"
+                        },
+                        "setName": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "setName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionAndSetPairs"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
             }]
         },{
             "name": "Developer Commands",
