@@ -1945,7 +1945,7 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "description": "A list of classification items.",
                 "items": {
-                    "$ref": "#/definitions/ClassificationItemDetails"
+                    "$ref": "#/ClassificationItemDetails"
                 }
             }
         },
