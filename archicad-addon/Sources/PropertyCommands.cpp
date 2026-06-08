@@ -246,11 +246,9 @@ static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::
         case PackTypes (API_PropertySingleChoiceEnumerationCollectionType, API_PropertyStringValueType):
             {
                 const API_Guid& selectedGuid = propertyValue.value.singleVariant.variant.guidValue;
-                bool found = false;
                 for (const API_SingleEnumerationVariant& enumVar : propertyValue.definition.possibleEnumValues) {
                     if (enumVar.keyVariant.guidValue == selectedGuid) {
                         resultString = enumVar.displayVariant.uniStringValue;
-                        found = true;
                         break;
                     }
                 }
