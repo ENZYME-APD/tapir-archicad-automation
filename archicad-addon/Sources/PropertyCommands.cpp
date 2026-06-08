@@ -218,6 +218,53 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
     return response;
 }
 
+constexpr uint32_t PackTypes (API_PropertyCollectionType colType, API_VariantType valType)
+{
+    return (static_cast<uint32_t> (colType) << 16) | static_cast<uint32_t> (valType);
+}
+
+static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::UniString& resultString)
+{
+    if (propertyValue.value.variantStatus == API_VariantStatusUserUndefined) {
+        resultString = "<Undefined>";
+        return NoError;
+    }
+
+    switch (PackTypes (propertyValue.definition.collectionType, propertyValue.definition.valueType)) {
+        case PackTypes (API_PropertySingleCollectionType, API_PropertyStringValueType):
+            resultString = propertyValue.value.singleVariant.variant.uniStringValue;
+            break;
+
+        case PackTypes (API_PropertySingleCollectionType, API_PropertyBooleanValueType):
+            resultString = propertyValue.value.singleVariant.variant.boolValue ? "True" : "False";
+            break;
+
+        case PackTypes (API_PropertySingleCollectionType, API_PropertyIntegerValueType):
+            resultString = GS::UniString::Printf ("%d", (int) propertyValue.value.singleVariant.variant.intValue);
+            break;
+
+        case PackTypes (API_PropertySingleChoiceEnumerationCollectionType, API_PropertyStringValueType):
+            {
+                const API_Guid& selectedGuid = propertyValue.value.singleVariant.variant.guidValue;
+                bool found = false;
+                for (const API_SingleEnumerationVariant& enumVar : propertyValue.definition.possibleEnumValues) {
+                    if (enumVar.keyVariant.guidValue == selectedGuid) {
+                        resultString = enumVar.displayVariant.uniStringValue;
+                        found = true;
+                        break;
+                    }
+                }
+                return ACAPI_Property_GetPropertyValueString (propertyValue, &resultString);
+            }
+
+        default:
+            return ACAPI_Property_GetPropertyValueString (propertyValue, &resultString);
+            break;
+    }
+
+    return NoError;
+}
+
 GetPropertyValuesOfElementsCommand::GetPropertyValuesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -333,7 +380,7 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
             }
 
             GS::UniString propertyValueString;
-            err = ACAPI_Property_GetPropertyValueString (propertyValue, &propertyValueString);
+            err = GetPropertyValueString (propertyValue, propertyValueString);
 
             if (err != NoError) {
                 propertyValues (CreateErrorResponse (err, "Failed to get property value as string"));
