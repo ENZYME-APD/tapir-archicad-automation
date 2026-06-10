@@ -233,15 +233,15 @@ static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::
     switch (PackTypes (propertyValue.definition.collectionType, propertyValue.definition.valueType)) {
         case PackTypes (API_PropertySingleCollectionType, API_PropertyStringValueType):
             resultString = propertyValue.value.singleVariant.variant.uniStringValue;
-            break;
+            return NoError;
 
         case PackTypes (API_PropertySingleCollectionType, API_PropertyBooleanValueType):
             resultString = propertyValue.value.singleVariant.variant.boolValue ? "True" : "False";
-            break;
+            return NoError;
 
         case PackTypes (API_PropertySingleCollectionType, API_PropertyIntegerValueType):
             resultString = GS::UniString::Printf ("%d", (int) propertyValue.value.singleVariant.variant.intValue);
-            break;
+            return NoError;
 
         case PackTypes (API_PropertySingleChoiceEnumerationCollectionType, API_PropertyStringValueType):
             {
@@ -249,7 +249,7 @@ static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::
                 for (const API_SingleEnumerationVariant& enumVar : propertyValue.definition.possibleEnumValues) {
                     if (enumVar.keyVariant.guidValue == selectedGuid) {
                         resultString = enumVar.displayVariant.uniStringValue;
-                        break;
+                        return NoError;
                     }
                 }
                 return ACAPI_Property_GetPropertyValueString (propertyValue, &resultString);
@@ -257,10 +257,7 @@ static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::
 
         default:
             return ACAPI_Property_GetPropertyValueString (propertyValue, &resultString);
-            break;
     }
-
-    return NoError;
 }
 
 GetPropertyValuesOfElementsCommand::GetPropertyValuesOfElementsCommand () :
@@ -325,7 +322,10 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     for (const GS::ObjectState& property : properties) {
         const GS::ObjectState* propertyId = property.Get ("propertyId");
         if (propertyId != nullptr) {
-            propertyGuids.Push (GetGuidFromObjectState (*propertyId));
+            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+            if (propertyGuid != APINULLGuid) {
+                propertyGuids.Push (propertyGuid);
+            }
         }
     }
 
@@ -338,7 +338,6 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
         const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
 
-
         GS::Array<API_Property> fetchedProperties;
         GSErrCode err = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, propertyGuids, fetchedProperties);
         if (err != NoError) {
@@ -346,13 +345,12 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
             continue;
         }
 
-        GS::HashTable<API_Guid, API_Property> propertyMap;
+        GS::HashTable<API_Guid, const API_Property*> propertyMap;
         for (const API_Property& prop : fetchedProperties) {
             if (!propertyMap.ContainsKey (prop.definition.guid)) {
-                propertyMap.Add (prop.definition.guid, prop);
+                propertyMap.Add (prop.definition.guid, &prop);
             }
         }
-
 
         GS::ObjectState propertyValuesForElement;
         const auto& propertyValues = propertyValuesForElement.AddList<GS::ObjectState> ("propertyValues");
@@ -360,7 +358,7 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
         for (const GS::ObjectState& property : properties) {
             const GS::ObjectState* propertyId = property.Get ("propertyId");
             if (propertyId == nullptr) {
-                propertyValues (CreateErrorResponse (APIERR_BADPARS, "propertyId is missing"));
+                propertyValues (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
                 continue;
             }
 
@@ -371,7 +369,7 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
-            const API_Property& propertyValue = propertyMap[propertyGuid];
+            const API_Property& propertyValue = *propertyMap[propertyGuid];
             if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
                 propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Not available or not evaluated property"));
                 continue;
