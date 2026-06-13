@@ -1429,6 +1429,24 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, objLoc);
         changed = true;
     }
+    bool reflected = false;
+    if (details.Get ("reflected", reflected)) {
+        element.window.openingBase.reflected = reflected;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.reflected);
+        changed = true;
+    }
+    bool refSide = false;
+    if (details.Get ("refSide", refSide)) {
+        element.window.openingBase.refSide = refSide;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.refSide);
+        changed = true;
+    }
+    bool oSide = false;
+    if (details.Get ("oSide", oSide)) {
+        element.window.openingBase.oSide = oSide;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.oSide);
+        changed = true;
+    }
     return changed;
 }
 
@@ -1780,6 +1798,9 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create."
@@ -1867,6 +1888,18 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             if (height.HasValue ()) {
                 element.window.openingBase.height = height.Get ();
             }
+            bool reflected = false;
+            if (data.Get ("reflected", reflected)) {
+                element.window.openingBase.reflected = reflected;
+            }
+            bool refSide = false;
+            if (data.Get ("refSide", refSide)) {
+                element.window.openingBase.refSide = refSide;
+            }
+            bool oSide = false;
+            if (data.Get ("oSide", oSide)) {
+                element.window.openingBase.oSide = oSide;
+            }
 
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
             if (err != NoError) {
@@ -1903,6 +1936,9 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create."
@@ -1989,6 +2025,18 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
             auto height = GetOptionalDouble (data, "height");
             if (height.HasValue ()) {
                 element.window.openingBase.height = height.Get ();
+            }
+            bool reflected = false;
+            if (data.Get ("reflected", reflected)) {
+                element.window.openingBase.reflected = reflected;
+            }
+            bool refSide = false;
+            if (data.Get ("refSide", refSide)) {
+                element.window.openingBase.refSide = refSide;
+            }
+            bool oSide = false;
+            if (data.Get ("oSide", oSide)) {
+                element.window.openingBase.oSide = oSide;
             }
 
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
@@ -3465,7 +3513,10 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () co
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 }
+                        "centerOffset": { "type": "number", "minimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3538,7 +3589,10 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () cons
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 }
+                        "centerOffset": { "type": "number", "minimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
