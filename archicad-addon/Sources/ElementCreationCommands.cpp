@@ -453,6 +453,9 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
 
         geometry.Get ("polygonArcs", polygonArcs);
         geometry.Get ("holes", holes);
+        if (polygonCoordinates.GetSize () < 3) {
+            return CreateErrorResponse (APIERR_BADPARS, "'polygonCoordinates' must contain at least 3 coordinates.");
+        }
         if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
             polygonCoordinates.Pop ();
         }
@@ -1004,6 +1007,9 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("polygonCoordinates", polygonCoordinates);
     parameters.Get ("polygonArcs", polygonArcs);
     parameters.Get ("holes", holes);
+    if (polygonCoordinates.GetSize () < 3) {
+        return CreateErrorResponse (APIERR_BADPARS, "'polygonCoordinates' must contain at least 3 coordinates.");
+    }
     if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
         polygonCoordinates.Pop ();
     }
