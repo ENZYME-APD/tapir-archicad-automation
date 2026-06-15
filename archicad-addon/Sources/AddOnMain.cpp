@@ -287,12 +287,12 @@ GSErrCode Initialize (void)
             "Deletes elements."
         );
         err |= RegisterCommand<LockElementsCommand> (
-            elementCommands, "1.5.0",
-            "Locks the given elements."
+            elementCommands, "1.5.2",
+            "Locks the given elements. Manual lock, not teamwork!"
         );
         err |= RegisterCommand<UnlockElementsCommand> (
-            elementCommands, "1.5.0",
-            "Unlocks the given elements."
+            elementCommands, "1.5.2",
+            "Unlocks the given elements. Manual lock, not teamwork!"
         );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
             elementCommands, "1.0.8",
