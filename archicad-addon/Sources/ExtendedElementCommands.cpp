@@ -846,19 +846,43 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         }
     }
 
-    if (oldPoly.nCoords != element.slab.poly.nCoords) {
-        memo.coords = reinterpret_cast<API_Coord**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords), (element.slab.poly.nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
-        memo.vertexIDs = reinterpret_cast<UInt32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.vertexIDs), (element.slab.poly.nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
-        memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.edgeTrims), (element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), REALLOC_CLEAR, 0));
-        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMReallocPtr (reinterpret_cast<GSPtr> (memo.sideMaterials), (element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), REALLOC_CLEAR, 0));
+    // ACAPI_Element_GetDefaults does not always allocate the polygon memo handles for
+    // slabs (e.g. the default slab reports nCoords but leaves memo.coords == nullptr).
+    // The original size-change-only guards skipped allocation whenever the requested
+    // polygon matched the default size, leaving memo.coords null and crashing
+    // AddPolyToMemo with a null dereference. BMReallocHandle does NOT allocate from a
+    // null handle, so a null handle must be created fresh with BMAllocateHandle (as the
+    // mesh/zone commands do); only an existing handle is resized with BMReallocHandle.
+    const Int32 nCoords    = element.slab.poly.nCoords;
+    const Int32 nSubPolys  = element.slab.poly.nSubPolys;
+    const Int32 nArcs      = element.slab.poly.nArcs;
+    const bool  coordsWereNull = (memo.coords == nullptr);
+
+    if (coordsWereNull) {
+        memo.coords        = reinterpret_cast<API_Coord**>             (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
+        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
+        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim),            ALLOCATE_CLEAR, 0));
+        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMAllocatePtr    ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+    } else if (oldPoly.nCoords != nCoords) {
+        memo.coords        = reinterpret_cast<API_Coord**>             (BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords),        (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
+        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMReallocHandle (reinterpret_cast<GSHandle> (memo.vertexIDs),     (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
+        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMReallocHandle (reinterpret_cast<GSHandle> (memo.edgeTrims),     (nCoords + 1) * sizeof (API_EdgeTrim),            REALLOC_CLEAR, 0));
+        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMReallocPtr    (reinterpret_cast<GSPtr> (memo.sideMaterials), (nCoords + 1) * sizeof (API_OverriddenAttribute), REALLOC_CLEAR, 0));
     }
-    if (oldPoly.nSubPolys != element.slab.poly.nSubPolys) {
-        memo.pends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (element.slab.poly.nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
+    if (memo.pends == nullptr) {
+        memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    } else if (oldPoly.nSubPolys != nSubPolys) {
+        memo.pends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
     }
-    if (oldPoly.nArcs != element.slab.poly.nArcs) {
-        memo.parcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), element.slab.poly.nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    if (nArcs > 0) {
+        if (memo.parcs == nullptr) {
+            memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+        } else if (oldPoly.nArcs != nArcs) {
+            memo.parcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+        }
     }
     const bool needToProcessVertexIDs =
+        coordsWereNull ||
         oldPoly.nCoords != element.slab.poly.nCoords ||
         oldPoly.nSubPolys != element.slab.poly.nSubPolys;
 
@@ -933,9 +957,24 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         }
     }
 
-    memo.additionalPolyCoords = reinterpret_cast<API_Coord**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyCoords), (element.roof.u.polyRoof.pivotPolygon.nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
-    memo.additionalPolyPends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyPends), (element.roof.u.polyRoof.pivotPolygon.nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
-    memo.additionalPolyParcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyParcs), element.roof.u.polyRoof.pivotPolygon.nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    // GetDefaults typically leaves the roof pivot-polygon memo handles null, and
+    // BMReallocHandle does not allocate from a null handle (it returns null), which would
+    // crash AddAdditionalPolyToMemo with a null dereference. Allocate fresh when null
+    // (same fix as the slab path); only resize an existing handle with BMReallocHandle.
+    const Int32 roofNCoords   = element.roof.u.polyRoof.pivotPolygon.nCoords;
+    const Int32 roofNSubPolys = element.roof.u.polyRoof.pivotPolygon.nSubPolys;
+    const Int32 roofNArcs     = element.roof.u.polyRoof.pivotPolygon.nArcs;
+    memo.additionalPolyCoords = reinterpret_cast<API_Coord**> (memo.additionalPolyCoords == nullptr
+        ? BMAllocateHandle ((roofNCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0)
+        : BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyCoords), (roofNCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
+    memo.additionalPolyPends = reinterpret_cast<Int32**> (memo.additionalPolyPends == nullptr
+        ? BMAllocateHandle ((roofNSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0)
+        : BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyPends), (roofNSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
+    if (roofNArcs > 0) {
+        memo.additionalPolyParcs = reinterpret_cast<API_PolyArc**> (memo.additionalPolyParcs == nullptr
+            ? BMAllocateHandle (roofNArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyParcs), roofNArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    }
 
     Int32 iCoord = 1;
     Int32 iArc = 0;
@@ -948,6 +987,22 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
             AddAdditionalPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo);
         }
+    }
+
+    // A multi-plane roof (API_PolyRoofData) needs BOTH a pivot polygon (set above via the
+    // additionalPoly* memo) AND a contour polygon (memo.coords/pends/parcs). The contour was
+    // never populated, leaving the roof under-specified so ACAPI_Element_Create throws a
+    // GSException. Use the same outline for the contour as for the pivot polygon by
+    // duplicating the handles.
+    element.roof.u.polyRoof.contourPolygon = element.roof.u.polyRoof.pivotPolygon;
+    if (memo.additionalPolyCoords != nullptr) {
+        BMHandleToHandle (reinterpret_cast<GSConstHandle> (memo.additionalPolyCoords), reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.additionalPolyPends != nullptr) {
+        BMHandleToHandle (reinterpret_cast<GSConstHandle> (memo.additionalPolyPends), reinterpret_cast<GSHandle*> (&memo.pends));
+    }
+    if (memo.additionalPolyParcs != nullptr) {
+        BMHandleToHandle (reinterpret_cast<GSConstHandle> (memo.additionalPolyParcs), reinterpret_cast<GSHandle*> (&memo.parcs));
     }
 
     return {};
@@ -1475,6 +1530,12 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
 {
+    if (parameters.Get ("begCoordinate") == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing required 'begCoordinate' parameter.");
+    }
+    if (parameters.Get ("endCoordinate") == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing required 'endCoordinate' parameter.");
+    }
     API_Coord begCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("begCoordinate"));
     API_Coord endCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("endCoordinate"));
 
@@ -1558,6 +1619,12 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
+    if (parameters.Get ("begCoordinate") == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing required 'begCoordinate' parameter.");
+    }
+    if (parameters.Get ("endCoordinate") == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing required 'endCoordinate' parameter.");
+    }
     element.beam.begC = Get2DCoordinateFromObjectState (*parameters.Get ("begCoordinate"));
     element.beam.endC = Get2DCoordinateFromObjectState (*parameters.Get ("endCoordinate"));
 
@@ -1819,6 +1886,10 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
 
     return ExecuteCreateWithElements ("Create Windows", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : windowsData) {
+            if (data.Get ("ownerWallId") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'ownerWallId' field."));
+                continue;
+            }
             const API_Guid wallGuid = GetGuidFromObjectState (*data.Get ("ownerWallId"));
             if (!DoesWallExist (wallGuid)) {
                 elements.Push (CreateErrorResponse (APIERR_BADID, "Failed to load owner wall."));
@@ -1942,6 +2013,10 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
 
     return ExecuteCreateWithElements ("Create Doors", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : doorsData) {
+            if (data.Get ("ownerWallId") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'ownerWallId' field."));
+                continue;
+            }
             const API_Guid wallGuid = GetGuidFromObjectState (*data.Get ("ownerWallId"));
             if (!DoesWallExist (wallGuid)) {
                 elements.Push (CreateErrorResponse (APIERR_BADID, "Failed to load owner wall."));
@@ -2060,6 +2135,10 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
 
     return ExecuteCreateWithElements ("Create Openings", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : openingsData) {
+            if (data.Get ("basePoint") == nullptr || data.Get ("ownerElementId") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'basePoint' or 'ownerElementId' field."));
+                continue;
+            }
             const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*data.Get ("basePoint"));
 
 #ifndef ServerMainVers_2900
@@ -2186,6 +2265,10 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            if (data.Get ("basePoint") == nullptr || data.Get ("size") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'basePoint' or 'size' field."));
+                continue;
+            }
             const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*data.Get ("basePoint"));
             const API_Coord3D size = Get3DCoordinateFromObjectState (*data.Get ("size"));
             if (size.x <= 0.0 || size.y <= 0.0 || size.z <= 0.0) {
@@ -2359,12 +2442,15 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
-            err = ACAPI_Element_Create (&element, &memo);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to create roof."));
-                continue;
-            }
-            elements.Push (CreateElementIdObjectState (element.header.guid));
+            // Multi-plane roof creation is NOT yet supported. ACAPI_Element_Create for an
+            // API_PolyRoofID requires pivot-edge plane data (memo.pivotPolyEdges holding
+            // per-edge API_RoofSegmentData keyed by the pivot polygon's edge unique IDs),
+            // which is not built here. Calling Create without it makes the Archicad core
+            // THROW a GSException AND pop a modal dialog that hangs the JSON API. Until that
+            // plane setup is implemented, reject cleanly without ever calling Create so the
+            // command can never crash or hang the application.
+            (void) err;
+            elements.Push (CreateErrorResponse (APIERR_GENERAL, "Multi-plane roof creation is not yet supported (incomplete pivot-edge plane setup)."));
         }
     });
 }
@@ -2454,6 +2540,10 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 }
             }
 
+            if (data.Get ("direction") == nullptr || data.Get ("referencePoint") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'direction' or 'referencePoint' field."));
+                continue;
+            }
             const API_Coord directionCoord = Get2DCoordinateFromObjectState (*data.Get ("direction"));
             if (directionCoord.x == 0.0 && directionCoord.y == 0.0) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "Dimension direction must be non-zero."));
@@ -2633,6 +2723,10 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 continue;
             }
 
+            if (data.Get ("referencePoint") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'referencePoint' field."));
+                continue;
+            }
             FillDimensionDefaults (
                 element,
                 Get2DCoordinateFromObjectState (*data.Get ("referencePoint")),
@@ -2715,6 +2809,10 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
 
     return ExecuteCreateWithElements ("Create Wall Thickness Dimensions", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : dimensionsData) {
+            if (data.Get ("wallId") == nullptr || data.Get ("direction") == nullptr || data.Get ("referencePoint") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'wallId', 'direction', or 'referencePoint' field."));
+                continue;
+            }
             API_Element wall = {};
             wall.header.guid = GetGuidFromObjectState (*data.Get ("wallId"));
             GSErrCode err = ACAPI_Element_Get (&wall);
@@ -2853,6 +2951,10 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
 
     return ExecuteModifyWithResults ("Modify Walls", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -2934,6 +3036,10 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
 
     return ExecuteModifyWithResults ("Modify Beams", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -3023,6 +3129,10 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
 
     return ExecuteModifyWithResults ("Modify Slabs", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -3161,6 +3271,10 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
 
     return ExecuteModifyWithResults ("Modify Roofs", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -3419,6 +3533,10 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
 
     return ExecuteModifyWithResults ("Modify Columns", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -3492,6 +3610,10 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
 
     return ExecuteModifyWithResults ("Modify Windows", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -3565,6 +3687,10 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
 
     return ExecuteModifyWithResults ("Modify Doors", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -3637,6 +3763,10 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
 
     return ExecuteModifyWithResults ("Modify Morphs", [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
             API_Element element = {};
             element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
             GSErrCode err = ACAPI_Element_Get (&element);
@@ -3779,6 +3909,10 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
+            if (data.Get ("startCoordinate") == nullptr || data.Get ("endCoordinate") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'startCoordinate' or 'endCoordinate' field."));
+                continue;
+            }
             const API_Coord startCoord = Get2DCoordinateFromObjectState (*data.Get ("startCoordinate"));
             const API_Coord endCoord = Get2DCoordinateFromObjectState (*data.Get ("endCoordinate"));
 
