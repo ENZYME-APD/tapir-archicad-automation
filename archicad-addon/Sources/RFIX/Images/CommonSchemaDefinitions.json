@@ -2033,6 +2033,13 @@
             "classificationItemId"
         ]
     },
+    "ClassificationItemIds": {
+        "type": "array",
+        "description": "A list of classification item identifiers.",
+        "items": {
+            "$ref": "#/ClassificationItemIdArrayItem"
+        }
+    },
     "ClassificationId": {
         "type": "object",
         "description": "The element classification identifier.",

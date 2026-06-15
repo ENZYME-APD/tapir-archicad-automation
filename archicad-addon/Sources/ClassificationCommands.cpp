@@ -424,3 +424,153 @@ GS::ObjectState CreateClassificationItemsCommand::Execute (const GS::ObjectState
 
     return response;
 }
+
+DeleteClassificationSystemsCommand::DeleteClassificationSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteClassificationSystemsCommand::GetName () const
+{
+    return "DeleteClassificationSystems";
+}
+
+GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationSystemIds": {
+                "$ref": "#/ClassificationSystemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteClassificationSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationSystemIds;
+    parameters.Get ("classificationSystemIds", classificationSystemIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("DeleteClassificationSystemsCommand", [&]() -> GSErrCode {
+        for (const GS::ObjectState& classificationSystemId : classificationSystemIds) {
+            const GS::ObjectState* systemId = classificationSystemId.Get ("classificationSystemId");
+            if (systemId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
+                continue;
+            }
+
+            const API_Guid systemGuid = GetGuidFromObjectState (*systemId);
+
+            GSErrCode err = ACAPI_Classification_DeleteClassificationSystem (systemGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "failed to delete classification system"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+DeleteClassificationItemsCommand::DeleteClassificationItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DeleteClassificationItemsCommand::GetName () const
+{
+    return "DeleteClassificationItems";
+}
+
+GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteClassificationItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> classificationItemIds;
+    parameters.Get ("classificationItemIds", classificationItemIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("DeleteClassificationItemsCommand", [&]() -> GSErrCode {
+        for (const GS::ObjectState& classificationItemId : classificationItemIds) {
+            const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
+            if (itemId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationItemId is missing"));
+                continue;
+            }
+
+            const API_Guid itemGuid = GetGuidFromObjectState (*itemId);
+
+            GSErrCode err = ACAPI_Classification_DeleteClassificationItem (itemGuid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "failed to delete classification item"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
