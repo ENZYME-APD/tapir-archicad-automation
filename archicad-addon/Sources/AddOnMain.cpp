@@ -535,6 +535,14 @@ GSErrCode Initialize (void)
             classificationCommands, "1.5.0",
             "Creates Classification Items in the given Classification Systems based on the given parameters."
         );
+        err |= RegisterCommand<DeleteClassificationSystemsCommand> (
+            classificationCommands, "1.5.2",
+            "Deletes the given Classification Systems."
+        );
+        err |= RegisterCommand<DeleteClassificationItemsCommand> (
+            classificationCommands, "1.5.2",
+            "Deletes the given Classification Items."
+        );
         AddCommandGroup (classificationCommands);
     }
 

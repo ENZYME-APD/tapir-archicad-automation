@@ -2033,6 +2033,13 @@
             "classificationItemId"
         ]
     },
+    "ClassificationItemIds": {
+        "type": "array",
+        "description": "A list of classification item identifiers.",
+        "items": {
+            "$ref": "#/ClassificationItemIdArrayItem"
+        }
+    },
     "ClassificationId": {
         "type": "object",
         "description": "The element classification identifier.",
@@ -3022,6 +3029,46 @@
             "angle"
         ]
     },
+    "WindowDoorDetails": {
+        "$ref": "#/LibPartBasedElementDetails",
+        "properties": {
+            "width": {
+                "type": "number",
+                "description": "Opening width."
+            },
+            "height": {
+                "type": "number",
+                "description": "Opening height."
+            },
+            "sillHeight": {
+                "type": "number",
+                "description": "Sill height (window) or threshold height (door)."
+            },
+            "centerOffset": {
+                "type": "number",
+                "description": "Center offset along the owner wall reference line."
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "refSide": {
+                "type": "boolean"
+            },
+            "oSide": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "width",
+            "height",
+            "sillHeight",
+            "centerOffset",
+            "reflected",
+            "refSide",
+            "oSide"
+        ]
+    },
     "PolylineDetails": {
         "type": "object",
         "properties": {
@@ -3391,6 +3438,9 @@
             },
             {
                 "$ref": "#/DetailWorksheetDetails"
+            },
+            {
+                "$ref": "#/WindowDoorDetails"
             },
             {
                 "$ref": "#/LibPartBasedElementDetails"
