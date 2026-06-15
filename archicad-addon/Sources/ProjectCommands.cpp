@@ -193,6 +193,120 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
     return {};
 }
 
+CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateProjectInfoFieldsCommand::GetName () const
+{
+    return "CreateProjectInfoFields";
+}
+
+GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoFields": {
+                "type": "array",
+                "description": "Array of custom project info fields to create.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoName": {
+                            "type": "string",
+                            "description": "Display name of the project info field.",
+                            "minLength": 1
+                        },
+                        "projectInfoValue": {
+                            "type": "string",
+                            "description": "Initial value of the project info field."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFields"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "fields": {
+                "$ref": "#/ProjectInfoFields"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fields"
+        ]
+    })";
+}
+
+GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> projectInfoFields;
+    if (!parameters.Get ("projectInfoFields", projectInfoFields) || projectInfoFields.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoFields is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& fieldsAdder = response.AddList<GS::ObjectState> ("fields");
+
+    ACAPI_CallUndoableCommand ("CreateProjectInfoFields", [&]() -> GSErrCode {
+        for (const GS::ObjectState& projectInfoField : projectInfoFields) {
+            GS::UniString projectInfoName;
+            if (!projectInfoField.Get ("projectInfoName", projectInfoName) || projectInfoName.IsEmpty ()) {
+                fieldsAdder (CreateErrorResponse (APIERR_BADPARS, "projectInfoName is missing or empty."));
+                continue;
+            }
+
+            GS::UniString projectInfoValue;
+            projectInfoField.Get ("projectInfoValue", projectInfoValue);
+
+            GS::Guid guid;
+            guid.Generate ();
+            API_Guid dbKey = GSGuid2APIGuid (guid);
+
+            GSErrCode err = ACAPI_AutoText_CreateAnAutoText (&dbKey, projectInfoName.ToCStr ());
+            if (err != NoError) {
+                fieldsAdder (CreateErrorResponse (err, "Failed to create project information field."));
+                continue;
+            }
+
+            GS::UniString projectInfoId ("autotext-");
+            projectInfoId.Append (guid.ToUniString ());
+
+            err = ACAPI_AutoText_SetAnAutoText (&projectInfoId, &projectInfoValue);
+            if (err != NoError) {
+                fieldsAdder (CreateErrorResponse (err, "Failed to set the initial value of the project information field."));
+                continue;
+            }
+
+            GS::ObjectState createdField;
+            createdField.Add ("projectInfoId", projectInfoId);
+            createdField.Add ("projectInfoName", projectInfoName);
+            createdField.Add ("projectInfoValue", projectInfoValue);
+            fieldsAdder (createdField);
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 GetHotlinksCommand::GetHotlinksCommand () :
     CommandBase (CommonSchema::Used)
 {

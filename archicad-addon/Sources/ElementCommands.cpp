@@ -2143,6 +2143,106 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
         : CreateFailedExecutionResult (err, "Failed to delete elements.");
 }
 
+LockElementsCommand::LockElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String LockElementsCommand::GetName () const
+{
+    return "LockElements";
+}
+
+GS::Optional<GS::UniString> LockElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> LockElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState LockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GSErrCode err = NoError;
+
+    ACAPI_CallUndoableCommand ("LockElementsCommand", [&]() {
+        err = ACAPI_Grouping_Tool (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), APITool_Lock, nullptr);
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to lock elements.");
+}
+
+UnlockElementsCommand::UnlockElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UnlockElementsCommand::GetName () const
+{
+    return "UnlockElements";
+}
+
+GS::Optional<GS::UniString> UnlockElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UnlockElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState UnlockElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GSErrCode err = NoError;
+
+    ACAPI_CallUndoableCommand ("UnlockElementsCommand", [&]() {
+        err = ACAPI_Grouping_Tool (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem), APITool_Unlock, nullptr);
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to unlock elements.");
+}
+
 GetElementPreviewImageCommand::GetElementPreviewImageCommand () :
     CommandBase (CommonSchema::Used)
 {

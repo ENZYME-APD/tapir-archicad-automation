@@ -173,6 +173,10 @@ GSErrCode Initialize (void)
             projectCommands, "0.1.2",
             "Sets the value of a project info field."
         );
+        err |= RegisterCommand<CreateProjectInfoFieldsCommand> (
+            projectCommands, "1.5.2",
+            "Creates one or more custom project info fields."
+        );
         err |= RegisterCommand<GetStoriesCommand> (
             projectCommands, "1.1.5",
             "Retrieves information about the story sructure of the currently loaded project."
@@ -281,6 +285,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
             "Deletes elements."
+        );
+        err |= RegisterCommand<LockElementsCommand> (
+            elementCommands, "1.5.0",
+            "Locks the given elements."
+        );
+        err |= RegisterCommand<UnlockElementsCommand> (
+            elementCommands, "1.5.0",
+            "Unlocks the given elements."
         );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
             elementCommands, "1.0.8",
