@@ -478,6 +478,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_DoorID:
             case API_WindowID:
                 AddLibPartBasedElementDetails (typeSpecificDetails, elem.window.openingBase.libInd, elem.window.owner);
+                typeSpecificDetails.Add ("width", elem.window.openingBase.width);
+                typeSpecificDetails.Add ("height", elem.window.openingBase.height);
+                typeSpecificDetails.Add ("sillHeight", elem.window.lower);
+                typeSpecificDetails.Add ("centerOffset", elem.window.objLoc);
+                typeSpecificDetails.Add ("reflected", elem.window.openingBase.reflected);
+                typeSpecificDetails.Add ("refSide", elem.window.openingBase.refSide);
+                typeSpecificDetails.Add ("oSide", elem.window.openingBase.oSide);
                 break;
 
             case API_LabelID:
