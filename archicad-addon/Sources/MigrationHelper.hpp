@@ -99,6 +99,7 @@
 #define ACAPI_Grouping_GetRootGroup         ACAPI_ElementGroup_GetRootGroup
 #define ACAPI_Grouping_GetGroupedElems      ACAPI_ElementGroup_GetGroupedElems
 #define ACAPI_Grouping_GetAllGroupedElems   ACAPI_ElementGroup_GetAllGroupedElems
+#define ACAPI_Grouping_Tool                 ACAPI_Element_Tool
 
 #define ACAPI_ProjectSetting_GetPreferences(par1, par2) ACAPI_Environment (APIEnv_GetPreferencesID, par1, (void*)par2)
 #define ACAPI_View_Rebuild(par1) ACAPI_Automate (APIDo_RebuildID, (void*) par1)
@@ -167,6 +168,11 @@ inline GSErrCode ACAPI_AutoText_GetAutoTexts (GS::Array<GS::ArrayFB<GS::UniStrin
 inline GSErrCode ACAPI_AutoText_SetAnAutoText (const GS::UniString* autotextDbKey = nullptr, const GS::UniString* autotextValue = nullptr)
 {
     return ACAPI_Goodies (APIAny_SetAnAutoTextID, (void*) autotextDbKey, (void*) autotextValue);
+}
+
+inline GSErrCode ACAPI_AutoText_CreateAnAutoText (const API_Guid* autotextDbKey, const char* autotextKey)
+{
+    return ACAPI_Goodies (APIAny_CreateAnAutoTextID, (void*) autotextDbKey, (void*) autotextKey);
 }
 
 inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
