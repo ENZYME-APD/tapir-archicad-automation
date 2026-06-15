@@ -157,6 +157,53 @@ var gCommands = [{
     },
                 "outputScheme": null
             },{
+                "name": "CreateProjectInfoFields",
+                "version": "1.5.2",
+                "description": "Creates one or more custom project info fields.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "projectInfoFields": {
+                "type": "array",
+                "description": "Array of custom project info fields to create.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "projectInfoName": {
+                            "type": "string",
+                            "description": "Display name of the project info field.",
+                            "minLength": 1
+                        },
+                        "projectInfoValue": {
+                            "type": "string",
+                            "description": "Initial value of the project info field."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "projectInfoName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFields"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "fields": {
+                "$ref": "#/ProjectInfoFields"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fields"
+        ]
+    }
+            },{
                 "name": "GetStories",
                 "version": "1.1.5",
                 "description": "Retrieves information about the story sructure of the currently loaded project.",
@@ -1302,6 +1349,44 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "LockElements",
+                "version": "1.5.2",
+                "description": "Locks the given elements. Manual lock, not teamwork!",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "UnlockElements",
+                "version": "1.5.2",
+                "description": "Unlocks the given elements. Manual lock, not teamwork!",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "GetGDLParametersOfElements",
                 "version": "1.0.8",
                 "description": "Gets all the GDL parameters (name, type, value) of the given elements.",
@@ -1710,6 +1795,9 @@ var gCommands = [{
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create."
@@ -1750,6 +1838,9 @@ var gCommands = [{
                         "sillHeight": { "type": "number" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" },
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create."
@@ -2707,7 +2798,10 @@ var gCommands = [{
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 }
+                        "centerOffset": { "type": "number", "minimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -2734,7 +2828,10 @@ var gCommands = [{
                         "width": { "type": "number", "exclusiveMinimum": 0.0 },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "sillHeight": { "type": "number" },
-                        "centerOffset": { "type": "number", "minimum": 0.0 }
+                        "centerOffset": { "type": "number", "minimum": 0.0 },
+                        "reflected": { "type": "boolean" },
+                        "refSide": { "type": "boolean" },
+                        "oSide": { "type": "boolean" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3618,6 +3715,62 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
            "newClassificationItems"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "DeleteClassificationSystems",
+                "version": "1.5.2",
+                "description": "Deletes the given Classification Systems.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "classificationSystemIds": {
+                "$ref": "#/ClassificationSystemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemIds"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "DeleteClassificationItems",
+                "version": "1.5.2",
+                "description": "Deletes the given Classification Items.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "classificationItemIds": {
+                "$ref": "#/ClassificationItemIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemIds"
         ]
     },
                 "outputScheme": {
