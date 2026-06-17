@@ -808,7 +808,8 @@
             "IsIndependent",
             "InCroppedView",
             "HasAccessRight",
-            "IsOverriddenByRenovation"
+            "IsOverriddenByRenovation",
+            "IncludeSubElemObjects"
         ]
     },
     "WindowType": {

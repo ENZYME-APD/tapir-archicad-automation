@@ -31,11 +31,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Databases",
                 "Databases to find elements in.");
 
+            InBoolean(
+                "SubElemObjects",
+                "Include sub element objects",
+                false);
+
             SetOptionality(
                 new[]
                 {
                     1,
-                    2
+                    2,
+                    3
                 });
         }
 
@@ -74,6 +80,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var databases = DatabasesObject.Create(
                 da,
                 2);
+
+            if (!da.TryGet(
+                    3,
+                    out bool includeSubElemObjects))
+            {
+                return;
+            }
+
+            if (includeSubElemObjects) {
+                if (filters is null)
+                {
+                    filters = new List<string>();
+                }
+                filters.Add("IncludeSubElemObjects");
+            }
 
             var input = new ElementsByTypeObj()
             {
