@@ -3115,6 +3115,10 @@
                 "$ref": "#/Coordinate2D",
                 "description": "Position of the origin of the zone stamp."
             },
+            "stampAngle": {
+                "type": "number",
+                "description": "Rotation angle of the zone stamp in radians."
+            },
             "isManual": {
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
@@ -3912,12 +3916,31 @@
         "additionalProperties": false,
         "required": []
     },
+    "ZoneSettings": {
+        "type": "object",
+        "description": "Settings for modifying a zone.",
+        "properties": {
+            "stampPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Position of the origin of the zone stamp."
+            },
+            "stampAngle": {
+                "type": "number",
+                "description": "Rotation angle of the zone stamp in radians."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
         "oneOf": [
             {
                 "$ref": "#/WallSettings"
+            },
+            {
+                "$ref": "#/ZoneSettings"
             }
         ]
     },

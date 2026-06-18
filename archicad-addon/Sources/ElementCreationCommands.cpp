@@ -389,6 +389,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/Coordinate2D",
                         "description" : "Position of the origin of the zone stamp."
                     },
+                    "stampAngle": {
+                        "type": "number",
+                        "description" : "Optional zone stamp rotation angle in radians."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -433,6 +437,7 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
 
     GS::ObjectState stampPosition;
     parameters.Get ("stampPosition", stampPosition);
+    parameters.Get ("stampAngle", element.zone.stampAngle);
 
     GS::ObjectState referencePosition;
     if (geometry.Get ("referencePosition", referencePosition)) {
