@@ -527,6 +527,20 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
     return API_ZombieElemID;
 }
 
+short ParseAnchorPointString (const GS::UniString& anchorPoint)
+{
+    if (anchorPoint == "TopLeft")      return 0;
+    if (anchorPoint == "TopCenter")    return 1;
+    if (anchorPoint == "TopRight")     return 2;
+    if (anchorPoint == "MiddleLeft")   return 3;
+    if (anchorPoint == "Center")       return 4;
+    if (anchorPoint == "MiddleRight")  return 5;
+    if (anchorPoint == "BottomLeft")   return 6;
+    if (anchorPoint == "BottomCenter") return 7;
+    if (anchorPoint == "BottomRight")  return 8;
+    return 4;
+}
+
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index)
 {
     API_Attribute attr = {};

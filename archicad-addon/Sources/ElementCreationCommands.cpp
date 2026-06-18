@@ -156,6 +156,11 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "type": "number",
                             "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "coreAnchor": {
+                            "type": "string",
+                            "description": "Optional anchor point of the column core on a 3x3 grid.",
+                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         }
                     },
                     "additionalProperties": false,
@@ -185,6 +190,11 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     element.column.origoPos.y = apiCoordinate.y;
     parameters.Get ("height", element.column.height);
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
+
+    GS::UniString coreAnchor;
+    if (parameters.Get ("coreAnchor", coreAnchor)) {
+        element.column.coreAnchor = ParseAnchorPointString (coreAnchor);
+    }
 
     double width = 0.0;
     double depth = 0.0;
@@ -231,6 +241,11 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                         "type": "number",
                         "description": "Optional slab thickness.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "referencePlaneLocation": {
+                        "type": "string",
+                        "description": "Optional location of the slab reference plane. For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid.",
+                        "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
                     },
                     "polygonCoordinates": { 
                         "type": "array",
