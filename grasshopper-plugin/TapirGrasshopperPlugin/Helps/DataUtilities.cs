@@ -223,7 +223,7 @@ namespace TapirGrasshopperPlugin.Helps
         {
             filters.RemoveAll(f =>
                 f == ElementFilter.NoFilter.ToString() ||
-                (!f.IsValid<ElementFilter>() && f != "IncludeSubElemObjects"));
+                !f.IsValid<ElementFilter>());
             if (filters.Count == 0)
             {
                 return null;

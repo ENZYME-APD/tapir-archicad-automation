@@ -19,7 +19,8 @@ namespace TapirGrasshopperPlugin.Types.Element
         IsIndependent,
         InCroppedView,
         HasAccessRight,
-        IsOverriddenByRenovation
+        IsOverriddenByRenovation,
+        IncludeSubElemObjects
     }
 
     public class ElementFiltersObj : AcceptsElementFilters
