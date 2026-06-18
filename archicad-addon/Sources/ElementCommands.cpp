@@ -78,11 +78,16 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
         elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
     }
 
+    bool includeSubElemObjects = false;
     API_ElemFilterFlags filterFlags = APIFilt_None;
     GS::Array<GS::UniString> filters;
     if (parameters.Get ("filters", filters)) {
         for (const GS::UniString& filter : filters) {
-            filterFlags |= ConvertFilterStringToFlag (filter);
+            if (filter == "IncludeSubElemObjects") {
+                includeSubElemObjects = true;
+            } else {
+                filterFlags |= ConvertFilterStringToFlag (filter);
+            }
         }
     }
 
@@ -92,8 +97,19 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
         return err;
     }
 
-    for (const API_Guid& elemGuid : elemList) {
-        elementsListProxy (CreateElementIdObjectState (GetParentElemOfSectElem (elemGuid)));
+    if (elemType == API_ObjectID && !includeSubElemObjects) {
+        for (const API_Guid& elemGuid : elemList) {
+            const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
+            API_Element elem = {};
+            elem.header.guid = parentGuid;
+            if (ACAPI_Element_Get (&elem) == NoError && elem.object.owner == APINULLGuid) {
+                elementsListProxy (CreateElementIdObjectState (parentGuid));
+            }
+        }
+    } else {
+        for (const API_Guid& elemGuid : elemList) {
+            elementsListProxy (CreateElementIdObjectState (GetParentElemOfSectElem (elemGuid)));
+        }
     }
     return NoError;
 }
