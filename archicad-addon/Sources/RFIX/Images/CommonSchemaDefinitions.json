@@ -3119,6 +3119,10 @@
                 "type": "number",
                 "description": "Rotation angle of the zone stamp in radians."
             },
+            "fixedStampAngle": {
+                "type": "boolean",
+                "description": "If true, the zone stamp angle remains fixed when the element is rotated."
+            },
             "isManual": {
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
@@ -3927,6 +3931,10 @@
             "stampAngle": {
                 "type": "number",
                 "description": "Rotation angle of the zone stamp in radians."
+            },
+            "fixedStampAngle": {
+                "type": "boolean",
+                "description": "If true, the zone stamp angle remains fixed when the element is rotated."
             }
         },
         "additionalProperties": false,
