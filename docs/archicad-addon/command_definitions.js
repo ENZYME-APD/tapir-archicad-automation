@@ -1598,6 +1598,11 @@ var gCommands = [{
                             "type": "number",
                             "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "coreAnchor": {
+                            "type": "string",
+                            "description": "Optional anchor point of the column core on a 3x3 grid.",
+                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         }
                     },
                     "additionalProperties": false,
@@ -1642,6 +1647,10 @@ var gCommands = [{
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "offset": { "type": "number" },
+                        "referenceLineLocation": {
+                            "type": "string",
+                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"]
+                        },
                         "structureType": {
                             "type": "string",
                             "enum": ["Basic", "Composite", "Profile"]
@@ -1698,6 +1707,11 @@ var gCommands = [{
                             "type": "number",
                             "description": "Cross section height of the beam. Applied to all segments.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "anchorPoint": {
+                            "type": "string",
+                            "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
+                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         }
                     },
                     "additionalProperties": false,
@@ -1812,6 +1826,11 @@ var gCommands = [{
                         "type": "number",
                         "description": "Optional slab thickness.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "referencePlaneLocation": {
+                        "type": "string",
+                        "description": "Optional location of the slab reference plane. For a basic (homogeneous) slab only 'Top' or 'Bottom' are valid.",
+                        "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
                     },
                     "polygonCoordinates": { 
                         "type": "array",
