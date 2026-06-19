@@ -353,6 +353,19 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
 
+    GS::UniString referencePlaneLocation;
+    if (parameters.Get ("referencePlaneLocation", referencePlaneLocation)) {
+        if (referencePlaneLocation == "Top") {
+            element.slab.referencePlaneLocation = APISlabRefPlane_Top;
+        } else if (referencePlaneLocation == "CoreTop") {
+            element.slab.referencePlaneLocation = APISlabRefPlane_CoreTop;
+        } else if (referencePlaneLocation == "CoreBottom") {
+            element.slab.referencePlaneLocation = APISlabRefPlane_CoreBottom;
+        } else if (referencePlaneLocation == "Bottom") {
+            element.slab.referencePlaneLocation = APISlabRefPlane_Bottom;
+        }
+    }
+
     GS::Array<GS::ObjectState> polygonCoordinates;
     GS::Array<GS::ObjectState> polygonArcs;
     GS::Array<GS::ObjectState> holes;
