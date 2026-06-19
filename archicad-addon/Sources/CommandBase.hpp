@@ -91,6 +91,7 @@ GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories
 double GetZPos (const short floorIndex, const double offset, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
+short ParseAnchorPointString (const GS::UniString& anchorPoint);
 
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index);
 API_Attr_Head GetAttributeHeadFromGuid (API_Guid guid);

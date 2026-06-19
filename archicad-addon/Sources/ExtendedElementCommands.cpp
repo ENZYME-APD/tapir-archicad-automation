@@ -1528,6 +1528,10 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "offset": { "type": "number" },
+                        "referenceLineLocation": {
+                            "type": "string",
+                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"]
+                        },
                         "structureType": {
                             "type": "string",
                             "enum": ["Basic", "Composite", "Profile"]
@@ -1570,6 +1574,22 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     element.wall.height = height;
     element.wall.thickness = thickness;
     element.wall.referenceLineLocation = APIWallRefLine_Center;
+    GS::UniString referenceLineLocation;
+    if (parameters.Get ("referenceLineLocation", referenceLineLocation)) {
+        if (referenceLineLocation == "Outside") {
+            element.wall.referenceLineLocation = APIWallRefLine_Outside;
+        } else if (referenceLineLocation == "Center") {
+            element.wall.referenceLineLocation = APIWallRefLine_Center;
+        } else if (referenceLineLocation == "Inside") {
+            element.wall.referenceLineLocation = APIWallRefLine_Inside;
+        } else if (referenceLineLocation == "CoreOutside") {
+            element.wall.referenceLineLocation = APIWallRefLine_CoreOutside;
+        } else if (referenceLineLocation == "CoreCenter") {
+            element.wall.referenceLineLocation = APIWallRefLine_CoreCenter;
+        } else if (referenceLineLocation == "CoreInside") {
+            element.wall.referenceLineLocation = APIWallRefLine_CoreInside;
+        }
+    }
     element.wall.modelElemStructureType = API_BasicStructure;
     element.wall.offset = 0.0;
 
@@ -1623,6 +1643,11 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "type": "number",
                             "description": "Cross section height of the beam. Applied to all segments.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "anchorPoint": {
+                            "type": "string",
+                            "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
+                            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         }
                     },
                     "additionalProperties": false,
@@ -1668,6 +1693,11 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     auto curveHeight = GetOptionalDouble (parameters, "verticalCurveHeight");
     if (curveHeight.HasValue ()) {
         element.beam.verticalCurveHeight = curveHeight.Get ();
+    }
+
+    GS::UniString anchorPoint;
+    if (parameters.Get ("anchorPoint", anchorPoint)) {
+        element.beam.anchorPoint = ParseAnchorPointString (anchorPoint);
     }
 
     auto width = GetOptionalDouble (parameters, "width");
