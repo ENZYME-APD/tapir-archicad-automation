@@ -1,0 +1,1538 @@
+Command: GetIFCIdsOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elementIFCIds": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "3nZwcCly9E5OTvFHvtO6en",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "1uXH6BY918xeS56uXLF_cp",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "3ICARxUI58i9RquDO_USom",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "064_YLFKrDrha7x1Nf0vwJ",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "0Q4L_G9p5FA9dTzrIL__g8",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "0vw6Uppm97_uF3HtsOSyh_",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "0Hbdiy1IXATep8xEOQtQnQ",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "2acStNcz9ADg9lCJYW2MD5",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "1Bj3C51kTE2QDya0CuuGF6",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "1qWvIIZyb8uxk8BAwhE_VH",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "0F7vnpQE5ACBdmsQOxuugV",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "37a3JGLZnChQytF7eHUyWb",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "0il84dbIz6mfSeEVbj1edZ",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "21ZCGAuH5FpwLPHRftsFEv",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "02NBduxNDB2h7PnvRLcCc2",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "1jGpT7Lp98VRNuiMRSzp4B",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "31N2mF00rENAolMFr$lxTm",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "0Zy0YcjaX4$vD_SpulgDGe",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "2VOjXYpzHANO9zCxIc1nv2",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "1a$fcfe4fDhQtvUR4fnYhY",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "2lwSm5V1rFSA2jXBYZG5gz",
+            "externalIFCId": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcId": "1hzj65Zjb7y80CzECwu5cO",
+            "externalIFCId": ""
+        }
+    ]
+}
+Command: GetElementsByIFCIds
+Parameters:
+{
+    "ifcIds": [
+        "3nZwcCly9E5OTvFHvtO6en",
+        "1uXH6BY918xeS56uXLF_cp",
+        "3ICARxUI58i9RquDO_USom",
+        "064_YLFKrDrha7x1Nf0vwJ",
+        "0Q4L_G9p5FA9dTzrIL__g8",
+        "0vw6Uppm97_uF3HtsOSyh_",
+        "0Hbdiy1IXATep8xEOQtQnQ",
+        "2acStNcz9ADg9lCJYW2MD5",
+        "1Bj3C51kTE2QDya0CuuGF6",
+        "1qWvIIZyb8uxk8BAwhE_VH",
+        "0F7vnpQE5ACBdmsQOxuugV",
+        "37a3JGLZnChQytF7eHUyWb",
+        "0il84dbIz6mfSeEVbj1edZ",
+        "21ZCGAuH5FpwLPHRftsFEv",
+        "02NBduxNDB2h7PnvRLcCc2",
+        "1jGpT7Lp98VRNuiMRSzp4B",
+        "31N2mF00rENAolMFr$lxTm",
+        "",
+        "0Zy0YcjaX4$vD_SpulgDGe",
+        "2VOjXYpzHANO9zCxIc1nv2",
+        "1a$fcfe4fDhQtvUR4fnYhY",
+        "2lwSm5V1rFSA2jXBYZG5gz",
+        "1hzj65Zjb7y80CzECwu5cO"
+    ]
+}
+Response:
+{
+    "elementsByIFCIds": [
+        {
+            "ifcId": "3nZwcCly9E5OTvFHvtO6en",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "1uXH6BY918xeS56uXLF_cp",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "3ICARxUI58i9RquDO_USom",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "064_YLFKrDrha7x1Nf0vwJ",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "0Q4L_G9p5FA9dTzrIL__g8",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "0vw6Uppm97_uF3HtsOSyh_",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "0Hbdiy1IXATep8xEOQtQnQ",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "2acStNcz9ADg9lCJYW2MD5",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "1Bj3C51kTE2QDya0CuuGF6",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "1qWvIIZyb8uxk8BAwhE_VH",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "0F7vnpQE5ACBdmsQOxuugV",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "37a3JGLZnChQytF7eHUyWb",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "0il84dbIz6mfSeEVbj1edZ",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "21ZCGAuH5FpwLPHRftsFEv",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "02NBduxNDB2h7PnvRLcCc2",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "1jGpT7Lp98VRNuiMRSzp4B",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "31N2mF00rENAolMFr$lxTm",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "",
+            "elements": []
+        },
+        {
+            "ifcId": "0Zy0YcjaX4$vD_SpulgDGe",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "2VOjXYpzHANO9zCxIc1nv2",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "1a$fcfe4fDhQtvUR4fnYhY",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "2lwSm5V1rFSA2jXBYZG5gz",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        },
+        {
+            "ifcId": "1hzj65Zjb7y80CzECwu5cO",
+            "elements": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    }
+                }
+            ]
+        }
+    ]
+}
+Command: GetIFCTypeOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elementIFCTypes": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcWall",
+            "typeObjectIFCType": "IfcWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcColumn",
+            "typeObjectIFCType": "IfcColumnType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcColumn",
+            "typeObjectIFCType": "IfcColumnType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcBeam",
+            "typeObjectIFCType": "IfcBeamType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcBeam",
+            "typeObjectIFCType": "IfcBeamType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcFurnishingElement",
+            "typeObjectIFCType": "IfcFurnitureType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcFurnishingElement",
+            "typeObjectIFCType": "IfcFurnitureType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcFurnishingElement",
+            "typeObjectIFCType": "IfcFurnitureType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcSlab",
+            "typeObjectIFCType": "IfcSlabType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcSlab",
+            "typeObjectIFCType": "IfcSlabType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "",
+            "typeObjectIFCType": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcSpace",
+            "typeObjectIFCType": "IfcSpaceType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcSpace",
+            "typeObjectIFCType": "IfcSpaceType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcCurtainWall",
+            "typeObjectIFCType": "IfcCurtainWallType"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcStair",
+            "typeObjectIFCType": ""
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcType": "IfcRailing",
+            "typeObjectIFCType": "IfcRailingType"
+        }
+    ]
+}
+Command: GetIFCPropertiesOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elementIFCProperties": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_WallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_ColumnCommon",
+                    "name": "Slope",
+                    "value": "1.570796"
+                },
+                {
+                    "propertySetName": "Pset_ColumnCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_ColumnCommon",
+                    "name": "Reference",
+                    "value": "Various Structures - 2 Segments - 300 x 300 x 2500 (1250+1250)"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_ColumnCommon",
+                    "name": "Slope",
+                    "value": "1.570796"
+                },
+                {
+                    "propertySetName": "Pset_ColumnCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_ColumnCommon",
+                    "name": "Reference",
+                    "value": "Various Structures - 2 Segments - 300 x 300 x 2800 (1400+1400)"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "To Be Demolished"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_BeamCommon",
+                    "name": "Slope",
+                    "value": "0.000000"
+                },
+                {
+                    "propertySetName": "Pset_BeamCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_BeamCommon",
+                    "name": "Reference",
+                    "value": "GENERIC - STRUCTURAL 300 x 400"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_BeamCommon",
+                    "name": "Slope",
+                    "value": "0.000000"
+                },
+                {
+                    "propertySetName": "Pset_BeamCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_BeamCommon",
+                    "name": "Reference",
+                    "value": "GENERIC - STRUCTURAL 300 x 400"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "To Be Demolished"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_ManufacturerOccurrence",
+                    "name": "SerialNumber",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "Pset_ManufacturerTypeInformation",
+                    "name": "Manufacturer",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "Pset_ManufacturerTypeInformation",
+                    "name": "ProductionYear",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_ManufacturerOccurrence",
+                    "name": "SerialNumber",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "Pset_ManufacturerTypeInformation",
+                    "name": "Manufacturer",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "Pset_ManufacturerTypeInformation",
+                    "name": "ProductionYear",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_ManufacturerOccurrence",
+                    "name": "SerialNumber",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "Pset_ManufacturerTypeInformation",
+                    "name": "Manufacturer",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "Pset_ManufacturerTypeInformation",
+                    "name": "ProductionYear",
+                    "value": ""
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_SlabCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_SlabCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": []
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_SpaceCommon",
+                    "name": "Reference",
+                    "value": "Space"
+                },
+                {
+                    "propertySetName": "Pset_SpaceCommon",
+                    "name": "Category",
+                    "value": "Generic"
+                },
+                {
+                    "propertySetName": "Pset_SpaceOccupancyRequirements",
+                    "name": "OccupancyNumber",
+                    "value": "0"
+                },
+                {
+                    "propertySetName": "Pset_SpaceOccupancyRequirements",
+                    "name": "AreaPerOccupant",
+                    "value": "6.000000"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_SpaceCommon",
+                    "name": "Reference",
+                    "value": "Space"
+                },
+                {
+                    "propertySetName": "Pset_SpaceCommon",
+                    "name": "Category",
+                    "value": "Generic"
+                },
+                {
+                    "propertySetName": "Pset_SpaceOccupancyRequirements",
+                    "name": "OccupancyNumber",
+                    "value": "0"
+                },
+                {
+                    "propertySetName": "Pset_SpaceOccupancyRequirements",
+                    "name": "AreaPerOccupant",
+                    "value": "6.000000"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_CurtainWallCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_StairCommon",
+                    "name": "NumberOfRiser",
+                    "value": "20"
+                },
+                {
+                    "propertySetName": "Pset_StairCommon",
+                    "name": "NumberOfTreads",
+                    "value": "20"
+                },
+                {
+                    "propertySetName": "Pset_StairCommon",
+                    "name": "RiserHeight",
+                    "value": "0.150000"
+                },
+                {
+                    "propertySetName": "Pset_StairCommon",
+                    "name": "RequiredHeadroom",
+                    "value": "2.200000"
+                },
+                {
+                    "propertySetName": "Pset_StairCommon",
+                    "name": "FireRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "ifcProperties": [
+                {
+                    "propertySetName": "Pset_FireRatingProperties",
+                    "name": "FireResistanceRating",
+                    "value": "20 minutes"
+                },
+                {
+                    "propertySetName": "AC_Pset_RenovationAndPhasing",
+                    "name": "Renovation Status",
+                    "value": "New"
+                }
+            ]
+        }
+    ]
+}

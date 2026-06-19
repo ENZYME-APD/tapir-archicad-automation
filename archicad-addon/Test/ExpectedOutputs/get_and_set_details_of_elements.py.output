@@ -8267,6 +8267,8 @@ Response:
                     "x": 6.014296819,
                     "y": 2.421236571
                 },
+                "stampAngle": 0,
+                "fixedStampAngle": true,
                 "isManual": true,
                 "zCoordinate": 0,
                 "polygonOutline": [
@@ -8354,6 +8356,8 @@ Response:
                     "x": 6.589801649,
                     "y": 0.890879072
                 },
+                "stampAngle": 0,
+                "fixedStampAngle": true,
                 "isManual": false,
                 "zCoordinate": 0,
                 "polygonOutline": [
@@ -21068,6 +21072,8 @@ Response:
                     "x": 6.014296819,
                     "y": 2.421236571
                 },
+                "stampAngle": 0,
+                "fixedStampAngle": true,
                 "isManual": true,
                 "zCoordinate": 3,
                 "polygonOutline": [
@@ -21155,6 +21161,8 @@ Response:
                     "x": 6.589801649,
                     "y": 0.890879072
                 },
+                "stampAngle": 0,
+                "fixedStampAngle": true,
                 "isManual": false,
                 "zCoordinate": 3,
                 "polygonOutline": [

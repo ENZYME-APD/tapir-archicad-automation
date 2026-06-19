@@ -1330,6 +1330,85 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "RotateElements",
+                "version": "1.5.3",
+                "description": "Rotates elements around a reference point.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementsWithRotations": {
+                "type": "array",
+                "description": "The elements with rotation settings.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "rotation": {
+                            "type": "object",
+                            "description": "Rotation parameters for an element.",
+                            "properties": {
+                                "beginPoint": {
+                                    "type": "object",
+                                    "description": "Starting point of the rotation arc.",
+                                    "properties": {
+                                        "x": { "type": "number" },
+                                        "y": { "type": "number" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["x", "y"]
+                                },
+                                "endPoint": {
+                                    "type": "object",
+                                    "description": "End point of the rotation arc.",
+                                    "properties": {
+                                        "x": { "type": "number" },
+                                        "y": { "type": "number" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["x", "y"]
+                                },
+                                "origin": {
+                                    "type": "object",
+                                    "description": "Center of rotation.",
+                                    "properties": {
+                                        "x": { "type": "number" },
+                                        "y": { "type": "number" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["x", "y"]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["beginPoint", "endPoint", "origin"]
+                        },
+                        "copy": {
+                            "type": "boolean",
+                            "description": "Optional parameter. If true, a copy of the element is rotated. By default it's false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "rotation"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elementsWithRotations"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
                 "name": "DeleteElements",
                 "version": "1.2.1",
                 "description": "Deletes elements.",
@@ -2206,6 +2285,14 @@ var gCommands = [{
                     "stampPosition": {
                         "$ref": "#/Coordinate2D",
                         "description" : "Position of the origin of the zone stamp."
+                    },
+                    "stampAngle": {
+                        "type": "number",
+                        "description" : "Optional zone stamp rotation angle in radians."
+                    },
+                    "fixedStampAngle": {
+                        "type": "boolean",
+                        "description" : "If true, the zone stamp angle remains fixed when the element is rotated."
                     },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"

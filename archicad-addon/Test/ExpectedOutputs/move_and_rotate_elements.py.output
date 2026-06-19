@@ -1,0 +1,588 @@
+Command: MoveElements
+Parameters:
+{
+    "elementsWithMoveVectors": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "moveVector": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: RotateElements
+Parameters:
+{
+    "elementsWithRotations": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "rotation": {
+                "beginPoint": {
+                    "x": 0.0,
+                    "y": 1.0
+                },
+                "endPoint": {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+                "origin": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+Command: GetDetailsOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "detailsOfElements": [
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 001",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "structureType": "Composite",
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 1,
+                    "y": -1
+                },
+                "endCoordinate": {
+                    "x": 1,
+                    "y": -2.234
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 1,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 001",
+            "details": {
+                "geometryType": "Trapezoid",
+                "begThickness": 0.2,
+                "endThickness": 0.25,
+                "structureType": "Basic",
+                "zCoordinate": 3.2,
+                "begCoordinate": {
+                    "x": 1.4,
+                    "y": -1
+                },
+                "endCoordinate": {
+                    "x": 1.4,
+                    "y": -2.234
+                },
+                "height": 2.8,
+                "bottomOffset": 0.2,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 1,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 001",
+            "details": {
+                "geometryType": "Polygonal",
+                "polygonOutline": [
+                    {
+                        "x": 1.4,
+                        "y": -2.35
+                    },
+                    {
+                        "x": 1.4,
+                        "y": -3.584
+                    },
+                    {
+                        "x": 1.65,
+                        "y": -3.584
+                    },
+                    {
+                        "x": 1.6,
+                        "y": -2.35
+                    },
+                    {
+                        "x": 1.4,
+                        "y": -2.35
+                    }
+                ],
+                "structureType": "Basic",
+                "zCoordinate": 3,
+                "begCoordinate": {
+                    "x": 1.4,
+                    "y": -2.35
+                },
+                "endCoordinate": {
+                    "x": 1.4,
+                    "y": -3.584
+                },
+                "height": 2.5,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 002",
+            "details": {
+                "geometryType": "Polygonal",
+                "polygonOutline": [
+                    {
+                        "x": 2.273521209,
+                        "y": -5.328634698
+                    },
+                    {
+                        "x": 2.273521209,
+                        "y": -6.212474801
+                    },
+                    {
+                        "x": 3.622139298,
+                        "y": -5.625787836
+                    },
+                    {
+                        "x": 3.622139298,
+                        "y": -5.084816738
+                    },
+                    {
+                        "x": 2.273521209,
+                        "y": -5.328634698
+                    }
+                ],
+                "structureType": "Basic",
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 2.273521209,
+                    "y": -5.328634698
+                },
+                "endCoordinate": {
+                    "x": 2.273521209,
+                    "y": -6.212474801
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 003",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "structureType": "Basic",
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 1.272771563,
+                    "y": -6.863901967
+                },
+                "endCoordinate": {
+                    "x": 1.272771563,
+                    "y": -8.27215771
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 004",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 1.570796327,
+                "structureType": "Basic",
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 1.272771563,
+                    "y": -8.27215771
+                },
+                "endCoordinate": {
+                    "x": 2.681027306,
+                    "y": -8.27215771
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 005",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "structureType": "Basic",
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 2.681027306,
+                    "y": -8.27215771
+                },
+                "endCoordinate": {
+                    "x": 2.681027306,
+                    "y": -6.863901967
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        },
+        {
+            "type": "Wall",
+            "floorIndex": 0,
+            "layerIndex": 33,
+            "drawIndex": 7,
+            "id": "SW - 006",
+            "details": {
+                "geometryType": "Straight",
+                "arcAngle": 0,
+                "structureType": "Basic",
+                "zCoordinate": 0,
+                "begCoordinate": {
+                    "x": 2.681027306,
+                    "y": -6.863901967
+                },
+                "endCoordinate": {
+                    "x": 1.272771563,
+                    "y": -6.863901967
+                },
+                "height": 3,
+                "bottomOffset": 0,
+                "offset": 0
+            }
+        }
+    ]
+}

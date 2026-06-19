@@ -1,0 +1,13 @@
+Changing to view: Site
+Command: ChangeWindow
+Parameters:
+{
+    "navigatorItemId": {
+        "guid": "<GUID>"
+    }
+}
+Response:
+{
+    "success": true
+}
+{'success': True}

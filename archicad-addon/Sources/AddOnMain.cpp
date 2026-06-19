@@ -283,7 +283,7 @@ GSErrCode Initialize (void)
             "Moves elements with a given vector."
         );
         err |= RegisterCommand<RotateElementsCommand> (
-            elementCommands, "1.0.0",
+            elementCommands, "1.5.3",
             "Rotates elements around a reference point."
         );
         err |= RegisterCommand<DeleteElementsCommand> (

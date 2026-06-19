@@ -808,7 +808,8 @@ var gSchemaDefinitions = {
             "IsIndependent",
             "InCroppedView",
             "HasAccessRight",
-            "IsOverriddenByRenovation"
+            "IsOverriddenByRenovation",
+            "IncludeSubElemObjects"
         ]
     },
     "WindowType": {
@@ -3114,6 +3115,14 @@ var gSchemaDefinitions = {
                 "$ref": "#/Coordinate2D",
                 "description": "Position of the origin of the zone stamp."
             },
+            "stampAngle": {
+                "type": "number",
+                "description": "Rotation angle of the zone stamp in radians."
+            },
+            "fixedStampAngle": {
+                "type": "boolean",
+                "description": "If true, the zone stamp angle remains fixed when the element is rotated."
+            },
             "isManual": {
                 "type": "boolean",
                 "description": "Is the coordinates of the zone manually placed?"
@@ -3911,12 +3920,35 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": []
     },
+    "ZoneSettings": {
+        "type": "object",
+        "description": "Settings for modifying a zone.",
+        "properties": {
+            "stampPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Position of the origin of the zone stamp."
+            },
+            "stampAngle": {
+                "type": "number",
+                "description": "Rotation angle of the zone stamp in radians."
+            },
+            "fixedStampAngle": {
+                "type": "boolean",
+                "description": "If true, the zone stamp angle remains fixed when the element is rotated."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
         "oneOf": [
             {
                 "$ref": "#/WallSettings"
+            },
+            {
+                "$ref": "#/ZoneSettings"
             }
         ]
     },

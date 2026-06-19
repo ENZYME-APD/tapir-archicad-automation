@@ -19,3 +19,276 @@ Response:
 {
     "designOptionCombinations": []
 }
+Command: GetElementsOfDesignOptions
+Parameters:
+{
+    "designOptions": []
+}
+Response:
+{
+    "elementsOfDesignOptions": []
+}
+Command: GetDesignOptionForElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "designOptionForElements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "type": "NotLinkedToAnyDesignOption"
+        }
+    ]
+}
