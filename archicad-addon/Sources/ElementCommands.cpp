@@ -1731,6 +1731,167 @@ GS::ObjectState	MoveElementsCommand::Execute (const GS::ObjectState& parameters,
     return response;
 }
 
+static GSErrCode RotateElement (const API_Guid& elemGuid, const API_Coord& beginPoint, const API_Coord& endPoint, const API_Coord& origin, bool withCopy)
+{
+    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Rotate;
+    editPars.begC = API_Coord3D { beginPoint.x, beginPoint.y, 0.0 };
+    editPars.endC = API_Coord3D { endPoint.x, endPoint.y, 0.0 };
+    editPars.origC = origin;
+    editPars.withDelete = !withCopy;
+
+    return ACAPI_Element_Edit (&elementsToEdit, editPars);
+}
+
+RotateElementsCommand::RotateElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RotateElementsCommand::GetName () const
+{
+    return "RotateElements";
+}
+
+GS::Optional<GS::UniString> RotateElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithRotations": {
+                "type": "array",
+                "description": "The elements with rotation settings.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "rotation": {
+                            "type": "object",
+                            "description": "Rotation parameters for an element.",
+                            "properties": {
+                                "beginPoint": {
+                                    "type": "object",
+                                    "description": "Starting point of the rotation arc.",
+                                    "properties": {
+                                        "x": { "type": "number" },
+                                        "y": { "type": "number" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["x", "y"]
+                                },
+                                "endPoint": {
+                                    "type": "object",
+                                    "description": "End point of the rotation arc.",
+                                    "properties": {
+                                        "x": { "type": "number" },
+                                        "y": { "type": "number" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["x", "y"]
+                                },
+                                "origin": {
+                                    "type": "object",
+                                    "description": "Center of rotation.",
+                                    "properties": {
+                                        "x": { "type": "number" },
+                                        "y": { "type": "number" }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["x", "y"]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["beginPoint", "endPoint", "origin"]
+                        },
+                        "copy": {
+                            "type": "boolean",
+                            "description": "Optional parameter. If true, a copy of the element is rotated. By default it's false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "rotation"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elementsWithRotations"]
+    })";
+}
+
+GS::Optional<GS::UniString> RotateElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RotateElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithRotations;
+    parameters.Get ("elementsWithRotations", elementsWithRotations);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Rotate Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementWithRotation : elementsWithRotations) {
+            const GS::ObjectState* elementId = elementWithRotation.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* rotation = elementWithRotation.Get ("rotation");
+            if (rotation == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "rotation is missing"));
+                continue;
+            }
+
+            const GS::ObjectState* beginPoint = rotation->Get ("beginPoint");
+            const GS::ObjectState* endPoint = rotation->Get ("endPoint");
+            const GS::ObjectState* origin = rotation->Get ("origin");
+            if (beginPoint == nullptr || endPoint == nullptr || origin == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "rotation beginPoint, endPoint, or origin is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            bool copy = false;
+            elementWithRotation.Get ("copy", copy);
+
+            const GSErrCode err = RotateElement (elemGuid,
+                                                Get2DCoordinateFromObjectState (*beginPoint),
+                                                Get2DCoordinateFromObjectState (*endPoint),
+                                                Get2DCoordinateFromObjectState (*origin),
+                                                copy);
+            if (err != NoError) {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to rotate element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+                executionResults (CreateFailedExecutionResult (err, errorMsg));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 FilterElementsCommand::FilterElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
