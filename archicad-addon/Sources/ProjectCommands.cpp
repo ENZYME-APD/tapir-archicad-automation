@@ -546,7 +546,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
             for (GS::UIndex i = storyCount - 1; i >= stories.GetSize (); --i) {
                 API_StoryCmdType storyCmd = {};
                 storyCmd.action = APIStory_Delete;
-                storyCmd.index  = static_cast<short> (i);
+                storyCmd.index  = (*storyInfo.data)[i].index;
             
                 err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
                 if (err != NoError) {
@@ -571,7 +571,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         const API_StoryType& story = (*storyInfo.data)[i];
 
         API_StoryCmdType storyCmd = {};
-        storyCmd.index  = static_cast<short> (i);
+        storyCmd.index  = story.index;
 
         stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
 
