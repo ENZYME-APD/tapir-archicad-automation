@@ -479,6 +479,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("numberStr", GS::UniString (elem.zone.roomNoStr));
                 typeSpecificDetails.Add ("categoryAttributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ZoneCatID, elem.zone.catInd)));
                 typeSpecificDetails.Add ("stampPosition", Create2DCoordinateObjectState (elem.zone.pos));
+                typeSpecificDetails.Add ("stampAngle", elem.zone.stampAngle);
+                typeSpecificDetails.Add ("fixedStampAngle", elem.zone.fixedAngle);
                 typeSpecificDetails.Add ("isManual", elem.zone.manual);
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
@@ -883,6 +885,19 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             } break;
                             default:
                             break;
+                        }
+                    } break;
+                    case API_ZoneID: {
+                        const GS::ObjectState* stampPosition = typeSpecificDetails->Get ("stampPosition");
+                        if (stampPosition != nullptr) {
+                            elem.zone.pos = Get2DCoordinateFromObjectState (*stampPosition);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, pos);
+                        }
+                        if (typeSpecificDetails->Get ("stampAngle", elem.zone.stampAngle)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, stampAngle);
+                        }
+                        if (typeSpecificDetails->Get ("fixedStampAngle", elem.zone.fixedAngle)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
                         }
                     } break;
                     default:
