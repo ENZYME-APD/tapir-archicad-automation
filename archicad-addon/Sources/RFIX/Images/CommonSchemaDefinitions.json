@@ -2723,6 +2723,9 @@
             "zCoordinate": {
                 "type": "number"
             },
+            "flipped": {
+                "type": "boolean"
+            },
             "height": {
                 "type": "number",
                 "description": "height relative to bottom"
@@ -2741,11 +2744,11 @@
             },
             "begThickness": {
                 "type": "number",
-                "description": "Thickness at the beginning in case of trapezoid wall"
+                "description": "Thickness at the beginning of wall, it will return 0 for poly wall type"
             },
             "endThickness": {
                 "type": "number",
-                "description": "Thickness at the end in case of trapezoid wall"
+                "description": "Thickness at the end of wall, it will return 0 for poly wall type"
             },
             "polygonOutline": {
                 "type": "array",
@@ -3166,6 +3169,9 @@
             "height": {
                 "type": "number"
             },
+            "flipped": {
+                "type": "boolean"
+            },
             "angle": {
                 "type": "number",
                 "description": "The rotation angle of the curtain wall in radians."
@@ -3417,6 +3423,30 @@
             "polygonCoordinates"
         ]
     },
+    "LabelDetails": {
+        "$ref": "#/LibPartBasedElementDetails",
+        "properties": {
+          "begCoordinate": {
+            "$ref": "#/Coordinate2D"
+          },
+          "midCoordinate": {
+            "$ref": "#/Coordinate2D"
+          },
+          "endCoordinate": {
+            "$ref": "#/Coordinate2D"
+          },
+          "hasLeaderLine": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+          "required": [
+              "begCoordinate",
+              "midCoordinate",
+              "endCoordinate",
+              "hasLeaderLine"
+          ]
+    },    
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -3474,6 +3504,9 @@
             },
             {
                 "$ref": "#/MeshDetails"
+            },
+            {
+                "$ref": "#/LabelDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"

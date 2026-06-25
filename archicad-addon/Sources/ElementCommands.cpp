@@ -435,8 +435,6 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         break;
                     case APIWtyp_Trapez:
                         typeSpecificDetails.Add ("geometryType", "Trapezoid");
-                        typeSpecificDetails.Add ("begThickness", elem.wall.thickness);
-                        typeSpecificDetails.Add ("endThickness", elem.wall.thickness1);
                         break;
                     case APIWtyp_Poly:
                         {
@@ -453,8 +451,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("bottomOffset", elem.wall.bottomOffset);
                 typeSpecificDetails.Add ("offset", elem.wall.offset);
                 typeSpecificDetails.Add ("flipped", elem.wall.flipped);
-                typeSpecificDetails.Add ("begThickness", elem.wall.thickness);
-                typeSpecificDetails.Add ("endThickness", elem.wall.thickness1);
+                if (elem.wall.type == APIWtyp_Poly) {
+                    typeSpecificDetails.Add ("begThickness", 0);
+                    typeSpecificDetails.Add ("endThickness", 0);
+                } else {
+                    typeSpecificDetails.Add ("begThickness", elem.wall.thickness);
+                    typeSpecificDetails.Add ("endThickness", elem.wall.thickness1);
+                }
                 if (StructureTypeToString (elem.wall.modelElemStructureType) == "Composite") {
                     typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, elem.wall.composite)));
                 }
