@@ -307,6 +307,85 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+DeleteProjectInfoFieldsCommand::DeleteProjectInfoFieldsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String DeleteProjectInfoFieldsCommand::GetName () const
+{
+    return "DeleteProjectInfoFields";
+}
+
+GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "projectInfoIds": {
+                "type": "array",
+                "description": "List of project info field ids to delete. Only custom fields (ids starting with 'autotext-') can be deleted.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoIds"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> projectInfoIds;
+    if (!parameters.Get ("projectInfoIds", projectInfoIds) || projectInfoIds.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "projectInfoIds is missing or empty.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("DeleteProjectInfoFields", [&]() -> GSErrCode {
+        for (const GS::UniString& projectInfoId : projectInfoIds) {
+            if (!projectInfoId.BeginsWith ("autotext-")) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    "Only custom project info fields (ids starting with 'autotext-') can be deleted."));
+                continue;
+            }
+
+            GSErrCode err = ACAPI_AutoText_DeleteAnAutoText (projectInfoId.ToCStr ());
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to delete project info field."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
 GetHotlinksCommand::GetHotlinksCommand () :
     CommandBase (CommonSchema::Used)
 {

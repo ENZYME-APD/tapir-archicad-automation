@@ -1091,6 +1091,17 @@
             },
             "propertyIsEditable": {
                 "type": "boolean"
+            },
+            "isExpressionBased": {
+                "type": "boolean",
+                "description": "True if the property value is computed from an expression."
+            },
+            "expressions": {
+                "type": "array",
+                "description": "The expression strings of an expression-based property. Only present when isExpressionBased is true.",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "additionalProperties": false,
@@ -1102,7 +1113,8 @@
             "propertyCollectionType",
             "propertyValueType",
             "propertyMeasureType",
-            "propertyIsEditable"
+            "propertyIsEditable",
+            "isExpressionBased"
         ]
     },
     "PropertyValue": {

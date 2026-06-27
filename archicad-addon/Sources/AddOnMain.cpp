@@ -517,6 +517,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.0.9",
             "Deletes the given Custom Property Definitions."
         );
+        err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
+            propertyCommands, "1.0.9",
+            "Updates the expression(s) of existing expression-based Custom Property Definitions."
+        );
         AddCommandGroup (propertyCommands);
     }
 
