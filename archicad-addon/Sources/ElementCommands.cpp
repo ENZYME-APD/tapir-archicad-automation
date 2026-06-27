@@ -435,8 +435,6 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         break;
                     case APIWtyp_Trapez:
                         typeSpecificDetails.Add ("geometryType", "Trapezoid");
-                        typeSpecificDetails.Add ("begThickness", elem.wall.thickness);
-                        typeSpecificDetails.Add ("endThickness", elem.wall.thickness1);
                         break;
                     case APIWtyp_Poly:
                         {
@@ -452,6 +450,17 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("height", elem.wall.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.wall.bottomOffset);
                 typeSpecificDetails.Add ("offset", elem.wall.offset);
+                typeSpecificDetails.Add ("flipped", elem.wall.flipped);
+                if (elem.wall.type == APIWtyp_Poly) {
+                    typeSpecificDetails.Add ("begThickness", 0);
+                    typeSpecificDetails.Add ("endThickness", 0);
+                } else {
+                    typeSpecificDetails.Add ("begThickness", elem.wall.thickness);
+                    typeSpecificDetails.Add ("endThickness", elem.wall.thickness1);
+                }
+                if (StructureTypeToString (elem.wall.modelElemStructureType) == "Composite") {
+                    typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, elem.wall.composite)));
+                }
                 break;
 
             case API_BeamID:
@@ -507,6 +516,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_LabelID:
                 AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
+                typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.label.begC));
+                typeSpecificDetails.Add ("midCoordinate", Create2DCoordinateObjectState (elem.label.midC));
+                typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.label.endC));
+                typeSpecificDetails.Add ("hasLeaderLine", elem.label.hasLeaderLine);
                 break;
 
             case API_ObjectID:
@@ -571,6 +584,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_CurtainWallID: {
                 typeSpecificDetails.Add ("height", elem.curtainWall.height);
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
+                typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
             } break;
 
             case API_CurtainWallSegmentID: {

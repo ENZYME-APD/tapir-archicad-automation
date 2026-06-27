@@ -246,11 +246,11 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
         GS::ObjectState hole;
         const auto& holeCoords = hole.AddList<GS::ObjectState> (holeCoordsFieldName);
         if (includeZCoords) {
-            for (size_t i = 0; i < polygons[i].coords.size (); ++i) {
+            for (size_t j = 0; j < polygons[i].coords.size (); ++j) {
                 holeCoords (Create3DCoordinateObjectState (API_Coord3D {
-                    polygons[i].coords[i].x,
-                    polygons[i].coords[i].y,
-                    polygons[i].zCoords[i]
+                    polygons[i].coords[j].x,
+                    polygons[i].coords[j].y,
+                    polygons[i].zCoords[j]
                 }));
             }
         } else {

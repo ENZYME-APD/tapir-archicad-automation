@@ -1163,6 +1163,15 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                         "$ref": "#/Coordinate2D",
                         "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
                     },
+                    "midCoordinate": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The mid coordinate of leader line. Optional parameter."
+                    },
+                    "endCoordinate": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The end coordinate of leader line. Optional parameter."
+                    },
+
                     "floorInd": {
                         "type": "number",
                         "description" : "The identifier of the floor. Optional parameter, by default the current floor or the floor of the parent element is used."	
@@ -1286,6 +1295,8 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     parameters.Get ("floorInd", element.header.floorInd);
 
     const GS::ObjectState* begCOS = parameters.Get ("begCoordinate");
+    const GS::ObjectState* midCOS = parameters.Get ("midCoordinate");
+    const GS::ObjectState* endCOS = parameters.Get ("endCoordinate");
 
     element.label.parent = GetGuidFromArrayItem ("parentElementId", parameters);
     API_Elem_Head parentElemHead = {};
@@ -1314,7 +1325,15 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     } else {
         return CreateErrorResponse (APIERR_BADPARS, "Missing 'begCoordinate' parameter");
     }
-    element.label.createAtDefaultPosition = true;
+
+
+    if (midCOS != nullptr && endCOS != nullptr) {
+        element.label.midC = Get2DCoordinateFromObjectState (*midCOS);
+        element.label.endC = Get2DCoordinateFromObjectState (*endCOS);
+        element.label.createAtDefaultPosition = false;
+    } else {
+        element.label.createAtDefaultPosition = true;
+    }
 
     if (element.label.labelClass == APILblClass_Text) {
         GS::UniString text;
