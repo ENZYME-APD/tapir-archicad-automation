@@ -4655,5 +4655,35 @@
             "id",
             "ownerSetName"
         ]
+    },
+    "SolidOperationType": {
+        "type": "string",
+        "description": "The type of solid element operation.",
+        "enum": [
+            "Subtraction",
+            "SubtractionUpwards",
+            "SubtractionDownwards",
+            "Intersection",
+            "Addition"
+        ]
+    },
+    "SolidLinkFlags": {
+        "type": "object",
+        "description": "Flags controlling the behaviour of a solid element operation link.",
+        "properties": {
+            "inheritOperatorAttributes": {
+                "type": "boolean",
+                "description": "If true, the target element inherits the attributes of the operator element."
+            },
+            "skipPolygonHoles": {
+                "type": "boolean",
+                "description": "If true, holes of the operator (roof/slab) are ignored during the operation."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "inheritOperatorAttributes",
+            "skipPolygonHoles"
+        ]
     }
 }

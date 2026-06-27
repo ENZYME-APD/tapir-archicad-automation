@@ -37,6 +37,7 @@
 #include "NotificationCommands.hpp"
 #include "DesignOptionCommands.hpp"
 #include "IFCCommands.hpp"
+#include "SolidElementOperationCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -176,6 +177,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateProjectInfoFieldsCommand> (
             projectCommands, "1.5.2",
             "Creates one or more custom project info fields."
+        );
+        err |= RegisterCommand<DeleteProjectInfoFieldsCommand> (
+            projectCommands, "1.5.2",
+            "Deletes one or more custom project info fields. Only fields with ids starting with 'autotext-' can be deleted."
         );
         err |= RegisterCommand<GetStoriesCommand> (
             projectCommands, "1.1.5",
@@ -836,6 +841,23 @@ GSErrCode Initialize (void)
             "Moves the given design options to another sets. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
+    }
+
+    { // Solid Element Operation Commands
+        CommandGroup solidElementOperationCommands ("Solid Element Operation Commands");
+        err |= RegisterCommand<CreateSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.3",
+            "Creates solid element operation links between target and operator elements."
+        );
+        err |= RegisterCommand<RemoveSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.3",
+            "Removes solid element operation links between target and operator elements."
+        );
+        err |= RegisterCommand<GetSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.3",
+            "Returns all solid element operation links involving the given elements (as target or operator)."
+        );
+        AddCommandGroup (solidElementOperationCommands);
     }
 
     { // Developer Commands
