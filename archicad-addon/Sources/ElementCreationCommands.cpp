@@ -325,6 +325,9 @@ void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
         ++iCoord;
     }
     (*memo.coords)[iCoord] = (*memo.coords)[iStart];
+    if (memo.meshPolyZ != nullptr) {
+        (*memo.meshPolyZ)[iCoord] = (*memo.meshPolyZ)[iStart];
+    }
     if (processVertexIDs && memo.vertexIDs != nullptr) {
         (*memo.vertexIDs)[iCoord] = (*memo.vertexIDs)[iStart];
     }

@@ -707,6 +707,17 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("skirtType", "SolidBodyWithSkirt");
                 }
                 typeSpecificDetails.Add ("skirtLevel", elem.mesh.skirtLevel);
+                if (elem.mesh.smoothRidges == APIRidge_AllSharp) {
+                    typeSpecificDetails.Add ("ridges", GS::UniString ("AllSharp"));
+                } else if (elem.mesh.smoothRidges == APIRidge_AllSmooth) {
+                    typeSpecificDetails.Add ("ridges", GS::UniString ("AllSmooth"));
+                } else {
+                    typeSpecificDetails.Add ("ridges", GS::UniString ("UserDefined"));
+                }
+                typeSpecificDetails.Add ("showLines",    elem.mesh.showLines != 0);
+                typeSpecificDetails.Add ("contourPen",   (Int32)elem.mesh.contPen);
+                typeSpecificDetails.Add ("levelPen",     (Int32)elem.mesh.levelPen);
+                typeSpecificDetails.Add ("lineTypeIndex", GetAttributeIndex (elem.mesh.ltypeInd));
                 constexpr bool includeZCoords = true;
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonCoordinates", "polygonArcs", "holes", "polygonCoordinates", "polygonArcs", includeZCoords);
                 if (elem.mesh.levelLines.nSubLines > 0) {
