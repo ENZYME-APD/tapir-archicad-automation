@@ -326,8 +326,7 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "List of project info field ids to delete. Only custom fields (ids starting with 'autotext-') can be deleted.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "type": "string"
                 },
                 "minItems": 1
             }
