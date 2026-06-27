@@ -308,7 +308,7 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
 }
 
 DeleteProjectInfoFieldsCommand::DeleteProjectInfoFieldsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
