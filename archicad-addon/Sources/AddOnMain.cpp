@@ -254,10 +254,6 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Sets the details of the given elements (floor, layer, order etc)."
         );
-        err |= RegisterCommand<SetElementsDrawIndexCommand> (
-            elementCommands, "1.5.4",
-            "Sets the draw order position of the given elements. Use drawIndex 0 to reset to the ArchiCAD default for the element type."
-        );
         err |= RegisterCommand<Get3DBoundingBoxesCommand> (
             elementCommands, "1.1.2",
             "Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements."
