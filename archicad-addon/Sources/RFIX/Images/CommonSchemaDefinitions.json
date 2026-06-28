@@ -3364,6 +3364,10 @@
     "MeshDetails": {
         "type": "object",
         "properties": {
+            "floorIndex": {
+                "type": "integer",
+                "description": "The index of the story the mesh is placed on."
+            },
             "level": {
                 "type": "number",
                 "description": "The Z reference level of coordinates."
@@ -3374,6 +3378,27 @@
             "skirtLevel": {
                 "type": "number",
                 "description": "The height of the skirt."
+            },
+            "ridges": {
+                "type": "string",
+                "description": "How ridges between mesh facets are displayed in 3D.",
+                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+            },
+            "showLines": {
+                "type": "boolean",
+                "description": "Whether to show secondary mesh lines on plan."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh contour line."
+            },
+            "levelPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh level lines."
+            },
+            "lineTypeIndex": {
+                "type": "integer",
+                "description": "Line type attribute index for the mesh contour."
             },
             "polygonCoordinates": {
                 "type": "array",

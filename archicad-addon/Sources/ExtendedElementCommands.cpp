@@ -4055,7 +4055,7 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
     });
 }
 
-static GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
+GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     API_Element&                       elem,
     API_ElementMemo&                   memo,
     GS::Array<GS::ObjectState>&        polygonCoordinates,
@@ -4131,6 +4131,47 @@ static GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     }
 
     return {};
+}
+
+void BuildMeshSublinesMemoFromGeometry (
+    API_Element&                      elem,
+    API_ElementMemo&                  memo,
+    const GS::Array<GS::ObjectState>& sublines)
+{
+    Int32 nTotalCoords = 0;
+    Int32 nSubLines    = 0;
+    for (const GS::ObjectState& subline : sublines) {
+        GS::Array<GS::ObjectState> coords;
+        if (subline.Get ("coordinates", coords) && !coords.IsEmpty ()) {
+            nTotalCoords += (Int32) coords.GetSize ();
+            ++nSubLines;
+        }
+    }
+
+    elem.mesh.levelLines.nCoords   = nTotalCoords;
+    elem.mesh.levelLines.nSubLines = nSubLines;
+
+    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (
+        memo.meshLevelCoords == nullptr
+            ? BMAllocateHandle (nTotalCoords * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelCoords), nTotalCoords * sizeof (API_MeshLevelCoord), REALLOC_CLEAR, 0));
+    memo.meshLevelEnds = reinterpret_cast<Int32**> (
+        memo.meshLevelEnds == nullptr
+            ? BMAllocateHandle (nSubLines * sizeof (Int32), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelEnds), nSubLines * sizeof (Int32), REALLOC_CLEAR, 0));
+
+    Int32 iCoord = 0;
+    Int32 iLine  = 0;
+    for (const GS::ObjectState& subline : sublines) {
+        GS::Array<GS::ObjectState> coords;
+        if (!subline.Get ("coordinates", coords) || coords.IsEmpty ())
+            continue;
+        for (const GS::ObjectState& c : coords) {
+            (*memo.meshLevelCoords)[iCoord].c = Get3DCoordinateFromObjectState (c);
+            ++iCoord;
+        }
+        (*memo.meshLevelEnds)[iLine++] = iCoord;
+    }
 }
 
 ModifyMeshesCommand::ModifyMeshesCommand () :
@@ -4396,8 +4437,6 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
             }
 
             if (hasSublines) {
-                const Int32 nSubLines = (Int32)sublines.GetSize ();
-
                 if (isClearingSublines) {
                     // Clearing level lines: ACAPI_Element_Change ignores null/empty handles for
                     // APIMemoMask_MeshLevel. Workaround: send two valid sublines placed just
@@ -4438,36 +4477,7 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
                     ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
                     memoChangeMask |= APIMemoMask_MeshLevel;
                 } else {
-                    Int32 nTotalCoords = 0;
-                    for (const GS::ObjectState& sub : sublines) {
-                        GS::Array<GS::ObjectState> coords;
-                        if (sub.Get ("coordinates", coords))
-                            nTotalCoords += (Int32)coords.GetSize ();
-                    }
-
-                    elem.mesh.levelLines.nCoords   = nTotalCoords;
-                    elem.mesh.levelLines.nSubLines = nSubLines;
-
-                    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (
-                        memo.meshLevelCoords == nullptr
-                            ? BMAllocateHandle (nTotalCoords * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0)
-                            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelCoords), nTotalCoords * sizeof (API_MeshLevelCoord), REALLOC_CLEAR, 0));
-                    memo.meshLevelEnds = reinterpret_cast<Int32**> (
-                        memo.meshLevelEnds == nullptr
-                            ? BMAllocateHandle (nSubLines * sizeof (Int32), ALLOCATE_CLEAR, 0)
-                            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelEnds), nSubLines * sizeof (Int32), REALLOC_CLEAR, 0));
-
-                    Int32 iCoord = 0;
-                    for (Int32 lineIdx = 0; lineIdx < nSubLines; ++lineIdx) {
-                        GS::Array<GS::ObjectState> coords;
-                        if (sublines[lineIdx].Get ("coordinates", coords)) {
-                            for (const GS::ObjectState& c : coords) {
-                                (*memo.meshLevelCoords)[iCoord].c = Get3DCoordinateFromObjectState (c);
-                                ++iCoord;
-                            }
-                        }
-                        (*memo.meshLevelEnds)[lineIdx] = iCoord;
-                    }
+                    BuildMeshSublinesMemoFromGeometry (elem, memo, sublines);
                     ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
                     memoChangeMask |= APIMemoMask_MeshLevel;
                 }

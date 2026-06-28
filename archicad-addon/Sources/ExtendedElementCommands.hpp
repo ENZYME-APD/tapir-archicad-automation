@@ -2,6 +2,19 @@
 
 #include "CommandBase.hpp"
 #include "ElementCreationCommands.hpp"
+#include "ObjectState.hpp"
+
+GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
+    API_Element& elem,
+    API_ElementMemo& memo,
+    GS::Array<GS::ObjectState>& polygonCoordinates,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes);
+
+void BuildMeshSublinesMemoFromGeometry (
+    API_Element& elem,
+    API_ElementMemo& memo,
+    const GS::Array<GS::ObjectState>& sublines);
 
 class CreateWallsCommand : public CreateElementsCommandBase
 {

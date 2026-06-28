@@ -1,4 +1,5 @@
 #include "ElementCreationCommands.hpp"
+#include "ExtendedElementCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
@@ -1051,88 +1052,15 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("polygonCoordinates", polygonCoordinates);
     parameters.Get ("polygonArcs", polygonArcs);
     parameters.Get ("holes", holes);
-    if (polygonCoordinates.GetSize () < 3) {
-        return CreateErrorResponse (APIERR_BADPARS, "'polygonCoordinates' must contain at least 3 coordinates.");
-    }
-    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
-        polygonCoordinates.Pop ();
-    }
-    element.mesh.poly.nCoords = polygonCoordinates.GetSize () + 1;
-    element.mesh.poly.nSubPolys = 1;
-    element.mesh.poly.nArcs = polygonArcs.GetSize ();
 
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            element.mesh.poly.nCoords += holePolygonOutline.GetSize () + 1;
-            ++element.mesh.poly.nSubPolys;
-            element.mesh.poly.nArcs += holePolygonArcs.GetSize ();
-        }
-    }
-
-    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.mesh.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-    memo.meshPolyZ = reinterpret_cast<double**> (BMAllocateHandle ((element.mesh.poly.nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0));
-    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.mesh.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.mesh.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-
-    Int32 iCoord = 1;
-    Int32 iArc = 0;
-    Int32 iPends = 1;
-    AddPolyToMemo (polygonCoordinates,
-                   polygonArcs,
-                   iCoord,
-                   iArc,
-                   iPends,
-                   memo);
-
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            AddPolyToMemo (holePolygonOutline,
-                           holePolygonArcs,
-                           iCoord,
-                           iArc,
-                           iPends,
-                           memo);
-        }
+    auto geoErr = BuildMeshPolyMemoFromGeometry (element, memo, polygonCoordinates, polygonArcs, holes);
+    if (geoErr.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, geoErr.Get ());
     }
 
     GS::Array<GS::ObjectState> sublines;
     parameters.Get ("sublines", sublines);
-    element.mesh.levelLines.nSubLines = 0;
-    element.mesh.levelLines.nCoords = 0;
-    for (const GS::ObjectState& subline : sublines) {
-        GS::Array<GS::ObjectState> coordinates;
-        subline.Get ("coordinates", coordinates);
-        if (coordinates.IsEmpty ()) {
-            continue;
-        }
-
-        ++element.mesh.levelLines.nSubLines;
-        element.mesh.levelLines.nCoords += coordinates.GetSize ();
-    }
-
-    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (BMAllocateHandle (element.mesh.levelLines.nCoords * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0));
-    memo.meshLevelEnds = reinterpret_cast<Int32**> (BMAllocateHandle (element.mesh.levelLines.nSubLines * sizeof (Int32), ALLOCATE_CLEAR, 0));
-
-    Int32 vertexID = 0;
-    Int32 lineID = 0;
-    for (const GS::ObjectState& subline : sublines) {
-        GS::Array<GS::ObjectState> coordinates;
-        subline.Get ("coordinates", coordinates);
-        if (coordinates.IsEmpty ()) {
-            continue;
-        }
-
-        for (const GS::ObjectState& coord : coordinates) {
-            API_MeshLevelCoord& meshLevelCoord = (*memo.meshLevelCoords)[vertexID];
-            meshLevelCoord.c = Get3DCoordinateFromObjectState (coord);
-            meshLevelCoord.vertexID = vertexID++;
-        }
-        (*memo.meshLevelEnds)[lineID++] = vertexID;
-    }
+    BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
 
     return {};
 }
