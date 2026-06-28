@@ -42,6 +42,7 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "GraphicalOverrideCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -1268,6 +1269,47 @@ GSErrCode Initialize (void)
             "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any."
         );
         AddCommandGroup (scriptUICommands);
+    }
+
+    { // Graphical Override Commands
+        CommandGroup graphicalOverrideCommands ("Graphical Override Commands");
+        err |= RegisterCommand<GetGraphicalOverrideCombinationsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Returns all graphical override combinations with their contained rule IDs."
+        );
+        err |= RegisterCommand<GetGraphicalOverrideRuleGroupsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Returns all graphical override rule groups with their contained rule IDs in order."
+        );
+        err |= RegisterCommand<GetGraphicalOverrideRulesCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Returns all graphical override rules with their criterion XML and style."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideRuleGroupsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Creates graphical override rule groups with the given names."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideRulesCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Creates graphical override rules with the given names, criterion XML, and style."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideCombinationsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Creates graphical override combinations with the given names and rule lists."
+        );
+        err |= RegisterCommand<DeleteGraphicalOverrideRulesCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Deletes the given graphical override rules by ID."
+        );
+        err |= RegisterCommand<DeleteGraphicalOverrideRuleGroupsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Deletes the given graphical override rule groups (and all rules they contain) by ID."
+        );
+        err |= RegisterCommand<DeleteGraphicalOverrideCombinationsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Deletes the given graphical override combinations by ID."
+        );
+        AddCommandGroup (graphicalOverrideCommands);
     }
 
     { // Developer Commands
