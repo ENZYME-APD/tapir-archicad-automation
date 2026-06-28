@@ -922,11 +922,23 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (drwIndexTarget == 0) {
                     ACAPI_Grouping_Tool (guids, APITool_ResetOrder, nullptr);
                 } else {
-                    const Int32 target = GS::Max (1, GS::Min ((Int32) drwIndexTarget, 14));
-                    const Int32 delta  = target - (Int32) elem.header.drwIndex;
-                    if (delta != 0) {
-                        const API_ToolCmdID step = (delta > 0) ? APITool_BringForward : APITool_SendBackward;
-                        for (Int32 i = 0; i < GS::Abs (delta); ++i)
+                    const Int32 target       = GS::Max (1, GS::Min ((Int32) drwIndexTarget, 14));
+                    const Int32 current      = (Int32) elem.header.drwIndex;
+                    const Int32 directCost   = GS::Abs (target - current);
+                    const Int32 viaFrontCost = 1 + (14 - target);
+                    const Int32 viaBackCost  = 1 + (target - 1);
+
+                    if (viaFrontCost <= GS::Min (directCost, viaBackCost)) {
+                        ACAPI_Grouping_Tool (guids, APITool_BringToFront, nullptr);
+                        for (Int32 i = 0; i < 14 - target; ++i)
+                            ACAPI_Grouping_Tool (guids, APITool_SendBackward, nullptr);
+                    } else if (viaBackCost <= GS::Min (directCost, viaFrontCost)) {
+                        ACAPI_Grouping_Tool (guids, APITool_SendToBack, nullptr);
+                        for (Int32 i = 0; i < target - 1; ++i)
+                            ACAPI_Grouping_Tool (guids, APITool_BringForward, nullptr);
+                    } else {
+                        const API_ToolCmdID step = (target > current) ? APITool_BringForward : APITool_SendBackward;
+                        for (Int32 i = 0; i < directCost; ++i)
                             ACAPI_Grouping_Tool (guids, step, nullptr);
                     }
                 }
