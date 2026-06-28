@@ -1569,6 +1569,10 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     API_Coord begCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("begCoordinate"));
     API_Coord endCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("endCoordinate"));
 
+    if (IsSame2DCoordinate (begCoordinate, endCoordinate)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Zero-length wall: 'begCoordinate' and 'endCoordinate' are identical.");
+    }
+
     double zCoordinate = 0.0;
     double height = 0.0;
     double thickness = 0.0;
