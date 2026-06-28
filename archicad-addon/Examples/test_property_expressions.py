@@ -36,6 +36,26 @@ def resolve(expr):
         expr
     )
 
+def get_all_classification_items():
+    """Return a flat availability list with all classification item GUIDs."""
+    availability = []
+    systems_r = aclib.RunCommand('API.GetAllClassificationSystems', {})
+    for sys_entry in (systems_r or {}).get('classificationSystems', []):
+        sys_id = sys_entry.get('classificationSystemId')
+        if not sys_id:
+            continue
+        items_r = aclib.RunCommand('API.GetAllClassificationsInSystem',
+                                   {'classificationSystemId': sys_id})
+        def collect(items):
+            for item in (items or []):
+                ci = item.get('classificationItem', {})
+                guid = ci.get('classificationItemId', {}).get('guid')
+                if guid:
+                    availability.append({'classificationItemId': {'guid': guid}})
+                collect(ci.get('children', []))
+        collect(items_r.get('classificationItems', []))
+    return availability
+
 def find_prop(ptype=None, vtype=None, exclude_expr=False):
     """Return first property matching type filters."""
     for p in all_props:
@@ -72,6 +92,10 @@ group_guid = (group_r or {}).get('propertyGroupIds', [{}])[0].get('propertyGroup
 if not group_guid:
     print('FATAL: could not create test group'); sys.exit(1)
 
+print('  Collecting classification items for availability...')
+all_avail = get_all_classification_items()
+print(f'  Found {len(all_avail)} classification items')
+
 created_guids = []
 
 def make_prop(name, ptype, expr_list):
@@ -80,7 +104,7 @@ def make_prop(name, ptype, expr_list):
             'name': name, 'description': '', 'type': ptype, 'isEditable': False,
             'defaultValue': {'expressions': expr_list},
             'group': {'propertyGroupId': {'guid': group_guid}},
-            'availability': [],
+            'availability': all_avail,
         }}
     ]})
     entry = (r or {}).get('propertyIds', [{}])[0]
@@ -119,7 +143,7 @@ print('TEST 2 -- Create expression referencing a built-in Real property')
 # =============================================================================
 if builtin_area:
     ag = builtin_area['propertyId']['guid']
-    guid2, _ = make_prop('TestExpr_BuiltinReal', 'number', [f'{ref(ag)} * 2'])
+    guid2, _ = make_prop('TestExpr_BuiltinReal', 'number', [f'{ref(ag)} / 1 m * 2'])
     check('created successfully', True, guid2 is not None)
     if guid2:
         p = get_prop(guid2)
@@ -162,7 +186,7 @@ print('TEST 4 -- Create expression referencing a custom Real/Integer property')
 if custom_prop:
     cg   = custom_prop['propertyId']['guid']
     ag   = builtin_area['propertyId']['guid'] if builtin_area else None
-    expr = f'{ref(cg)} + {ref(ag)}' if ag else f'{ref(cg)} * 1'
+    expr = f'{ref(cg)} + {ref(ag)} / 1 m' if ag else f'{ref(cg)} * 1'
     guid4, _ = make_prop('TestExpr_CustomRef', 'number', [expr])
     check('created successfully', True, guid4 is not None)
     if guid4:
@@ -184,7 +208,7 @@ if builtin_area and custom_prop:
     ag = builtin_area['propertyId']['guid']
     cg = custom_prop['propertyId']['guid']
     guid5, _ = make_prop('TestExpr_MultiExpr', 'number',
-                         [f'{ref(ag)} * 1.1', f'{ref(cg)} + 0'])
+                         [f'{ref(ag)} / 1 m + {ref(cg)}', f'{ref(cg)} + {ref(ag)} / 1 m'])
     check('created successfully', True, guid5 is not None)
     if guid5:
         p = get_prop(guid5)
@@ -202,7 +226,7 @@ print('TEST 6 -- UpdatePropertyDefinitions: change expression')
 if guid5 and builtin_area and custom_prop:
     ag       = builtin_area['propertyId']['guid']
     cg       = custom_prop['propertyId']['guid']
-    new_expr = f'{ref(ag)} + {ref(cg)}'
+    new_expr = f'{ref(ag)} / 1 m + {ref(cg)}'
     upd_r = run('UpdatePropertyDefinitions', {'propertyDefinitions': [
         {'propertyId': {'guid': guid5}, 'expressions': [new_expr]}
     ]})
