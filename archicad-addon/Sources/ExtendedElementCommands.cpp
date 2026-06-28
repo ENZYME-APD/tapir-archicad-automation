@@ -1171,6 +1171,12 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, endC);
         changed = true;
     }
+    auto arcAngle = GetOptionalDouble (details, "arcAngle");
+    if (arcAngle.HasValue ()) {
+        element.wall.angle = arcAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, angle);
+        changed = true;
+    }
     auto height = GetOptionalDouble (details, "height");
     if (height.HasValue ()) {
         element.wall.height = height.Get ();
@@ -1528,6 +1534,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "offset": { "type": "number" },
+                        "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
                             "type": "string",
                             "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"]
@@ -1571,6 +1578,10 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     element.wall.type = APIWtyp_Normal;
     element.wall.begC = begCoordinate;
     element.wall.endC = endCoordinate;
+    auto arcAngle = GetOptionalDouble (parameters, "arcAngle");
+    if (arcAngle.HasValue ()) {
+        element.wall.angle = arcAngle.Get ();
+    }
     element.wall.height = height;
     element.wall.thickness = thickness;
     element.wall.referenceLineLocation = APIWallRefLine_Center;
@@ -2992,6 +3003,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "elementId": { "$ref": "#/ElementId" },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "bottomOffset": { "type": "number" },
