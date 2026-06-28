@@ -168,25 +168,34 @@ for res, lk in zip(results, solid_links):
     check(label, True, res.get('success', False))
 
 # ---------------------------------------------------------------------------
-# STEP 3 — Verifier via GetSolidElementLinks
+# STEP 3 — Verifier via GetSolidElementLinks (format groupe par element)
 # ---------------------------------------------------------------------------
 print('\nSTEP 3 -- GetSolidElementLinks (verification)')
 
-get_r = run('GetSolidElementLinks', {'elements': [{'elementId': e} for pair in pairs for e in pair]})
-links = (get_r or {}).get('solidLinks', [])
-check('nombre de liens', len(solid_links), len(links))
+all_elems = [{'elementId': e} for pair in pairs for e in pair]
+get_r = run('GetSolidElementLinks', {'elements': all_elems})
+entries = (get_r or {}).get('solidLinks', [])
+check('une entree par element', len(all_elems), len(entries))
+
+# Construire un index {(target_guid, operator_guid): operation} a partir de la reponse
+link_index = {}
+for elem_os, entry in zip(all_elems, entries):
+    elem_guid = elem_os['elementId']['guid']
+    for lk in entry.get('solidLinksWithTheGivenTarget', []):
+        op_guid = lk.get('operatorId', {}).get('guid')
+        if op_guid:
+            link_index[(elem_guid, op_guid)] = lk.get('operation')
+    for lk in entry.get('solidLinksWithTheGivenOperator', []):
+        tgt_guid = lk.get('targetId', {}).get('guid')
+        if tgt_guid:
+            link_index[(tgt_guid, elem_guid)] = lk.get('operation')
 
 for lk in solid_links:
     a_guid = lk['targetId']['guid']
     b_guid = lk['operatorId']['guid']
-    op = lk['operation']
-    found = next(
-        (l for l in links
-         if l.get('targetId',   {}).get('guid') == a_guid
-         and l.get('operatorId',{}).get('guid') == b_guid),
-        None
-    )
-    check(f'  lien {op} {a_guid[:6]}->{b_guid[:6]}', op, (found or {}).get('operation'))
+    op     = lk['operation']
+    found_op = link_index.get((a_guid, b_guid))
+    check(f'  lien {op} {a_guid[:6]}->{b_guid[:6]}', op, found_op)
 
 # ---------------------------------------------------------------------------
 # STEP 4 — RemoveSolidElementLinks (teste sur la paire Subtraction)
@@ -203,15 +212,23 @@ if rem_results:
     check('remove success', True, rem_results[0].get('success', False))
 
 # Verifier que le lien a disparu et que les autres sont intacts
-get2_r = run('GetSolidElementLinks', {'elements': [{'elementId': e} for pair in pairs for e in pair]})
-links2 = (get2_r or {}).get('solidLinks', [])
-gone = not any(
-    l.get('targetId',   {}).get('guid') == a_sub['guid']
-    and l.get('operatorId',{}).get('guid') == b_sub['guid']
-    for l in links2
-)
+get2_r = run('GetSolidElementLinks', {'elements': all_elems})
+entries2 = (get2_r or {}).get('solidLinks', [])
+link_index2 = {}
+for elem_os, entry in zip(all_elems, entries2):
+    elem_guid = elem_os['elementId']['guid']
+    for lk in entry.get('solidLinksWithTheGivenTarget', []):
+        op_guid = lk.get('operatorId', {}).get('guid')
+        if op_guid:
+            link_index2[(elem_guid, op_guid)] = lk.get('operation')
+    for lk in entry.get('solidLinksWithTheGivenOperator', []):
+        tgt_guid = lk.get('targetId', {}).get('guid')
+        if tgt_guid:
+            link_index2[(tgt_guid, elem_guid)] = lk.get('operation')
+
+gone = (a_sub['guid'], b_sub['guid']) not in link_index2
 check('lien Subtraction supprime', True, gone)
-check('autres liens intacts', len(solid_links) - 1, len(links2))
+check('autres liens intacts', len(solid_links) - 1, len(link_index2))
 
 # ---------------------------------------------------------------------------
 # Resume

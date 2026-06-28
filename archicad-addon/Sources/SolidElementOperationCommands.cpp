@@ -286,37 +286,46 @@ GS::Optional<GS::UniString> GetSolidElementLinksCommand::GetResponseSchema () co
         "properties": {
             "solidLinks": {
                 "type": "array",
-                "description": "All solid element operation links involving the queried elements.",
+                "description": "For each input element, the solid links where it acts as target and where it acts as operator.",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "targetId": {
-                            "$ref": "#/ElementId"
+                        "solidLinksWithTheGivenTarget": {
+                            "type": "array",
+                            "description": "Links where the given element is the target (being cut or modified).",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "operatorId": { "$ref": "#/ElementId" },
+                                    "operation":  { "$ref": "#/SolidOperationType" },
+                                    "linkFlags":  { "$ref": "#/SolidLinkFlags" }
+                                },
+                                "additionalProperties": false,
+                                "required": [ "operatorId", "operation", "linkFlags" ]
+                            }
                         },
-                        "operatorId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "operation": {
-                            "$ref": "#/SolidOperationType"
-                        },
-                        "linkFlags": {
-                            "$ref": "#/SolidLinkFlags"
+                        "solidLinksWithTheGivenOperator": {
+                            "type": "array",
+                            "description": "Links where the given element is the operator (performing the cut).",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "targetId":  { "$ref": "#/ElementId" },
+                                    "operation": { "$ref": "#/SolidOperationType" },
+                                    "linkFlags": { "$ref": "#/SolidLinkFlags" }
+                                },
+                                "additionalProperties": false,
+                                "required": [ "targetId", "operation", "linkFlags" ]
+                            }
                         }
                     },
                     "additionalProperties": false,
-                    "required": [
-                        "targetId",
-                        "operatorId",
-                        "operation",
-                        "linkFlags"
-                    ]
+                    "required": [ "solidLinksWithTheGivenTarget", "solidLinksWithTheGivenOperator" ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": [
-            "solidLinks"
-        ]
+        "required": [ "solidLinks" ]
     })";
 }
 
@@ -325,51 +334,51 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GS::HashSet<GS::UniString> seen;
-
     GS::ObjectState response;
     const auto& solidLinksAdder = response.AddList<GS::ObjectState> ("solidLinks");
 
-    auto addLink = [&] (const API_Guid& targetGuid, const API_Guid& operatorGuid) {
-        const GS::UniString key = APIGuidToString (targetGuid) + "/" + APIGuidToString (operatorGuid);
-        if (seen.Contains (key)) {
-            return;
-        }
-        seen.Add (key);
-
-        API_SolidOperationID operation = APISolid_Substract;
-        ACAPI_Element_SolidLink_GetOperation (targetGuid, operatorGuid, &operation);
-
-        GSFlags flags = 0;
-        ACAPI_Element_SolidLink_GetFlags (targetGuid, operatorGuid, &flags);
-
-        GS::ObjectState link;
-        link.Add ("targetId",   CreateGuidObjectState (targetGuid));
-        link.Add ("operatorId", CreateGuidObjectState (operatorGuid));
-        link.Add ("operation",  OperationToString (operation));
-        link.Add ("linkFlags",  FlagsToObjectState (flags));
-        solidLinksAdder (link);
-    };
-
     for (const GS::ObjectState& elemOs : elements) {
         const API_Guid elemGuid = GetGuidFromElementsArrayItem (elemOs);
-        if (elemGuid == APINULLGuid) {
-            continue;
-        }
 
-        GS::Array<API_Guid> operators;
-        if (ACAPI_Element_SolidLink_GetOperators (elemGuid, &operators) == NoError) {
-            for (const API_Guid& opGuid : operators) {
-                addLink (elemGuid, opGuid);
+        GS::ObjectState entry;
+        const auto& asTargetAdder   = entry.AddList<GS::ObjectState> ("solidLinksWithTheGivenTarget");
+        const auto& asOperatorAdder = entry.AddList<GS::ObjectState> ("solidLinksWithTheGivenOperator");
+
+        if (elemGuid != APINULLGuid) {
+            GS::Array<API_Guid> operators;
+            if (ACAPI_Element_SolidLink_GetOperators (elemGuid, &operators) == NoError) {
+                for (const API_Guid& opGuid : operators) {
+                    API_SolidOperationID operation = APISolid_Substract;
+                    ACAPI_Element_SolidLink_GetOperation (elemGuid, opGuid, &operation);
+                    GSFlags flags = 0;
+                    ACAPI_Element_SolidLink_GetFlags (elemGuid, opGuid, &flags);
+
+                    GS::ObjectState link;
+                    link.Add ("operatorId", CreateGuidObjectState (opGuid));
+                    link.Add ("operation",  OperationToString (operation));
+                    link.Add ("linkFlags",  FlagsToObjectState (flags));
+                    asTargetAdder (link);
+                }
+            }
+
+            GS::Array<API_Guid> targets;
+            if (ACAPI_Element_SolidLink_GetTargets (elemGuid, &targets) == NoError) {
+                for (const API_Guid& tGuid : targets) {
+                    API_SolidOperationID operation = APISolid_Substract;
+                    ACAPI_Element_SolidLink_GetOperation (tGuid, elemGuid, &operation);
+                    GSFlags flags = 0;
+                    ACAPI_Element_SolidLink_GetFlags (tGuid, elemGuid, &flags);
+
+                    GS::ObjectState link;
+                    link.Add ("targetId",  CreateGuidObjectState (tGuid));
+                    link.Add ("operation", OperationToString (operation));
+                    link.Add ("linkFlags", FlagsToObjectState (flags));
+                    asOperatorAdder (link);
+                }
             }
         }
 
-        GS::Array<API_Guid> targets;
-        if (ACAPI_Element_SolidLink_GetTargets (elemGuid, &targets) == NoError) {
-            for (const API_Guid& tGuid : targets) {
-                addLink (tGuid, elemGuid);
-            }
-        }
+        solidLinksAdder (entry);
     }
 
     return response;

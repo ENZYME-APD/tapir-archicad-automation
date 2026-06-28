@@ -842,16 +842,16 @@ GSErrCode Initialize (void)
     { // Solid Element Operation Commands
         CommandGroup solidElementOperationCommands ("Solid Element Operation Commands");
         err |= RegisterCommand<CreateSolidElementLinksCommand> (
-            solidElementOperationCommands, "1.5.3",
+            solidElementOperationCommands, "1.5.4",
             "Creates solid element operation links between target and operator elements."
         );
         err |= RegisterCommand<RemoveSolidElementLinksCommand> (
-            solidElementOperationCommands, "1.5.3",
+            solidElementOperationCommands, "1.5.4",
             "Removes solid element operation links between target and operator elements."
         );
         err |= RegisterCommand<GetSolidElementLinksCommand> (
-            solidElementOperationCommands, "1.5.3",
-            "Returns all solid element operation links involving the given elements (as target or operator)."
+            solidElementOperationCommands, "1.5.4",
+            "Returns solid element operation links for each queried element, grouped by role (target or operator)."
         );
         AddCommandGroup (solidElementOperationCommands);
     }
