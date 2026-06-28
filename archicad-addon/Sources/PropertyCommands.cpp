@@ -1470,27 +1470,9 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
                 continue;
             }
 
-            const API_Guid guid = GetGuidFromObjectState (*propertyId);
-
-            // GetPropertyDefinitions takes a group GUID, not a definition GUID.
-            // Search all groups to locate the definition by its own GUID.
-            GS::Array<API_PropertyGroup> groups;
-            ACAPI_Property_GetPropertyGroups (groups);
-            bool found = false;
             API_PropertyDefinition definition;
-            for (const API_PropertyGroup& group : groups) {
-                GS::Array<API_PropertyDefinition> defs;
-                ACAPI_Property_GetPropertyDefinitions (group.guid, defs);
-                for (const API_PropertyDefinition& def : defs) {
-                    if (def.guid == guid) {
-                        definition = def;
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) break;
-            }
-            if (!found) {
+            definition.guid = GetGuidFromObjectState (*propertyId);
+            if (ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property not found"));
                 continue;
             }
