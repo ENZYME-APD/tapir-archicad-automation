@@ -454,9 +454,10 @@ inline GSErrCode ACAPI_Attribute_GetAttributesByType (API_AttrTypeID typeID, GS:
 }
 #endif
 
-#ifdef ServerMainVers_2700
-// ACAPI_Element_SolidLink_GetFlags is declared in ACAPinc.h for AC27 but missing from ACAP_STAT.lib.
-// Return NoError with zero flags so callers compile and run correctly on AC27+.
+#if defined(_WIN32) && defined(ServerMainVers_2700) && !defined(ServerMainVers_2800)
+// On Windows, ACAPI_Element_SolidLink_GetFlags is declared in ACAPinc.h for AC27
+// but absent from ACAP_STAT.lib. The symbol is present in AC25/26 and again in AC28+.
+// Mac/Clang tolerates the missing symbol; MSVC does not, so this shim is Windows-only.
 inline GSErrCode ACAPI_Element_SolidLink_GetFlags (API_Guid /*guid_Target*/, API_Guid /*guid_Operator*/, GSFlags* linkFlags)
 {
     if (linkFlags != nullptr) {
