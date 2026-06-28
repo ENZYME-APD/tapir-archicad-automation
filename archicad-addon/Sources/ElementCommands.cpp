@@ -2671,3 +2671,116 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     str.DeleteAll (GS::UniChar(char('\n')));
     return GS::ObjectState ("roomImage", str);
 }
+
+SetElementsDrawIndexCommand::SetElementsDrawIndexCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetElementsDrawIndexCommand::GetName () const
+{
+    return "SetElementsDrawIndex";
+}
+
+GS::Optional<GS::UniString> SetElementsDrawIndexCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsWithDrawIndex": {
+                "type": "array",
+                "description": "Elements to reorder.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "drawIndex": {
+                            "type": "integer",
+                            "description": "Target stack level (1 = back, 14 = front). Use 0 to reset to the ArchiCAD default for the element type.",
+                            "minimum": 0,
+                            "maximum": 14
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "drawIndex"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elementsWithDrawIndex"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetElementsDrawIndexCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState SetElementsDrawIndexCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementsWithDrawIndex;
+    parameters.Get ("elementsWithDrawIndex", elementsWithDrawIndex);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("SetElementsDrawIndex", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : elementsWithDrawIndex) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid guid = GetGuidFromObjectState (*elementId);
+            GS::Array<API_Guid> guids = { guid };
+
+            Int32 targetIndex = 0;
+            item.Get ("drawIndex", targetIndex);
+
+            if (targetIndex == 0) {
+                GSErrCode err = ACAPI_Grouping_Tool (guids, APITool_ResetOrder, nullptr);
+                executionResults (err == NoError
+                    ? CreateSuccessfulExecutionResult ()
+                    : CreateFailedExecutionResult (err, "Failed to reset draw order"));
+                continue;
+            }
+
+            API_Element elem = {};
+            elem.header.guid = guid;
+            GSErrCode err = ACAPI_Element_Get (&elem);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to get element"));
+                continue;
+            }
+
+            const Int32 currentDrwIdx = elem.header.drwIndex;
+            const Int32 target        = GS::Max (1, GS::Min (targetIndex, 14));
+            const Int32 delta         = target - currentDrwIdx;
+
+            if (delta == 0) {
+                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
+            const API_ToolCmdID step = (delta > 0) ? APITool_BringForward : APITool_SendBackward;
+            for (Int32 i = 0; i < GS::Abs (delta); ++i)
+                ACAPI_Grouping_Tool (guids, step, nullptr);
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}
