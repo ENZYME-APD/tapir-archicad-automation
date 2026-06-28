@@ -178,10 +178,6 @@ GSErrCode Initialize (void)
             projectCommands, "1.5.2",
             "Creates one or more custom project info fields."
         );
-        err |= RegisterCommand<DeleteProjectInfoFieldsCommand> (
-            projectCommands, "1.5.2",
-            "Deletes one or more custom project info fields. Only fields with ids starting with 'autotext-' can be deleted."
-        );
         err |= RegisterCommand<GetStoriesCommand> (
             projectCommands, "1.1.5",
             "Retrieves information about the story sructure of the currently loaded project."
