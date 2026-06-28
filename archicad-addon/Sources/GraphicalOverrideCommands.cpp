@@ -148,19 +148,13 @@ static API_OverriddenPenOrRGB OverriddenPenOrRGBFromOS (const GS::ObjectState& o
     bool isOverridden = false;
     os.Get ("isOverridden", isOverridden);
     if (isOverridden) {
-        GS::ObjectState rgbOS;
         int penIdx = -1;
+        GS::ObjectState rgbOS;
         if (os.Get ("penIndex", penIdx)) {
-            APIVariant<API_PenIndex, API_RGBColor> var;
-            var = (API_PenIndex) penIdx;
-            v = var;
+            v = (API_PenIndex) penIdx;
         } else if (os.Get ("rgbColor", rgbOS)) {
-            APIVariant<API_PenIndex, API_RGBColor> var;
-            var = RGBColorFromOS (rgbOS);
-            v = var;
+            v = RGBColorFromOS (rgbOS);
         }
-    } else {
-        v = APINullValue;
     }
     return v;
 }
@@ -175,16 +169,10 @@ static API_OverriddenAttributeOrRGB OverriddenAttributeOrRGBFromOS (const GS::Ob
         Int32 attrIdx = -1;
         GS::ObjectState rgbOS;
         if (os.Get ("attributeIndex", attrIdx)) {
-            APIVariant<API_AttributeIndex, API_RGBColor> var;
-            var = ACAPI_CreateAttributeIndex (attrIdx);
-            v = var;
+            v = ACAPI_CreateAttributeIndex (attrIdx);
         } else if (os.Get ("rgbColor", rgbOS)) {
-            APIVariant<API_AttributeIndex, API_RGBColor> var;
-            var = RGBColorFromOS (rgbOS);
-            v = var;
+            v = RGBColorFromOS (rgbOS);
         }
-    } else {
-        v = APINullValue;
     }
     return v;
 }
@@ -488,7 +476,7 @@ GS::ObjectState CreateGraphicalOverrideRuleGroupsCommand::Execute (const GS::Obj
             const GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideRuleGroup (ruleGroup);
             if (err != NoError) {
                 resultsAdder (CreateFailedExecutionResult (err, "Failed to create rule group '" + name + "'."));
-                groupsAdder (GS::ObjectState ());
+                GS::ObjectState emptyGroup; emptyGroup.Add ("ruleGroupId", GS::UniString ()); emptyGroup.Add ("name", GS::UniString ()); groupsAdder (emptyGroup);
             } else {
                 resultsAdder (CreateSuccessfulExecutionResult ());
                 GS::ObjectState os;
@@ -582,7 +570,7 @@ GS::ObjectState CreateGraphicalOverrideRulesCommand::Execute (const GS::ObjectSt
             if (!ruleInput.Get ("name", name) || !ruleInput.Get ("ruleGroupId", ruleGroupIdStr) ||
                 !ruleInput.Get ("criterionXML", criterionXML) || !ruleInput.Get ("style", styleOS)) {
                 resultsAdder (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required field."));
-                rulesAdder (GS::ObjectState ());
+                GS::ObjectState emptyRule; emptyRule.Add ("ruleId", GS::UniString ()); emptyRule.Add ("name", GS::UniString ()); rulesAdder (emptyRule);
                 continue;
             }
 
@@ -596,7 +584,7 @@ GS::ObjectState CreateGraphicalOverrideRulesCommand::Execute (const GS::ObjectSt
             const GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideRule (rule, ruleGroupGuid);
             if (err != NoError) {
                 resultsAdder (CreateFailedExecutionResult (err, "Failed to create rule '" + name + "'."));
-                rulesAdder (GS::ObjectState ());
+                GS::ObjectState emptyRule; emptyRule.Add ("ruleId", GS::UniString ()); emptyRule.Add ("name", GS::UniString ()); rulesAdder (emptyRule);
             } else {
                 resultsAdder (CreateSuccessfulExecutionResult ());
                 GS::ObjectState os;
@@ -687,7 +675,7 @@ GS::ObjectState CreateGraphicalOverrideCombinationsCommand::Execute (const GS::O
 
             if (!input.Get ("name", name) || !input.Get ("ruleIds", ruleIdStrs)) {
                 resultsAdder (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required field."));
-                combinationsAdder (GS::ObjectState ());
+                GS::ObjectState emptyCombo; emptyCombo.Add ("combinationId", GS::UniString ()); emptyCombo.Add ("name", GS::UniString ()); combinationsAdder (emptyCombo);
                 continue;
             }
 
@@ -701,7 +689,7 @@ GS::ObjectState CreateGraphicalOverrideCombinationsCommand::Execute (const GS::O
             const GSErrCode err = ACAPI_GraphicalOverride_CreateOverrideCombination (combination, ruleIds);
             if (err != NoError) {
                 resultsAdder (CreateFailedExecutionResult (err, "Failed to create combination '" + name + "'."));
-                combinationsAdder (GS::ObjectState ());
+                GS::ObjectState emptyCombo; emptyCombo.Add ("combinationId", GS::UniString ()); emptyCombo.Add ("name", GS::UniString ()); combinationsAdder (emptyCombo);
             } else {
                 resultsAdder (CreateSuccessfulExecutionResult ());
                 GS::ObjectState os;

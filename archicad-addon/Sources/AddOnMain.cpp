@@ -1291,7 +1291,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateGraphicalOverrideRulesCommand> (
             graphicalOverrideCommands, "1.5.7",
-            "Creates graphical override rules with the given names, criterion XML, and style."
+            "Creates graphical override rules with the given names, criterion XML, and style. Note: fillBackgroundPenOverride.penIndex=0 (transparent background) is rejected by the ArchiCAD API; use isOverridden:false or an RGB color instead."
         );
         err |= RegisterCommand<CreateGraphicalOverrideCombinationsCommand> (
             graphicalOverrideCommands, "1.5.7",
