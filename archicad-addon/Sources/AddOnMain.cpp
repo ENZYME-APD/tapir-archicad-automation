@@ -37,6 +37,7 @@
 #include "NotificationCommands.hpp"
 #include "DesignOptionCommands.hpp"
 #include "IFCCommands.hpp"
+#include "SolidElementOperationCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -836,6 +837,23 @@ GSErrCode Initialize (void)
             "Moves the given design options to another sets. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
+    }
+
+    { // Solid Element Operation Commands
+        CommandGroup solidElementOperationCommands ("Solid Element Operation Commands");
+        err |= RegisterCommand<CreateSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.4",
+            "Creates solid element operation links between target and operator elements."
+        );
+        err |= RegisterCommand<RemoveSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.4",
+            "Removes solid element operation links between target and operator elements."
+        );
+        err |= RegisterCommand<GetSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.4",
+            "Returns solid element operation links for each queried element, grouped by role (target or operator)."
+        );
+        AddCommandGroup (solidElementOperationCommands);
     }
 
     { // Developer Commands

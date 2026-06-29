@@ -454,6 +454,19 @@ inline GSErrCode ACAPI_Attribute_GetAttributesByType (API_AttrTypeID typeID, GS:
 }
 #endif
 
+#if defined(ServerMainVers_2700) && !defined(ServerMainVers_2800)
+// ACAPI_Element_SolidLink_GetFlags is declared in ACAPinc.h for AC27 but absent
+// from ACAP_STAT.lib on both Windows and Mac. The symbol is present in AC25/26
+// and returns in AC28+. This shim covers AC27 on all platforms.
+inline GSErrCode ACAPI_Element_SolidLink_GetFlags (API_Guid /*guid_Target*/, API_Guid /*guid_Operator*/, GSFlags* linkFlags)
+{
+    if (linkFlags != nullptr) {
+        *linkFlags = 0;
+    }
+    return NoError;
+}
+#endif
+
 inline void DisposeAttribute (API_Attribute& attr)
 {
     if (attr.header.typeID == API_MaterialID) {
