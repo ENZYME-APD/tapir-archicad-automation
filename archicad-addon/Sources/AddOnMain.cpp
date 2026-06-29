@@ -427,6 +427,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Modifies multi-plane Roof elements based on the given parameters."
         );
+        err |= RegisterCommand<ModifyMeshesCommand> (
+            elementCommands, "1.5.4",
+            "Modifies the attributes of Mesh elements based on the given parameters."
+        );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
             elementCommands, "1.2.7",
             "Returns the preview image of the given element."
