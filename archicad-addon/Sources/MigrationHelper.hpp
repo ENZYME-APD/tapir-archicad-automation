@@ -175,6 +175,11 @@ inline GSErrCode ACAPI_AutoText_CreateAnAutoText (const API_Guid* autotextDbKey,
     return ACAPI_Goodies (APIAny_CreateAnAutoTextID, (void*) autotextDbKey, (void*) autotextKey);
 }
 
+inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
+{
+    return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
+}
+
 inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
 {
     return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);

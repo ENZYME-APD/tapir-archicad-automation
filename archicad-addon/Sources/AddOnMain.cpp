@@ -178,6 +178,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.5.2",
             "Creates one or more custom project info fields."
         );
+        err |= RegisterCommand<DeleteProjectInfoFieldsCommand> (
+            projectCommands, "1.5.4",
+            "Deletes one or more custom project info fields. Hardcoded fields cannot be deleted."
+        );
         err |= RegisterCommand<GetStoriesCommand> (
             projectCommands, "1.1.5",
             "Retrieves information about the story sructure of the currently loaded project."
@@ -517,6 +521,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeletePropertyDefinitionsCommand> (
             propertyCommands, "1.0.9",
             "Deletes the given Custom Property Definitions."
+        );
+        err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
+            propertyCommands, "1.5.4",
+            "Updates the expression(s) of existing expression-based Custom Property Definitions."
         );
         AddCommandGroup (propertyCommands);
     }
