@@ -175,6 +175,11 @@ inline GSErrCode ACAPI_AutoText_CreateAnAutoText (const API_Guid* autotextDbKey,
     return ACAPI_Goodies (APIAny_CreateAnAutoTextID, (void*) autotextDbKey, (void*) autotextKey);
 }
 
+inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
+{
+    return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
+}
+
 inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
 {
     return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);
@@ -451,6 +456,19 @@ inline GSErrCode ACAPI_Attribute_GetAttributesByType (API_AttrTypeID typeID, GS:
     }
 
     return err;
+}
+#endif
+
+#if defined(ServerMainVers_2700) && !defined(ServerMainVers_2800)
+// ACAPI_Element_SolidLink_GetFlags is declared in ACAPinc.h for AC27 but absent
+// from ACAP_STAT.lib on both Windows and Mac. The symbol is present in AC25/26
+// and returns in AC28+. This shim covers AC27 on all platforms.
+inline GSErrCode ACAPI_Element_SolidLink_GetFlags (API_Guid /*guid_Target*/, API_Guid /*guid_Operator*/, GSFlags* linkFlags)
+{
+    if (linkFlags != nullptr) {
+        *linkFlags = 0;
+    }
+    return NoError;
 }
 #endif
 
