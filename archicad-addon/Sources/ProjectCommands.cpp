@@ -538,6 +538,9 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
         storyData.Add ("floorId", story.floorId);
         storyData.Add ("dispOnSections", story.dispOnSections);
         storyData.Add ("level", story.level);
+        if (i + 1 < storyCount) {
+            storyData.Add ("height", (*storyInfo.data)[i + 1].level - story.level);
+        }
         storyData.Add ("name", uName);
 
         listAdder (storyData);

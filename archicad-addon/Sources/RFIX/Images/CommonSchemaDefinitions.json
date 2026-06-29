@@ -3849,6 +3849,10 @@
                 "type": "number",
                 "description": "The story level."
             },
+            "height": {
+                "type": "number",
+                "description": "Story height, calculated as the level of the story above minus this story's level. Omitted for the topmost story, which has no story above."
+            },
             "name": {
                 "type": "string",
                 "description": "The name of the story."
