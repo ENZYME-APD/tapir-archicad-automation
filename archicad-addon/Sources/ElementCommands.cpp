@@ -380,7 +380,7 @@ static void AddFloorPlanPolygonsIfAvailable (const API_Guid& guid, GS::ObjectSta
     params.allStories = true;
     params.polygon    = nullptr;
 
-#ifdef ServerMainVers_2600
+#if defined(ServerMainVers_2700)
     const GSErrCode fpErr = ACAPI_DrawingPrimitive_ShapePrimsExt (elemHead, CollectCutFillPolygons, &params);
 #else
     const GSErrCode fpErr = ACAPI_Element_ShapePrimsExt (elemHead, CollectCutFillPolygons, &params);
