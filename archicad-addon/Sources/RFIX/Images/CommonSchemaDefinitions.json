@@ -853,6 +853,10 @@
                     },
                     "databaseId": {
                         "$ref": "#/DatabaseId"
+                    },
+                    "storyIndex": {
+                        "type": "integer",
+                        "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
                     }
                 },
                 "additionalProperties": false,

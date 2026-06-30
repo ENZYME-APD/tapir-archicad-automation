@@ -279,6 +279,21 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                         },
                         "details": {
                             "$ref": "#/TypeSpecificDetails"
+                        },
+                        "floorPlanPolygons": {
+                            "type": "array",
+                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Available for elements with a cut-fill representation (walls, columns, beams). Absent when the element has no cut fill or when the floor plan database is not accessible.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "coordinates": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/2DCoordinate"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -298,6 +313,91 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
             "detailsOfElements"
         ]
     })";
+}
+
+// ── Floor plan polygon infrastructure (used by GetDetailsOfElements) ─────────
+
+struct FloorPlanCollectorContext {
+    GS::Array<GS::Array<API_Coord>> polys;
+    bool inCutFill = false;
+};
+
+static thread_local FloorPlanCollectorContext* tl_floorPlanCtx = nullptr;
+
+static GSErrCode CollectCutFillPolygons (const API_PrimElement* primElem,
+                                          const void* par1, const void* par2, const void* /*par3*/)
+{
+    if (tl_floorPlanCtx == nullptr)
+        return NoError;
+
+    switch (primElem->header.typeID) {
+        case API_PrimCtrl_HatchBorderBegID: {
+            const auto* border = static_cast<const API_PrimHatchBorder*> (par1);
+            tl_floorPlanCtx->inCutFill = (border != nullptr && border->determination == APIHatch_CutFills);
+            break;
+        }
+        case API_PrimCtrl_HatchBorderEndID:
+            tl_floorPlanCtx->inCutFill = false;
+            break;
+        case API_PrimPolyID: {
+            if (!tl_floorPlanCtx->inCutFill)
+                break;
+            const Int32 nCoords = primElem->poly.nCoords;
+            if (nCoords < 3)
+                break;
+            const auto* coords = static_cast<const API_Coord*> (par1);
+            const auto* pends  = static_cast<const Int32*> (par2);
+            Int32 start = 1;
+            const Int32 nSubPolys = primElem->poly.nSubPolys;
+            for (Int32 sub = 1; sub <= nSubPolys; ++sub) {
+                const Int32 end = (pends != nullptr) ? pends[sub] : nCoords;
+                GS::Array<API_Coord> ring;
+                for (Int32 i = start; i <= end; ++i)
+                    ring.Push (coords[i]);
+                if (ring.GetSize () >= 3)
+                    tl_floorPlanCtx->polys.Push (ring);
+                start = end + 1;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    return NoError;
+}
+
+static void AddFloorPlanPolygonsIfAvailable (const API_Guid& guid, GS::ObjectState& os)
+{
+    FloorPlanCollectorContext ctx;
+    tl_floorPlanCtx = &ctx;
+    const GS::OnExit ctxGuard ([&] () { tl_floorPlanCtx = nullptr; });
+
+    API_Elem_Head elemHead = {};
+    elemHead.guid = guid;
+
+    API_ShapePrimsParams params = {};
+    params.dontClip   = true;
+    params.allStories = true;
+    params.polygon    = nullptr;
+
+#if defined(ServerMainVers_2700)
+    const GSErrCode fpErr = ACAPI_DrawingPrimitive_ShapePrimsExt (elemHead, CollectCutFillPolygons, &params);
+#else
+    const GSErrCode fpErr = ACAPI_Element_ShapePrimsExt (elemHead, CollectCutFillPolygons, &params);
+#endif
+    if (fpErr != NoError)
+        return;
+    if (ctx.polys.IsEmpty ())
+        return;
+
+    const auto& polygonsOS = os.AddList<GS::ObjectState> ("floorPlanPolygons");
+    for (const GS::Array<API_Coord>& poly : ctx.polys) {
+        GS::ObjectState polyOS;
+        const auto& coordsOS = polyOS.AddList<GS::ObjectState> ("coordinates");
+        for (const API_Coord& c : poly)
+            coordsOS (Create2DCoordinateObjectState (c));
+        polygonsOS (polyOS);
+    }
 }
 
 static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
@@ -765,6 +865,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         detailsOfElement.Add ("details", typeSpecificDetails);
+        AddFloorPlanPolygonsIfAvailable (elem.header.guid, detailsOfElement);
 
         detailsOfElements (detailsOfElement);
     }
