@@ -551,3 +551,240 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
     }
     return response;
 }
+
+GetLayoutSettingsCommand::GetLayoutSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLayoutSettingsCommand::GetName () const
+{
+    return "GetLayoutSettings";
+}
+
+GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layoutDatabaseIds": { "$ref": "#/Databases" }
+        },
+        "additionalProperties": false,
+        "required": ["layoutDatabaseIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layoutSettings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "layoutName":              { "type": "string" },
+                        "sizeX":                   { "type": "number" },
+                        "sizeY":                   { "type": "number" },
+                        "leftMargin":              { "type": "number" },
+                        "topMargin":               { "type": "number" },
+                        "rightMargin":             { "type": "number" },
+                        "bottomMargin":            { "type": "number" },
+                        "customLayoutNumber":      { "type": "string" },
+                        "customLayoutNumbering":   { "type": "boolean" },
+                        "doNotIncludeInNumbering": { "type": "boolean" },
+                        "showMasterBelow":         { "type": "boolean" },
+                        "customData": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "customSchemeKey":   { "type": "string" },
+                                    "customSchemeValue": { "type": "string" }
+                                },
+                                "required": ["customSchemeKey", "customSchemeValue"],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["layoutSettings"]
+    })";
+}
+
+GS::ObjectState GetLayoutSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "layoutDatabaseIds", items, errorResponse)) {
+        return errorResponse;
+    }
+
+    GS::ObjectState response;
+    const auto& layoutSettingsList = response.AddList<GS::ObjectState> ("layoutSettings");
+
+    for (const auto& item : items) {
+        const GS::ObjectState* dbIdOS = item.Get ("databaseId");
+        if (dbIdOS == nullptr) {
+            layoutSettingsList (CreateErrorResponse (APIERR_BADPARS, "Missing databaseId."));
+            continue;
+        }
+
+        API_DatabaseInfo dbInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*dbIdOS));
+        API_LayoutInfo layoutInfo = {};
+        const GSErrCode err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
+        if (err != NoError) {
+            layoutSettingsList (CreateErrorResponse (err, "Failed to get layout settings."));
+            continue;
+        }
+
+        GS::ObjectState layoutResult (
+            "layoutName",              GS::UniString (layoutInfo.layoutName),
+            "sizeX",                   layoutInfo.sizeX,
+            "sizeY",                   layoutInfo.sizeY,
+            "leftMargin",              layoutInfo.leftMargin,
+            "topMargin",               layoutInfo.topMargin,
+            "rightMargin",             layoutInfo.rightMargin,
+            "bottomMargin",            layoutInfo.bottomMargin,
+            "customLayoutNumber",      GS::UniString (layoutInfo.customLayoutNumber),
+            "customLayoutNumbering",   layoutInfo.customLayoutNumbering,
+            "doNotIncludeInNumbering", layoutInfo.doNotIncludeInNumbering,
+            "showMasterBelow",         layoutInfo.showMasterBelow);
+
+        if (layoutInfo.customData != nullptr && !layoutInfo.customData->IsEmpty ()) {
+            const auto& customDataList = layoutResult.AddList<GS::ObjectState> ("customData");
+            for (auto& kv : *layoutInfo.customData) {
+                customDataList (GS::ObjectState (
+#ifdef ServerMainVers_2800
+                    "customSchemeKey",   APIGuidToString (kv.key),
+                    "customSchemeValue", kv.value));
+#else
+                    "customSchemeKey",   APIGuidToString (*kv.key),
+                    "customSchemeValue", *kv.value));
+#endif
+            }
+        }
+
+        delete layoutInfo.customData;
+        layoutInfo.customData = nullptr;
+
+        layoutSettingsList (layoutResult);
+    }
+
+    return response;
+}
+
+SetLayoutSettingsCommand::SetLayoutSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLayoutSettingsCommand::GetName () const
+{
+    return "SetLayoutSettings";
+}
+
+GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layoutsData": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "layoutDatabaseId":        { "$ref": "#/DatabaseId" },
+                        "customLayoutNumber":      { "type": "string" },
+                        "customLayoutNumbering":   { "type": "boolean" },
+                        "doNotIncludeInNumbering": { "type": "boolean" },
+                        "showMasterBelow":         { "type": "boolean" },
+                        "customData": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "customSchemeKey":   { "type": "string" },
+                                    "customSchemeValue": { "type": "string" }
+                                },
+                                "required": ["customSchemeKey", "customSchemeValue"],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["layoutDatabaseId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["layoutsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetResponseSchema () const
+{
+    return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
+}
+
+GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "layoutsData", items, errorResponse)) {
+        return errorResponse;
+    }
+
+    GS::Array<GS::ObjectState> executionResults;
+
+    for (const auto& item : items) {
+        const GS::ObjectState* dbIdOS = item.Get ("layoutDatabaseId");
+        if (dbIdOS == nullptr) {
+            executionResults.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing layoutDatabaseId."));
+            continue;
+        }
+
+        API_DatabaseInfo dbInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*dbIdOS));
+
+        API_LayoutInfo layoutInfo = {};
+        GSErrCode err = ACAPI_Navigator_GetLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
+        if (err != NoError) {
+            executionResults.Push (CreateFailedExecutionResult (err, "Failed to read current layout settings."));
+            continue;
+        }
+
+        SetCharProperty (&item, "customLayoutNumber", layoutInfo.customLayoutNumber);
+        item.Get ("customLayoutNumbering",   layoutInfo.customLayoutNumbering);
+        item.Get ("doNotIncludeInNumbering", layoutInfo.doNotIncludeInNumbering);
+        item.Get ("showMasterBelow",         layoutInfo.showMasterBelow);
+
+        GS::Array<GS::ObjectState> customDataItems;
+        if (item.Get ("customData", customDataItems)) {
+            delete layoutInfo.customData;
+            layoutInfo.customData = new GS::HashTable<API_Guid, GS::UniString> ();
+            for (const auto& cd : customDataItems) {
+                GS::UniString keyStr, value;
+                if (cd.Get ("customSchemeKey", keyStr) && cd.Get ("customSchemeValue", value)) {
+                    layoutInfo.customData->Put (APIGuidFromString (keyStr.ToCStr ()), value);
+                }
+            }
+        }
+
+        err = ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &dbInfo.databaseUnId);
+        delete layoutInfo.customData;
+        layoutInfo.customData = nullptr;
+
+        if (err != NoError) {
+            executionResults.Push (CreateFailedExecutionResult (err, "Failed to change layout settings."));
+        } else {
+            executionResults.Push (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return CreateExecutionResultsResponse (executionResults);
+}

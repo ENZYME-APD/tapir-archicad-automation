@@ -90,6 +90,11 @@
 #define ACAPI_Database_GetMasterLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetMasterLayoutDatabasesID, par1, par2)
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
+
+inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutInfo, API_DatabaseUnId* databaseUnId)
+{
+    return ACAPI_Environment (APIEnv_ChangeLayoutSetsID, const_cast<API_LayoutInfo*> (layoutInfo), databaseUnId);
+}
 #define ACAPI_Navigator_CreateLayout(par1, par2) ACAPI_Environment (APIEnv_CreateLayoutID, par1, par2)
 #define ACAPI_Navigator_GetSubSetDefault(par1) ACAPI_Database (APIDb_GetSubSetDefaultID, par1)
 #define ACAPI_Navigator_CreateSubSet(par1, par2) ACAPI_Database (APIDb_CreateSubSetID, par1, (void*)par2)
@@ -278,6 +283,14 @@ inline GSErrCode ACAPI_LibraryPart_GetBuiltInLibpartUnId (short resId, char* unI
 inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_NavigatorItem* par2)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
+}
+
+inline GSErrCode ACAPI_Navigator_CloneProjectMapItemToViewMap (const API_Guid* sourceItemId, const API_Guid* parentItemId, API_Guid* createdItemId)
+{
+    return ACAPI_Navigator (APINavigator_CloneProjectMapItemToViewMapID,
+                            const_cast<API_Guid*> (sourceItemId),
+                            const_cast<API_Guid*> (parentItemId),
+                            createdItemId);
 }
 
 inline GSErrCode ACAPI_Database_ChangeCurrentDatabase (API_DatabaseInfo* par1)

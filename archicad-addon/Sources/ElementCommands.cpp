@@ -742,6 +742,23 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
             } break;
 
+            case API_DrawingID: {
+                typeSpecificDetails.Add ("pos",           Create2DCoordinateObjectState (elem.drawing.pos));
+                typeSpecificDetails.Add ("angle",         elem.drawing.angle);
+                typeSpecificDetails.Add ("ratio",         elem.drawing.ratio);
+                typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
+                typeSpecificDetails.Add ("modelOffset",   Create2DCoordinateObjectState (elem.drawing.modelOffset));
+                typeSpecificDetails.Add ("isCutWithFrame", elem.drawing.isCutWithFrame);
+                typeSpecificDetails.Add ("bounds", GS::ObjectState (
+                    "xMin", elem.drawing.bounds.xMin,
+                    "yMin", elem.drawing.bounds.yMin,
+                    "xMax", elem.drawing.bounds.xMax,
+                    "yMax", elem.drawing.bounds.yMax));
+                if (elem.drawing.isCutWithFrame) {
+                    AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
+                }
+            } break;
+
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
                 break;
@@ -1135,17 +1152,66 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
                         }
                     } break;
+                    case API_DrawingID: {
+                        GS::Array<GS::ObjectState> clipCoords;
+                        if (typeSpecificDetails->Get ("clipPolygon", clipCoords) && clipCoords.GetSize () >= 3) {
+                            Int32 nUnique = (Int32) clipCoords.GetSize ();
+                            if (nUnique > 1) {
+                                API_Coord first = Get2DCoordinateFromObjectState (clipCoords.GetFirst ());
+                                API_Coord last  = Get2DCoordinateFromObjectState (clipCoords.GetLast ());
+                                if (first.x == last.x && first.y == last.y)
+                                    --nUnique;
+                            }
+                            elem.drawing.isCutWithFrame    = true;
+                            elem.drawing.poly.nSubPolys    = 1;
+                            elem.drawing.poly.nCoords      = nUnique + 1; // +1 for closing vertex
+                            elem.drawing.poly.nArcs        = 0;
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, poly);
+                        }
+                    } break;
                     default:
                     break;
                 }
                 hasElementChanges = true;
             }
 
-            constexpr API_ElementMemo* memo = nullptr;
-            constexpr UInt64 memoMask = 0;
+            API_ElementMemo clipMemo = {};
+            UInt64 memoMask = 0;
+            bool hasMemoChanges = false;
+
+            if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_DrawingID) {
+                GS::Array<GS::ObjectState> clipCoords;
+                if (typeSpecificDetails->Get ("clipPolygon", clipCoords) && clipCoords.GetSize () >= 3) {
+                    // Drop explicit closing vertex if caller already duplicated first point at the end
+                    if (clipCoords.GetSize () > 1) {
+                        API_Coord first = Get2DCoordinateFromObjectState (clipCoords.GetFirst ());
+                        API_Coord last  = Get2DCoordinateFromObjectState (clipCoords.GetLast ());
+                        if (first.x == last.x && first.y == last.y)
+                            clipCoords.Pop ();
+                    }
+                    const Int32 nUnique = clipCoords.GetSize ();
+                    // AC polygon convention: coords[1..nUnique] = vertices, coords[nUnique+1] = closing duplicate of coords[1]
+                    // Handle size = nUnique+2 (index 0 unused, 1..nUnique vertices, nUnique+1 closing)
+                    clipMemo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nUnique + 2) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+                    clipMemo.pends  = reinterpret_cast<Int32**>     (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+                    if (clipMemo.coords != nullptr && clipMemo.pends != nullptr) {
+                        for (Int32 i = 0; i < nUnique; ++i)
+                            (*clipMemo.coords)[i + 1] = Get2DCoordinateFromObjectState (clipCoords[i]);
+                        (*clipMemo.coords)[nUnique + 1] = (*clipMemo.coords)[1]; // closing vertex
+                        (*clipMemo.pends)[1] = nUnique + 1;
+                        memoMask = APIMemoMask_Polygon;
+                        hasMemoChanges = true;
+                    }
+                }
+            }
+
             constexpr bool withDel = true;
-            if (hasElementChanges) {
-                err = ACAPI_Element_Change (&elem, &mask, memo, memoMask, withDel);
+            if (hasElementChanges || hasMemoChanges) {
+                err = ACAPI_Element_Change (&elem, &mask,
+                                            hasMemoChanges ? &clipMemo : nullptr,
+                                            memoMask, withDel);
+                ACAPI_DisposeElemMemoHdls (&clipMemo);
                 if (err != NoError) {
                     executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
                     continue;

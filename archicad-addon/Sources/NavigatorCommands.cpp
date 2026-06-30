@@ -687,3 +687,108 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
 
     return CreateSuccessfulExecutionResult ();
 }
+
+CloneViewsToViewMapCommand::CloneViewsToViewMapCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String CloneViewsToViewMapCommand::GetName () const
+{
+    return "CloneViewsToViewMap";
+}
+
+GS::Optional<GS::UniString> CloneViewsToViewMapCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewsData": {
+                "type": "array",
+                "description": "Array of views to clone from the Project Map to the View Map.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "Navigator item ID of the Project Map viewpoint to clone."
+                        },
+                        "parentNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "Navigator item ID of the View Map folder to place the clone in. Optional; defaults to the View Map root."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["navigatorItemId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CloneViewsToViewMapCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/NavigatorItemIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItems"]
+    })";
+}
+
+GS::ObjectState CloneViewsToViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> viewsData;
+    parameters.Get ("viewsData", viewsData);
+
+    GS::ObjectState response;
+    const auto& navigatorItems = response.AddList<GS::ObjectState> ("navigatorItems");
+
+    for (const GS::ObjectState& item : viewsData) {
+        const GS::ObjectState* navigatorItemIdOS = item.Get ("navigatorItemId");
+        if (navigatorItemIdOS == nullptr) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is missing."));
+            continue;
+        }
+
+        API_Guid sourceGuid = GetGuidFromObjectState (*navigatorItemIdOS);
+        if (sourceGuid == APINULLGuid) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing."));
+            continue;
+        }
+
+        API_Guid parentGuid = APINULLGuid;
+        const GS::ObjectState* parentOS = item.Get ("parentNavigatorItemId");
+        if (parentOS != nullptr) {
+            parentGuid = GetGuidFromObjectState (*parentOS);
+        }
+
+        if (parentGuid == APINULLGuid) {
+            API_NavigatorSet viewMapSet = {};
+            viewMapSet.mapId = API_PublicViewMap;
+            Int32 idx = 0;
+            if (ACAPI_Navigator_GetNavigatorSet (&viewMapSet, &idx) == NoError) {
+                parentGuid = viewMapSet.rootGuid;
+            }
+        }
+
+        API_Guid createdGuid = APINULLGuid;
+        const GSErrCode err = ACAPI_Navigator_CloneProjectMapItemToViewMap (&sourceGuid, &parentGuid, &createdGuid);
+        if (err != NoError) {
+            navigatorItems (CreateErrorResponse (err, "Failed to clone navigator item to view map."));
+            continue;
+        }
+
+        navigatorItems (CreateIdObjectState ("navigatorItemId", createdGuid));
+    }
+
+    return response;
+}

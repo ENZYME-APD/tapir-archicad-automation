@@ -4014,6 +4014,21 @@
         "additionalProperties": false,
         "required": []
     },
+    "DrawingSettings": {
+        "description": "Modifiable settings for a Drawing element placed on a layout.",
+        "type": "object",
+        "properties": {
+            "clipPolygon": {
+                "type": "array",
+                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (useDrawingPolyClip).",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
@@ -4023,6 +4038,9 @@
             },
             {
                 "$ref": "#/ZoneSettings"
+            },
+            {
+                "$ref": "#/DrawingSettings"
             }
         ]
     },

@@ -701,6 +701,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates Drawing elements on the specified or active layout from navigator items."
         );
+        err |= RegisterCommand<GetLayoutSettingsCommand> (
+            navigatorCommands, "1.1.7",
+            "Gets settings of layouts, including Layout Info Panel custom data fields."
+        );
+        err |= RegisterCommand<SetLayoutSettingsCommand> (
+            navigatorCommands, "1.1.7",
+            "Sets settings of layouts, including Layout Info Panel custom data fields."
+        );
         err |= RegisterCommand<GetModelViewOptionsCommand> (
             navigatorCommands, "1.1.4",
             "Gets all model view options"
@@ -716,6 +724,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetView2DTransformationsCommand> (
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"
+        );
+        err |= RegisterCommand<CloneViewsToViewMapCommand> (
+            navigatorCommands, "1.1.7",
+            "Clones Project Map viewpoints into the View Map, optionally into a specified folder."
         );
         err |= RegisterCommand<Set3DCutPlanesCommand> (
             navigatorCommands, "1.3.1",
