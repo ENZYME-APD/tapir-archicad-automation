@@ -279,6 +279,21 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                         },
                         "details": {
                             "$ref": "#/TypeSpecificDetails"
+                        },
+                        "floorPlanPolygons": {
+                            "type": "array",
+                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Available for elements with a cut-fill representation (walls, columns, beams). Absent when the element has no cut fill or when the floor plan database is not accessible.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "coordinates": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/2DCoordinate"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -298,6 +313,91 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
             "detailsOfElements"
         ]
     })";
+}
+
+// ── Floor plan polygon infrastructure (used by GetDetailsOfElements) ─────────
+
+struct FloorPlanCollectorContext {
+    GS::Array<GS::Array<API_Coord>> polys;
+    bool inCutFill = false;
+};
+
+static thread_local FloorPlanCollectorContext* tl_floorPlanCtx = nullptr;
+
+static GSErrCode CollectCutFillPolygons (const API_PrimElement* primElem,
+                                          const void* par1, const void* par2, const void* /*par3*/)
+{
+    if (tl_floorPlanCtx == nullptr)
+        return NoError;
+
+    switch (primElem->header.typeID) {
+        case API_PrimCtrl_HatchBorderBegID: {
+            const auto* border = static_cast<const API_PrimHatchBorder*> (par1);
+            tl_floorPlanCtx->inCutFill = (border != nullptr && border->determination == APIHatch_CutFills);
+            break;
+        }
+        case API_PrimCtrl_HatchBorderEndID:
+            tl_floorPlanCtx->inCutFill = false;
+            break;
+        case API_PrimPolyID: {
+            if (!tl_floorPlanCtx->inCutFill)
+                break;
+            const Int32 nCoords = primElem->poly.nCoords;
+            if (nCoords < 3)
+                break;
+            const auto* coords = static_cast<const API_Coord*> (par1);
+            const auto* pends  = static_cast<const Int32*> (par2);
+            Int32 start = 1;
+            const Int32 nSubPolys = primElem->poly.nSubPolys;
+            for (Int32 sub = 1; sub <= nSubPolys; ++sub) {
+                const Int32 end = (pends != nullptr) ? pends[sub] : nCoords;
+                GS::Array<API_Coord> ring;
+                for (Int32 i = start; i <= end; ++i)
+                    ring.Push (coords[i]);
+                if (ring.GetSize () >= 3)
+                    tl_floorPlanCtx->polys.Push (ring);
+                start = end + 1;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    return NoError;
+}
+
+static void AddFloorPlanPolygonsIfAvailable (const API_Guid& guid, GS::ObjectState& os)
+{
+    FloorPlanCollectorContext ctx;
+    tl_floorPlanCtx = &ctx;
+    const GS::OnExit ctxGuard ([&] () { tl_floorPlanCtx = nullptr; });
+
+    API_Elem_Head elemHead = {};
+    elemHead.guid = guid;
+
+    API_ShapePrimsParams params = {};
+    params.dontClip   = true;
+    params.allStories = true;
+    params.polygon    = nullptr;
+
+#if defined(ServerMainVers_2700)
+    const GSErrCode fpErr = ACAPI_DrawingPrimitive_ShapePrimsExt (elemHead, CollectCutFillPolygons, &params);
+#else
+    const GSErrCode fpErr = ACAPI_Element_ShapePrimsExt (elemHead, CollectCutFillPolygons, &params);
+#endif
+    if (fpErr != NoError)
+        return;
+    if (ctx.polys.IsEmpty ())
+        return;
+
+    const auto& polygonsOS = os.AddList<GS::ObjectState> ("floorPlanPolygons");
+    for (const GS::Array<API_Coord>& poly : ctx.polys) {
+        GS::ObjectState polyOS;
+        const auto& coordsOS = polyOS.AddList<GS::ObjectState> ("coordinates");
+        for (const API_Coord& c : poly)
+            coordsOS (Create2DCoordinateObjectState (c));
+        polygonsOS (polyOS);
+    }
 }
 
 static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
@@ -748,6 +848,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         detailsOfElement.Add ("details", typeSpecificDetails);
+        AddFloorPlanPolygonsIfAvailable (elem.header.guid, detailsOfElement);
 
         detailsOfElements (detailsOfElement);
     }
@@ -831,6 +932,183 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetResponseSchema () co
     })";
 }
 
+// ============================================================
+// drawIndex repositioning — implementation notes
+// ============================================================
+//
+// WHY NOT ACAPI_Element_Change WITH drwIndex MASK
+// ------------------------------------------------
+// ACAPI_Element_Change silently ignores the drwIndex field even when the
+// mask bit is set (confirmed Graphisoft bug, AC27). The only working API
+// is ACAPI_Grouping_Tool with the following commands:
+//   APITool_BringForward  (+1, reliable)
+//   APITool_SendBackward  (-1, reliable)
+//   APITool_ResetOrder    (→ class default, unreliable for some types — see below)
+//
+// DEAD ENDS (do not reintroduce)
+// --------------------------------
+//   APITool_BringToFront : unreliable on Wall and its sub-elements; causes
+//                          unexpected level jumps. Removed from all strategies.
+//   APITool_SendToBack   : does NOT reliably reach level 1. In sparse files
+//                          it stops at 2 or 3. Removed from all strategies.
+//
+// STRATEGIES FOR NORMAL ELEMENTS
+// --------------------------------
+// Target clamped to [1, 14]. Two strategies, cheapest wins:
+//   Direct  : |target - current| × BringForward or SendBackward
+//   ViaReset: 1 ResetOrder + |target - classDefault| steps
+//             (disabled for Morph, Railing, PolyLine — ResetOrder is a no-op
+//              for these types; a simulated default from GetDefaultDrwIndex is
+//              used instead if they need to reach their default level)
+//
+// CLASS DEFAULTS (per ArchiCAD documentation, levels 1-4 and 11-14 are void)
+//   5  : Drawing
+//   6  : Hatch, Zone
+//   7  : Wall, Slab, Roof, Shell, Morph, Mesh, Column, CurtainWall, Stair,
+//         Railing, Door, Window, Skylight, Opening
+//   8  : Lamp, Object
+//   9  : Line, Arc, Spline, PolyLine, Beam, Hotspot, ChangeMarker, Detail,
+//         Worksheet
+//   10 : Dimension (all types), Label, Text, CutPlane, Elevation,
+//         InteriorElevation
+//
+// OPENINGS (Door, Window, Skylight) — special case
+// --------------------------------------------------
+// ArchiCAD enforces a hard minimum of 7 for elements embedded in a host
+// (wall or roof/shell). Levels 1-6 are unreachable regardless of strategy.
+//
+// Host types by opening type:
+//   Door   → Wall
+//   Window → Wall
+//   Skylight → Roof or Shell
+//
+// Levels 8-14 require indirect host manipulation:
+//   1. Step host UP  (target - hostOriginal) × BringForward  → opening follows
+//   2. Step host DOWN the same number of times × SendBackward → host returns,
+//      opening stays elevated (the two are decoupled once host passes the
+//      opening's natural level)
+//
+// Reset (drawIndex = 0) on an elevated opening is a no-op via direct
+// ResetOrder. It must be applied to the HOST instead, which resets all its
+// openings to level 7.
+//
+// Reverse host lookup (opening → host) is not exposed by the API. It requires
+// a forward scan: enumerate all walls/roofs/shells, call GetConnectedElements
+// on each, build an inverse map.
+//
+// BATCH ORDERING CONSTRAINT
+// --------------------------
+// Openings are processed before all other elements within the same batch.
+// This ensures the host manipulation reads the host's pre-batch position, not
+// a position already shifted by another element in the same call.
+//
+// KNOWN LIMITATIONS
+// -----------------
+// • Door/Window/Skylight: levels 1-6 are unreachable (ArchiCAD constraint).
+// • An opening cannot be below its host's current level. If the host wall/roof
+//   is at level 9, the opening cannot reach levels 7 or 8.
+// • Multiple openings in the same host wall/roof with different targets in a
+//   single batch: all will end up at the same level (the last one processed),
+//   because moving the host affects all its openings simultaneously.
+// • Opening (API_OpeningID, generic void): completely immovable. All
+//   Grouping_Tool calls are no-ops. ArchiCAD displays level 0 for these
+//   elements (outside the 1-14 ordering system); the API may report 7
+//   (class default) but the actual display order cannot be changed. Likely
+//   due to multi-host nature (can span Wall, Slab, Roof, Shell, Beam, Column).
+// • Morph, Railing, PolyLine: ResetOrder is a no-op; reset (drawIndex = 0)
+//   is simulated by stepping from current position to the class default.
+// ============================================================
+
+static bool IsOpeningType (const API_Elem_Head& head)
+{
+    switch (GetElemTypeId (head)) {
+        case API_DoorID:
+        case API_WindowID:
+        case API_SkylightID: return true;
+        default:             return false;
+    }
+}
+
+static bool IsResetOrderReliable (const API_Elem_Head& head)
+{
+    switch (GetElemTypeId (head)) {
+        case API_MorphID:
+        case API_RailingID:
+        case API_PolyLineID: return false;
+        default:             return true;
+    }
+}
+
+static Int32 GetDefaultDrwIndex (const API_Elem_Head& head)
+{
+    switch (GetElemTypeId (head)) {
+        case API_DrawingID:                                                      return 5;
+        case API_HatchID:     case API_ZoneID:                                   return 6;
+        case API_WallID:      case API_SlabID:      case API_RoofID:
+        case API_ShellID:     case API_MorphID:     case API_MeshID:
+        case API_ColumnID:    case API_CurtainWallID: case API_StairID:
+        case API_RailingID:   case API_DoorID:      case API_WindowID:
+        case API_SkylightID:  case API_OpeningID:                                return 7;
+        case API_LampID:      case API_ObjectID:                                 return 8;
+        case API_LineID:      case API_ArcID:       case API_SplineID:
+        case API_PolyLineID:  case API_BeamID:      case API_HotspotID:
+        case API_ChangeMarkerID: case API_DetailID: case API_WorksheetID:        return 9;
+        case API_DimensionID: case API_RadialDimensionID:
+        case API_LevelDimensionID: case API_AngleDimensionID:
+        case API_LabelID:     case API_TextID:      case API_CutPlaneID:
+        case API_ElevationID: case API_InteriorElevationID:                      return 10;
+        default:                                                                  return 7;
+    }
+}
+
+static void ApplyDrawIndexStrategy (GS::Array<API_Guid>& guids, const API_Elem_Head& head, Int32 target, Int32 current)
+{
+    target = GS::Max (1, GS::Min (target, 14));
+    const Int32 defaultLevel = GetDefaultDrwIndex (head);
+    const Int32 directCost   = GS::Abs (target - current);
+    const Int32 viaResetCost = IsResetOrderReliable (head)
+                             ? 1 + GS::Abs (target - defaultLevel)
+                             : INT_MAX;
+
+    if (viaResetCost < directCost) {
+        ACAPI_Grouping_Tool (guids, APITool_ResetOrder, nullptr);
+        const API_ToolCmdID step = (target > defaultLevel) ? APITool_BringForward : APITool_SendBackward;
+        for (Int32 i = 0; i < GS::Abs (target - defaultLevel); ++i)
+            ACAPI_Grouping_Tool (guids, step, nullptr);
+    } else {
+        const API_ToolCmdID step = (target > current) ? APITool_BringForward : APITool_SendBackward;
+        for (Int32 i = 0; i < directCost; ++i)
+            ACAPI_Grouping_Tool (guids, step, nullptr);
+    }
+}
+
+static GS::HashTable<API_Guid, API_Guid> BuildOpeningToHostMap (const GS::HashSet<API_Guid>& targetGuids)
+{
+    GS::HashTable<API_Guid, API_Guid> result;
+    if (targetGuids.IsEmpty ())
+        return result;
+
+    auto scan = [&](API_ElemTypeID hostType, API_ElemTypeID openType) {
+        GS::Array<API_Guid> hostList;
+        ACAPI_Element_GetElemList (hostType, &hostList, APIFilt_None);
+        for (const API_Guid& hostGuid : hostList) {
+            GS::Array<API_Guid> connected;
+            ACAPI_Grouping_GetConnectedElements (hostGuid, openType, &connected);
+            for (const API_Guid& g : connected) {
+                if (targetGuids.Contains (g) && !result.ContainsKey (g))
+                    result.Add (g, hostGuid);
+            }
+        }
+    };
+
+    scan (API_WallID,  API_DoorID);
+    scan (API_WallID,  API_WindowID);
+    scan (API_RoofID,  API_SkylightID);
+    scan (API_ShellID, API_SkylightID);
+
+    return result;
+}
+
 GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementsWithDetails;
@@ -839,8 +1117,41 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Pre-scan: identify openings (Door/Window/Skylight) that need host manipulation:
+    //   - target > 7  : elevate via host (step up, step back)
+    //   - target == 0 : reset via host ResetOrder (direct ResetOrder on opening doesn't work when elevated)
+    GS::HashSet<API_Guid> openingsNeedingHost;
+    for (const GS::ObjectState& ewd : elementsWithDetails) {
+        const GS::ObjectState* eid = ewd.Get ("elementId");
+        const GS::ObjectState* det = ewd.Get ("details");
+        if (eid == nullptr || det == nullptr) continue;
+        short tgt = -1;
+        det->Get ("drawIndex", tgt);
+        if (tgt > 0 && tgt <= 7) continue;   // 1-7: no host needed
+        API_Element hdr = {};
+        hdr.header.guid = GetGuidFromObjectState (*eid);
+        if (ACAPI_Element_GetHeader (&hdr.header) != NoError) continue;
+        if (IsOpeningType (hdr.header))
+            openingsNeedingHost.Add (hdr.header.guid);
+    }
+    const GS::HashTable<API_Guid, API_Guid> openingToHost = BuildOpeningToHostMap (openingsNeedingHost);
+
+    // Process openings first so host manipulation starts from the host's natural position,
+    // not a position already shifted by another element in the same batch.
+    GS::Array<GS::ObjectState> sortedElements;
+    for (const GS::ObjectState& ewd : elementsWithDetails) {
+        const GS::ObjectState* eid = ewd.Get ("elementId");
+        if (eid != nullptr && openingsNeedingHost.Contains (GetGuidFromObjectState (*eid)))
+            sortedElements.Push (ewd);
+    }
+    for (const GS::ObjectState& ewd : elementsWithDetails) {
+        const GS::ObjectState* eid = ewd.Get ("elementId");
+        if (eid == nullptr || !openingsNeedingHost.Contains (GetGuidFromObjectState (*eid)))
+            sortedElements.Push (ewd);
+    }
+
     ACAPI_CallUndoableCommand ("SetDetailsOfElementsCommand", [&]() {
-        for (const GS::ObjectState& elementWithDetails : elementsWithDetails) {
+        for (const GS::ObjectState& elementWithDetails : sortedElements) {
             const GS::ObjectState* elementId = elementWithDetails.Get ("elementId");
             if (elementId == nullptr) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
@@ -864,19 +1175,19 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
+            bool hasElementChanges = false;
             if (details->Get ("floorIndex", elem.header.floorInd)) {
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                hasElementChanges = true;
             }
             Int32 layerIndex;
             if (details->Get ("layerIndex", layerIndex)) {
                 elem.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+                hasElementChanges = true;
             }
-            short drwIndex;
-            if (details->Get ("drawIndex", drwIndex)) {
-                elem.header.drwIndex = static_cast<char> (drwIndex);
-                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
-            }
+            short drwIndexTarget = -1;
+            details->Get ("drawIndex", drwIndexTarget);
 
             const GS::ObjectState* typeSpecificDetails = details->Get ("typeSpecificDetails");
             if (typeSpecificDetails != nullptr) {
@@ -928,16 +1239,59 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     default:
                     break;
                 }
-                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, drwIndex);
+                hasElementChanges = true;
             }
 
             constexpr API_ElementMemo* memo = nullptr;
             constexpr UInt64 memoMask = 0;
             constexpr bool withDel = true;
-            err = ACAPI_Element_Change (&elem, &mask, memo, memoMask, withDel);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
-                continue;
+            if (hasElementChanges) {
+                err = ACAPI_Element_Change (&elem, &mask, memo, memoMask, withDel);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
+                    continue;
+                }
+            }
+
+            if (drwIndexTarget >= 0) {
+                GS::Array<API_Guid> guids = { elem.header.guid };
+
+                if (IsOpeningType (elem.header) && drwIndexTarget > 7) {
+                    // Openings (Door/Window/Skylight) can only reach levels above 7 by
+                    // temporarily elevating their host wall/roof step by step, then
+                    // bringing it back the same way (BringToFront is unreliable on walls).
+                    const API_Guid* hostGuidPtr = openingToHost.GetPtr (elem.header.guid);
+                    if (hostGuidPtr != nullptr) {
+                        API_Element hostElem = {};
+                        hostElem.header.guid = *hostGuidPtr;
+                        if (ACAPI_Element_Get (&hostElem) == NoError) {
+                            const Int32 hostOriginal = (Int32) hostElem.header.drwIndex;
+                            const Int32 target       = GS::Max (8, GS::Min ((Int32) drwIndexTarget, 14));
+                            const Int32 steps        = target - hostOriginal;
+                            GS::Array<API_Guid> hostGuids = { *hostGuidPtr };
+                            if (steps > 0) {
+                                // Step host up — opening follows
+                                for (Int32 i = 0; i < steps; ++i)
+                                    ACAPI_Grouping_Tool (hostGuids, APITool_BringForward, nullptr);
+                                // Step host back down — opening stays elevated
+                                for (Int32 i = 0; i < steps; ++i)
+                                    ACAPI_Grouping_Tool (hostGuids, APITool_SendBackward, nullptr);
+                            }
+                        }
+                    }
+                } else if (drwIndexTarget == 0 && IsOpeningType (elem.header)) {
+                    // Reset elevated opening via its host (direct ResetOrder on opening doesn't work)
+                    const API_Guid* hostGuidPtr = openingToHost.GetPtr (elem.header.guid);
+                    if (hostGuidPtr != nullptr) {
+                        GS::Array<API_Guid> hostGuids = { *hostGuidPtr };
+                        ACAPI_Grouping_Tool (hostGuids, APITool_ResetOrder, nullptr);
+                    }
+                } else if (drwIndexTarget == 0 && IsResetOrderReliable (elem.header)) {
+                    ACAPI_Grouping_Tool (guids, APITool_ResetOrder, nullptr);
+                } else if (drwIndexTarget != 0 || !IsResetOrderReliable (elem.header)) {
+                    const short resolvedTarget = (drwIndexTarget == 0) ? (short) GetDefaultDrwIndex (elem.header) : drwIndexTarget;
+                    ApplyDrawIndexStrategy (guids, elem.header, (Int32) resolvedTarget, (Int32) elem.header.drwIndex);
+                }
             }
 
             executionResults (CreateSuccessfulExecutionResult ());
@@ -2696,3 +3050,4 @@ GS::ObjectState GetRoomImageCommand::Execute (const GS::ObjectState& parameters,
     str.DeleteAll (GS::UniChar(char('\n')));
     return GS::ObjectState ("roomImage", str);
 }
+
