@@ -1530,7 +1530,8 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
-                        "zCoordinate": { "type": "number" },
+                        "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z when floorIndex is absent; bottomOffset relative to the floor when floorIndex is provided." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "offset": { "type": "number" },
@@ -1548,7 +1549,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "profileId": { "$ref": "#/AttributeId" }
                     },
                     "additionalProperties": false,
-                    "required": ["begCoordinate", "endCoordinate", "zCoordinate", "height", "thickness"]
+                    "required": ["begCoordinate", "endCoordinate", "height", "thickness"]
                 }
             }
         },
@@ -1610,9 +1611,15 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
         element.wall.offset = offset.Get ();
     }
 
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
-    element.header.floorInd = floorIndexAndOffset.first;
-    element.wall.bottomOffset = floorIndexAndOffset.second;
+    Int32 explicitFloorIndex = -1;
+    if (parameters.Get ("floorIndex", explicitFloorIndex)) {
+        element.header.floorInd   = static_cast<short> (explicitFloorIndex);
+        element.wall.bottomOffset = zCoordinate;
+    } else {
+        const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+        element.header.floorInd   = floorIndexAndOffset.first;
+        element.wall.bottomOffset = floorIndexAndOffset.second;
+    }
 
     bool structureChanged = false;
     auto error = ApplyWallStructure (element, nullptr, parameters, structureChanged);

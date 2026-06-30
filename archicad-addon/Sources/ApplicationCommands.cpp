@@ -316,6 +316,24 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
     }
 
+    Int32 storyIndex = 0;
+    const bool hasStoryIndex = parameters.Get ("storyIndex", storyIndex);
+    if (hasStoryIndex) {
+        if (windowInfo.typeID != APIWind_FloorPlanID) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "storyIndex is only valid when windowType is 'FloorPlan'.");
+        }
+        windowInfo.index = storyIndex;
+        // GetDatabaseInfo fills in the GUID and all fields from typeID+index,
+        // which are needed to change the current database (used by ACAPI element creation).
+        if (ACAPI_Window_GetDatabaseInfo (&windowInfo) == NoError) {
+            ACAPI_Database_ChangeCurrentDatabase (&windowInfo);
+        }
+        const GSErrCode err = ACAPI_Window_ChangeWindow (&windowInfo);
+        return err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, "Failed to change active story.");
+    }
+
     const GS::ObjectState* databaseId = parameters.Get ("databaseId");
     if (databaseId != nullptr) {
         API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
@@ -341,3 +359,4 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         ? CreateSuccessfulExecutionResult ()
         : CreateErrorResponse (err, "Failed to change the window!");
 }
+
