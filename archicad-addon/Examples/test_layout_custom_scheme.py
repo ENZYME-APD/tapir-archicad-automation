@@ -152,8 +152,17 @@ after_clear = run("GetLayoutSettings", {"layoutDatabaseIds": [get_id]})["layoutS
 print(f"   Résultat après effacement :")
 print_custom_data(after_clear.get("customData", []))
 
-print(f"\n[INFO] Valeurs laissées dans ArchiCAD pour vérification visuelle.")
-print(f"       Mise en page : {target.get('name', '?')}")
-print(f"       Layout Info Panel > champs personnalisés")
+# ---------------------------------------------------------------------------
+# 7. Restauration des valeurs d'origine
+# ---------------------------------------------------------------------------
+print("\n7. Restauration des valeurs d'origine...")
+restore_data = [
+    {"customSchemeKey": f["customSchemeKey"], "customSchemeValue": orig_data.get(f["customSchemeKey"], "")}
+    for f in scheme
+]
+run("SetLayoutSettings", {"layoutsData": [{**set_id, "customData": restore_data}]})
+restored = run("GetLayoutSettings", {"layoutDatabaseIds": [get_id]})["layoutSettings"][0]
+print(f"   Valeurs restaurées :")
+print_custom_data(restored.get("customData", []))
 
 print("\nAll tests passed.")
