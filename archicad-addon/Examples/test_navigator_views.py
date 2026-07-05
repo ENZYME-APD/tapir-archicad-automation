@@ -7,9 +7,11 @@ Validates:
   - CloneProjectMapItemToViewMap (single linked view, NOT a live-sync folder)
   - CreateViewMapCloneFolder    (true live-sync clone folder mirroring a Project Map folder)
   - SetViewRotation
-  - GetViewSettings.rotation round-trip
+  - GetViewSettings             (all fields + rotation round-trip)
+  - GetView2DTransformations
+  - SetViewSettings             (structureDisplay round-trip)
   - RenameNavigatorItem
-  - DeleteNavigatorItems (cleanup)
+  - DeleteNavigatorItems        (cleanup)
 """
 import math
 import sys
@@ -103,6 +105,49 @@ for i, (deg, name, nav_id) in enumerate(created):
     assert vs["saveZoom"] is True, f"saveZoom should be True for '{name}'"
     print(f"  {name:16s}  rotation={got_deg:.1f} deg  saveZoom={vs['saveZoom']}  OK")
 print("PASS: GetViewSettings.rotation matches expected values")
+
+# 4b. GetViewSettings — verify all expected fields
+print("\n4b. GetViewSettings (all fields)...")
+first_nav_id = created[0][2]
+vs_full = run("GetViewSettings", {"navigatorItemIds": [{"navigatorItemId": first_nav_id}]})["viewSettings"][0]
+assert "error" not in vs_full, f"GetViewSettings error: {vs_full}"
+for field in [
+    "modelViewOptions", "layerCombination", "dimensionStyle", "penSetName",
+    "graphicOverrideCombination", "drawingScale", "saveZoom", "ignoreSavedZoom",
+    "rotation", "structureDisplay", "usePhotoRendering", "d3styleName", "renderingSceneName",
+]:
+    assert field in vs_full, f"Missing field in GetViewSettings response: {field}"
+print("PASS: GetViewSettings returns all expected fields")
+
+# 4c. GetView2DTransformations
+print("\n4c. GetView2DTransformations...")
+db_transform = run(
+    "GetView2DTransformations", {"navigatorItemIds": [{"navigatorItemId": first_nav_id}]}
+)["transformations"][0]
+assert "error" not in db_transform, f"GetView2DTransformations error: {db_transform}"
+assert "rotation" in db_transform, "GetView2DTransformations: missing rotation field"
+assert "zoom" in db_transform,     "GetView2DTransformations: missing zoom field"
+print(f"PASS: GetView2DTransformations (DB zoom rotation = {math.degrees(db_transform['rotation']):.1f} deg)")
+
+# 4d. SetViewSettings — structureDisplay round-trip
+print("\n4d. SetViewSettings (structureDisplay round-trip)...")
+original_structure = vs_full["structureDisplay"]
+modes = ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+test_mode = modes[(modes.index(original_structure) + 1) % len(modes)]
+sv_result = run("SetViewSettings", {"navigatorItemIdsWithViewSettings": [{
+    "navigatorItemId": first_nav_id,
+    "viewSettings": {"structureDisplay": test_mode},
+}]})
+assert sv_result["executionResults"][0].get("success"), \
+    f"SetViewSettings (structureDisplay) failed: {sv_result}"
+vs_after_sv = run("GetViewSettings", {"navigatorItemIds": [{"navigatorItemId": first_nav_id}]})["viewSettings"][0]
+assert vs_after_sv["structureDisplay"] == test_mode, \
+    f"structureDisplay round-trip failed: set {test_mode}, got {vs_after_sv['structureDisplay']}"
+run("SetViewSettings", {"navigatorItemIdsWithViewSettings": [{
+    "navigatorItemId": first_nav_id,
+    "viewSettings": {"structureDisplay": original_structure},
+}]})
+print(f"PASS: SetViewSettings structureDisplay ({original_structure} -> {test_mode} -> restored)")
 
 # 5. CloneProjectMapItemToViewMap — copy a single story view into test folder
 print(f"\n5. CloneProjectMapItemToViewMap (source StoryItem -> {FOLDER_NAME})...")
