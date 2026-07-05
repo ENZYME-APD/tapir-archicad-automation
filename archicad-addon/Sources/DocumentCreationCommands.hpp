@@ -22,20 +22,20 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class CreateLayoutsCommand : public CommandBase
+class CreateLayoutCommand : public CommandBase
 {
 public:
-    CreateLayoutsCommand ();
+    CreateLayoutCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
-class CreateSubsetsCommand : public CommandBase
+class CreateLayoutSubsetCommand : public CommandBase
 {
 public:
-    CreateSubsetsCommand ();
+    CreateLayoutSubsetCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;

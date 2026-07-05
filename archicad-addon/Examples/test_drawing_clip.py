@@ -17,54 +17,57 @@ def find_by_type(branch, t):
             yield from find_by_type(children, t)
 
 
-# 1. Find layouts and their databases
+# 1. Find a layout and its database
 lb = aclib.RunCommand("API.GetNavigatorItemTree", {"navigatorTreeId": {"type": "LayoutBook"}})
 layouts = list(find_by_type(lb["navigatorTree"]["rootItem"]["children"], "LayoutItem"))
 assert layouts, "No layout found"
 
-layout_ids = [{"navigatorItemId": l["navigatorItemId"]} for l in layouts]
-databases = run("GetDatabaseIdFromNavigatorItemId", {"navigatorItemIds": layout_ids})["databases"]
+layout = layouts[0]
+layout_ids = [{"navigatorItemId": layout["navigatorItemId"]}]
+db_result = run("GetDatabaseIdFromNavigatorItemId", {"navigatorItemIds": layout_ids})
+layout_db_id = db_result["databases"][0]["databaseId"]
 
-# 2. Find a Drawing element on a layout
-drawings = run("GetElementsByType", {"elementType": "Drawing", "databases": databases})["elements"]
-assert drawings, "No Drawing element found"
-drawing = drawings[0]
-print(f"Drawing elementId: {drawing['elementId']}")
+# 2. Find a StoryItem (floor plan view) to place as Drawing
+vt = aclib.RunCommand("API.GetNavigatorItemTree", {"navigatorTreeId": {"type": "ProjectMap"}})
+views = list(find_by_type(vt["navigatorTree"]["rootItem"]["children"], "StoryItem"))
+assert views, "No StoryItem found in ProjectMap"
+nav_item_id = views[0]["navigatorItemId"]
+print(f"StoryItem navigatorItemId: {nav_item_id}")
 
-# 3. Read current state
-before = run("GetDetailsOfElements", {"elements": [drawing]})["detailsOfElements"][0]
-bounds = before["details"]["bounds"]
-
-# 4. Set a new triangle clip polygon (3 unique points, no closing vertex)
-cx = (bounds["xMin"] + bounds["xMax"]) / 2
-cy = (bounds["yMin"] + bounds["yMax"]) / 2
+# 3. Create a Drawing on the layout WITH a triangle clip polygon
+cx, cy = 0.1, 0.17
 triangle = [
-    {"x": bounds["xMin"], "y": bounds["yMin"]},
-    {"x": bounds["xMax"], "y": bounds["yMin"]},
-    {"x": cx,             "y": bounds["yMax"]},
+    {"x": 0.02, "y": 0.06},
+    {"x": 0.18, "y": 0.06},
+    {"x": cx,   "y": 0.28},
 ]
-set_result = run("SetDetailsOfElements", {"elementsWithDetails": [{
-    "elementId": drawing["elementId"],
-    "details": {"typeSpecificDetails": {"clipPolygon": triangle}}
+create_result = run("CreateDrawings", {"drawingsData": [{
+    "navigatorItemId": nav_item_id,
+    "layoutDatabaseId": layout_db_id,
+    "name": "TestClipDrawing",
+    "position": {"x": cx, "y": cy},
+    "clipPolygon": triangle,
 }]})
-assert set_result["executionResults"][0].get("success") is True, f"Set failed: {set_result}"
-print("SET triangle (3 pts, no closing): OK")
+print(f"CreateDrawings result: {create_result}")
+created = create_result["elements"][0]
+assert "elementId" in created, f"CreateDrawings failed: {created}"
+drawing_ref = created  # {"elementId": {"guid": "..."}}
+print(f"Created Drawing: {drawing_ref['elementId']}")
 
-# 5. Verify via GetDetailsOfElements
-after = run("GetDetailsOfElements", {"elements": [drawing]})["detailsOfElements"][0]
+# 4. Verify via GetDetailsOfElements
+after = run("GetDetailsOfElements", {"elements": [drawing_ref]})["detailsOfElements"][0]
+print(f"isCutWithFrame: {after['details'].get('isCutWithFrame')}")
+poly = after["details"].get("clipPolygon")
+assert poly is not None, "clipPolygon missing after create"
+print(f"clipPolygon points: {len(poly)}")
+for i, pt in enumerate(poly):
+    print(f"  pt[{i}]: ({pt['x']:.6f}, {pt['y']:.6f})")
+
 assert after["details"].get("isCutWithFrame") is True, "isCutWithFrame should be True"
-poly_after = after["details"].get("clipPolygon")
-assert poly_after is not None, "clipPolygon missing after set"
-# GetDetails returns coords with closing vertex included → triangle = 4 points (3 unique + 1 closing)
-print(f"clipPolygon after set: {len(poly_after)} points (including closing vertex)")
-assert len(poly_after) == 4, f"Expected 4 points (3 unique + closing), got {len(poly_after)}"
+assert len(poly) == 4, f"Expected 4 points (triangle + closing), got {len(poly)}"
 
-# 6. Round-trip: send the polygon back as-is (with closing vertex)
-set_result2 = run("SetDetailsOfElements", {"elementsWithDetails": [{
-    "elementId": drawing["elementId"],
-    "details": {"typeSpecificDetails": {"clipPolygon": poly_after}}
-}]})
-assert set_result2["executionResults"][0].get("success") is True, f"Round-trip failed: {set_result2}"
-print("Round-trip (4 pts with closing): OK")
+# 5. Clean up
+del_result = run("DeleteElements", {"elements": [drawing_ref]})
+print(f"Delete: {del_result}")
 
-print("\nPASS: Drawing clipPolygon SetDetailsOfElements OK")
+print("\nPASS: CreateDrawings with clipPolygon OK")

@@ -2585,6 +2585,31 @@
                     "xMax",
                     "yMax"
                 ]
+            },
+            "rotation": {
+                "type": "number",
+                "description": "View rotation angle in radians. Read via GetViewSettings; use SetViewRotation to change it."
+            },
+            "structureDisplay": {
+                "type": "string",
+                "description": "Structure display mode. One of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.",
+                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+            },
+            "renovationFilterGuid": {
+                "$ref": "#/Guid",
+                "description": "GUID of the renovation filter applied to the view."
+            },
+            "d3styleName": {
+                "type": "string",
+                "description": "Name of the 3D style. Empty if not set."
+            },
+            "renderingSceneName": {
+                "type": "string",
+                "description": "Name of the rendering scene. Empty if not set."
+            },
+            "usePhotoRendering": {
+                "type": "boolean",
+                "description": "Whether photo rendering is used for this view."
             }
         },
         "additionalProperties": false,

@@ -47,7 +47,7 @@ guids_before = collect_guids(vm_before["navigatorTree"]["rootItem"]["children"])
 print(f"View Map item count before: {len(guids_before)}")
 
 # 3. Clone it
-result = run("CloneViewsToViewMap", {"viewsData": [{"navigatorItemId": source["navigatorItemId"]}]})
+result = run("CloneProjectMapItemToViewMap", {"viewsData": [{"navigatorItemId": source["navigatorItemId"]}]})
 print(f"CloneViewsToViewMap result: {result}")
 assert "navigatorItems" in result
 clone_item = result["navigatorItems"][0]
@@ -61,4 +61,4 @@ guids_after = collect_guids(vm_after["navigatorTree"]["rootItem"]["children"])
 print(f"View Map item count after: {len(guids_after)}")
 assert new_guid in guids_after, f"New guid {new_guid} not found in View Map after cloning"
 
-print("\nPASS: CloneViewsToViewMap created a new View Map item")
+print("\nPASS: CloneProjectMapItemToViewMap created a new View Map item")

@@ -220,6 +220,11 @@ inline GSErrCode ACAPI_Navigator_ChangeNavigatorView (API_NavigatorItem* navigat
     return ACAPI_Navigator (APINavigator_ChangeNavigatorViewID, navigatorItem, navigatorView);
 }
 
+inline GSErrCode ACAPI_Navigator_NewNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView, const GS::Guid* parent = nullptr, const GS::Guid* /*previousSibling*/ = nullptr)
+{
+    return ACAPI_Navigator (APINavigator_NewNavigatorViewID, navigatorItem, navigatorView, const_cast<GS::Guid*> (parent));
+}
+
 inline GSErrCode ACAPI_View_Redraw ()
 {
     return ACAPI_Automate (APIDo_RedrawID);

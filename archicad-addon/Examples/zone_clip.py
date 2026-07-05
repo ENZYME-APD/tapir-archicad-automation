@@ -1,12 +1,11 @@
 """
 zone_clip.py
 
-1. Gets all zones and their floor plan polygons (polygonOutline)
-2. Gets all walls and computes their floor plan rectangles
-3. Keeps walls adjacent (touching/overlapping) to any zone
-4. Computes a convex hull enclosing all zones + adjacent walls (model space)
-5. Transforms it to layout space using the Drawing's pos/angle/drawingScale/modelOffset
-6. Applies it as a clipPolygon to the first Drawing found on a layout
+1. Gets all zones (polygonOutline) and walls (floorPlanPolygons + geometric corners)
+2. Keeps walls adjacent to any zone (5 cm buffer)
+3. Computes a convex hull enclosing all zones + adjacent walls (model space)
+4. Transforms it to layout space using the Drawing's pos/angle/drawingScale/modelOffset
+5. Applies it as a clipPolygon to the first Drawing found on a layout
 """
 
 import sys
@@ -15,7 +14,7 @@ import math
 sys.path.insert(0, r"D:\ONEDRIVE\Documents\CODE PLUGINS\tapir-archicad-automation\archicad-addon\Examples")
 import aclib
 
-from shapely.geometry import Polygon, MultiPolygon, GeometryCollection
+from shapely.geometry import Polygon, MultiPolygon, MultiPoint
 from shapely.ops import unary_union
 
 
@@ -37,51 +36,49 @@ def find_by_type(branch, t):
             yield from find_by_type(children, t)
 
 
-def coords_to_shapely(pts):
-    """Convert [{x, y}, ...] to shapely Polygon (strips optional closing vertex)."""
-    coords = [(p["x"], p["y"]) for p in pts]
-    if len(coords) > 1 and coords[0] == coords[-1]:
-        coords = coords[:-1]
-    if len(coords) < 3:
+def outline_to_shapely(pts_raw):
+    """Convert [{x,y},...] outline to a valid shapely Polygon, or None."""
+    pts = [(p["x"], p["y"]) for p in pts_raw]
+    if len(pts) > 1 and pts[0] == pts[-1]:
+        pts = pts[:-1]
+    if len(pts) < 3:
         return None
-    return Polygon(coords)
+    s = Polygon(pts)
+    if not s.is_valid:
+        s = s.buffer(0)
+    return s if s.area > 1e-12 else None
 
 
-def wall_to_shapely(wall):
-    """Compute floor plan rectangle for a straight wall from ArchiCAD API data."""
-    beg = wall.get("begCoordinate", {})
-    end = wall.get("endCoordinate", {})
+def wall_geometry_corners(details):
+    """
+    Return the 4 corner points of a straight wall rectangle from its API parameters.
+    Used to supplement floorPlanPolygons which may not reach exact extremal corners.
+    """
+    beg = details.get("begCoordinate")
+    end = details.get("endCoordinate")
     if not beg or not end:
-        return None
-
+        return []
     bx, by = beg["x"], beg["y"]
     ex, ey = end["x"], end["y"]
-
     dx, dy = ex - bx, ey - by
     length = math.hypot(dx, dy)
     if length < 1e-9:
-        return None
-
-    # Perpendicular unit vector (pointing "left" of wall direction)
-    px, py = -dy / length, dx / length
-
-    t = wall.get("begThickness", 0.3)
-    o = wall.get("offset", t / 2.0)
-
-    # Four corners: ref line offset by +o and -(t-o) in perpendicular direction
-    c1 = (bx + o * px, by + o * py)
-    c2 = (ex + o * px, ey + o * py)
-    c3 = (ex - (t - o) * px, ey - (t - o) * py)
-    c4 = (bx - (t - o) * px, by - (t - o) * py)
-    return Polygon([c1, c2, c3, c4])
+        return []
+    px, py = -dy / length, dx / length          # perpendicular unit vector
+    t = details.get("begThickness", 0.3)
+    o = details.get("offset", t / 2.0)
+    return [
+        (bx + o * px,       by + o * py),
+        (ex + o * px,       ey + o * py),
+        (ex - (t - o) * px, ey - (t - o) * py),
+        (bx - (t - o) * px, by - (t - o) * py),
+    ]
 
 
 def model_to_layout(mx, my, pos, angle, drawing_scale, model_offset):
     """Transform a model-space coordinate to layout space."""
-    # Shift by modelOffset first (ArchiCAD pans the content by this amount)
     dx = (mx - model_offset["x"]) * drawing_scale
     dy = (my - model_offset["y"]) * drawing_scale
-    # Rotate by drawing angle
     cos_a = math.cos(angle)
     sin_a = math.sin(angle)
     lx = pos["x"] + dx * cos_a - dy * sin_a
@@ -94,24 +91,32 @@ def model_to_layout(mx, my, pos, angle, drawing_scale, model_offset):
 # ---------------------------------------------------------------------------
 
 print("==> Getting zones...")
-zones_resp = run("GetElementsByType", {"elementType": "Zone"})
-zone_elements = zones_resp.get("elements", [])
+zone_elements = run("GetElementsByType", {"elementType": "Zone"}).get("elements", [])
 assert zone_elements, "No Zone elements found in the project"
-print(f"    Found {len(zone_elements)} zone(s)")
+print("    Found %d zone(s)" % len(zone_elements))
 
 zone_details = run("GetDetailsOfElements", {"elements": zone_elements})["detailsOfElements"]
 
 zone_shapes = []
+zone_pts = []
 for zd in zone_details:
-    details = zd.get("details", {})
-    outline = details.get("polygonOutline")
-    if outline:
-        shape = coords_to_shapely(outline)
-        if shape and shape.is_valid:
-            zone_shapes.append(shape)
+    # floorPlanPolygons is at the top level; zones rarely return it — fall back to polygonOutline
+    fp_polys = zd.get("floorPlanPolygons") or []
+    if fp_polys:
+        for raw in fp_polys:
+            s = outline_to_shapely(raw.get("coordinates", []))
+            if s:
+                zone_shapes.append(s)
+                zone_pts.extend(list(s.exterior.coords))
+    else:
+        outline = zd.get("details", {}).get("polygonOutline") or []
+        s = outline_to_shapely(outline)
+        if s:
+            zone_shapes.append(s)
+            zone_pts.extend(list(s.exterior.coords))
 
-assert zone_shapes, "No valid zone polygons found"
-print(f"    {len(zone_shapes)} zone polygon(s) extracted")
+assert zone_shapes, "No valid zone floor plan polygons found"
+print("    %d zone shape(s) extracted" % len(zone_shapes))
 
 zone_union = unary_union(zone_shapes)
 zone_buffered = zone_union.buffer(0.05)  # 5 cm buffer to catch touching walls
@@ -121,46 +126,108 @@ zone_buffered = zone_union.buffer(0.05)  # 5 cm buffer to catch touching walls
 # ---------------------------------------------------------------------------
 
 print("==> Getting walls...")
-walls_resp = run("GetElementsByType", {"elementType": "Wall"})
-wall_elements = walls_resp.get("elements", [])
-print(f"    Found {len(wall_elements)} wall(s)")
+wall_elements = run("GetElementsByType", {"elementType": "Wall"}).get("elements", [])
+print("    Found %d wall(s)" % len(wall_elements))
 
 wall_details = run("GetDetailsOfElements", {"elements": wall_elements})["detailsOfElements"]
 
-adjacent_shapes = []
+adjacent_pts = []
 adjacent_count = 0
+
 for wd in wall_details:
-    details = wd.get("details", {})
+    fp_polys = wd.get("floorPlanPolygons") or []
+    details  = wd.get("details", {})
     geom_type = details.get("geometryType", "Straight")
-    if geom_type not in ("Straight", "Trapezoid"):
-        continue  # skip arc walls — rectangle approximation too imprecise
 
-    shape = wall_to_shapely(details)
-    if shape is None or not shape.is_valid:
-        continue
+    # Build wall shape from floorPlanPolygons triangles
+    fp_shapes = []
+    for raw in fp_polys:
+        s = outline_to_shapely(raw.get("coordinates", []))
+        if s:
+            fp_shapes.append(s)
 
-    if zone_buffered.intersects(shape):
-        adjacent_shapes.append(shape)
+    wall_shape = unary_union(fp_shapes) if fp_shapes else None
+
+    # Also compute geometric corners (ensures extremal corners are always captured)
+    geo_corners = wall_geometry_corners(details) if geom_type in ("Straight", "Trapezoid") else []
+
+    # Check adjacency using the fp_shape (or a point from geo_corners as fallback)
+    is_adjacent = False
+    if wall_shape and not wall_shape.is_empty:
+        is_adjacent = zone_buffered.intersects(wall_shape)
+    elif geo_corners:
+        is_adjacent = any(zone_buffered.contains(MultiPoint([c])) for c in geo_corners)
+
+    if is_adjacent:
         adjacent_count += 1
+        # Collect points from floorPlanPolygons
+        for s in fp_shapes:
+            if hasattr(s, "exterior"):
+                adjacent_pts.extend(list(s.exterior.coords))
+            elif hasattr(s, "geoms"):
+                for g in s.geoms:
+                    if hasattr(g, "exterior"):
+                        adjacent_pts.extend(list(g.exterior.coords))
+        # Add geometric corners to guarantee all wall extremities are in the hull
+        adjacent_pts.extend(geo_corners)
 
-print(f"    {adjacent_count} adjacent wall(s) found")
+print("    %d adjacent wall(s) found" % adjacent_count)
 
 # ---------------------------------------------------------------------------
-# 3. Compute convex hull in model space
+# 3. Compute the outline of the union of all zones + adjacent walls
+#    Use the actual exterior boundary (not convex hull) to preserve concave corners.
+#    Simplify to remove micro-segments from triangulated wall primitives.
 # ---------------------------------------------------------------------------
 
-all_shapes = zone_shapes + adjacent_shapes
-combined = unary_union(all_shapes)
-hull = combined.convex_hull
+all_shapes_for_union = zone_shapes[:]
+for wd in wall_details:
+    fp_polys = wd.get("floorPlanPolygons") or []
+    details  = wd.get("details", {})
+    geom_type = details.get("geometryType", "Straight")
 
-print(f"==> Convex hull: {len(hull.exterior.coords)} vertices")
+    fp_shapes = [s for raw in fp_polys
+                 for s in [outline_to_shapely(raw.get("coordinates", []))] if s]
 
-hull_coords_model = list(hull.exterior.coords)
-# Remove closing vertex (shapely includes it)
+    wall_shape = unary_union(fp_shapes) if fp_shapes else None
+
+    geo_corners = wall_geometry_corners(details) if geom_type in ("Straight", "Trapezoid") else []
+    geo_shape = Polygon(geo_corners) if len(geo_corners) == 4 else None
+
+    shape = None
+    if wall_shape and not wall_shape.is_empty:
+        shape = wall_shape if geo_shape is None else unary_union([wall_shape, geo_shape])
+    elif geo_shape:
+        shape = geo_shape
+
+    if shape and not shape.is_empty and zone_buffered.intersects(shape):
+        all_shapes_for_union.append(shape)
+
+combined = unary_union(all_shapes_for_union)
+
+# If the union is disconnected, take the convex hull of the whole cloud as fallback
+if combined.is_empty:
+    assert False, "No geometry to union"
+if isinstance(combined, MultiPolygon):
+    all_pts = zone_pts + adjacent_pts
+    combined = MultiPoint(all_pts).convex_hull
+
+# combined should now be a single (possibly concave) Polygon
+assert hasattr(combined, "exterior"), \
+    "Union geometry is not a Polygon (type: %s)" % type(combined).__name__
+
+# Simplify to remove near-collinear micro-vertices from wall triangulation
+# tolerance = 1 mm in model units (metres)
+simplified = combined.simplify(0.001, preserve_topology=True)
+if not hasattr(simplified, "exterior"):
+    simplified = combined  # fall back to unsimplified if simplify returned multipolygon
+
+hull_coords_model = list(simplified.exterior.coords)
 if hull_coords_model[0] == hull_coords_model[-1]:
     hull_coords_model = hull_coords_model[:-1]
 
-print(f"    Hull vertices (model space, first 3): {hull_coords_model[:3]}")
+print("==> Union outline: %d vertices (simplified)" % len(hull_coords_model))
+for pt in hull_coords_model:
+    print("    (%.4f, %.4f)" % pt)
 
 # ---------------------------------------------------------------------------
 # 4. Find a Drawing on a layout and read its transform params
@@ -174,19 +241,18 @@ assert layouts, "No layout found"
 layout_ids = [{"navigatorItemId": l["navigatorItemId"]} for l in layouts]
 databases = run("GetDatabaseIdFromNavigatorItemId", {"navigatorItemIds": layout_ids})["databases"]
 
-drawings_resp = run("GetElementsByType", {"elementType": "Drawing", "databases": databases})
-drawings = drawings_resp.get("elements", [])
+drawings = run("GetElementsByType", {"elementType": "Drawing", "databases": databases}).get("elements", [])
 assert drawings, "No Drawing element found on layouts"
 drawing = drawings[0]
-print(f"    Drawing elementId: {drawing['elementId']}")
+print("    Drawing elementId: %s" % drawing["elementId"])
 
 drawing_dets = run("GetDetailsOfElements", {"elements": [drawing]})["detailsOfElements"][0]["details"]
-pos          = drawing_dets["pos"]
-angle        = drawing_dets.get("angle", 0.0) or 0.0
-drawing_scale = drawing_dets.get("drawingScale", 0.01) or 0.01
-model_offset = drawing_dets.get("modelOffset") or {"x": 0.0, "y": 0.0}
+pos           = drawing_dets["pos"]
+angle         = drawing_dets.get("angle") or 0.0
+drawing_scale = drawing_dets.get("drawingScale") or 0.01
+model_offset  = drawing_dets.get("modelOffset") or {"x": 0.0, "y": 0.0}
 
-print(f"    pos={pos}  angle={angle:.4f}  drawingScale={drawing_scale}  modelOffset={model_offset}")
+print("    pos=%s  angle=%.4f  drawingScale=%s  modelOffset=%s" % (pos, angle, drawing_scale, model_offset))
 
 # ---------------------------------------------------------------------------
 # 5. Transform convex hull to layout space
@@ -197,20 +263,23 @@ clip_polygon = [
     for mx, my in hull_coords_model
 ]
 
-print(f"==> Clip polygon (layout space, first 3): {clip_polygon[:3]}")
+print("==> Clip polygon (%d pts, layout space):" % len(clip_polygon))
+for pt in clip_polygon:
+    print("    x=%.4f  y=%.4f" % (pt["x"], pt["y"]))
 
-# Sanity-check: verify points are near the drawing bounds
+# Sanity-check against drawing bounds
 bounds = drawing_dets.get("bounds", {})
 if bounds:
     bx_min, bx_max = bounds["xMin"], bounds["xMax"]
     by_min, by_max = bounds["yMin"], bounds["yMax"]
-    # Clamp to drawing bounds (the clip can't go outside the Drawing frame anyway)
-    margin = 0.5  # 50 cm tolerance in layout space
-    for pt in clip_polygon:
+    margin = 0.5
+    out_count = sum(
+        1 for pt in clip_polygon
         if not (bx_min - margin <= pt["x"] <= bx_max + margin and
-                by_min - margin <= pt["y"] <= by_max + margin):
-            print(f"    WARNING: clip pt {pt} outside Drawing bounds — check drawingScale/modelOffset")
-            break
+                by_min - margin <= pt["y"] <= by_max + margin)
+    )
+    if out_count:
+        print("    WARNING: %d point(s) outside Drawing bounds — check drawingScale/modelOffset" % out_count)
 
 # ---------------------------------------------------------------------------
 # 6. Apply clipPolygon via SetDetailsOfElements
@@ -222,9 +291,7 @@ result = run("SetDetailsOfElements", {"elementsWithDetails": [{
     "details": {"typeSpecificDetails": {"clipPolygon": clip_polygon}}
 }]})
 exec_result = result["executionResults"][0]
-assert exec_result.get("success") is True, f"SetDetailsOfElements failed: {exec_result}"
+assert exec_result.get("success") is True, "SetDetailsOfElements failed: %s" % exec_result
 
 print("\nPASS: Zone + adjacent wall convex hull applied as Drawing clip polygon")
-print(f"      {len(clip_polygon)} vertices in layout space")
-print(f"      Drawing bounds: x=[{bx_min:.3f}, {bx_max:.3f}]  y=[{by_min:.3f}, {by_max:.3f}]")
-print(f"      First clip pt: x={clip_polygon[0]['x']:.3f}  y={clip_polygon[0]['y']:.3f}")
+print("      %d vertices in layout space" % len(clip_polygon))
