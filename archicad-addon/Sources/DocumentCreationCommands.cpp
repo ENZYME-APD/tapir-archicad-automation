@@ -384,8 +384,13 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
         }
 
         const GS::Array<API_Guid> before = GetLayoutDatabaseGuids ();
+#ifdef ServerMainVers_2700
         const GSErrCode err = ACAPI_Navigator_CreateLayout (&layoutInfo, &masterLayoutDbInfo.databaseUnId,
             (parentNavGuid != APINULLGuid) ? &parentNavGuid : nullptr);
+#else
+        // AC25/26: parent navigator item not supported by CreateLayout API
+        const GSErrCode err = ACAPI_Navigator_CreateLayout (&layoutInfo, &masterLayoutDbInfo.databaseUnId);
+#endif
         if (err != NoError) {
             databases.Push (CreateErrorResponse (err, "Failed to create layout."));
             continue;

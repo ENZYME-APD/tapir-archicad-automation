@@ -313,6 +313,41 @@ inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
     return ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr);
 }
 
+inline GSErrCode ACAPI_Navigator_SearchNavigatorItem (API_NavigatorItem* item, GS::Array<API_NavigatorItem>* items)
+{
+    return ACAPI_Navigator (APINavigator_SearchNavigatorItemID, item, nullptr, items);
+}
+
+inline GSErrCode ACAPI_Navigator_ChangeNavigatorItem (API_NavigatorItem* item)
+{
+    return ACAPI_Navigator (APINavigator_ChangeNavigatorItemID, item);
+}
+
+inline GSErrCode ACAPI_Navigator_SetNavigatorItemPosition (const GS::Guid* source, const GS::Guid* parent, const GS::Guid* child)
+{
+    return ACAPI_Navigator (APINavigator_SetNavigatorItemPositionID,
+                            const_cast<GS::Guid*> (source),
+                            const_cast<GS::Guid*> (parent),
+                            const_cast<GS::Guid*> (child));
+}
+
+inline GSErrCode ACAPI_Navigator_DeleteNavigatorView (const API_Guid* viewGuid, const bool* silentMode)
+{
+    return ACAPI_Navigator (APINavigator_DeleteNavigatorViewID,
+                            const_cast<API_Guid*> (viewGuid),
+                            const_cast<bool*> (silentMode));
+}
+
+inline GSErrCode ACAPI_Database_DeleteDatabase (API_DatabaseInfo* databaseInfo)
+{
+    return ACAPI_Database (APIDb_DeleteDatabaseID, databaseInfo);
+}
+
+inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* databaseUnId = nullptr)
+{
+    return ACAPI_Database (APIDb_GetExtentID, extent, databaseUnId);
+}
+
 #endif
 
 #ifndef ServerMainVers_2600
