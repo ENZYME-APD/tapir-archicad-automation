@@ -702,6 +702,24 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
     return response;
 }
 
+// Returns a GUID-string → field-name map built from the Layout Book custom scheme.
+static GS::HashTable<GS::UniString, GS::UniString> GetLayoutSchemeByGuidString ()
+{
+    GS::HashTable<GS::UniString, GS::UniString> result;
+    API_LayoutBook book = {};
+    if (ACAPI_Navigator_GetLayoutBook (&book) != NoError) {
+        return result;
+    }
+    for (const auto& kv : book.customScheme) {
+#ifdef ServerMainVers_2800
+        result.Add (APIGuidToString (kv.key), kv.value);
+#else
+        result.Add (APIGuidToString (*kv.key), *kv.value);
+#endif
+    }
+    return result;
+}
+
 GetLayoutSettingsCommand::GetLayoutSettingsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -761,6 +779,7 @@ GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetResponseSchema () const
                                 "type": "object",
                                 "properties": {
                                     "customSchemeKey":   { "type": "string" },
+                                    "customSchemeName":  { "type": "string" },
                                     "customSchemeValue": { "type": "string" }
                                 },
                                 "required": ["customSchemeKey", "customSchemeValue"],
@@ -784,6 +803,8 @@ GS::ObjectState GetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
     if (!GetItems (parameters, "layoutDatabaseIds", items, errorResponse)) {
         return errorResponse;
     }
+
+    const auto schemeByGuid = GetLayoutSchemeByGuidString ();
 
     GS::ObjectState response;
     const auto& layoutSettingsList = response.AddList<GS::ObjectState> ("layoutSettings");
@@ -833,14 +854,24 @@ GS::ObjectState GetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
         if (layoutInfo.customData != nullptr && !layoutInfo.customData->IsEmpty ()) {
             const auto& customDataList = layoutResult.AddList<GS::ObjectState> ("customData");
             for (auto& kv : *layoutInfo.customData) {
-                customDataList (GS::ObjectState (
 #ifdef ServerMainVers_2800
-                    "customSchemeKey",   APIGuidToString (kv.key),
-                    "customSchemeValue", kv.value));
+                const GS::UniString guidStr  = APIGuidToString (kv.key);
+                const GS::UniString& value   = kv.value;
 #else
-                    "customSchemeKey",   APIGuidToString (*kv.key),
-                    "customSchemeValue", *kv.value));
+                const GS::UniString guidStr  = APIGuidToString (*kv.key);
+                const GS::UniString& value   = *kv.value;
 #endif
+                GS::UniString name;
+                if (schemeByGuid.ContainsKey (guidStr)) {
+                    schemeByGuid.Get (guidStr, &name);
+                }
+                GS::ObjectState entry;
+                entry.Add ("customSchemeKey",   guidStr);
+                entry.Add ("customSchemeValue", value);
+                if (!name.IsEmpty ()) {
+                    entry.Add ("customSchemeName", name);
+                }
+                customDataList (entry);
             }
         }
 
@@ -892,9 +923,10 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
                                 "type": "object",
                                 "properties": {
                                     "customSchemeKey":   { "type": "string" },
+                                    "customSchemeName":  { "type": "string" },
                                     "customSchemeValue": { "type": "string" }
                                 },
-                                "required": ["customSchemeKey", "customSchemeValue"],
+                                "required": ["customSchemeValue"],
                                 "additionalProperties": false
                             }
                         }
@@ -1006,11 +1038,29 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
 
         GS::Array<GS::ObjectState> customDataItems;
         if (item.Get ("customData", customDataItems)) {
+            const auto schemeByGuid = GetLayoutSchemeByGuidString ();
+
+            // Build reverse map: field name → GUID string (for name-based lookup)
+            GS::HashTable<GS::UniString, GS::UniString> schemeByName;
+            for (const auto& sk : schemeByGuid) {
+#ifdef ServerMainVers_2800
+                schemeByName.Add (sk.value, sk.key);
+#else
+                schemeByName.Add (*sk.value, *sk.key);
+#endif
+            }
+
             delete layoutInfo.customData;
             layoutInfo.customData = new GS::HashTable<API_Guid, GS::UniString> ();
             for (const auto& cd : customDataItems) {
                 GS::UniString keyStr, value;
-                if (cd.Get ("customSchemeKey", keyStr) && cd.Get ("customSchemeValue", value)) {
+                if (!cd.Get ("customSchemeKey", keyStr)) {
+                    GS::UniString nameStr;
+                    if (cd.Get ("customSchemeName", nameStr) && schemeByName.ContainsKey (nameStr)) {
+                        schemeByName.Get (nameStr, &keyStr);
+                    }
+                }
+                if (!keyStr.IsEmpty () && cd.Get ("customSchemeValue", value)) {
                     layoutInfo.customData->Put (APIGuidFromString (keyStr.ToCStr ()), value);
                 }
             }
@@ -1037,4 +1087,64 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
     }
 
     return CreateExecutionResultsResponse (executionResults);
+}
+
+GetLayoutCustomSchemeCommand::GetLayoutCustomSchemeCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLayoutCustomSchemeCommand::GetName () const
+{
+    return "GetLayoutCustomScheme";
+}
+
+GS::Optional<GS::UniString> GetLayoutCustomSchemeCommand::GetInputParametersSchema () const
+{
+    return GS::NoValue;
+}
+
+GS::Optional<GS::UniString> GetLayoutCustomSchemeCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "customScheme": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "customSchemeKey":  { "type": "string" },
+                        "customSchemeName": { "type": "string" }
+                    },
+                    "required": ["customSchemeKey", "customSchemeName"],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "required": ["customScheme"],
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetLayoutCustomSchemeCommand::Execute (const GS::ObjectState&, GS::ProcessControl&) const
+{
+    GS::ObjectState response;
+    const auto& schemeList = response.AddList<GS::ObjectState> ("customScheme");
+
+    API_LayoutBook book = {};
+    if (ACAPI_Navigator_GetLayoutBook (&book) == NoError) {
+        for (const auto& kv : book.customScheme) {
+            schemeList (GS::ObjectState (
+#ifdef ServerMainVers_2800
+                "customSchemeKey",  APIGuidToString (kv.key),
+                "customSchemeName", kv.value));
+#else
+                "customSchemeKey",  APIGuidToString (*kv.key),
+                "customSchemeName", *kv.value));
+#endif
+        }
+    }
+
+    return response;
 }

@@ -709,6 +709,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Sets settings of layouts, including Layout Info Panel custom data fields."
         );
+        err |= RegisterCommand<GetLayoutCustomSchemeCommand> (
+            navigatorCommands, "1.1.7",
+            "Gets the Layout Info Panel custom field definitions (name and key) from Book Settings."
+        );
         err |= RegisterCommand<GetModelViewOptionsCommand> (
             navigatorCommands, "1.1.4",
             "Gets all model view options"
