@@ -1270,6 +1270,25 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, poly);
                         }
+                        if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
+                        }
+                        if (typeSpecificDetails->Get ("ratio", elem.drawing.ratio)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, ratio);
+                        }
+                        if (typeSpecificDetails->Get ("angle", elem.drawing.angle)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, angle);
+                        }
+                        const GS::ObjectState* posState = typeSpecificDetails->Get ("pos");
+                        if (posState != nullptr) {
+                            elem.drawing.pos = Get2DCoordinateFromObjectState (*posState);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
+                        }
+                        const GS::ObjectState* modelOffsetState = typeSpecificDetails->Get ("modelOffset");
+                        if (modelOffsetState != nullptr) {
+                            elem.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, modelOffset);
+                        }
                     } break;
                     default:
                     break;

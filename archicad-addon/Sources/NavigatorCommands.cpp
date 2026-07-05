@@ -1477,14 +1477,7 @@ GS::Optional<GS::UniString> CreateViewMapCloneFolderCommand::GetInputParametersS
 
 GS::Optional<GS::UniString> CreateViewMapCloneFolderCommand::GetResponseSchema () const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "navigatorItemId": { "$ref": "#/NavigatorItemId" }
-        },
-        "additionalProperties": false,
-        "required": ["navigatorItemId"]
-    })";
+    return {};
 }
 
 GS::ObjectState CreateViewMapCloneFolderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -1508,7 +1501,7 @@ GS::ObjectState CreateViewMapCloneFolderCommand::Execute (const GS::ObjectState&
     }
 
     API_NavigatorItem folderItem = {};
-    folderItem.itemType   = API_FolderNavItem;
+    folderItem.itemType   = API_UndefinedNavItem;
     folderItem.mapId      = API_PublicViewMap;
     folderItem.sourceGuid = sourceGuid;
 
@@ -1525,5 +1518,121 @@ GS::ObjectState CreateViewMapCloneFolderCommand::Execute (const GS::ObjectState&
 
     GS::ObjectState response;
     response.Add ("navigatorItemId", CreateGuidObjectState (folderItem.guid));
+    return response;
+}
+
+// ─── GetNavigatorItemTree ─────────────────────────────────────────────────────
+
+static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t)
+{
+    switch (t) {
+        case API_UndefinedNavItem:           return "UndefinedItem";
+        case API_ProjectNavItem:             return "ProjectItem";
+        case API_StoryNavItem:               return "StoryItem";
+        case API_SectionNavItem:             return "SectionItem";
+        case API_DetailDrawingNavItem:       return "DetailDrawingItem";
+        case API_PerspectiveNavItem:         return "PerspectiveItem";
+        case API_AxonometryNavItem:          return "AxonometryItem";
+        case API_ListNavItem:                return "ListItem";
+        case API_ScheduleNavItem:            return "ScheduleItem";
+        case API_TocNavItem:                 return "TocItem";
+        case API_CameraNavItem:              return "CameraItem";
+        case API_CameraSetNavItem:           return "CameraSetItem";
+        case API_InfoNavItem:                return "InfoItem";
+        case API_HelpNavItem:                return "HelpItem";
+        case API_LayoutNavItem:              return "LayoutItem";
+        case API_MasterLayoutNavItem:        return "MasterLayoutItem";
+        case API_BookNavItem:                return "BookItem";
+        case API_MasterFolderNavItem:        return "MasterFolderItem";
+        case API_SubSetNavItem:              return "SubSetItem";
+        case API_TextListNavItem:            return "TextListItem";
+        case API_ElevationNavItem:           return "ElevationItem";
+        case API_InteriorElevationNavItem:   return "InteriorElevationItem";
+        case API_WorksheetDrawingNavItem:    return "WorksheetDrawingItem";
+        case API_DocumentFrom3DNavItem:      return "DocumentFrom3DItem";
+        case API_FolderNavItem:              return "FolderItem";
+        case API_DrawingNavItem:             return "DrawingItem";
+        default:                             return "UnknownItem";
+    }
+}
+
+static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_NavigatorMapID mapId)
+{
+    GS::ObjectState itemOS;
+    itemOS.Add ("type",            NavigatorItemTypeToString (item.itemType));
+    itemOS.Add ("name",            GS::UniString (item.uName));
+    itemOS.Add ("navigatorItemId", CreateGuidObjectState (item.guid));
+
+    GS::UniString prefix;
+    if (item.itemType == API_StoryNavItem) {
+        prefix = GS::UniString::Printf ("%d", (int) item.floorNum);
+    }
+    itemOS.Add ("prefix", prefix);
+
+    item.mapId = mapId;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) == NoError && !children.IsEmpty ()) {
+        const auto& childList = itemOS.AddList<GS::ObjectState> ("children");
+        for (const API_NavigatorItem& child : children) {
+            GS::ObjectState wrapper;
+            wrapper.Add ("navigatorItem", NavigatorItemToObjectState (child, mapId));
+            childList (wrapper);
+        }
+    }
+
+    return itemOS;
+}
+
+GetNavigatorItemTreeCommand::GetNavigatorItemTreeCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetNavigatorItemTreeCommand::GetName () const
+{
+    return "GetNavigatorItemTree";
+}
+
+GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorMapId": {
+                "type": "string",
+                "enum": ["PublicViewMap", "ProjectMap", "LayoutBook", "PublisherSets"],
+                "description": "The navigator map to retrieve."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorMapId"]
+    })";
+}
+
+GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString navigatorMapIdStr;
+    parameters.Get ("navigatorMapId", navigatorMapIdStr);
+
+    API_NavigatorMapID mapId = API_PublicViewMap;
+    if (navigatorMapIdStr == "ProjectMap")         mapId = API_ProjectMap;
+    else if (navigatorMapIdStr == "LayoutBook")    mapId = API_LayoutMap;
+    else if (navigatorMapIdStr == "PublisherSets") mapId = API_PublisherSets;
+
+    API_NavigatorSet navSet = {};
+    navSet.mapId = mapId;
+    Int32 idx = 0;
+    GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&navSet, &idx);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get navigator set.");
+    }
+
+    API_NavigatorItem rootItem = {};
+    err = ACAPI_Navigator_GetNavigatorItem (&navSet.rootGuid, &rootItem);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get root navigator item.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("navigatorItemTree", NavigatorItemToObjectState (rootItem, mapId));
     return response;
 }
