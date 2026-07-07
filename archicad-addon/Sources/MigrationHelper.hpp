@@ -225,6 +225,11 @@ inline GSErrCode ACAPI_Navigator_NewNavigatorView (API_NavigatorItem* navigatorI
     return ACAPI_Navigator (APINavigator_NewNavigatorViewID, navigatorItem, navigatorView, const_cast<GS::Guid*> (parent));
 }
 
+inline GSErrCode ACAPI_Navigator_GetNavigatorChildrenItems (API_NavigatorItem* item, GS::Array<API_NavigatorItem>* items)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorChildrenItemsID, item, nullptr, items);
+}
+
 inline GSErrCode ACAPI_View_Redraw ()
 {
     return ACAPI_Automate (APIDo_RedrawID);
