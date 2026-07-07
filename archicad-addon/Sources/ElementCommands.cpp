@@ -1009,9 +1009,9 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetResponseSchema () co
 // ResetOrder. It must be applied to the HOST instead, which resets all its
 // openings to level 7.
 //
-// Reverse host lookup (opening → host) is not exposed by the API. It requires
-// a forward scan: enumerate all walls/roofs/shells, call GetConnectedElements
-// on each, build an inverse map.
+// Reverse host lookup (opening → host) uses the owner guid stored directly on
+// the opening element (API_WindowType::owner for door/window, API_SkylightType::owner
+// for skylight) via ACAPI_Element_Get — no need to scan hosts.
 //
 // BATCH ORDERING CONSTRAINT
 // --------------------------
@@ -1102,27 +1102,19 @@ static void ApplyDrawIndexStrategy (GS::Array<API_Guid>& guids, const API_Elem_H
 static GS::HashTable<API_Guid, API_Guid> BuildOpeningToHostMap (const GS::HashSet<API_Guid>& targetGuids)
 {
     GS::HashTable<API_Guid, API_Guid> result;
-    if (targetGuids.IsEmpty ())
-        return result;
+    for (const API_Guid& guid : targetGuids) {
+        API_Element elem = {};
+        elem.header.guid = guid;
+        if (ACAPI_Element_GetHeader (&elem.header) != NoError || ACAPI_Element_Get (&elem) != NoError)
+            continue;
 
-    auto scan = [&](API_ElemTypeID hostType, API_ElemTypeID openType) {
-        GS::Array<API_Guid> hostList;
-        ACAPI_Element_GetElemList (hostType, &hostList, APIFilt_None);
-        for (const API_Guid& hostGuid : hostList) {
-            GS::Array<API_Guid> connected;
-            ACAPI_Grouping_GetConnectedElements (hostGuid, openType, &connected);
-            for (const API_Guid& g : connected) {
-                if (targetGuids.Contains (g) && !result.ContainsKey (g))
-                    result.Add (g, hostGuid);
-            }
+        switch (GetElemTypeId (elem.header)) {
+            case API_DoorID:
+            case API_WindowID:   result.Add (guid, elem.window.owner);   break;
+            case API_SkylightID: result.Add (guid, elem.skylight.owner); break;
+            default: break;
         }
-    };
-
-    scan (API_WallID,  API_DoorID);
-    scan (API_WallID,  API_WindowID);
-    scan (API_RoofID,  API_SkylightID);
-    scan (API_ShellID, API_SkylightID);
-
+    }
     return result;
 }
 

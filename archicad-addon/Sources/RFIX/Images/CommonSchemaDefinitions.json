@@ -3489,6 +3489,65 @@
             "polygonCoordinates"
         ]
     },
+    "DrawingDetails": {
+        "type": "object",
+        "properties": {
+            "pos": {
+                "$ref": "#/Coordinate2D",
+                "description": "Position of the drawing's reference point on the layout."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Rotation angle of the drawing in radians."
+            },
+            "ratio": {
+                "type": "number",
+                "description": "Scale ratio applied to the drawing relative to its source view."
+            },
+            "drawingScale": {
+                "type": "number",
+                "description": "The nominal scale of the drawing."
+            },
+            "modelOffset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Offset of the model origin within the drawing."
+            },
+            "isCutWithFrame": {
+                "type": "boolean",
+                "description": "Whether the drawing is clipped by a custom polygon (see clipPolygon) instead of showing the full auto-fit extent."
+            },
+            "bounds": {
+                "type": "object",
+                "description": "Bounding box of the drawing on the layout.",
+                "properties": {
+                    "xMin": { "type": "number" },
+                    "yMin": { "type": "number" },
+                    "xMax": { "type": "number" },
+                    "yMax": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": ["xMin", "yMin", "xMax", "yMax"]
+            },
+            "clipPolygon": {
+                "type": "array",
+                "description": "Polygon (in model coordinates) used to clip the drawing view. Present only when isCutWithFrame is true.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pos",
+            "angle",
+            "ratio",
+            "drawingScale",
+            "modelOffset",
+            "isCutWithFrame",
+            "bounds"
+        ]
+    },
     "LabelDetails": {
         "$ref": "#/LibPartBasedElementDetails",
         "properties": {
@@ -3570,6 +3629,9 @@
             },
             {
                 "$ref": "#/MeshDetails"
+            },
+            {
+                "$ref": "#/DrawingDetails"
             },
             {
                 "$ref": "#/LabelDetails"
