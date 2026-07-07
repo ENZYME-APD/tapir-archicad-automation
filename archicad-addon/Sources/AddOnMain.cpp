@@ -769,10 +769,6 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Deletes navigator items from the navigator tree."
         );
-        err |= RegisterCommand<CreateViewMapCloneFolderCommand> (
-            navigatorCommands, "1.1.7",
-            "Creates a clone folder in the View Map that mirrors a Project Map folder."
-        );
         err |= RegisterCommand<GetNavigatorItemTreeCommand> (
             navigatorCommands, "1.1.7",
             "Returns the full navigator item tree for the specified map."
