@@ -1105,7 +1105,7 @@ static GS::HashTable<API_Guid, API_Guid> BuildOpeningToHostMap (const GS::HashSe
     for (const API_Guid& guid : targetGuids) {
         API_Element elem = {};
         elem.header.guid = guid;
-        if (ACAPI_Element_GetHeader (&elem.header) != NoError || ACAPI_Element_Get (&elem) != NoError)
+        if (ACAPI_Element_Get (&elem) != NoError)
             continue;
 
         switch (GetElemTypeId (elem.header)) {
