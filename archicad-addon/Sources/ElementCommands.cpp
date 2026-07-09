@@ -842,6 +842,23 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
             } break;
 
+            case API_DrawingID: {
+                typeSpecificDetails.Add ("pos",           Create2DCoordinateObjectState (elem.drawing.pos));
+                typeSpecificDetails.Add ("angle",         elem.drawing.angle);
+                typeSpecificDetails.Add ("ratio",         elem.drawing.ratio);
+                typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
+                typeSpecificDetails.Add ("modelOffset",   Create2DCoordinateObjectState (elem.drawing.modelOffset));
+                typeSpecificDetails.Add ("isCutWithFrame", elem.drawing.isCutWithFrame);
+                typeSpecificDetails.Add ("bounds", GS::ObjectState (
+                    "xMin", elem.drawing.bounds.xMin,
+                    "yMin", elem.drawing.bounds.yMin,
+                    "xMax", elem.drawing.bounds.xMax,
+                    "yMax", elem.drawing.bounds.yMax));
+                if (elem.drawing.isCutWithFrame) {
+                    AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
+                }
+            } break;
+
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
                 break;
@@ -992,9 +1009,9 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetResponseSchema () co
 // ResetOrder. It must be applied to the HOST instead, which resets all its
 // openings to level 7.
 //
-// Reverse host lookup (opening → host) is not exposed by the API. It requires
-// a forward scan: enumerate all walls/roofs/shells, call GetConnectedElements
-// on each, build an inverse map.
+// Reverse host lookup (opening → host) uses the owner guid stored directly on
+// the opening element (API_WindowType::owner for door/window, API_SkylightType::owner
+// for skylight) via ACAPI_Element_Get — no need to scan hosts.
 //
 // BATCH ORDERING CONSTRAINT
 // --------------------------
@@ -1085,27 +1102,19 @@ static void ApplyDrawIndexStrategy (GS::Array<API_Guid>& guids, const API_Elem_H
 static GS::HashTable<API_Guid, API_Guid> BuildOpeningToHostMap (const GS::HashSet<API_Guid>& targetGuids)
 {
     GS::HashTable<API_Guid, API_Guid> result;
-    if (targetGuids.IsEmpty ())
-        return result;
+    for (const API_Guid& guid : targetGuids) {
+        API_Element elem = {};
+        elem.header.guid = guid;
+        if (ACAPI_Element_Get (&elem) != NoError)
+            continue;
 
-    auto scan = [&](API_ElemTypeID hostType, API_ElemTypeID openType) {
-        GS::Array<API_Guid> hostList;
-        ACAPI_Element_GetElemList (hostType, &hostList, APIFilt_None);
-        for (const API_Guid& hostGuid : hostList) {
-            GS::Array<API_Guid> connected;
-            ACAPI_Grouping_GetConnectedElements (hostGuid, openType, &connected);
-            for (const API_Guid& g : connected) {
-                if (targetGuids.Contains (g) && !result.ContainsKey (g))
-                    result.Add (g, hostGuid);
-            }
+        switch (GetElemTypeId (elem.header)) {
+            case API_DoorID:
+            case API_WindowID:   result.Add (guid, elem.window.owner);   break;
+            case API_SkylightID: result.Add (guid, elem.skylight.owner); break;
+            default: break;
         }
-    };
-
-    scan (API_WallID,  API_DoorID);
-    scan (API_WallID,  API_WindowID);
-    scan (API_RoofID,  API_SkylightID);
-    scan (API_ShellID, API_SkylightID);
-
+    }
     return result;
 }
 
@@ -1236,17 +1245,85 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
                         }
                     } break;
+                    case API_DrawingID: {
+                        GS::Array<GS::ObjectState> clipCoords;
+                        if (typeSpecificDetails->Get ("clipPolygon", clipCoords) && clipCoords.GetSize () >= 3) {
+                            Int32 nUnique = (Int32) clipCoords.GetSize ();
+                            if (nUnique > 1) {
+                                API_Coord first = Get2DCoordinateFromObjectState (clipCoords.GetFirst ());
+                                API_Coord last  = Get2DCoordinateFromObjectState (clipCoords.GetLast ());
+                                if (first.x == last.x && first.y == last.y)
+                                    --nUnique;
+                            }
+                            elem.drawing.isCutWithFrame    = true;
+                            elem.drawing.poly.nSubPolys    = 1;
+                            elem.drawing.poly.nCoords      = nUnique + 1; // +1 for closing vertex
+                            elem.drawing.poly.nArcs        = 0;
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, poly);
+                        }
+                        if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
+                        }
+                        if (typeSpecificDetails->Get ("ratio", elem.drawing.ratio)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, ratio);
+                        }
+                        if (typeSpecificDetails->Get ("angle", elem.drawing.angle)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, angle);
+                        }
+                        const GS::ObjectState* posState = typeSpecificDetails->Get ("pos");
+                        if (posState != nullptr) {
+                            elem.drawing.pos = Get2DCoordinateFromObjectState (*posState);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
+                        }
+                        const GS::ObjectState* modelOffsetState = typeSpecificDetails->Get ("modelOffset");
+                        if (modelOffsetState != nullptr) {
+                            elem.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, modelOffset);
+                        }
+                    } break;
                     default:
                     break;
                 }
                 hasElementChanges = true;
             }
 
-            constexpr API_ElementMemo* memo = nullptr;
-            constexpr UInt64 memoMask = 0;
+            API_ElementMemo clipMemo = {};
+            UInt64 memoMask = 0;
+            bool hasMemoChanges = false;
+
+            if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_DrawingID) {
+                GS::Array<GS::ObjectState> clipCoords;
+                if (typeSpecificDetails->Get ("clipPolygon", clipCoords) && clipCoords.GetSize () >= 3) {
+                    // Drop explicit closing vertex if caller already duplicated first point at the end
+                    if (clipCoords.GetSize () > 1) {
+                        API_Coord first = Get2DCoordinateFromObjectState (clipCoords.GetFirst ());
+                        API_Coord last  = Get2DCoordinateFromObjectState (clipCoords.GetLast ());
+                        if (first.x == last.x && first.y == last.y)
+                            clipCoords.Pop ();
+                    }
+                    const Int32 nUnique = clipCoords.GetSize ();
+                    // AC polygon convention: coords[1..nUnique] = vertices, coords[nUnique+1] = closing duplicate of coords[1]
+                    // Handle size = nUnique+2 (index 0 unused, 1..nUnique vertices, nUnique+1 closing)
+                    clipMemo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nUnique + 2) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+                    clipMemo.pends  = reinterpret_cast<Int32**>     (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+                    if (clipMemo.coords != nullptr && clipMemo.pends != nullptr) {
+                        for (Int32 i = 0; i < nUnique; ++i)
+                            (*clipMemo.coords)[i + 1] = Get2DCoordinateFromObjectState (clipCoords[i]);
+                        (*clipMemo.coords)[nUnique + 1] = (*clipMemo.coords)[1]; // closing vertex
+                        (*clipMemo.pends)[1] = nUnique + 1;
+                        memoMask = APIMemoMask_Polygon;
+                        hasMemoChanges = true;
+                    }
+                }
+            }
+
             constexpr bool withDel = true;
-            if (hasElementChanges) {
-                err = ACAPI_Element_Change (&elem, &mask, memo, memoMask, withDel);
+            if (hasElementChanges || hasMemoChanges) {
+                err = ACAPI_Element_Change (&elem, &mask,
+                                            hasMemoChanges ? &clipMemo : nullptr,
+                                            memoMask, withDel);
+                ACAPI_DisposeElemMemoHdls (&clipMemo);
                 if (err != NoError) {
                     executionResults (CreateFailedExecutionResult (err, "Failed to change element"));
                     continue;

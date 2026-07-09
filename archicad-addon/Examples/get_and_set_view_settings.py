@@ -1,4 +1,6 @@
+import math
 import aclib
+
 
 def getNavigatorItemIdsFromTree(branch):
     navigatorItemIds = []
@@ -10,6 +12,7 @@ def getNavigatorItemIdsFromTree(branch):
             navigatorItemIds.extend(getNavigatorItemIdsFromTree(children))
     return navigatorItemIds
 
+
 viewMapTree = aclib.RunCommand('API.GetNavigatorItemTree', {'navigatorTreeId': {'type': 'ViewMap'}})
 views = getNavigatorItemIdsFromTree(viewMapTree['navigatorTree']['rootItem']['children'])
 
@@ -20,10 +23,12 @@ layerCombinations = aclib.RunTapirCommand('GetAttributesByType', {'attributeType
 dimensionStyle = "US Architect"
 penSetName = "11 Archicad 9"
 graphicalOverrideCombination = 'Cardboard Model'
+structureDisplayModes = ['EntireStructure', 'CoreOnly', 'WithoutFinishes', 'StructureOnly']
 
 navigatorItemIdsWithViewSettings = []
-for i in range(len(viewSettings)):
-    oldViewSettings = viewSettings[i]
+for i, oldViewSettings in enumerate(viewSettings):
+    if 'error' in oldViewSettings:
+        continue
     newViewSettings = {}
     if 'modelViewOptions' in oldViewSettings:
         newViewSettings['modelViewOptions'] = modelViewOptions[i % len(modelViewOptions)]['name']
@@ -33,13 +38,17 @@ for i in range(len(viewSettings)):
         newViewSettings['dimensionStyle'] = dimensionStyle
     if 'penSetName' in oldViewSettings:
         newViewSettings['penSetName'] = penSetName
-    if 'graphicalOverrideCombination' in oldViewSettings:
-        newViewSettings['graphicalOverrideCombination'] = graphicalOverrideCombination
+    if 'graphicOverrideCombination' in oldViewSettings:
+        newViewSettings['graphicOverrideCombination'] = graphicalOverrideCombination
+    if 'structureDisplay' in oldViewSettings:
+        newViewSettings['structureDisplay'] = structureDisplayModes[i % len(structureDisplayModes)]
+    if 'rotation' in oldViewSettings:
+        newViewSettings['rotation'] = oldViewSettings['rotation'] + math.radians(i * 5)
     if newViewSettings:
         navigatorItemIdsWithViewSettings.append({
-                'navigatorItemId': views[i]['navigatorItemId'],
-                'viewSettings': newViewSettings
-            })
+            'navigatorItemId': views[i]['navigatorItemId'],
+            'viewSettings': newViewSettings
+        })
 
 aclib.RunTapirCommand('SetViewSettings', {'navigatorItemIdsWithViewSettings': navigatorItemIdsWithViewSettings})
 

@@ -2585,6 +2585,31 @@
                     "xMax",
                     "yMax"
                 ]
+            },
+            "rotation": {
+                "type": "number",
+                "description": "View rotation angle in radians. Read via GetViewSettings; use SetViewRotation to change it."
+            },
+            "structureDisplay": {
+                "type": "string",
+                "description": "Structure display mode. One of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.",
+                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+            },
+            "renovationFilterGuid": {
+                "$ref": "#/Guid",
+                "description": "GUID of the renovation filter applied to the view."
+            },
+            "d3styleName": {
+                "type": "string",
+                "description": "Name of the 3D style. Empty if not set."
+            },
+            "renderingSceneName": {
+                "type": "string",
+                "description": "Name of the rendering scene. Empty if not set."
+            },
+            "usePhotoRendering": {
+                "type": "boolean",
+                "description": "Whether photo rendering is used for this view."
             }
         },
         "additionalProperties": false,
@@ -3464,6 +3489,65 @@
             "polygonCoordinates"
         ]
     },
+    "DrawingDetails": {
+        "type": "object",
+        "properties": {
+            "pos": {
+                "$ref": "#/Coordinate2D",
+                "description": "Position of the drawing's reference point on the layout."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Rotation angle of the drawing in radians."
+            },
+            "ratio": {
+                "type": "number",
+                "description": "Scale ratio applied to the drawing relative to its source view."
+            },
+            "drawingScale": {
+                "type": "number",
+                "description": "The nominal scale of the drawing."
+            },
+            "modelOffset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Offset of the model origin within the drawing."
+            },
+            "isCutWithFrame": {
+                "type": "boolean",
+                "description": "Whether the drawing is clipped by a custom polygon (see clipPolygon) instead of showing the full auto-fit extent."
+            },
+            "bounds": {
+                "type": "object",
+                "description": "Bounding box of the drawing on the layout.",
+                "properties": {
+                    "xMin": { "type": "number" },
+                    "yMin": { "type": "number" },
+                    "xMax": { "type": "number" },
+                    "yMax": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": ["xMin", "yMin", "xMax", "yMax"]
+            },
+            "clipPolygon": {
+                "type": "array",
+                "description": "Polygon (in model coordinates) used to clip the drawing view. Present only when isCutWithFrame is true.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pos",
+            "angle",
+            "ratio",
+            "drawingScale",
+            "modelOffset",
+            "isCutWithFrame",
+            "bounds"
+        ]
+    },
     "LabelDetails": {
         "$ref": "#/LibPartBasedElementDetails",
         "properties": {
@@ -3545,6 +3629,9 @@
             },
             {
                 "$ref": "#/MeshDetails"
+            },
+            {
+                "$ref": "#/DrawingDetails"
             },
             {
                 "$ref": "#/LabelDetails"
@@ -4018,6 +4105,21 @@
         "additionalProperties": false,
         "required": []
     },
+    "DrawingSettings": {
+        "description": "Modifiable settings for a Drawing element placed on a layout.",
+        "type": "object",
+        "properties": {
+            "clipPolygon": {
+                "type": "array",
+                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (useDrawingPolyClip).",
+                "items": {
+                    "$ref": "#/2DCoordinate"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
@@ -4027,6 +4129,9 @@
             },
             {
                 "$ref": "#/ZoneSettings"
+            },
+            {
+                "$ref": "#/DrawingSettings"
             }
         ]
     },

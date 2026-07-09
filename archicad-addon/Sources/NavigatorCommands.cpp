@@ -401,6 +401,41 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
                 "yMax", navigatorView.zoom.yMax));
         }
 
+        {
+            Vector2D vec2D1 (navigatorView.tr.tmx[0], navigatorView.tr.tmx[4]);
+            Vector2D vec2D2 (navigatorView.tr.tmx[1], navigatorView.tr.tmx[5]);
+            Vector2D offset (navigatorView.tr.tmx[3], navigatorView.tr.tmx[7]);
+            Geometry::Matrix22 rotMatrix;
+            Geometry::Matrix22::ColVectorsMatrix (vec2D1, vec2D2, rotMatrix);
+            Geometry::Transformation2D trafo;
+            trafo.SetMatrix (rotMatrix);
+            trafo.SetOffset (offset);
+            double rotAngle = 0.0;
+            Geometry::TranAngle (trafo, &rotAngle);
+            viewSetting.Add ("rotation", rotAngle);
+        }
+
+        const char* structureDisplayStr = "EntireStructure";
+        switch (navigatorView.structureDisplay) {
+            case API_CoreOnly:        structureDisplayStr = "CoreOnly";        break;
+            case API_WithoutFinishes: structureDisplayStr = "WithoutFinishes"; break;
+            case API_StructureOnly:   structureDisplayStr = "StructureOnly";   break;
+            default: break;
+        }
+        viewSetting.Add ("structureDisplay", GS::UniString (structureDisplayStr));
+
+        if (navigatorView.renovationFilterGuid != APINULLGuid) {
+            viewSetting.Add ("renovationFilterGuid", CreateGuidObjectState (navigatorView.renovationFilterGuid));
+        }
+
+        GS::UniString d3styleName (navigatorView.d3styleName);
+        viewSetting.Add ("d3styleName", d3styleName);
+
+        GS::UniString renderingSceneName (navigatorView.renderingSceneName);
+        viewSetting.Add ("renderingSceneName", renderingSceneName);
+
+        viewSetting.Add ("usePhotoRendering", navigatorView.usePhotoRendering);
+
         viewSettings (viewSetting);
     }
 
@@ -512,13 +547,41 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         viewSettingsOS->Get ("saveZoom", navigatorView.saveZoom);
         viewSettingsOS->Get ("ignoreSavedZoom", navigatorView.ignoreSavedZoom);
         const GS::ObjectState* zoomOS = viewSettingsOS->Get ("zoom");
-        if (zoomOS != nullptr && 
+        if (zoomOS != nullptr &&
             zoomOS->Get ("xMin", navigatorView.zoom.xMin) &&
             zoomOS->Get ("yMin", navigatorView.zoom.yMin) &&
             zoomOS->Get ("xMax", navigatorView.zoom.xMax) &&
             zoomOS->Get ("yMax", navigatorView.zoom.yMax)) {
             navigatorView.saveZoom = true;
         }
+
+        double rotation = 0.0;
+        if (viewSettingsOS->Get ("rotation", rotation)) {
+            const double c = cos (rotation);
+            const double s = sin (rotation);
+            navigatorView.tr.tmx[0]  = c;   navigatorView.tr.tmx[1]  = -s;  navigatorView.tr.tmx[2]  = 0.0;
+            navigatorView.tr.tmx[4]  = s;   navigatorView.tr.tmx[5]  = c;   navigatorView.tr.tmx[6]  = 0.0;
+            navigatorView.tr.tmx[8]  = 0.0; navigatorView.tr.tmx[9]  = 0.0; navigatorView.tr.tmx[10] = 1.0;
+            navigatorView.tr.tmx[11] = 0.0;
+        }
+
+        GS::UniString structureDisplayStr;
+        if (viewSettingsOS->Get ("structureDisplay", structureDisplayStr)) {
+            if      (structureDisplayStr == "CoreOnly")         navigatorView.structureDisplay = API_CoreOnly;
+            else if (structureDisplayStr == "WithoutFinishes")  navigatorView.structureDisplay = API_WithoutFinishes;
+            else if (structureDisplayStr == "StructureOnly")    navigatorView.structureDisplay = API_StructureOnly;
+            else                                                navigatorView.structureDisplay = API_EntireStructure;
+            navigatorView.saveStructureDisplay = true;
+        }
+
+        const GS::ObjectState* renovFilterOS = viewSettingsOS->Get ("renovationFilterGuid");
+        if (renovFilterOS != nullptr) {
+            navigatorView.renovationFilterGuid = GetGuidFromObjectState (*renovFilterOS);
+        }
+
+        SetUCharProperty (viewSettingsOS, "d3styleName", navigatorView.d3styleName);
+        SetUCharProperty (viewSettingsOS, "renderingSceneName", navigatorView.renderingSceneName);
+        viewSettingsOS->Get ("usePhotoRendering", navigatorView.usePhotoRendering);
 
         err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
         if (err != NoError) {
@@ -546,6 +609,9 @@ GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetInputParametersS
     return R"({
         "type": "object",
         "properties": {
+            "navigatorItemIds": {
+                "$ref": "#/NavigatorItemIds"
+            },
             "databases": {
                  "$ref": "#/Databases"
             }
@@ -613,12 +679,7 @@ GS::ObjectState GetView2DTransformationsCommand::Execute (const GS::ObjectState&
     GS::ObjectState response;
     const auto& transformations = response.AddList<GS::ObjectState> ("transformations");
 
-    GS::Array<GS::ObjectState> databases;
-    if (!parameters.Get ("databases", databases)) {
-        GetTransformationFromCurrentDatabase (transformations);
-    } else {
-        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
-
+    auto runForDatabaseIds = [&](const GS::Array<API_Guid>& databaseIds) -> GSErrCode {
         auto action = [&]() -> GSErrCode {
             return GetTransformationFromCurrentDatabase (transformations);
         };
@@ -626,11 +687,185 @@ GS::ObjectState GetView2DTransformationsCommand::Execute (const GS::ObjectState&
         auto actionFailure = [&](GSErrCode err, const GS::UniString& errMsg) -> void {
             transformations (CreateErrorResponse (err, errMsg));
         };
+        return ExecuteActionForEachDatabase (databaseIds, action, actionSuccess, actionFailure);
+    };
 
-        GSErrCode err = ExecuteActionForEachDatabase (databaseIds, action, actionSuccess, actionFailure);
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    GS::Array<GS::ObjectState> databases;
+
+    if (parameters.Get ("navigatorItemIds", navigatorItemIds)) {
+        GS::Array<API_Guid> databaseIds;
+        for (const GS::ObjectState& navItemOS : navigatorItemIds) {
+            API_Guid navGuid = GetGuidFromNavigatorItemIdArrayItem (navItemOS);
+            if (navGuid == APINULLGuid) {
+                transformations (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing"));
+                continue;
+            }
+            API_NavigatorItem navigatorItem = {};
+            if (ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem) != NoError) {
+                transformations (CreateErrorResponse (APIERR_BADPARS, "Failed to get navigator item"));
+                continue;
+            }
+            API_DatabaseInfo navDb = navigatorItem.db;
+            GSErrCode dbErr = ACAPI_Window_GetDatabaseInfo (&navDb);
+            if (dbErr != NoError) {
+                transformations (CreateErrorResponse (dbErr, "Navigator item has no associated database"));
+                continue;
+            }
+            const API_Guid dbGuid = DatabaseIdResolver::Instance ().GetIdOfDatabase (navDb);
+            if (dbGuid == APINULLGuid) {
+                transformations (CreateErrorResponse (APIERR_BADPARS, "Could not resolve database id for navigator item"));
+                continue;
+            }
+            databaseIds.Push (dbGuid);
+        }
+        if (!databaseIds.IsEmpty ()) {
+            GSErrCode err = runForDatabaseIds (databaseIds);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to switch database.");
+            }
+        }
+    } else if (parameters.Get ("databases", databases)) {
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+        GSErrCode err = runForDatabaseIds (databaseIds);
         if (err != NoError) {
             return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
         }
+    } else {
+        GetTransformationFromCurrentDatabase (transformations);
+    }
+
+    return response;
+}
+
+SetViewRotationCommand::SetViewRotationCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String SetViewRotationCommand::GetName () const
+{
+    return "SetViewRotation";
+}
+
+GS::Optional<GS::UniString> SetViewRotationCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIdsWithRotation": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId"
+                        },
+                        "rotation": {
+                            "type": "number",
+                            "description": "View rotation angle in radians."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["navigatorItemId", "rotation"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIdsWithRotation"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetViewRotationCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState SetViewRotationCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithRotation;
+    parameters.Get ("navigatorItemIdsWithRotation", itemsWithRotation);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : itemsWithRotation) {
+        double rotation = 0.0;
+        if (!item.Get ("rotation", rotation)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "rotation is missing"));
+            continue;
+        }
+
+        API_Guid navGuid = GetGuidFromNavigatorItemIdArrayItem (item);
+        if (navGuid == APINULLGuid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId is corrupt or missing"));
+            continue;
+        }
+
+        API_NavigatorItem navigatorItem = {};
+        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get navigator item"));
+            continue;
+        }
+        navigatorItem.mapId = API_PublicViewMap;
+
+        API_NavigatorView navigatorView = {};
+        err = ACAPI_Navigator_GetNavigatorView (&navigatorItem, &navigatorView);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to get navigator view"));
+            continue;
+        }
+
+        // Obtain the axis-aligned model extent for this database without
+        // modifying the database's live zoom state.
+        // - ACAPI_Element_GetExtent returns the fit-in-window bounding box of
+        //   all elements, always axis-aligned (independent of current rotation).
+        // - We never call SetZoom/GetZoom, so the shared database zoom is
+        //   untouched. Views without their own saveZoom keep using whatever
+        //   the database currently shows.
+        // ArchiCAD only applies tr (rotation) when navigating to a view whose
+        // saveZoom flag is true.
+        if (!navigatorView.saveZoom) {
+            API_DatabaseInfo startDb  = {};
+            API_DatabaseInfo targetDb = navigatorItem.db;
+            if (ACAPI_Database_GetCurrentDatabase (&startDb) == NoError &&
+                ACAPI_Window_GetDatabaseInfo      (&targetDb) == NoError &&
+                ACAPI_Database_ChangeCurrentDatabase (&targetDb) == NoError)
+            {
+                API_Box extent = {};
+                if (ACAPI_Element_GetExtent (&extent) == NoError &&
+                    extent.xMax > extent.xMin)
+                {
+                    navigatorView.zoom     = extent;
+                    navigatorView.saveZoom = true;
+                }
+                ACAPI_Database_ChangeCurrentDatabase (&startDb);
+            }
+        }
+
+        const double c = cos (rotation);
+        const double s = sin (rotation);
+        navigatorView.tr.tmx[0]  = c;   navigatorView.tr.tmx[1]  = -s;  navigatorView.tr.tmx[2]  = 0.0;
+        navigatorView.tr.tmx[4]  = s;   navigatorView.tr.tmx[5]  =  c;  navigatorView.tr.tmx[6]  = 0.0;
+        navigatorView.tr.tmx[8]  = 0.0; navigatorView.tr.tmx[9]  = 0.0; navigatorView.tr.tmx[10] = 1.0;
+        navigatorView.tr.tmx[11] = 0.0;
+
+        err = ACAPI_Navigator_ChangeNavigatorView (&navigatorItem, &navigatorView);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to change navigator view rotation"));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
     }
 
     return response;
@@ -686,4 +921,640 @@ GS::ObjectState FitInWindowCommand::Execute (const GS::ObjectState& parameters, 
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+CloneProjectMapItemToViewMapCommand::CloneProjectMapItemToViewMapCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String CloneProjectMapItemToViewMapCommand::GetName () const
+{
+    return "CloneProjectMapItemToViewMap";
+}
+
+GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewsData": {
+                "type": "array",
+                "description": "Array of views to clone from the Project Map to the View Map.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "Navigator item ID of the Project Map viewpoint to clone."
+                        },
+                        "parentNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "Navigator item ID of the View Map folder to place the clone in. Optional; defaults to the View Map root."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["navigatorItemId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/NavigatorItemIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItems"]
+    })";
+}
+
+GS::ObjectState CloneProjectMapItemToViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> viewsData;
+    parameters.Get ("viewsData", viewsData);
+
+    GS::ObjectState response;
+    const auto& navigatorItems = response.AddList<GS::ObjectState> ("navigatorItems");
+
+    for (const GS::ObjectState& item : viewsData) {
+        const GS::ObjectState* navigatorItemIdOS = item.Get ("navigatorItemId");
+        if (navigatorItemIdOS == nullptr) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is missing."));
+            continue;
+        }
+
+        API_Guid sourceGuid = GetGuidFromObjectState (*navigatorItemIdOS);
+        if (sourceGuid == APINULLGuid) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing."));
+            continue;
+        }
+
+        API_Guid parentGuid = APINULLGuid;
+        const GS::ObjectState* parentOS = item.Get ("parentNavigatorItemId");
+        if (parentOS != nullptr) {
+            parentGuid = GetGuidFromObjectState (*parentOS);
+        }
+
+        if (parentGuid == APINULLGuid) {
+            API_NavigatorSet viewMapSet = {};
+            viewMapSet.mapId = API_PublicViewMap;
+            Int32 idx = 0;
+            if (ACAPI_Navigator_GetNavigatorSet (&viewMapSet, &idx) == NoError) {
+                parentGuid = viewMapSet.rootGuid;
+            }
+        }
+
+        API_Guid createdGuid = APINULLGuid;
+        const GSErrCode err = ACAPI_Navigator_CloneProjectMapItemToViewMap (&sourceGuid, &parentGuid, &createdGuid);
+        if (err != NoError) {
+            navigatorItems (CreateErrorResponse (err, "Failed to clone navigator item to view map."));
+            continue;
+        }
+
+        navigatorItems (CreateIdObjectState ("navigatorItemId", createdGuid));
+    }
+
+    return response;
+}
+
+CreateViewsInViewMapCommand::CreateViewsInViewMapCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String CreateViewsInViewMapCommand::GetName () const
+{
+    return "CreateViewsInViewMap";
+}
+
+GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "viewsData": {
+                "type": "array",
+                "description": "Array of views to create as independent (non-clone) items in the View Map.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "Source navigator item whose database and settings are copied."
+                        },
+                        "parentNavigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "View Map folder to place the new view in. Optional; defaults to View Map root."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name for the new view. Optional; defaults to the source item name."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["navigatorItemId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/NavigatorItemIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItems"]
+    })";
+}
+
+GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> viewsData;
+    parameters.Get ("viewsData", viewsData);
+
+    GS::ObjectState response;
+    const auto& navigatorItems = response.AddList<GS::ObjectState> ("navigatorItems");
+
+    for (const GS::ObjectState& item : viewsData) {
+        const GS::ObjectState* navigatorItemIdOS = item.Get ("navigatorItemId");
+        if (navigatorItemIdOS == nullptr) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is missing."));
+            continue;
+        }
+
+        API_Guid sourceGuid = GetGuidFromObjectState (*navigatorItemIdOS);
+        if (sourceGuid == APINULLGuid) {
+            navigatorItems (CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing."));
+            continue;
+        }
+
+        API_Guid parentGuid = APINULLGuid;
+        const GS::ObjectState* parentOS = item.Get ("parentNavigatorItemId");
+        if (parentOS != nullptr) {
+            parentGuid = GetGuidFromObjectState (*parentOS);
+        }
+        if (parentGuid == APINULLGuid) {
+            API_NavigatorSet viewMapSet = {};
+            viewMapSet.mapId = API_PublicViewMap;
+            Int32 idx = 0;
+            if (ACAPI_Navigator_GetNavigatorSet (&viewMapSet, &idx) == NoError) {
+                parentGuid = viewMapSet.rootGuid;
+            }
+        }
+
+        // Step 1: clone from Project Map (only reliable way to create a
+        // floor-plan View Map item)
+        API_Guid createdGuid = APINULLGuid;
+        GSErrCode err = ACAPI_Navigator_CloneProjectMapItemToViewMap (&sourceGuid, &parentGuid, &createdGuid);
+        if (err != NoError) {
+            navigatorItems (CreateErrorResponse (err, "Failed to clone navigator item to view map."));
+            continue;
+        }
+
+        // Step 2: read the newly created navigator item
+        API_NavigatorItem createdItem = {};
+        err = ACAPI_Navigator_GetNavigatorItem (&createdGuid, &createdItem);
+        if (err != NoError) {
+            navigatorItems (CreateErrorResponse (err, "Failed to read created navigator item."));
+            continue;
+        }
+
+        // Step 3: make it independent (break the link to the Project Map) and
+        // apply optional custom name
+        createdItem.mapId         = API_PublicViewMap;
+        createdItem.isIndependent = true;
+
+        GS::UniString newName;
+        if (item.Get ("name", newName) && !newName.IsEmpty ()) {
+            GS::ucscpy (createdItem.uName, newName.ToUStr ());
+            createdItem.customName = true;
+        }
+
+        ACAPI_Navigator_ChangeNavigatorItem (&createdItem);
+
+        navigatorItems (CreateIdObjectState ("navigatorItemId", createdGuid));
+    }
+
+    return response;
+}
+
+CreateViewMapFolderCommand::CreateViewMapFolderCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String CreateViewMapFolderCommand::GetName () const
+{
+    return "CreateViewMapFolder";
+}
+
+GS::Optional<GS::UniString> CreateViewMapFolderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folderName": {
+                "type": "string",
+                "description": "Name of the new folder to create in the View Map."
+            },
+            "parentNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "Navigator item ID of the parent View Map folder. Optional; defaults to the View Map root."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["folderName"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateViewMapFolderCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemId"]
+    })";
+}
+
+GS::ObjectState CreateViewMapFolderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString folderName;
+    if (!parameters.Get ("folderName", folderName) || folderName.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "folderName is required and must not be empty.");
+    }
+
+    GS::Guid  parentGuidStorage;
+    GS::Guid* parentGuidPtr = nullptr;
+
+    const GS::ObjectState* parentOS = parameters.Get ("parentNavigatorItemId");
+    if (parentOS != nullptr) {
+        parentGuidStorage = APIGuid2GSGuid (GetGuidFromObjectState (*parentOS));
+        parentGuidPtr     = &parentGuidStorage;
+    }
+    // If no parent specified, pass nullptr → folder is created at the View Map root.
+
+    API_NavigatorItem folderItem = {};
+    folderItem.itemType   = API_FolderNavItem;
+    folderItem.mapId      = API_PublicViewMap;
+    folderItem.customName = true;
+    GS::ucscpy (folderItem.uName, folderName.ToUStr ());
+
+    const GSErrCode err = ACAPI_Navigator_NewNavigatorView (&folderItem, nullptr, parentGuidPtr, nullptr);
+    if (err != NoError) {
+        return CreateErrorResponse (err, GS::UniString::Printf ("Failed to create View Map folder (code %d).", (int) err));
+    }
+
+    GS::ObjectState response;
+    response.Add ("navigatorItemId", CreateGuidObjectState (folderItem.guid));
+    return response;
+}
+
+MoveNavigatorItemCommand::MoveNavigatorItemCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String MoveNavigatorItemCommand::GetName () const
+{
+    return "MoveNavigatorItem";
+}
+
+GS::Optional<GS::UniString> MoveNavigatorItemCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIdToMove": { "$ref": "#/NavigatorItemId" },
+            "parentNavigatorItemId": { "$ref": "#/NavigatorItemId" },
+            "previousNavigatorItemId": { "$ref": "#/NavigatorItemId" }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIdToMove", "parentNavigatorItemId"]
+    })";
+}
+
+GS::Optional<GS::UniString> MoveNavigatorItemCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState MoveNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::ObjectState* itemToMoveOS = parameters.Get ("navigatorItemIdToMove");
+    const GS::ObjectState* parentOS     = parameters.Get ("parentNavigatorItemId");
+
+    if (itemToMoveOS == nullptr || parentOS == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemIdToMove and parentNavigatorItemId are required.");
+    }
+
+    const GS::Guid sourceGuid = APIGuid2GSGuid (GetGuidFromObjectState (*itemToMoveOS));
+    const GS::Guid parentGuid = APIGuid2GSGuid (GetGuidFromObjectState (*parentOS));
+
+    const GS::ObjectState* prevOS = parameters.Get ("previousNavigatorItemId");
+    GS::Guid  prevGuidStorage;
+    GS::Guid* prevGuidPtr = nullptr;
+    if (prevOS != nullptr) {
+        prevGuidStorage = APIGuid2GSGuid (GetGuidFromObjectState (*prevOS));
+        prevGuidPtr = &prevGuidStorage;
+    }
+
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("MoveNavigatorItemCommand", [&]() -> GSErrCode {
+        err = ACAPI_Navigator_SetNavigatorItemPosition (&sourceGuid, &parentGuid, prevGuidPtr);
+        return err;
+    });
+
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to move navigator item.");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+RenameNavigatorItemCommand::RenameNavigatorItemCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String RenameNavigatorItemCommand::GetName () const
+{
+    return "RenameNavigatorItem";
+}
+
+GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemId": { "$ref": "#/NavigatorItemId" },
+            "newName":         { "type": "string" },
+            "newId":           { "type": "string" }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemId"]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::ObjectState* navIdOS = parameters.Get ("navigatorItemId");
+    if (navIdOS == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId is required.");
+    }
+
+    const API_Guid guid = GetGuidFromObjectState (*navIdOS);
+
+    API_NavigatorItem navItem = {};
+    GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to get navigator item.");
+    }
+
+    GS::UniString newName;
+    if (parameters.Get ("newName", newName) && !newName.IsEmpty ()) {
+        GS::ucsncpy (navItem.uName, newName.ToUStr (), GS::ArraySize (navItem.uName));
+        navItem.uName[GS::ArraySize (navItem.uName) - 1] = 0;
+        navItem.customName = true;
+    }
+
+    err = ACAPI_Navigator_ChangeNavigatorItem (&navItem);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to rename navigator item.");
+    }
+
+    // For layouts: set custom layout number (ID) via ChangeLayoutSets
+    GS::UniString newId;
+    if (parameters.Get ("newId", newId)) {
+        API_LayoutInfo layoutInfo = {};
+        BNZeroMemory (&layoutInfo, sizeof (layoutInfo));
+        if (ACAPI_Navigator_GetLayoutSets (&layoutInfo, &navItem.db.databaseUnId) == NoError) {
+            CHTruncate (newId.ToCStr ().Get (), layoutInfo.customLayoutNumber,
+                        GS::ArraySize (layoutInfo.customLayoutNumber));
+            layoutInfo.customLayoutNumbering = true;
+            ACAPI_Navigator_ChangeLayoutSets (&layoutInfo, &navItem.db.databaseUnId);
+            delete layoutInfo.customData;
+            layoutInfo.customData = nullptr;
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+DeleteNavigatorItemsCommand::DeleteNavigatorItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String DeleteNavigatorItemsCommand::GetName () const
+{
+    return "DeleteNavigatorItems";
+}
+
+GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemIds": { "$ref": "#/NavigatorItemIds" }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemIds"]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetResponseSchema () const
+{
+    return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
+}
+
+GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> navigatorItemIds;
+    parameters.Get ("navigatorItemIds", navigatorItemIds);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& navItemIdOS : navigatorItemIds) {
+        const API_Guid guid = GetGuidFromNavigatorItemIdArrayItem (navItemIdOS);
+        if (guid == APINULLGuid) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "navigatorItemId is corrupt or missing."));
+            continue;
+        }
+
+        API_NavigatorItem navItem = {};
+        const GSErrCode getErr = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+        if (getErr != NoError) {
+            executionResults (CreateFailedExecutionResult (getErr, "Failed to get navigator item."));
+            continue;
+        }
+
+        GSErrCode err = NoError;
+        if (navItem.itemType == API_LayoutNavItem || navItem.itemType == API_MasterLayoutNavItem) {
+            API_DatabaseInfo dbInfo = navItem.db;
+            err = ACAPI_Database_DeleteDatabase (&dbInfo);
+        } else if (navItem.itemType == API_SubSetNavItem) {
+            err = APIERR_NOTSUPPORTED;
+        } else {
+            bool silentMode = true;
+            err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
+        }
+
+        if (err == APIERR_NOTSUPPORTED) {
+            executionResults (CreateFailedExecutionResult (err, "Deleting layout subsets is not supported by the ArchiCAD API."));
+        } else if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to delete navigator item."));
+        } else {
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+    }
+
+    return response;
+}
+
+// ─── GetNavigatorItemTree ─────────────────────────────────────────────────────
+
+static GS::UniString NavigatorItemTypeToString (API_NavigatorItemTypeID t)
+{
+    switch (t) {
+        case API_UndefinedNavItem:           return "UndefinedItem";
+        case API_ProjectNavItem:             return "ProjectItem";
+        case API_StoryNavItem:               return "StoryItem";
+        case API_SectionNavItem:             return "SectionItem";
+        case API_DetailDrawingNavItem:       return "DetailDrawingItem";
+        case API_PerspectiveNavItem:         return "PerspectiveItem";
+        case API_AxonometryNavItem:          return "AxonometryItem";
+        case API_ListNavItem:                return "ListItem";
+        case API_ScheduleNavItem:            return "ScheduleItem";
+        case API_TocNavItem:                 return "TocItem";
+        case API_CameraNavItem:              return "CameraItem";
+        case API_CameraSetNavItem:           return "CameraSetItem";
+        case API_InfoNavItem:                return "InfoItem";
+        case API_HelpNavItem:                return "HelpItem";
+        case API_LayoutNavItem:              return "LayoutItem";
+        case API_MasterLayoutNavItem:        return "MasterLayoutItem";
+        case API_BookNavItem:                return "BookItem";
+        case API_MasterFolderNavItem:        return "MasterFolderItem";
+        case API_SubSetNavItem:              return "SubSetItem";
+        case API_TextListNavItem:            return "TextListItem";
+        case API_ElevationNavItem:           return "ElevationItem";
+        case API_InteriorElevationNavItem:   return "InteriorElevationItem";
+        case API_WorksheetDrawingNavItem:    return "WorksheetDrawingItem";
+        case API_DocumentFrom3DNavItem:      return "DocumentFrom3DItem";
+        case API_FolderNavItem:              return "FolderItem";
+        case API_DrawingNavItem:             return "DrawingItem";
+        default:                             return "UnknownItem";
+    }
+}
+
+static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_NavigatorMapID mapId)
+{
+    GS::ObjectState itemOS;
+    itemOS.Add ("type",            NavigatorItemTypeToString (item.itemType));
+    itemOS.Add ("name",            GS::UniString (item.uName));
+    itemOS.Add ("navigatorItemId", CreateGuidObjectState (item.guid));
+
+    GS::UniString prefix;
+    if (item.itemType == API_StoryNavItem) {
+        prefix = GS::UniString::Printf ("%d", (int) item.floorNum);
+    }
+    itemOS.Add ("prefix", prefix);
+
+    item.mapId = mapId;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) == NoError && !children.IsEmpty ()) {
+        const auto& childList = itemOS.AddList<GS::ObjectState> ("children");
+        for (const API_NavigatorItem& child : children) {
+            GS::ObjectState wrapper;
+            wrapper.Add ("navigatorItem", NavigatorItemToObjectState (child, mapId));
+            childList (wrapper);
+        }
+    }
+
+    return itemOS;
+}
+
+GetNavigatorItemTreeCommand::GetNavigatorItemTreeCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetNavigatorItemTreeCommand::GetName () const
+{
+    return "GetNavigatorItemTree";
+}
+
+GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorMapId": {
+                "type": "string",
+                "enum": ["PublicViewMap", "ProjectMap", "LayoutBook", "PublisherSets"],
+                "description": "The navigator map to retrieve."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorMapId"]
+    })";
+}
+
+GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString navigatorMapIdStr;
+    parameters.Get ("navigatorMapId", navigatorMapIdStr);
+
+    API_NavigatorMapID mapId = API_PublicViewMap;
+    if (navigatorMapIdStr == "ProjectMap")         mapId = API_ProjectMap;
+    else if (navigatorMapIdStr == "LayoutBook")    mapId = API_LayoutMap;
+    else if (navigatorMapIdStr == "PublisherSets") mapId = API_PublisherSets;
+
+    API_NavigatorSet navSet = {};
+    navSet.mapId = mapId;
+    Int32 idx = 0;
+    GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&navSet, &idx);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get navigator set.");
+    }
+
+    API_NavigatorItem rootItem = {};
+    err = ACAPI_Navigator_GetNavigatorItem (&navSet.rootGuid, &rootItem);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get root navigator item.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("navigatorItemTree", NavigatorItemToObjectState (rootItem, mapId));
+    return response;
 }

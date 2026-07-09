@@ -689,17 +689,29 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates independent Worksheet databases."
         );
-        err |= RegisterCommand<CreateLayoutsCommand> (
+        err |= RegisterCommand<CreateLayoutCommand> (
             navigatorCommands, "1.4.0",
             "Creates Layouts and their backing master layouts."
         );
-        err |= RegisterCommand<CreateSubsetsCommand> (
+        err |= RegisterCommand<CreateLayoutSubsetCommand> (
             navigatorCommands, "1.4.0",
             "Creates Layout Book subsets."
         );
         err |= RegisterCommand<CreateDrawingsCommand> (
             navigatorCommands, "1.4.0",
             "Creates Drawing elements on the specified or active layout from navigator items."
+        );
+        err |= RegisterCommand<GetLayoutSettingsCommand> (
+            navigatorCommands, "1.1.7",
+            "Gets settings of layouts, including Layout Info Panel custom data fields."
+        );
+        err |= RegisterCommand<SetLayoutSettingsCommand> (
+            navigatorCommands, "1.1.7",
+            "Sets settings of layouts, including Layout Info Panel custom data fields."
+        );
+        err |= RegisterCommand<GetLayoutCustomSchemeCommand> (
+            navigatorCommands, "1.1.7",
+            "Gets the Layout Info Panel custom field definitions (name and key) from Book Settings."
         );
         err |= RegisterCommand<GetModelViewOptionsCommand> (
             navigatorCommands, "1.1.4",
@@ -717,6 +729,22 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"
         );
+        err |= RegisterCommand<SetViewRotationCommand> (
+            navigatorCommands, "1.1.7",
+            "Set the rotation angle of 2D views via their floor plan database."
+        );
+        err |= RegisterCommand<CloneProjectMapItemToViewMapCommand> (
+            navigatorCommands, "1.1.7",
+            "Clones Project Map viewpoints into the View Map, optionally into a specified folder."
+        );
+        err |= RegisterCommand<CreateViewsInViewMapCommand> (
+            navigatorCommands, "1.1.7",
+            "Creates independent (non-clone) navigator views in the View Map by copying database and settings from source items."
+        );
+        err |= RegisterCommand<CreateViewMapFolderCommand> (
+            navigatorCommands, "1.1.7",
+            "Creates a new folder in the View Map."
+        );
         err |= RegisterCommand<Set3DCutPlanesCommand> (
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
@@ -728,6 +756,22 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
             "Creates Section elements on the floor plan."
+        );
+        err |= RegisterCommand<MoveNavigatorItemCommand> (
+            navigatorCommands, "1.1.7",
+            "Moves a navigator item to a new parent in the navigator tree."
+        );
+        err |= RegisterCommand<RenameNavigatorItemCommand> (
+            navigatorCommands, "1.1.7",
+            "Renames a navigator item or changes its ID."
+        );
+        err |= RegisterCommand<DeleteNavigatorItemsCommand> (
+            navigatorCommands, "1.1.7",
+            "Deletes navigator items from the navigator tree."
+        );
+        err |= RegisterCommand<GetNavigatorItemTreeCommand> (
+            navigatorCommands, "1.1.7",
+            "Returns the full navigator item tree for the specified map."
         );
         AddCommandGroup (navigatorCommands);
     }
