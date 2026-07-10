@@ -1180,7 +1180,9 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
     auto height = GetOptionalDouble (details, "height");
     if (height.HasValue ()) {
         element.wall.height = height.Get ();
+        element.wall.relativeTopStory = 0;
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, height);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, relativeTopStory);
         changed = true;
     }
     auto offset = GetOptionalDouble (details, "offset");
@@ -1332,7 +1334,9 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     auto height = GetOptionalDouble (details, "height");
     if (height.HasValue ()) {
         element.column.height = height.Get ();
+        element.column.relativeTopStory = 0;
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, height);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, relativeTopStory);
         changed = true;
     }
     auto bottomOffset = GetOptionalDouble (details, "bottomOffset");
@@ -1584,6 +1588,7 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
         element.wall.angle = arcAngle.Get ();
     }
     element.wall.height = height;
+    element.wall.relativeTopStory = 0;
     element.wall.thickness = thickness;
     element.wall.referenceLineLocation = APIWallRefLine_Center;
     GS::UniString referenceLineLocation;
