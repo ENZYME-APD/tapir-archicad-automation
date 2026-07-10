@@ -1857,26 +1857,16 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
 
     // Allocate new baseline: polyline (not polygon), so no closing vertex needed
     // Coords: index 1..nCoords (1-based), index 0 unused
+    // edgeData/vertexData are intentionally left null: ACAPI_Element_Create derives them
+    // from the baseline geometry (see the Element_Test example in the DevKit). Pre-filling
+    // them marks every edge as a steps segment, which makes multi-segment (L/U-shaped)
+    // baselines fail with -2130313215 (#444).
     memo.stairBaseLine.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.edgeData = reinterpret_cast<API_StairPolylineEdgeData*> (BMAllocatePtr (nCoords * sizeof (API_StairPolylineEdgeData), ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.vertexData = reinterpret_cast<API_StairPolylineVertexData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineVertexData), ALLOCATE_CLEAR, 0));
 
     for (Int32 i = 0; i < nCoords; ++i) {
         (*memo.stairBaseLine.coords)[i + 1] = Get2DCoordinateFromObjectState (baseLinePoints[i]);
-
-        // Set vertex data
-        memo.stairBaseLine.vertexData[i + 1].type = APISP_BaseLine;
-        memo.stairBaseLine.vertexData[i + 1].geometryType = APISG_Vertex;
-        memo.stairBaseLine.vertexData[i + 1].subElemId = 0;
-
-        // Set edge data (between vertices, so nCoords-1 edges)
-        if (i < nCoords - 1) {
-            memo.stairBaseLine.edgeData[i].type = APISP_BaseLine;
-            memo.stairBaseLine.edgeData[i].geometryType = APISG_Edge;
-            memo.stairBaseLine.edgeData[i].subElemId = 0;
-        }
     }
 
     (*memo.stairBaseLine.pends)[1] = nCoords;
