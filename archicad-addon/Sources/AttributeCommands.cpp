@@ -1274,8 +1274,9 @@ static GS::Optional<Coord> GetProfileAnchorPosition (const ProfileVectorImage& p
 #ifdef ServerMainVers_2700
 static Int32 ToPlainAttrIndex (const ADB::AttributeIndex& idx)
 {
-    // Renamed between AC27 and AC29 (ToGSAttributeIndex () -> ToGSAttributeIndex_Deprecated ()).
-#ifdef ServerMainVers_2900
+    // Renamed between AC27 and AC28 (ToGSAttributeIndex () -> ToGSAttributeIndex_Deprecated ()) - confirmed via
+    // CI failure that AC28 already has AC29's shape, not AC27's; this is not a ServerMainVers_2900-only change.
+#ifdef ServerMainVers_2800
     return idx.ToGSAttributeIndex_Deprecated ();
 #else
     return idx.ToGSAttributeIndex ();
@@ -1289,12 +1290,13 @@ static Int32 ToPlainAttrIndex (GSAttributeIndex idx)
 #endif
 
 // Reverse of ToPlainAttrIndex, for writing a resolved attribute index back into a HatchObject/ProfileItem/
-// ProfileEdgeData setter. AC27's AttributeIndex(GSAttributeIndex) constructor is public; AC29 made the
-// equivalent constructor private and requires going through the CreateAttributeIndex() friend function.
+// ProfileEdgeData setter. AC27's AttributeIndex(GSAttributeIndex) constructor is public; AC28 made the
+// equivalent constructor private and requires going through the CreateAttributeIndex() friend function (same
+// CI-confirmed AC28, not AC29, boundary as ToPlainAttrIndex above).
 #ifdef ServerMainVers_2700
 static ADB::AttributeIndex FromPlainAttrIndex (Int32 idx)
 {
-#ifdef ServerMainVers_2900
+#ifdef ServerMainVers_2800
     return ADB::CreateAttributeIndex (idx);
 #else
     return ADB::AttributeIndex ((GSAttributeIndex) idx);
@@ -3494,7 +3496,11 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetResponseSchema () const
 
 static void SetBitPattern (const GS::UniString& hex, API_Pattern& pattern)
 {
-    const char* hexCStr = hex.ToCStr ().Get ();
+    // hex.ToCStr() returns a temporary owning the buffer - it must be kept alive as a named local for as long as
+    // hexCStr is used, or the pointer dangles past the end of this statement (caught by Clang's -Wdangling on Mac
+    // CI, silently not diagnosed by MSVC on Windows).
+    const auto hexCToken = hex.ToCStr ();
+    const char* hexCStr = hexCToken.Get ();
     size_t len = strlen (hexCStr);
     for (UInt32 i = 0; i < 8 && (i * 2 + 1) < len; ++i) {
         char byteChars[3] = { hexCStr[i * 2], hexCStr[i * 2 + 1], 0 };
