@@ -220,6 +220,11 @@ inline GSErrCode ACAPI_Element_UI2ElemPriority (GS::Int32* uiPriority, GS::Int32
     return ACAPI_Goodies (APIAny_UI2ElemPriorityID, uiPriority, elemPriority);
 }
 
+inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int32* uiPriority)
+{
+    return ACAPI_Goodies (APIAny_Elem2UIPriorityID, elemPriority, uiPriority);
+}
+
 inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo>* activeLibs, Int32* embeddedLibraryIndex = nullptr)
 {
     return ACAPI_Environment (APIEnv_GetLibrariesID, activeLibs, embeddedLibraryIndex);

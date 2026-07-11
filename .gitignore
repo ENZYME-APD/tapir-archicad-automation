@@ -1,3 +1,6 @@
+# ArchiCAD add-on CMake build output (per-version build directories)
+archicad-addon/Build_AC*/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
