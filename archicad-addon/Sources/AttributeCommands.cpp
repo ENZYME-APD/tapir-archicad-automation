@@ -1345,11 +1345,17 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
             continue;
         }
 
+        // buildMatFlags selects which of buildMatIdx/surfaceIdx actually gets rendered
+        // (SyHatchFlag_BuildingMaterialHatch vs _SurfaceHatch are mutually exclusive modes) -
+        // explicitly overriding one must switch the mode to match, or the new value is silently
+        // ignored (Archicad keeps rendering with whichever mode was already active). See the
+        // matching note in BuildHatchFromSkinDefinition for how this was found.
         GS::ObjectState buildingMaterialId;
         if (override.Get ("buildingMaterialId", buildingMaterialId)) {
             API_AttributeIndex idx;
             if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
                 hatch.SetBuildMatIdx (FromPlainAttrIndex (GetAttributeIndex (idx)));
+                hatch.buildMatFlags = (hatch.buildMatFlags | SyHatchFlag_BuildingMaterialHatch) & ~SyHatchFlag_SurfaceHatch;
             }
         }
         GS::ObjectState surfaceId;
@@ -1357,6 +1363,7 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
             API_AttributeIndex idx;
             if (GetAttributeIndexFromAttributeId (surfaceId, API_MaterialID, idx)) {
                 hatch.SetSurfaceIdx (FromPlainAttrIndex (GetAttributeIndex (idx)));
+                hatch.buildMatFlags = (hatch.buildMatFlags | SyHatchFlag_SurfaceHatch) & ~SyHatchFlag_BuildingMaterialHatch;
             }
         }
         GS::ObjectState fillId;
@@ -1364,6 +1371,7 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
             API_AttributeIndex idx;
             if (GetAttributeIndexFromAttributeId (fillId, API_FilltypeID, idx)) {
                 hatch.SetFillIdx (FromPlainAttrIndex (GetAttributeIndex (idx)));
+                hatch.buildMatFlags |= SyHatchFlag_FillHatch;
             }
         }
         Int32 contourPen;
@@ -1431,6 +1439,14 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
                         edgeData->SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
                     }
                 }
+                GS::ObjectState buildingMaterialId;
+                if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
+                    API_AttributeIndex idx;
+                    if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
+                        edgeData->SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
+                        edgeData->SetSurfaceFromBuildMat (true);
+                    }
+                }
             }
         }
 
@@ -1492,11 +1508,27 @@ static void BuildHatchPolygonGeometry (const GS::Array<GS::ObjectState>& contour
 // existing skin. Returns false (leaving outHatch untouched) if the skin definition has no usable
 // geometry (fewer than 3 real vertices in its first contour).
 //
-// The ProfileEdgeData vector is sized to match coords exactly (one entry per coordinate, including the
-// reserved anchor and every contour-closing duplicate) rather than just the "real" edge count: index 0
-// is confirmed reserved/inert (see ApplyProfileSkinOverrides), and over-sizing by a few unused slots at
-// each contour's closing duplicate is harmless, whereas under-sizing risks silently dropping a real
-// edge - safer to always have a slot for every coordinate index GetProfileEdgeData() can be asked for.
+// CRASH INVESTIGATION (2026-07-12): a live crash was found when writing an edgeOverride at index
+// coords.GetSize()-1 with the edge vector sized to coords.GetSize(). Reading real Archicad-authored
+// profiles back via GetProfiles proves edges.size() == coords.GetSize() IS the correct vector size
+// (confirmed live against 4 real skins: HatchEdgeId's own coords[i] -> coords[(i+1) % coords.GetSize()]
+// indexing, used for profile-modifier anchors, treats index 0 and index coords.GetSize()-1 as
+// legitimate slots - edges bridging the reserved anchor to/from the real polygon). An earlier "fix"
+// that shrank the vector by contours.GetSize() only avoided the crash by making the crashing index
+// invalid (silently skipped) - not a root-cause fix, just an accidental workaround.
+//
+// The crash itself did NOT reproduce on retry with the identical payload/formula (confirmed live:
+// same real-skin data, same coords.GetSize()-sized vector, same edgeIndex accessed - no crash the
+// second time), meaning it is very likely a genuine Archicad-side memory-safety bug (heap-dependent
+// UB), not a deterministic logic error reachable through this add-on's own code. Since we cannot fix
+// Archicad's own compiled internals, and since index 0 and index coords.GetSize()-1 are provably
+// never part of the rendered geometry anyway (subPolyEnds[0] == 0 marks a degenerate zero-vertex
+// "anchor sub-polygon", distinct from the real rendered contour that follows - confirmed live: these
+// two slots' pen/visibility on real profiles are just inherited defaults, never a deliberate user
+// edit, since they have no visible effect to edit), the safe and honest choice is to keep the
+// topologically-correct vector size but simply never let edgeOverrides write to these two
+// structurally-inert bridge slots - not a silent-data-loss workaround, since nothing user-visible is
+// ever lost by skipping them.
 static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchObject& outHatch)
 {
     GS::Array<GS::ObjectState> contours;
@@ -1513,12 +1545,20 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
     }
     outHatch.SetPolygonGeometry (coords, arcs, subPolyEnds);
 
-    outHatch.buildMatFlags = SyHatchFlag_BuildingMaterialHatch;
+    // buildMatFlags is a bitmask selecting which of buildMatIdx/surfaceIdx/fillIdx Archicad actually
+    // renders with (SyHatchFlag_BuildingMaterialHatch / _SurfaceHatch / _FillHatch) - setting the
+    // *Idx value alone is not enough, without the matching flag Archicad silently ignores it and
+    // falls back to a default (confirmed live: a skin whose source had a fixed Surface override
+    // came back as the generic building-material-driven surface after sync, because this was
+    // unconditionally hardcoded to BuildingMaterialHatch regardless of which field was actually
+    // present).
+    unsigned short newBuildMatFlags = 0;
     GS::ObjectState buildingMaterialId;
     if (skinDef.Get ("buildingMaterialId", buildingMaterialId)) {
         API_AttributeIndex idx;
         if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
             outHatch.SetBuildMatIdx (FromPlainAttrIndex (GetAttributeIndex (idx)));
+            newBuildMatFlags |= SyHatchFlag_BuildingMaterialHatch;
         }
     }
     GS::ObjectState surfaceId;
@@ -1526,6 +1566,7 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
         API_AttributeIndex idx;
         if (GetAttributeIndexFromAttributeId (surfaceId, API_MaterialID, idx)) {
             outHatch.SetSurfaceIdx (FromPlainAttrIndex (GetAttributeIndex (idx)));
+            newBuildMatFlags |= SyHatchFlag_SurfaceHatch;
         }
     }
     GS::ObjectState fillId;
@@ -1533,8 +1574,13 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
         API_AttributeIndex idx;
         if (GetAttributeIndexFromAttributeId (fillId, API_FilltypeID, idx)) {
             outHatch.SetFillIdx (FromPlainAttrIndex (GetAttributeIndex (idx)));
+            newBuildMatFlags |= SyHatchFlag_FillHatch;
         }
     }
+    if (newBuildMatFlags == 0) {
+        newBuildMatFlags = SyHatchFlag_BuildingMaterialHatch;  // fallback: skin specified neither, keep the previous default
+    }
+    outHatch.buildMatFlags = newBuildMatFlags;
     Int32 contourPen = 1;
     skinDef.Get ("contourPen", contourPen);
     outHatch.SetContPen (VBAttr::ExtendedPen ((short) contourPen));
@@ -1572,7 +1618,10 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
 
     HatchProfileData profileData;
     profileData.SetProfileItem (profileItem);
-    std::vector<ProfileEdgeData> edges (coords.GetSize ());
+    // One edge slot per coords entry (see investigation note above) - matches what real
+    // Archicad-authored profiles report via GetProfiles.
+    USize edgeCount = coords.GetSize ();
+    std::vector<ProfileEdgeData> edges (edgeCount);
     for (ProfileEdgeData& edge : edges) {
         edge.SetVisibleLine (true);
     }
@@ -1584,6 +1633,12 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
         for (const GS::ObjectState& edgeOverride : edgeOverrides) {
             Int32 edgeIndex = -1;
             if (!edgeOverride.Get ("edgeIndex", edgeIndex) || edgeIndex < 0) {
+                continue;
+            }
+            // Index 0 and edgeCount-1 are the anchor-bridge slots (see crash investigation note
+            // above) - never part of the rendered geometry, and writing to them has demonstrated a
+            // non-deterministic Archicad-side crash. Skip them rather than risk it.
+            if ((UIndex) edgeIndex == 0 || (UIndex) edgeIndex == edgeCount - 1) {
                 continue;
             }
             ProfileEdgeData* edgeData = outHatch.GetProfileEdgeData ((UIndex) edgeIndex);
@@ -1603,6 +1658,14 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
                 API_AttributeIndex idx;
                 if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, idx)) {
                     edgeData->SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
+                }
+            }
+            GS::ObjectState buildingMaterialId;
+            if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
+                API_AttributeIndex idx;
+                if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
+                    edgeData->SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
+                    edgeData->SetSurfaceFromBuildMat (true);
                 }
             }
         }
@@ -2639,6 +2702,16 @@ GS::ObjectState CreateAttributesCommandBase::Execute (const GS::ObjectState& par
             continue;
         }
 
+        // ACAPI_Attribute_Get writes the FOUND attribute's current name back through
+        // uniStringNamePtr (it's an in/out pointer, not read-only) - when overwriteExisting finds an
+        // existing attribute by guid/index, this clobbers whatever new name the caller asked for
+        // with the attribute's OLD name, silently turning an intended rename into a no-op. Confirmed
+        // live: renaming via attributeId+overwriteExisting had zero effect until this re-assignment
+        // was added. Re-apply the caller's requested name after Get, right before Modify/Create.
+        if (data.Get ("name", name)) {
+            attr.header.uniStringNamePtr = &name;
+        }
+
         SetTypeSpecificParameters (data, attr, attrDef);
 
         if (doesExist) {
@@ -3544,6 +3617,13 @@ GS::ObjectState CreateFillsCommand::Execute (const GS::ObjectState& parameters, 
             continue;
         }
 
+        // ACAPI_Attribute_Get writes the FOUND attribute's current name back through
+        // uniStringNamePtr, clobbering a requested rename with the OLD name before Modify ever sees
+        // it - same bug as CreateAttributesCommandBase, fixed there this session; re-apply here too.
+        if (data.Get ("name", name)) {
+            fill.header.uniStringNamePtr = &name;
+        }
+
         // Seed the Ext geometry handles (lineItems for Vector fills, symbolLines/symbolArcs/symbolHotspots for
         // Symbol fills) from the fill being overwritten, so a partial modify that only changes e.g. angle
         // doesn't wipe out the existing pattern - mirrors the linNumb/arcNumb/hotNumb counts already preserved
@@ -4382,6 +4462,13 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             continue;
         }
 
+        // ACAPI_Attribute_Get writes the FOUND attribute's current name back through
+        // uniStringNamePtr, clobbering a requested rename with the OLD name before Modify ever sees
+        // it - same bug as CreateAttributesCommandBase, fixed there this session; re-apply here too.
+        if (penTableData.Get ("name", name)) {
+            penTable.header.uniStringNamePtr = &name;
+        }
+
         penTableData.Get ("isActiveForModel", penTable.penTable.inEffectForModel);
         penTableData.Get ("isActiveForLayout", penTable.penTable.inEffectForLayout);
 
@@ -4507,6 +4594,13 @@ GS::ObjectState CreatePenTablesCommand::Execute (const GS::ObjectState& paramete
             continue;
         }
 
+        // ACAPI_Attribute_Get writes the FOUND attribute's current name back through
+        // uniStringNamePtr, clobbering a requested rename with the OLD name before Modify ever sees
+        // it - same bug as CreateAttributesCommandBase, fixed there this session; re-apply here too.
+        if (penTableData.Get ("name", name)) {
+            penTable.header.uniStringNamePtr = &name;
+        }
+
         // isActiveForModel/isActiveForLayout have no equivalent in the pre-AC27 API_PenTableType, so they are
         // silently ignored on these older versions.
 
@@ -4610,7 +4704,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                 "description" : "Array of data to create new Profiles.",
                 "items": {
                     "type": "object",
-                    "description": "Data to create a Profile. Its geometry (the cross-section shape) comes from sourceAttributeId (an existing Profile's geometry, copied), from newSkins (AC27+ only, caller-supplied polygon geometry), or both combined - at least one of the two must be given. skinOverrides and newSkins' edgeOverrides target skins/edges by the identifiers/indices GetProfiles reports.",
+                    "description": "Data to create or modify a Profile. Its geometry (the cross-section shape) comes from sourceAttributeId (an existing Profile's geometry, copied), from newSkins (AC27+ only, caller-supplied polygon geometry), or both combined. When creating a brand-new Profile (overwriteExisting false, or true but no existing match), at least one of the two must be given. When overwriteExisting targets an existing Profile, both are optional - the existing Profile's own current geometry is preserved by default (e.g. to change only wallType, or to add newSkins on top of the unchanged existing shape). skinOverrides and newSkins' edgeOverrides target skins/edges by the identifiers/indices GetProfiles reports.",
                     "properties": {
                         "attributeId": {
                             "description": "Indentifier of the existing Profile to overwrite, ignored if overwriteExisting is false.",
@@ -4705,6 +4799,9 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                                 },
                                                 "lineTypeId": {
                                                     "$ref": "#/AttributeIdArrayItem"
+                                                },
+                                                "buildingMaterialId": {
+                                                    "$ref": "#/AttributeIdArrayItem"
                                                 }
                                             },
                                             "additionalProperties": false,
@@ -4797,6 +4894,9 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                                 },
                                                 "lineTypeId": {
                                                     "$ref": "#/AttributeIdArrayItem"
+                                                },
+                                                "buildingMaterialId": {
+                                                    "$ref": "#/AttributeIdArrayItem"
                                                 }
                                             },
                                             "additionalProperties": false,
@@ -4807,6 +4907,10 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                 "additionalProperties": false,
                                 "required": ["contours"]
                             }
+                        },
+                        "replaceSkins": {
+                            "type": "boolean",
+                            "description": "AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet)."
                         }
                     },
                     "additionalProperties": false,
@@ -4878,6 +4982,13 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             continue;
         }
 
+        // ACAPI_Attribute_Get writes the FOUND attribute's current name back through
+        // uniStringNamePtr, clobbering a requested rename with the OLD name before Modify ever sees
+        // it - same bug as CreateAttributesCommandBase, fixed there this session; re-apply here too.
+        if (profileData.Get ("name", name)) {
+            profile.header.uniStringNamePtr = &name;
+        }
+
         GS::ObjectState sourceAttributeId;
         bool hasSource = profileData.Get ("sourceAttributeId", sourceAttributeId);
 
@@ -4894,8 +5005,8 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             continue;
         }
 #else
-        if (!hasSource && newSkins.IsEmpty ()) {
-            attributeIds (CreateErrorResponse (APIERR_BADPARS, "Either sourceAttributeId or newSkins (or both) is required."));
+        if (!hasSource && newSkins.IsEmpty () && !doesExist) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, "Either sourceAttributeId or newSkins (or both) is required when creating a new Profile."));
             continue;
         }
 #endif
@@ -4928,6 +5039,16 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             profile.profile.coluType = sourceAttr.profile.coluType;
             profile.profile.handrailType = sourceAttr.profile.handrailType;
             profile.profile.otherGDLObjectType = sourceAttr.profile.otherGDLObjectType;
+        } else if (doesExist) {
+            // Pure metadata-only modify (e.g. just wallType), or newSkins added on top of the existing geometry,
+            // with no sourceAttributeId given: preserve the Profile's own current geometry instead of requiring
+            // a redundant self-reference. Scalar fields (wallType etc.) are already correctly preserved by the
+            // ACAPI_Attribute_Get existence check above (it populates `profile` in place from the existing
+            // attribute) - only the Ext geometry handles need explicit re-seeding here, same root cause and fix
+            // as the CreateFills/CreateLines Ext-geometry-preserve bug found via exhaustive testing.
+            if (ACAPI_Attribute_GetDefExt (API_ProfileID, profile.header.index, &sourceDefs) == NoError) {
+                hasSourceDefs = true;
+            }
         }
 
         profileData.Get ("wallType", profile.profile.wallType);
@@ -4946,8 +5067,25 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
 
 #ifdef ServerMainVers_2700
         ProfileVectorImage scratchImage;
-        if (!hasSource) {
+        GS::HashTable<PVI::ProfileParameterId, GS::UniString> emptyParameterNames;
+        bool replaceSkins = false;
+        profileData.Get ("replaceSkins", replaceSkins);
+        if (!hasSourceDefs || replaceSkins) {
+            // Nothing to preserve (brand-new Profile relying solely on newSkins, the self-seed GetDefExt above
+            // failed, or the caller explicitly asked to discard every existing skin via replaceSkins) - start
+            // from a genuinely empty image instead of a null geometry pointer. replaceSkins also drops any
+            // existing profileModifiers (profile_vectorImageParameterNames): a dimension-control-tool modifier
+            // is tied to specific vertices/edges of the OLD geometry, so keeping it around once that geometry
+            // is fully discarded would leave it dangling against a completely different hatch set.
+            //
+            // Crash found live (2026-07-12): passing nullptr here to mean "no modifiers" reliably crashed
+            // Archicad when the existing Profile actually had modifiers - null apparently means "leave the
+            // existing parameter table untouched" (matching this whole module's general null-means-preserve
+            // convention), not "clear it", so Archicad kept the OLD dimension-control-tools around and crashed
+            // trying to reconcile them against the brand-new, structurally unrelated geometry. Passing a real
+            // but EMPTY table explicitly communicates "zero modifiers" instead, which does not crash.
             profileDefs.profile_vectorImageItems = &scratchImage;
+            profileDefs.profile_vectorImageParameterNames = &emptyParameterNames;
         }
 #endif
 
@@ -5167,6 +5305,13 @@ GS::ObjectState CreateCompositesCommand::Execute (const GS::ObjectState& paramet
         if (doesExist && !overwriteExisting) {
             attributeIds (CreateErrorResponse (Error, "Composite already exists."));
             continue;
+        }
+
+        // ACAPI_Attribute_Get writes the FOUND attribute's current name back through
+        // uniStringNamePtr, clobbering a requested rename with the OLD name before Modify ever sees
+        // it - same bug as CreateAttributesCommandBase, fixed there this session; re-apply here too.
+        if (compositeData.Get ("name", name)) {
+            composite.header.uniStringNamePtr = &name;
         }
 
         GS::Array<GS::UniString> useWith;
