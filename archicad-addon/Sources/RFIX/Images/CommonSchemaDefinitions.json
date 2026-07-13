@@ -3489,6 +3489,340 @@
             "polygonCoordinates"
         ]
     },
+    "StoryVisibility": {
+        "type": "object",
+        "description": "Per-story visibility settings (API_StoryVisibility): the home story, plus how many stories above/below also show this element.",
+        "properties": {
+            "showOnHome": {
+                "type": "boolean",
+                "description": "Show on the home story."
+            },
+            "showAllAbove": {
+                "type": "boolean",
+                "description": "Show on all stories above the home story."
+            },
+            "showAllBelow": {
+                "type": "boolean",
+                "description": "Show on all stories below the home story."
+            },
+            "showRelAbove": {
+                "type": "integer",
+                "description": "Show this many stories above the home story (ignored when showAllAbove is true)."
+            },
+            "showRelBelow": {
+                "type": "integer",
+                "description": "Show this many stories below the home story (ignored when showAllBelow is true)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "MorphBody": {
+        "description": "A Morph's full body geometry: an indexed vertex list plus one entry per face (polygon). Shared shape between GetDetailsOfElements' output and CreateMorphs/ModifyMorphs' input - what Get reports is what Create/Modify accept back. There is no fillet/chamfer operation in the Archicad API - a caller wanting rounded geometry must supply the already-tessellated facets here; edgeOverrides only controls how an existing straight edge is DISPLAYED (hidden/visible/smooth-shaded), not its shape.",
+        "type": "object",
+        "properties": {
+            "bodyType": {
+                "type": "string",
+                "description": "Whether the body is a closed solid or an open surface shell. Reported accurately on Get; on Create/Modify this is set on the element but a confirmed Archicad SDK bug means it may not take effect (bodyType has been observed always coming back Solid regardless of what was requested - see edgeOverrides' note).",
+                "enum": ["Solid", "Surface"]
+            },
+            "isClosed": {
+                "type": "boolean",
+                "description": "READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed (Modeler::MeshBody::IsClosedBody): true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing."
+            },
+            "edgeDefault": {
+                "type": "string",
+                "description": "Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get; on Create/Modify this is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).",
+                "enum": ["HardVisible", "HardHidden", "SoftHidden"]
+            },
+            "vertices": {
+                "type": "array",
+                "description": "Flat, indexed vertex list, local to the Morph's own placement (not world coordinates).",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 4
+            },
+            "polygons": {
+                "type": "array",
+                "description": "One entry per face. Each face is a closed loop of vertex indices (into `vertices`), counterclockwise as seen from outside the body.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertexIds": {
+                            "type": "array",
+                            "description": "Counterclockwise outer-loop vertex indices for this face.",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 3
+                        },
+                        "holes": {
+                            "type": "array",
+                            "description": "Optional hole loops cut out of this face, each a clockwise list of vertex indices.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "vertexIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "minItems": 3
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "vertexIds"
+                                ]
+                            }
+                        },
+                        "surfaceId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Optional per-face Surface (render material) override. Falls back to the Morph's own default surface when omitted. Named surfaceId, not buildingMaterialId - confirmed live that Archicad's per-face body override is a Surface index, not a building material (a Morph's building material is always a single whole-volume property, element.morph.buildingMaterial, exposed as the sibling 'buildingMaterialId' field on MorphDetails/CreateMorphs/ModifyMorphs - never per-face). Version-dependent write bug, isolated live: silently lost on Create on Archicad 25 (presumably 26 too - same pre-2700 API_OverriddenAttribute shape, though Archicad 26 itself could not be installed to confirm live), confirmed fixed and working correctly from Archicad 27 onward (27 and 29 both verified). No SDK/build available locally to check Archicad 28."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertexIds"
+                    ]
+                },
+                "minItems": 4
+            },
+            "edgeOverrides": {
+                "type": "array",
+                "description": "READ-ONLY in practice: reported accurately by GetDetailsOfElements (reflecting whatever Archicad itself currently has), but CreateMorphs/ModifyMorphs silently ignore this field on input - per-edge display status cannot be set by an add-on due to a confirmed, still-unresolved Archicad SDK bug (element.morph.edgeType/bodyType are silently discarded by ACAPI_Element_Create/Change; see the GRAPHISOFT community forum thread 'Help with setting morph's hidden edges in the API'). Sparse when present - only edges whose display status differs from edgeDefault get an entry. Identifies an edge by the (unordered) pair of vertex indices it connects.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertexIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                        },
+                        "hidden": {
+                            "type": "boolean",
+                            "description": "Hide this edge's line entirely."
+                        },
+                        "smooth": {
+                            "type": "boolean",
+                            "description": "Shade the two adjacent faces smoothly across this edge instead of as a hard crease - the 'aide a la courbe' rounded-look hint. Does not change actual geometry."
+                        },
+                        "silhouetteOnly": {
+                            "type": "boolean",
+                            "description": "Show this edge's line only where it forms a silhouette/contour from the current viewpoint."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertexIds"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertices",
+            "polygons"
+        ]
+    },
+    "MorphDetails": {
+        "type": "object",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate3D",
+                "description": "Translation component of the Morph's placement transform (tranmat's origin column)."
+            },
+            "xAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "X axis of the Morph's placement transform (tranmat's first column). Omit on Create to get an identity rotation; give all three of xAxis/yAxis/zAxis together or none at all."
+            },
+            "yAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "Y axis of the Morph's placement transform (tranmat's second column). Give all three of xAxis/yAxis/zAxis together or none at all."
+            },
+            "zAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "Z axis of the Morph's placement transform (tranmat's third column). Give all three of xAxis/yAxis/zAxis together or none at all."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The Morph's building material - a single, whole-volume property (what the mass is 'made of', governing cut-fill/quantity takeoff), NOT settable per face. Per-face appearance is controlled separately by each polygon's own surfaceId (see MorphBody) - confirmed live these are two independent, unrelated attributes (a Morph can have one uniform building material while showing a different Surface finish on each face)."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The Morph's own default Surface (element.morph.material) - used for any face that has no per-face surfaceId override of its own (see MorphBody polygons[].surfaceId). Distinct from buildingMaterialId (the whole-volume material). Confirmed live that Archicad silently discards this specific field when set through ACAPI_Element_Create alone (reproduced identically on Archicad 27 and 29 - not a version-specific issue, unlike polygons[].surfaceId below); CreateMorphs works around this transparently with an internal follow-up Change right after Create, so this field behaves correctly end-to-end despite the underlying quirk."
+            },
+            "body": {
+                "$ref": "#/MorphBody"
+            },
+            "castShadow": {
+                "type": "boolean",
+                "description": "Whether the body casts shadow in 3D."
+            },
+            "receiveShadow": {
+                "type": "boolean",
+                "description": "Whether the body receives shadow in 3D."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, the per-story visibility (showContour/showFill) is calculated automatically from the Morph's vertical extent instead of using the explicit values."
+            },
+            "showContour": {
+                "$ref": "#/StoryVisibility",
+                "description": "Which stories display this Morph's contour. Reported accurately on Get, but confirmed live that Create/Modify do not reliably apply it (showAllBelow/showRelAbove/showRelBelow silently come back reset even when explicitly set and isAutoOnStoryVisibility is false) - the same class of confirmed Archicad SDK write bug as bodyType/edgeType/level (see MorphBody's notes). Set on the element regardless since doing so is harmless and forward-compatible."
+            },
+            "showFill": {
+                "$ref": "#/StoryVisibility",
+                "description": "Which stories display this Morph's floor plan fill. Same write-reliability caveat as showContour."
+            },
+            "linkToSettings": {
+                "type": "object",
+                "description": "Mode of linking the Morph to its home story.",
+                "properties": {
+                    "homeStoryDifference": {
+                        "type": "integer",
+                        "description": "Difference of the home story from the current story."
+                    },
+                    "newCreationMode": {
+                        "type": "boolean",
+                        "description": "If true, the story link is relative to the current story (homeStoryDifference is used); if false, the element's absolute floor index is used instead."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "displayOption": {
+                "type": "string",
+                "description": "Floor plan display option.",
+                "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+            },
+            "viewDepthLimitation": {
+                "type": "string",
+                "description": "Floor plan view depth limitation.",
+                "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+            },
+            "cutFillPen": {
+                "type": "integer",
+                "description": "Overridden cut fill foreground pen (otherwise inherited from the building material). Omit to leave uninherited/unset."
+            },
+            "cutFillBackgroundPen": {
+                "type": "integer",
+                "description": "Overridden cut fill background pen (otherwise inherited from the building material). Omit to leave uninherited/unset."
+            },
+            "cutLineType": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut contour."
+            },
+            "cutLinePen": {
+                "type": "integer",
+                "description": "Pen of the cut contour."
+            },
+            "uncutLineType": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the (uncut) contour."
+            },
+            "uncutLinePen": {
+                "type": "integer",
+                "description": "Pen of the (uncut) contour."
+            },
+            "overheadLineType": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the overhead part (floor plan only)."
+            },
+            "overheadLinePen": {
+                "type": "integer",
+                "description": "Pen of the overhead part (floor plan only)."
+            },
+            "useCoverFillType": {
+                "type": "boolean",
+                "description": "Use a dedicated floor plan fill instead of the one from the building material."
+            },
+            "outlineContourDisplay": {
+                "type": "boolean",
+                "description": "Outline contour display."
+            },
+            "coverFillType": {
+                "$ref": "#/AttributeId",
+                "description": "Floor plan fill type (only used when useCoverFillType is true)."
+            },
+            "coverFillPen": {
+                "type": "integer",
+                "description": "Floor plan fill foreground pen."
+            },
+            "coverFillBGPen": {
+                "type": "integer",
+                "description": "Floor plan fill background pen."
+            },
+            "use3DHatching": {
+                "type": "boolean",
+                "description": "Derive the floor plan fill from the 3D material instead of coverFillType."
+            },
+            "coverFillOrientation": {
+                "type": "object",
+                "description": "Orientation/distortion of the floor plan cover fill.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": ["Global", "Rotated", "Distorted", "Centered"]
+                    },
+                    "origo": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "Origin of the fill relative to the project origin."
+                    },
+                    "matrix00": {
+                        "type": "number",
+                        "description": "X component of the primary distortion (direction) vector - the cosine of the fill angle, if not distorted."
+                    },
+                    "matrix10": {
+                        "type": "number",
+                        "description": "Y component of the primary distortion (direction) vector - the sine of the fill angle, if not distorted."
+                    },
+                    "matrix01": {
+                        "type": "number",
+                        "description": "X component of the secondary distortion vector - the cosine of the normal vector's angle, if not distorted."
+                    },
+                    "matrix11": {
+                        "type": "number",
+                        "description": "Y component of the secondary distortion vector - the sine of the normal vector's angle, if not distorted."
+                    },
+                    "innerRadius": {
+                        "type": "number",
+                        "description": "Radius for circular fill distortion (type Centered only)."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "useDistortedCoverFill": {
+                "type": "boolean",
+                "description": "Show the floor plan hatching as if projected onto a plane."
+            },
+            "textureProjectionType": {
+                "type": "string",
+                "description": "Projection type of the 3D texture.",
+                "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+            },
+            "textureProjectionCoords": {
+                "type": "array",
+                "description": "Texture projection coordinate system: origin, then 3 axis endpoints.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 4,
+                "maxItems": 4
+            },
+            "level": {
+                "type": "number",
+                "description": "Z position of the free shape relative to the floor level. Reported accurately on Get, but a confirmed Archicad SDK bug means it may not take effect on Create/Modify (same class of bug as bodyType/edgeType - see MorphBody's notes)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "origin",
+            "body"
+        ]
+    },
     "DrawingDetails": {
         "type": "object",
         "properties": {
@@ -3629,6 +3963,9 @@
             },
             {
                 "$ref": "#/MeshDetails"
+            },
+            {
+                "$ref": "#/MorphDetails"
             },
             {
                 "$ref": "#/DrawingDetails"
