@@ -109,6 +109,27 @@ static void AddValueString (GS::ObjectState& gdlParameterDetails,
     }
 }
 
+// API_AddParType.arrayDescriptions (per-array-item text labels, e.g. naming each row of a table
+// parameter) was never read before - walks it the same way AddValueString walks value.array:
+// a GSHandle of consecutive null-terminated UTF-16 strings, one per array element.
+static void AddArrayItemDescriptions (GS::ObjectState& gdlParameterDetails,
+                                      const API_AddParType& actParam)
+{
+    if (actParam.typeMod != API_ParArray || actParam.arrayDescriptions == nullptr) {
+        return;
+    }
+
+    const auto& itemDescriptionAdder = gdlParameterDetails.AddList<GS::UniString> ("itemDescriptions");
+    Int32 descIndex = 0;
+    for (Int32 i1 = 1; i1 <= actParam.dim1; i1++) {
+        for (Int32 i2 = 1; i2 <= actParam.dim2; i2++) {
+            GS::uchar_t* uDescStr = (reinterpret_cast<GS::uchar_t*> (*actParam.arrayDescriptions)) + descIndex;
+            descIndex += GS::ucslen32 (uDescStr) + 1;
+            itemDescriptionAdder (GS::UniString (uDescStr));
+        }
+    }
+}
+
 static bool SetParamValueInteger (API_ChangeParamType& changeParam,
                                   const GS::ObjectState& parameterDetails)
 {
@@ -352,6 +373,8 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     break;
             }
 
+            AddArrayItemDescriptions (gdlParameterDetails, actParam);
+
             GS::UniString valueDescription (actParam.valueDescription);
             if (!valueDescription.IsEmpty ()) {
                 gdlParameterDetails.Add ("valueDescription", valueDescription);
@@ -377,6 +400,12 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             }
             if (actParam.flags & API_ParFlg_Fixed) {
                 flags ("Fixed");
+            }
+            if (actParam.flags & API_ParFlg_BoldName) {
+                flags ("BoldName");
+            }
+            if (actParam.flags & API_ParFlg_Open) {
+                flags ("Open");
             }
 
             if (getValues.nVals > 0) {
@@ -407,8 +436,12 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 } else if (possibleValue.flags & APIVLVal_UpperEqual) {
                                     os = GS::ObjectState ("value", possibleValue.upperLimit, "flag", "LessThanOrEqual");
                                 } else if (possibleValue.flags == APIVLVal_Step) {
-                                    os = GS::ObjectState ("value", possibleValue.stepBeg, "flag", "StepBegin");
-                                    os = GS::ObjectState ("value", possibleValue.stepVal, "flag", "StepValue");
+                                    // Previously two separate `os = GS::ObjectState (...)` assignments here -
+                                    // the second silently clobbered the first, so stepBeg was always lost and
+                                    // only stepVal (mislabeled "StepValue") ever reached the caller.
+                                    os = GS::ObjectState ("flag", GS::UniString ("Step"));
+                                    os.Add ("stepBegin", possibleValue.stepBeg);
+                                    os.Add ("stepValue", possibleValue.stepVal);
                                 }
                             } else {
                                 os = GS::ObjectState ("value", possibleValue.value);
@@ -512,12 +545,28 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             }
 
             const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+            // The owner's real element type is needed here, not hardcoded - GetGDLParametersOfElements
+            // already reads it from the fetched element (see above) and supports Object/Lamp/Window/
+            // Door/Skylight/Zone/Label/Drawing/CurtainWallFrame/Panel/Junction/Accessory; this command
+            // used to hardcode API_ObjectID regardless of the actual type, so setting GDL parameters
+            // on anything other than a plain Object was likely broken (never caught - the only existing
+            // example script only exercises plain Objects). Fetch the element once here and reuse it
+            // below for the post-loop xRatio/width/height patch too, instead of re-fetching.
+            API_Element element = {};
+            element.header.guid = elemGuid;
+            err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to find element with guid %T", APIGuidToString (elemGuid).ToPrintf ())));
+                continue;
+            }
+
             API_ParamOwnerType paramOwner = {};
-            paramOwner.libInd = 0;
+            paramOwner.libInd = -1;
 #ifdef ServerMainVers_2600
-            paramOwner.type = API_ObjectID;
+            paramOwner.type = element.header.type;
 #else
-            paramOwner.typeID = API_ObjectID;
+            paramOwner.typeID = element.header.typeID;
 #endif
             paramOwner.guid = elemGuid;
 
@@ -567,43 +616,38 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                     }
 
                     if (err == NoError) {
-                        API_Element	element = {};
-                        element.header.guid = elemGuid;
+                        API_Element mask = {};
+                        API_ElementMemo memo = {};
 
-                        err = ACAPI_Element_Get (&element);
-                        if (err == NoError) {
-                            API_Element 	mask = {};
-                            API_ElementMemo memo = {};
-
-                            ACAPI_ELEMENT_MASK_CLEAR (mask);
-                            switch (GetElemTypeId (element.header)) {
-                                case API_ObjectID:
-                                    element.object.xRatio = getParams.a;
-                                    element.object.yRatio = getParams.b;
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, xRatio);
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, yRatio);
-                                    break;
-                                case API_WindowID:
-                                case API_DoorID:
-                                    element.window.openingBase.width = getParams.a;
-                                    element.window.openingBase.height = getParams.b;
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
-                                    break;
-                                case API_SkylightID:
-                                    element.skylight.openingBase.width = getParams.a;
-                                    element.skylight.openingBase.height = getParams.b;
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
-                                    ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
-                                    break;
-                                default:
-                                    // Not supported yet
-                                    break;
-                            }
-
-                            memo.params = getParams.params;
-                            err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+                        ACAPI_ELEMENT_MASK_CLEAR (mask);
+                        switch (GetElemTypeId (element.header)) {
+                            case API_ObjectID:
+                            case API_LampID:
+                                element.object.xRatio = getParams.a;
+                                element.object.yRatio = getParams.b;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, xRatio);
+                                ACAPI_ELEMENT_MASK_SET (mask, API_ObjectType, yRatio);
+                                break;
+                            case API_WindowID:
+                            case API_DoorID:
+                                element.window.openingBase.width = getParams.a;
+                                element.window.openingBase.height = getParams.b;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.width);
+                                ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.height);
+                                break;
+                            case API_SkylightID:
+                                element.skylight.openingBase.width = getParams.a;
+                                element.skylight.openingBase.height = getParams.b;
+                                ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
+                                ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
+                                break;
+                            default:
+                                // Not supported yet
+                                break;
                         }
+
+                        memo.params = getParams.params;
+                        err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
                     }
                 }
                 ACAPI_LibraryPart_CloseParameters ();

@@ -688,11 +688,75 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
 // (verified across AC25..29), so the two commands differ only in name,
 // elemTypeID, JSON array field name, and the singular noun / description
 // used in the schema.
+// The properties shared by CreateObjects/CreateLamps (on top of libraryPartName/coordinates) and
+// ModifyObjects/ModifyLamps (all of these, nothing else) - kept as one string so the two schemas
+// can't drift apart. lightColor/lightIsOn are only meaningful for Lamps, gated by `isLamp`.
+static GS::UniString BuildObjectLampDetailFields (bool isLamp)
+{
+    GS::UniString fields = R"(
+        "angle": { "type": "number" },
+        "pen": { "type": "integer" },
+        "lineTypeId": { "$ref": "#/AttributeId" },
+        "surfaceId": { "$ref": "#/AttributeId", "description": "Material/Surface override (API_ObjectType.mat)." },
+        "sectionFillId": { "$ref": "#/AttributeId" },
+        "sectionFillPen": { "type": "integer" },
+        "sectionFillBackgroundPen": { "type": "integer" },
+        "sectionContourPen": { "type": "integer" },
+        "useObjectPens": { "type": "boolean" },
+        "useObjectLineTypes": { "type": "boolean" },
+        "useObjectMaterials": { "type": "boolean" },
+        "useObjectSectionAttributes": { "type": "boolean" },
+        "reflected": { "type": "boolean" },
+        "useFixSize": { "type": "boolean" },
+        "fixPoint": { "type": "integer", "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)." },
+        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level." },
+        "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
+        "isAutoOnStoryVisibility": { "type": "boolean" },
+        "visibility": {
+            "type": "object",
+            "properties": {
+                "showOnHome": { "type": "boolean" },
+                "showAllAbove": { "type": "boolean" },
+                "showAllBelow": { "type": "boolean" },
+                "showRelAbove": { "type": "integer" },
+                "showRelBelow": { "type": "integer" }
+            },
+            "additionalProperties": false
+        },
+        "linkToSettings": {
+            "type": "object",
+            "properties": {
+                "homeStoryDifference": { "type": "integer" },
+                "newCreationMode": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        })";
+    if (isLamp) {
+        fields += R"(,
+        "lightColor": { "$ref": "#/ColorRGB", "description": "Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default light color). lightIsOn (the on/off state, as opposed to the color) does not have this problem." },
+        "lightIsOn": { "type": "boolean" })";
+    }
+    return fields;
+}
+
+// API_LampType is a typedef alias of API_ObjectType in APIdefs_Elements.h (verified across
+// AC25..29), so Object and Lamp share one schema shape beyond the element-type-specific
+// description strings.
+//
+// Built via plain GS::UniString concatenation rather than a single GS::UniString::Printf call -
+// confirmed live (crash dumps in APICommandBridge.dll, ACCESS_VIOLATION) that feeding the large
+// BuildObjectLampDetailFields blob through Printf's %s reliably crashed Archicad at add-on
+// registration time (RegisterCommand<T> calls GetInputParametersSchema() at startup); isolated by
+// bisection to the SIZE of that single %s argument, not its content (a 1-line stand-in placeholder
+// through the same Printf call never crashed). Root cause not confirmed further (suspected fixed-size
+// internal buffer in GS::UniString::Printf/PrintfFwd's va_arg handling) - concatenating instead
+// avoids the vararg path entirely for the large piece.
 static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                                                   const char* elementSingularName,
-                                                  const char* libraryPartNameDescription)
+                                                  const char* libraryPartNameDescription,
+                                                  bool isLamp)
 {
-    return GS::UniString::Printf (R"({
+    GS::UniString schema = GS::UniString::Printf (R"({
         "type": "object",
         "properties": {
             "%s": {
@@ -711,7 +775,13 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         },
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
-                        }
+                        },
+                        )",
+        arrayFieldName, elementSingularName, elementSingularName, libraryPartNameDescription);
+
+    schema += BuildObjectLampDetailFields (isLamp);
+
+    schema += GS::UniString::Printf (R"(
                     },
                     "additionalProperties": false,
                     "required" : [
@@ -725,9 +795,9 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
         "required": [
             "%s"
         ]
-    })",
-    arrayFieldName, elementSingularName, elementSingularName,
-    libraryPartNameDescription, arrayFieldName);
+    })", arrayFieldName);
+
+    return schema;
 }
 
 CreateObjectsCommand::CreateObjectsCommand () :
@@ -738,7 +808,7 @@ CreateObjectsCommand::CreateObjectsCommand () :
 GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () const
 {
     return BuildLibraryPartBasedSchema ("objectsData", "Object",
-                                        "The name of the library part to use.");
+                                        "The name of the library part to use.", false);
 }
 
 constexpr const char* ParameterValueFieldName = "value";
@@ -820,15 +890,9 @@ static void ChangeParams (API_AddParType**& params, const GS::HashTable<GS::Stri
 	}
 }
 
-// Shared placement logic for CreateObjects and CreateLamps.
-//
-// element.object and element.lamp alias the same union storage in
-// API_Element (API_LampType is a typedef of API_ObjectType across the
-// AC25..29 SDKs we target), so writing through element.object.* is
-// correct for both API_ObjectID and API_LampID code paths.
-static GS::Optional<GS::ObjectState> SetLibraryPartElementParameters (
-    API_Element& element, API_ElementMemo& memo,
-    const Stories& stories, const GS::ObjectState& parameters)
+// Resolves 'libraryPartName' to element.object.libInd - Create only. Modify doesn't support
+// swapping an existing instance's library part, only patching its placement/attribute fields.
+static GS::Optional<GS::ObjectState> ResolveLibraryPartName (API_Element& element, const GS::ObjectState& parameters)
 {
     GS::UniString uName;
     parameters.Get ("libraryPartName", uName);
@@ -844,7 +908,38 @@ static GS::Optional<GS::ObjectState> SetLibraryPartElementParameters (
     }
 
     element.object.libInd = libPart.index;
+    return {};
+}
 
+static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrTypeID attributeType, API_AttributeIndex& attributeIndex)
+{
+    API_Attribute attribute = {};
+    attribute.header.typeID = attributeType;
+    attribute.header.guid = GetGuidFromObjectState (attributeId);
+    if (attribute.header.guid == APINULLGuid) {
+        return false;
+    }
+
+    if (ACAPI_Attribute_Get (&attribute) != NoError) {
+        return false;
+    }
+
+    attributeIndex = attribute.header.index;
+    return true;
+}
+
+// Applies every optional API_ObjectType field beyond the library part itself - coordinates,
+// dimensions, angle, pen/line type/surface/section attributes, fixed-size/angle behavior,
+// per-story visibility, link-to-story, and (Lamp only) light color/on-off - shared by
+// CreateObjects/CreateLamps (mask == nullptr, a freshly-defaulted element needs no mask) and
+// ModifyObjects/ModifyLamps (mask != nullptr, every touched field also needs its
+// ACAPI_ELEMENT_MASK_SET bit). element.object/.lamp alias the same union storage (API_LampType is
+// a typedef of API_ObjectType across the AC25..29 SDKs we target), so writing through
+// element.object.* is correct for both API_ObjectID and API_LampID.
+static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
+    API_Element& element, API_ElementMemo& memo, API_Element* mask,
+    const Stories& stories, const GS::ObjectState& parameters)
+{
     GS::ObjectState coordinates;
     if (parameters.Get ("coordinates", coordinates)) {
         const API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
@@ -855,15 +950,168 @@ static GS::Optional<GS::ObjectState> SetLibraryPartElementParameters (
         const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.object.level = floorIndexAndOffset.second;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_Elem_Head, floorInd);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, pos);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, level);
+        }
     }
 
-    if (parameters.Get ("dimensions", coordinates)) {
-        const API_Coord3D dimensions = Get3DCoordinateFromObjectState (coordinates);
+    GS::ObjectState dimensions;
+    if (parameters.Get ("dimensions", dimensions)) {
+        const API_Coord3D dims = Get3DCoordinateFromObjectState (dimensions);
 
-        element.object.xRatio = dimensions.x;
-        element.object.yRatio = dimensions.y;
-        GS::ObjectState os (ParameterValueFieldName, dimensions.z);
+        element.object.xRatio = dims.x;
+        element.object.yRatio = dims.y;
+        GS::ObjectState os (ParameterValueFieldName, dims.z);
         ChangeParams (memo.params, {{"ZZYZX", os}});
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, xRatio);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, yRatio);
+        }
+    }
+
+    double angle = 0.0;
+    if (parameters.Get ("angle", angle)) {
+        element.object.angle = angle;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, angle);
+    }
+
+    Int32 penValue = 0;
+    if (parameters.Get ("pen", penValue)) {
+        element.object.pen = (short) penValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, pen);
+    }
+
+    const GS::ObjectState* lineTypeIdOS = parameters.Get ("lineTypeId");
+    if (lineTypeIdOS != nullptr) {
+        API_AttributeIndex idx = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (*lineTypeIdOS, API_LinetypeID, idx)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid 'lineTypeId' line type reference.");
+        }
+        element.object.ltypeInd = idx;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, ltypeInd);
+    }
+
+    const GS::ObjectState* surfaceIdOS = parameters.Get ("surfaceId");
+    if (surfaceIdOS != nullptr) {
+        API_AttributeIndex idx = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (*surfaceIdOS, API_MaterialID, idx)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid 'surfaceId' surface reference.");
+        }
+        element.object.mat = idx;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, mat);
+    }
+
+    const GS::ObjectState* sectionFillIdOS = parameters.Get ("sectionFillId");
+    if (sectionFillIdOS != nullptr) {
+        API_AttributeIndex idx = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (*sectionFillIdOS, API_FilltypeID, idx)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid 'sectionFillId' fill reference.");
+        }
+        element.object.sectFill = idx;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, sectFill);
+    }
+
+    Int32 shortValue = 0;
+    if (parameters.Get ("sectionFillPen", shortValue)) {
+        element.object.sectFillPen = (short) shortValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, sectFillPen);
+    }
+    if (parameters.Get ("sectionFillBackgroundPen", shortValue)) {
+        element.object.sectBGPen = (short) shortValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, sectBGPen);
+    }
+    if (parameters.Get ("sectionContourPen", shortValue)) {
+        element.object.sectContPen = (short) shortValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, sectContPen);
+    }
+
+    bool boolValue = false;
+    if (parameters.Get ("useObjectPens", boolValue)) {
+        element.object.useObjPens = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, useObjPens);
+    }
+    if (parameters.Get ("useObjectLineTypes", boolValue)) {
+        element.object.useObjLtypes = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, useObjLtypes);
+    }
+    if (parameters.Get ("useObjectMaterials", boolValue)) {
+        element.object.useObjMaterials = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, useObjMaterials);
+    }
+    if (parameters.Get ("useObjectSectionAttributes", boolValue)) {
+        element.object.useObjSectAttrs = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, useObjSectAttrs);
+    }
+    if (parameters.Get ("reflected", boolValue)) {
+        element.object.reflected = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, reflected);
+    }
+    if (parameters.Get ("useFixSize", boolValue)) {
+        element.object.useXYFixSize = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, useXYFixSize);
+    }
+
+    Int32 fixPointValue = 0;
+    if (parameters.Get ("fixPoint", fixPointValue)) {
+        element.object.fixPoint = (short) fixPointValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, fixPoint);
+    }
+
+    const GS::ObjectState* offsetOS = parameters.Get ("offset");
+    if (offsetOS != nullptr) {
+        element.object.offset = Get2DCoordinateFromObjectState (*offsetOS);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, offset);
+    }
+
+    if (parameters.Get ("useFixedAngle", boolValue)) {
+        element.object.fixedAngle = boolValue ? 1 : 0;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, fixedAngle);
+    }
+    if (parameters.Get ("isAutoOnStoryVisibility", boolValue)) {
+        element.object.isAutoOnStoryVisibility = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, isAutoOnStoryVisibility);
+    }
+
+    GS::ObjectState colorOS;
+    if (parameters.Get ("lightColor", colorOS)) {
+        element.object.lightColor = GetColorFromObjectState (colorOS);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, lightColor);
+    }
+    if (parameters.Get ("lightIsOn", boolValue)) {
+        element.object.lightIsOn = boolValue;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, lightIsOn);
+    }
+
+    const GS::ObjectState* visibilityOS = parameters.Get ("visibility");
+    if (visibilityOS != nullptr) {
+        API_StoryVisibility vis = element.object.visibility;
+        visibilityOS->Get ("showOnHome", vis.showOnHome);
+        visibilityOS->Get ("showAllAbove", vis.showAllAbove);
+        visibilityOS->Get ("showAllBelow", vis.showAllBelow);
+        Int32 relAbove = vis.showRelAbove;
+        Int32 relBelow = vis.showRelBelow;
+        if (visibilityOS->Get ("showRelAbove", relAbove)) {
+            vis.showRelAbove = (short) relAbove;
+        }
+        if (visibilityOS->Get ("showRelBelow", relBelow)) {
+            vis.showRelBelow = (short) relBelow;
+        }
+        element.object.visibility = vis;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility);
+    }
+
+    const GS::ObjectState* linkOS = parameters.Get ("linkToSettings");
+    if (linkOS != nullptr) {
+        API_LinkToSettings link = element.object.linkToSettings;
+        Int32 homeDiff = link.homeStoryDifference;
+        if (linkOS->Get ("homeStoryDifference", homeDiff)) {
+            link.homeStoryDifference = (short) homeDiff;
+        }
+        linkOS->Get ("newCreationMode", link.newCreationMode);
+        element.object.linkToSettings = link;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, linkToSettings);
     }
 
     return {};
@@ -871,14 +1119,18 @@ static GS::Optional<GS::ObjectState> SetLibraryPartElementParameters (
 
 GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    return SetLibraryPartElementParameters (element, memo, stories, parameters);
+    auto err = ResolveLibraryPartName (element, parameters);
+    if (err.HasValue ()) {
+        return err;
+    }
+    return ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
 }
 
 // CreateLamps — parallel to CreateObjects but for AC subtype Lamp.
 // Without this command, lamp libparts cannot be placed via Tapir —
 // CreateObjects rejects them with APIERR_NOTSUPPORTED. The schema and
 // placement logic are shared via BuildLibraryPartBasedSchema and
-// SetLibraryPartElementParameters above.
+// ApplyObjectLampDetails above.
 CreateLampsCommand::CreateLampsCommand () :
     CreateElementsCommandBase ("CreateLamps", API_LampID, "lampsData")
 {
@@ -887,12 +1139,189 @@ CreateLampsCommand::CreateLampsCommand () :
 GS::Optional<GS::UniString> CreateLampsCommand::GetInputParametersSchema () const
 {
     return BuildLibraryPartBasedSchema ("lampsData", "Lamp",
-                                        "The name of the lamp library part to use.");
+                                        "The name of the lamp library part to use.", true);
 }
 
 GS::Optional<GS::ObjectState> CreateLampsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    return SetLibraryPartElementParameters (element, memo, stories, parameters);
+    auto err = ResolveLibraryPartName (element, parameters);
+    if (err.HasValue ()) {
+        return err;
+    }
+    return ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
+}
+
+// Shared Modify schema builder for ModifyObjects/ModifyLamps, mirroring
+// BuildLibraryPartBasedSchema's Create-side counterpart - same field list via
+// BuildObjectLampDetailFields, minus libraryPartName/coordinates being required (Modify only
+// patches the fields actually given).
+// Built via concatenation, not a single Printf %s - see BuildLibraryPartBasedSchema's comment for
+// why (confirmed live crash feeding the large BuildObjectLampDetailFields blob through Printf).
+static GS::UniString BuildLibraryPartBasedModifySchema (const char* arrayFieldName, bool isLamp)
+{
+    GS::UniString schema = GS::UniString::Printf (R"({
+        "type": "object",
+        "properties": {
+            "%s": {
+                "type": "array",
+                "description": "Array of elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "coordinates": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensions": {
+                            "$ref": "#/Dimensions3D"
+                        },
+                        )",
+        arrayFieldName);
+
+    schema += BuildObjectLampDetailFields (isLamp);
+
+    schema += GS::UniString::Printf (R"(
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "%s"
+        ]
+    })", arrayFieldName);
+
+    return schema;
+}
+
+static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& parameters, const char* arrayFieldName, API_ElemTypeID elemTypeID, const char* undoableCommandName)
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get (arrayFieldName, itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand (undoableCommandName, [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+
+            if (GetElemTypeId (element.header) != elemTypeID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not of the expected type."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_AddPars);
+
+            auto applyErr = ApplyObjectLampDetails (element, memo, &mask, GetStories (), item);
+            if (applyErr.HasValue ()) {
+                executionResults (*applyErr);
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+            executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify element."));
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+ModifyObjectsCommand::ModifyObjectsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyObjectsCommand::GetName () const
+{
+    return "ModifyObjects";
+}
+
+GS::Optional<GS::UniString> ModifyObjectsCommand::GetInputParametersSchema () const
+{
+    return BuildLibraryPartBasedModifySchema ("objectsWithDetails", false);
+}
+
+GS::Optional<GS::UniString> ModifyObjectsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyObjectsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteModifyObjectOrLamp (parameters, "objectsWithDetails", API_ObjectID, "ModifyObjects");
+}
+
+ModifyLampsCommand::ModifyLampsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyLampsCommand::GetName () const
+{
+    return "ModifyLamps";
+}
+
+GS::Optional<GS::UniString> ModifyLampsCommand::GetInputParametersSchema () const
+{
+    return BuildLibraryPartBasedModifySchema ("lampsWithDetails", true);
+}
+
+GS::Optional<GS::UniString> ModifyLampsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyLampsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return ExecuteModifyObjectOrLamp (parameters, "lampsWithDetails", API_LampID, "ModifyLamps");
 }
 
 CreateMeshesCommand::CreateMeshesCommand () :

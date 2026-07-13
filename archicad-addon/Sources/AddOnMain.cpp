@@ -252,7 +252,7 @@ GSErrCode Initialize (void)
             "Tests an elements by the given criterias."
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
-            elementCommands, "1.0.7",
+            elementCommands, "1.1.0",
             "Gets the details of the given elements (geometry parameters etc)."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
@@ -304,11 +304,11 @@ GSErrCode Initialize (void)
             "Unlocks the given elements. Manual lock, not teamwork!"
         );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
-            elementCommands, "1.0.8",
+            elementCommands, "1.1.0",
             "Gets all the GDL parameters (name, type, value) of the given elements."
         );
         err |= RegisterCommand<SetGDLParametersOfElementsCommand> (
-            elementCommands, "1.0.8",
+            elementCommands, "1.1.0",
             "Sets the given GDL parameters of the given elements."
         );
         err |= RegisterCommand<CreateColumnsCommand> (
@@ -376,11 +376,11 @@ GSErrCode Initialize (void)
             "Creates Polyline elements based on the given parameters."
         );
         err |= RegisterCommand<CreateObjectsCommand> (
-            elementCommands, "1.0.3",
+            elementCommands, "1.6.0",
             "Creates Object elements based on the given parameters."
         );
         err |= RegisterCommand<CreateLampsCommand> (
-            elementCommands, "1.5.0",
+            elementCommands, "1.6.0",
             "Creates Lamp elements based on the given parameters."
         );
         err |= RegisterCommand<CreateMeshesCommand> (
@@ -430,6 +430,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",
             "Modifies the attributes of Mesh elements based on the given parameters."
+        );
+        err |= RegisterCommand<ModifyObjectsCommand> (
+            elementCommands, "1.0.0",
+            "Modifies Object elements based on the given parameters."
+        );
+        err |= RegisterCommand<ModifyLampsCommand> (
+            elementCommands, "1.0.0",
+            "Modifies Lamp elements based on the given parameters."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
             elementCommands, "1.2.7",
