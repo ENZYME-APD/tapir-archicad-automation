@@ -701,6 +701,13 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates Drawing elements on the specified or active layout from navigator items."
         );
+        err |= RegisterCommand<ChangeDrawingLinkCommand> (
+            navigatorCommands, "1.5.4",
+            "Relinks a Drawing to a different source navigator item. Archicad has no in-place relink "
+            "API, so this recreates the Drawing against the new source and deletes the original - the "
+            "returned elementId is a NEW guid, not the input one. The Drawing Title marker's own "
+            "position is not preserved (undocumented Archicad limitation)."
+        );
         err |= RegisterCommand<GetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
             "Gets settings of layouts, including Layout Info Panel custom data fields."

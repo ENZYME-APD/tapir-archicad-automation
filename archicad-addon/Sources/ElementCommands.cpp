@@ -849,6 +849,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
                 typeSpecificDetails.Add ("modelOffset",   Create2DCoordinateObjectState (elem.drawing.modelOffset));
                 typeSpecificDetails.Add ("isCutWithFrame", elem.drawing.isCutWithFrame);
+                typeSpecificDetails.Add ("navigatorItemId", CreateGuidObjectState (elem.drawing.drawingGuid));
                 typeSpecificDetails.Add ("bounds", GS::ObjectState (
                     "xMin", elem.drawing.bounds.xMin,
                     "yMin", elem.drawing.bounds.yMin,
@@ -1281,6 +1282,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, modelOffset);
                         }
+                        // drawingGuid (the Drawing's source link) is intentionally not settable here:
+                        // confirmed live that ACAPI_Element_Change silently discards any change to it
+                        // after creation - it can only be set once, at CreateDrawings time.
                     } break;
                     default:
                     break;
