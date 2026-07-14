@@ -432,11 +432,11 @@ GSErrCode Initialize (void)
             "Modifies the attributes of Mesh elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyObjectsCommand> (
-            elementCommands, "1.0.0",
+            elementCommands, "1.5.4",
             "Modifies Object elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyLampsCommand> (
-            elementCommands, "1.0.0",
+            elementCommands, "1.5.4",
             "Modifies Lamp elements based on the given parameters."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
