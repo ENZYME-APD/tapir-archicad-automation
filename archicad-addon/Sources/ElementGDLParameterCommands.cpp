@@ -165,6 +165,120 @@ static const API_AddParType* FindParameterByName (const API_GetParamsType& getPa
     return nullptr;
 }
 
+// Retrieving a list of numbers via ObjectState::Get<GS::Array<double>> does not convert integer items
+// (their bit pattern is reinterpreted as double), so numbers are collected item by item instead.
+class NumberArrayValueCollector : public GS::ObjectState::Processor
+{
+public:
+    virtual void IntFound (const GS::String&, Int64 value) override
+    {
+        AddNumber (static_cast<double> (value));
+    }
+
+    virtual void UIntFound (const GS::String&, UInt64 value) override
+    {
+        AddNumber (static_cast<double> (value));
+    }
+
+    virtual void RealFound (const GS::String&, double value) override
+    {
+        AddNumber (value);
+    }
+
+    virtual void BoolFound (const GS::String&, bool) override
+    {
+        failed = true;
+    }
+
+    virtual void StringFound (const GS::String&, const GS::UniString&) override
+    {
+        failed = true;
+    }
+
+    virtual bool ObjectFound (const GS::String&, const GS::ObjectState&) override
+    {
+        failed = true;
+        return false;
+    }
+
+    virtual bool ListFound (const GS::String&) override
+    {
+        return !failed;
+    }
+
+    virtual void ListEntered (const GS::String&) override
+    {
+        ++depth;
+        if (depth > 2) {
+            failed = true;
+        } else if (depth == 2) {
+            rows.Push (GS::Array<double> ());
+        }
+    }
+
+    virtual void ListExited (const GS::String&) override
+    {
+        --depth;
+    }
+
+    bool GetCollectedValues (GS::Array<double>& outFlatValues, Int32& outDim1, Int32& outDim2) const
+    {
+        if (failed || (!rows.IsEmpty () && !flatValues.IsEmpty ())) {
+            return false;
+        }
+        if (!rows.IsEmpty ()) {
+            outDim1 = static_cast<Int32> (rows.GetSize ());
+            outDim2 = static_cast<Int32> (rows[0].GetSize ());
+            if (outDim2 == 0) {
+                return false;
+            }
+            for (const GS::Array<double>& row : rows) {
+                if (static_cast<Int32> (row.GetSize ()) != outDim2) {
+                    return false;
+                }
+                for (double value : row) {
+                    outFlatValues.Push (value);
+                }
+            }
+            return true;
+        }
+        if (!flatValues.IsEmpty ()) {
+            outDim1 = static_cast<Int32> (flatValues.GetSize ());
+            outDim2 = 1;
+            outFlatValues = flatValues;
+            return true;
+        }
+        return false;
+    }
+
+private:
+    void AddNumber (double value)
+    {
+        if (depth == 1) {
+            flatValues.Push (value);
+        } else if (depth == 2) {
+            rows.GetLast ().Push (value);
+        } else {
+            failed = true;
+        }
+    }
+
+    GS::Array<double> flatValues;
+    GS::Array<GS::Array<double>> rows;
+    Int32 depth = 0;
+    bool failed = false;
+};
+
+static bool GetNumberArrayValueField (const GS::ObjectState& parameter, GS::Array<double>& flatValues, Int32& dim1, Int32& dim2)
+{
+    if (!parameter.IsList (ParameterValueFieldName)) {
+        return false;
+    }
+    NumberArrayValueCollector collector;
+    parameter.Enumerate (ParameterValueFieldName, collector);
+    return collector.GetCollectedValues (flatValues, dim1, dim2);
+}
+
 template<typename T>
 static bool GetArrayValueField (const GS::ObjectState& parameter, GS::Array<T>& flatValues, Int32& dim1, Int32& dim2)
 {
@@ -856,7 +970,7 @@ bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
         case APIParT_Length:
         case APIParT_RealNum:
         case APIParT_Angle:
-            return GetArrayValueField (parameter, change.numberValues, change.dim1, change.dim2);
+            return GetNumberArrayValueField (parameter, change.numberValues, change.dim1, change.dim2);
         case APIParT_LightSw: {
             GS::Array<GS::String> values;
             if (!GetArrayValueField (parameter, values, change.dim1, change.dim2)) {
