@@ -153,6 +153,56 @@ static bool SetParamValueBool (API_ChangeParamType& changeParam,
     return false;
 }
 
+static const API_AddParType* FindParameterByName (const API_GetParamsType& getParams, const char* name)
+{
+    const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& actParam = (*getParams.params)[ii];
+        if (actParam.typeID != APIParT_Separator && CHCompareCStrings (actParam.name, name) == 0) {
+            return &actParam;
+        }
+    }
+    return nullptr;
+}
+
+template<typename T>
+static bool GetArrayValueField (const GS::ObjectState& parameter, GS::Array<T>& flatValues, Int32& dim1, Int32& dim2)
+{
+    GS::Array<GS::Array<T>> valuesIn2D;
+    if (parameter.Get (ParameterValueFieldName, valuesIn2D)) {
+        dim1 = static_cast<Int32> (valuesIn2D.GetSize ());
+        if (dim1 == 0) {
+            return false;
+        }
+        dim2 = static_cast<Int32> (valuesIn2D[0].GetSize ());
+        if (dim2 == 0) {
+            return false;
+        }
+        for (const GS::Array<T>& row : valuesIn2D) {
+            if (static_cast<Int32> (row.GetSize ()) != dim2) {
+                return false;
+            }
+            for (const T& value : row) {
+                flatValues.Push (value);
+            }
+        }
+        return true;
+    }
+
+    GS::Array<T> valuesIn1D;
+    if (parameter.Get (ParameterValueFieldName, valuesIn1D)) {
+        dim1 = static_cast<Int32> (valuesIn1D.GetSize ());
+        if (dim1 == 0) {
+            return false;
+        }
+        dim2 = 1;
+        flatValues = valuesIn1D;
+        return true;
+    }
+
+    return false;
+}
+
 static bool SetParamValueString (API_ChangeParamType& changeParam,
                                  const GS::ObjectState& parameterDetails)
 {
@@ -541,13 +591,13 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         }
                     }
 
+                    GS::Array<ArrayParameterChange> pendingArrayChanges;
                     for (const GS::ObjectState& elemGdlParametersItem : elemGdlParameters) {
-                        API_ChangeParamType changeParam = {};
                         GS::Array<GS::ObjectState> parameters;
                         if (elemGdlParametersItem.Get ("parameters", parameters)) {
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
-                                err = SetOneGDLParameter (parameter, elemGuid, changeParam, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, errMessage);
+                                err = SetOneGDLParameter (parameter, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, pendingArrayChanges, errMessage);
                                 if (err != NoError) {
                                     break;
                                 }
@@ -555,8 +605,11 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 ACAPI_DisposeAddParHdl (&getParams.params);
                                 ACAPI_LibraryPart_GetActParameters (&getParams);
                             }
+                            if (err != NoError) {
+                                break;
+                            }
                         } else {
-                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, changeParam, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, errMessage);
+                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, pendingArrayChanges, errMessage);
                             if (err != NoError) {
                                 break;
                             }
@@ -564,6 +617,10 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             ACAPI_DisposeAddParHdl (&getParams.params);
                             ACAPI_LibraryPart_GetActParameters (&getParams);
                         }
+                    }
+
+                    if (err == NoError && !pendingArrayChanges.IsEmpty ()) {
+                        err = ApplyArrayParameterChanges (getParams, pendingArrayChanges, elemGuid, errMessage);
                     }
 
                     if (err == NoError) {
@@ -631,11 +688,13 @@ GSErrCode
 SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     const GS::ObjectState& parameter,
     const API_Guid& elemGuid,
-    API_ChangeParamType& changeParam,
+    const API_GetParamsType& getParams,
     const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
     const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
+    GS::Array<ArrayParameterChange>& pendingArrayChanges,
     GS::UniString& errMessage)
 {
+    API_ChangeParamType changeParam = {};
     GS::String name;
     if (parameter.Get ("name", name)) {
         CHTruncate (name.ToCStr (), changeParam.name, API_NameLen);
@@ -660,6 +719,56 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
 
     if (!parameter.Contains (ParameterValueFieldName)) {
         errMessage = GS::UniString::Printf ("Invalid input: value is missing for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    }
+
+    const API_AddParType* actParam = FindParameterByName (getParams, changeParam.name);
+    if (actParam == nullptr) {
+        errMessage = GS::UniString::Printf ("Invalid input: %s is not a GDL parameter of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    }
+    const bool isArrayParameter = (actParam->typeMod == API_ParArray);
+
+    if (parameter.IsList (ParameterValueFieldName)) {
+        if (!isArrayParameter) {
+            errMessage = GS::UniString::Printf ("Invalid input: %s is not an array parameter of element %T, provide a single value", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+        ArrayParameterChange change;
+        change.name = changeParam.name;
+        change.typeID = gdlParametersTypeDictionary[changeParam.name];
+        if (!ParseArrayParameterValue (parameter, change.typeID, change)) {
+            errMessage = GS::UniString::Printf ("Invalid input: the given value is not a valid array for parameter %s of element %T (use [v1, v2, ...] for one-dimensional and [[v11, v12], [v21, v22]] for two-dimensional arrays)", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+        pendingArrayChanges.Push (change);
+        return NoError;
+    }
+
+    if (parameter.Contains ("index1")) {
+        if (!isArrayParameter) {
+            errMessage = GS::UniString::Printf ("Invalid input: %s is not an array parameter of element %T, index1 and index2 are not allowed", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+        Int32 index1 = 0;
+        if (!parameter.Get ("index1", index1) || index1 < 1 || index1 > actParam->dim1) {
+            errMessage = GS::UniString::Printf ("Invalid input: index1 must be an integer between 1 and %d for array parameter %s of element %T", actParam->dim1, changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+        Int32 index2 = 1;
+        if (parameter.Contains ("index2")) {
+            if (!parameter.Get ("index2", index2) || index2 < 1 || index2 > actParam->dim2) {
+                errMessage = GS::UniString::Printf ("Invalid input: index2 must be an integer between 1 and %d for array parameter %s of element %T", actParam->dim2, changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+                return APIERR_BADPARS;
+            }
+        }
+        changeParam.ind1 = index1;
+        changeParam.ind2 = index2;
+    } else if (parameter.Contains ("index2")) {
+        errMessage = GS::UniString::Printf ("Invalid input: index2 is given without index1 for parameter %s of element %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
+        return APIERR_BADPARS;
+    } else if (isArrayParameter) {
+        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of element %T, provide a list value to resize the array or use index1/index2 to change a single item", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
 
@@ -718,4 +827,122 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     }
 
     return err;
+}
+
+bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
+    const GS::ObjectState& parameter,
+    API_AddParID typeID,
+    ArrayParameterChange& change)
+{
+    switch (typeID) {
+        case APIParT_Integer:
+        case APIParT_PenCol:
+        case APIParT_LineTyp:
+        case APIParT_Mater:
+        case APIParT_FillPat:
+        case APIParT_BuildingMaterial:
+        case APIParT_Profile: {
+            GS::Array<Int32> values;
+            if (!GetArrayValueField (parameter, values, change.dim1, change.dim2)) {
+                return false;
+            }
+            for (Int32 value : values) {
+                change.numberValues.Push (static_cast<double> (value));
+            }
+            return true;
+        }
+        case APIParT_ColRGB:
+        case APIParT_Intens:
+        case APIParT_Length:
+        case APIParT_RealNum:
+        case APIParT_Angle:
+            return GetArrayValueField (parameter, change.numberValues, change.dim1, change.dim2);
+        case APIParT_LightSw: {
+            GS::Array<GS::String> values;
+            if (!GetArrayValueField (parameter, values, change.dim1, change.dim2)) {
+                return false;
+            }
+            for (const GS::String& value : values) {
+                change.numberValues.Push (value == "Off" ? 0.0 : 1.0);
+            }
+            return true;
+        }
+        case APIParT_Boolean: {
+            GS::Array<bool> values;
+            if (!GetArrayValueField (parameter, values, change.dim1, change.dim2)) {
+                return false;
+            }
+            for (bool value : values) {
+                change.numberValues.Push (value ? 1.0 : 0.0);
+            }
+            return true;
+        }
+        case APIParT_CString:
+        case APIParT_Title:
+            return GetArrayValueField (parameter, change.stringValues, change.dim1, change.dim2);
+        default:
+        case APIParT_Dictionary:
+            // Not supported by the Archicad API yet
+            return false;
+    }
+}
+
+GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
+    const API_GetParamsType& getParams,
+    const GS::Array<ArrayParameterChange>& changes,
+    const API_Guid& elemGuid,
+    GS::UniString& errMessage)
+{
+    const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
+    for (const ArrayParameterChange& change : changes) {
+        API_AddParType* actParam = nullptr;
+        for (GSIndex ii = 0; ii < nParams; ++ii) {
+            if (CHCompareCStrings ((*getParams.params)[ii].name, change.name.ToCStr ()) == 0) {
+                actParam = &(*getParams.params)[ii];
+                break;
+            }
+        }
+
+        if (actParam == nullptr || actParam->typeMod != API_ParArray) {
+            errMessage = GS::UniString::Printf ("Invalid input: %s is not an array parameter of element %T", change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+            return APIERR_BADPARS;
+        }
+
+        GSHandle newArrayHandle = nullptr;
+        if (change.typeID == APIParT_CString || change.typeID == APIParT_Title) {
+            GSSize totalLength = 0;
+            for (const GS::UniString& value : change.stringValues) {
+                totalLength += value.GetLength () + 1;
+            }
+            newArrayHandle = BMAllocateHandle (totalLength * sizeof (GS::uchar_t), ALLOCATE_CLEAR, 0);
+            if (newArrayHandle == nullptr) {
+                return APIERR_MEMFULL;
+            }
+            GS::uchar_t* strPos = reinterpret_cast<GS::uchar_t*> (*newArrayHandle);
+            for (const GS::UniString& value : change.stringValues) {
+                GS::ucscpy (strPos, value.ToUStr ().Get ());
+                strPos += value.GetLength () + 1;
+            }
+        } else {
+            newArrayHandle = BMAllocateHandle (change.numberValues.GetSize () * sizeof (double), ALLOCATE_CLEAR, 0);
+            if (newArrayHandle == nullptr) {
+                return APIERR_MEMFULL;
+            }
+            double* arrayValues = reinterpret_cast<double*> (*newArrayHandle);
+            for (UIndex ii = 0; ii < change.numberValues.GetSize (); ++ii) {
+                arrayValues[ii] = change.numberValues[ii];
+            }
+        }
+
+        if (actParam->dim1 != change.dim1 || actParam->dim2 != change.dim2) {
+            // The stored value descriptions would no longer match the new dimensions
+            BMKillHandle (&actParam->arrayDescriptions);
+        }
+        BMKillHandle (&actParam->value.array);
+        actParam->value.array = newArrayHandle;
+        actParam->dim1 = change.dim1;
+        actParam->dim2 = change.dim2;
+    }
+
+    return NoError;
 }
