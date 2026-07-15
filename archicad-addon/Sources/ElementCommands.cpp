@@ -400,6 +400,11 @@ static void AddFloorPlanPolygonsIfAvailable (const API_Guid& guid, GS::ObjectSta
     }
 }
 
+static GS::ObjectState CreateColorObjectState (const API_RGBColor& color)
+{
+    return GS::ObjectState ("red", color.f_red, "green", color.f_green, "blue", color.f_blue);
+}
+
 static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
 {
     API_LibPart	lp = {};
@@ -419,6 +424,89 @@ static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libI
             ownerType = GetElemTypeId (elemHead);
         }
         os.Add ("ownerElementType", GetElementTypeNonLocalizedName (ownerType));
+    }
+}
+
+// Reads every non-reserved field of API_ObjectType (shared verbatim as API_LampType) into
+// `typeSpecificDetails`, in the shape the "ObjectDetails" schema definition
+// (CommonSchemaDefinitions.json) expects - the same shape CreateObjects/CreateLamps/ModifyObjects/
+// ModifyLamps accept back. lightColor/lightIsOn are Lamp-only (elem.object.lightColor/lightIsOn
+// exist on the shared struct but are only meaningful for API_LampID). lookId is intentionally
+// never exposed - it's an internal 2D-draw "same look" dedup id, not meant to be read or set
+// externally. Per the SDK's own remarks, per-story visibility (showRelAbove/showRelBelow) and
+// linkToSettings.newCreationMode were "not extended" for Object/Lamp the way they were for Morph -
+// still exposed here for schema symmetry, but Archicad may silently no-op them on write.
+static void AddObjectLampDetails (GS::ObjectState& typeSpecificDetails, const API_Element& elem, const Stories& stories)
+{
+    const bool isLamp = GetElemTypeId (elem.header) == API_LampID;
+#ifdef ServerMainVers_2600
+    auto ownerType = elem.object.ownerType;
+#else
+    auto ownerType = elem.object.ownerID;
+#endif
+    AddLibPartBasedElementDetails (typeSpecificDetails, elem.object.libInd, elem.object.owner, GetElemTypeId (ownerType));
+    typeSpecificDetails.Add ("origin", Create3DCoordinateObjectState ({elem.object.pos.x, elem.object.pos.y, GetZPos (elem.header.floorInd, elem.object.level, stories)}));
+
+    double zDimension = 0.0;
+    API_ElementMemo objectMemo = {};
+    const GS::OnExit objectMemoGuard ([&objectMemo] () { ACAPI_DisposeElemMemoHdls (&objectMemo); });
+    ACAPI_Element_GetMemo (elem.header.guid, &objectMemo, APIMemoMask_AddPars);
+    const GSSize nParams = BMGetHandleSize ((GSHandle) objectMemo.params) / sizeof (API_AddParType);
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        API_AddParType& actParam = (*objectMemo.params)[ii];
+
+        const GS::String name (actParam.name);
+        if (name == "ZZYZX") {
+            zDimension = actParam.value.real;
+            break;
+        }
+    }
+    typeSpecificDetails.Add ("dimensions", Create3DCoordinateObjectState ({elem.object.xRatio, elem.object.yRatio, zDimension}));
+    typeSpecificDetails.Add ("angle", elem.object.angle);
+
+    typeSpecificDetails.Add ("pen", (Int32) elem.object.pen);
+    if (elem.object.ltypeInd != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.object.ltypeInd)));
+    }
+    if (elem.object.mat != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, elem.object.mat)));
+    }
+    if (elem.object.sectFill != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("sectionFillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, elem.object.sectFill)));
+    }
+    typeSpecificDetails.Add ("sectionFillPen", (Int32) elem.object.sectFillPen);
+    typeSpecificDetails.Add ("sectionFillBackgroundPen", (Int32) elem.object.sectBGPen);
+    typeSpecificDetails.Add ("sectionContourPen", (Int32) elem.object.sectContPen);
+    typeSpecificDetails.Add ("useObjectPens", elem.object.useObjPens);
+    typeSpecificDetails.Add ("useObjectLineTypes", elem.object.useObjLtypes);
+    typeSpecificDetails.Add ("useObjectMaterials", elem.object.useObjMaterials);
+    typeSpecificDetails.Add ("useObjectSectionAttributes", elem.object.useObjSectAttrs);
+    typeSpecificDetails.Add ("reflected", elem.object.reflected);
+    typeSpecificDetails.Add ("useFixSize", elem.object.useXYFixSize);
+    typeSpecificDetails.Add ("fixPoint", (Int32) elem.object.fixPoint);
+    typeSpecificDetails.Add ("offset", Create2DCoordinateObjectState (elem.object.offset));
+    typeSpecificDetails.Add ("useFixedAngle", elem.object.fixedAngle != 0);
+    typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.object.isAutoOnStoryVisibility);
+
+    if (isLamp) {
+        typeSpecificDetails.Add ("lightColor", CreateColorObjectState (elem.object.lightColor));
+        typeSpecificDetails.Add ("lightIsOn", elem.object.lightIsOn);
+    }
+
+    {
+        GS::ObjectState visibilityOS;
+        visibilityOS.Add ("showOnHome", elem.object.visibility.showOnHome);
+        visibilityOS.Add ("showAllAbove", elem.object.visibility.showAllAbove);
+        visibilityOS.Add ("showAllBelow", elem.object.visibility.showAllBelow);
+        visibilityOS.Add ("showRelAbove", (Int32) elem.object.visibility.showRelAbove);
+        visibilityOS.Add ("showRelBelow", (Int32) elem.object.visibility.showRelBelow);
+        typeSpecificDetails.Add ("visibility", visibilityOS);
+    }
+    {
+        GS::ObjectState linkOS;
+        linkOS.Add ("homeStoryDifference", (Int32) elem.object.linkToSettings.homeStoryDifference);
+        linkOS.Add ("newCreationMode", elem.object.linkToSettings.newCreationMode);
+        typeSpecificDetails.Add ("linkToSettings", linkOS);
     }
 }
 
@@ -623,31 +711,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
 
             case API_ObjectID:
-            case API_LampID: {
-#ifdef ServerMainVers_2600
-                auto ownerType = elem.object.ownerType;
-#else
-                auto ownerType = elem.object.ownerID;
-#endif
-                AddLibPartBasedElementDetails (typeSpecificDetails, elem.object.libInd, elem.object.owner, GetElemTypeId (ownerType));
-                typeSpecificDetails.Add ("origin", Create3DCoordinateObjectState ({elem.object.pos.x, elem.object.pos.y, GetZPos (elem.header.floorInd, elem.object.level, stories)}));
-                double zDimension = 0.0;
-                API_ElementMemo objectMemo = {};
-                const GS::OnExit objectMemoGuard ([&objectMemo] () { ACAPI_DisposeElemMemoHdls (&objectMemo); });
-                ACAPI_Element_GetMemo(elem.header.guid, &objectMemo, APIMemoMask_AddPars);
-                const GSSize nParams = BMGetHandleSize ((GSHandle) objectMemo.params) / sizeof (API_AddParType);
-                for (GSIndex ii = 0; ii < nParams; ++ii) {
-                    API_AddParType& actParam = (*objectMemo.params)[ii];
-
-                    const GS::String name(actParam.name);
-                    if (name == "ZZYZX") {
-                        zDimension = actParam.value.real;
-                        break;
-                    }
-                }
-                typeSpecificDetails.Add ("dimensions", Create3DCoordinateObjectState ({elem.object.xRatio, elem.object.yRatio, zDimension}));
-                typeSpecificDetails.Add ("angle", elem.object.angle);
-            } break;
+            case API_LampID:
+                AddObjectLampDetails (typeSpecificDetails, elem, stories);
+                break;
 
             case API_DetailID:
             case API_WorksheetID: {

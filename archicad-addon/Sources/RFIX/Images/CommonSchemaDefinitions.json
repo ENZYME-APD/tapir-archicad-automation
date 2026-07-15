@@ -307,21 +307,26 @@
             "properties": {
                 "value": {
                     "type": "number",
-                    "description": "The numeric value."
+                    "description": "The numeric value. Present for all flags except 'Step', which instead carries stepBegin/stepValue."
                 },
                 "flag": {
                     "type": "string",
                     "description": "The flag."
+                },
+                "stepBegin": {
+                    "type": "number",
+                    "description": "Only present when flag is 'Step': the value is stepBegin + n*stepValue for n >= 0."
+                },
+                "stepValue": {
+                    "type": "number",
+                    "description": "Only present when flag is 'Step' - see stepBegin."
                 },
                 "description": {
                     "type": "string",
                     "description": "The description of the value."
                 }
             },
-            "additionalProperties": false,
-            "required": [
-                "value"
-            ]
+            "additionalProperties": false
         }
     },
     "GDLParameterDetails": {
@@ -374,7 +379,9 @@
                         "Disabled",
                         "Child",
                         "Unique",
-                        "Fixed"
+                        "Fixed",
+                        "BoldName",
+                        "Open"
                     ]
                 }
             },
@@ -391,6 +398,13 @@
             "canHaveCustomValue": {
                 "type": "boolean",
                 "description": "The parameter can have a custom value."
+            },
+            "itemDescriptions": {
+                "type": "array",
+                "description": "Per-item text labels for an array-type parameter (API_AddParType.arrayDescriptions), one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "additionalProperties": false,
@@ -3056,6 +3070,7 @@
     },
     "ObjectDetails": {
         "$ref": "#/LibPartBasedElementDetails",
+        "description": "Shared shape for Object and Lamp elements (both use the same API_ObjectType struct). lightColor/lightIsOn only apply to Lamps. Per the Archicad SDK's own remarks, per-story visibility (visibility.showRelAbove/showRelBelow) and visibility.linkToSettings.newCreationMode were 'not extended' for Object/Lamp the way they were for other element types - still settable here for schema symmetry, but Archicad may silently ignore them.",
         "properties": {
             "origin": {
                 "$ref": "#/Coordinate3D"
@@ -3065,6 +3080,110 @@
             },
             "angle": {
                 "type": "number"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "Material/Surface override (API_ObjectType.mat)."
+            },
+            "sectionFillId": {
+                "$ref": "#/AttributeId"
+            },
+            "sectionFillPen": {
+                "type": "integer"
+            },
+            "sectionFillBackgroundPen": {
+                "type": "integer"
+            },
+            "sectionContourPen": {
+                "type": "integer"
+            },
+            "useObjectPens": {
+                "type": "boolean",
+                "description": "Use the pen defined in the library part instead of 'pen'."
+            },
+            "useObjectLineTypes": {
+                "type": "boolean",
+                "description": "Use the line type defined in the library part instead of 'lineTypeId'."
+            },
+            "useObjectMaterials": {
+                "type": "boolean",
+                "description": "Use the materials defined in the library part instead of 'surfaceId'."
+            },
+            "useObjectSectionAttributes": {
+                "type": "boolean",
+                "description": "Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'."
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "useFixSize": {
+                "type": "boolean",
+                "description": "Use the A/B (dimensions.x/dimensions.y) values as fixed sizes."
+            },
+            "fixPoint": {
+                "type": "integer",
+                "description": "0-based index of the hotspot to keep fixed when the object is resized (raw API_ObjectType.fixPoint value, not 1-based)."
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level."
+            },
+            "useFixedAngle": {
+                "type": "boolean",
+                "description": "Use a fixed rotation angle (API_ObjectType.fixedAngle - stored as Int32 in the API despite being boolean in practice). Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "Recalculate per-story visibility automatically from the object's vertical extent ('All Relevant Stories')."
+            },
+            "lightColor": {
+                "$ref": "#/ColorRGB",
+                "description": "Lamp only. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default light color). lightIsOn (the on/off state) does not have this problem."
+            },
+            "lightIsOn": {
+                "type": "boolean",
+                "description": "Lamp only."
+            },
+            "visibility": {
+                "type": "object",
+                "description": "Per-story visibility settings.",
+                "properties": {
+                    "showOnHome": {
+                        "type": "boolean"
+                    },
+                    "showAllAbove": {
+                        "type": "boolean"
+                    },
+                    "showAllBelow": {
+                        "type": "boolean"
+                    },
+                    "showRelAbove": {
+                        "type": "integer"
+                    },
+                    "showRelBelow": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "linkToSettings": {
+                "type": "object",
+                "description": "Mode of linking to the home story.",
+                "properties": {
+                    "homeStoryDifference": {
+                        "type": "integer"
+                    },
+                    "newCreationMode": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false
             }
         },
         "additionalProperties": false,
