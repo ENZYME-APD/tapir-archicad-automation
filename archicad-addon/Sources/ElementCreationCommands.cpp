@@ -189,7 +189,9 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     element.column.bottomOffset = floorIndexAndOffset.second;
     element.column.origoPos.x = apiCoordinate.x;
     element.column.origoPos.y = apiCoordinate.y;
-    parameters.Get ("height", element.column.height);
+    if (parameters.Get ("height", element.column.height)) {
+        element.column.relativeTopStory = 0;
+    }
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
 
     GS::UniString coreAnchor;
