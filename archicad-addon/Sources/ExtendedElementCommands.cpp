@@ -1288,7 +1288,7 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
     auto level = GetOptionalDouble (details, "level");
 
     if (level.HasValue ()) {
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (level.Get (), stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", level.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.roof.shellBase.level = floorIndexAndOffset.second;
         if (mask != nullptr) {
@@ -1656,6 +1656,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
                         "zCoordinate": { "type": "number" },
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
@@ -1700,7 +1701,7 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.beam.level = floorIndexAndOffset.second;
 
@@ -1772,6 +1773,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "number",
                             "description": "The Z coordinate (absolute elevation) of the stair base."
                         },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from zCoordinate."
+                        },
                         "totalHeight": {
                             "type": "number",
                             "description": "Total height of the stair.",
@@ -1818,7 +1823,7 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
 
     auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
@@ -2312,7 +2317,8 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                     "properties": {
                         "basePoint": { "$ref": "#/Coordinate3D" },
                         "size": { "$ref": "#/Dimensions3D" },
-                        "buildingMaterialId": { "$ref": "#/AttributeId" }
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from the basePoint's z value." }
                     },
                     "additionalProperties": false,
                     "required": ["basePoint", "size"]
@@ -2346,6 +2352,8 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
+    const Stories stories = GetStories ();
+
     return ExecuteCreateWithElements ("Create Morphs", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : morphsData) {
             API_Element element = {};
@@ -2370,6 +2378,14 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "Morph 'size' values must be positive."));
                 continue;
             }
+
+            // GetDefaults leaves floorInd at whatever story is currently active in the UI,
+            // regardless of basePoint's z - a morph built far above/below that story's own
+            // elevation would get correctly placed in absolute 3D space (tmx below stays absolute)
+            // but assigned to the wrong story for floor-plan/story-based queries. Only floorInd is
+            // derived here; tmx[11] intentionally stays basePoint.z (absolute), matching how the
+            // rest of this command already places the morph in world space.
+            element.header.floorInd = ResolveFloorIndexAndOffset (data, "floorIndex", basePoint.z, stories).first;
 
             auto buildingMaterialId = GetOptionalObjectState (data, "buildingMaterialId");
 
@@ -2431,6 +2447,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "level": { "type": "number" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from level." },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "polygonCoordinates": {
                             "type": "array",
