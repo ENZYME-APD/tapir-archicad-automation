@@ -21,6 +21,36 @@
 /* [  1] */        "Check for Updates...^E3^ES^EE^EI^ED^EL^EW^ET^EM^32510"
 }
 
+'STR#' ID_ADDON_MENU_RUNSCRIPT_1 "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Run Script Shortcut 1^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_RUNSCRIPT_2 "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Run Script Shortcut 2^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_RUNSCRIPT_3 "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Run Script Shortcut 3^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_RUNSCRIPT_4 "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Run Script Shortcut 4^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_RUNSCRIPT_5 "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Run Script Shortcut 5^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_RUNSCRIPT_6 "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Run Script Shortcut 6^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
 'STR#' ID_PALETTE_STRINGS "Tapir Palette Strings" {
 /* [  1] */ "Select Python Scripts"
 /* [  2] */ "Add"
@@ -51,13 +81,14 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  400  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  428  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
 /* [  2] */ PopupControl              28   3 260  22    80  3
 /* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
 /* [  4] */ IconButton               316   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
 /* [  5] */ IconButton               344   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
 /* [  6] */ IconButton               372   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
+/* [  7] */ IconButton               400   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -67,4 +98,53 @@
 4    ""        OpenButton
 5    ""        AddButton
 6    ""        DelButton
+7    ""        ManageShortcutsButton
+}
+
+'GDLG' ID_SHORTCUTS_DIALOG Modal | noGrow    80   80  500  270  "Script Shortcuts" {
+/* [  1] */ LeftText     110    6  210   16    SmallPlain  vCenter  "Script"
+/* [  2] */ LeftText     330    6  150   16    SmallPlain  vCenter  "Toolbar label (optional)"
+/* [  3] */ LeftText      10   32   90   18    SmallPlain  vCenter  "Shortcut 1:"
+/* [  4] */ PopupControl 110   30  210   22    80  3
+/* [  5] */ TextEdit     330   30  150   22    SmallPlain  60
+/* [  6] */ LeftText      10   62   90   18    SmallPlain  vCenter  "Shortcut 2:"
+/* [  7] */ PopupControl 110   60  210   22    80  3
+/* [  8] */ TextEdit     330   60  150   22    SmallPlain  60
+/* [  9] */ LeftText      10   92   90   18    SmallPlain  vCenter  "Shortcut 3:"
+/* [ 10] */ PopupControl 110   90  210   22    80  3
+/* [ 11] */ TextEdit     330   90  150   22    SmallPlain  60
+/* [ 12] */ LeftText      10  122   90   18    SmallPlain  vCenter  "Shortcut 4:"
+/* [ 13] */ PopupControl 110  120  210   22    80  3
+/* [ 14] */ TextEdit     330  120  150   22    SmallPlain  60
+/* [ 15] */ LeftText      10  152   90   18    SmallPlain  vCenter  "Shortcut 5:"
+/* [ 16] */ PopupControl 110  150  210   22    80  3
+/* [ 17] */ TextEdit     330  150  150   22    SmallPlain  60
+/* [ 18] */ LeftText      10  182   90   18    SmallPlain  vCenter  "Shortcut 6:"
+/* [ 19] */ PopupControl 110  180  210   22    80  3
+/* [ 20] */ TextEdit     330  180  150   22    SmallPlain  60
+/* [ 21] */ Button       410  224   70   24    LargePlain  "Close"
+}
+
+'DLGH' ID_SHORTCUTS_DIALOG Tapir_Shortcuts_Dialog {
+1    ""        ScriptColumnHeader
+2    ""        LabelColumnHeader
+3    ""        ShortcutLabel1
+4    ""        ShortcutPopUp1
+5    ""        ShortcutLabelEdit1
+6    ""        ShortcutLabel2
+7    ""        ShortcutPopUp2
+8    ""        ShortcutLabelEdit2
+9    ""        ShortcutLabel3
+10   ""        ShortcutPopUp3
+11   ""        ShortcutLabelEdit3
+12   ""        ShortcutLabel4
+13   ""        ShortcutPopUp4
+14   ""        ShortcutLabelEdit4
+15   ""        ShortcutLabel5
+16   ""        ShortcutPopUp5
+17   ""        ShortcutLabelEdit5
+18   ""        ShortcutLabel6
+19   ""        ShortcutPopUp6
+20   ""        ShortcutLabelEdit6
+21   ""        CloseButton
 }
