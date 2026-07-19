@@ -489,6 +489,15 @@ inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& ele
 #endif
 }
 
+inline GSErrCode TAPIR_Element_SetCategoryValue (const API_Guid& elemGuid, const API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_SetCategoryValue (elemGuid, categoryValue.category, categoryValue);
+#else
+    return ACAPI_Element_SetCategoryValue (elemGuid, categoryValue.category, categoryValue);
+#endif
+}
+
 inline GSErrCode TAPIR_Element_SetPropertiesOfDefaultElem (const API_Elem_Head& elemHead, const GS::Array<API_Property>& properties)
 {
 #ifdef ServerMainVers_2600
