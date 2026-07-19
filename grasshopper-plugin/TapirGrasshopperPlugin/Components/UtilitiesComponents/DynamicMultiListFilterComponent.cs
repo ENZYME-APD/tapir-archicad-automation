@@ -180,6 +180,9 @@ namespace TapirGrasshopperPlugin.Components.UtilitiesComponents
             ExpireSolution(true);
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.DynamicMultiFilter;
+
         public override Guid ComponentGuid =>
             new Guid("aa37107d-57bd-415d-bbf6-0b36058451e3");
     }

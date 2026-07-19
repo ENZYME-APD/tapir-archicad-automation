@@ -79,6 +79,9 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
             }
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ReserveElements;
+
         public override Guid ComponentGuid =>
             new Guid("3c0e9944-2875-4a68-8794-ec16fa3235f5");
     }
@@ -118,6 +121,9 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 0,
                 response.Message());
         }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ReleaseElements;
 
         public override Guid ComponentGuid =>
             new Guid("f0456a61-c0c7-445a-b670-009b2ae5d1af");

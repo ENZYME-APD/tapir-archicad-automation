@@ -19,6 +19,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.Hotlinks;
+
         public override Guid ComponentGuid =>
             new Guid("89ae1638-8c9f-481f-8a01-5cdf2ded8071");
 
