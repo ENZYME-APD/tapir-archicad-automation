@@ -14,6 +14,7 @@
 #define ACAPI_MenuItem_InstallMenuHandler ACAPI_Install_MenuHandler
 #define ACAPI_MenuItem_GetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_GetMenuItemFlagsID, par1, par2);
 #define ACAPI_MenuItem_SetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_SetMenuItemFlagsID, par1, par2);
+#define ACAPI_MenuItem_SetMenuItemText(par1, par2, par3) ACAPI_Interface (APIIo_SetMenuItemTextID, par1, par2, par3);
 
 #define ACAPI_Markup_Create ACAPI_MarkUp_Create
 #define ACAPI_Markup_Delete ACAPI_MarkUp_Delete

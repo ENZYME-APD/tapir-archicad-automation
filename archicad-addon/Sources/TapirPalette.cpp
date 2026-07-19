@@ -142,6 +142,7 @@ TapirPalette::TapirPalette ()
     , openScriptButton (GetReference (), 4)
     , addScriptButton (GetReference (), 5)
     , delScriptButton (GetReference (), 6)
+    , manageShortcutsButton (GetReference (), 7)
 {
     Attach (*this);
     AttachToAllItems (*this);
@@ -216,6 +217,7 @@ void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
         }
     }
     scriptSelectionPopUp.SelectItem (itemToSelect);
+    RefreshScriptListShortcutLabels ();
 }
 
 static void OpenWebpage (const GS::UniString& webpage)
@@ -277,6 +279,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         AddNewScript ();
     } else if (ev.GetSource () == &delScriptButton) {
         DeleteScriptFromPopUp ();
+    } else if (ev.GetSource () == &manageShortcutsButton) {
+        OpenShortcutsDialog ();
     }
 }
 
@@ -314,6 +318,297 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
     }
+}
+
+void TapirPalette::RunShortcutSlot (short slotIndex)
+{
+    // Uses DG_ERROR (pops an alert) rather than DG_WARNING (silently logged) for every failure
+    // path here on purpose: a keyboard-shortcut-triggered action needs to be impossible to miss —
+    // a report-log-only warning looks identical to "nothing happened" if the Report window isn't open.
+    if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount || scriptShortcutSlots[slotIndex].IsEmpty ()) {
+        WriteReport (DG_ERROR, "No script assigned to shortcut slot %d.", (int) (slotIndex + 1));
+        return;
+    }
+    if (IsProcessRunning ()) {
+        WriteReport (DG_ERROR, "A script is already running - wait for it to finish before using a shortcut slot.");
+        return;
+    }
+    if (Config::Instance ().AskUpdatingAddOnBeforeEachExecution () && UpdateAddOn ()) {
+        return;
+    }
+
+    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
+        if (scriptSelectionPopUp.IsSeparator (i)) {
+            continue;
+        }
+        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
+        if (popUpItemData != nullptr && popUpItemData->fileLocation == scriptShortcutSlots[slotIndex]) {
+            ExecuteScript (*popUpItemData);
+            return;
+        }
+    }
+    WriteReport (DG_ERROR, "Script assigned to shortcut slot %d could not be found (%d scripts currently listed).",
+        (int) (slotIndex + 1), (int) (scriptSelectionPopUp.GetItemCount () - 1));
+}
+
+void TapirPalette::GetAvailableScripts (GS::Array<std::pair<GS::UniString, IO::Location>>& outScripts)
+{
+    outScripts.Clear ();
+    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
+        if (scriptSelectionPopUp.IsSeparator (i)) {
+            continue;
+        }
+        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
+        if (popUpItemData != nullptr) {
+            outScripts.Push ({ scriptSelectionPopUp.GetItemText (i), popUpItemData->fileLocation });
+        }
+    }
+}
+
+IO::Location TapirPalette::GetShortcutSlot (short slotIndex) const
+{
+    if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount) {
+        return IO::Location ();
+    }
+    return scriptShortcutSlots[slotIndex];
+}
+
+void TapirPalette::SetShortcutSlot (short slotIndex, const IO::Location& location)
+{
+    if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount) {
+        return;
+    }
+    // A script only ever occupies one slot — clear it from any other slot first.
+    if (!location.IsEmpty ()) {
+        for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+            if (scriptShortcutSlots[slot] == location) {
+                scriptShortcutSlots[slot] = IO::Location ();
+            }
+        }
+    }
+    scriptShortcutSlots[slotIndex] = location;
+    SaveScriptsToPreferences ();
+    RefreshScriptListShortcutLabels ();
+}
+
+GS::UniString TapirPalette::GetShortcutLabel (short slotIndex) const
+{
+    if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount) {
+        return GS::EmptyUniString;
+    }
+    return scriptShortcutLabels[slotIndex];
+}
+
+void TapirPalette::SetShortcutLabel (short slotIndex, const GS::UniString& label)
+{
+    if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount) {
+        return;
+    }
+    if (scriptShortcutLabels[slotIndex] == label) {
+        return;
+    }
+    scriptShortcutLabels[slotIndex] = label;
+    ApplyShortcutMenuItemText (slotIndex);
+    SaveScriptsToPreferences ();
+}
+
+// scriptSelectionPopUp items get "  [Shortcut N]" appended when the script backing them is assigned
+// to a slot, so both "which slot is this" and "what's already taken" are visible while just browsing
+// the normal script dropdown, not only inside the dedicated Shortcuts dialog.
+void TapirPalette::RefreshScriptListShortcutLabels ()
+{
+    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
+        if (scriptSelectionPopUp.IsSeparator (i)) {
+            continue;
+        }
+        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
+        if (popUpItemData == nullptr) {
+            continue;
+        }
+        GS::UniString label = popUpItemData->baseDisplayText;
+        for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+            if (!scriptShortcutSlots[slot].IsEmpty () && scriptShortcutSlots[slot] == popUpItemData->fileLocation) {
+                label += GS::UniString::Printf ("   [Shortcut %d]", (int) (slot + 1));
+                break;
+            }
+        }
+        scriptSelectionPopUp.SetItemText (i, label);
+    }
+}
+
+void TapirPalette::ApplyShortcutMenuItemText (short slotIndex)
+{
+    static const short menuResIds[ScriptShortcutSlotCount] = {
+        ID_ADDON_MENU_RUNSCRIPT_1, ID_ADDON_MENU_RUNSCRIPT_2, ID_ADDON_MENU_RUNSCRIPT_3,
+        ID_ADDON_MENU_RUNSCRIPT_4, ID_ADDON_MENU_RUNSCRIPT_5, ID_ADDON_MENU_RUNSCRIPT_6
+    };
+    if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount) {
+        return;
+    }
+
+    GS::UniString label = scriptShortcutLabels[slotIndex];
+    if (label.IsEmpty ()) {
+        label = GS::UniString::Printf ("Run Script Shortcut %d", (int) (slotIndex + 1));
+    }
+
+    API_MenuItemRef itemRef = {};
+    itemRef.menuResID = menuResIds[slotIndex];
+    itemRef.itemIndex = ID_ADDON_MENU_RUNSCRIPT_ITEM;
+    ACAPI_MenuItem_SetMenuItemText (&itemRef, nullptr, &label);
+}
+
+void TapirPalette::ApplyAllShortcutMenuItemTexts ()
+{
+    for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+        ApplyShortcutMenuItemText (slot);
+    }
+}
+
+namespace {
+
+// Dedicated dialog for assigning scripts to shortcut slots: each row shows the slot's currently
+// assigned script directly in its own popup (and "(unassigned)" when empty), plus an editable label
+// for the text shown in Archicad's menu/toolbar for that shortcut, so both "which slot is this" and
+// "what's already taken" are visible in one screen, instead of blind slot numbers.
+class TapirShortcutsDialog : public DG::ModalDialog,
+    public DG::ButtonItemObserver,
+    public DG::PopUpObserver,
+    public DG::TextEditBaseObserver
+{
+public:
+    TapirShortcutsDialog ()
+        : DG::ModalDialog (ACAPI_GetOwnResModule (), ID_SHORTCUTS_DIALOG, ACAPI_GetOwnResModule ())
+        , slotPopUp1 (GetReference (), ID_SHORTCUTS_DIALOG_POPUP_1)
+        , slotPopUp2 (GetReference (), ID_SHORTCUTS_DIALOG_POPUP_2)
+        , slotPopUp3 (GetReference (), ID_SHORTCUTS_DIALOG_POPUP_3)
+        , slotPopUp4 (GetReference (), ID_SHORTCUTS_DIALOG_POPUP_4)
+        , slotPopUp5 (GetReference (), ID_SHORTCUTS_DIALOG_POPUP_5)
+        , slotPopUp6 (GetReference (), ID_SHORTCUTS_DIALOG_POPUP_6)
+        , labelEdit1 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_1)
+        , labelEdit2 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_2)
+        , labelEdit3 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_3)
+        , labelEdit4 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_4)
+        , labelEdit5 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_5)
+        , labelEdit6 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_6)
+        , closeButton (GetReference (), ID_SHORTCUTS_DIALOG_CLOSE_BUTTON)
+    {
+        slotPopUps[0] = &slotPopUp1;
+        slotPopUps[1] = &slotPopUp2;
+        slotPopUps[2] = &slotPopUp3;
+        slotPopUps[3] = &slotPopUp4;
+        slotPopUps[4] = &slotPopUp5;
+        slotPopUps[5] = &slotPopUp6;
+
+        labelEdits[0] = &labelEdit1;
+        labelEdits[1] = &labelEdit2;
+        labelEdits[2] = &labelEdit3;
+        labelEdits[3] = &labelEdit4;
+        labelEdits[4] = &labelEdit5;
+        labelEdits[5] = &labelEdit6;
+
+        closeButton.Attach (*this);
+        for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
+            slotPopUps[row]->Attach (*this);
+            labelEdits[row]->Attach (*this);
+        }
+
+        TapirPalette::Instance ().GetAvailableScripts (scripts);
+        for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
+            BuildRowItems (*slotPopUps[row]);
+        }
+        RefreshAllRows ();
+    }
+
+    ~TapirShortcutsDialog ()
+    {
+        closeButton.Detach (*this);
+        for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
+            slotPopUps[row]->Detach (*this);
+            labelEdits[row]->Detach (*this);
+        }
+    }
+
+private:
+    DG::PopUp    slotPopUp1, slotPopUp2, slotPopUp3, slotPopUp4, slotPopUp5, slotPopUp6;
+    DG::TextEdit labelEdit1, labelEdit2, labelEdit3, labelEdit4, labelEdit5, labelEdit6;
+    DG::Button   closeButton;
+    DG::PopUp*     slotPopUps[TapirPalette::ScriptShortcutSlotCount];
+    DG::TextEdit*  labelEdits[TapirPalette::ScriptShortcutSlotCount];
+    GS::Array<std::pair<GS::UniString, IO::Location>> scripts;
+
+    void BuildRowItems (DG::PopUp& popUp)
+    {
+        popUp.AppendItem ();
+        popUp.SetItemText (DG::PopUp::BottomItem, "(unassigned)");
+        for (const auto& script : scripts) {
+            popUp.AppendItem ();
+            popUp.SetItemText (DG::PopUp::BottomItem, script.first);
+        }
+    }
+
+    void RefreshAllRows ()
+    {
+        for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
+            const IO::Location assigned = TapirPalette::Instance ().GetShortcutSlot (row);
+            short itemToSelect = 1;   // "(unassigned)"
+            if (!assigned.IsEmpty ()) {
+                for (UIndex i = 0; i < scripts.GetSize (); ++i) {
+                    if (scripts[i].second == assigned) {
+                        itemToSelect = (short) (i + 2);
+                        break;
+                    }
+                }
+            }
+            slotPopUps[row]->SelectItem (itemToSelect);
+
+            GS::UniString label = TapirPalette::Instance ().GetShortcutLabel (row);
+            if (label.IsEmpty ()) {
+                label = GS::UniString::Printf ("Run Script Shortcut %d", (int) (row + 1));
+            }
+            labelEdits[row]->SetText (label);
+        }
+    }
+
+    virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override
+    {
+        if (ev.GetSource () == &closeButton) {
+            PostCloseRequest (DG::ModalDialog::Accept);
+        }
+    }
+
+    virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override
+    {
+        for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
+            if (ev.GetSource () == slotPopUps[row]) {
+                const short selectedItem = slotPopUps[row]->GetSelectedItem ();
+                IO::Location newLocation;   // empty = unassigned
+                if (selectedItem >= 2 && (UIndex) (selectedItem - 2) < scripts.GetSize ()) {
+                    newLocation = scripts[selectedItem - 2].second;
+                }
+                TapirPalette::Instance ().SetShortcutSlot (row, newLocation);
+                RefreshAllRows ();   // another row may have just lost this script to the dedup rule
+                return;
+            }
+        }
+    }
+
+    virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override
+    {
+        for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
+            if (ev.GetSource () == labelEdits[row]) {
+                TapirPalette::Instance ().SetShortcutLabel (row, labelEdits[row]->GetText ());
+                return;
+            }
+        }
+    }
+};
+
+} // namespace
+
+void TapirPalette::OpenShortcutsDialog ()
+{
+    TapirShortcutsDialog dialog;
+    dialog.Invoke ();
 }
 
 GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID messageID, GS::IntPtr param)
@@ -510,13 +805,14 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     if (popUpData->repo) {
         auto* repo = popUpData->repo;
         if (repo->displayName.IsEmpty ()) {
-            scriptSelectionPopUp.SetItemText (index, name.ToString () + " (" + repo->repoOwner + "/" + repo->repoName + ")");
+            popUpData->baseDisplayText = name.ToString () + " (" + repo->repoOwner + "/" + repo->repoName + ")";
         } else {
-            scriptSelectionPopUp.SetItemText (index, name.ToString () + " (" + repo->displayName + ")");
+            popUpData->baseDisplayText = name.ToString () + " (" + repo->displayName + ")";
         }
     } else {
-        scriptSelectionPopUp.SetItemText (index, name.ToString ());
+        popUpData->baseDisplayText = name.ToString ();
     }
+    scriptSelectionPopUp.SetItemText (index, popUpData->baseDisplayText);
     scriptSelectionPopUp.SetItemObjectData (index, popUpData);
 
     return true;
@@ -625,6 +921,7 @@ void TapirPalette::LoadScriptsToPopUp ()
     }
     scriptSelectionPopUp.SelectItem (itemToSelect);
 
+    RefreshScriptListShortcutLabels ();
     SetDeleteScriptButtonStatus ();
 }
 
@@ -699,7 +996,11 @@ bool TapirPalette::UpdateAddOn ()
     return true;
 }
 
-#define PREFERENCES_VERSION 10
+#define PREFERENCES_VERSION 12
+#define PREFERENCES_VERSION_BEFORE_SHORTCUT_LABELS 11
+#define PREFERENCES_VERSION_BEFORE_SHORTCUT_SLOTS 10
+static const GS::UniString ShortcutSlotEmptyMarker ("(unassigned)");   // never a valid file path; "" would be dropped by SkipEmptyParts
+static const GS::UniString ShortcutLabelDefaultMarker ("(default)");   // means "use the default 'Run Script Shortcut N' text"; "" would be dropped by SkipEmptyParts
 
 void TapirPalette::SaveScriptsToPreferences ()
 {
@@ -717,6 +1018,17 @@ void TapirPalette::SaveScriptsToPreferences ()
         }
     }
     preferencesStr += GS::ValueToUniString (scriptSelectionPopUp.GetSelectedItem ());
+    for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+        GS::UniString slotPathStr = ShortcutSlotEmptyMarker;
+        if (!scriptShortcutSlots[slot].IsEmpty ()) {
+            scriptShortcutSlots[slot].ToPath (&slotPathStr);
+        }
+        preferencesStr += '\n' + slotPathStr;
+    }
+    for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+        const GS::UniString& labelStr = scriptShortcutLabels[slot].IsEmpty () ? ShortcutLabelDefaultMarker : scriptShortcutLabels[slot];
+        preferencesStr += '\n' + labelStr;
+    }
     auto cStr = preferencesStr.ToCStr ();
     ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()), cStr.Get());
 }
@@ -739,12 +1051,16 @@ short TapirPalette::AddScriptsFromPreferences ()
             scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
         }
     }
+    for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+        scriptShortcutSlots[slot] = IO::Location ();
+        scriptShortcutLabels[slot] = GS::EmptyUniString;
+    }
 
     Int32 version;
     GSSize nBytes;
 
     ACAPI_GetPreferences (&version, &nBytes, nullptr);
-    if (version != PREFERENCES_VERSION || nBytes <= 0) {
+    if (nBytes <= 0 || (version != PREFERENCES_VERSION && version != PREFERENCES_VERSION_BEFORE_SHORTCUT_LABELS && version != PREFERENCES_VERSION_BEFORE_SHORTCUT_SLOTS)) {
         return DG::PopUp::TopItem;
     }
 
@@ -752,8 +1068,37 @@ short TapirPalette::AddScriptsFromPreferences ()
     ACAPI_GetPreferences (&version, &nBytes, data.get ());
     GS::Array<GS::UniString> scriptPathArray;
     GS::UniString (data.get ()).Split ("\n", GS::UniString::SkipEmptyParts, &scriptPathArray);
+
+    if (version == PREFERENCES_VERSION && scriptPathArray.GetSize () >= 2 * ScriptShortcutSlotCount) {
+        // Labels were appended last, so they must be popped first.
+        for (short slot = ScriptShortcutSlotCount - 1; slot >= 0; --slot) {
+            GS::UniString labelStr = scriptPathArray.GetLast ();
+            scriptPathArray.DeleteLast ();
+            if (labelStr != ShortcutLabelDefaultMarker) {
+                scriptShortcutLabels[slot] = labelStr;
+            }
+        }
+        for (short slot = ScriptShortcutSlotCount - 1; slot >= 0; --slot) {
+            GS::UniString slotPathStr = scriptPathArray.GetLast ();
+            scriptPathArray.DeleteLast ();
+            if (slotPathStr != ShortcutSlotEmptyMarker) {
+                scriptShortcutSlots[slot] = IO::Location (slotPathStr);
+            }
+        }
+    } else if (version == PREFERENCES_VERSION_BEFORE_SHORTCUT_LABELS && scriptPathArray.GetSize () >= ScriptShortcutSlotCount) {
+        for (short slot = ScriptShortcutSlotCount - 1; slot >= 0; --slot) {
+            GS::UniString slotPathStr = scriptPathArray.GetLast ();
+            scriptPathArray.DeleteLast ();
+            if (slotPathStr != ShortcutSlotEmptyMarker) {
+                scriptShortcutSlots[slot] = IO::Location (slotPathStr);
+            }
+        }
+    }
+
+    ApplyAllShortcutMenuItemTexts ();
+
     short selectedItemBeforeClose = -1;
-    if (GS::UniStringToValue<short> (scriptPathArray.GetLast (), selectedItemBeforeClose, GS::ToValueMode::Strict)) {
+    if (!scriptPathArray.IsEmpty () && GS::UniStringToValue<short> (scriptPathArray.GetLast (), selectedItemBeforeClose, GS::ToValueMode::Strict)) {
         scriptPathArray.DeleteLast();
     }
     for (auto&& scriptPath : scriptPathArray) {

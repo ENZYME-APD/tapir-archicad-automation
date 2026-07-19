@@ -8,6 +8,8 @@
 #include "Config.hpp"
 #include "UvManager.hpp"
 
+#include <utility>
+
 class TapirPalette final : public DG::Palette,
     public DG::PanelObserver,
     public DG::ButtonItemObserver,
@@ -25,6 +27,16 @@ public:
 
     bool UpdateAddOn ();
 
+    static constexpr short ScriptShortcutSlotCount = 6;
+    void RunShortcutSlot (short slotIndex);   // 0-based, 0..ScriptShortcutSlotCount-1
+
+    void GetAvailableScripts (GS::Array<std::pair<GS::UniString, IO::Location>>& outScripts);
+    IO::Location GetShortcutSlot (short slotIndex) const;   // 0-based; empty location = unassigned
+    void SetShortcutSlot (short slotIndex, const IO::Location& location);   // empty location clears it
+    GS::UniString GetShortcutLabel (short slotIndex) const;   // 0-based; empty = using the default "Run Script Shortcut N" text
+    void SetShortcutLabel (short slotIndex, const GS::UniString& label);   // empty resets to the default text
+    void OpenShortcutsDialog ();
+
     static GSErrCode RegisterPaletteControlCallBack ();
 
 private:
@@ -33,6 +45,7 @@ private:
         IO::Location fileLocation;
         const GS::UniString repoRelLoc;
         const Config::Repository* repo = nullptr;
+        GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
 
         explicit PopUpItemData (
             const IO::Location& _fileLocation,
@@ -47,12 +60,15 @@ private:
     DG::IconButton openScriptButton;
     DG::IconButton addScriptButton;
     DG::IconButton delScriptButton;
+    DG::IconButton manageShortcutsButton;
 
     GS::Process process;
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
     UvManager uvManager;
+    IO::Location scriptShortcutSlots[ScriptShortcutSlotCount];    // empty = unassigned
+    GS::UniString scriptShortcutLabels[ScriptShortcutSlotCount];  // empty = using the default menu text
 
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const PopUpItemData& popUpItemData);
@@ -69,6 +85,9 @@ private:
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
     void SetRunButtonIcon ();
+    void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot
+    void ApplyShortcutMenuItemText (short slotIndex);   // pushes scriptShortcutLabels[slotIndex] to the real Archicad menu item
+    void ApplyAllShortcutMenuItemTexts ();
     bool IsProcessRunning () {
         return process.IsValid ();
     }
