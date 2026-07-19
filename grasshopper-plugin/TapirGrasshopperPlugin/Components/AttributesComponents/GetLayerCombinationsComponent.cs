@@ -141,6 +141,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 intersectionGroupsOfLayers);
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.LayerCombinations;
+
         public override Guid ComponentGuid =>
             new Guid("a4cebe10-f489-4cd6-a174-45b158a33365");
     }
