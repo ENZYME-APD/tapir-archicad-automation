@@ -5,9 +5,13 @@
 const GS::Guid                  ScriptUIPalette::paletteGuid ("{6E3B7F0A-6C7A-4B0E-9A0D-5B6E3F2C9A11}");
 GS::Ref<ScriptUIPalette>        ScriptUIPalette::instance;
 
-// Zoom control and SetAllowSelfSignedCertificates do not exist at all on DG::Browser before
-// Archicad 27; the context menu can only be toggled on/off pre-27 (no Custom mode). These wrappers
-// keep ShowWithHTML version-agnostic.
+// Zoom control, SetAllowSelfSignedCertificates, and the context-menu mode enum do not exist at
+// all on DG::Browser before Archicad 27 (context menu can only be toggled on/off pre-27, no
+// Custom mode). Archicad 27 itself is a further split: SetZoomLevel/GetZoomLevel exist there, but
+// EnableZooming/DisableZooming were only added in 28 (confirmed via a real 27 build failure -
+// "'EnableZooming': is not a member of 'DG::Browser'" - matching the existing precedent in
+// MigrationHelper.hpp where AC27 is a known odd-one-out for other APIs too, e.g.
+// ACAPI_Element_SolidLink_GetFlags). These wrappers keep ShowWithHTML version-agnostic.
 #ifndef ServerMainVers_2700
 static void TAPIR_Browser_SetZoomEnabled (DG::Browser&, bool) {}
 static void TAPIR_Browser_SetZoomLevel (DG::Browser&, double) {}
@@ -21,14 +25,6 @@ static void TAPIR_Browser_SetContextMenuEnabled (DG::Browser& browser, bool enab
     }
 }
 #else
-static void TAPIR_Browser_SetZoomEnabled (DG::Browser& browser, bool enabled)
-{
-    if (enabled) {
-        browser.EnableZooming ();
-    } else {
-        browser.DisableZooming ();
-    }
-}
 static void TAPIR_Browser_SetZoomLevel (DG::Browser& browser, double zoomLevel)
 {
     browser.SetZoomLevel (zoomLevel);
@@ -41,6 +37,18 @@ static void TAPIR_Browser_SetContextMenuEnabled (DG::Browser& browser, bool enab
 {
     browser.SetContextMenuMode (enabled ? DG::BrowserBase::ContextMenuMode::Default : DG::BrowserBase::ContextMenuMode::Disabled);
 }
+#if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
+static void TAPIR_Browser_SetZoomEnabled (DG::Browser&, bool) {}
+#else
+static void TAPIR_Browser_SetZoomEnabled (DG::Browser& browser, bool enabled)
+{
+    if (enabled) {
+        browser.EnableZooming ();
+    } else {
+        browser.DisableZooming ();
+    }
+}
+#endif
 #endif
 
 // Archicad's own browser.onContentHeightChanged event does not fire on dynamic DOM changes (only
