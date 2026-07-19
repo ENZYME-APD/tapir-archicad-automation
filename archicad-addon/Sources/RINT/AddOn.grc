@@ -68,3 +68,11 @@
 5    ""        AddButton
 6    ""        DelButton
 }
+
+'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {
+/* [  1] */ Browser                     0   0  600  450
+}
+
+'DLGH' ID_SCRIPTUI_PALETTE Tapir_ScriptUI_Palette {
+1    ""        BrowserItem
+}
