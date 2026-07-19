@@ -90,6 +90,11 @@
 #define ACAPI_Database_GetMasterLayoutDatabases(par1, par2) ACAPI_Database (APIDb_GetMasterLayoutDatabasesID, par1, par2)
 #define ACAPI_Navigator_GetLayoutSets(par1, par2) ACAPI_Environment (APIEnv_GetLayoutSetsID, par1, par2)
 #define ACAPI_Database_NewDatabase(par1) ACAPI_Database (APIDb_NewDatabaseID, par1)
+
+inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutInfo, API_DatabaseUnId* databaseUnId)
+{
+    return ACAPI_Environment (APIEnv_ChangeLayoutSetsID, const_cast<API_LayoutInfo*> (layoutInfo), databaseUnId);
+}
 #define ACAPI_Navigator_CreateLayout(par1, par2) ACAPI_Environment (APIEnv_CreateLayoutID, par1, par2)
 #define ACAPI_Navigator_GetSubSetDefault(par1) ACAPI_Database (APIDb_GetSubSetDefaultID, par1)
 #define ACAPI_Navigator_CreateSubSet(par1, par2) ACAPI_Database (APIDb_CreateSubSetID, par1, (void*)par2)
@@ -175,6 +180,11 @@ inline GSErrCode ACAPI_AutoText_CreateAnAutoText (const API_Guid* autotextDbKey,
     return ACAPI_Goodies (APIAny_CreateAnAutoTextID, (void*) autotextDbKey, (void*) autotextKey);
 }
 
+inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
+{
+    return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
+}
+
 inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
 {
     return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);
@@ -210,6 +220,16 @@ inline GSErrCode ACAPI_Navigator_ChangeNavigatorView (API_NavigatorItem* navigat
     return ACAPI_Navigator (APINavigator_ChangeNavigatorViewID, navigatorItem, navigatorView);
 }
 
+inline GSErrCode ACAPI_Navigator_NewNavigatorView (API_NavigatorItem* navigatorItem, API_NavigatorView* navigatorView, const GS::Guid* parent = nullptr, const GS::Guid* /*previousSibling*/ = nullptr)
+{
+    return ACAPI_Navigator (APINavigator_NewNavigatorViewID, navigatorItem, navigatorView, const_cast<GS::Guid*> (parent));
+}
+
+inline GSErrCode ACAPI_Navigator_GetNavigatorChildrenItems (API_NavigatorItem* item, GS::Array<API_NavigatorItem>* items)
+{
+    return ACAPI_Navigator (APINavigator_GetNavigatorChildrenItemsID, item, nullptr, items);
+}
+
 inline GSErrCode ACAPI_View_Redraw ()
 {
     return ACAPI_Automate (APIDo_RedrawID);
@@ -218,6 +238,11 @@ inline GSErrCode ACAPI_View_Redraw ()
 inline GSErrCode ACAPI_Element_UI2ElemPriority (GS::Int32* uiPriority, GS::Int32* elemPriority)
 {
     return ACAPI_Goodies (APIAny_UI2ElemPriorityID, uiPriority, elemPriority);
+}
+
+inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int32* uiPriority)
+{
+    return ACAPI_Goodies (APIAny_Elem2UIPriorityID, elemPriority, uiPriority);
 }
 
 inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo>* activeLibs, Int32* embeddedLibraryIndex = nullptr)
@@ -275,6 +300,14 @@ inline GSErrCode ACAPI_Navigator_GetNavigatorItem (const API_Guid* par1, API_Nav
     return ACAPI_Navigator (APINavigator_GetNavigatorItemID, (void*) par1, (void*) par2);
 }
 
+inline GSErrCode ACAPI_Navigator_CloneProjectMapItemToViewMap (const API_Guid* sourceItemId, const API_Guid* parentItemId, API_Guid* createdItemId)
+{
+    return ACAPI_Navigator (APINavigator_CloneProjectMapItemToViewMapID,
+                            const_cast<API_Guid*> (sourceItemId),
+                            const_cast<API_Guid*> (parentItemId),
+                            createdItemId);
+}
+
 inline GSErrCode ACAPI_Database_ChangeCurrentDatabase (API_DatabaseInfo* par1)
 {
     return ACAPI_Database (APIDb_ChangeCurrentDatabaseID, (void*) par1);
@@ -288,6 +321,46 @@ inline GSErrCode ACAPI_Database_GetCurrentDatabase (API_DatabaseInfo* par1)
 inline GSErrCode ACAPI_Window_GetDatabaseInfo (API_DatabaseInfo* par1)
 {
     return ACAPI_Database (APIDb_GetDatabaseInfoID, (void*) par1, nullptr);
+}
+
+inline GSErrCode ACAPI_Navigator_SearchNavigatorItem (API_NavigatorItem* item, GS::Array<API_NavigatorItem>* items)
+{
+    return ACAPI_Navigator (APINavigator_SearchNavigatorItemID, item, nullptr, items);
+}
+
+inline GSErrCode ACAPI_Navigator_ChangeNavigatorItem (API_NavigatorItem* item)
+{
+    return ACAPI_Navigator (APINavigator_ChangeNavigatorItemID, item);
+}
+
+inline GSErrCode ACAPI_Navigator_SetNavigatorItemPosition (const GS::Guid* source, const GS::Guid* parent, const GS::Guid* child)
+{
+    return ACAPI_Navigator (APINavigator_SetNavigatorItemPositionID,
+                            const_cast<GS::Guid*> (source),
+                            const_cast<GS::Guid*> (parent),
+                            const_cast<GS::Guid*> (child));
+}
+
+inline GSErrCode ACAPI_Navigator_DeleteNavigatorView (const API_Guid* viewGuid, const bool* silentMode)
+{
+    return ACAPI_Navigator (APINavigator_DeleteNavigatorViewID,
+                            const_cast<API_Guid*> (viewGuid),
+                            const_cast<bool*> (silentMode));
+}
+
+inline GSErrCode ACAPI_Database_DeleteDatabase (API_DatabaseInfo* databaseInfo)
+{
+    return ACAPI_Database (APIDb_DeleteDatabaseID, databaseInfo);
+}
+
+inline GSErrCode ACAPI_Element_GetExtent (API_Box* extent, API_DatabaseUnId* databaseUnId = nullptr)
+{
+    return ACAPI_Database (APIDb_GetExtentID, extent, databaseUnId);
+}
+
+inline GSErrCode ACAPI_Navigator_GetLayoutBook (API_LayoutBook* book)
+{
+    return ACAPI_Database (APIDb_GetLayoutBookID, book);
 }
 
 #endif
@@ -451,6 +524,19 @@ inline GSErrCode ACAPI_Attribute_GetAttributesByType (API_AttrTypeID typeID, GS:
     }
 
     return err;
+}
+#endif
+
+#if defined(ServerMainVers_2700) && !defined(ServerMainVers_2800)
+// ACAPI_Element_SolidLink_GetFlags is declared in ACAPinc.h for AC27 but absent
+// from ACAP_STAT.lib on both Windows and Mac. The symbol is present in AC25/26
+// and returns in AC28+. This shim covers AC27 on all platforms.
+inline GSErrCode ACAPI_Element_SolidLink_GetFlags (API_Guid /*guid_Target*/, API_Guid /*guid_Operator*/, GSFlags* linkFlags)
+{
+    if (linkFlags != nullptr) {
+        *linkFlags = 0;
+    }
+    return NoError;
 }
 #endif
 

@@ -246,11 +246,11 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
         GS::ObjectState hole;
         const auto& holeCoords = hole.AddList<GS::ObjectState> (holeCoordsFieldName);
         if (includeZCoords) {
-            for (size_t i = 0; i < polygons[i].coords.size (); ++i) {
+            for (size_t j = 0; j < polygons[i].coords.size (); ++j) {
                 holeCoords (Create3DCoordinateObjectState (API_Coord3D {
-                    polygons[i].coords[i].x,
-                    polygons[i].coords[i].y,
-                    polygons[i].zCoords[i]
+                    polygons[i].coords[j].x,
+                    polygons[i].coords[j].y,
+                    polygons[i].zCoords[j]
                 }));
             }
         } else {
@@ -369,6 +369,15 @@ double GetZPos (const short floorIndex, const double offset, const Stories& stor
 
     const Story& story = it->second;
     return story.level + offset;
+}
+
+GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& parameters, const char* floorIndexFieldName, const double zPos, const Stories& stories)
+{
+    short floorIndex = 0;
+    if (parameters.Get (floorIndexFieldName, floorIndex)) {
+        return { floorIndex, zPos - GetZPos (floorIndex, 0.0, stories) };
+    }
+    return GetFloorIndexAndOffset (zPos, stories);
 }
 
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID)

@@ -1,4 +1,5 @@
 #include "ElementCreationCommands.hpp"
+#include "ExtendedElementCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
@@ -161,6 +162,10 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "type": "string",
                             "description": "Optional anchor point of the column core on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from the coordinate's z value."
                         }
                     },
                     "additionalProperties": false,
@@ -183,12 +188,14 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     parameters.Get ("coordinates", coordinates);
     API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
 
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", apiCoordinate.z, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.column.bottomOffset = floorIndexAndOffset.second;
     element.column.origoPos.x = apiCoordinate.x;
     element.column.origoPos.y = apiCoordinate.y;
-    parameters.Get ("height", element.column.height);
+    if (parameters.Get ("height", element.column.height)) {
+        element.column.relativeTopStory = 0;
+    }
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
 
     GS::UniString coreAnchor;
@@ -264,7 +271,11 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "holes" : {
                         "$ref": "#/Holes2D"
-                    }    
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index. If omitted, derived from level."
+                    }
                 },
                 "additionalProperties": false,
                 "required" : [
@@ -325,6 +336,9 @@ void AddPolyToMemo (const GS::Array<GS::ObjectState>& coords,
         ++iCoord;
     }
     (*memo.coords)[iCoord] = (*memo.coords)[iStart];
+    if (memo.meshPolyZ != nullptr) {
+        (*memo.meshPolyZ)[iCoord] = (*memo.meshPolyZ)[iStart];
+    }
     if (processVertexIDs && memo.vertexIDs != nullptr) {
         (*memo.vertexIDs)[iCoord] = (*memo.vertexIDs)[iStart];
     }
@@ -348,7 +362,7 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
 {
     double inputLevel = 0.0;
     parameters.Get ("level", inputLevel);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (inputLevel, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", inputLevel, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
@@ -707,6 +721,10 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         },
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from the coordinate's z value."
                         }
                     },
                     "additionalProperties": false,
@@ -848,7 +866,7 @@ static GS::Optional<GS::ObjectState> SetLibraryPartElementParameters (
         element.object.pos.x = apiCoordinate.x;
         element.object.pos.y = apiCoordinate.y;
 
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", apiCoordinate.z, stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.object.level = floorIndexAndOffset.second;
     }
@@ -1048,88 +1066,15 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("polygonCoordinates", polygonCoordinates);
     parameters.Get ("polygonArcs", polygonArcs);
     parameters.Get ("holes", holes);
-    if (polygonCoordinates.GetSize () < 3) {
-        return CreateErrorResponse (APIERR_BADPARS, "'polygonCoordinates' must contain at least 3 coordinates.");
-    }
-    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
-        polygonCoordinates.Pop ();
-    }
-    element.mesh.poly.nCoords = polygonCoordinates.GetSize () + 1;
-    element.mesh.poly.nSubPolys = 1;
-    element.mesh.poly.nArcs = polygonArcs.GetSize ();
 
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            element.mesh.poly.nCoords += holePolygonOutline.GetSize () + 1;
-            ++element.mesh.poly.nSubPolys;
-            element.mesh.poly.nArcs += holePolygonArcs.GetSize ();
-        }
-    }
-
-    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((element.mesh.poly.nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-    memo.meshPolyZ = reinterpret_cast<double**> (BMAllocateHandle ((element.mesh.poly.nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0));
-    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((element.mesh.poly.nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (element.mesh.poly.nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-
-    Int32 iCoord = 1;
-    Int32 iArc = 0;
-    Int32 iPends = 1;
-    AddPolyToMemo (polygonCoordinates,
-                   polygonArcs,
-                   iCoord,
-                   iArc,
-                   iPends,
-                   memo);
-
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            AddPolyToMemo (holePolygonOutline,
-                           holePolygonArcs,
-                           iCoord,
-                           iArc,
-                           iPends,
-                           memo);
-        }
+    auto geoErr = BuildMeshPolyMemoFromGeometry (element, memo, polygonCoordinates, polygonArcs, holes);
+    if (geoErr.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, geoErr.Get ());
     }
 
     GS::Array<GS::ObjectState> sublines;
     parameters.Get ("sublines", sublines);
-    element.mesh.levelLines.nSubLines = 0;
-    element.mesh.levelLines.nCoords = 0;
-    for (const GS::ObjectState& subline : sublines) {
-        GS::Array<GS::ObjectState> coordinates;
-        subline.Get ("coordinates", coordinates);
-        if (coordinates.IsEmpty ()) {
-            continue;
-        }
-
-        ++element.mesh.levelLines.nSubLines;
-        element.mesh.levelLines.nCoords += coordinates.GetSize ();
-    }
-
-    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (BMAllocateHandle (element.mesh.levelLines.nCoords * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0));
-    memo.meshLevelEnds = reinterpret_cast<Int32**> (BMAllocateHandle (element.mesh.levelLines.nSubLines * sizeof (Int32), ALLOCATE_CLEAR, 0));
-
-    Int32 vertexID = 0;
-    Int32 lineID = 0;
-    for (const GS::ObjectState& subline : sublines) {
-        GS::Array<GS::ObjectState> coordinates;
-        subline.Get ("coordinates", coordinates);
-        if (coordinates.IsEmpty ()) {
-            continue;
-        }
-
-        for (const GS::ObjectState& coord : coordinates) {
-            API_MeshLevelCoord& meshLevelCoord = (*memo.meshLevelCoords)[vertexID];
-            meshLevelCoord.c = Get3DCoordinateFromObjectState (coord);
-            meshLevelCoord.vertexID = vertexID++;
-        }
-        (*memo.meshLevelEnds)[lineID++] = vertexID;
-    }
+    BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
 
     return {};
 }
@@ -1163,6 +1108,15 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                         "$ref": "#/Coordinate2D",
                         "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided."
                     },
+                    "midCoordinate": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The mid coordinate of leader line. Optional parameter."
+                    },
+                    "endCoordinate": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The end coordinate of leader line. Optional parameter."
+                    },
+
                     "floorInd": {
                         "type": "number",
                         "description" : "The identifier of the floor. Optional parameter, by default the current floor or the floor of the parent element is used."	
@@ -1286,6 +1240,8 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     parameters.Get ("floorInd", element.header.floorInd);
 
     const GS::ObjectState* begCOS = parameters.Get ("begCoordinate");
+    const GS::ObjectState* midCOS = parameters.Get ("midCoordinate");
+    const GS::ObjectState* endCOS = parameters.Get ("endCoordinate");
 
     element.label.parent = GetGuidFromArrayItem ("parentElementId", parameters);
     API_Elem_Head parentElemHead = {};
@@ -1314,7 +1270,15 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     } else {
         return CreateErrorResponse (APIERR_BADPARS, "Missing 'begCoordinate' parameter");
     }
-    element.label.createAtDefaultPosition = true;
+
+
+    if (midCOS != nullptr && endCOS != nullptr) {
+        element.label.midC = Get2DCoordinateFromObjectState (*midCOS);
+        element.label.endC = Get2DCoordinateFromObjectState (*endCOS);
+        element.label.createAtDefaultPosition = false;
+    } else {
+        element.label.createAtDefaultPosition = true;
+    }
 
     if (element.label.labelClass == APILblClass_Text) {
         GS::UniString text;

@@ -37,6 +37,7 @@
 #include "NotificationCommands.hpp"
 #include "DesignOptionCommands.hpp"
 #include "IFCCommands.hpp"
+#include "SolidElementOperationCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -176,6 +177,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateProjectInfoFieldsCommand> (
             projectCommands, "1.5.2",
             "Creates one or more custom project info fields."
+        );
+        err |= RegisterCommand<DeleteProjectInfoFieldsCommand> (
+            projectCommands, "1.5.4",
+            "Deletes one or more custom project info fields. Hardcoded fields cannot be deleted."
         );
         err |= RegisterCommand<GetStoriesCommand> (
             projectCommands, "1.1.5",
@@ -422,6 +427,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.4.0",
             "Modifies multi-plane Roof elements based on the given parameters."
         );
+        err |= RegisterCommand<ModifyMeshesCommand> (
+            elementCommands, "1.5.4",
+            "Modifies the attributes of Mesh elements based on the given parameters."
+        );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
             elementCommands, "1.2.7",
             "Returns the preview image of the given element."
@@ -517,6 +526,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.0.9",
             "Deletes the given Custom Property Definitions."
         );
+        err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
+            propertyCommands, "1.5.4",
+            "Updates the expression(s) of existing expression-based Custom Property Definitions."
+        );
         AddCommandGroup (propertyCommands);
     }
 
@@ -556,6 +569,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.1.3",
             "Returns the details of every attribute of the given type."
         );
+        err |= RegisterCommand<DeleteAttributesCommand> (
+            attributeCommands, "1.5.4",
+            "Deletes the given attributes."
+        );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
             "Creates or overwrites Layer attributes based on the given parameters."
@@ -563,6 +580,30 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLayerCombinationsCommand> (
             attributeCommands, "1.2.4",
             "Creates or overwrites Layer Combination attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateLinesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Line attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateFillsCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Fill attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateZoneCategoriesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Zone Category attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateMEPSystemsCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites MEP System attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreatePenTablesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Pen Table attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateProfilesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Profile attributes as a copy of an existing Profile's geometry, based on the given parameters."
         );
         err |= RegisterCommand<CreateBuildingMaterialsCommand> (
             attributeCommands, "1.0.1",
@@ -583,6 +624,46 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetLayerCombinationsCommand> (
             attributeCommands, "1.2.4",
             "Returns the details of layer combination attributes."
+        );
+        err |= RegisterCommand<GetLinesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Line attributes."
+        );
+        err |= RegisterCommand<GetFillsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Fill attributes."
+        );
+        err |= RegisterCommand<GetZoneCategoriesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Zone Category attributes."
+        );
+        err |= RegisterCommand<GetMEPSystemsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given MEP System attributes."
+        );
+        err |= RegisterCommand<GetPenTablesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Pen Table attributes."
+        );
+        err |= RegisterCommand<GetProfilesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Profile attributes."
+        );
+        err |= RegisterCommand<GetCompositesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Composite attributes."
+        );
+        err |= RegisterCommand<GetSurfacesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Surface attributes."
+        );
+        err |= RegisterCommand<GetLayersCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Layer attributes."
+        );
+        err |= RegisterCommand<GetBuildingMaterialsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Building Material attributes."
         );
         AddCommandGroup (attributeCommands);
     }
@@ -676,17 +757,29 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates independent Worksheet databases."
         );
-        err |= RegisterCommand<CreateLayoutsCommand> (
+        err |= RegisterCommand<CreateLayoutCommand> (
             navigatorCommands, "1.4.0",
             "Creates Layouts and their backing master layouts."
         );
-        err |= RegisterCommand<CreateSubsetsCommand> (
+        err |= RegisterCommand<CreateLayoutSubsetCommand> (
             navigatorCommands, "1.4.0",
             "Creates Layout Book subsets."
         );
         err |= RegisterCommand<CreateDrawingsCommand> (
             navigatorCommands, "1.4.0",
             "Creates Drawing elements on the specified or active layout from navigator items."
+        );
+        err |= RegisterCommand<GetLayoutSettingsCommand> (
+            navigatorCommands, "1.1.7",
+            "Gets settings of layouts, including Layout Info Panel custom data fields."
+        );
+        err |= RegisterCommand<SetLayoutSettingsCommand> (
+            navigatorCommands, "1.1.7",
+            "Sets settings of layouts, including Layout Info Panel custom data fields."
+        );
+        err |= RegisterCommand<GetLayoutCustomSchemeCommand> (
+            navigatorCommands, "1.1.7",
+            "Gets the Layout Info Panel custom field definitions (name and key) from Book Settings."
         );
         err |= RegisterCommand<GetModelViewOptionsCommand> (
             navigatorCommands, "1.1.4",
@@ -704,6 +797,22 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Get zoom and rotation of 2D views"
         );
+        err |= RegisterCommand<SetViewRotationCommand> (
+            navigatorCommands, "1.1.7",
+            "Set the rotation angle of 2D views via their floor plan database."
+        );
+        err |= RegisterCommand<CloneProjectMapItemToViewMapCommand> (
+            navigatorCommands, "1.1.7",
+            "Clones Project Map viewpoints into the View Map, optionally into a specified folder."
+        );
+        err |= RegisterCommand<CreateViewsInViewMapCommand> (
+            navigatorCommands, "1.1.7",
+            "Creates independent (non-clone) navigator views in the View Map by copying database and settings from source items."
+        );
+        err |= RegisterCommand<CreateViewMapFolderCommand> (
+            navigatorCommands, "1.1.7",
+            "Creates a new folder in the View Map."
+        );
         err |= RegisterCommand<Set3DCutPlanesCommand> (
             navigatorCommands, "1.3.1",
             "Sets the 3D cut planes."
@@ -715,6 +824,22 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
             "Creates Section elements on the floor plan."
+        );
+        err |= RegisterCommand<MoveNavigatorItemCommand> (
+            navigatorCommands, "1.1.7",
+            "Moves a navigator item to a new parent in the navigator tree."
+        );
+        err |= RegisterCommand<RenameNavigatorItemCommand> (
+            navigatorCommands, "1.1.7",
+            "Renames a navigator item or changes its ID."
+        );
+        err |= RegisterCommand<DeleteNavigatorItemsCommand> (
+            navigatorCommands, "1.1.7",
+            "Deletes navigator items from the navigator tree."
+        );
+        err |= RegisterCommand<GetNavigatorItemTreeCommand> (
+            navigatorCommands, "1.1.7",
+            "Returns the full navigator item tree for the specified map."
         );
         AddCommandGroup (navigatorCommands);
     }
@@ -836,6 +961,23 @@ GSErrCode Initialize (void)
             "Moves the given design options to another sets. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
+    }
+
+    { // Solid Element Operation Commands
+        CommandGroup solidElementOperationCommands ("Solid Element Operation Commands");
+        err |= RegisterCommand<CreateSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.4",
+            "Creates solid element operation links between target and operator elements."
+        );
+        err |= RegisterCommand<RemoveSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.4",
+            "Removes solid element operation links between target and operator elements."
+        );
+        err |= RegisterCommand<GetSolidElementLinksCommand> (
+            solidElementOperationCommands, "1.5.4",
+            "Returns solid element operation links for each queried element, grouped by role (target or operator)."
+        );
+        AddCommandGroup (solidElementOperationCommands);
     }
 
     { // Developer Commands

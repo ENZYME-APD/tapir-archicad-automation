@@ -210,6 +210,13 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
             details.Add ("propertyValueType", GetPropertyTypeString (definition.valueType));
             details.Add ("propertyMeasureType", GetPropertyTypeString (definition.measureType));
             details.Add ("propertyIsEditable", definition.canValueBeEditable);
+            details.Add ("isExpressionBased", definition.defaultValue.hasExpression);
+            if (definition.defaultValue.hasExpression) {
+                const auto& expressionList = details.AddList<GS::UniString> ("expressions");
+                for (const GS::UniString& expr : definition.defaultValue.propertyExpressions) {
+                    expressionList (expr);
+                }
+            }
 
             propertyAdder (details);
         }
@@ -1372,6 +1379,116 @@ GS::ObjectState DeletePropertyDefinitionsCommand::Execute (const GS::ObjectState
             GSErrCode err = ACAPI_Property_DeletePropertyDefinition (GetGuidFromObjectState (*propertyId));
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "failed to delete property"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
+UpdatePropertyDefinitionsCommand::UpdatePropertyDefinitionsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String UpdatePropertyDefinitionsCommand::GetName () const
+{
+    return "UpdatePropertyDefinitions";
+}
+
+GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyDefinitions": {
+                "type": "array",
+                "description": "The list of expression-based property definitions to update.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyId": {
+                            "$ref": "#/PropertyId"
+                        },
+                        "expressions": {
+                            "type": "array",
+                            "description": "The new expression strings for the property.",
+                            "items": {
+                                "type": "string"
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyId",
+                        "expressions"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinitions"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyDefinitions;
+    parameters.Get ("propertyDefinitions", propertyDefinitions);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("UpdatePropertyDefinitions", [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : propertyDefinitions) {
+            const GS::ObjectState* propertyId = item.Get ("propertyId");
+            if (propertyId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyId is missing"));
+                continue;
+            }
+
+            API_PropertyDefinition definition;
+            definition.guid = GetGuidFromObjectState (*propertyId);
+            if (ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property not found"));
+                continue;
+            }
+
+            if (!definition.defaultValue.hasExpression) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property is not expression-based"));
+                continue;
+            }
+
+            GS::Array<GS::UniString> expressions;
+            item.Get ("expressions", expressions);
+            definition.defaultValue.propertyExpressions = expressions;
+
+            GSErrCode err = ACAPI_Property_ChangePropertyDefinition (definition);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "failed to update property definition"));
                 continue;
             }
 

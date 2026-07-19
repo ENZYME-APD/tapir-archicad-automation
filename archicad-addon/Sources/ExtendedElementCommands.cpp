@@ -1171,10 +1171,18 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, endC);
         changed = true;
     }
+    auto arcAngle = GetOptionalDouble (details, "arcAngle");
+    if (arcAngle.HasValue ()) {
+        element.wall.angle = arcAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, angle);
+        changed = true;
+    }
     auto height = GetOptionalDouble (details, "height");
     if (height.HasValue ()) {
         element.wall.height = height.Get ();
+        element.wall.relativeTopStory = 0;
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, height);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, relativeTopStory);
         changed = true;
     }
     auto offset = GetOptionalDouble (details, "offset");
@@ -1280,7 +1288,7 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
     auto level = GetOptionalDouble (details, "level");
 
     if (level.HasValue ()) {
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (level.Get (), stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", level.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.roof.shellBase.level = floorIndexAndOffset.second;
         if (mask != nullptr) {
@@ -1326,7 +1334,9 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     auto height = GetOptionalDouble (details, "height");
     if (height.HasValue ()) {
         element.column.height = height.Get ();
+        element.column.relativeTopStory = 0;
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, height);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, relativeTopStory);
         changed = true;
     }
     auto bottomOffset = GetOptionalDouble (details, "bottomOffset");
@@ -1524,10 +1534,12 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
-                        "zCoordinate": { "type": "number" },
+                        "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z when floorIndex is absent; bottomOffset relative to the floor when floorIndex is provided." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "offset": { "type": "number" },
+                        "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
                             "type": "string",
                             "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"]
@@ -1541,7 +1553,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "profileId": { "$ref": "#/AttributeId" }
                     },
                     "additionalProperties": false,
-                    "required": ["begCoordinate", "endCoordinate", "zCoordinate", "height", "thickness"]
+                    "required": ["begCoordinate", "endCoordinate", "height", "thickness"]
                 }
             }
         },
@@ -1561,6 +1573,10 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     API_Coord begCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("begCoordinate"));
     API_Coord endCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("endCoordinate"));
 
+    if (IsSame2DCoordinate (begCoordinate, endCoordinate)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Zero-length wall: 'begCoordinate' and 'endCoordinate' are identical.");
+    }
+
     double zCoordinate = 0.0;
     double height = 0.0;
     double thickness = 0.0;
@@ -1571,7 +1587,12 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     element.wall.type = APIWtyp_Normal;
     element.wall.begC = begCoordinate;
     element.wall.endC = endCoordinate;
+    auto arcAngle = GetOptionalDouble (parameters, "arcAngle");
+    if (arcAngle.HasValue ()) {
+        element.wall.angle = arcAngle.Get ();
+    }
     element.wall.height = height;
+    element.wall.relativeTopStory = 0;
     element.wall.thickness = thickness;
     element.wall.referenceLineLocation = APIWallRefLine_Center;
     GS::UniString referenceLineLocation;
@@ -1599,9 +1620,15 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
         element.wall.offset = offset.Get ();
     }
 
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
-    element.header.floorInd = floorIndexAndOffset.first;
-    element.wall.bottomOffset = floorIndexAndOffset.second;
+    Int32 explicitFloorIndex = -1;
+    if (parameters.Get ("floorIndex", explicitFloorIndex)) {
+        element.header.floorInd   = static_cast<short> (explicitFloorIndex);
+        element.wall.bottomOffset = zCoordinate;
+    } else {
+        const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+        element.header.floorInd   = floorIndexAndOffset.first;
+        element.wall.bottomOffset = floorIndexAndOffset.second;
+    }
 
     bool structureChanged = false;
     auto error = ApplyWallStructure (element, nullptr, parameters, structureChanged);
@@ -1629,6 +1656,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
                         "zCoordinate": { "type": "number" },
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
@@ -1673,7 +1701,7 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.beam.level = floorIndexAndOffset.second;
 
@@ -1745,6 +1773,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "number",
                             "description": "The Z coordinate (absolute elevation) of the stair base."
                         },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from zCoordinate."
+                        },
                         "totalHeight": {
                             "type": "number",
                             "description": "Total height of the stair.",
@@ -1791,7 +1823,7 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
 
     auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
@@ -1839,26 +1871,16 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
 
     // Allocate new baseline: polyline (not polygon), so no closing vertex needed
     // Coords: index 1..nCoords (1-based), index 0 unused
+    // edgeData/vertexData are intentionally left null: ACAPI_Element_Create derives them
+    // from the baseline geometry (see the Element_Test example in the DevKit). Pre-filling
+    // them marks every edge as a steps segment, which makes multi-segment (L/U-shaped)
+    // baselines fail with -2130313215 (#444).
     memo.stairBaseLine.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.edgeData = reinterpret_cast<API_StairPolylineEdgeData*> (BMAllocatePtr (nCoords * sizeof (API_StairPolylineEdgeData), ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.vertexData = reinterpret_cast<API_StairPolylineVertexData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineVertexData), ALLOCATE_CLEAR, 0));
 
     for (Int32 i = 0; i < nCoords; ++i) {
         (*memo.stairBaseLine.coords)[i + 1] = Get2DCoordinateFromObjectState (baseLinePoints[i]);
-
-        // Set vertex data
-        memo.stairBaseLine.vertexData[i + 1].type = APISP_BaseLine;
-        memo.stairBaseLine.vertexData[i + 1].geometryType = APISG_Vertex;
-        memo.stairBaseLine.vertexData[i + 1].subElemId = 0;
-
-        // Set edge data (between vertices, so nCoords-1 edges)
-        if (i < nCoords - 1) {
-            memo.stairBaseLine.edgeData[i].type = APISP_BaseLine;
-            memo.stairBaseLine.edgeData[i].geometryType = APISG_Edge;
-            memo.stairBaseLine.edgeData[i].subElemId = 0;
-        }
     }
 
     (*memo.stairBaseLine.pends)[1] = nCoords;
@@ -2295,7 +2317,8 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                     "properties": {
                         "basePoint": { "$ref": "#/Coordinate3D" },
                         "size": { "$ref": "#/Dimensions3D" },
-                        "buildingMaterialId": { "$ref": "#/AttributeId" }
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from the basePoint's z value." }
                     },
                     "additionalProperties": false,
                     "required": ["basePoint", "size"]
@@ -2329,6 +2352,8 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
+    const Stories stories = GetStories ();
+
     return ExecuteCreateWithElements ("Create Morphs", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : morphsData) {
             API_Element element = {};
@@ -2353,6 +2378,14 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "Morph 'size' values must be positive."));
                 continue;
             }
+
+            // GetDefaults leaves floorInd at whatever story is currently active in the UI,
+            // regardless of basePoint's z - a morph built far above/below that story's own
+            // elevation would get correctly placed in absolute 3D space (tmx below stays absolute)
+            // but assigned to the wrong story for floor-plan/story-based queries. Only floorInd is
+            // derived here; tmx[11] intentionally stays basePoint.z (absolute), matching how the
+            // rest of this command already places the morph in world space.
+            element.header.floorInd = ResolveFloorIndexAndOffset (data, "floorIndex", basePoint.z, stories).first;
 
             auto buildingMaterialId = GetOptionalObjectState (data, "buildingMaterialId");
 
@@ -2414,6 +2447,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "level": { "type": "number" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from level." },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "polygonCoordinates": {
                             "type": "array",
@@ -2992,6 +3026,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "elementId": { "$ref": "#/ElementId" },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0 },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "bottomOffset": { "type": "number" },
@@ -4053,4 +4088,447 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
+}
+
+GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
+    API_Element&                       elem,
+    API_ElementMemo&                   memo,
+    GS::Array<GS::ObjectState>&        polygonCoordinates,
+    const GS::Array<GS::ObjectState>&  polygonArcs,
+    const GS::Array<GS::ObjectState>&  holes)
+{
+    if (polygonCoordinates.GetSize () < 3) {
+        return "'polygonCoordinates' must contain at least 3 coordinates.";
+    }
+    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
+        polygonCoordinates.Pop ();
+    }
+
+    elem.mesh.poly.nCoords   = polygonCoordinates.GetSize () + 1;
+    elem.mesh.poly.nSubPolys = 1;
+    elem.mesh.poly.nArcs     = polygonArcs.GetSize ();
+
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holeCoords;
+        GS::Array<GS::ObjectState> holeArcs;
+        if (GetHoleGeometry (hole, holeCoords, holeArcs)) {
+            elem.mesh.poly.nCoords += holeCoords.GetSize () + 1;
+            ++elem.mesh.poly.nSubPolys;
+            elem.mesh.poly.nArcs += holeArcs.GetSize ();
+        }
+    }
+
+    const Int32 nCoords   = elem.mesh.poly.nCoords;
+    const Int32 nSubPolys = elem.mesh.poly.nSubPolys;
+    const Int32 nArcs     = elem.mesh.poly.nArcs;
+
+    memo.coords = reinterpret_cast<API_Coord**> (
+        memo.coords == nullptr
+            ? BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords), (nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
+
+    memo.meshPolyZ = reinterpret_cast<double**> (
+        memo.meshPolyZ == nullptr
+            ? BMAllocateHandle ((nCoords + 1) * sizeof (double), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshPolyZ), (nCoords + 1) * sizeof (double), REALLOC_CLEAR, 0));
+
+    memo.pends = reinterpret_cast<Int32**> (
+        memo.pends == nullptr
+            ? BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
+
+    if (nArcs > 0) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (
+            memo.parcs == nullptr
+                ? BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0)
+                : BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    } else if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+        memo.parcs = nullptr;
+    }
+
+    if (memo.vertexIDs != nullptr) {
+        memo.vertexIDs = reinterpret_cast<UInt32**> (
+            BMReallocHandle (reinterpret_cast<GSHandle> (memo.vertexIDs), (nCoords + 1) * sizeof (UInt32), REALLOC_CLEAR, 0));
+    }
+
+    Int32 iCoord = 1;
+    Int32 iArc   = 0;
+    Int32 iPends = 1;
+    AddPolyToMemo (polygonCoordinates, polygonArcs, iCoord, iArc, iPends, memo);
+
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holeCoords;
+        GS::Array<GS::ObjectState> holeArcs;
+        if (GetHoleGeometry (hole, holeCoords, holeArcs)) {
+            AddPolyToMemo (holeCoords, holeArcs, iCoord, iArc, iPends, memo);
+        }
+    }
+
+    return {};
+}
+
+void BuildMeshSublinesMemoFromGeometry (
+    API_Element&                      elem,
+    API_ElementMemo&                  memo,
+    const GS::Array<GS::ObjectState>& sublines)
+{
+    Int32 nTotalCoords = 0;
+    Int32 nSubLines    = 0;
+    for (const GS::ObjectState& subline : sublines) {
+        GS::Array<GS::ObjectState> coords;
+        if (subline.Get ("coordinates", coords) && !coords.IsEmpty ()) {
+            nTotalCoords += (Int32) coords.GetSize ();
+            ++nSubLines;
+        }
+    }
+
+    elem.mesh.levelLines.nCoords   = nTotalCoords;
+    elem.mesh.levelLines.nSubLines = nSubLines;
+
+    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (
+        memo.meshLevelCoords == nullptr
+            ? BMAllocateHandle (nTotalCoords * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelCoords), nTotalCoords * sizeof (API_MeshLevelCoord), REALLOC_CLEAR, 0));
+    memo.meshLevelEnds = reinterpret_cast<Int32**> (
+        memo.meshLevelEnds == nullptr
+            ? BMAllocateHandle (nSubLines * sizeof (Int32), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelEnds), nSubLines * sizeof (Int32), REALLOC_CLEAR, 0));
+
+    Int32 iCoord = 0;
+    Int32 iLine  = 0;
+    for (const GS::ObjectState& subline : sublines) {
+        GS::Array<GS::ObjectState> coords;
+        if (!subline.Get ("coordinates", coords) || coords.IsEmpty ())
+            continue;
+        for (const GS::ObjectState& c : coords) {
+            (*memo.meshLevelCoords)[iCoord].c = Get3DCoordinateFromObjectState (c);
+            ++iCoord;
+        }
+        (*memo.meshLevelEnds)[iLine++] = iCoord;
+    }
+}
+
+ModifyMeshesCommand::ModifyMeshesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ModifyMeshesCommand::GetName () const
+{
+    return "ModifyMeshes";
+}
+
+GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "meshesData": {
+            "type": "array",
+            "description": "Array of meshes to modify.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "meshData": {
+                        "type": "object",
+                        "description": "The fields to modify on the Mesh. Only provided fields are changed; omitted fields are left as-is.",
+                        "properties": {
+                            "floorIndex": {
+                                "type": "integer"
+                            },
+                            "level": {
+                                "type": "number",
+                                "description": "The Z reference level of coordinates."
+                            },
+                            "skirtType": {
+                                "$ref": "#/MeshSkirtType"
+                            },
+                            "skirtLevel": {
+                                "type": "number",
+                                "description": "The height of the skirt."
+                            },
+                            "ridges": {
+                                "type": "string",
+                                "description": "How ridges between mesh facets are displayed in 3D.",
+                                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+                            },
+                            "showLines": {
+                                "type": "boolean",
+                                "description": "Whether to show secondary mesh lines on plan."
+                            },
+                            "contourPen": {
+                                "type": "integer",
+                                "description": "Pen attribute index for the mesh contour line."
+                            },
+                            "levelPen": {
+                                "type": "integer",
+                                "description": "Pen attribute index for the mesh level lines."
+                            },
+                            "lineTypeIndex": {
+                                "type": "integer",
+                                "description": "Line type attribute index for the mesh contour."
+                            },
+                            "polygonCoordinates": {
+                                "type": "array",
+                                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
+                                "items": { "$ref": "#/Coordinate3D" },
+                                "minItems": 3
+                            },
+                            "polygonArcs": {
+                                "type": "array",
+                                "description": "Polygon outline arcs of the mesh.",
+                                "items": { "$ref": "#/PolyArc" }
+                            },
+                            "holes": {
+                                "$ref": "#/Holes3D"
+                            },
+                            "sublines": {
+                                "type": "array",
+                                "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "coordinates": {
+                                            "type": "array",
+                                            "description": "The 3D coordinates of the leveling subline.",
+                                            "items": { "$ref": "#/Coordinate3D" }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": ["coordinates"]
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId",
+                    "meshData"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "meshesData"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyMeshesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> meshesData;
+    parameters.Get ("meshesData", meshesData);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("ModifyMeshes", [&] () -> GSErrCode {
+        for (const GS::ObjectState& meshEntry : meshesData) {
+            const GS::ObjectState* elementId = meshEntry.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element elem = {};
+            elem.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&elem);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+
+#ifdef ServerMainVers_2600
+            if (elem.header.type.typeID != API_MeshID) {
+#else
+            if (elem.header.typeID != API_MeshID) {
+#endif
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Mesh."));
+                continue;
+            }
+
+            const GS::ObjectState* meshData = meshEntry.Get ("meshData");
+            if (meshData == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "meshData is missing"));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> polygonCoordinates;
+            GS::Array<GS::ObjectState> polygonArcs;
+            GS::Array<GS::ObjectState> holes;
+            GS::Array<GS::ObjectState> sublines;
+            const bool hasPolyGeom        = meshData->Get ("polygonCoordinates", polygonCoordinates);
+            const bool hasSublines        = meshData->Get ("sublines", sublines);
+            const bool isClearingSublines = hasSublines && sublines.IsEmpty ();
+            if (hasPolyGeom) {
+                meshData->Get ("polygonArcs", polygonArcs);
+                meshData->Get ("holes", holes);
+            }
+
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+
+            {
+                // When clearing sublines without a polygon change, also load the current polygon
+                // to compute the bounding box for the out-of-bounds dummy sublines (see below).
+                const UInt64 loadMask =
+                    ((hasPolyGeom || isClearingSublines) ? (APIMemoMask_Polygon | APIMemoMask_MeshPolyZ) : 0) |
+                    ((hasSublines && !isClearingSublines) ? APIMemoMask_MeshLevel : 0);
+                if (loadMask != 0) {
+                    err = ACAPI_Element_GetMemo (elem.header.guid, &memo, loadMask);
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "Failed to get mesh memo"));
+                        continue;
+                    }
+                }
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            if (meshData->Get ("floorIndex", elem.header.floorInd)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+            if (meshData->Get ("level", elem.mesh.level)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, level);
+            }
+            if (meshData->Get ("skirtLevel", elem.mesh.skirtLevel)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, skirtLevel);
+            }
+            GS::UniString skirtType;
+            if (meshData->Get ("skirtType", skirtType)) {
+                if (skirtType == "SurfaceOnlyWithoutSkirt") {
+                    elem.mesh.skirt = 3;
+                } else if (skirtType == "WithSkirt") {
+                    elem.mesh.skirt = 2;
+                } else if (skirtType == "SolidBodyWithSkirt") {
+                    elem.mesh.skirt = 1;
+                }
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, skirt);
+            }
+            GS::UniString ridges;
+            if (meshData->Get ("ridges", ridges)) {
+                if (ridges == "AllSharp") {
+                    elem.mesh.smoothRidges = APIRidge_AllSharp;
+                } else if (ridges == "AllSmooth") {
+                    elem.mesh.smoothRidges = APIRidge_AllSmooth;
+                } else if (ridges == "UserDefined") {
+                    elem.mesh.smoothRidges = APIRidge_UserSharp;
+                }
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, smoothRidges);
+            }
+            bool showLines = false;
+            if (meshData->Get ("showLines", showLines)) {
+                elem.mesh.showLines = showLines ? 1 : 0;
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, showLines);
+            }
+            short contourPen = 0;
+            if (meshData->Get ("contourPen", contourPen) && contourPen > 0) {
+                elem.mesh.contPen = contourPen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, contPen);
+            }
+            short levelPen = 0;
+            if (meshData->Get ("levelPen", levelPen) && levelPen > 0) {
+                elem.mesh.levelPen = levelPen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelPen);
+            }
+            Int32 lineTypeIndex = 0;
+            if (meshData->Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
+                elem.mesh.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, ltypeInd);
+            }
+
+            UInt64 memoChangeMask = 0;
+
+            if (hasPolyGeom) {
+                auto geoErr = BuildMeshPolyMemoFromGeometry (elem, memo, polygonCoordinates, polygonArcs, holes);
+                if (geoErr.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, geoErr.Get ()));
+                    continue;
+                }
+                memoChangeMask |= APIMemoMask_Polygon | APIMemoMask_MeshPolyZ;
+            }
+
+            if (hasSublines) {
+                if (isClearingSublines) {
+                    // Clearing level lines: ACAPI_Element_Change ignores null/empty handles for
+                    // APIMemoMask_MeshLevel. Workaround: send two valid sublines placed just
+                    // outside the polygon bounding box; ArchiCAD clips them out automatically,
+                    // resulting in nSubLines == 0 stored in the element.
+                    // memo.coords is guaranteed valid here (loaded above for this case).
+                    const Int32 nPolyCoords = elem.mesh.poly.nCoords;
+                    double xMin = (*memo.coords)[1].x;
+                    double yMin = (*memo.coords)[1].y;
+                    for (Int32 j = 2; j < nPolyCoords; ++j) {
+                        if ((*memo.coords)[j].x < xMin) xMin = (*memo.coords)[j].x;
+                        if ((*memo.coords)[j].y < yMin) yMin = (*memo.coords)[j].y;
+                    }
+
+                    const double kOffset = 1.0;
+                    const double kStep   = 0.5;
+                    const double ox = xMin - kOffset;
+                    const double oy = yMin - kOffset;
+
+                    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (
+                        memo.meshLevelCoords == nullptr
+                            ? BMAllocateHandle (4 * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0)
+                            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelCoords), 4 * sizeof (API_MeshLevelCoord), REALLOC_CLEAR, 0));
+                    memo.meshLevelEnds = reinterpret_cast<Int32**> (
+                        memo.meshLevelEnds == nullptr
+                            ? BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0)
+                            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelEnds), 2 * sizeof (Int32), REALLOC_CLEAR, 0));
+
+                    (*memo.meshLevelCoords)[0].c.x = ox;          (*memo.meshLevelCoords)[0].c.y = oy;          (*memo.meshLevelCoords)[0].c.z = 0.0;
+                    (*memo.meshLevelCoords)[1].c.x = ox + kStep;  (*memo.meshLevelCoords)[1].c.y = oy;          (*memo.meshLevelCoords)[1].c.z = 0.0;
+                    (*memo.meshLevelCoords)[2].c.x = ox;          (*memo.meshLevelCoords)[2].c.y = oy + kStep;  (*memo.meshLevelCoords)[2].c.z = 0.0;
+                    (*memo.meshLevelCoords)[3].c.x = ox + kStep;  (*memo.meshLevelCoords)[3].c.y = oy + kStep;  (*memo.meshLevelCoords)[3].c.z = 0.0;
+                    (*memo.meshLevelEnds)[0] = 2;
+                    (*memo.meshLevelEnds)[1] = 4;
+
+                    elem.mesh.levelLines.nCoords   = 4;
+                    elem.mesh.levelLines.nSubLines = 2;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
+                    memoChangeMask |= APIMemoMask_MeshLevel;
+                } else {
+                    BuildMeshSublinesMemoFromGeometry (elem, memo, sublines);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
+                    memoChangeMask |= APIMemoMask_MeshLevel;
+                }
+            }
+
+            err = ACAPI_Element_Change (&elem, &mask, memoChangeMask != 0 ? &memo : nullptr, memoChangeMask, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify mesh"));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+
+        return NoError;
+    });
+
+    return response;
 }

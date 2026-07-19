@@ -2,6 +2,19 @@
 
 #include "CommandBase.hpp"
 #include "ElementCreationCommands.hpp"
+#include "ObjectState.hpp"
+
+GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
+    API_Element& elem,
+    API_ElementMemo& memo,
+    GS::Array<GS::ObjectState>& polygonCoordinates,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes);
+
+void BuildMeshSublinesMemoFromGeometry (
+    API_Element& elem,
+    API_ElementMemo& memo,
+    const GS::Array<GS::ObjectState>& sublines);
 
 class CreateWallsCommand : public CreateElementsCommandBase
 {
@@ -201,6 +214,16 @@ class GetDimensionDataCommand : public CommandBase
 {
 public:
     GetDimensionDataCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyMeshesCommand : public CommandBase
+{
+public:
+    ModifyMeshesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
