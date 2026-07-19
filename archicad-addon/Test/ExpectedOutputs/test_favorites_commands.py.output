@@ -173,3 +173,195 @@ Response:
         }
     ]
 }
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Column"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: CreateFavoritesFromElements
+Parameters:
+{
+    "favoritesFromElements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "favorite": "ZZTestFolderFavorite",
+            "folder": [
+                "ZZTest",
+                "Sub"
+            ]
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: ApplyFavoritesToElements
+Parameters:
+{
+    "favoritesToApply": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "favorite": "ColumnFromPython"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "PolyLine"
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Command: ApplyFavoritesToElements
+Parameters:
+{
+    "favoritesToApply": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "favorite": "ColumnFromPython"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "error": {
+                "code": -2130313115,
+                "message": "The Favorite's element type does not match the target element's type."
+            },
+            "success": false
+        }
+    ]
+}
+Command: ApplyFavoritesToElements
+Parameters:
+{
+    "favoritesToApply": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "favorite": "ColumnFromPython"
+        }
+    ],
+    "applySettings": false
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: UpdateFavoritesFromElements
+Parameters:
+{
+    "favoritesFromElements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "favorite": "ColumnFromPython"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: RenameFavorites
+Parameters:
+{
+    "renames": [
+        {
+            "oldName": "ZZTestFolderFavorite",
+            "newName": "ZZTestFolderFavoriteRenamed"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: DeleteFavorites
+Parameters:
+{
+    "favorites": [
+        "ZZTestFolderFavoriteRenamed"
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}

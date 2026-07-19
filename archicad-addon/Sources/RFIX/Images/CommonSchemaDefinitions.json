@@ -1363,8 +1363,16 @@
                 "type": "string",
                 "description": "The name of the parameter."
             },
+            "index1": {
+                "type": "integer",
+                "description": "Optional 1-based first index for changing a single item of an array parameter without resizing it. Only valid for array parameters and only together with a single (non-list) value."
+            },
+            "index2": {
+                "type": "integer",
+                "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
+            },
             "value": {
-                "description": "The value of the parameter."
+                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the array parameter is resized to match the given values. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array without resizing it. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -1381,8 +1389,16 @@
                 "type": "integer",
                 "description": "The index of the parameter."
             },
+            "index1": {
+                "type": "integer",
+                "description": "Optional 1-based first index for changing a single item of an array parameter without resizing it. Only valid for array parameters and only together with a single (non-list) value."
+            },
+            "index2": {
+                "type": "integer",
+                "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
+            },
             "value": {
-                "description": "The value of the parameter."
+                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the array parameter is resized to match the given values. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array without resizing it. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
