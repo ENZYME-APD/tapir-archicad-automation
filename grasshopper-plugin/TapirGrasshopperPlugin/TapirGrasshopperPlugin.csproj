@@ -12,6 +12,7 @@
     <TargetExt>.gha</TargetExt>
     <NoWarn>NU1701;NETSDK1086</NoWarn>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   
   <PropertyGroup>

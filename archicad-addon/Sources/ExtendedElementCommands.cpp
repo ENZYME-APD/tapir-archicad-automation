@@ -1189,7 +1189,9 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
     auto height = GetOptionalDouble (details, "height");
     if (height.HasValue ()) {
         element.wall.height = height.Get ();
+        element.wall.relativeTopStory = 0;
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, height);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, relativeTopStory);
         changed = true;
     }
     auto offset = GetOptionalDouble (details, "offset");
@@ -1295,7 +1297,7 @@ GS::Optional<GS::UniString> ApplyRoofDetails (
     auto level = GetOptionalDouble (details, "level");
 
     if (level.HasValue ()) {
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (level.Get (), stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", level.Get (), stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.roof.shellBase.level = floorIndexAndOffset.second;
         if (mask != nullptr) {
@@ -1341,7 +1343,9 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     auto height = GetOptionalDouble (details, "height");
     if (height.HasValue ()) {
         element.column.height = height.Get ();
+        element.column.relativeTopStory = 0;
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, height);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, relativeTopStory);
         changed = true;
     }
     auto bottomOffset = GetOptionalDouble (details, "bottomOffset");
@@ -2396,6 +2400,10 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     API_Coord begCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("begCoordinate"));
     API_Coord endCoordinate = Get2DCoordinateFromObjectState (*parameters.Get ("endCoordinate"));
 
+    if (IsSame2DCoordinate (begCoordinate, endCoordinate)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Zero-length wall: 'begCoordinate' and 'endCoordinate' are identical.");
+    }
+
     double zCoordinate = 0.0;
     double height = 0.0;
     double thickness = 0.0;
@@ -2411,6 +2419,7 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
         element.wall.angle = arcAngle.Get ();
     }
     element.wall.height = height;
+    element.wall.relativeTopStory = 0;
     element.wall.thickness = thickness;
     element.wall.referenceLineLocation = APIWallRefLine_Center;
     GS::UniString referenceLineLocation;
@@ -2474,6 +2483,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
                         "zCoordinate": { "type": "number" },
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
@@ -2518,7 +2528,7 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.beam.level = floorIndexAndOffset.second;
 
@@ -2590,6 +2600,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "number",
                             "description": "The Z coordinate (absolute elevation) of the stair base."
                         },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from zCoordinate."
+                        },
                         "totalHeight": {
                             "type": "number",
                             "description": "Total height of the stair.",
@@ -2636,7 +2650,7 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (zCoordinate, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
 
     auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
@@ -2684,26 +2698,16 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
 
     // Allocate new baseline: polyline (not polygon), so no closing vertex needed
     // Coords: index 1..nCoords (1-based), index 0 unused
+    // edgeData/vertexData are intentionally left null: ACAPI_Element_Create derives them
+    // from the baseline geometry (see the Element_Test example in the DevKit). Pre-filling
+    // them marks every edge as a steps segment, which makes multi-segment (L/U-shaped)
+    // baselines fail with -2130313215 (#444).
     memo.stairBaseLine.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.edgeData = reinterpret_cast<API_StairPolylineEdgeData*> (BMAllocatePtr (nCoords * sizeof (API_StairPolylineEdgeData), ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.vertexData = reinterpret_cast<API_StairPolylineVertexData*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_StairPolylineVertexData), ALLOCATE_CLEAR, 0));
 
     for (Int32 i = 0; i < nCoords; ++i) {
         (*memo.stairBaseLine.coords)[i + 1] = Get2DCoordinateFromObjectState (baseLinePoints[i]);
-
-        // Set vertex data
-        memo.stairBaseLine.vertexData[i + 1].type = APISP_BaseLine;
-        memo.stairBaseLine.vertexData[i + 1].geometryType = APISG_Vertex;
-        memo.stairBaseLine.vertexData[i + 1].subElemId = 0;
-
-        // Set edge data (between vertices, so nCoords-1 edges)
-        if (i < nCoords - 1) {
-            memo.stairBaseLine.edgeData[i].type = APISP_BaseLine;
-            memo.stairBaseLine.edgeData[i].geometryType = APISG_Edge;
-            memo.stairBaseLine.edgeData[i].subElemId = 0;
-        }
     }
 
     (*memo.stairBaseLine.pends)[1] = nCoords;
@@ -3211,7 +3215,8 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                             "minItems": 4,
                             "maxItems": 4
                         },
-                        "level": { "type": "number" }
+                        "level": { "type": "number" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from the basePoint's z value." }
                     },
                     "additionalProperties": false,
                     "required": ["basePoint"]
@@ -3245,6 +3250,8 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
+    const Stories stories = GetStories ();
+
     return ExecuteCreateWithElements ("Create Morphs", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : morphsData) {
             API_Element element = {};
@@ -3270,6 +3277,14 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
             const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*data.Get ("basePoint"));
+
+            // GetDefaults leaves floorInd at whatever story is currently active in the UI,
+            // regardless of basePoint's z - a morph built far above/below that story's own
+            // elevation would get correctly placed in absolute 3D space (tmx below stays absolute)
+            // but assigned to the wrong story for floor-plan/story-based queries. Only floorInd is
+            // derived here; tmx[11] intentionally stays basePoint.z (absolute), matching how the
+            // rest of this command already places the morph in world space.
+            element.header.floorInd = ResolveFloorIndexAndOffset (data, "floorIndex", basePoint.z, stories).first;
 
             auto buildingMaterialId = GetOptionalObjectState (data, "buildingMaterialId");
 
@@ -3384,6 +3399,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "level": { "type": "number" },
+                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from level." },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "polygonCoordinates": {
                             "type": "array",

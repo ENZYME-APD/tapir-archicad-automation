@@ -485,6 +485,25 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.5.0",
             "Export the project's Favorites to a .prefs file or folder."
         );
+        err |= RegisterCommand<ApplyFavoritesToElementsCommand> (
+            favoritesCommands, "1.5.4",
+            "Apply the given favorites to existing elements. Only settings-type parameters are changed - "
+            "geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying "
+            "a Favorite never moves or resizes the target element. By default settings, classifications, "
+            "categories and properties are all applied; each can be opted out of individually."
+        );
+        err |= RegisterCommand<UpdateFavoritesFromElementsCommand> (
+            favoritesCommands, "1.5.4",
+            "Update existing favorites from the given elements."
+        );
+        err |= RegisterCommand<RenameFavoritesCommand> (
+            favoritesCommands, "1.5.4",
+            "Rename existing favorites."
+        );
+        err |= RegisterCommand<DeleteFavoritesCommand> (
+            favoritesCommands, "1.5.4",
+            "Delete existing favorites."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
@@ -569,6 +588,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.1.3",
             "Returns the details of every attribute of the given type."
         );
+        err |= RegisterCommand<DeleteAttributesCommand> (
+            attributeCommands, "1.5.4",
+            "Deletes the given attributes."
+        );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
             "Creates or overwrites Layer attributes based on the given parameters."
@@ -576,6 +599,30 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLayerCombinationsCommand> (
             attributeCommands, "1.2.4",
             "Creates or overwrites Layer Combination attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateLinesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Line attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateFillsCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Fill attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateZoneCategoriesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Zone Category attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateMEPSystemsCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites MEP System attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreatePenTablesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Pen Table attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateProfilesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Profile attributes as a copy of an existing Profile's geometry, based on the given parameters."
         );
         err |= RegisterCommand<CreateBuildingMaterialsCommand> (
             attributeCommands, "1.0.1",
@@ -596,6 +643,46 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetLayerCombinationsCommand> (
             attributeCommands, "1.2.4",
             "Returns the details of layer combination attributes."
+        );
+        err |= RegisterCommand<GetLinesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Line attributes."
+        );
+        err |= RegisterCommand<GetFillsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Fill attributes."
+        );
+        err |= RegisterCommand<GetZoneCategoriesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Zone Category attributes."
+        );
+        err |= RegisterCommand<GetMEPSystemsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given MEP System attributes."
+        );
+        err |= RegisterCommand<GetPenTablesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Pen Table attributes."
+        );
+        err |= RegisterCommand<GetProfilesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Profile attributes."
+        );
+        err |= RegisterCommand<GetCompositesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Composite attributes."
+        );
+        err |= RegisterCommand<GetSurfacesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Surface attributes."
+        );
+        err |= RegisterCommand<GetLayersCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Layer attributes."
+        );
+        err |= RegisterCommand<GetBuildingMaterialsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Building Material attributes."
         );
         AddCommandGroup (attributeCommands);
     }

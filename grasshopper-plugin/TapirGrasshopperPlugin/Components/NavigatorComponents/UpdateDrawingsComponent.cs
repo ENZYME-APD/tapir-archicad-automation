@@ -57,6 +57,9 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 response.Message());
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.UpdateDrawings;
+
         public override Guid ComponentGuid =>
             new Guid("bfba1890-06d6-4902-b817-5e06e99398b2");
     }

@@ -234,6 +234,955 @@
             }
         ]
     },
+    "LineAttribute": {
+        "type": "object",
+        "description": "A line attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "scaleWithPlan": {
+                "type": "boolean"
+            },
+            "defineScale": {
+                "type": "number"
+            },
+            "lineType": {
+                "type": "string",
+                "enum": ["Solid", "Dashed", "Symbol"]
+            },
+            "period": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "dashItems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/LineDashItem"
+                }
+            },
+            "lineItems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/LineSymbolItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "LineAttributeOrError": {
+        "type": "object",
+        "description": "A line attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/LineAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "LineDashItem": {
+        "type": "object",
+        "properties": {
+            "dash": {
+                "type": "number"
+            },
+            "gap": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dash",
+            "gap"
+        ]
+    },
+    "LineSymbolItem": {
+        "type": "object",
+        "properties": {
+            "itemType": {
+                "type": "string"
+            },
+            "centerOffset": {
+                "type": "number"
+            },
+            "length": {
+                "type": "number"
+            },
+            "begPos": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endPos": {
+                "$ref": "#/Coordinate2D"
+            },
+            "radius": {
+                "type": "number"
+            },
+            "beginAngle": {
+                "type": "number"
+            },
+            "endAngle": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "itemType",
+            "centerOffset",
+            "length",
+            "begPos",
+            "endPos",
+            "radius",
+            "beginAngle",
+            "endAngle"
+        ]
+    },
+    "FillAttribute": {
+        "type": "object",
+        "description": "A fill attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "subType": {
+                "type": "string",
+                "enum": ["Vector", "Solid", "Empty", "Symbol", "LinearGradient", "RadialGradient"]
+            },
+            "scaleWithPlan": {
+                "type": "boolean"
+            },
+            "useForWalls": {
+                "type": "boolean"
+            },
+            "useForDraft": {
+                "type": "boolean"
+            },
+            "useForCover": {
+                "type": "boolean"
+            },
+            "horizontalSpacing": {
+                "type": "number"
+            },
+            "verticalSpacing": {
+                "type": "number"
+            },
+            "angle": {
+                "type": "number"
+            },
+            "bitPattern": {
+                "type": "string"
+            },
+            "gradientStart": {
+                "$ref": "#/Coordinate2D"
+            },
+            "gradientEnd": {
+                "$ref": "#/Coordinate2D"
+            },
+            "percent": {
+                "type": "number"
+            },
+            "texture": {
+                "$ref": "#/Texture"
+            },
+            "lineItems": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/FillLineItem"
+                }
+            },
+            "symbolLines": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/FillSymbolLine"
+                }
+            },
+            "symbolArcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/FillSymbolArc"
+                }
+            },
+            "symbolHotspots": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "FillAttributeOrError": {
+        "type": "object",
+        "description": "A fill attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/FillAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "FillLineItem": {
+        "type": "object",
+        "properties": {
+            "frequency": {
+                "type": "number"
+            },
+            "direction": {
+                "type": "number"
+            },
+            "offsetLine": {
+                "type": "number"
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D"
+            },
+            "lineLengths": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "frequency",
+            "direction",
+            "offsetLine",
+            "offset"
+        ]
+    },
+    "FillSymbolLine": {
+        "type": "object",
+        "properties": {
+            "begin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "end": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begin",
+            "end"
+        ]
+    },
+    "FillSymbolArc": {
+        "type": "object",
+        "properties": {
+            "begin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "origin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "angle": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begin",
+            "origin",
+            "angle"
+        ]
+    },
+    "ZoneCategoryAttribute": {
+        "type": "object",
+        "description": "A zone category attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "categoryCode": {
+                "type": "string"
+            },
+            "color": {
+                "$ref": "#/ColorRGB"
+            },
+            "stampName": {
+                "type": "string"
+            },
+            "stampMainGuid": {
+                "type": "string"
+            },
+            "stampRevGuid": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "ZoneCategoryAttributeOrError": {
+        "type": "object",
+        "description": "A zone category attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ZoneCategoryAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPSystemAttribute": {
+        "type": "object",
+        "description": "An MEP system attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "domain": {
+                "type": "array",
+                "description": "The domain(s) this system belongs to. Archicad 29+ allows only one; earlier versions may report several.",
+                "items": {
+                    "type": "string",
+                    "enum": ["Ventilation", "Piping", "CableCarrier"]
+                }
+            },
+            "contourPen": {
+                "type": "integer"
+            },
+            "fillPen": {
+                "type": "integer"
+            },
+            "fillBackgroundPen": {
+                "type": "integer"
+            },
+            "centerLinePen": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "centerLineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "MEPSystemAttributeOrError": {
+        "type": "object",
+        "description": "An MEP system attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/MEPSystemAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "PenTableAttribute": {
+        "type": "object",
+        "description": "A pen table attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "isActiveForModel": {
+                "type": "boolean"
+            },
+            "isActiveForLayout": {
+                "type": "boolean"
+            },
+            "pens": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PenTablePen"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "PenTableAttributeOrError": {
+        "type": "object",
+        "description": "A pen table attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/PenTableAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "PenTablePen": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer"
+            },
+            "color": {
+                "$ref": "#/ColorRGB"
+            },
+            "width": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "color",
+            "width",
+            "description"
+        ]
+    },
+    "ProfileAttribute": {
+        "type": "object",
+        "description": "A profile attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "wallType": {
+                "type": "boolean"
+            },
+            "beamType": {
+                "type": "boolean"
+            },
+            "coluType": {
+                "type": "boolean"
+            },
+            "handrailType": {
+                "type": "boolean"
+            },
+            "otherGDLObjectType": {
+                "type": "boolean"
+            },
+            "useWith": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": ["Wall", "Beam", "Column", "Handrail", "Other"]
+                }
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "minimumWidth": {
+                "type": "number"
+            },
+            "minimumHeight": {
+                "type": "number"
+            },
+            "widthStretchable": {
+                "type": "boolean"
+            },
+            "heightStretchable": {
+                "type": "boolean"
+            },
+            "hasCoreSkin": {
+                "type": "boolean"
+            },
+            "profileModifiers": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ProfileModifier"
+                }
+            },
+            "skins": {
+                "type": "array",
+                "description": "The profile's skins (hatches), each with its building material/surface/fill, contour and cut-end line settings, and per-edge line data.",
+                "items": {
+                    "$ref": "#/ProfileSkin"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "ProfileModifier": {
+        "type": "object",
+        "description": "A stretchable edge-offset parameter of the profile, as named by the profile's author in the Profile Editor. Its value is a live geometric measurement matching what the Profile Editor's dimension shows.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "User-authored label, e.g. 'Largeur support'. Present only if the profile's author assigned one."
+            },
+            "value": {
+                "type": "number",
+                "description": "Present only when the parameter's dimension anchors could be resolved to concrete positions."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ProfileSkin": {
+        "type": "object",
+        "description": "One skin (hatch) of the profile's cross-section.",
+        "properties": {
+            "skinId": {
+                "type": "string",
+                "description": "Internal identifier of this skin, stable for the lifetime of the profile. Pass it back in CreateProfiles' skinOverrides to target this skin for modification."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "fillId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "contourPen": {
+                "type": "integer"
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "isCore": {
+                "type": "boolean"
+            },
+            "isFinish": {
+                "type": "boolean"
+            },
+            "visibleCutEndLines": {
+                "type": "boolean"
+            },
+            "cutEndLinePen": {
+                "type": "integer"
+            },
+            "cutEndLineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "edges": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ProfileEdge"
+                }
+            },
+            "outlineCoords": {
+                "type": "array",
+                "description": "The skin's outline polygon vertices, present only when the skinOutlines field is requested alongside skins.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "outlineSubPolyEnds": {
+                "type": "array",
+                "description": "Index (into outlineCoords) of the last vertex of each contour, for skins whose outline has holes or multiple contours.",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "outlineArcs": {
+                "type": "array",
+                "description": "Marks which consecutive outlineCoords pairs are connected by an arc instead of a straight edge.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "begIndex": { "type": "integer" },
+                        "endIndex": { "type": "integer" },
+                        "arcAngle": { "type": "number" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["begIndex", "endIndex", "arcAngle"]
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "ProfileEdge": {
+        "type": "object",
+        "description": "One edge of a profile skin's outline.",
+        "properties": {
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "isVisibleLine": {
+                "type": "boolean"
+            },
+            "isCutEndLine": {
+                "type": "boolean"
+            },
+            "isInnerLine": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false
+    },
+    "ProfileAttributeOrError": {
+        "type": "object",
+        "description": "A profile attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ProfileAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "CompositeAttribute": {
+        "type": "object",
+        "description": "A composite attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "useWith": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "skins": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/CompositeSkin"
+                }
+            },
+            "separators": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/CompositeSeparator"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "CompositeAttributeOrError": {
+        "type": "object",
+        "description": "A composite attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/CompositeAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "CompositeSkin": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["Core", "Finish", "Other"]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "framePen": {
+                "type": "integer"
+            },
+            "thickness": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "framePen",
+            "thickness"
+        ]
+    },
+    "CompositeSeparator": {
+        "type": "object",
+        "properties": {
+            "lineTypeId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "linePen": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linePen"
+        ]
+    },
+    "SurfaceAttribute": {
+        "type": "object",
+        "description": "A surface attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "materialType": {
+                "$ref": "#/SurfaceType"
+            },
+            "ambientReflection": {
+                "type": "number"
+            },
+            "diffuseReflection": {
+                "type": "number"
+            },
+            "specularReflection": {
+                "type": "number"
+            },
+            "transparency": {
+                "type": "number"
+            },
+            "shine": {
+                "type": "number"
+            },
+            "transparencyAttenuation": {
+                "type": "number"
+            },
+            "emissionAttenuation": {
+                "type": "number"
+            },
+            "surfaceColor": {
+                "$ref": "#/ColorRGB"
+            },
+            "specularColor": {
+                "$ref": "#/ColorRGB"
+            },
+            "emissionColor": {
+                "$ref": "#/ColorRGB"
+            },
+            "fillId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "texture": {
+                "$ref": "#/Texture"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "SurfaceAttributeOrError": {
+        "type": "object",
+        "description": "A surface attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/SurfaceAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "LayerAttribute": {
+        "type": "object",
+        "description": "A layer attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "isHidden": {
+                "type": "boolean"
+            },
+            "isLocked": {
+                "type": "boolean"
+            },
+            "isWireframe": {
+                "type": "boolean"
+            },
+            "intersectionGroupNr": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "LayerAttributeOrError": {
+        "type": "object",
+        "description": "A layer attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/LayerAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "BuildingMaterialAttribute": {
+        "type": "object",
+        "description": "A building material attribute.",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "name": {
+                "type": "string"
+            },
+            "id": {
+                "type": "string"
+            },
+            "manufacturer": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "connPriority": {
+                "type": "integer"
+            },
+            "cutFillIndex": {
+                "type": "integer"
+            },
+            "cutFillPen": {
+                "type": "integer"
+            },
+            "cutFillBackgroundPen": {
+                "type": "integer"
+            },
+            "cutSurfaceIndex": {
+                "type": "integer"
+            },
+            "cutFillOrientation": {
+                "type": "string",
+                "enum": ["ProjectOrigin", "ElementOrigin", "FitToSkin"]
+            },
+            "thermalConductivity": {
+                "type": "number"
+            },
+            "density": {
+                "type": "number"
+            },
+            "heatCapacity": {
+                "type": "number"
+            },
+            "embodiedEnergy": {
+                "type": "number"
+            },
+            "embodiedCarbon": {
+                "type": "number"
+            },
+            "showUncutLines": {
+                "type": "boolean"
+            },
+            "collisionDetection": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "index",
+            "name"
+        ]
+    },
+    "BuildingMaterialAttributeOrError": {
+        "type": "object",
+        "description": "A building material attribute or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/BuildingMaterialAttribute"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "Guid": {
         "type": "string",
         "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
@@ -414,8 +1363,16 @@
                 "type": "string",
                 "description": "The name of the parameter."
             },
+            "index1": {
+                "type": "integer",
+                "description": "Optional 1-based first index for changing a single item of an array parameter without resizing it. Only valid for array parameters and only together with a single (non-list) value."
+            },
+            "index2": {
+                "type": "integer",
+                "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
+            },
             "value": {
-                "description": "The value of the parameter."
+                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the array parameter is resized to match the given values. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array without resizing it. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
@@ -432,8 +1389,16 @@
                 "type": "integer",
                 "description": "The index of the parameter."
             },
+            "index1": {
+                "type": "integer",
+                "description": "Optional 1-based first index for changing a single item of an array parameter without resizing it. Only valid for array parameters and only together with a single (non-list) value."
+            },
+            "index2": {
+                "type": "integer",
+                "description": "Optional 1-based second index for changing a single item of a two-dimensional array parameter. Only valid together with index1. Defaults to 1."
+            },
             "value": {
-                "description": "The value of the parameter."
+                "description": "The new value of the parameter. For array parameters provide a list of values for one-dimensional arrays (e.g. [1, 2, 3]) or a list of lists for two-dimensional arrays (e.g. [[11, 12], [21, 22]]); the array parameter is resized to match the given values. Alternatively provide index1 (and optionally index2) together with a single value to change one item of the array without resizing it. Within one command call whole-array (list) values are applied after all single-value changes."
             }
         },
         "additionalProperties": false,
