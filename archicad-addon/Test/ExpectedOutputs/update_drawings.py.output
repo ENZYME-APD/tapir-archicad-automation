@@ -110,6 +110,122 @@ Response:
         }
     ]
 }
+Command: GetDetailsOfElements
+Parameters:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "detailsOfElements": [
+        {
+            "type": "Drawing",
+            "floorIndex": 0,
+            "layerIndex": 48,
+            "drawIndex": 5,
+            "id": "",
+            "details": {
+                "pos": {
+                    "x": 0.265,
+                    "y": 0.21
+                },
+                "angle": 0,
+                "ratio": 1,
+                "drawingScale": 0.01,
+                "modelOffset": {
+                    "x": 0,
+                    "y": 0
+                },
+                "isCutWithFrame": false,
+                "navigatorItemId": {
+                    "guid": "<GUID>"
+                },
+                "bounds": {
+                    "xMin": 0.209698292,
+                    "yMin": 0.18225,
+                    "xMax": 0.320301708,
+                    "yMax": 0.23775
+                }
+            }
+        },
+        {
+            "type": "Drawing",
+            "floorIndex": 0,
+            "layerIndex": 48,
+            "drawIndex": 5,
+            "id": "",
+            "details": {
+                "pos": {
+                    "x": 0.265,
+                    "y": 0.21
+                },
+                "angle": 0,
+                "ratio": 1,
+                "drawingScale": 0.01,
+                "modelOffset": {
+                    "x": 0,
+                    "y": 0
+                },
+                "isCutWithFrame": false,
+                "navigatorItemId": {
+                    "guid": "<GUID>"
+                },
+                "bounds": {
+                    "xMin": 0.233107143,
+                    "yMin": 0.1845,
+                    "xMax": 0.296892858,
+                    "yMax": 0.2355
+                }
+            }
+        },
+        {
+            "type": "Drawing",
+            "floorIndex": 0,
+            "layerIndex": 48,
+            "drawIndex": 5,
+            "id": "",
+            "details": {
+                "pos": {
+                    "x": 0.265,
+                    "y": 0.21
+                },
+                "angle": 0,
+                "ratio": 1,
+                "drawingScale": 0.01,
+                "modelOffset": {
+                    "x": 0,
+                    "y": 0
+                },
+                "isCutWithFrame": false,
+                "navigatorItemId": {
+                    "guid": "<GUID>"
+                },
+                "bounds": {
+                    "xMin": 0.2348125,
+                    "yMin": 0.205,
+                    "xMax": 0.2951875,
+                    "yMax": 0.215
+                }
+            }
+        }
+    ]
+}
 Command: UpdateDrawings
 Parameters:
 {
@@ -134,4 +250,58 @@ Parameters:
 Response:
 {
     "success": true
+}
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Drawing",
+    "databases": [
+        {
+            "databaseId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ],
+    "executionResultForDatabases": [
+        {
+            "success": true
+        }
+    ]
+}
+Command: ChangeDrawingLink
+Parameters:
+{
+    "drawingsWithNewLinks": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "navigatorItemId": {
+                "guid": "<GUID>"
+            },
+            "layoutDatabaseId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
 }
