@@ -302,7 +302,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",
-            "Updates all Zones (recalculates their geometry and updates their Zone Stamps)."
+            "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
         );
         err |= RegisterCommand<GetCollisionsCommand> (
             elementCommands, "1.2.2",
