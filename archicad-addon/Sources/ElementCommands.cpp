@@ -14,6 +14,25 @@
 
 #include <algorithm>
 
+struct API_RoomUpdateParams {
+    bool keepStampPos;
+    bool undoTopTrim;
+    bool undoBotTrim;
+    bool filler_1[5];
+
+    API_RoomUpdateParams() : keepStampPos(true), undoTopTrim(false), undoBotTrim(false)
+    {}
+};
+
+typedef enum {
+    APIInternal_UpdateRoomsID    = 'UPDR',
+    APIInternal_PostCommandIdID  = 'ESPC',
+} API_InternalID;
+
+extern "C" {
+    GSErrCode ACAPI_Internal (API_InternalID code, void* par1 = nullptr, void* par2 = nullptr, void* par3 = nullptr);
+}
+
 static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
 {
     if (filter == "IsEditable")
@@ -1927,6 +1946,67 @@ GS::ObjectState GetZoneBoundariesCommand::Execute (
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command is only supported in ArchiCAD 28 or later.");
 #endif
+}
+
+UpdateZonesCommand::UpdateZonesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UpdateZonesCommand::GetName () const
+{
+    return "UpdateZones";
+}
+
+GS::Optional<GS::UniString> UpdateZonesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "keepStampPosition": {
+                "type": "boolean",
+                "description": "Keep the position of the Zone Stamps. The default is true."
+            },
+            "undoTopTrim": {
+                "type": "boolean",
+                "description": "Undo the trimming of the top of the Zones. The default is false."
+            },
+            "undoBottomTrim": {
+                "type": "boolean",
+                "description": "Undo the trimming of the bottom of the Zones. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdateZonesCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState UpdateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_RoomUpdateParams roomUpdateParams;
+    parameters.Get ("keepStampPosition", roomUpdateParams.keepStampPos);
+    parameters.Get ("undoTopTrim", roomUpdateParams.undoTopTrim);
+    parameters.Get ("undoBottomTrim", roomUpdateParams.undoBotTrim);
+
+    GSErrCode err = NoError;
+
+    ACAPI_CallUndoableCommand ("UpdateZonesCommand", [&]() {
+        err = ACAPI_Internal (APIInternal_UpdateRoomsID, &roomUpdateParams);
+
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to update zones.");
 }
 
 GetCollisionsCommand::GetCollisionsCommand () :

@@ -300,6 +300,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.3",
             "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.)."
         );
+        err |= RegisterCommand<UpdateZonesCommand> (
+            elementCommands, "1.5.4",
+            "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
+        );
         err |= RegisterCommand<GetCollisionsCommand> (
             elementCommands, "1.2.2",
             "Detect collisions between the given two groups of elements."
