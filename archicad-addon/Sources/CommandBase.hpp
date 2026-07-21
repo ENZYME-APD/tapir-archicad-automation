@@ -75,6 +75,13 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
 
+// Defined in ExtendedElementCommands.cpp (not ElementCommands.cpp, where it's called from) -
+// reading a Morph's body needs Model3D/MeshBody.hpp, which cannot be included in the same
+// translation unit as ModelMeshBody.hpp (already required by ElementCommands.cpp for zone
+// boundaries) without a "'GS' n'est pas membre de 'GS'" GDL header conflict - confirmed live,
+// root cause not fully understood, kept as two separate translation units instead.
+void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
 struct Story {
     Story (short _index, double _level)
         : index (_index)

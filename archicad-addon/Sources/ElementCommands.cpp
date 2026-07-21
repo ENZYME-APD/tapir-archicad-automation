@@ -878,6 +878,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
             } break;
 
+            case API_MorphID:
+                AddMorphBodyFromMemo (elem, typeSpecificDetails);
+                break;
+
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
                 break;
