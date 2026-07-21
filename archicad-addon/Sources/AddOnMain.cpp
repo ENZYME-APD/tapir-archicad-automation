@@ -282,7 +282,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
-            "Sets the details of the given elements (floor, layer, order etc)."
+            "Sets the details of the given elements (floor, layer, order etc). The typeSpecificDetails field accepts the same type-specific parameters as the Modify commands (walls, beams, slabs, roofs, columns, windows, doors, morphs, meshes) plus zone and drawing settings; the fields applied are selected by the type of each element."
         );
         err |= RegisterCommand<Get3DBoundingBoxesCommand> (
             elementCommands, "1.1.2",

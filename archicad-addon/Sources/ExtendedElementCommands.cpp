@@ -1203,6 +1203,20 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, bottomOffset);
         changed = true;
     }
+    if (element.wall.type == APIWtyp_Trapez) {
+        auto begThickness = GetOptionalDouble (details, "begThickness");
+        if (begThickness.HasValue ()) {
+            element.wall.thickness = begThickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness);
+            changed = true;
+        }
+        auto endThickness = GetOptionalDouble (details, "endThickness");
+        if (endThickness.HasValue ()) {
+            element.wall.thickness1 = endThickness.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness1);
+            changed = true;
+        }
+    }
     return changed;
 }
 
@@ -1513,6 +1527,277 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
         changed = true;
     }
     return changed;
+}
+
+bool ApplyZoneDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
+{
+    bool changed = false;
+    const GS::ObjectState* stampPosition = details.Get ("stampPosition");
+    if (stampPosition != nullptr) {
+        element.zone.pos = Get2DCoordinateFromObjectState (*stampPosition);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, pos);
+        changed = true;
+    }
+    if (details.Get ("stampAngle", element.zone.stampAngle)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, stampAngle);
+        changed = true;
+    }
+    if (details.Get ("fixedStampAngle", element.zone.fixedAngle)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+        changed = true;
+    }
+    return changed;
+}
+
+bool ApplyDrawingDetails (API_Element& element, API_Element& mask, API_ElementMemo& memo, UInt64& memoMask, const GS::ObjectState& details)
+{
+    bool changed = false;
+    GS::Array<GS::ObjectState> clipCoords;
+    if (details.Get ("clipPolygon", clipCoords) && clipCoords.GetSize () >= 3) {
+        // Drop explicit closing vertex if caller already duplicated first point at the end
+        if (clipCoords.GetSize () > 1) {
+            API_Coord first = Get2DCoordinateFromObjectState (clipCoords.GetFirst ());
+            API_Coord last  = Get2DCoordinateFromObjectState (clipCoords.GetLast ());
+            if (first.x == last.x && first.y == last.y)
+                clipCoords.Pop ();
+        }
+        const Int32 nUnique = clipCoords.GetSize ();
+        // AC polygon convention: coords[1..nUnique] = vertices, coords[nUnique+1] = closing duplicate of coords[1]
+        // Handle size = nUnique+2 (index 0 unused, 1..nUnique vertices, nUnique+1 closing)
+        memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nUnique + 2) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+        memo.pends  = reinterpret_cast<Int32**>     (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+        if (memo.coords != nullptr && memo.pends != nullptr) {
+            for (Int32 i = 0; i < nUnique; ++i)
+                (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (clipCoords[i]);
+            (*memo.coords)[nUnique + 1] = (*memo.coords)[1]; // closing vertex
+            (*memo.pends)[1] = nUnique + 1;
+            element.drawing.isCutWithFrame    = true;
+            element.drawing.poly.nSubPolys    = 1;
+            element.drawing.poly.nCoords      = nUnique + 1; // +1 for closing vertex
+            element.drawing.poly.nArcs        = 0;
+            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
+            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, poly);
+            memoMask |= APIMemoMask_Polygon;
+            changed = true;
+        }
+    }
+    if (details.Get ("drawingScale", element.drawing.drawingScale)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);
+        changed = true;
+    }
+    if (details.Get ("ratio", element.drawing.ratio)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, ratio);
+        changed = true;
+    }
+    if (details.Get ("angle", element.drawing.angle)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, angle);
+        changed = true;
+    }
+    const GS::ObjectState* posState = details.Get ("pos");
+    if (posState != nullptr) {
+        element.drawing.pos = Get2DCoordinateFromObjectState (*posState);
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
+        changed = true;
+    }
+    const GS::ObjectState* modelOffsetState = details.Get ("modelOffset");
+    if (modelOffsetState != nullptr) {
+        element.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, modelOffset);
+        changed = true;
+    }
+    return changed;
+}
+
+GS::Optional<GS::UniString> ApplyMorphDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    auto translation = GetOptionalCoordinate3D (details, "translation");
+
+    if (translation.HasValue ()) {
+        element.morph.tranmat.tmx[3] += translation->x;
+        element.morph.tranmat.tmx[7] += translation->y;
+        element.morph.tranmat.tmx[11] += translation->z;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
+        changed = true;
+    }
+
+    auto rotationDegrees = GetOptionalDouble (details, "rotationDegreesZ");
+
+    if (rotationDegrees.HasValue ()) {
+        const double radians = rotationDegrees.Get () * DegreesToRadians;
+        const double cosAngle = std::cos (radians);
+        const double sinAngle = std::sin (radians);
+        const API_Tranmat originalTransform = element.morph.tranmat;
+        for (Int32 column = 0; column < 4; ++column) {
+            element.morph.tranmat.tmx[column] = cosAngle * originalTransform.tmx[column] + sinAngle * originalTransform.tmx[8 + column];
+            element.morph.tranmat.tmx[8 + column] = -sinAngle * originalTransform.tmx[column] + cosAngle * originalTransform.tmx[8 + column];
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
+        changed = true;
+    }
+
+    auto buildingMaterialId = GetOptionalObjectState (details, "buildingMaterialId");
+
+    if (buildingMaterialId.HasValue ()) {
+        API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (buildingMaterialId.Get (), API_BuildingMaterialID, buildingMaterialIndex)) {
+            return GS::UniString ("Invalid morph building material.");
+        }
+        element.morph.buildingMaterial = buildingMaterialIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, buildingMaterial);
+        changed = true;
+    }
+
+    return {};
+}
+
+GS::Optional<GS::UniString> ApplyMeshDetails (API_Element& element, API_Element& mask, API_ElementMemo& memo, UInt64& memoMask, const GS::ObjectState& details, bool& changed)
+{
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    GS::Array<GS::ObjectState> polygonArcs;
+    GS::Array<GS::ObjectState> holes;
+    GS::Array<GS::ObjectState> sublines;
+    const bool hasPolyGeom        = details.Get ("polygonCoordinates", polygonCoordinates);
+    const bool hasSublines        = details.Get ("sublines", sublines);
+    const bool isClearingSublines = hasSublines && sublines.IsEmpty ();
+    if (hasPolyGeom) {
+        details.Get ("polygonArcs", polygonArcs);
+        details.Get ("holes", holes);
+    }
+
+    {
+        // When clearing sublines without a polygon change, also load the current polygon
+        // to compute the bounding box for the out-of-bounds dummy sublines (see below).
+        const UInt64 loadMask =
+            ((hasPolyGeom || isClearingSublines) ? (APIMemoMask_Polygon | APIMemoMask_MeshPolyZ) : 0) |
+            ((hasSublines && !isClearingSublines) ? APIMemoMask_MeshLevel : 0);
+        if (loadMask != 0) {
+            const GSErrCode err = ACAPI_Element_GetMemo (element.header.guid, &memo, loadMask);
+            if (err != NoError) {
+                return GS::UniString ("Failed to get mesh memo");
+            }
+        }
+    }
+
+    if (details.Get ("floorIndex", element.header.floorInd)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+        changed = true;
+    }
+    if (details.Get ("level", element.mesh.level)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, level);
+        changed = true;
+    }
+    if (details.Get ("skirtLevel", element.mesh.skirtLevel)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, skirtLevel);
+        changed = true;
+    }
+    GS::UniString skirtType;
+    if (details.Get ("skirtType", skirtType)) {
+        if (skirtType == "SurfaceOnlyWithoutSkirt") {
+            element.mesh.skirt = 3;
+        } else if (skirtType == "WithSkirt") {
+            element.mesh.skirt = 2;
+        } else if (skirtType == "SolidBodyWithSkirt") {
+            element.mesh.skirt = 1;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, skirt);
+        changed = true;
+    }
+    GS::UniString ridges;
+    if (details.Get ("ridges", ridges)) {
+        if (ridges == "AllSharp") {
+            element.mesh.smoothRidges = APIRidge_AllSharp;
+        } else if (ridges == "AllSmooth") {
+            element.mesh.smoothRidges = APIRidge_AllSmooth;
+        } else if (ridges == "UserDefined") {
+            element.mesh.smoothRidges = APIRidge_UserSharp;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, smoothRidges);
+        changed = true;
+    }
+    bool showLines = false;
+    if (details.Get ("showLines", showLines)) {
+        element.mesh.showLines = showLines ? 1 : 0;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, showLines);
+        changed = true;
+    }
+    short contourPen = 0;
+    if (details.Get ("contourPen", contourPen) && contourPen > 0) {
+        element.mesh.contPen = contourPen;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, contPen);
+        changed = true;
+    }
+    short levelPen = 0;
+    if (details.Get ("levelPen", levelPen) && levelPen > 0) {
+        element.mesh.levelPen = levelPen;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelPen);
+        changed = true;
+    }
+    Int32 lineTypeIndex = 0;
+    if (details.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
+        element.mesh.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, ltypeInd);
+        changed = true;
+    }
+
+    if (hasPolyGeom) {
+        auto geoErr = BuildMeshPolyMemoFromGeometry (element, memo, polygonCoordinates, polygonArcs, holes);
+        if (geoErr.HasValue ()) {
+            return geoErr;
+        }
+        memoMask |= APIMemoMask_Polygon | APIMemoMask_MeshPolyZ;
+        changed = true;
+    }
+
+    if (hasSublines) {
+        if (isClearingSublines) {
+            // Clearing level lines: ACAPI_Element_Change ignores null/empty handles for
+            // APIMemoMask_MeshLevel. Workaround: send two valid sublines placed just
+            // outside the polygon bounding box; ArchiCAD clips them out automatically,
+            // resulting in nSubLines == 0 stored in the element.
+            // memo.coords is guaranteed valid here (loaded above for this case).
+            const Int32 nPolyCoords = element.mesh.poly.nCoords;
+            double xMin = (*memo.coords)[1].x;
+            double yMin = (*memo.coords)[1].y;
+            for (Int32 j = 2; j < nPolyCoords; ++j) {
+                if ((*memo.coords)[j].x < xMin) xMin = (*memo.coords)[j].x;
+                if ((*memo.coords)[j].y < yMin) yMin = (*memo.coords)[j].y;
+            }
+
+            const double kOffset = 1.0;
+            const double kStep   = 0.5;
+            const double ox = xMin - kOffset;
+            const double oy = yMin - kOffset;
+
+            memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (
+                memo.meshLevelCoords == nullptr
+                    ? BMAllocateHandle (4 * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0)
+                    : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelCoords), 4 * sizeof (API_MeshLevelCoord), REALLOC_CLEAR, 0));
+            memo.meshLevelEnds = reinterpret_cast<Int32**> (
+                memo.meshLevelEnds == nullptr
+                    ? BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0)
+                    : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelEnds), 2 * sizeof (Int32), REALLOC_CLEAR, 0));
+
+            (*memo.meshLevelCoords)[0].c.x = ox;          (*memo.meshLevelCoords)[0].c.y = oy;          (*memo.meshLevelCoords)[0].c.z = 0.0;
+            (*memo.meshLevelCoords)[1].c.x = ox + kStep;  (*memo.meshLevelCoords)[1].c.y = oy;          (*memo.meshLevelCoords)[1].c.z = 0.0;
+            (*memo.meshLevelCoords)[2].c.x = ox;          (*memo.meshLevelCoords)[2].c.y = oy + kStep;  (*memo.meshLevelCoords)[2].c.z = 0.0;
+            (*memo.meshLevelCoords)[3].c.x = ox + kStep;  (*memo.meshLevelCoords)[3].c.y = oy + kStep;  (*memo.meshLevelCoords)[3].c.z = 0.0;
+            (*memo.meshLevelEnds)[0] = 2;
+            (*memo.meshLevelEnds)[1] = 4;
+
+            element.mesh.levelLines.nCoords   = 4;
+            element.mesh.levelLines.nSubLines = 2;
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
+            memoMask |= APIMemoMask_MeshLevel;
+            changed = true;
+        } else {
+            BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
+            memoMask |= APIMemoMask_MeshLevel;
+            changed = true;
+        }
+    }
+
+    return {};
 }
 
 }
@@ -3003,6 +3288,188 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
     });
 }
 
+GS::Optional<GS::UniString> ApplyTypeSpecificModification (
+    API_Element& element,
+    API_Element& mask,
+    API_ElementMemo& memo,
+    UInt64& memoMask,
+    const GS::ObjectState& details,
+    const Stories& stories,
+    bool& changed)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_WallID: {
+            if (ApplyWallDetails (element, mask, details)) {
+                changed = true;
+            }
+            return ApplyWallStructure (element, &mask, details, changed);
+        }
+        case API_BeamID:
+            if (ApplyBeamDetails (element, mask, details)) {
+                changed = true;
+            }
+            return {};
+        case API_ColumnID:
+            if (ApplyColumnDetails (element, mask, details, stories)) {
+                changed = true;
+            }
+            return {};
+        case API_WindowID:
+        case API_DoorID:
+            if (ApplyWindowOrDoorDetails (element, mask, details)) {
+                changed = true;
+            }
+            return {};
+        case API_ZoneID:
+            if (ApplyZoneDetails (element, mask, details)) {
+                changed = true;
+            }
+            return {};
+        case API_DrawingID:
+            if (ApplyDrawingDetails (element, mask, memo, memoMask, details)) {
+                changed = true;
+            }
+            return {};
+        case API_MorphID:
+            return ApplyMorphDetails (element, mask, details, changed);
+        case API_MeshID:
+            return ApplyMeshDetails (element, mask, memo, memoMask, details, changed);
+        case API_SlabID: {
+            if (ApplySlabDetails (element, mask, details, stories)) {
+                changed = true;
+            }
+            auto error = ApplySlabStructure (element, &mask, details, changed);
+            if (error.HasValue ()) {
+                return error;
+            }
+            GS::Array<GS::ObjectState> polygonOutline;
+            if (details.Get ("polygonOutline", polygonOutline)) {
+                if (polygonOutline.GetSize () < 3) {
+                    return GS::UniString ("'polygonOutline' must contain at least 3 coordinates.");
+                }
+                ACAPI_Element_GetMemo (element.header.guid, &memo);
+                GS::Array<GS::ObjectState> polygonArcs;
+                GS::Array<GS::ObjectState> holes;
+                details.Get ("polygonArcs", polygonArcs);
+                details.Get ("holes", holes);
+                auto geoError = BuildSlabMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
+                if (geoError.HasValue ()) {
+                    return geoError;
+                }
+                memoMask |= APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims;
+                changed = true;
+            }
+            return {};
+        }
+        case API_RoofID: {
+            if (element.roof.roofClass != API_PolyRoofID) {
+                return GS::UniString ("Only multi-plane roofs are supported.");
+            }
+            {
+                auto error = ApplyRoofStructure (element, &mask, details, changed);
+                if (error.HasValue ()) {
+                    return error;
+                }
+            }
+            auto error = ApplyRoofDetails (element, &mask, details, stories, changed);
+            if (error.HasValue ()) {
+                return error;
+            }
+            GS::Array<GS::ObjectState> polygonOutline;
+            if (details.Get ("polygonOutline", polygonOutline)) {
+                if (polygonOutline.GetSize () < 3) {
+                    return GS::UniString ("'polygonOutline' must contain at least 3 coordinates.");
+                }
+                ACAPI_Element_GetMemo (element.header.guid, &memo);
+                GS::Array<GS::ObjectState> polygonArcs;
+                GS::Array<GS::ObjectState> holes;
+                details.Get ("polygonArcs", polygonArcs);
+                details.Get ("holes", holes);
+                auto geoError = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
+                if (geoError.HasValue ()) {
+                    return geoError;
+                }
+                memoMask |= APIMemoMask_AdditionalPolygon;
+                changed = true;
+            }
+            return {};
+        }
+        default:
+            return GS::UniString ("Type-specific modification is not supported for this element type.");
+    }
+}
+
+// Shared per-item flow of the Modify* commands: loads each element, checks
+// its type, applies the type-specific fields via ApplyTypeSpecificModification
+// and performs the change. detailsKey selects a nested details object inside
+// each item (used by ModifyMeshes); when nullptr the item itself holds the
+// fields next to elementId.
+static GS::ObjectState ExecuteTypedElementModification (
+    const GS::ObjectState& parameters,
+    const char* arrayKey,
+    const GS::String& undoName,
+    API_ElemTypeID expectedType,
+    const GS::UniString& elemName,
+    const char* detailsKey = nullptr)
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, arrayKey, items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    const Stories stories = GetStories ();
+
+    return ExecuteModifyWithResults (undoName, [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load " + elemName + "."));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != expectedType) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "Element is not a " + elemName + "."));
+                continue;
+            }
+
+            const GS::ObjectState* details = &item;
+            if (detailsKey != nullptr) {
+                details = item.Get (detailsKey);
+                if (details == nullptr) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (detailsKey) + " is missing"));
+                    continue;
+                }
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            UInt64 memoMask = 0;
+            bool changed = false;
+
+            auto modError = ApplyTypeSpecificModification (element, mask, memo, memoMask, *details, stories, changed);
+            if (modError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, modError.Get ()));
+                continue;
+            }
+            if (!changed) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No " + elemName + " fields to modify."));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, memoMask != 0 ? &memo : nullptr, memoMask, true);
+            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify " + elemName + "."));
+        }
+    });
+}
+
 ModifyWallsCommand::ModifyWallsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -3056,43 +3523,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "wallsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    return ExecuteModifyWithResults ("Modify Walls", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load wall."));
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            bool changed = ApplyWallDetails (element, mask, item);
-            auto error = ApplyWallStructure (element, &mask, item, changed);
-            if (error.HasValue ()) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                continue;
-            }
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No wall fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify wall."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "wallsWithDetails", "Modify Walls", API_WallID, "wall");
 }
 
 ModifyBeamsCommand::ModifyBeamsCommand () :
@@ -3141,38 +3572,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "beamsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    return ExecuteModifyWithResults ("Modify Beams", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load beam."));
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyBeamDetails (element, mask, item);
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No beam fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify beam."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "beamsWithDetails", "Modify Beams", API_BeamID, "beam");
 }
 
 ModifySlabsCommand::ModifySlabsCommand () :
@@ -3232,74 +3632,7 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "slabsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    const Stories stories = GetStories ();
-
-    return ExecuteModifyWithResults ("Modify Slabs", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load slab."));
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            bool changed = ApplySlabDetails (element, mask, item, stories);
-            auto error = ApplySlabStructure (element, &mask, item, changed);
-            if (error.HasValue ()) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                continue;
-            }
-
-            GS::Array<GS::ObjectState> polygonOutline;
-            if (item.Get ("polygonOutline", polygonOutline)) {
-                if (polygonOutline.GetSize () < 3) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
-                    continue;
-                }
-
-                API_ElementMemo memo = {};
-                const GS::OnExit cleanup ([&]() {
-                    ACAPI_DisposeElemMemoHdls (&memo);
-                });
-                ACAPI_Element_GetMemo (element.header.guid, &memo);
-
-                GS::Array<GS::ObjectState> polygonArcs;
-                GS::Array<GS::ObjectState> holes;
-                item.Get ("polygonArcs", polygonArcs);
-                item.Get ("holes", holes);
-                auto error = BuildSlabMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
-                if (error.HasValue ()) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                    continue;
-                }
-
-                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, true);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify slab geometry."));
-                continue;
-            }
-
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No slab fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify slab."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "slabsWithDetails", "Modify Slabs", API_SlabID, "slab");
 }
 
 ModifyRoofsCommand::ModifyRoofsCommand () :
@@ -3374,85 +3707,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "roofsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    const Stories stories = GetStories ();
-
-    return ExecuteModifyWithResults ("Modify Roofs", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load roof."));
-                continue;
-            }
-            if (element.roof.roofClass != API_PolyRoofID) {
-                results.Push (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "Only multi-plane roofs are supported.")); 
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            bool changed = false;
-            {
-                auto error = ApplyRoofStructure (element, &mask, item, changed);
-                if (error.HasValue ()) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                    continue;
-                }
-            }
-            auto error = ApplyRoofDetails (element, &mask, item, stories, changed);
-            if (error.HasValue ()) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                continue;
-            }
-\
-            GS::Array<GS::ObjectState> polygonOutline;
-            if (item.Get ("polygonOutline", polygonOutline)) {
-                if (polygonOutline.GetSize () < 3) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
-                    continue;
-                }
-
-                API_ElementMemo memo = {};
-                const GS::OnExit cleanup ([&]() {
-                    ACAPI_DisposeElemMemoHdls (&memo);
-                });
-                ACAPI_Element_GetMemo (element.header.guid, &memo);
-
-                GS::Array<GS::ObjectState> polygonArcs;
-                GS::Array<GS::ObjectState> holes;
-                item.Get ("polygonArcs", polygonArcs);
-                item.Get ("holes", holes);
-                auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
-                if (error.HasValue ()) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                    continue;
-                }
-
-                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof geometry."));
-                continue;
-            }
-
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No roof fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "roofsWithDetails", "Modify Roofs", API_RoofID, "roof");
 }
 
 // ============================================================================
@@ -3636,40 +3891,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "columnsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    const Stories stories = GetStories ();
-
-    return ExecuteModifyWithResults ("Modify Columns", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load column."));
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyColumnDetails (element, mask, item, stories);
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No column fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify column."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "columnsWithDetails", "Modify Columns", API_ColumnID, "column");
 }
 
 ModifyWindowsCommand::ModifyWindowsCommand () :
@@ -3718,38 +3940,7 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "windowsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    return ExecuteModifyWithResults ("Modify Windows", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load window."));
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyWindowOrDoorDetails (element, mask, item);
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No window fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify window."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "windowsWithDetails", "Modify Windows", API_WindowID, "window");
 }
 
 ModifyDoorsCommand::ModifyDoorsCommand () :
@@ -3798,38 +3989,7 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "doorsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    return ExecuteModifyWithResults ("Modify Doors", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load door."));
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyWindowOrDoorDetails (element, mask, item);
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No door fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify door."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "doorsWithDetails", "Modify Doors", API_DoorID, "door");
 }
 
 ModifyMorphsCommand::ModifyMorphsCommand () :
@@ -3874,77 +4034,7 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> items;
-    auto error = GetElementArray (parameters, "morphsWithDetails", items);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    return ExecuteModifyWithResults ("Modify Morphs", [&](GS::Array<GS::ObjectState>& results) {
-        for (const auto& item : items) {
-            if (item.Get ("elementId") == nullptr) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
-                continue;
-            }
-            API_Element element = {};
-            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
-            GSErrCode err = ACAPI_Element_Get (&element);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to load morph."));
-                continue;
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            bool changed = false;
-
-            auto translation = GetOptionalCoordinate3D (item, "translation");
-
-            if (translation.HasValue ()) {
-                element.morph.tranmat.tmx[3] += translation->x;
-                element.morph.tranmat.tmx[7] += translation->y;
-                element.morph.tranmat.tmx[11] += translation->z;
-                ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
-                changed = true;
-            }
-
-            auto rotationDegrees = GetOptionalDouble (item, "rotationDegreesZ");
-
-            if (rotationDegrees.HasValue ()) {
-                const double radians = rotationDegrees.Get () * DegreesToRadians;
-                const double cosAngle = std::cos (radians);
-                const double sinAngle = std::sin (radians);
-                const API_Tranmat originalTransform = element.morph.tranmat;
-                for (Int32 column = 0; column < 4; ++column) {
-                    element.morph.tranmat.tmx[column] = cosAngle * originalTransform.tmx[column] + sinAngle * originalTransform.tmx[8 + column];
-                    element.morph.tranmat.tmx[8 + column] = -sinAngle * originalTransform.tmx[column] + cosAngle * originalTransform.tmx[8 + column];
-                }
-                ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
-                changed = true;
-            }
-
-            auto buildingMaterialId = GetOptionalObjectState (item, "buildingMaterialId");
-
-            if (buildingMaterialId.HasValue ()) {
-                API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
-                if (!ResolveAttributeIndex (buildingMaterialId.Get (), API_BuildingMaterialID, buildingMaterialIndex)) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Invalid morph building material."));
-                    continue;
-                }
-                element.morph.buildingMaterial = buildingMaterialIndex;
-                ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, buildingMaterial);
-                changed = true;
-            }
-
-            if (!changed) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No morph fields to modify."));
-                continue;
-            }
-
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify morph."));
-        }
-    });
+    return ExecuteTypedElementModification (parameters, "morphsWithDetails", "Modify Morphs", API_MorphID, "morph");
 }
 
 CreateSectionsCommand::CreateSectionsCommand () :
@@ -4338,197 +4428,5 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetResponseSchema () const
 
 GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> meshesData;
-    parameters.Get ("meshesData", meshesData);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("ModifyMeshes", [&] () -> GSErrCode {
-        for (const GS::ObjectState& meshEntry : meshesData) {
-            const GS::ObjectState* elementId = meshEntry.Get ("elementId");
-            if (elementId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-                continue;
-            }
-
-            API_Element elem = {};
-            elem.header.guid = GetGuidFromObjectState (*elementId);
-            GSErrCode err = ACAPI_Element_Get (&elem);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
-                continue;
-            }
-
-#ifdef ServerMainVers_2600
-            if (elem.header.type.typeID != API_MeshID) {
-#else
-            if (elem.header.typeID != API_MeshID) {
-#endif
-                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Mesh."));
-                continue;
-            }
-
-            const GS::ObjectState* meshData = meshEntry.Get ("meshData");
-            if (meshData == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "meshData is missing"));
-                continue;
-            }
-
-            GS::Array<GS::ObjectState> polygonCoordinates;
-            GS::Array<GS::ObjectState> polygonArcs;
-            GS::Array<GS::ObjectState> holes;
-            GS::Array<GS::ObjectState> sublines;
-            const bool hasPolyGeom        = meshData->Get ("polygonCoordinates", polygonCoordinates);
-            const bool hasSublines        = meshData->Get ("sublines", sublines);
-            const bool isClearingSublines = hasSublines && sublines.IsEmpty ();
-            if (hasPolyGeom) {
-                meshData->Get ("polygonArcs", polygonArcs);
-                meshData->Get ("holes", holes);
-            }
-
-            API_ElementMemo memo = {};
-            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-
-            {
-                // When clearing sublines without a polygon change, also load the current polygon
-                // to compute the bounding box for the out-of-bounds dummy sublines (see below).
-                const UInt64 loadMask =
-                    ((hasPolyGeom || isClearingSublines) ? (APIMemoMask_Polygon | APIMemoMask_MeshPolyZ) : 0) |
-                    ((hasSublines && !isClearingSublines) ? APIMemoMask_MeshLevel : 0);
-                if (loadMask != 0) {
-                    err = ACAPI_Element_GetMemo (elem.header.guid, &memo, loadMask);
-                    if (err != NoError) {
-                        executionResults (CreateFailedExecutionResult (err, "Failed to get mesh memo"));
-                        continue;
-                    }
-                }
-            }
-
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-
-            if (meshData->Get ("floorIndex", elem.header.floorInd)) {
-                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-            }
-            if (meshData->Get ("level", elem.mesh.level)) {
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, level);
-            }
-            if (meshData->Get ("skirtLevel", elem.mesh.skirtLevel)) {
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, skirtLevel);
-            }
-            GS::UniString skirtType;
-            if (meshData->Get ("skirtType", skirtType)) {
-                if (skirtType == "SurfaceOnlyWithoutSkirt") {
-                    elem.mesh.skirt = 3;
-                } else if (skirtType == "WithSkirt") {
-                    elem.mesh.skirt = 2;
-                } else if (skirtType == "SolidBodyWithSkirt") {
-                    elem.mesh.skirt = 1;
-                }
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, skirt);
-            }
-            GS::UniString ridges;
-            if (meshData->Get ("ridges", ridges)) {
-                if (ridges == "AllSharp") {
-                    elem.mesh.smoothRidges = APIRidge_AllSharp;
-                } else if (ridges == "AllSmooth") {
-                    elem.mesh.smoothRidges = APIRidge_AllSmooth;
-                } else if (ridges == "UserDefined") {
-                    elem.mesh.smoothRidges = APIRidge_UserSharp;
-                }
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, smoothRidges);
-            }
-            bool showLines = false;
-            if (meshData->Get ("showLines", showLines)) {
-                elem.mesh.showLines = showLines ? 1 : 0;
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, showLines);
-            }
-            short contourPen = 0;
-            if (meshData->Get ("contourPen", contourPen) && contourPen > 0) {
-                elem.mesh.contPen = contourPen;
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, contPen);
-            }
-            short levelPen = 0;
-            if (meshData->Get ("levelPen", levelPen) && levelPen > 0) {
-                elem.mesh.levelPen = levelPen;
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelPen);
-            }
-            Int32 lineTypeIndex = 0;
-            if (meshData->Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
-                elem.mesh.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
-                ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, ltypeInd);
-            }
-
-            UInt64 memoChangeMask = 0;
-
-            if (hasPolyGeom) {
-                auto geoErr = BuildMeshPolyMemoFromGeometry (elem, memo, polygonCoordinates, polygonArcs, holes);
-                if (geoErr.HasValue ()) {
-                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, geoErr.Get ()));
-                    continue;
-                }
-                memoChangeMask |= APIMemoMask_Polygon | APIMemoMask_MeshPolyZ;
-            }
-
-            if (hasSublines) {
-                if (isClearingSublines) {
-                    // Clearing level lines: ACAPI_Element_Change ignores null/empty handles for
-                    // APIMemoMask_MeshLevel. Workaround: send two valid sublines placed just
-                    // outside the polygon bounding box; ArchiCAD clips them out automatically,
-                    // resulting in nSubLines == 0 stored in the element.
-                    // memo.coords is guaranteed valid here (loaded above for this case).
-                    const Int32 nPolyCoords = elem.mesh.poly.nCoords;
-                    double xMin = (*memo.coords)[1].x;
-                    double yMin = (*memo.coords)[1].y;
-                    for (Int32 j = 2; j < nPolyCoords; ++j) {
-                        if ((*memo.coords)[j].x < xMin) xMin = (*memo.coords)[j].x;
-                        if ((*memo.coords)[j].y < yMin) yMin = (*memo.coords)[j].y;
-                    }
-
-                    const double kOffset = 1.0;
-                    const double kStep   = 0.5;
-                    const double ox = xMin - kOffset;
-                    const double oy = yMin - kOffset;
-
-                    memo.meshLevelCoords = reinterpret_cast<API_MeshLevelCoord**> (
-                        memo.meshLevelCoords == nullptr
-                            ? BMAllocateHandle (4 * sizeof (API_MeshLevelCoord), ALLOCATE_CLEAR, 0)
-                            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelCoords), 4 * sizeof (API_MeshLevelCoord), REALLOC_CLEAR, 0));
-                    memo.meshLevelEnds = reinterpret_cast<Int32**> (
-                        memo.meshLevelEnds == nullptr
-                            ? BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0)
-                            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshLevelEnds), 2 * sizeof (Int32), REALLOC_CLEAR, 0));
-
-                    (*memo.meshLevelCoords)[0].c.x = ox;          (*memo.meshLevelCoords)[0].c.y = oy;          (*memo.meshLevelCoords)[0].c.z = 0.0;
-                    (*memo.meshLevelCoords)[1].c.x = ox + kStep;  (*memo.meshLevelCoords)[1].c.y = oy;          (*memo.meshLevelCoords)[1].c.z = 0.0;
-                    (*memo.meshLevelCoords)[2].c.x = ox;          (*memo.meshLevelCoords)[2].c.y = oy + kStep;  (*memo.meshLevelCoords)[2].c.z = 0.0;
-                    (*memo.meshLevelCoords)[3].c.x = ox + kStep;  (*memo.meshLevelCoords)[3].c.y = oy + kStep;  (*memo.meshLevelCoords)[3].c.z = 0.0;
-                    (*memo.meshLevelEnds)[0] = 2;
-                    (*memo.meshLevelEnds)[1] = 4;
-
-                    elem.mesh.levelLines.nCoords   = 4;
-                    elem.mesh.levelLines.nSubLines = 2;
-                    ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
-                    memoChangeMask |= APIMemoMask_MeshLevel;
-                } else {
-                    BuildMeshSublinesMemoFromGeometry (elem, memo, sublines);
-                    ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, levelLines);
-                    memoChangeMask |= APIMemoMask_MeshLevel;
-                }
-            }
-
-            err = ACAPI_Element_Change (&elem, &mask, memoChangeMask != 0 ? &memo : nullptr, memoChangeMask, true);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to modify mesh"));
-                continue;
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
-        }
-
-        return NoError;
-    });
-
-    return response;
+    return ExecuteTypedElementModification (parameters, "meshesData", "ModifyMeshes", API_MeshID, "mesh", "meshData");
 }
