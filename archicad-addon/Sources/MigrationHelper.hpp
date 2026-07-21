@@ -14,6 +14,7 @@
 #define ACAPI_MenuItem_InstallMenuHandler ACAPI_Install_MenuHandler
 #define ACAPI_MenuItem_GetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_GetMenuItemFlagsID, par1, par2);
 #define ACAPI_MenuItem_SetMenuItemFlags(par1, par2) ACAPI_Interface (APIIo_SetMenuItemFlagsID, par1, par2);
+#define ACAPI_MenuItem_SetMenuItemText(par1, par2, par3) ACAPI_Interface (APIIo_SetMenuItemTextID, par1, par2, par3);
 
 #define ACAPI_Markup_Create ACAPI_MarkUp_Create
 #define ACAPI_Markup_Delete ACAPI_MarkUp_Delete
@@ -238,6 +239,11 @@ inline GSErrCode ACAPI_View_Redraw ()
 inline GSErrCode ACAPI_Element_UI2ElemPriority (GS::Int32* uiPriority, GS::Int32* elemPriority)
 {
     return ACAPI_Goodies (APIAny_UI2ElemPriorityID, uiPriority, elemPriority);
+}
+
+inline GSErrCode ACAPI_Element_Elem2UIPriority (GS::Int32* elemPriority, GS::Int32* uiPriority)
+{
+    return ACAPI_Goodies (APIAny_Elem2UIPriorityID, elemPriority, uiPriority);
 }
 
 inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo>* activeLibs, Int32* embeddedLibraryIndex = nullptr)
@@ -481,6 +487,15 @@ inline GSErrCode TAPIR_Element_SetCategoryValueDefault (const API_Elem_Head& ele
 #else
     return ACAPI_Element_SetCategoryValueDefault (elemHead.typeID, elemHead.variationID, categoryValue.category, categoryValue);
 #endif
+#endif
+}
+
+inline GSErrCode TAPIR_Element_SetCategoryValue (const API_Guid& elemGuid, const API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_SetCategoryValue (elemGuid, categoryValue.category, categoryValue);
+#else
+    return ACAPI_Element_SetCategoryValue (elemGuid, categoryValue.category, categoryValue);
 #endif
 }
 

@@ -162,6 +162,10 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "type": "string",
                             "description": "Optional anchor point of the column core on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from the coordinate's z value."
                         }
                     },
                     "additionalProperties": false,
@@ -184,12 +188,14 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     parameters.Get ("coordinates", coordinates);
     API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
 
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", apiCoordinate.z, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.column.bottomOffset = floorIndexAndOffset.second;
     element.column.origoPos.x = apiCoordinate.x;
     element.column.origoPos.y = apiCoordinate.y;
-    parameters.Get ("height", element.column.height);
+    if (parameters.Get ("height", element.column.height)) {
+        element.column.relativeTopStory = 0;
+    }
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
 
     GS::UniString coreAnchor;
@@ -265,7 +271,11 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     },
                     "holes" : {
                         "$ref": "#/Holes2D"
-                    }    
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "Optional floor index. If omitted, derived from level."
+                    }
                 },
                 "additionalProperties": false,
                 "required" : [
@@ -352,7 +362,7 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
 {
     double inputLevel = 0.0;
     parameters.Get ("level", inputLevel);
-    const auto floorIndexAndOffset = GetFloorIndexAndOffset (inputLevel, stories);
+    const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", inputLevel, stories);
     element.header.floorInd = floorIndexAndOffset.first;
     element.slab.level = floorIndexAndOffset.second;
     parameters.Get ("thickness", element.slab.thickness);
@@ -711,6 +721,10 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         },
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from the coordinate's z value."
                         }
                     },
                     "additionalProperties": false,
@@ -852,7 +866,7 @@ static GS::Optional<GS::ObjectState> SetLibraryPartElementParameters (
         element.object.pos.x = apiCoordinate.x;
         element.object.pos.y = apiCoordinate.y;
 
-        const auto floorIndexAndOffset = GetFloorIndexAndOffset (apiCoordinate.z, stories);
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", apiCoordinate.z, stories);
         element.header.floorInd = floorIndexAndOffset.first;
         element.object.level = floorIndexAndOffset.second;
     }

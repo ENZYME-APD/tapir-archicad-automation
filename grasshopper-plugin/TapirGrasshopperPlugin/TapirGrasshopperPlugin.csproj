@@ -12,11 +12,12 @@
     <TargetExt>.gha</TargetExt>
     <NoWarn>NU1701;NETSDK1086</NoWarn>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   
   <PropertyGroup>
     <!-- Specifies information for Assembly and Yak -->
-    <Version>1.5.4</Version>
+    <Version>1.5.5</Version>
     <Title>Tapir</Title>
     <Company>Enzyme APD</Company>
     <Description>Grasshopper components to access Archicad via JSON interface.</Description>

@@ -56,3 +56,70 @@ aclib.RunTapirCommand (
             ]}
         ]
     })
+
+allColumnsAfterCreate = aclib.RunTapirCommand (
+    'GetElementsByType', {
+        'elementType': 'Column'
+    })['elements']
+
+newColumn = allColumnsAfterCreate[-1]
+
+aclib.RunTapirCommand (
+    'CreateFavoritesFromElements', {
+        'favoritesFromElements': [{
+            'elementId': firstColumn['elementId'],
+            'favorite': 'ZZTestFolderFavorite',
+            'folder': ['ZZTest', 'Sub']
+        }]
+    })
+
+aclib.RunTapirCommand (
+    'ApplyFavoritesToElements', {
+        'favoritesToApply': [{
+            'elementId': newColumn['elementId'],
+            'favorite': 'ColumnFromPython'
+        }]
+    })
+
+allPolylines = aclib.RunTapirCommand (
+    'GetElementsByType', {
+        'elementType': 'PolyLine'
+    })['elements']
+
+aclib.RunTapirCommand (
+    'ApplyFavoritesToElements', {
+        'favoritesToApply': [{
+            'elementId': allPolylines[0]['elementId'],
+            'favorite': 'ColumnFromPython'
+        }]
+    })
+
+aclib.RunTapirCommand (
+    'ApplyFavoritesToElements', {
+        'favoritesToApply': [{
+            'elementId': newColumn['elementId'],
+            'favorite': 'ColumnFromPython'
+        }],
+        'applySettings': False
+    })
+
+aclib.RunTapirCommand (
+    'UpdateFavoritesFromElements', {
+        'favoritesFromElements': [{
+            'elementId': firstColumn['elementId'],
+            'favorite': 'ColumnFromPython'
+        }]
+    })
+
+aclib.RunTapirCommand (
+    'RenameFavorites', {
+        'renames': [{
+            'oldName': 'ZZTestFolderFavorite',
+            'newName': 'ZZTestFolderFavoriteRenamed'
+        }]
+    })
+
+aclib.RunTapirCommand (
+    'DeleteFavorites', {
+        'favorites': ['ZZTestFolderFavoriteRenamed']
+    })
