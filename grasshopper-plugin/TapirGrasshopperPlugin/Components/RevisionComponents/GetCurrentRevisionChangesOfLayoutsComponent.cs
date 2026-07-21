@@ -1,6 +1,5 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -11,15 +10,14 @@ using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.RevisionComponents
 {
-    public class GetCurrentRevisionChangesOfLayoutsComponent : ArchicadAccessorComponent
+    public class GetCurrentRevisionChangesOfLayoutsComponent : RevisionChangesOfEntitiesComponent
     {
         public override string CommandName => "GetCurrentRevisionChangesOfLayouts";
 
         public GetCurrentRevisionChangesOfLayoutsComponent()
             : base(
                 "GetCurrentRevisionChangesOfLayouts",
-                "Retrieve all changes belonging to the last revision of the given layouts.",
-                GroupNames.Revision)
+                "Retrieve all changes belonging to the last revision of the given layouts.")
         {
         }
 
@@ -28,13 +26,6 @@ namespace TapirGrasshopperPlugin.Components.RevisionComponents
             InGenerics(
                 "LayoutDatabaseGuids",
                 "Identifiers of the layout databases to query.");
-        }
-
-        protected override void AddOutputs()
-        {
-            OutText(
-                "RevisionChanges",
-                "JSON object with the current revision changes of the given layouts.");
         }
 
         protected override void Solve(
@@ -74,9 +65,11 @@ namespace TapirGrasshopperPlugin.Components.RevisionComponents
                 return;
             }
 
-            da.SetData(
-                0,
-                response.ToString(Formatting.Indented));
+            SetChangeOutputs(
+                da,
+                JsonOutputHelp.Items(
+                    response,
+                    "currentRevisionChangesOfLayouts"));
         }
 
         protected override System.Drawing.Bitmap Icon =>

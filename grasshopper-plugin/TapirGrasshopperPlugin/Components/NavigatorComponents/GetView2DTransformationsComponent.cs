@@ -1,7 +1,7 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -37,9 +37,21 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override void AddOutputs()
         {
-            OutText(
-                "Transformations",
-                "JSON object with the 2D zoom and rotation of the given views.");
+            OutPoints(
+                "ZoomMins",
+                "Minimum corner of the zoom box of each view.");
+
+            OutPoints(
+                "ZoomMaxs",
+                "Maximum corner of the zoom box of each view.");
+
+            OutNumberList(
+                "Rotations",
+                "Rotation of each view in radians.");
+
+            OutTexts(
+                "ErrorMessages",
+                "Error message for each queried view (empty when successful).");
         }
 
         protected override void Solve(
@@ -94,9 +106,49 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            da.SetData(
-                0,
-                response.ToString(Formatting.Indented));
+            var zoomMins = new List<object>();
+            var zoomMaxs = new List<object>();
+            var rotations = new List<object>();
+            var errors = new List<string>();
+
+            foreach (var item in JsonOutputHelp.Items(response, "transformations"))
+            {
+                if (JsonOutputHelp.IsError(item))
+                {
+                    errors.Add(JsonOutputHelp.ErrorMessage(item));
+                    zoomMins.Add(null);
+                    zoomMaxs.Add(null);
+                    rotations.Add(null);
+                    continue;
+                }
+
+                errors.Add("");
+                var zoom = item["zoom"];
+                if (zoom == null)
+                {
+                    zoomMins.Add(null);
+                    zoomMaxs.Add(null);
+                }
+                else
+                {
+                    zoomMins.Add(
+                        new Point3d(
+                            zoom.Value<double?>("xMin") ?? 0.0,
+                            zoom.Value<double?>("yMin") ?? 0.0,
+                            0.0));
+                    zoomMaxs.Add(
+                        new Point3d(
+                            zoom.Value<double?>("xMax") ?? 0.0,
+                            zoom.Value<double?>("yMax") ?? 0.0,
+                            0.0));
+                }
+                rotations.Add(JsonOutputHelp.Scalar(item, "rotation"));
+            }
+
+            da.SetDataList(0, zoomMins);
+            da.SetDataList(1, zoomMaxs);
+            da.SetDataList(2, rotations);
+            da.SetDataList(3, errors);
         }
 
         protected override System.Drawing.Bitmap Icon =>

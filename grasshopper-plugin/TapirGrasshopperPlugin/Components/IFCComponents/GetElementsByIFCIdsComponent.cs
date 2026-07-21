@@ -1,5 +1,6 @@
+using Grasshopper;
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
+using Grasshopper.Kernel.Data;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -29,9 +30,13 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
 
         protected override void AddOutputs()
         {
-            OutText(
-                "Elements",
-                "JSON object with the elements corresponding to the given IFC identifiers.");
+            OutTexts(
+                "IFCIds",
+                "IFC identifier of each result.");
+
+            OutGenericTree(
+                "ElementGuids",
+                "Identifiers of the elements corresponding to each IFC identifier (one branch per IFC identifier).");
         }
 
         protected override void Solve(
@@ -39,12 +44,12 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
         {
             if (!da.TryGetList(
                     0,
-                    out List<string> ifcIds))
+                    out List<string> inputIfcIds))
             {
                 return;
             }
 
-            var input = new GetElementsByIFCIdsParameters { IfcIds = ifcIds };
+            var input = new GetElementsByIFCIdsParameters { IfcIds = inputIfcIds };
 
             if (!TryGetCadResponse(
                     CommandName,
@@ -55,9 +60,33 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 return;
             }
 
-            da.SetData(
-                0,
-                response.ToString(Formatting.Indented));
+            var ifcIds = new List<object>();
+            var elementGuids = new DataTree<object>();
+
+            var items = JsonOutputHelp.Items(
+                response,
+                "elementsByIFCIds");
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                var path = new GH_Path(i);
+                elementGuids.EnsurePath(path);
+
+                ifcIds.Add(JsonOutputHelp.Scalar(item, "ifcId"));
+
+                if (item["elements"] is JArray elements)
+                {
+                    foreach (var element in elements)
+                    {
+                        elementGuids.Add(
+                            ElementsStructuredGetterComponent.ElementIdOf(element),
+                            path);
+                    }
+                }
+            }
+
+            da.SetDataList(0, ifcIds);
+            da.SetDataTree(1, elementGuids);
         }
 
         protected override System.Drawing.Bitmap Icon =>
