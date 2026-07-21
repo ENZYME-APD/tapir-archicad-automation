@@ -1,7 +1,7 @@
 using Grasshopper.Kernel;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.LibraryComponents
@@ -29,9 +29,37 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
 
         protected override void AddOutputs()
         {
-            OutText(
-                "LibraryParts",
-                "JSON object with the available library parts.");
+            OutTexts(
+                "Guids",
+                "Main guid of each library part.");
+
+            OutIntegers(
+                "Indices",
+                "Index of each library part.");
+
+            OutTexts(
+                "DocumentNames",
+                "Document name of each library part.");
+
+            OutTexts(
+                "FileNames",
+                "File name of each library part.");
+
+            OutTexts(
+                "TypeIds",
+                "Type of each library part (e.g. Door, Window, Object, Lamp).");
+
+            OutInteger(
+                "SkippedCount",
+                "Number of library parts skipped while listing.");
+
+            OutIntegers(
+                "SkippedIndices",
+                "Index of each skipped library part (sample).");
+
+            OutIntegers(
+                "SkippedCodes",
+                "Error code of each skipped library part (sample).");
         }
 
         protected override void Solve(
@@ -55,9 +83,37 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
                 return;
             }
 
-            da.SetData(
-                0,
-                response.ToString(Formatting.Indented));
+            var guids = new List<object>();
+            var indices = new List<object>();
+            var documentNames = new List<object>();
+            var fileNames = new List<object>();
+            var typeIds = new List<object>();
+
+            foreach (var item in JsonOutputHelp.Items(response, "libraryParts"))
+            {
+                guids.Add(JsonOutputHelp.Scalar(item, "guid"));
+                indices.Add(JsonOutputHelp.Scalar(item, "index"));
+                documentNames.Add(JsonOutputHelp.Scalar(item, "documentName"));
+                fileNames.Add(JsonOutputHelp.Scalar(item, "fileName"));
+                typeIds.Add(JsonOutputHelp.Scalar(item, "typeId"));
+            }
+
+            var skippedIndices = new List<object>();
+            var skippedCodes = new List<object>();
+            foreach (var skipped in JsonOutputHelp.Items(response, "skippedSample"))
+            {
+                skippedIndices.Add(JsonOutputHelp.Scalar(skipped, "index"));
+                skippedCodes.Add(JsonOutputHelp.Scalar(skipped, "code"));
+            }
+
+            da.SetDataList(0, guids);
+            da.SetDataList(1, indices);
+            da.SetDataList(2, documentNames);
+            da.SetDataList(3, fileNames);
+            da.SetDataList(4, typeIds);
+            da.SetData(5, JsonOutputHelp.Scalar(response, "skippedCount"));
+            da.SetDataList(6, skippedIndices);
+            da.SetDataList(7, skippedCodes);
         }
 
         protected override System.Drawing.Bitmap Icon =>
