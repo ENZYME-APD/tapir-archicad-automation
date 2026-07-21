@@ -908,7 +908,7 @@ var gCommands = [{
                                     "coordinates": {
                                         "type": "array",
                                         "items": {
-                                            "$ref": "#/2DCoordinate"
+                                            "$ref": "#/Coordinate2D"
                                         }
                                     }
                                 }

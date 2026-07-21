@@ -308,7 +308,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                     "coordinates": {
                                         "type": "array",
                                         "items": {
-                                            "$ref": "#/2DCoordinate"
+                                            "$ref": "#/Coordinate2D"
                                         }
                                     }
                                 }
