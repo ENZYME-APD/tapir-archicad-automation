@@ -3433,6 +3433,18 @@ var gSchemaDefinitions = {
             "$ref": "#/NavigatorItemIdArrayItem"
         }
     },
+    "NavigatorItemIdOrError": {
+        "type": "object",
+        "description": "A propertyId or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/NavigatorItemIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "NavigatorItemIdArrayItem": {
         "type": "object",
         "properties": {
