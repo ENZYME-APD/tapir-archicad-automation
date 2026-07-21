@@ -4846,6 +4846,36 @@
                     "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
+            },
+            "nameType": {
+                "type": "string",
+                "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
+                "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+            },
+            "customName": {
+                "type": "string",
+                "description": "The drawing's custom title name. Present only when nameType is CustomName."
+            },
+            "numberingType": {
+                "type": "string",
+                "enum": ["ByLayout", "ByViewId", "CustomNumber"],
+                "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+            },
+            "customNumber": {
+                "type": "string",
+                "description": "The drawing's custom title ID. Present only when numberingType is CustomNumber."
+            },
+            "isInNumbering": {
+                "type": "boolean",
+                "description": "Whether the drawing is included in the automatic drawing numbering sequence."
+            },
+            "titleLibraryPartIndex": {
+                "type": "number",
+                "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
+            },
+            "titleElementId": {
+                "$ref": "#/ElementId",
+                "description": "Id of the drawing title, itself a placed GDL object element (font/pen/size aside, its own settings are reachable like any other element, e.g. with GetGDLParametersOfElements/SetGDLParametersOfElements). Absent if the drawing has no title object."
             }
         },
         "additionalProperties": false,
@@ -4856,7 +4886,11 @@
             "drawingScale",
             "modelOffset",
             "isCutWithFrame",
-            "bounds"
+            "bounds",
+            "nameType",
+            "numberingType",
+            "isInNumbering",
+            "titleLibraryPartIndex"
         ]
     },
     "LabelDetails": {
@@ -5430,6 +5464,32 @@
                     "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
+            },
+            "nameType": {
+                "type": "string",
+                "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
+                "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog)."
+            },
+            "customName": {
+                "type": "string",
+                "description": "The drawing's custom title name. Only used when nameType is CustomName."
+            },
+            "numberingType": {
+                "type": "string",
+                "enum": ["ByLayout", "ByViewId", "CustomNumber"],
+                "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
+            },
+            "customNumber": {
+                "type": "string",
+                "description": "The drawing's custom title ID. Only used when numberingType is CustomNumber."
+            },
+            "isInNumbering": {
+                "type": "boolean",
+                "description": "Whether the drawing is included in the automatic drawing numbering sequence."
+            },
+            "titleLibraryPartIndex": {
+                "type": "number",
+                "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
             }
         },
         "additionalProperties": false

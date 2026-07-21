@@ -62,6 +62,44 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
     return APIFilt_None;
 }
 
+static GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType)
+{
+    switch (nameType) {
+        case APIName_ViewIdAndName:  return "ViewIdAndName";
+        case APIName_CustomName:     return "CustomName";
+        default:
+        case APIName_ViewOrSrcFileName: return "ViewOrSourceFileName";
+    }
+}
+
+static API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str)
+{
+    if (str == "ViewIdAndName")
+        return APIName_ViewIdAndName;
+    if (str == "CustomName")
+        return APIName_CustomName;
+    return APIName_ViewOrSrcFileName;
+}
+
+static GS::UniString DrawingNumberingTypeToString (API_NumberingTypeValues numberingType)
+{
+    switch (numberingType) {
+        case APINumbering_ByViewId:   return "ByViewId";
+        case APINumbering_CustomNum:  return "CustomNumber";
+        default:
+        case APINumbering_ByLayout:   return "ByLayout";
+    }
+}
+
+static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniString& str)
+{
+    if (str == "ByViewId")
+        return APINumbering_ByViewId;
+    if (str == "CustomNumber")
+        return APINumbering_CustomNum;
+    return APINumbering_ByLayout;
+}
+
 static API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
 {
     API_Element element = {};
@@ -876,6 +914,27 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (elem.drawing.isCutWithFrame) {
                     AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
                 }
+                typeSpecificDetails.Add ("nameType",      DrawingNameTypeToString (elem.drawing.nameType));
+                if (elem.drawing.nameType == APIName_CustomName) {
+                    typeSpecificDetails.Add ("customName", GS::UniString (elem.drawing.name));
+                }
+                typeSpecificDetails.Add ("numberingType",  DrawingNumberingTypeToString (elem.drawing.numberingType));
+                if (elem.drawing.numberingType == APINumbering_CustomNum) {
+                    typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
+                }
+                typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
+                // index here means no title object is instantiated at all (nothing to show); setting
+                // it to a valid index (e.g. copied from another drawing) is what makes Archicad
+                // create the title's own placed element.
+                typeSpecificDetails.Add ("titleLibraryPartIndex", elem.drawing.title.libInd);
+                if (elem.drawing.title.guid != APINULLGuid) {
+                    // The drawing title is itself a placed, GDL-parameterized library part
+                    // element (API_DrawingTitle::guid, "object based elements from Archicad 10")
+                    // - its own settings (font/pen/size aside) are reachable like any other
+                    // element via this id, e.g. with Get/SetGDLParametersOfElements.
+                    typeSpecificDetails.Add ("titleElementId", CreateGuidObjectState (elem.drawing.title.guid));
+                }
             } break;
 
             case API_MorphID:
@@ -1303,6 +1362,28 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (modelOffsetState != nullptr) {
                             elem.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, modelOffset);
+                        }
+                        GS::UniString nameTypeStr;
+                        if (typeSpecificDetails->Get ("nameType", nameTypeStr)) {
+                            elem.drawing.nameType = DrawingNameTypeFromString (nameTypeStr);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, nameType);
+                        }
+                        if (SetCharProperty (typeSpecificDetails, "customName", elem.drawing.name)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, name);
+                        }
+                        GS::UniString numberingTypeStr;
+                        if (typeSpecificDetails->Get ("numberingType", numberingTypeStr)) {
+                            elem.drawing.numberingType = DrawingNumberingTypeFromString (numberingTypeStr);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, numberingType);
+                        }
+                        if (SetCharProperty (typeSpecificDetails, "customNumber", elem.drawing.customNumber)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, customNumber);
+                        }
+                        if (typeSpecificDetails->Get ("isInNumbering", elem.drawing.isInNumbering)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isInNumbering);
+                        }
+                        if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
                         }
                     } break;
                     default:
