@@ -5026,6 +5026,10 @@
             "endCoordinate": {
                 "$ref": "#/Coordinate2D"
             },
+            "arcAngle": {
+                "type": "number",
+                "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)"
+            },
             "height": {
                 "type": "number",
                 "description": "height relative to bottom"
@@ -5038,6 +5042,11 @@
                 "type": "number",
                 "description": "wall's base line's offset from ref. line"
             },
+            "thickness": {
+                "type": "number",
+                "description": "Thickness of the wall",
+                "exclusiveMinimum": 0.0
+            },
             "begThickness": {
                 "type": "number",
                 "description": "Thickness at the beginning in case of trapezoid wall"
@@ -5045,6 +5054,304 @@
             "endThickness": {
                 "type": "number",
                 "description": "Thickness at the end in case of trapezoid wall"
+            },
+            "structureType": {
+                "type": "string",
+                "enum": ["Basic", "Composite", "Profile"]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "profileId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "BeamSettings": {
+        "type": "object",
+        "description": "Settings for modifying a beam.",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "level": {
+                "type": "number"
+            },
+            "offset": {
+                "type": "number"
+            },
+            "slantAngle": {
+                "type": "number"
+            },
+            "arcAngle": {
+                "type": "number"
+            },
+            "verticalCurveHeight": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SlabSettings": {
+        "type": "object",
+        "description": "Settings for modifying a slab.",
+        "properties": {
+            "zCoordinate": {
+                "type": "number"
+            },
+            "thickness": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "structureType": {
+                "type": "string",
+                "enum": ["Basic", "Composite"]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "polygonOutline": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "RoofSettings": {
+        "type": "object",
+        "description": "Settings for modifying a multi-plane roof.",
+        "properties": {
+            "level": {
+                "type": "number"
+            },
+            "thickness": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "eavesOverhang": {
+                "type": "number"
+            },
+            "levels": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 16,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "levelHeight": {
+                            "type": "number"
+                        },
+                        "levelAngle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["levelHeight", "levelAngle"]
+                }
+            },
+            "structureType": {
+                "type": "string",
+                "enum": ["Basic", "Composite"]
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "polygonOutline": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ColumnSettings": {
+        "type": "object",
+        "description": "Settings for modifying a column.",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "zCoordinate": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "bottomOffset": {
+                "type": "number"
+            },
+            "axisRotationAngle": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "WindowDoorSettings": {
+        "type": "object",
+        "description": "Settings for modifying a window or a door.",
+        "properties": {
+            "width": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "height": {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+            },
+            "sillHeight": {
+                "type": "number"
+            },
+            "centerOffset": {
+                "type": "number",
+                "minimum": 0.0
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "refSide": {
+                "type": "boolean"
+            },
+            "oSide": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "MorphSettings": {
+        "type": "object",
+        "description": "Settings for modifying a morph.",
+        "properties": {
+            "translation": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationDegreesZ": {
+                "type": "number"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "MeshSettings": {
+        "type": "object",
+        "description": "Settings for modifying a mesh. Only provided fields are changed; omitted fields are left as-is.",
+        "properties": {
+            "floorIndex": {
+                "type": "integer"
+            },
+            "level": {
+                "type": "number",
+                "description": "The Z reference level of coordinates."
+            },
+            "skirtType": {
+                "$ref": "#/MeshSkirtType"
+            },
+            "skirtLevel": {
+                "type": "number",
+                "description": "The height of the skirt."
+            },
+            "ridges": {
+                "type": "string",
+                "description": "How ridges between mesh facets are displayed in 3D.",
+                "enum": ["AllSharp", "AllSmooth", "UserDefined"]
+            },
+            "showLines": {
+                "type": "boolean",
+                "description": "Whether to show secondary mesh lines on plan."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh contour line."
+            },
+            "levelPen": {
+                "type": "integer",
+                "description": "Pen attribute index for the mesh level lines."
+            },
+            "lineTypeIndex": {
+                "type": "integer",
+                "description": "Line type attribute index for the mesh contour."
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the mesh.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes3D"
+            },
+            "sublines": {
+                "type": "array",
+                "description": "The leveling sublines inside the polygon of the mesh. Replaces existing sublines entirely.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "coordinates": {
+                            "type": "array",
+                            "description": "The 3D coordinates of the leveling subline.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["coordinates"]
+                }
             }
         },
         "additionalProperties": false,
@@ -5078,19 +5385,60 @@
                 "type": "array",
                 "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (useDrawingPolyClip).",
                 "items": {
-                    "$ref": "#/2DCoordinate"
+                    "$ref": "#/Coordinate2D"
                 },
                 "minItems": 3
+            },
+            "drawingScale": {
+                "type": "number",
+                "description": "Scale of the drawing."
+            },
+            "ratio": {
+                "type": "number",
+                "description": "Magnification ratio of the drawing."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Rotation angle of the drawing in radians."
+            },
+            "pos": {
+                "$ref": "#/Coordinate2D",
+                "description": "Position of the drawing on the layout."
+            },
+            "modelOffset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Offset of the model within the drawing."
             }
         },
         "additionalProperties": false
     },
     "TypeSpecificSettings": {
-        "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
+        "description": "Defines the modifiable type-specific settings for an element, matching the type-specific input parameters of the Modify* commands. The applied settings are selected based on the type of the element. Used as input for SET requests.",
         "type": "object",
-        "oneOf": [
+        "anyOf": [
             {
                 "$ref": "#/WallSettings"
+            },
+            {
+                "$ref": "#/BeamSettings"
+            },
+            {
+                "$ref": "#/SlabSettings"
+            },
+            {
+                "$ref": "#/RoofSettings"
+            },
+            {
+                "$ref": "#/ColumnSettings"
+            },
+            {
+                "$ref": "#/WindowDoorSettings"
+            },
+            {
+                "$ref": "#/MorphSettings"
+            },
+            {
+                "$ref": "#/MeshSettings"
             },
             {
                 "$ref": "#/ZoneSettings"

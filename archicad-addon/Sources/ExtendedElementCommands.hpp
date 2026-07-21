@@ -16,6 +16,21 @@ void BuildMeshSublinesMemoFromGeometry (
     API_ElementMemo& memo,
     const GS::Array<GS::ObjectState>& sublines);
 
+// Applies the type-specific modification fields of the Modify* commands (and
+// the zone/drawing settings of SetDetailsOfElements) to an already loaded
+// element, dispatching on the element type. Fills the change mask, and for
+// geometry changes the memo and memo mask (the caller owns and disposes the
+// memo). Returns an error text on invalid input; changed reports whether any
+// field was applied. The caller performs the ACAPI_Element_Change call.
+GS::Optional<GS::UniString> ApplyTypeSpecificModification (
+    API_Element& element,
+    API_Element& mask,
+    API_ElementMemo& memo,
+    UInt64& memoMask,
+    const GS::ObjectState& details,
+    const Stories& stories,
+    bool& changed);
+
 class CreateWallsCommand : public CreateElementsCommandBase
 {
 public:
