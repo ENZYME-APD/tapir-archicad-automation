@@ -14,9 +14,11 @@
 
 #include "AboutDialog.hpp"
 #include "TapirPalette.hpp"
+#include "ScriptUIPalette.hpp"
 #include "VersionChecker.hpp"
 
 #include "ApplicationCommands.hpp"
+#include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
@@ -154,6 +156,7 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_5, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_6, MenuCommandHandler);
     err |= TapirPalette::RegisterPaletteControlCallBack ();
+    err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
 
     // Forces the palette singleton (and its saved shortcut-slot preferences) to load immediately,
     // so custom shortcut menu labels are applied at startup rather than only after the user first
@@ -1026,6 +1029,19 @@ GSErrCode Initialize (void)
             "Returns solid element operation links for each queried element, grouped by role (target or operator)."
         );
         AddCommandGroup (solidElementOperationCommands);
+    }
+
+    { // Script UI Commands
+        CommandGroup scriptUICommands ("Script UI Commands");
+        err |= RegisterCommand<ShowScriptUICommand> (
+            scriptUICommands, "1.5.4",
+            "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts)."
+        );
+        err |= RegisterCommand<GetScriptUIResultCommand> (
+            scriptUICommands, "1.5.4",
+            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any."
+        );
+        AddCommandGroup (scriptUICommands);
     }
 
     { // Developer Commands

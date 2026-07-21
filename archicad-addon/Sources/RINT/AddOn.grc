@@ -101,6 +101,14 @@
 7    ""        ManageShortcutsButton
 }
 
+'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {
+/* [  1] */ Browser                     0   0  600  450
+}
+
+'DLGH' ID_SCRIPTUI_PALETTE Tapir_ScriptUI_Palette {
+1    ""        BrowserItem
+}
+
 'GDLG' ID_SHORTCUTS_DIALOG Modal | noGrow    80   80  500  270  "Script Shortcuts" {
 /* [  1] */ LeftText     110    6  210   16    SmallPlain  vCenter  "Script"
 /* [  2] */ LeftText     330    6  150   16    SmallPlain  vCenter  "Toolbar label (optional)"
