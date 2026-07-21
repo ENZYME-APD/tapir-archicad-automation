@@ -372,6 +372,39 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
+        public void OutNumberList(
+            string name,
+            string description = "")
+        {
+            outManager.AddNumberParameter(
+                name,
+                name,
+                description.WithTypeName("numberList"),
+                GH_ParamAccess.list);
+        }
+
+        public void OutColors(
+            string name,
+            string description = "")
+        {
+            outManager.AddColourParameter(
+                name,
+                name,
+                description.WithTypeName("colorList"),
+                GH_ParamAccess.list);
+        }
+
+        public void OutPointTree(
+            string name,
+            string description = "")
+        {
+            outManager.AddPointParameter(
+                name,
+                name,
+                description.WithTypeName("pointTree"),
+                GH_ParamAccess.tree);
+        }
+
         public void InBoolean(
             string name,
             string description = "",

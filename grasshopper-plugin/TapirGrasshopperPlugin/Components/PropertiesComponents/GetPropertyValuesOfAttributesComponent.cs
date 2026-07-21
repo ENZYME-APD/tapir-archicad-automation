@@ -1,6 +1,7 @@
+using Grasshopper;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         public GetPropertyValuesOfAttributesComponent()
             : base(
                 "GetPropertyValuesOfAttributes",
-                "Get the property values of the given attributes for the given properties.",
+                "Get the property values of the given attributes for the given properties. " +
+                "Value outputs have one branch per queried attribute, with one item per queried property.",
                 GroupNames.Properties)
         {
         }
@@ -36,9 +38,17 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 
         protected override void AddOutputs()
         {
-            OutText(
-                "PropertyValues",
-                "JSON object with the property values of the given attributes.");
+            OutTextTree(
+                "Values",
+                "Property value of each attribute and property (one branch per attribute).");
+
+            OutTextTree(
+                "ValueErrorMessages",
+                "Error message for each attribute and property (one branch per attribute; empty when successful).");
+
+            OutTexts(
+                "ErrorMessages",
+                "Error message for each queried attribute (empty when successful).");
         }
 
         protected override void Solve(
@@ -97,9 +107,54 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 return;
             }
 
-            da.SetData(
-                0,
-                response.ToString(Formatting.Indented));
+            var values = new DataTree<object>();
+            var valueErrors = new DataTree<object>();
+            var errors = new List<string>();
+
+            var items = JsonOutputHelp.Items(
+                response,
+                "propertyValuesForAttributes");
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                var path = new GH_Path(i);
+                values.EnsurePath(path);
+                valueErrors.EnsurePath(path);
+
+                if (JsonOutputHelp.IsError(item))
+                {
+                    errors.Add(JsonOutputHelp.ErrorMessage(item));
+                    continue;
+                }
+
+                errors.Add("");
+
+                if (item["propertyValues"] is JArray propertyValues)
+                {
+                    foreach (var valueOrError in propertyValues)
+                    {
+                        if (JsonOutputHelp.IsError(valueOrError))
+                        {
+                            values.Add(null, path);
+                            valueErrors.Add(
+                                JsonOutputHelp.ErrorMessage(valueOrError),
+                                path);
+                            continue;
+                        }
+
+                        values.Add(
+                            JsonOutputHelp.Scalar(
+                                valueOrError["propertyValue"],
+                                "value"),
+                            path);
+                        valueErrors.Add("", path);
+                    }
+                }
+            }
+
+            da.SetDataTree(0, values);
+            da.SetDataTree(1, valueErrors);
+            da.SetDataList(2, errors);
         }
 
         protected override System.Drawing.Bitmap Icon =>
