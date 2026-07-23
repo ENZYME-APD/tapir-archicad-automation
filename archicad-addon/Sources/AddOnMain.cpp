@@ -185,6 +185,11 @@ GSErrCode Initialize (void)
             applicationCommands, "1.3.1",
             "Changes the current (active) window to the given window."
         );
+        err |= RegisterCommand<ShowAlertCommand>(
+            applicationCommands,"1.5.6",
+            "Display a dialog with up to three buttons."
+        );
+
         AddCommandGroup (applicationCommands);
     }
 

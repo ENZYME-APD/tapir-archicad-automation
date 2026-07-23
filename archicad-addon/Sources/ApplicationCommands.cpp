@@ -3,6 +3,7 @@
 #include "FileSystem.hpp"
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
+#include "DGModule.hpp"
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -360,3 +361,92 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         : CreateErrorResponse (err, "Failed to change the window!");
 }
 
+
+ShowAlertCommand::ShowAlertCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String ShowAlertCommand::GetName () const
+{
+    return "ShowAlert";
+}
+
+GS::Optional<GS::UniString> ShowAlertCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "alertType": {
+                "type": "string",
+                "enum": ["information", "warning", "error"],
+                "description": "The type of the alert dialog."
+            },
+            "title": {
+                "type": "string",
+                "description": "The title of the alert dialog."
+            },
+            "message": {
+                "type": "string",
+                "description": "The main message text."
+            },
+            "subMessage": {
+                "type": "string",
+                "description": "Optional smaller sub-message text below the main message."
+            },
+            "button1": {
+                "type": "string",
+                "description": "Label for the first (default) button."
+            },
+            "button2": {
+                "type": "string",
+                "description": "Label for the second button (e.g. Cancel)."
+            },
+            "button3": {
+                "type": "string",
+                "description": "Label for the optional third button."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["alertType", "title", "message", "button1"]
+    })";
+}
+
+GS::Optional<GS::UniString> ShowAlertCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "clickedButton": {
+                "type": "integer",
+                "description": "Index of the button the user clicked: 1 = button1, 2 = button2, 3 = button3."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["clickedButton"]
+    })";
+}
+
+GS::ObjectState ShowAlertCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString alertTypeStr;
+    parameters.Get ("alertType", alertTypeStr);
+
+    short alertType = DG_INFORMATION;
+    if (alertTypeStr == "warning") {
+        alertType = DG_WARNING;
+    } else if (alertTypeStr == "error") {
+        alertType = DG_ERROR;
+    }
+
+    GS::UniString title, message, subMessage, button1, button2, button3;
+    parameters.Get ("title", title);
+    parameters.Get ("message", message);
+    parameters.Get ("subMessage", subMessage);
+    parameters.Get ("button1", button1);
+    parameters.Get ("button2", button2);
+    parameters.Get ("button3", button3);
+
+    short clicked = DGAlert (alertType, title, message, subMessage, button1, button2, button3);
+
+    return GS::ObjectState ("clickedButton", static_cast<Int32> (clicked));
+}
