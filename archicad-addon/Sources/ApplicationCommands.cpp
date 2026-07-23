@@ -3,6 +3,7 @@
 #include "FileSystem.hpp"
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
+#include "DGModule.hpp"
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)

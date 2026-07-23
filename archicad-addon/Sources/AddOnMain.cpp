@@ -188,7 +188,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ShowAlertCommand>(
             applicationCommands,"1.5.6",
             "Display a dialog with up to three buttons."
-        )
+        );
 
         AddCommandGroup (applicationCommands);
     }
