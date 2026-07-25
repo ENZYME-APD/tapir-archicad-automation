@@ -161,8 +161,8 @@ GSErrCode Initialize (void)
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
 
     // Forces the palette singleton (and its saved shortcut-slot preferences) to load immediately,
-    // so custom shortcut menu labels are applied at startup rather than only after the user first
-    // opens the palette or triggers a shortcut.
+    // so custom shortcut menu labels and the enabled state of the shortcut menu items are applied
+    // at startup rather than only after the user first opens the palette or triggers a shortcut.
     TapirPalette::Instance ();
 
     { // Application Commands
