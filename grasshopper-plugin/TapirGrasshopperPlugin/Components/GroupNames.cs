@@ -4,8 +4,11 @@
     {
         public static string Attributes => nameof(Attributes);
         public static string Classifications => nameof(Classifications);
+        public static string CreateElements => "Create Elements";
         public static string DesignOptions => nameof(DesignOptions);
+        public static string ElementDetails => "Element Details";
         public static string Elements => nameof(Elements);
+        public static string ModifyElements => "Modify Elements";
         public static string Favorites => nameof(Favorites);
         public static string General => nameof(General);
         public static string IFC => nameof(IFC);

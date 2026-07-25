@@ -17,7 +17,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "SetElementGDLs",
                 "Sets the given GDL parameters of the given elements.",
-                GroupNames.Elements)
+                GroupNames.ModifyElements)
         {
         }
 

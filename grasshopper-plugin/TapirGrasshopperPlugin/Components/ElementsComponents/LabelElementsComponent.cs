@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "LabelElements",
                 "Label elements",
-                GroupNames.Elements)
+                GroupNames.CreateElements)
         {
         }
 

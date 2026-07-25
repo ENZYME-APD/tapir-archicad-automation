@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "Element3DBoundingBoxes",
                 "Gets the 3D BoundingBoxes of elements.",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 

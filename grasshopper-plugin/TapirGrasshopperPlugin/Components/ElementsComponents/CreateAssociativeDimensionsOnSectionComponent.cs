@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateAssociativeDimensionsOnSection",
                 "Create associative linear dimensions on section elements using common wall, slab, beam, column and opening presets. Each input item is a JSON object matching the command's documented item schema, e.g. {\"databaseId\":{\"guid\":\"...\"},\"elements\":[...]}.",
-                GroupNames.Elements,
+                GroupNames.CreateElements,
                 "dimensionsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

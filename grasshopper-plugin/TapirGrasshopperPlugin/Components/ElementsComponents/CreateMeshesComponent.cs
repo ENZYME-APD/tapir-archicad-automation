@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateMeshes",
                 "Create Mesh elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"level\":0,\"polygonCoordinates\":[{\"x\":0,\"y\":0,\"z\":0},...]}.",
-                GroupNames.Elements,
+                GroupNames.CreateElements,
                 "meshesData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

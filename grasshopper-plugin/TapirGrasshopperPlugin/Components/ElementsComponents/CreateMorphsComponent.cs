@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateMorphs",
                 "Create Morph elements from simple box definitions. Each input item is a JSON object matching the command's documented item schema, e.g. {\"boxBegCoordinate\":{\"x\":0,\"y\":0,\"z\":0},\"boxEndCoordinate\":{\"x\":1,\"y\":1,\"z\":1}}.",
-                GroupNames.Elements,
+                GroupNames.CreateElements,
                 "morphsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

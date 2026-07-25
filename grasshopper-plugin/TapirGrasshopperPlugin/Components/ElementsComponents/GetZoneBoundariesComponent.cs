@@ -17,7 +17,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ZoneBoundaries",
                 "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 

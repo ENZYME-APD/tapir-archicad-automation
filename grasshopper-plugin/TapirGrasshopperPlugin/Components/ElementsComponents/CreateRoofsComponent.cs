@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateRoofs",
                 "Create multi-plane Roof elements based on footprint, level and roof profile data. Each input item is a JSON object matching the command's documented item schema, e.g. {\"level\":3.0,\"polygonCoordinates\":[{\"x\":0,\"y\":0},...]}.",
-                GroupNames.Elements,
+                GroupNames.CreateElements,
                 "roofsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

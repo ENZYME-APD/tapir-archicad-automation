@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "SetWallDetails",
                 "Set details of Wall elements.",
-                GroupNames.Elements)
+                GroupNames.ModifyElements)
         {
         }
 

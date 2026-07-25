@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "GetDimensionData",
                 "Get witness point data (coordinates, measured values) from existing dimension chains. " +
                 "Witness point outputs have one branch per queried dimension element.",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 

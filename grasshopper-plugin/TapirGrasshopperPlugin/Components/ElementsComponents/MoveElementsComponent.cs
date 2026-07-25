@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "MoveElements",
                 "Move elements",
-                GroupNames.Elements)
+                GroupNames.ModifyElements)
         {
         }
 
