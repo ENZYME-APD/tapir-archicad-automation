@@ -5,8 +5,9 @@
 #include "MigrationHelper.hpp"
 #include "DGModule.hpp"
 
-#ifdef ServerMainVers_2700
+#if defined (ServerMainVers_2700) && __has_include ("ACAPI/GSID.hpp")
 #include "ACAPI/GSID.hpp"
+#define TAPIR_HAS_GSID
 #endif
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
@@ -492,7 +493,7 @@ GS::Optional<GS::UniString> GetUserGSIDCommand::GetResponseSchema () const
 
 GS::ObjectState GetUserGSIDCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-#ifdef ServerMainVers_2700
+#ifdef TAPIR_HAS_GSID
     auto gsid = ACAPI::CreateGSIDObject ();
     if (gsid.IsErr ()) {
         return CreateErrorResponse (APIERR_GENERAL, "Failed to create GSID object!");
