@@ -204,27 +204,7 @@ GS::Optional<GS::UniString> GetKeynoteAutoTextsCommand::GetResponseSchema () con
         "type": "object",
         "properties": {
             "autoTexts": {
-                "type": "array",
-                "description": "The autotext tokens of the keynote items. An autotext token can be used as the text content of a label to reference the field of the keynote item.",
-                "items": {
-                    "type": "object",
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "keyToken": { "type": "string" },
-                                "titleToken": { "type": "string" },
-                                "descriptionToken": { "type": "string" },
-                                "referenceToken": { "type": "string" }
-                            },
-                            "additionalProperties": false,
-                            "required": [ "keyToken", "titleToken", "descriptionToken", "referenceToken" ]
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
+                "$ref": "#/KeynoteAutoTextTokensOrErrors"
             }
         },
         "additionalProperties": false,
@@ -1010,19 +990,7 @@ GS::Optional<GS::UniString> CreateKeynoteLabelsCommand::GetResponseSchema () con
         "type": "object",
         "properties": {
             "elements": {
-                "type": "array",
-                "description": "The identifiers of the created label elements or errors.",
-                "items": {
-                    "type": "object",
-                    "oneOf": [
-                        {
-                            "$ref": "#/ElementIdArrayItem"
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,

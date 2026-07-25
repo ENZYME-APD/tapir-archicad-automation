@@ -18,6 +18,25 @@
             "elementId"
         ]
     },
+    "ElementIdOrError": {
+        "type": "object",
+        "description": "An element identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIdsOrErrors": {
+        "type": "array",
+        "description": "A list of element identifiers or errors.",
+        "items": {
+            "$ref": "#/ElementIdOrError"
+        }
+    },
     "ElementId": {
         "type": "object",
         "description": "The identifier of an element.",
@@ -194,6 +213,50 @@
         "description": "A list of keynote item identifiers or errors.",
         "items": {
             "$ref": "#/KeynoteItemIdOrError"
+        }
+    },
+    "KeynoteAutoTextTokens": {
+        "type": "object",
+        "description": "The autotext tokens of a keynote item. A token can be used as the text content of a label to reference the field of the keynote item.",
+        "properties": {
+            "keyToken": {
+                "type": "string"
+            },
+            "titleToken": {
+                "type": "string"
+            },
+            "descriptionToken": {
+                "type": "string"
+            },
+            "referenceToken": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keyToken",
+            "titleToken",
+            "descriptionToken",
+            "referenceToken"
+        ]
+    },
+    "KeynoteAutoTextTokensOrError": {
+        "type": "object",
+        "description": "The autotext tokens of a keynote item or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/KeynoteAutoTextTokens"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "KeynoteAutoTextTokensOrErrors": {
+        "type": "array",
+        "description": "A list of keynote autotext tokens or errors.",
+        "items": {
+            "$ref": "#/KeynoteAutoTextTokensOrError"
         }
     },
     "KeynoteItemDetails": {
