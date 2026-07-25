@@ -40,6 +40,7 @@
 #include "DesignOptionCommands.hpp"
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
+#include "KeynoteCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -1017,6 +1018,47 @@ GSErrCode Initialize (void)
             "Moves the given design options to another sets. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
+    }
+
+    { // Keynote Commands
+        CommandGroup keynoteCommands ("Keynote Commands");
+        err |= RegisterCommand<GetKeynoteTreeCommand> (
+            keynoteCommands, "1.5.6",
+            "Retrieves the whole keynote folder and item hierarchy. The technical root folder is not included in the output; the top-level folders and items are returned directly. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetKeynoteAutoTextsCommand> (
+            keynoteCommands, "1.5.6",
+            "Retrieves the autotext tokens of the given keynote items. The tokens can be used as label text content to reference the fields of a keynote item. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates keynote folders under the given parent folders (or under the root folder). Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates keynote items in the given parent folders (or in the root folder). Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Modifies the key, title or reference of the given keynote folders. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Modifies the key, title, description or reference of the given keynote items. Available from Archicad 28."
+        );
+        err |= RegisterCommand<DeleteKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Deletes the given keynote folders including their content. Available from Archicad 28."
+        );
+        err |= RegisterCommand<DeleteKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Deletes the given keynote items. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteLabelsCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates Label elements that reference the given keynote items via autotext. Available from Archicad 28."
+        );
+        AddCommandGroup (keynoteCommands);
     }
 
     { // Solid Element Operation Commands

@@ -10,6 +10,7 @@
         public static string General => nameof(General);
         public static string IFC => nameof(IFC);
         public static string Issues => nameof(Issues);
+        public static string Keynotes => nameof(Keynotes);
         public static string Library => nameof(Library);
         public static string Navigator => nameof(Navigator);
         public static string Project => nameof(Project);
