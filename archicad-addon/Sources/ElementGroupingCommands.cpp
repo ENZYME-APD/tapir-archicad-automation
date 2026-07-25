@@ -211,3 +211,88 @@ GS::ObjectState GetGroupsOfElementsCommand::Execute(const GS::ObjectState& param
 
     return response;
 }
+
+GetElementsOfGroupsCommand::GetElementsOfGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementsOfGroupsCommand::GetName() const
+{
+    return "GetElementsOfGroups";
+}
+
+GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to get the elements of.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsOfGroups": {
+                "type": "array",
+                "description": "The elements directly contained by each given group, or an error.",
+                "items": {
+                    "$ref": "#/ElementsWrapperOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsOfGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> groups;
+    if (!parameters.Get("groups", groups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementsOfGroups = response.AddList<GS::ObjectState>("elementsOfGroups");
+
+    for (const GS::ObjectState& group : groups) {
+        const GS::ObjectState* groupId = group.Get("groupId");
+        if (groupId == nullptr) {
+            elementsOfGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
+            continue;
+        }
+
+        GS::Array<API_Guid> elemGuids;
+        const GSErrCode err = ACAPI_Grouping_GetGroupedElems(GetGuidFromObjectState(*groupId), &elemGuids);
+        if (err != NoError) {
+            elementsOfGroups(CreateErrorResponse(err, "Failed to get the elements of the group."));
+            continue;
+        }
+
+        GS::ObjectState elementsItem;
+        const auto& elements = elementsItem.AddList<GS::ObjectState>("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elements(CreateElementIdObjectState(elemGuid));
+        }
+        elementsOfGroups(elementsItem);
+    }
+
+    return response;
+}

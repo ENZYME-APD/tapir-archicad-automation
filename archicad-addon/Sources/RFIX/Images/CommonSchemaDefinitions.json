@@ -6486,6 +6486,31 @@
             "groupId"
         ]
     },
+    "ElementsWrapper": {
+        "type": "object",
+        "description": "A list of elements wrapped in an object.",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+    "ElementsWrapperOrError": {
+        "type": "object",
+        "description": "A list of elements or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementsWrapper"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "GroupIdOrError": {
         "type": "object",
         "description": "A groupId or an error.",

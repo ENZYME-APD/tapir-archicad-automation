@@ -499,6 +499,10 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.5.6",
             "Gets the identifier of the group that directly contains each given element. Returns an error for elements that are not part of any group."
         );
+        err |= RegisterCommand<GetElementsOfGroupsCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the elements directly contained by each given group."
+        );
         AddCommandGroup (elementGroupingCommands);
     }
 
