@@ -305,73 +305,7 @@ GS::Optional<GS::UniString> GetMEPRoutingElementsCommand::GetResponseSchema () c
         "type": "object",
         "properties": {
             "routingElements": {
-                "type": "array",
-                "description": "The details of the MEP routing elements.",
-                "items": {
-                    "type": "object",
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "domain": {
-                                    "type": "string"
-                                },
-                                "mepSystemId": {
-                                    "$ref": "#/AttributeId"
-                                },
-                                "polyline": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                },
-                                "segments": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "elementId": {
-                                                "$ref": "#/ElementId"
-                                            },
-                                            "crossSectionWidth": {
-                                                "type": "number"
-                                            },
-                                            "crossSectionHeight": {
-                                                "type": "number"
-                                            },
-                                            "crossSectionShape": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["elementId", "crossSectionWidth", "crossSectionHeight", "crossSectionShape"]
-                                    }
-                                },
-                                "nodes": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "elementId": {
-                                                "$ref": "#/ElementId"
-                                            },
-                                            "position": {
-                                                "$ref": "#/Coordinate3D"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["elementId", "position"]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["domain", "mepSystemId", "polyline", "segments", "nodes"]
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
+                "$ref": "#/MEPRoutingElementDetailsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -478,69 +412,7 @@ GS::Optional<GS::UniString> GetMEPPortsCommand::GetResponseSchema () const
         "type": "object",
         "properties": {
             "elementPorts": {
-                "type": "array",
-                "description": "The ports of the MEP elements.",
-                "items": {
-                    "type": "object",
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "ports": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "portId": {
-                                                "$ref": "#/Guid"
-                                            },
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "position": {
-                                                "$ref": "#/Coordinate3D"
-                                            },
-                                            "direction": {
-                                                "$ref": "#/Coordinate3D"
-                                            },
-                                            "shape": {
-                                                "type": "string"
-                                            },
-                                            "width": {
-                                                "type": "number"
-                                            },
-                                            "height": {
-                                                "type": "number"
-                                            },
-                                            "domain": {
-                                                "type": "string"
-                                            },
-                                            "mepSystemId": {
-                                                "$ref": "#/AttributeId"
-                                            },
-                                            "isPhysicallyConnected": {
-                                                "type": "boolean"
-                                            },
-                                            "connectedPortId": {
-                                                "$ref": "#/Guid"
-                                            },
-                                            "connectedElementId": {
-                                                "$ref": "#/ElementId"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["portId", "name", "position", "direction", "shape", "width", "height", "domain", "mepSystemId", "isPhysicallyConnected"]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["ports"]
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
+                "$ref": "#/MEPElementPortsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -1268,35 +1140,7 @@ GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetResponseSchema () cons
         "type": "object",
         "properties": {
             "connectionResults": {
-                "type": "array",
-                "description": "The result of each connection.",
-                "items": {
-                    "type": "object",
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "deletedRoutingElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing element deleted by merging."
-                                },
-                                "splitRoutingElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing element created by splitting."
-                                },
-                                "createdBranchId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The branch element created by the connection."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": []
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
+                "$ref": "#/MEPConnectionResultsOrErrors"
             }
         },
         "additionalProperties": false,
