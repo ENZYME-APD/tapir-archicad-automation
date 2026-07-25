@@ -161,7 +161,7 @@ static GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
     }
 }
 
-static API_WindowTypeID ConvertWindowTypeToString (GS::UniString typeStr)
+static API_WindowTypeID ConvertStringToWindowType (GS::UniString typeStr)
 {
     if ("FloorPlan" == typeStr) {
         return APIWind_FloorPlanID;
@@ -311,7 +311,7 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
     }
 
     API_WindowInfo windowInfo = {};
-    windowInfo.typeID = ConvertWindowTypeToString (windowTypeStr);
+    windowInfo.typeID = ConvertStringToWindowType (windowTypeStr);
     if (windowInfo.typeID == API_ZombieWindowID) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
     }
