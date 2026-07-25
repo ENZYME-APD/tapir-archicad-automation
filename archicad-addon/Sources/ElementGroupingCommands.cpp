@@ -129,3 +129,275 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
 #endif
     return response;
 }
+
+GetGroupsOfElementsCommand::GetGroupsOfElementsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetGroupsOfElementsCommand::GetName() const
+{
+    return "GetGroupsOfElements";
+}
+
+GS::Optional<GS::UniString> GetGroupsOfElementsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetGroupsOfElementsCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groupGuids": {
+                "type": "array",
+                "description": "The identifier of the group that directly contains each given element, or an error for elements that are not part of any group.",
+                "items": {
+                    "$ref": "#/GroupIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groupGuids"
+        ]
+    })";
+}
+
+GS::ObjectState GetGroupsOfElementsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get("elements", elements)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& groupGuids = response.AddList<GS::ObjectState>("groupGuids");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get("elementId");
+        if (elementId == nullptr) {
+            groupGuids(CreateErrorResponse(APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Guid groupGuid = APINULLGuid;
+        const GSErrCode err = ACAPI_Grouping_GetGroup(GetGuidFromObjectState(*elementId), &groupGuid);
+        if (err != NoError) {
+            groupGuids(CreateErrorResponse(err, "Failed to get the group of the element."));
+            continue;
+        }
+        if (groupGuid == APINULLGuid) {
+            groupGuids(CreateErrorResponse(APIERR_GENERAL, "The element is not part of any group."));
+            continue;
+        }
+
+        GS::ObjectState groupIdItem;
+        groupIdItem.Add("groupId", CreateGuidObjectState(groupGuid));
+        groupGuids(groupIdItem);
+    }
+
+    return response;
+}
+
+GetElementsOfGroupsCommand::GetElementsOfGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementsOfGroupsCommand::GetName() const
+{
+    return "GetElementsOfGroups";
+}
+
+GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to get the elements of.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsOfGroups": {
+                "type": "array",
+                "description": "The elements directly contained by each given group, or an error.",
+                "items": {
+                    "$ref": "#/ElementsWrapperOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsOfGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> groups;
+    if (!parameters.Get("groups", groups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementsOfGroups = response.AddList<GS::ObjectState>("elementsOfGroups");
+
+    for (const GS::ObjectState& group : groups) {
+        const GS::ObjectState* groupId = group.Get("groupId");
+        if (groupId == nullptr) {
+            elementsOfGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
+            continue;
+        }
+
+        GS::Array<API_Guid> elemGuids;
+        const GSErrCode err = ACAPI_Grouping_GetGroupedElems(GetGuidFromObjectState(*groupId), &elemGuids);
+        if (err != NoError) {
+            elementsOfGroups(CreateErrorResponse(err, "Failed to get the elements of the group."));
+            continue;
+        }
+
+        GS::ObjectState elementsItem;
+        const auto& elements = elementsItem.AddList<GS::ObjectState>("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elements(CreateElementIdObjectState(elemGuid));
+        }
+        elementsOfGroups(elementsItem);
+    }
+
+    return response;
+}
+
+GetSuspendGroupsModeCommand::GetSuspendGroupsModeCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetSuspendGroupsModeCommand::GetName() const
+{
+    return "GetSuspendGroupsMode";
+}
+
+GS::Optional<GS::UniString> GetSuspendGroupsModeCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "suspendGroups": {
+                "type": "boolean",
+                "description": "True if the Suspend Groups mode is currently on."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "suspendGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetSuspendGroupsModeCommand::Execute(const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    bool suspendGroups = false;
+    const GSErrCode err = ACAPI_View_IsSuspendGroupOn(&suspendGroups);
+    if (err != NoError) {
+        return CreateErrorResponse(err, "Failed to get the Suspend Groups mode.");
+    }
+
+    return GS::ObjectState("suspendGroups", suspendGroups);
+}
+
+SetSuspendGroupsModeCommand::SetSuspendGroupsModeCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String SetSuspendGroupsModeCommand::GetName() const
+{
+    return "SetSuspendGroupsMode";
+}
+
+GS::Optional<GS::UniString> SetSuspendGroupsModeCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "suspendGroups": {
+                "type": "boolean",
+                "description": "Turn the Suspend Groups mode on or off."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "suspendGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetSuspendGroupsModeCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
+    })";
+}
+
+GS::ObjectState SetSuspendGroupsModeCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool suspendGroups = false;
+    if (!parameters.Get("suspendGroups", suspendGroups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'suspendGroups' parameter.");
+    }
+
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Grouping_ChangeSuspendGroup(suspendGroups);
+#else
+    // Older versions only offer the APITool_SuspendGroups toggle, so the mode
+    // is toggled only when the current state differs from the requested one.
+    bool currentState = false;
+    GSErrCode err = ACAPI_View_IsSuspendGroupOn(&currentState);
+    if (err == NoError && currentState != suspendGroups) {
+        err = ACAPI_Grouping_Tool(GS::Array<API_Guid>(), APITool_SuspendGroups, nullptr);
+    }
+#endif
+
+    return GS::ObjectState("executionResult", err == NoError
+        ? CreateSuccessfulExecutionResult()
+        : CreateFailedExecutionResult(err, "Failed to set the Suspend Groups mode."));
+}

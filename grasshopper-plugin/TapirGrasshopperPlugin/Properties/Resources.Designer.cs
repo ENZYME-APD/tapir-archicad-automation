@@ -2183,5 +2183,37 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetGroupsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGroupsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementsOfGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementsOfGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetSuspendGroupsMode
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSuspendGroupsMode", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetSuspendGroupsMode
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetSuspendGroupsMode", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
     }
 }
