@@ -21,6 +21,11 @@
 /* [  1] */        "Check for Updates...^E3^ES^EE^EI^ED^EL^EW^ET^EM^32510"
 }
 
+'STR#' ID_ADDON_MENU_FOR_SHORTCUTS "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Manage Script Shortcuts...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
 'STR#' ID_ADDON_MENU_RUNSCRIPT_1 "Add-On Menu" {
 /* [   ] */        "Tapir"
 /* [  1] */        "Run Script Shortcut 1^E3^ES^EE^EI^ED^EL^EW^ET^EM"
