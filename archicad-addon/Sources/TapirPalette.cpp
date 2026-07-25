@@ -691,7 +691,11 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 return;
             }
 
+#ifdef ServerMainVers_3000
+            const GS::UniString lowerContent = stderrContent.GetLowerCased ();
+#else
             const GS::UniString lowerContent = stderrContent.ToLowerCase ();
+#endif
 
             if (lowerContent.Contains ("error:") || lowerContent.Contains ("failed") || lowerContent.Contains ("traceback (most recent call last)")) {
                 GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_ERROR, stderrContent));
@@ -865,7 +869,11 @@ void TapirPalette::AddScriptsFromRepositories ()
                 IO::Name fileName;
                 if (relLoc.GetLength () != (1 + repoFolderRelativeLoc.GetLength ()) ||
                     fileLoc.GetLastLocalName (&fileName) != NoError ||
+#ifdef ServerMainVers_3000
+                    fileName.GetExtension ().GetLowerCased () != "py") {
+#else
                     fileName.GetExtension ().ToLowerCase () != "py") {
+#endif
                     continue;
                 }
             }
