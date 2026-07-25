@@ -2047,5 +2047,173 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetKeynoteTree
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetKeynoteTree", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetKeynoteAutoTexts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetKeynoteAutoTexts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateKeynoteItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateKeynoteItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyKeynoteItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyKeynoteItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteKeynoteItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteKeynoteItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateKeynoteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateKeynoteFolders", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyKeynoteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyKeynoteFolders", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteKeynoteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteKeynoteFolders", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateKeynoteLabels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateKeynoteLabels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPRoutingElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPRoutingElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPPorts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPPorts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPDistributionSystems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPDistributionSystems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateMEPRoutingElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateMEPRoutingElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateMEPElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateMEPElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyMEPRoutingElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyMEPRoutingElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ConnectMEPElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ConnectMEPElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGroupsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGroupsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementsOfGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementsOfGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetSuspendGroupsMode
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSuspendGroupsMode", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetSuspendGroupsMode
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetSuspendGroupsMode", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
     }
 }

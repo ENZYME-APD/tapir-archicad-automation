@@ -100,6 +100,7 @@ inline GSErrCode ACAPI_Navigator_ChangeLayoutSets (const API_LayoutInfo* layoutI
 #define ACAPI_Navigator_GetSubSetDefault(par1) ACAPI_Database (APIDb_GetSubSetDefaultID, par1)
 #define ACAPI_Navigator_CreateSubSet(par1, par2) ACAPI_Database (APIDb_CreateSubSetID, par1, (void*)par2)
 
+#define ACAPI_View_IsSuspendGroupOn(par1)   ACAPI_Environment (APIEnv_IsSuspendGroupOnID, par1)
 #define ACAPI_Grouping_CreateGroup          ACAPI_ElementGroup_Create
 #define ACAPI_Grouping_GetGroup             ACAPI_ElementGroup_GetGroup
 #define ACAPI_Grouping_GetRootGroup         ACAPI_ElementGroup_GetRootGroup

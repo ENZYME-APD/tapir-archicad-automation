@@ -40,6 +40,8 @@
 #include "DesignOptionCommands.hpp"
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
+#include "MEPCommands.hpp"
+#include "KeynoteCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -189,6 +191,11 @@ GSErrCode Initialize (void)
             applicationCommands, "1.5.6",
             "Get the current registered User-GSID and OrganizationsID. Requires Archicad 27 or later."
         );
+        err |= RegisterCommand<ShowAlertCommand>(
+            applicationCommands,"1.5.6",
+            "Display a dialog with up to three buttons."
+        );
+
         AddCommandGroup (applicationCommands);
     }
 
@@ -491,6 +498,22 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateGroupsCommand> (
             elementGroupingCommands, "1.4.0",
             "Creates groups of the passed elements"
+        );
+        err |= RegisterCommand<GetGroupsOfElementsCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the identifier of the group that directly contains each given element. Returns an error for elements that are not part of any group."
+        );
+        err |= RegisterCommand<GetElementsOfGroupsCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the elements directly contained by each given group."
+        );
+        err |= RegisterCommand<GetSuspendGroupsModeCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the current state of the Suspend Groups mode."
+        );
+        err |= RegisterCommand<SetSuspendGroupsModeCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Turns the Suspend Groups mode on or off. Suspend groups to perform operations on elements that are part of a group; remember to restore the previous state afterwards."
         );
         AddCommandGroup (elementGroupingCommands);
     }
@@ -1016,6 +1039,84 @@ GSErrCode Initialize (void)
             "Moves the given design options to another sets. Available from Archicad 29."
         );
         AddCommandGroup (designOptionsCommands);
+    }
+
+    { // Keynote Commands
+        CommandGroup keynoteCommands ("Keynote Commands");
+        err |= RegisterCommand<GetKeynoteTreeCommand> (
+            keynoteCommands, "1.5.6",
+            "Retrieves the whole keynote folder and item hierarchy. The technical root folder is not included in the output; the top-level folders and items are returned directly. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetKeynoteAutoTextsCommand> (
+            keynoteCommands, "1.5.6",
+            "Retrieves the autotext tokens of the given keynote items. The tokens can be used as label text content to reference the fields of a keynote item. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates keynote folders under the given parent folders (or under the root folder). Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates keynote items in the given parent folders (or in the root folder). Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Modifies the key, title or reference of the given keynote folders. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Modifies the key, title, description or reference of the given keynote items. Available from Archicad 28."
+        );
+        err |= RegisterCommand<DeleteKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Deletes the given keynote folders including their content. Available from Archicad 28."
+        );
+        err |= RegisterCommand<DeleteKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Deletes the given keynote items. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteLabelsCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates Label elements that reference the given keynote items via autotext. Available from Archicad 28."
+        );
+        AddCommandGroup (keynoteCommands);
+    }
+
+    { // MEP Commands
+        CommandGroup mepCommands ("MEP Commands");
+        err |= RegisterCommand<GetMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data and nodes. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPPortsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the ports of the given MEP elements including position, shape, size and connection status. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPDistributionSystemsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the MEP distribution systems of the project with their domain, MEP system attribute and member elements. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data and MEP system. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Modifies the given MEP routing elements: MEP system, cross section data of all segments and node positions. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ConnectMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Available from Archicad 28."
+        );
+        AddCommandGroup (mepCommands);
     }
 
     { // Solid Element Operation Commands

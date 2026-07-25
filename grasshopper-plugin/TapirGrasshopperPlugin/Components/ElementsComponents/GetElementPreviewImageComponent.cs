@@ -105,9 +105,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            var bitmap = ImageHelp.FromBase64(base64);
+            if (bitmap == null)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Remark,
+                    "Bitmap decoding is not available on this platform; use the Base64 output.");
+            }
+
             da.SetData(
                 0,
-                ImageHelp.FromBase64(base64));
+                bitmap);
 
             da.SetData(
                 1,

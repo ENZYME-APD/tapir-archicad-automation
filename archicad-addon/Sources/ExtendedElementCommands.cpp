@@ -1,3 +1,10 @@
+// Model3D/MeshBody.hpp MUST be included before ExtendedElementCommands.hpp/ACAPinc.h, not after -
+// confirmed live: including it afterward makes GDLDefs.h/PropertyListImp.hpp fail to parse
+// ("'GS' n'est pas membre de 'GS'"), a GDL header ordering conflict between ACAPinc.h's own GDL
+// declarations and the GDLWrapping.hpp pulled in transitively by MeshBody.hpp. Root cause not
+// fully understood beyond "order matters"; isolated and confirmed via standalone cl.exe repro.
+#include "Model3D/MeshBody.hpp"
+
 #include "ExtendedElementCommands.hpp"
 
 #include "MigrationHelper.hpp"
@@ -11,6 +18,8 @@
 
 #include <cmath>
 #include <limits>
+#include <map>
+#include <utility>
 
 namespace {
 
@@ -1467,6 +1476,591 @@ bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_Attribu
     return true;
 }
 
+static GS::UniString MorphBodyTypeToString (API_MorphBodyTypeID bodyType)
+{
+    return bodyType == APIMorphBodyType_SolidBody ? "Solid" : "Surface";
+}
+
+static GS::UniString MorphEdgeTypeToString (API_MorphEdgeTypeID edgeType)
+{
+    switch (edgeType) {
+        case APIMorphEdgeType_HardVisibleEdge: return "HardVisible";
+        case APIMorphEdgeType_HardHiddenEdge:   return "HardHidden";
+        case APIMorphEdgeType_SoftHiddenEdge:
+        default:                                return "SoftHidden";
+    }
+}
+
+static GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption)
+{
+    switch (displayOption) {
+        case API_StandardWithAbstract: return "StandardWithAbstract";
+        case API_CutOnly:              return "CutOnly";
+        case API_OutLinesOnly:         return "OutLinesOnly";
+        case API_AbstractAll:          return "AbstractAll";
+        case API_CutAll:               return "CutAll";
+        case API_Standard:
+        default:                       return "Standard";
+    }
+}
+
+static bool ElemDisplayOptionFromString (const GS::UniString& s, API_ElemDisplayOptionsID& out)
+{
+    if (s == "Standard")                { out = API_Standard; return true; }
+    if (s == "StandardWithAbstract")     { out = API_StandardWithAbstract; return true; }
+    if (s == "CutOnly")                  { out = API_CutOnly; return true; }
+    if (s == "OutLinesOnly")             { out = API_OutLinesOnly; return true; }
+    if (s == "AbstractAll")              { out = API_AbstractAll; return true; }
+    if (s == "CutAll")                   { out = API_CutAll; return true; }
+    return false;
+}
+
+static GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation)
+{
+    switch (viewDepthLimitation) {
+        case API_ToAbsoluteLimit: return "ToAbsoluteLimit";
+        case API_EntireElement:   return "EntireElement";
+        case API_ToFloorPlanRange:
+        default:                  return "ToFloorPlanRange";
+    }
+}
+
+static bool ViewDepthLimitationFromString (const GS::UniString& s, API_ElemViewDepthLimitationsID& out)
+{
+    if (s == "ToFloorPlanRange") { out = API_ToFloorPlanRange; return true; }
+    if (s == "ToAbsoluteLimit")  { out = API_ToAbsoluteLimit; return true; }
+    if (s == "EntireElement")    { out = API_EntireElement; return true; }
+    return false;
+}
+
+static GS::UniString TextureProjectionTypeToString (API_TextureProjectionTypeID projectionType)
+{
+    switch (projectionType) {
+        case APITextureProjectionType_Planar:   return "Planar";
+        case APITextureProjectionType_Default:  return "Default";
+        case APITextureProjectionType_Cylindric: return "Cylindric";
+        case APITextureProjectionType_Spheric:  return "Spheric";
+        case APITextureProjectionType_Box:      return "Box";
+        case APITextureProjectionType_Invalid:
+        default:                                 return "Invalid";
+    }
+}
+
+static bool TextureProjectionTypeFromString (const GS::UniString& s, API_TextureProjectionTypeID& out)
+{
+    if (s == "Invalid")   { out = APITextureProjectionType_Invalid; return true; }
+    if (s == "Planar")    { out = APITextureProjectionType_Planar; return true; }
+    if (s == "Default")   { out = APITextureProjectionType_Default; return true; }
+    if (s == "Cylindric") { out = APITextureProjectionType_Cylindric; return true; }
+    if (s == "Spheric")   { out = APITextureProjectionType_Spheric; return true; }
+    if (s == "Box")       { out = APITextureProjectionType_Box; return true; }
+    return false;
+}
+
+static GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID orientationType)
+{
+    switch (orientationType) {
+        case API_HatchRotated:   return "Rotated";
+        case API_HatchDistorted: return "Distorted";
+        case API_HatchCentered:  return "Centered";
+        case API_HatchGlobal:
+        default:                 return "Global";
+    }
+}
+
+static bool HatchOrientationTypeFromString (const GS::UniString& s, API_HatchOrientationTypeID& out)
+{
+    if (s == "Global")     { out = API_HatchGlobal; return true; }
+    if (s == "Rotated")    { out = API_HatchRotated; return true; }
+    if (s == "Distorted")  { out = API_HatchDistorted; return true; }
+    if (s == "Centered")   { out = API_HatchCentered; return true; }
+    return false;
+}
+
+// Reuses (rather than re-adds) the edge between two vertices - ACAPI_Body_AddEdge's own doc is
+// explicit that "the edge can be used with at most 2 polygons, and in that case it has to be
+// passed with opposite directions", so a shared edge between two adjacent faces must resolve to
+// the SAME edge index (sign-flipped for whichever face walks it in the other direction), not two
+// separate edges - confirmed against BuildCuboidMorphMemo's own hand-written edge reuse pattern
+// above (e.g. `-edges[4]`, `-edges[8]`), just generalized to arbitrary polygon counts.
+static Int32 GetOrAddEdge (void* bodyData, UInt32 a, UInt32 b, std::map<std::pair<UInt32, UInt32>, Int32>& edgeCache)
+{
+    const bool flipped = a > b;
+    const auto key = flipped ? std::make_pair (b, a) : std::make_pair (a, b);
+    auto it = edgeCache.find (key);
+    if (it != edgeCache.end ()) {
+        return flipped ? -it->second : it->second;
+    }
+    Int32 idx = 0;
+    ACAPI_Body_AddEdge (bodyData, key.first, key.second, idx);
+    edgeCache[key] = idx;
+    return flipped ? -idx : idx;
+}
+
+// Builds an arbitrary Morph body (any number of faces, holes, per-face building materials) from
+// the "body" JSON shape documented by the "MorphBody" schema definition (CommonSchemaDefinitions.json)
+// - the general-purpose counterpart to BuildCuboidMorphMemo above, shared by CreateMorphs and
+// ModifyMorphs (the latter via a "replace the whole body" flag, mirroring CreateProfiles'
+// replaceSkins). Does NOT set element.morph.bodyType/edgeType - the caller does that from the
+// same "body" object's bodyType/edgeDefault fields, since those live on API_Element, not the memo.
+bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo& memo, GS::UniString& errorOut)
+{
+    GS::Array<GS::ObjectState> verticesOS;
+    bodyOS.Get ("vertices", verticesOS);
+    GS::Array<GS::ObjectState> polygonsOS;
+    bodyOS.Get ("polygons", polygonsOS);
+
+    if (verticesOS.GetSize () < 4 || polygonsOS.GetSize () < 4) {
+        errorOut = "A Morph body needs at least 4 vertices and 4 faces to form a closed volume.";
+        return false;
+    }
+
+    void* bodyData = nullptr;
+    if (ACAPI_Body_Create (nullptr, nullptr, &bodyData) != NoError || bodyData == nullptr) {
+        errorOut = "Failed to start building the morph body.";
+        return false;
+    }
+    const GS::OnExit disposeBody ([&] () {
+        if (bodyData != nullptr) {
+            ACAPI_Body_Dispose (&bodyData);
+        }
+    });
+
+    // GS::Array's single-integer constructor reserves CAPACITY only (GetSize() stays 0 until
+    // elements are actually added) - confirmed live: indexed-assigning into a capacity-only array
+    // left vertexIndices permanently empty, making every subsequent bounds check against its size
+    // fail for every real vertex index ("a face or hole references a vertex index out of range").
+    GS::Array<UInt32> vertexIndices;
+    vertexIndices.SetSize (verticesOS.GetSize ());
+    for (UIndex i = 0; i < verticesOS.GetSize (); ++i) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (verticesOS[i]);
+        UInt32 idx = 0;
+        ACAPI_Body_AddVertex (bodyData, coord, idx);
+        vertexIndices[i] = idx;
+    }
+
+    const auto resolveLoopEdges = [&] (const GS::Array<Int32>& loopVertexIds, std::map<std::pair<UInt32, UInt32>, Int32>& edgeCache,
+                                        GS::Array<Int32>& outEdgeIndices, GS::UniString& loopError) -> bool {
+        for (UIndex i = 0; i < loopVertexIds.GetSize (); ++i) {
+            const Int32 vFrom = loopVertexIds[i];
+            const Int32 vTo = loopVertexIds[(i + 1) % loopVertexIds.GetSize ()];
+            if (vFrom < 0 || (GS::UIndex) vFrom >= vertexIndices.GetSize () || vTo < 0 || (GS::UIndex) vTo >= vertexIndices.GetSize ()) {
+                loopError = "A face or hole references a vertex index that is out of range.";
+                return false;
+            }
+            outEdgeIndices.Push (GetOrAddEdge (bodyData, vertexIndices[vFrom], vertexIndices[vTo], edgeCache));
+        }
+        return true;
+    };
+
+    std::map<std::pair<UInt32, UInt32>, Int32> edgeCache;
+
+    for (const GS::ObjectState& polygonOS : polygonsOS) {
+        GS::Array<Int32> outerVertexIds;
+        polygonOS.Get ("vertexIds", outerVertexIds);
+        if (outerVertexIds.GetSize () < 3) {
+            errorOut = "Every face needs at least 3 vertices.";
+            return false;
+        }
+
+        GS::Array<Int32> edgeIndices;
+        GS::UniString loopError;
+        if (!resolveLoopEdges (outerVertexIds, edgeCache, edgeIndices, loopError)) {
+            errorOut = loopError;
+            return false;
+        }
+
+        GS::Array<GS::ObjectState> holesOS;
+        if (polygonOS.Get ("holes", holesOS)) {
+            for (const GS::ObjectState& holeOS : holesOS) {
+                GS::Array<Int32> holeVertexIds;
+                holeOS.Get ("vertexIds", holeVertexIds);
+                if (holeVertexIds.GetSize () < 3) {
+                    errorOut = "Every hole needs at least 3 vertices.";
+                    return false;
+                }
+                edgeIndices.Push (0);
+                if (!resolveLoopEdges (holeVertexIds, edgeCache, edgeIndices, loopError)) {
+                    errorOut = loopError;
+                    return false;
+                }
+            }
+        }
+
+#ifdef ServerMainVers_2700
+        // This per-polygon override is a SURFACE (API_MaterialID), not a building material -
+        // confirmed live: a Morph's building material is always a single whole-volume property
+        // (element.morph.buildingMaterial), never per-face. Leaving `material` unset (hasValue
+        // false, the default) means "no override, inherit the element's default appearance" -
+        // do NOT fall back to the building material's own index here, since treating a building
+        // material index as if it were a surface index picks an unrelated, coincidental surface.
+        API_OverriddenAttribute material = {};
+        auto faceSurfaceId = GetOptionalObjectState (polygonOS, "surfaceId");
+        if (faceSurfaceId.HasValue ()) {
+            API_AttributeIndex faceSurfaceIndex = APIInvalidAttributeIndex;
+            if (!ResolveAttributeIndex (faceSurfaceId.Get (), API_MaterialID, faceSurfaceIndex)) {
+                errorOut = "Invalid per-face surface.";
+                return false;
+            }
+            material = faceSurfaceIndex;
+        }
+#else
+        API_OverriddenAttribute material = {};
+#endif
+
+        UInt32 polygonIndex = 0;
+        if (ACAPI_Body_AddPolygon (bodyData, edgeIndices, 0, material, polygonIndex) != NoError) {
+            errorOut = "Failed to build one of the morph's faces - check winding order and vertex indices.";
+            return false;
+        }
+    }
+
+    if (ACAPI_Body_Finish (bodyData, &memo.morphBody, &memo.morphMaterialMapTable) != NoError) {
+        errorOut = "Failed to finalize the morph body.";
+        return false;
+    }
+
+    return true;
+}
+
+// Applies every API_MorphType field beyond geometry/body itself - placement rotation axes,
+// shadows, per-story visibility, floor plan display/pens/line types/cover fill, texture
+// projection, level - from the same flat MorphDetails JSON shape AddMorphBodyFromMemo reports.
+// Shared by CreateMorphs (mask == nullptr, a freshly-defaulted element needs no mask) and
+// ModifyMorphs (mask != nullptr, every touched field also needs its ACAPI_ELEMENT_MASK_SET bit).
+// Returns false only on a genuine validation error (bad attribute reference, partial axis triple,
+// unrecognized enum string); increments appliedCount for every recognized field found, so
+// ModifyMorphs can tell whether ANY field was actually given.
+bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& element, API_Element* mask, int& appliedCount, GS::UniString& errorOut)
+{
+    auto xAxisOS = GetOptionalObjectState (details, "xAxis");
+    auto yAxisOS = GetOptionalObjectState (details, "yAxis");
+    auto zAxisOS = GetOptionalObjectState (details, "zAxis");
+    const int axisCount = (int) xAxisOS.HasValue () + (int) yAxisOS.HasValue () + (int) zAxisOS.HasValue ();
+    if (axisCount != 0 && axisCount != 3) {
+        errorOut = "Give all three of 'xAxis', 'yAxis' and 'zAxis' together, or none at all.";
+        return false;
+    }
+    if (axisCount == 3) {
+        const API_Coord3D xAxis = Get3DCoordinateFromObjectState (xAxisOS.Get ());
+        const API_Coord3D yAxis = Get3DCoordinateFromObjectState (yAxisOS.Get ());
+        const API_Coord3D zAxis = Get3DCoordinateFromObjectState (zAxisOS.Get ());
+        double* tmx = element.morph.tranmat.tmx;
+        tmx[0] = xAxis.x; tmx[1] = xAxis.y; tmx[2] = xAxis.z;
+        tmx[4] = yAxis.x; tmx[5] = yAxis.y; tmx[6] = yAxis.z;
+        tmx[8] = zAxis.x; tmx[9] = zAxis.y; tmx[10] = zAxis.z;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, tranmat);
+        }
+        ++appliedCount;
+    }
+
+    auto surfaceId = GetOptionalObjectState (details, "surfaceId");
+    if (surfaceId.HasValue ()) {
+        API_AttributeIndex idx = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (surfaceId.Get (), API_MaterialID, idx)) {
+            errorOut = "Invalid morph default surface ('surfaceId').";
+            return false;
+        }
+#ifdef ServerMainVers_2700
+        element.morph.material.hasValue = true;
+        element.morph.material.value = idx;
+#else
+        element.morph.material.overridden = true;
+        element.morph.material.attributeIndex = idx;
+#endif
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, material);
+        }
+        ++appliedCount;
+    }
+
+    {
+        bool v = false;
+        if (details.Get ("castShadow", v)) {
+            element.morph.castShadow = v;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, castShadow);
+            ++appliedCount;
+        }
+    }
+    {
+        bool v = false;
+        if (details.Get ("receiveShadow", v)) {
+            element.morph.receiveShadow = v;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, receiveShadow);
+            ++appliedCount;
+        }
+    }
+    {
+        bool v = false;
+        if (details.Get ("isAutoOnStoryVisibility", v)) {
+            element.morph.isAutoOnStoryVisibility = v;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, isAutoOnStoryVisibility);
+            ++appliedCount;
+        }
+    }
+
+    const auto applyStoryVisibility = [&] (const char* fieldName, API_StoryVisibility& target) {
+        const GS::ObjectState* svOS = details.Get (fieldName);
+        if (svOS == nullptr) {
+            return;
+        }
+        API_StoryVisibility sv = target;
+        svOS->Get ("showOnHome", sv.showOnHome);
+        svOS->Get ("showAllAbove", sv.showAllAbove);
+        svOS->Get ("showAllBelow", sv.showAllBelow);
+        Int32 relAbove = sv.showRelAbove;
+        Int32 relBelow = sv.showRelBelow;
+        if (svOS->Get ("showRelAbove", relAbove)) {
+            sv.showRelAbove = (short) relAbove;
+        }
+        if (svOS->Get ("showRelBelow", relBelow)) {
+            sv.showRelBelow = (short) relBelow;
+        }
+        target = sv;
+        ++appliedCount;
+    };
+    applyStoryVisibility ("showContour", element.morph.showContour);
+    if (details.Get ("showContour") != nullptr && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showContour);
+    }
+    applyStoryVisibility ("showFill", element.morph.showFill);
+    if (details.Get ("showFill") != nullptr && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showFill);
+    }
+
+    {
+        const GS::ObjectState* linkOS = details.Get ("linkToSettings");
+        if (linkOS != nullptr) {
+            API_LinkToSettings link = element.morph.linkToSettings;
+            Int32 homeDiff = link.homeStoryDifference;
+            if (linkOS->Get ("homeStoryDifference", homeDiff)) {
+                link.homeStoryDifference = (short) homeDiff;
+            }
+            linkOS->Get ("newCreationMode", link.newCreationMode);
+            element.morph.linkToSettings = link;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, linkToSettings);
+            ++appliedCount;
+        }
+    }
+
+    {
+        GS::UniString s;
+        if (details.Get ("displayOption", s)) {
+            API_ElemDisplayOptionsID v;
+            if (!ElemDisplayOptionFromString (s, v)) {
+                errorOut = "Invalid 'displayOption'.";
+                return false;
+            }
+            element.morph.displayOption = v;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, displayOption);
+            ++appliedCount;
+        }
+    }
+    {
+        GS::UniString s;
+        if (details.Get ("viewDepthLimitation", s)) {
+            API_ElemViewDepthLimitationsID v;
+            if (!ViewDepthLimitationFromString (s, v)) {
+                errorOut = "Invalid 'viewDepthLimitation'.";
+                return false;
+            }
+            element.morph.viewDepthLimitation = v;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, viewDepthLimitation);
+            ++appliedCount;
+        }
+    }
+
+    {
+        Int32 v = 0;
+        if (details.Get ("cutFillPen", v)) {
+#ifdef ServerMainVers_2700
+            element.morph.cutFillPen.hasValue = true;
+            element.morph.cutFillPen.value = (API_PenIndex) v;
+#else
+            element.morph.penOverride.cutFillPen = (short) v;
+            element.morph.penOverride.overrideCutFillPen = true;
+#endif
+            if (mask != nullptr) {
+#ifdef ServerMainVers_2700
+                ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, cutFillPen);
+#else
+                ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, penOverride);
+#endif
+            }
+            ++appliedCount;
+        }
+    }
+    {
+        Int32 v = 0;
+        if (details.Get ("cutFillBackgroundPen", v)) {
+#ifdef ServerMainVers_2700
+            element.morph.cutFillBackgroundPen.hasValue = true;
+            element.morph.cutFillBackgroundPen.value = (API_PenIndex) v;
+#else
+            element.morph.penOverride.cutFillBackgroundPen = (short) v;
+            element.morph.penOverride.overrideCutFillBackgroundPen = true;
+#endif
+            if (mask != nullptr) {
+#ifdef ServerMainVers_2700
+                ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, cutFillBackgroundPen);
+#else
+                ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, penOverride);
+#endif
+            }
+            ++appliedCount;
+        }
+    }
+
+    const auto applyLineType = [&] (const char* fieldName, API_AttributeIndex API_MorphType::* member, const char* errorLabel) -> bool {
+        auto lineTypeId = GetOptionalObjectState (details, fieldName);
+        if (!lineTypeId.HasValue ()) {
+            return true;
+        }
+        API_AttributeIndex idx = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (lineTypeId.Get (), API_LinetypeID, idx)) {
+            errorOut = GS::UniString::Printf ("Invalid '%s' line type reference.", errorLabel);
+            return false;
+        }
+        element.morph.*member = idx;
+        ++appliedCount;
+        return true;
+    };
+    if (!applyLineType ("cutLineType", &API_MorphType::cutLineType, "cutLineType")) return false;
+    if (details.Get ("cutLineType") != nullptr && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, cutLineType);
+    if (!applyLineType ("uncutLineType", &API_MorphType::uncutLineType, "uncutLineType")) return false;
+    if (details.Get ("uncutLineType") != nullptr && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, uncutLineType);
+    if (!applyLineType ("overheadLineType", &API_MorphType::overheadLineType, "overheadLineType")) return false;
+    if (details.Get ("overheadLineType") != nullptr && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, overheadLineType);
+
+    const auto applyShortField = [&] (const char* fieldName, short API_MorphType::* member) {
+        Int32 v = 0;
+        if (details.Get (fieldName, v)) {
+            element.morph.*member = (short) v;
+            ++appliedCount;
+            return true;
+        }
+        return false;
+    };
+    if (applyShortField ("cutLinePen", &API_MorphType::cutLinePen) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, cutLinePen);
+    if (applyShortField ("uncutLinePen", &API_MorphType::uncutLinePen) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, uncutLinePen);
+    if (applyShortField ("overheadLinePen", &API_MorphType::overheadLinePen) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, overheadLinePen);
+    if (applyShortField ("coverFillPen", &API_MorphType::coverFillPen) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, coverFillPen);
+    if (applyShortField ("coverFillBGPen", &API_MorphType::coverFillBGPen) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, coverFillBGPen);
+
+    const auto applyBoolField = [&] (const char* fieldName, bool API_MorphType::* member) {
+        bool v = false;
+        if (details.Get (fieldName, v)) {
+            element.morph.*member = v;
+            ++appliedCount;
+            return true;
+        }
+        return false;
+    };
+    if (applyBoolField ("useCoverFillType", &API_MorphType::useCoverFillType) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, useCoverFillType);
+    if (applyBoolField ("outlineContourDisplay", &API_MorphType::outlineContourDisplay) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, outlineContourDisplay);
+    if (applyBoolField ("use3DHatching", &API_MorphType::use3DHatching) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, use3DHatching);
+    if (applyBoolField ("useDistortedCoverFill", &API_MorphType::useDistortedCoverFill) && mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, useDistortedCoverFill);
+
+    {
+        auto coverFillTypeId = GetOptionalObjectState (details, "coverFillType");
+        if (coverFillTypeId.HasValue ()) {
+            API_AttributeIndex idx = APIInvalidAttributeIndex;
+            if (!ResolveAttributeIndex (coverFillTypeId.Get (), API_FilltypeID, idx)) {
+                errorOut = "Invalid 'coverFillType' fill reference.";
+                return false;
+            }
+            element.morph.coverFillType = idx;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, coverFillType);
+            ++appliedCount;
+        }
+    }
+
+    {
+        const GS::ObjectState* orientOS = details.Get ("coverFillOrientation");
+        if (orientOS != nullptr) {
+            API_HatchOrientation orient = element.morph.coverFillOrientation;
+            GS::UniString typeStr;
+            if (orientOS->Get ("type", typeStr)) {
+                API_HatchOrientationTypeID t;
+                if (!HatchOrientationTypeFromString (typeStr, t)) {
+                    errorOut = "Invalid 'coverFillOrientation.type'.";
+                    return false;
+                }
+                orient.type = t;
+            }
+            const GS::ObjectState* origoOS = orientOS->Get ("origo");
+            if (origoOS != nullptr) {
+                orient.origo = Get2DCoordinateFromObjectState (*origoOS);
+            }
+            orientOS->Get ("matrix00", orient.matrix00);
+            orientOS->Get ("matrix10", orient.matrix10);
+            orientOS->Get ("matrix01", orient.matrix01);
+            orientOS->Get ("matrix11", orient.matrix11);
+            orientOS->Get ("innerRadius", orient.innerRadius);
+            element.morph.coverFillOrientation = orient;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, coverFillOrientation);
+            ++appliedCount;
+        }
+    }
+
+    {
+        GS::UniString s;
+        if (details.Get ("textureProjectionType", s)) {
+            API_TextureProjectionTypeID v;
+            if (!TextureProjectionTypeFromString (s, v)) {
+                errorOut = "Invalid 'textureProjectionType'.";
+                return false;
+            }
+            element.morph.textureProjectionType = v;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, textureProjectionType);
+            ++appliedCount;
+        }
+    }
+    {
+        GS::Array<GS::ObjectState> coordsOS;
+        if (details.Get ("textureProjectionCoords", coordsOS)) {
+            if (coordsOS.GetSize () != 4) {
+                errorOut = "'textureProjectionCoords' needs exactly 4 entries.";
+                return false;
+            }
+            for (UIndex i = 0; i < 4; ++i) {
+                element.morph.textureProjectionCoords[i] = Get3DCoordinateFromObjectState (coordsOS[i]);
+            }
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, textureProjectionCoords);
+            ++appliedCount;
+        }
+    }
+
+    {
+        double level = 0.0;
+        if (details.Get ("level", level)) {
+            element.morph.level = level;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, level);
+            ++appliedCount;
+        }
+    }
+
+    return true;
+}
+
+// Per-edge display-status overrides (hidden/visible/smooth "aide a la courbe") were attempted
+// here via a full MeshBody reconstruction (the only write path, since there is no ACAPI_Body_Set*
+// for edge attributes - Modeler::MeshBody is read-only post-build; only the internal
+// Cut::IMeshBody, never handed to add-ons, has mutators). The reconstruction itself worked
+// without crashing, but the resulting edge attributes never survived ACAPI_Element_Create -
+// confirmed against a GRAPHISOFT community thread (archicad-api forum, "Help with setting
+// morph's hidden edges in the API", ManelCG/BerndSchwarzenbacher, 2023-2024): this is a CONFIRMED,
+// still-unresolved Archicad SDK bug (reproduced independently by multiple developers across
+// AC23-27) - element.morph.edgeType (and even bodyType, always coming back Solid) is silently
+// discarded/reset by ACAPI_Element_Create/Change regardless of what's supplied, with no known
+// workaround. Not fixable from an add-on. The element-wide edgeType/bodyType fields are still
+// set on the element (CreateMorphsCommand/ModifyMorphsCommand below) since doing so is harmless
+// and forward-compatible if GRAPHISOFT ever fixes this - but per-edge overrides were removed
+// entirely rather than ship a reconstruction step with real risk (raw MeshBody manipulation) for
+// zero actual effect. Reading back whatever Archicad itself currently reports (AddMorphBodyFromMemo
+// in ElementCommands.cpp) remains fully correct and unaffected - only writing is impossible.
+
 bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {
     bool changed = false;
@@ -1515,6 +2109,239 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
     return changed;
 }
 
+}
+
+// Reads a Morph's full body geometry (vertices/faces/holes/per-face material) plus its default
+// edge display status and own building material, writing them into `typeSpecificDetails` in the
+// shape the "MorphBody"/"MorphDetails" schema definitions (CommonSchemaDefinitions.json) expect -
+// the same shape CreateMorphs/ModifyMorphs accept back via their "body" field. There is no
+// ACAPI_Body_Get* family (confirmed live) - reading goes through ACAPI_Element_GetMemo's
+// memo.morphBody (a Modeler::MeshBody), walked via its const read API. Declared in CommandBase.hpp
+// and called from ElementCommands.cpp's GetDetailsOfElements switch, but defined HERE (not there) -
+// Model3D/MeshBody.hpp cannot coexist with ElementCommands.cpp's existing ModelMeshBody.hpp
+// include in the same translation unit (confirmed live: "'GS' n'est pas membre de 'GS'" GDL header
+// conflict), so this stays a separate translation unit instead. Defined OUTSIDE the anonymous
+// namespace above (unlike its GetOrAddEdge/BuildMorphBodyFromGeometry siblings) - it needs real
+// external linkage to be callable from ElementCommands.cpp; confirmed live via LNK2019 that
+// leaving it inside the anonymous namespace silently gives it internal linkage instead.
+void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    typeSpecificDetails.Add ("origin", Create3DCoordinateObjectState (
+        {elem.morph.tranmat.tmx[3], elem.morph.tranmat.tmx[7], elem.morph.tranmat.tmx[11]}));
+    typeSpecificDetails.Add ("xAxis", Create3DCoordinateObjectState (
+        {elem.morph.tranmat.tmx[0], elem.morph.tranmat.tmx[1], elem.morph.tranmat.tmx[2]}));
+    typeSpecificDetails.Add ("yAxis", Create3DCoordinateObjectState (
+        {elem.morph.tranmat.tmx[4], elem.morph.tranmat.tmx[5], elem.morph.tranmat.tmx[6]}));
+    typeSpecificDetails.Add ("zAxis", Create3DCoordinateObjectState (
+        {elem.morph.tranmat.tmx[8], elem.morph.tranmat.tmx[9], elem.morph.tranmat.tmx[10]}));
+    if (elem.morph.buildingMaterial != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.morph.buildingMaterial)));
+    }
+#ifdef ServerMainVers_2700
+    if (elem.morph.material.hasValue) {
+        typeSpecificDetails.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, elem.morph.material.value)));
+    }
+#else
+    if (elem.morph.material.overridden) {
+        typeSpecificDetails.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, elem.morph.material.attributeIndex)));
+    }
+#endif
+
+    typeSpecificDetails.Add ("castShadow", elem.morph.castShadow);
+    typeSpecificDetails.Add ("receiveShadow", elem.morph.receiveShadow);
+    typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.morph.isAutoOnStoryVisibility);
+
+    const auto addStoryVisibility = [&] (const char* fieldName, const API_StoryVisibility& sv) {
+        GS::ObjectState svOS;
+        svOS.Add ("showOnHome", sv.showOnHome);
+        svOS.Add ("showAllAbove", sv.showAllAbove);
+        svOS.Add ("showAllBelow", sv.showAllBelow);
+        svOS.Add ("showRelAbove", (Int32) sv.showRelAbove);
+        svOS.Add ("showRelBelow", (Int32) sv.showRelBelow);
+        typeSpecificDetails.Add (fieldName, svOS);
+    };
+    addStoryVisibility ("showContour", elem.morph.showContour);
+    addStoryVisibility ("showFill", elem.morph.showFill);
+
+    {
+        GS::ObjectState linkOS;
+        linkOS.Add ("homeStoryDifference", (Int32) elem.morph.linkToSettings.homeStoryDifference);
+        linkOS.Add ("newCreationMode", elem.morph.linkToSettings.newCreationMode);
+        typeSpecificDetails.Add ("linkToSettings", linkOS);
+    }
+
+    typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.morph.displayOption));
+    typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.morph.viewDepthLimitation));
+
+#ifdef ServerMainVers_2700
+    if (elem.morph.cutFillPen.hasValue) {
+        typeSpecificDetails.Add ("cutFillPen", (Int32) elem.morph.cutFillPen.value);
+    }
+    if (elem.morph.cutFillBackgroundPen.hasValue) {
+        typeSpecificDetails.Add ("cutFillBackgroundPen", (Int32) elem.morph.cutFillBackgroundPen.value);
+    }
+#else
+    if (elem.morph.penOverride.overrideCutFillPen) {
+        typeSpecificDetails.Add ("cutFillPen", (Int32) elem.morph.penOverride.cutFillPen);
+    }
+    if (elem.morph.penOverride.overrideCutFillBackgroundPen) {
+        typeSpecificDetails.Add ("cutFillBackgroundPen", (Int32) elem.morph.penOverride.cutFillBackgroundPen);
+    }
+#endif
+
+    if (elem.morph.cutLineType != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("cutLineType", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.morph.cutLineType)));
+    }
+    typeSpecificDetails.Add ("cutLinePen", (Int32) elem.morph.cutLinePen);
+    if (elem.morph.uncutLineType != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("uncutLineType", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.morph.uncutLineType)));
+    }
+    typeSpecificDetails.Add ("uncutLinePen", (Int32) elem.morph.uncutLinePen);
+    if (elem.morph.overheadLineType != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("overheadLineType", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.morph.overheadLineType)));
+    }
+    typeSpecificDetails.Add ("overheadLinePen", (Int32) elem.morph.overheadLinePen);
+
+    typeSpecificDetails.Add ("useCoverFillType", elem.morph.useCoverFillType);
+    typeSpecificDetails.Add ("outlineContourDisplay", elem.morph.outlineContourDisplay);
+    if (elem.morph.coverFillType != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("coverFillType", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, elem.morph.coverFillType)));
+    }
+    typeSpecificDetails.Add ("coverFillPen", (Int32) elem.morph.coverFillPen);
+    typeSpecificDetails.Add ("coverFillBGPen", (Int32) elem.morph.coverFillBGPen);
+    typeSpecificDetails.Add ("use3DHatching", elem.morph.use3DHatching);
+
+    {
+        GS::ObjectState orientOS;
+        orientOS.Add ("type", HatchOrientationTypeToString (elem.morph.coverFillOrientation.type));
+        orientOS.Add ("origo", Create2DCoordinateObjectState (elem.morph.coverFillOrientation.origo));
+        orientOS.Add ("matrix00", elem.morph.coverFillOrientation.matrix00);
+        orientOS.Add ("matrix10", elem.morph.coverFillOrientation.matrix10);
+        orientOS.Add ("matrix01", elem.morph.coverFillOrientation.matrix01);
+        orientOS.Add ("matrix11", elem.morph.coverFillOrientation.matrix11);
+        orientOS.Add ("innerRadius", elem.morph.coverFillOrientation.innerRadius);
+        typeSpecificDetails.Add ("coverFillOrientation", orientOS);
+    }
+    typeSpecificDetails.Add ("useDistortedCoverFill", elem.morph.useDistortedCoverFill);
+
+    typeSpecificDetails.Add ("textureProjectionType", TextureProjectionTypeToString (elem.morph.textureProjectionType));
+    {
+        const auto& coords = typeSpecificDetails.AddList<GS::ObjectState> ("textureProjectionCoords");
+        for (Int32 i = 0; i < 4; ++i) {
+            coords (Create3DCoordinateObjectState (elem.morph.textureProjectionCoords[i]));
+        }
+    }
+
+    typeSpecificDetails.Add ("level", elem.morph.level);
+
+    GS::ObjectState body;
+    body.Add ("bodyType", MorphBodyTypeToString (elem.morph.bodyType));
+    body.Add ("edgeDefault", MorphEdgeTypeToString (elem.morph.edgeType));
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo) != NoError || memo.morphBody == nullptr) {
+        typeSpecificDetails.Add ("body", body);
+        return;
+    }
+    const Modeler::MeshBody& meshBody = *memo.morphBody;
+    body.Add ("isClosed", meshBody.IsClosedBody ());
+
+    {
+        const auto& vertices = body.AddList<GS::ObjectState> ("vertices");
+        const ULong vertexCount = meshBody.GetVertexCount ();
+        for (ULong i = 0; i < vertexCount; ++i) {
+            const VERT& v = meshBody.GetConstVertex (i);
+            vertices (Create3DCoordinateObjectState ({v.x, v.y, v.z}));
+        }
+    }
+
+    {
+        const auto& polygons = body.AddList<GS::ObjectState> ("polygons");
+        const ULong polygonCount = meshBody.GetPolygonCount ();
+        for (ULong i = 0; i < polygonCount; ++i) {
+            GS::Array<ULong> vertIdxs;
+            GS::Array<ULong> nextContourStartIdxs;
+            meshBody.GetPolygonVertices (i, vertIdxs, &nextContourStartIdxs);
+
+            GS::ObjectState polygon;
+            const ULong outerEnd = nextContourStartIdxs.IsEmpty () ? vertIdxs.GetSize () : nextContourStartIdxs[0];
+            {
+                const auto& vertexIds = polygon.AddList<Int32> ("vertexIds");
+                for (ULong k = 0; k < outerEnd; ++k) {
+                    vertexIds (static_cast<Int32> (vertIdxs[k]));
+                }
+            }
+            if (!nextContourStartIdxs.IsEmpty ()) {
+                const auto& holes = polygon.AddList<GS::ObjectState> ("holes");
+                for (UIndex h = 0; h < nextContourStartIdxs.GetSize (); ++h) {
+                    const ULong start = nextContourStartIdxs[h];
+                    const ULong end = (h + 1 < nextContourStartIdxs.GetSize ()) ? nextContourStartIdxs[h + 1] : vertIdxs.GetSize ();
+                    GS::ObjectState hole;
+                    const auto& holeVertexIds = hole.AddList<Int32> ("vertexIds");
+                    for (ULong k = start; k < end; ++k) {
+                        holeVertexIds (static_cast<Int32> (vertIdxs[k]));
+                    }
+                    holes (hole);
+                }
+            }
+
+            // API_OverriddenAttribute's shape changed at AC27 (APIOptional<API_AttributeIndex>,
+            // fields hasValue/value) vs before (a plain struct, fields overridden/attributeIndex) -
+            // same version split BuildMorphBodyFromGeometry already handles on the write side.
+            // This is a SURFACE override (API_MaterialID), not a building material - confirmed
+            // live (see "surfaceId" field note on the MorphBody schema definition).
+            if (memo.morphMaterialMapTable != nullptr) {
+                const API_OverriddenAttribute& faceMaterial = memo.morphMaterialMapTable[i];
+#ifdef ServerMainVers_2700
+                if (faceMaterial.hasValue) {
+                    polygon.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, faceMaterial.value)));
+                }
+#else
+                if (faceMaterial.overridden) {
+                    polygon.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, faceMaterial.attributeIndex)));
+                }
+#endif
+            }
+
+            polygons (polygon);
+        }
+    }
+
+    {
+        GS::Array<GS::ObjectState> overrides;
+        const ULong edgeCount = meshBody.GetEdgeCount ();
+        for (ULong i = 0; i < edgeCount; ++i) {
+            const EDGE& e = meshBody.GetConstEdge (i);
+            const Modeler::EdgeAttributes& attrs = meshBody.GetConstEdgeAttributes (i);
+            const bool hidden = attrs.IsInvisible ();
+            const bool smooth = !attrs.IsSharp ();
+            const bool silhouetteOnly = attrs.IsVisibleIfContour ();
+            // Only emit an entry when it differs from the element-wide default, keeping
+            // edgeOverrides sparse as documented in the schema.
+            const bool defaultHidden = elem.morph.edgeType != APIMorphEdgeType_HardVisibleEdge;
+            const bool defaultSmooth = elem.morph.edgeType == APIMorphEdgeType_SoftHiddenEdge;
+            if (hidden == defaultHidden && smooth == defaultSmooth && !silhouetteOnly) {
+                continue;
+            }
+            GS::ObjectState override_;
+            const auto& vertexIds = override_.AddList<Int32> ("vertexIds");
+            vertexIds (static_cast<Int32> (e.vert1));
+            vertexIds (static_cast<Int32> (e.vert2));
+            override_.Add ("hidden", hidden);
+            override_.Add ("smooth", smooth);
+            override_.Add ("silhouetteOnly", silhouetteOnly);
+            overrides.Push (override_);
+        }
+        if (!overrides.IsEmpty ()) {
+            const auto& edgeOverrides = body.AddList<GS::ObjectState> ("edgeOverrides");
+            for (const auto& o : overrides) {
+                edgeOverrides (o);
+            }
+        }
+    }
+
+    typeSpecificDetails.Add ("body", body);
 }
 
 CreateWallsCommand::CreateWallsCommand () :
@@ -2316,12 +3143,83 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                     "type": "object",
                     "properties": {
                         "basePoint": { "$ref": "#/Coordinate3D" },
-                        "size": { "$ref": "#/Dimensions3D" },
+                        "size": {
+                            "$ref": "#/Dimensions3D",
+                            "description": "Builds a simple axis-aligned box of this size. Mutually exclusive with `body` - give exactly one of the two."
+                        },
+                        "body": {
+                            "$ref": "#/MorphBody",
+                            "description": "Builds arbitrary geometry (any number of faces, holes, per-face materials, edge display overrides) instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
+                        },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "xAxis": { "$ref": "#/Coordinate3D" },
+                        "yAxis": { "$ref": "#/Coordinate3D" },
+                        "zAxis": { "$ref": "#/Coordinate3D" },
+                        "surfaceId": { "$ref": "#/AttributeId" },
+                        "castShadow": { "type": "boolean" },
+                        "receiveShadow": { "type": "boolean" },
+                        "isAutoOnStoryVisibility": { "type": "boolean" },
+                        "showContour": { "$ref": "#/StoryVisibility" },
+                        "showFill": { "$ref": "#/StoryVisibility" },
+                        "linkToSettings": {
+                            "type": "object",
+                            "properties": {
+                                "homeStoryDifference": { "type": "integer" },
+                                "newCreationMode": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "displayOption": {
+                            "type": "string",
+                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                        },
+                        "viewDepthLimitation": {
+                            "type": "string",
+                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                        },
+                        "cutFillPen": { "type": "integer" },
+                        "cutFillBackgroundPen": { "type": "integer" },
+                        "cutLineType": { "$ref": "#/AttributeId" },
+                        "cutLinePen": { "type": "integer" },
+                        "uncutLineType": { "$ref": "#/AttributeId" },
+                        "uncutLinePen": { "type": "integer" },
+                        "overheadLineType": { "$ref": "#/AttributeId" },
+                        "overheadLinePen": { "type": "integer" },
+                        "useCoverFillType": { "type": "boolean" },
+                        "outlineContourDisplay": { "type": "boolean" },
+                        "coverFillType": { "$ref": "#/AttributeId" },
+                        "coverFillPen": { "type": "integer" },
+                        "coverFillBGPen": { "type": "integer" },
+                        "use3DHatching": { "type": "boolean" },
+                        "coverFillOrientation": {
+                            "type": "object",
+                            "properties": {
+                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
+                                "origo": { "$ref": "#/Coordinate2D" },
+                                "matrix00": { "type": "number" },
+                                "matrix10": { "type": "number" },
+                                "matrix01": { "type": "number" },
+                                "matrix11": { "type": "number" },
+                                "innerRadius": { "type": "number" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "useDistortedCoverFill": { "type": "boolean" },
+                        "textureProjectionType": {
+                            "type": "string",
+                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                        },
+                        "textureProjectionCoords": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate3D" },
+                            "minItems": 4,
+                            "maxItems": 4
+                        },
+                        "level": { "type": "number" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from the basePoint's z value." }
                     },
                     "additionalProperties": false,
-                    "required": ["basePoint", "size"]
+                    "required": ["basePoint"]
                 }
             }
         },
@@ -2368,16 +3266,17 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
-            if (data.Get ("basePoint") == nullptr || data.Get ("size") == nullptr) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'basePoint' or 'size' field."));
+            if (data.Get ("basePoint") == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'basePoint' field."));
+                continue;
+            }
+            const GS::ObjectState* sizeOS = data.Get ("size");
+            const GS::ObjectState* bodyOS = data.Get ("body");
+            if ((sizeOS == nullptr) == (bodyOS == nullptr)) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Give exactly one of 'size' (a simple box) or 'body' (arbitrary geometry)."));
                 continue;
             }
             const API_Coord3D basePoint = Get3DCoordinateFromObjectState (*data.Get ("basePoint"));
-            const API_Coord3D size = Get3DCoordinateFromObjectState (*data.Get ("size"));
-            if (size.x <= 0.0 || size.y <= 0.0 || size.z <= 0.0) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Morph 'size' values must be positive."));
-                continue;
-            }
 
             // GetDefaults leaves floorInd at whatever story is currently active in the UI,
             // regardless of basePoint's z - a morph built far above/below that story's own
@@ -2406,14 +3305,52 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             tmx[7] = basePoint.y;
             tmx[11] = basePoint.z;
 
+            {
+                int appliedCount = 0;
+                GS::UniString cosmeticError;
+                if (!ApplyMorphCosmeticDetails (data, element, nullptr, appliedCount, cosmeticError)) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, cosmeticError));
+                    continue;
+                }
+            }
+
             API_ElementMemo memo = {};
             const GS::OnExit cleanup ([&]() {
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
 
-            if (!BuildCuboidMorphMemo (size.x, size.y, size.z, element.morph.buildingMaterial, memo)) {
-                elements.Push (CreateErrorResponse (APIERR_GENERAL, "Failed to build morph body."));
-                continue;
+            if (sizeOS != nullptr) {
+                const API_Coord3D size = Get3DCoordinateFromObjectState (*sizeOS);
+                if (size.x <= 0.0 || size.y <= 0.0 || size.z <= 0.0) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, "Morph 'size' values must be positive."));
+                    continue;
+                }
+                if (!BuildCuboidMorphMemo (size.x, size.y, size.z, element.morph.buildingMaterial, memo)) {
+                    elements.Push (CreateErrorResponse (APIERR_GENERAL, "Failed to build morph body."));
+                    continue;
+                }
+            } else {
+                GS::UniString bodyError;
+                if (!BuildMorphBodyFromGeometry (*bodyOS, memo, bodyError)) {
+                    elements.Push (CreateErrorResponse (APIERR_GENERAL, bodyError));
+                    continue;
+                }
+                GS::UniString bodyType;
+                if (bodyOS->Get ("bodyType", bodyType) && bodyType == "Surface") {
+                    element.morph.bodyType = APIMorphBodyType_SurfaceBody;
+                } else {
+                    element.morph.bodyType = APIMorphBodyType_SolidBody;
+                }
+                GS::UniString edgeDefault;
+                if (bodyOS->Get ("edgeDefault", edgeDefault)) {
+                    if (edgeDefault == "HardHidden") {
+                        element.morph.edgeType = APIMorphEdgeType_HardHiddenEdge;
+                    } else if (edgeDefault == "SoftHidden") {
+                        element.morph.edgeType = APIMorphEdgeType_SoftHiddenEdge;
+                    } else {
+                        element.morph.edgeType = APIMorphEdgeType_HardVisibleEdge;
+                    }
+                }
             }
 
             err = ACAPI_Element_Create (&element, &memo);
@@ -2421,6 +3358,21 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 elements.Push (CreateErrorResponse (err, "Failed to create morph."));
                 continue;
             }
+
+            // element.morph.material (the default-surface override, "surfaceId" on this command)
+            // is confirmed live to be silently ignored by ACAPI_Element_Create - the exact same
+            // value only takes effect through a follow-up ACAPI_Element_Change. Not a version-
+            // specific issue (reproduced identically on AC27 and AC29): unlike every other
+            // ApplyMorphCosmeticDetails field (which DOES take effect via Create), this one field
+            // needs this extra step, done transparently here so CreateMorphs' own "surfaceId"
+            // input behaves as documented.
+            if (GetOptionalObjectState (data, "surfaceId").HasValue ()) {
+                API_Element materialMask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (materialMask);
+                ACAPI_ELEMENT_MASK_SET (materialMask, API_MorphType, material);
+                ACAPI_Element_Change (&element, &materialMask, nullptr, 0, true);
+            }
+
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
@@ -3855,7 +4807,75 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                         "elementId": { "$ref": "#/ElementId" },
                         "translation": { "$ref": "#/Coordinate3D" },
                         "rotationDegreesZ": { "type": "number" },
-                        "buildingMaterialId": { "$ref": "#/AttributeId" }
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "body": {
+                            "$ref": "#/MorphBody",
+                            "description": "When given, discards the Morph's ENTIRE existing geometry and rebuilds it from this (mirrors CreateProfiles' replaceSkins) - not a partial edit."
+                        },
+                        "xAxis": { "$ref": "#/Coordinate3D", "description": "Replaces the rotation part of the placement transform outright. Give all three of xAxis/yAxis/zAxis together. If rotationDegreesZ is also given in the same call, it is applied first and this then overwrites its result." },
+                        "yAxis": { "$ref": "#/Coordinate3D" },
+                        "zAxis": { "$ref": "#/Coordinate3D" },
+                        "surfaceId": { "$ref": "#/AttributeId" },
+                        "castShadow": { "type": "boolean" },
+                        "receiveShadow": { "type": "boolean" },
+                        "isAutoOnStoryVisibility": { "type": "boolean" },
+                        "showContour": { "$ref": "#/StoryVisibility" },
+                        "showFill": { "$ref": "#/StoryVisibility" },
+                        "linkToSettings": {
+                            "type": "object",
+                            "properties": {
+                                "homeStoryDifference": { "type": "integer" },
+                                "newCreationMode": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "displayOption": {
+                            "type": "string",
+                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                        },
+                        "viewDepthLimitation": {
+                            "type": "string",
+                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                        },
+                        "cutFillPen": { "type": "integer" },
+                        "cutFillBackgroundPen": { "type": "integer" },
+                        "cutLineType": { "$ref": "#/AttributeId" },
+                        "cutLinePen": { "type": "integer" },
+                        "uncutLineType": { "$ref": "#/AttributeId" },
+                        "uncutLinePen": { "type": "integer" },
+                        "overheadLineType": { "$ref": "#/AttributeId" },
+                        "overheadLinePen": { "type": "integer" },
+                        "useCoverFillType": { "type": "boolean" },
+                        "outlineContourDisplay": { "type": "boolean" },
+                        "coverFillType": { "$ref": "#/AttributeId" },
+                        "coverFillPen": { "type": "integer" },
+                        "coverFillBGPen": { "type": "integer" },
+                        "use3DHatching": { "type": "boolean" },
+                        "coverFillOrientation": {
+                            "type": "object",
+                            "properties": {
+                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
+                                "origo": { "$ref": "#/Coordinate2D" },
+                                "matrix00": { "type": "number" },
+                                "matrix10": { "type": "number" },
+                                "matrix01": { "type": "number" },
+                                "matrix11": { "type": "number" },
+                                "innerRadius": { "type": "number" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "useDistortedCoverFill": { "type": "boolean" },
+                        "textureProjectionType": {
+                            "type": "string",
+                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                        },
+                        "textureProjectionCoords": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate3D" },
+                            "minItems": 4,
+                            "maxItems": 4
+                        },
+                        "level": { "type": "number" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3936,12 +4956,59 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 changed = true;
             }
 
+            API_ElementMemo bodyMemo = {};
+            const GS::OnExit bodyMemoGuard ([&bodyMemo] () { ACAPI_DisposeElemMemoHdls (&bodyMemo); });
+            bool replacingBody = false;
+
+            const GS::ObjectState* bodyOS = item.Get ("body");
+            if (bodyOS != nullptr) {
+                GS::UniString bodyError;
+                if (!BuildMorphBodyFromGeometry (*bodyOS, bodyMemo, bodyError)) {
+                    results.Push (CreateFailedExecutionResult (APIERR_GENERAL, bodyError));
+                    continue;
+                }
+                GS::UniString bodyType;
+                if (bodyOS->Get ("bodyType", bodyType) && bodyType == "Surface") {
+                    element.morph.bodyType = APIMorphBodyType_SurfaceBody;
+                } else {
+                    element.morph.bodyType = APIMorphBodyType_SolidBody;
+                }
+                ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, bodyType);
+                GS::UniString edgeDefault;
+                if (bodyOS->Get ("edgeDefault", edgeDefault)) {
+                    if (edgeDefault == "HardHidden") {
+                        element.morph.edgeType = APIMorphEdgeType_HardHiddenEdge;
+                    } else if (edgeDefault == "SoftHidden") {
+                        element.morph.edgeType = APIMorphEdgeType_SoftHiddenEdge;
+                    } else {
+                        element.morph.edgeType = APIMorphEdgeType_HardVisibleEdge;
+                    }
+                    ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, edgeType);
+                }
+                replacingBody = true;
+                changed = true;
+            }
+
+            {
+                int appliedCount = 0;
+                GS::UniString cosmeticError;
+                if (!ApplyMorphCosmeticDetails (item, element, &mask, appliedCount, cosmeticError)) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, cosmeticError));
+                    continue;
+                }
+                if (appliedCount > 0) {
+                    changed = true;
+                }
+            }
+
             if (!changed) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No morph fields to modify."));
                 continue;
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            err = replacingBody
+                ? ACAPI_Element_Change (&element, &mask, &bodyMemo, APIMemoMask_All, true)
+                : ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify morph."));
         }
     });

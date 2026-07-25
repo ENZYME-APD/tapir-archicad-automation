@@ -2099,12 +2099,83 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "basePoint": { "$ref": "#/Coordinate3D" },
-                        "size": { "$ref": "#/Dimensions3D" },
+                        "size": {
+                            "$ref": "#/Dimensions3D",
+                            "description": "Builds a simple axis-aligned box of this size. Mutually exclusive with `body` - give exactly one of the two."
+                        },
+                        "body": {
+                            "$ref": "#/MorphBody",
+                            "description": "Builds arbitrary geometry (any number of faces, holes, per-face materials, edge display overrides) instead of a simple box. Mutually exclusive with `size` - give exactly one of the two."
+                        },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "xAxis": { "$ref": "#/Coordinate3D" },
+                        "yAxis": { "$ref": "#/Coordinate3D" },
+                        "zAxis": { "$ref": "#/Coordinate3D" },
+                        "surfaceId": { "$ref": "#/AttributeId" },
+                        "castShadow": { "type": "boolean" },
+                        "receiveShadow": { "type": "boolean" },
+                        "isAutoOnStoryVisibility": { "type": "boolean" },
+                        "showContour": { "$ref": "#/StoryVisibility" },
+                        "showFill": { "$ref": "#/StoryVisibility" },
+                        "linkToSettings": {
+                            "type": "object",
+                            "properties": {
+                                "homeStoryDifference": { "type": "integer" },
+                                "newCreationMode": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "displayOption": {
+                            "type": "string",
+                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                        },
+                        "viewDepthLimitation": {
+                            "type": "string",
+                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                        },
+                        "cutFillPen": { "type": "integer" },
+                        "cutFillBackgroundPen": { "type": "integer" },
+                        "cutLineType": { "$ref": "#/AttributeId" },
+                        "cutLinePen": { "type": "integer" },
+                        "uncutLineType": { "$ref": "#/AttributeId" },
+                        "uncutLinePen": { "type": "integer" },
+                        "overheadLineType": { "$ref": "#/AttributeId" },
+                        "overheadLinePen": { "type": "integer" },
+                        "useCoverFillType": { "type": "boolean" },
+                        "outlineContourDisplay": { "type": "boolean" },
+                        "coverFillType": { "$ref": "#/AttributeId" },
+                        "coverFillPen": { "type": "integer" },
+                        "coverFillBGPen": { "type": "integer" },
+                        "use3DHatching": { "type": "boolean" },
+                        "coverFillOrientation": {
+                            "type": "object",
+                            "properties": {
+                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
+                                "origo": { "$ref": "#/Coordinate2D" },
+                                "matrix00": { "type": "number" },
+                                "matrix10": { "type": "number" },
+                                "matrix01": { "type": "number" },
+                                "matrix11": { "type": "number" },
+                                "innerRadius": { "type": "number" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "useDistortedCoverFill": { "type": "boolean" },
+                        "textureProjectionType": {
+                            "type": "string",
+                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                        },
+                        "textureProjectionCoords": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate3D" },
+                            "minItems": 4,
+                            "maxItems": 4
+                        },
+                        "level": { "type": "number" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from the basePoint's z value." }
                     },
                     "additionalProperties": false,
-                    "required": ["basePoint", "size"]
+                    "required": ["basePoint"]
                 }
             }
         },
@@ -3072,7 +3143,75 @@ var gCommands = [{
                         "elementId": { "$ref": "#/ElementId" },
                         "translation": { "$ref": "#/Coordinate3D" },
                         "rotationDegreesZ": { "type": "number" },
-                        "buildingMaterialId": { "$ref": "#/AttributeId" }
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "body": {
+                            "$ref": "#/MorphBody",
+                            "description": "When given, discards the Morph's ENTIRE existing geometry and rebuilds it from this (mirrors CreateProfiles' replaceSkins) - not a partial edit."
+                        },
+                        "xAxis": { "$ref": "#/Coordinate3D", "description": "Replaces the rotation part of the placement transform outright. Give all three of xAxis/yAxis/zAxis together. If rotationDegreesZ is also given in the same call, it is applied first and this then overwrites its result." },
+                        "yAxis": { "$ref": "#/Coordinate3D" },
+                        "zAxis": { "$ref": "#/Coordinate3D" },
+                        "surfaceId": { "$ref": "#/AttributeId" },
+                        "castShadow": { "type": "boolean" },
+                        "receiveShadow": { "type": "boolean" },
+                        "isAutoOnStoryVisibility": { "type": "boolean" },
+                        "showContour": { "$ref": "#/StoryVisibility" },
+                        "showFill": { "$ref": "#/StoryVisibility" },
+                        "linkToSettings": {
+                            "type": "object",
+                            "properties": {
+                                "homeStoryDifference": { "type": "integer" },
+                                "newCreationMode": { "type": "boolean" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "displayOption": {
+                            "type": "string",
+                            "enum": ["Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "AbstractAll", "CutAll"]
+                        },
+                        "viewDepthLimitation": {
+                            "type": "string",
+                            "enum": ["ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"]
+                        },
+                        "cutFillPen": { "type": "integer" },
+                        "cutFillBackgroundPen": { "type": "integer" },
+                        "cutLineType": { "$ref": "#/AttributeId" },
+                        "cutLinePen": { "type": "integer" },
+                        "uncutLineType": { "$ref": "#/AttributeId" },
+                        "uncutLinePen": { "type": "integer" },
+                        "overheadLineType": { "$ref": "#/AttributeId" },
+                        "overheadLinePen": { "type": "integer" },
+                        "useCoverFillType": { "type": "boolean" },
+                        "outlineContourDisplay": { "type": "boolean" },
+                        "coverFillType": { "$ref": "#/AttributeId" },
+                        "coverFillPen": { "type": "integer" },
+                        "coverFillBGPen": { "type": "integer" },
+                        "use3DHatching": { "type": "boolean" },
+                        "coverFillOrientation": {
+                            "type": "object",
+                            "properties": {
+                                "type": { "type": "string", "enum": ["Global", "Rotated", "Distorted", "Centered"] },
+                                "origo": { "$ref": "#/Coordinate2D" },
+                                "matrix00": { "type": "number" },
+                                "matrix10": { "type": "number" },
+                                "matrix01": { "type": "number" },
+                                "matrix11": { "type": "number" },
+                                "innerRadius": { "type": "number" }
+                            },
+                            "additionalProperties": false
+                        },
+                        "useDistortedCoverFill": { "type": "boolean" },
+                        "textureProjectionType": {
+                            "type": "string",
+                            "enum": ["Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"]
+                        },
+                        "textureProjectionCoords": {
+                            "type": "array",
+                            "items": { "$ref": "#/Coordinate3D" },
+                            "minItems": 4,
+                            "maxItems": 4
+                        },
+                        "level": { "type": "number" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -8484,6 +8623,103 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [ "solidLinks" ]
+    }
+            }]
+        },{
+            "name": "Script UI Commands",
+            "commands": [{
+                "name": "ShowScriptUI",
+                "version": "1.5.4",
+                "description": "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "htmlContent": {
+                "type": "string",
+                "description": "The full HTML document to display in the Script UI palette.",
+                "minLength": 1
+            },
+            "width": {
+                "type": "integer",
+                "description": "Optional palette client width in pixels. Leave unset to keep the current size.",
+                "minimum": 1
+            },
+            "height": {
+                "type": "integer",
+                "description": "Optional palette client height in pixels. Leave unset to keep the current size.",
+                "minimum": 1
+            },
+            "title": {
+                "type": "string",
+                "description": "Optional palette window title. Leave unset to keep the current title.",
+                "minLength": 1
+            },
+            "resizable": {
+                "type": "boolean",
+                "description": "Whether the user can drag-resize the palette. Defaults to true."
+            },
+            "zoomEnabled": {
+                "type": "boolean",
+                "description": "Whether Ctrl+scroll/pinch zooming is allowed in the page. Defaults to true."
+            },
+            "zoomLevel": {
+                "type": "number",
+                "description": "Optional initial zoom level (1.0 = 100%). Leave unset to keep the current zoom."
+            },
+            "scrollBarsVisible": {
+                "type": "boolean",
+                "description": "Whether the browser's own scrollbars are shown. Defaults to true."
+            },
+            "contextMenuEnabled": {
+                "type": "boolean",
+                "description": "Whether right-click shows the browser's context menu (e.g. Inspect Element). Defaults to true."
+            },
+            "navigationDisabled": {
+                "type": "boolean",
+                "description": "Prevents the page from navigating away (e.g. clicking a link to another site). Defaults to false."
+            },
+            "allowSelfSignedCertificates": {
+                "type": "boolean",
+                "description": "Only relevant if htmlContent links to a remote https:// resource with a self-signed certificate. Defaults to false."
+            },
+            "clearCookies": {
+                "type": "boolean",
+                "description": "Deletes all browser cookies before loading htmlContent. Defaults to false."
+            },
+            "autoHeight": {
+                "type": "boolean",
+                "description": "Automatically resizes the palette's height to fit the page content as it changes. Defaults to false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "htmlContent"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "GetScriptUIResult",
+                "version": "1.5.4",
+                "description": "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "hasResult": {
+                "type": "boolean",
+                "description": "True if the Script UI page has submitted a result since the last call."
+            },
+            "result": {
+                "type": "string",
+                "description": "The submitted content (as passed to window.ACAPI.SubmitResult). Only present when hasResult is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hasResult"
+        ]
     }
             }]
         },{
