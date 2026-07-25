@@ -37,6 +37,231 @@
             "$ref": "#/ElementIdOrError"
         }
     },
+    "MEPRoutingSegmentDetails": {
+        "type": "object",
+        "description": "The details of an MEP routing segment.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "crossSectionWidth": {
+                "type": "number"
+            },
+            "crossSectionHeight": {
+                "type": "number"
+            },
+            "crossSectionShape": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "crossSectionWidth",
+            "crossSectionHeight",
+            "crossSectionShape"
+        ]
+    },
+    "MEPRoutingNodeDetails": {
+        "type": "object",
+        "description": "The details of an MEP routing node.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "position": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "position"
+        ]
+    },
+    "MEPRoutingElementDetails": {
+        "type": "object",
+        "description": "The details of an MEP routing element.",
+        "properties": {
+            "domain": {
+                "type": "string"
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId"
+            },
+            "polyline": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            },
+            "segments": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPRoutingSegmentDetails"
+                }
+            },
+            "nodes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPRoutingNodeDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "domain",
+            "mepSystemId",
+            "polyline",
+            "segments",
+            "nodes"
+        ]
+    },
+    "MEPRoutingElementDetailsOrError": {
+        "type": "object",
+        "description": "The details of an MEP routing element or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/MEPRoutingElementDetails"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPRoutingElementDetailsOrErrors": {
+        "type": "array",
+        "description": "A list of MEP routing element details or errors.",
+        "items": {
+            "$ref": "#/MEPRoutingElementDetailsOrError"
+        }
+    },
+    "MEPPortDetails": {
+        "type": "object",
+        "description": "The details of a port of an MEP element.",
+        "properties": {
+            "portId": {
+                "$ref": "#/Guid"
+            },
+            "name": {
+                "type": "string"
+            },
+            "position": {
+                "$ref": "#/Coordinate3D"
+            },
+            "direction": {
+                "$ref": "#/Coordinate3D"
+            },
+            "shape": {
+                "type": "string"
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "domain": {
+                "type": "string"
+            },
+            "mepSystemId": {
+                "$ref": "#/AttributeId"
+            },
+            "isPhysicallyConnected": {
+                "type": "boolean"
+            },
+            "connectedPortId": {
+                "$ref": "#/Guid"
+            },
+            "connectedElementId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "portId",
+            "name",
+            "position",
+            "direction",
+            "shape",
+            "width",
+            "height",
+            "domain",
+            "mepSystemId",
+            "isPhysicallyConnected"
+        ]
+    },
+    "MEPElementPorts": {
+        "type": "object",
+        "description": "The ports of an MEP element.",
+        "properties": {
+            "ports": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/MEPPortDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ports"
+        ]
+    },
+    "MEPElementPortsOrError": {
+        "type": "object",
+        "description": "The ports of an MEP element or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/MEPElementPorts"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPElementPortsOrErrors": {
+        "type": "array",
+        "description": "A list of MEP element ports or errors.",
+        "items": {
+            "$ref": "#/MEPElementPortsOrError"
+        }
+    },
+    "MEPConnectionResult": {
+        "type": "object",
+        "description": "The result of connecting an MEP routing element: the routing element deleted by merging, the routing element created by splitting and the branch element created by the connection.",
+        "properties": {
+            "deletedRoutingElementId": {
+                "$ref": "#/ElementId"
+            },
+            "splitRoutingElementId": {
+                "$ref": "#/ElementId"
+            },
+            "createdBranchId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "MEPConnectionResultOrError": {
+        "type": "object",
+        "description": "The result of an MEP connection or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/MEPConnectionResult"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "MEPConnectionResultsOrErrors": {
+        "type": "array",
+        "description": "A list of MEP connection results or errors.",
+        "items": {
+            "$ref": "#/MEPConnectionResultOrError"
+        }
+    },
     "ElementId": {
         "type": "object",
         "description": "The identifier of an element.",

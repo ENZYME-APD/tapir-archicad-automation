@@ -40,6 +40,7 @@
 #include "DesignOptionCommands.hpp"
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
+#include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
 
 template <typename CommandType>
@@ -1059,6 +1060,43 @@ GSErrCode Initialize (void)
             "Creates Label elements that reference the given keynote items via autotext. Available from Archicad 28."
         );
         AddCommandGroup (keynoteCommands);
+    }
+
+    { // MEP Commands
+        CommandGroup mepCommands ("MEP Commands");
+        err |= RegisterCommand<GetMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data and nodes. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPPortsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the ports of the given MEP elements including position, shape, size and connection status. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPDistributionSystemsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the MEP distribution systems of the project with their domain, MEP system attribute and member elements. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data and MEP system. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Modifies the given MEP routing elements: MEP system, cross section data of all segments and node positions. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ConnectMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Available from Archicad 28."
+        );
+        AddCommandGroup (mepCommands);
     }
 
     { // Solid Element Operation Commands
