@@ -108,6 +108,170 @@
             "guid"
         ]
     },
+    "KeynoteFolderId": {
+        "type": "object",
+        "description": "The identifier of a keynote folder.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "KeynoteItemId": {
+        "type": "object",
+        "description": "The identifier of a keynote item.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "KeynoteFolderIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "keynoteFolderId": {
+                "$ref": "#/KeynoteFolderId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keynoteFolderId"
+        ]
+    },
+    "KeynoteItemIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "keynoteItemId": {
+                "$ref": "#/KeynoteItemId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keynoteItemId"
+        ]
+    },
+    "KeynoteFolderIdOrError": {
+        "type": "object",
+        "description": "A keynote folder identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/KeynoteFolderIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "KeynoteFolderIdsOrErrors": {
+        "type": "array",
+        "description": "A list of keynote folder identifiers or errors.",
+        "items": {
+            "$ref": "#/KeynoteFolderIdOrError"
+        }
+    },
+    "KeynoteItemIdOrError": {
+        "type": "object",
+        "description": "A keynote item identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/KeynoteItemIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "KeynoteItemIdsOrErrors": {
+        "type": "array",
+        "description": "A list of keynote item identifiers or errors.",
+        "items": {
+            "$ref": "#/KeynoteItemIdOrError"
+        }
+    },
+    "KeynoteItemDetails": {
+        "type": "object",
+        "description": "The details of a keynote item.",
+        "properties": {
+            "keynoteItemId": {
+                "$ref": "#/KeynoteItemId"
+            },
+            "key": {
+                "type": "string"
+            },
+            "title": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "reference": {
+                "type": "string"
+            },
+            "uiText": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keynoteItemId",
+            "key",
+            "title",
+            "description",
+            "reference",
+            "uiText"
+        ]
+    },
+    "KeynoteFolderDetails": {
+        "type": "object",
+        "description": "The details of a keynote folder, including its subfolders and items recursively.",
+        "properties": {
+            "keynoteFolderId": {
+                "$ref": "#/KeynoteFolderId"
+            },
+            "key": {
+                "type": "string"
+            },
+            "title": {
+                "type": "string"
+            },
+            "reference": {
+                "type": "string"
+            },
+            "uiText": {
+                "type": "string"
+            },
+            "subFolders": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/KeynoteFolderDetails"
+                }
+            },
+            "items": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/KeynoteItemDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keynoteFolderId",
+            "key",
+            "title",
+            "reference",
+            "uiText",
+            "subFolders",
+            "items"
+        ]
+    },
     "DesignOptionId": {
         "type": "object",
         "description": "The identifier of a design option.",

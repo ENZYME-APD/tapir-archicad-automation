@@ -2047,5 +2047,77 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetKeynoteTree
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetKeynoteTree", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetKeynoteAutoTexts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetKeynoteAutoTexts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateKeynoteItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateKeynoteItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyKeynoteItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyKeynoteItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteKeynoteItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteKeynoteItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateKeynoteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateKeynoteFolders", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyKeynoteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyKeynoteFolders", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteKeynoteFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteKeynoteFolders", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateKeynoteLabels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateKeynoteLabels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
     }
 }
