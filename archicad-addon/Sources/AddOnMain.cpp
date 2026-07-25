@@ -1066,7 +1066,7 @@ GSErrCode Initialize (void)
         CommandGroup mepCommands ("MEP Commands");
         err |= RegisterCommand<GetMEPElementsCommand> (
             mepCommands, "1.5.6",
-            "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. Available from Archicad 28."
+            "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",

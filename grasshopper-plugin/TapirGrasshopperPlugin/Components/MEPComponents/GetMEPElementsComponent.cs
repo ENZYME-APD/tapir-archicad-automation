@@ -15,6 +15,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             : base(
                 "GetMEPElements",
                 "Get the MEP elements of the project, optionally filtered by type and domain. " +
+                "MEP elements are ordinary elements, so the generic element components work on them as well " +
+                "(for example they can be deleted with the DeleteElements component). " +
                 "Available from Archicad 28.",
                 GroupNames.MEP)
         {

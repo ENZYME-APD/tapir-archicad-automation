@@ -85,3 +85,9 @@ aclib.RunTapirCommand ('ModifyMEPRoutingElements', {
 distributionSystems = aclib.RunTapirCommand ('GetMEPDistributionSystems')['distributionSystems']
 for system in distributionSystems:
     print ('System domain: {}, element count: {}'.format (system['domain'], len (system['elements'])))
+
+# Clean up: MEP elements are ordinary elements, so the generic DeleteElements command deletes them
+createdElementIds = [e['elementId'] for e in createdRoutes + createdElements if 'elementId' in e]
+aclib.RunTapirCommand ('DeleteElements', {
+        'elements': [{ 'elementId': elementId } for elementId in createdElementIds]
+    })
