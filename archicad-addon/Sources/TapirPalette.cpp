@@ -389,6 +389,8 @@ void TapirPalette::SetShortcutSlot (short slotIndex, const IO::Location& locatio
     scriptShortcutSlots[slotIndex] = location;
     SaveScriptsToPreferences ();
     RefreshScriptListShortcutLabels ();
+    // Refresh every slot: the dedup loop above may have cleared another one.
+    ApplyAllShortcutMenuItemTexts ();
 }
 
 GS::UniString TapirPalette::GetShortcutLabel (short slotIndex) const
@@ -455,6 +457,17 @@ void TapirPalette::ApplyShortcutMenuItemText (short slotIndex)
     itemRef.menuResID = menuResIds[slotIndex];
     itemRef.itemIndex = ID_ADDON_MENU_RUNSCRIPT_ITEM;
     ACAPI_MenuItem_SetMenuItemText (&itemRef, nullptr, &label);
+
+    // The API offers no way to hide add-on menu items, so slots without an
+    // assigned script are disabled (greyed out) instead.
+    GSFlags itemFlags = {};
+    ACAPI_MenuItem_GetMenuItemFlags (&itemRef, &itemFlags);
+    if (scriptShortcutSlots[slotIndex].IsEmpty ()) {
+        itemFlags |= API_MenuItemDisabled;
+    } else {
+        itemFlags &= ~API_MenuItemDisabled;
+    }
+    ACAPI_MenuItem_SetMenuItemFlags (&itemRef, &itemFlags);
 }
 
 void TapirPalette::ApplyAllShortcutMenuItemTexts ()

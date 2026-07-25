@@ -15,6 +15,9 @@
 
 #define ID_SCRIPTUI_PALETTE             32041
 
+#define ID_ADDON_MENU_FOR_SHORTCUTS     32026
+#define ID_ADDON_MENU_MANAGE_SHORTCUTS      1
+
 // Each shortcut slot is its own top-level menu group (own resID, exactly one item) — confirmed
 // working end to end (menu display AND click dispatch running the assigned script).
 #define ID_ADDON_MENU_RUNSCRIPT_1       32020

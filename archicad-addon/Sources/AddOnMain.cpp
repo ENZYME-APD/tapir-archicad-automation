@@ -105,6 +105,13 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     break;
             }
             break;
+        case ID_ADDON_MENU_FOR_SHORTCUTS:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_MANAGE_SHORTCUTS:
+                    TapirPalette::Instance ().OpenShortcutsDialog ();
+                    break;
+            }
+            break;
         // Each shortcut slot is its own top-level menu group (see ResourceIds.hpp) —
         // RunShortcutSlot takes a 0-based slot index.
         case ID_ADDON_MENU_RUNSCRIPT_1: TapirPalette::Instance ().RunShortcutSlot (0); break;
@@ -134,6 +141,7 @@ GSErrCode RegisterInterface (void)
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_PALETTE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_UPDATE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SHORTCUTS, 0, MenuCode_UserDef, MenuFlag_SeparatorBefore);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_1, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_2, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_3, 0, MenuCode_UserDef, MenuFlag_Default);
@@ -151,6 +159,7 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_PALETTE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_UPDATE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SHORTCUTS, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_1, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_2, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_3, MenuCommandHandler);
@@ -161,8 +170,8 @@ GSErrCode Initialize (void)
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
 
     // Forces the palette singleton (and its saved shortcut-slot preferences) to load immediately,
-    // so custom shortcut menu labels are applied at startup rather than only after the user first
-    // opens the palette or triggers a shortcut.
+    // so custom shortcut menu labels and the enabled state of the shortcut menu items are applied
+    // at startup rather than only after the user first opens the palette or triggers a shortcut.
     TapirPalette::Instance ();
 
     { // Application Commands
