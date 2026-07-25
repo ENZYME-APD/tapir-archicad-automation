@@ -99,11 +99,11 @@
 'DLGH' ID_PALETTE Tapir_Palette {
 1    ""        TapirButton
 2    ""        ScriptSelection
-3    ""        RunButton
-4    ""        OpenButton
-5    ""        AddButton
-6    ""        DelButton
-7    ""        ManageShortcutsButton
+3    "Run Script"          RunButton
+4    "Open in Browser"     OpenButton
+5    "Add Script"          AddButton
+6    "Remove Script"       DelButton
+7    "Manage Shortcuts"    ManageShortcutsButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {
