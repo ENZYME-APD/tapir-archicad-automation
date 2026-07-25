@@ -275,6 +275,9 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             GS::UniString projectInfoValue;
             projectInfoField.Get ("projectInfoValue", projectInfoValue);
 
+#ifdef ServerMainVers_3000
+            fieldsAdder (CreateErrorResponse (APIERR_NOTSUPPORTED, "TODO: this function was not migrated to AC30 yet. Failed to create project information field."));
+#else
             GS::Guid guid;
             guid.Generate ();
             API_Guid dbKey = GSGuid2APIGuid (guid);
@@ -299,6 +302,7 @@ GS::ObjectState CreateProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             createdField.Add ("projectInfoName", projectInfoName);
             createdField.Add ("projectInfoValue", projectInfoValue);
             fieldsAdder (createdField);
+#endif
         }
 
         return NoError;
@@ -365,6 +369,10 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
 
     ACAPI_CallUndoableCommand ("DeleteProjectInfoFields", [&]() -> GSErrCode {
         for (const GS::UniString& projectInfoId : projectInfoIds) {
+#ifdef ServerMainVers_3000
+            (void) projectInfoId; // suppress unused variable warning
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "TODO: this function was not migrated to AC30 yet. Failed to delete project info field."));
+#else
             if (!projectInfoId.BeginsWith ("autotext-")) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
                     "Only custom project info fields (ids starting with 'autotext-') can be deleted."));
@@ -377,6 +385,7 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             } else {
                 executionResults (CreateSuccessfulExecutionResult ());
             }
+#endif
         }
         return NoError;
     });

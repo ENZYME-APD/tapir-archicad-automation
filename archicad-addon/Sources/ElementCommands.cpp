@@ -2221,7 +2221,11 @@ GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters
             "elementId1", CreateGuidObjectState (collisionElement.first.collidedElemGuid),
             "elementId2", CreateGuidObjectState (collisionElement.second.collidedElemGuid),
             "hasBodyCollision", collisionElement.first.hasBodyCollision,
+#ifdef ServerMainVers_3000
+            "hasClearanceCollision", collisionElement.second.hasClearanceCollision));
+#else
             "hasClearenceCollision", collisionElement.second.hasClearenceCollision));
+#endif
     }
 
     return response;

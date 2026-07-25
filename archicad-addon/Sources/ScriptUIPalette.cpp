@@ -88,7 +88,11 @@ static GS::UniString InjectAutoHeightScript (const GS::UniString& htmlContent)
         "})();</script>";
 
     // Find "</body>" case-insensitively; fall back to appending at the end when absent/malformed.
+#ifdef ServerMainVers_3000
+    const GS::UniString lowerContent = htmlContent.GetLowerCased ();
+#else
     const GS::UniString lowerContent = htmlContent.ToLowerCase ();
+#endif
     if (!lowerContent.Contains (GS::UniString ("</body>"))) {
         return htmlContent + observerScript;
     }
