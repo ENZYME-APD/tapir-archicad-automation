@@ -503,6 +503,14 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.5.6",
             "Gets the elements directly contained by each given group."
         );
+        err |= RegisterCommand<GetSuspendGroupsModeCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the current state of the Suspend Groups mode."
+        );
+        err |= RegisterCommand<SetSuspendGroupsModeCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Turns the Suspend Groups mode on or off. Suspend groups to perform operations on elements that are part of a group; remember to restore the previous state afterwards."
+        );
         AddCommandGroup (elementGroupingCommands);
     }
 

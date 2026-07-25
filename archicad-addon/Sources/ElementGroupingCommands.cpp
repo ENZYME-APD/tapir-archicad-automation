@@ -296,3 +296,108 @@ GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& param
 
     return response;
 }
+
+GetSuspendGroupsModeCommand::GetSuspendGroupsModeCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetSuspendGroupsModeCommand::GetName() const
+{
+    return "GetSuspendGroupsMode";
+}
+
+GS::Optional<GS::UniString> GetSuspendGroupsModeCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "suspendGroups": {
+                "type": "boolean",
+                "description": "True if the Suspend Groups mode is currently on."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "suspendGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetSuspendGroupsModeCommand::Execute(const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    bool suspendGroups = false;
+    const GSErrCode err = ACAPI_View_IsSuspendGroupOn(&suspendGroups);
+    if (err != NoError) {
+        return CreateErrorResponse(err, "Failed to get the Suspend Groups mode.");
+    }
+
+    return GS::ObjectState("suspendGroups", suspendGroups);
+}
+
+SetSuspendGroupsModeCommand::SetSuspendGroupsModeCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String SetSuspendGroupsModeCommand::GetName() const
+{
+    return "SetSuspendGroupsMode";
+}
+
+GS::Optional<GS::UniString> SetSuspendGroupsModeCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "suspendGroups": {
+                "type": "boolean",
+                "description": "Turn the Suspend Groups mode on or off."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "suspendGroups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetSuspendGroupsModeCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": {
+                "$ref": "#/ExecutionResult"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResult"
+        ]
+    })";
+}
+
+GS::ObjectState SetSuspendGroupsModeCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool suspendGroups = false;
+    if (!parameters.Get("suspendGroups", suspendGroups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'suspendGroups' parameter.");
+    }
+
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Grouping_ChangeSuspendGroup(suspendGroups);
+#else
+    // Older versions only offer the APITool_SuspendGroups toggle, so the mode
+    // is toggled only when the current state differs from the requested one.
+    bool currentState = false;
+    GSErrCode err = ACAPI_View_IsSuspendGroupOn(&currentState);
+    if (err == NoError && currentState != suspendGroups) {
+        err = ACAPI_Grouping_Tool(GS::Array<API_Guid>(), APITool_SuspendGroups, nullptr);
+    }
+#endif
+
+    return GS::ObjectState("executionResult", err == NoError
+        ? CreateSuccessfulExecutionResult()
+        : CreateFailedExecutionResult(err, "Failed to set the Suspend Groups mode."));
+}
