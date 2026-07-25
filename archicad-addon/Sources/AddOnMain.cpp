@@ -495,6 +495,10 @@ GSErrCode Initialize (void)
             elementGroupingCommands, "1.4.0",
             "Creates groups of the passed elements"
         );
+        err |= RegisterCommand<GetGroupsOfElementsCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the identifier of the group that directly contains each given element. Returns an error for elements that are not part of any group."
+        );
         AddCommandGroup (elementGroupingCommands);
     }
 

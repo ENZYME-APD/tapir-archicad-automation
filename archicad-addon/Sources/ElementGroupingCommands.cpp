@@ -129,3 +129,85 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
 #endif
     return response;
 }
+
+GetGroupsOfElementsCommand::GetGroupsOfElementsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetGroupsOfElementsCommand::GetName() const
+{
+    return "GetGroupsOfElements";
+}
+
+GS::Optional<GS::UniString> GetGroupsOfElementsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetGroupsOfElementsCommand::GetResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groupGuids": {
+                "type": "array",
+                "description": "The identifier of the group that directly contains each given element, or an error for elements that are not part of any group.",
+                "items": {
+                    "$ref": "#/GroupIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groupGuids"
+        ]
+    })";
+}
+
+GS::ObjectState GetGroupsOfElementsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get("elements", elements)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& groupGuids = response.AddList<GS::ObjectState>("groupGuids");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get("elementId");
+        if (elementId == nullptr) {
+            groupGuids(CreateErrorResponse(APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Guid groupGuid = APINULLGuid;
+        const GSErrCode err = ACAPI_Grouping_GetGroup(GetGuidFromObjectState(*elementId), &groupGuid);
+        if (err != NoError) {
+            groupGuids(CreateErrorResponse(err, "Failed to get the group of the element."));
+            continue;
+        }
+        if (groupGuid == APINULLGuid) {
+            groupGuids(CreateErrorResponse(APIERR_GENERAL, "The element is not part of any group."));
+            continue;
+        }
+
+        GS::ObjectState groupIdItem;
+        groupIdItem.Add("groupId", CreateGuidObjectState(groupGuid));
+        groupGuids(groupIdItem);
+    }
+
+    return response;
+}
