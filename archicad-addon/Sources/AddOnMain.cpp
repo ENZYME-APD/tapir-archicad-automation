@@ -304,7 +304,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetConnectedElementsCommand> (
             elementCommands, "1.1.4",
-            "Gets connected elements of the given elements."
+            "Gets connected elements of the given elements. The connected element type filter is optional; if omitted, connected elements of all types are returned."
         );
         err |= RegisterCommand<GetZoneBoundariesCommand> (
             elementCommands, "1.2.3",

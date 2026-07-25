@@ -1859,13 +1859,13 @@ GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchem
                 "$ref": "#/Elements"
             },
             "connectedElementType": {
-                "$ref": "#/ElementType"
+                "$ref": "#/ElementType",
+                "description": "Optional filter for the type of the connected elements. If omitted, connected elements of all types are returned."
             }
         },
         "additionalProperties": false,
         "required": [
-            "elements",
-            "connectedElementType"
+            "elements"
         ]
     })";
 }

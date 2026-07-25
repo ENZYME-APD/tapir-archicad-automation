@@ -8,7 +8,7 @@ namespace TapirGrasshopperPlugin.Types.Element
         [JsonProperty("elements")]
         public List<ElementGuidWrapper> Elements;
 
-        [JsonProperty("connectedElementType")]
+        [JsonProperty("connectedElementType", NullValueHandling = NullValueHandling.Ignore)]
         public string ConnectedElementType;
     }
 

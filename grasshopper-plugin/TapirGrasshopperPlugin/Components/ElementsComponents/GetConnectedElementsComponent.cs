@@ -27,7 +27,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             InText(
                 "ConnectedElementType",
-                "Type of connected elements.");
+                "Type of connected elements. Optional; if not set, connected elements of all types are returned.");
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
@@ -58,12 +60,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGet(
-                    1,
-                    out string elementType))
-            {
-                return;
-            }
+            da.TryGet(
+                1,
+                out string elementType);
 
             if (!TryGetConvertedCadValues(
                     CommandName,
