@@ -1019,7 +1019,7 @@ GSErrCode Initialize (void)
         CommandGroup keynoteCommands ("Keynote Commands");
         err |= RegisterCommand<GetKeynoteTreeCommand> (
             keynoteCommands, "1.5.6",
-            "Retrieves the whole keynote folder and item hierarchy starting from the root folder. Available from Archicad 28."
+            "Retrieves the whole keynote folder and item hierarchy. The technical root folder is not included in the output; the top-level folders and items are returned directly. Available from Archicad 28."
         );
         err |= RegisterCommand<GetKeynoteAutoTextsCommand> (
             keynoteCommands, "1.5.6",

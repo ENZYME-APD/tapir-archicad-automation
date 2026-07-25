@@ -10,8 +10,11 @@ def PrintFolder (folder, indent = 0):
     for subFolder in folder['subFolders']:
         PrintFolder (subFolder, indent + 1)
 
-rootFolder = aclib.RunTapirCommand ('GetKeynoteTree')['rootFolder']
-PrintFolder (rootFolder)
+keynoteTree = aclib.RunTapirCommand ('GetKeynoteTree')
+for folder in keynoteTree['foldersInRoot']:
+    PrintFolder (folder)
+for item in keynoteTree['itemsInRoot']:
+    print ('Item: key="{}" title="{}"'.format (item['key'], item['title']))
 
 # Create a folder and an item inside it
 newFolderId = aclib.RunTapirCommand ('CreateKeynoteFolders', {

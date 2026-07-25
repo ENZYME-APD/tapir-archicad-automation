@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
             : base(
                 "GetKeynoteTree",
                 "Get the whole keynote folder and item hierarchy. " +
-                "The folder outputs include the root folder (with a null parent). " +
+                "The technical root folder is not included; top-level folders and items have a null parent. " +
                 "Available from Archicad 28.",
                 GroupNames.Keynotes)
         {
@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
         {
             OutGenerics(
                 "FolderGuids",
-                "Identifier of each keynote folder (including the root folder).");
+                "Identifier of each keynote folder.");
 
             OutTexts(
                 "FolderKeys",
@@ -41,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
 
             OutGenerics(
                 "FolderParentGuids",
-                "Identifier of the parent of each keynote folder (null for the root folder).");
+                "Identifier of the parent of each keynote folder (null for top-level folders).");
 
             OutGenerics(
                 "ItemGuids",
@@ -65,7 +65,7 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
 
             OutGenerics(
                 "ItemFolderGuids",
-                "Identifier of the folder containing each keynote item.");
+                "Identifier of the folder containing each keynote item (null for top-level items).");
         }
 
         private static KeynoteFolderGuidWrapper FolderIdOf(
@@ -106,6 +106,25 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
             var itemReferences = new List<object>();
             var itemFolderGuids = new List<object>();
 
+            void AddItem(
+                JToken item,
+                KeynoteFolderGuidWrapper folderId)
+            {
+                var itemGuid = item["keynoteItemId"]?["guid"]?.ToString();
+                itemGuids.Add(
+                    itemGuid == null
+                        ? null
+                        : new KeynoteItemGuidWrapper
+                        {
+                            KeynoteItemId = new KeynoteItemGuid { Guid = itemGuid }
+                        });
+                itemKeys.Add(item["key"]?.ToString());
+                itemTitles.Add(item["title"]?.ToString());
+                itemDescriptions.Add(item["description"]?.ToString());
+                itemReferences.Add(item["reference"]?.ToString());
+                itemFolderGuids.Add(folderId);
+            }
+
             void WalkFolder(
                 JToken folder,
                 KeynoteFolderGuidWrapper parentId)
@@ -121,19 +140,7 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
                 {
                     foreach (var item in items)
                     {
-                        var itemGuid = item["keynoteItemId"]?["guid"]?.ToString();
-                        itemGuids.Add(
-                            itemGuid == null
-                                ? null
-                                : new KeynoteItemGuidWrapper
-                                {
-                                    KeynoteItemId = new KeynoteItemGuid { Guid = itemGuid }
-                                });
-                        itemKeys.Add(item["key"]?.ToString());
-                        itemTitles.Add(item["title"]?.ToString());
-                        itemDescriptions.Add(item["description"]?.ToString());
-                        itemReferences.Add(item["reference"]?.ToString());
-                        itemFolderGuids.Add(folderId);
+                        AddItem(item, folderId);
                     }
                 }
 
@@ -146,13 +153,20 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
                 }
             }
 
-            var rootFolder = response["rootFolder"];
-            if (rootFolder == null)
+            if (response["foldersInRoot"] is JArray foldersInRoot)
             {
-                this.AddError("The response contains no root folder.");
-                return;
+                foreach (var folder in foldersInRoot)
+                {
+                    WalkFolder(folder, null);
+                }
             }
-            WalkFolder(rootFolder, null);
+            if (response["itemsInRoot"] is JArray itemsInRoot)
+            {
+                foreach (var item in itemsInRoot)
+                {
+                    AddItem(item, null);
+                }
+            }
 
             da.SetDataList(0, folderGuids);
             da.SetDataList(1, folderKeys);

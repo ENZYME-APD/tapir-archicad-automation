@@ -135,13 +135,25 @@ GS::Optional<GS::UniString> GetKeynoteTreeCommand::GetResponseSchema () const
     return R"({
         "type": "object",
         "properties": {
-            "rootFolder": {
-                "$ref": "#/KeynoteFolderDetails"
+            "foldersInRoot": {
+                "type": "array",
+                "description": "The top-level keynote folders with their content recursively. The technical root folder itself is not included.",
+                "items": {
+                    "$ref": "#/KeynoteFolderDetails"
+                }
+            },
+            "itemsInRoot": {
+                "type": "array",
+                "description": "The keynote items located directly in the technical root folder.",
+                "items": {
+                    "$ref": "#/KeynoteItemDetails"
+                }
             }
         },
         "additionalProperties": false,
         "required": [
-            "rootFolder"
+            "foldersInRoot",
+            "itemsInRoot"
         ]
     })";
 }
@@ -159,10 +171,28 @@ GS::ObjectState GetKeynoteTreeCommand::Execute (const GS::ObjectState& /*paramet
         return CreateErrorResponse (rootFolder.UnwrapErr ().kind, "Failed to get keynote root folder.");
     }
 
-    GS::ObjectState rootFolderOs;
-    AddKeynoteFolderToObjectState (rootFolder.Unwrap (), rootFolderOs);
+    GS::ObjectState response;
+    const auto& foldersInRoot = response.AddList<GS::ObjectState> ("foldersInRoot");
+    auto subFolders = rootFolder->GetDirectSubFolders ();
+    if (subFolders.IsOk ()) {
+        for (const auto& subFolder : subFolders.Unwrap ()) {
+            GS::ObjectState folderOs;
+            AddKeynoteFolderToObjectState (subFolder, folderOs);
+            foldersInRoot (folderOs);
+        }
+    }
 
-    return GS::ObjectState ("rootFolder", rootFolderOs);
+    const auto& itemsInRoot = response.AddList<GS::ObjectState> ("itemsInRoot");
+    auto items = rootFolder->GetDirectItems ();
+    if (items.IsOk ()) {
+        for (const auto& item : items.Unwrap ()) {
+            GS::ObjectState itemOs;
+            AddKeynoteItemToObjectState (item, itemOs);
+            itemsInRoot (itemOs);
+        }
+    }
+
+    return response;
 #else
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
