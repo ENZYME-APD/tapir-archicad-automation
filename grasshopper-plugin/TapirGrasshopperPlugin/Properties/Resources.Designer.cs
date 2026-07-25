@@ -2119,5 +2119,69 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetMEPElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPRoutingElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPRoutingElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPPorts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPPorts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPDistributionSystems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPDistributionSystems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateMEPRoutingElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateMEPRoutingElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateMEPElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateMEPElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyMEPRoutingElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyMEPRoutingElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ConnectMEPElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ConnectMEPElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
     }
 }

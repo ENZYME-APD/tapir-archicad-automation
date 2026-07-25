@@ -37,6 +37,25 @@
             "$ref": "#/ElementIdOrError"
         }
     },
+    "ElementIdOrError": {
+        "type": "object",
+        "description": "An element identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "ElementIdsOrErrors": {
+        "type": "array",
+        "description": "A list of element identifiers or errors.",
+        "items": {
+            "$ref": "#/ElementIdOrError"
+        }
+    },
     "ElementId": {
         "type": "object",
         "description": "The identifier of an element.",
