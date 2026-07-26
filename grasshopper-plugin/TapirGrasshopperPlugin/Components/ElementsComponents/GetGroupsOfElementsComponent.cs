@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "GetGroupsOfElements",
                 "Get the identifier of the group that directly contains each given element. " +
                 "The GroupGuids output holds null for elements that are not part of any group.",
-                GroupNames.Elements)
+                GroupNames.ElementGrouping)
         {
         }
 

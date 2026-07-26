@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Turn the Suspend Groups mode on or off. " +
                 "Suspend groups to perform operations on elements that are part of a group; " +
                 "remember to restore the previous state afterwards.",
-                GroupNames.Elements)
+                GroupNames.ElementGrouping)
         {
         }
 

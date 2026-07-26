@@ -7,6 +7,7 @@
         public static string CreateElements => "Create Elements";
         public static string DesignOptions => nameof(DesignOptions);
         public static string ElementDetails => "Element Details";
+        public static string ElementGrouping => "Element Grouping";
         public static string Elements => nameof(Elements);
         public static string ModifyElements => "Modify Elements";
         public static string Favorites => nameof(Favorites);

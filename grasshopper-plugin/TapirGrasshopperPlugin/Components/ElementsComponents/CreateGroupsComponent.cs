@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateGroups",
                 "Create groups of the passed elements (one branch per group, at least two elements each).",
-                GroupNames.Elements)
+                GroupNames.ElementGrouping)
         {
         }
 
