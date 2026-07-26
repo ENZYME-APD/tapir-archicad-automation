@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                 "GetSolidElementLinks",
                 "Get solid element operation links for each queried element, grouped by role (target or operator). " +
                 "All outputs have one branch per queried element.",
-                GroupNames.Elements)
+                GroupNames.SolidOperations)
         {
         }
 

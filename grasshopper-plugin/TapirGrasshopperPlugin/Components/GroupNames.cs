@@ -20,6 +20,7 @@
         public static string Project => nameof(Project);
         public static string Properties => nameof(Properties);
         public static string Revision => nameof(Revision);
+        public static string SolidOperations => "Solid Operations";
         public static string Utilities => nameof(Utilities);
         public static string Teamwork => nameof(Teamwork);
     }
