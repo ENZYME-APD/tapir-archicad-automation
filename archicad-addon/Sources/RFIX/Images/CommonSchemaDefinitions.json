@@ -7076,5 +7076,57 @@
             "inheritOperatorAttributes",
             "skipPolygonHoles"
         ]
+    },
+    "SpecialFolderType": {
+        "type": "string",
+        "description": "The type of a special folder of the running Archicad.",
+        "enum": [
+            "ApplicationPrefs",
+            "GraphisoftPrefs",
+            "GraphisoftHome",
+            "Cache",
+            "Data",
+            "UserDocuments",
+            "Temporary",
+            "Application",
+            "Defaults",
+            "WebObjects",
+            "Templates",
+            "Help",
+            "EmbeddedProjectLibrary",
+            "EmbeddedProjectLibraryHotlink"
+        ]
+    },
+    "SpecialFolderPath": {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "The path of the special folder in the filesystem."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "path"
+        ]
+    },
+    "SpecialFolderPathOrError": {
+        "type": "object",
+        "description": "The path of a special folder or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/SpecialFolderPath"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "SpecialFolderPathsOrErrors": {
+        "type": "array",
+        "description": "A list of special folder paths or errors.",
+        "items": {
+            "$ref": "#/SpecialFolderPathOrError"
+        }
     }
 }

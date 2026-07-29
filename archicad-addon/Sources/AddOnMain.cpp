@@ -200,6 +200,10 @@ GSErrCode Initialize (void)
             applicationCommands,"1.5.6",
             "Display a dialog with up to three buttons."
         );
+        err |= RegisterCommand<GetSpecialFoldersCommand> (
+            applicationCommands, "1.5.6",
+            "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.)."
+        );
 
         AddCommandGroup (applicationCommands);
     }
