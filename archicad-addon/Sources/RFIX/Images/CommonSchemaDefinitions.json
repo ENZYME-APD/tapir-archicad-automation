@@ -4559,6 +4559,208 @@
                     "$ref": "#/PolyArc"
                 }
             },
+            "roomSeparator": {
+                "type": "boolean",
+                "description": "Is this a zone boundary line?"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "zCoordinate"
+        ]
+    },
+    "LineDetails": {
+        "type": "object",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "roomSeparator": {
+                "type": "boolean",
+                "description": "Is this a zone boundary line?"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate",
+            "endCoordinate",
+            "zCoordinate"
+        ]
+    },
+    "ArcDetails": {
+        "type": "object",
+        "description": "Geometry of an Arc or Circle element. begAngle/endAngle are only present for Arc (a Circle spans the full 0-2*PI range implicitly).",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "radius": {
+                "type": "number"
+            },
+            "angle": {
+                "type": "number",
+                "description": "0.0, or the angle of the 'a' axis in radians."
+            },
+            "ratio": {
+                "type": "number",
+                "description": "1.0, or 'a/b' of the ellipse."
+            },
+            "begAngle": {
+                "type": "number",
+                "description": "Beginning angle of the arc in radians. Only present for Arc, not Circle."
+            },
+            "endAngle": {
+                "type": "number",
+                "description": "End angle of the arc in radians. Only present for Arc, not Circle."
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "roomSeparator": {
+                "type": "boolean",
+                "description": "Is this a zone boundary line?"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "origin",
+            "radius",
+            "angle",
+            "ratio",
+            "reflected",
+            "zCoordinate"
+        ]
+    },
+    "HotspotDetails": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate2D"
+            },
+            "height": {
+                "type": "number",
+                "description": "Z coordinate of the hotspot (can come from a GDL script)."
+            },
+            "penIndex": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "height"
+        ]
+    },
+    "SplineDetails": {
+        "type": "object",
+        "description": "Geometry of a Spline element. Geometry is read-only: Archicad's own API does not support modifying Spline geometry via ACAPI_Element_Change. The settings fields (roomSeparator/linePenIndex/lineTypeId) ARE modifiable via SET.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "closed": {
+                "type": "boolean",
+                "description": "Is this a closed curve?"
+            },
+            "roomSeparator": {
+                "type": "boolean",
+                "description": "Is this a zone boundary line?"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates",
+            "closed",
+            "zCoordinate"
+        ]
+    },
+    "HatchDetails": {
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "description": "The arcs of the hatch outline.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            },
+            "contourPenIndex": {
+                "type": "integer"
+            },
+            "fillPenIndex": {
+                "type": "integer"
+            },
+            "fillBackgroundPenIndex": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill attribute used, if the hatch's type is a plain fill hatch."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material attribute used, if the hatch's type is a building material hatch."
+            },
+            "roomSpecial": {
+                "type": "integer",
+                "description": "Special area percent in a room (negative means OFF)."
+            },
+            "showArea": {
+                "type": "boolean",
+                "description": "True if the area text is shown."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -5905,6 +6107,176 @@
         "additionalProperties": false,
         "required": []
     },
+    "LineSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Line.",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "roomSeparator": {
+                "type": "boolean"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ArcSettings": {
+        "type": "object",
+        "description": "Settings for modifying an Arc or Circle. begAngle/endAngle are only applied to Arc, ignored for Circle.",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "radius": {
+                "type": "number"
+            },
+            "angle": {
+                "type": "number"
+            },
+            "ratio": {
+                "type": "number"
+            },
+            "begAngle": {
+                "type": "number"
+            },
+            "endAngle": {
+                "type": "number"
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "roomSeparator": {
+                "type": "boolean"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "HotspotSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Hotspot.",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate2D"
+            },
+            "height": {
+                "type": "number"
+            },
+            "penIndex": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SplineSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Spline. Only these settings fields are modifiable - Archicad's own API does not support changing Spline geometry (coordinates/closed) via ACAPI_Element_Change.",
+        "properties": {
+            "roomSeparator": {
+                "type": "boolean"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "PolylineSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Polyline. Setting coordinates replaces the entire polygon (single contour, no holes) and may change the number of vertices.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 2
+            },
+            "arcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "roomSeparator": {
+                "type": "boolean"
+            },
+            "linePenIndex": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "HatchSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Hatch. Setting coordinates replaces the entire polygon (outline plus optional holes) and may change the number of vertices.",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "arcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            },
+            "contourPenIndex": {
+                "type": "integer"
+            },
+            "fillPenIndex": {
+                "type": "integer"
+            },
+            "fillBackgroundPenIndex": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeId"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "roomSpecial": {
+                "type": "integer"
+            },
+            "showArea": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "DrawingSettings": {
         "description": "Modifiable settings for a Drawing element placed on a layout.",
         "type": "object",
@@ -5955,6 +6327,24 @@
             },
             {
                 "$ref": "#/ZoneSettings"
+            },
+            {
+                "$ref": "#/LineSettings"
+            },
+            {
+                "$ref": "#/ArcSettings"
+            },
+            {
+                "$ref": "#/HotspotSettings"
+            },
+            {
+                "$ref": "#/SplineSettings"
+            },
+            {
+                "$ref": "#/PolylineSettings"
+            },
+            {
+                "$ref": "#/HatchSettings"
             },
             {
                 "$ref": "#/DrawingSettings"
