@@ -1200,5 +1200,9 @@ GSErrCode Initialize (void)
 
 GSErrCode FreeData (void)
 {
+    // Must run here, not left to the static GS::Ref's destructor at DLL/dylib unload time - see
+    // ScriptUIPalette::Release for why (real macOS crash on quit, EXC_BAD_ACCESS tearing down the
+    // browser control after Archicad's own environment had already begun shutting down).
+    ScriptUIPalette::Release ();
     return NoError;
 }
