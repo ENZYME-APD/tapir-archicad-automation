@@ -132,6 +132,9 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 response.ExecutionResults.Select(x => x.Message()));
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.SetViewSettings;
+
         public override Guid ComponentGuid =>
             new Guid("1bed0140-6c27-4263-9c19-5ae234e68cd9");
     }

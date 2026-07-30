@@ -3,6 +3,54 @@
 #include "FileSystem.hpp"
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
+#include "DGModule.hpp"
+#include "Folder.hpp"
+
+static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
+{
+    ULong hashValue = projectLocation.GenerateHashValue ();
+    const GS::UniString username = projectLocation.GetUserName ();
+    if (username.IsEmpty ()) {
+        return hashValue;
+    } else {
+        return hashValue * 65599 + username.GenerateHashValue ();
+    }
+}
+
+static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocation)
+{
+    const auto hashValue = GenerateProjectLocationHashValue (projectLocation);
+    const auto projectHashFolderName = IO::Name (GS::UniString::Printf ("%lu", hashValue));
+
+    API_SpecFolderID specFolderId = API_ApplicationPrefsFolderID;
+    IO::Location applicationPrefSpecFolderLoc;
+    ACAPI_ProjectSettings_GetSpecFolder (&specFolderId, &applicationPrefSpecFolderLoc);
+
+	IO::Folder applicationPrefSpecFolder (applicationPrefSpecFolderLoc);
+	if (applicationPrefSpecFolder.GetStatus () != NoError)
+		return {};
+
+    IO::Location previewFolderLoc = {};
+	applicationPrefSpecFolder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+		if (isFolder && previewFolderLoc.IsEmpty ()) {
+            const IO::Folder folder (IO::Location (applicationPrefSpecFolderLoc, name));
+            bool containsProjectHashFolder = false;
+            if (folder.Contains (projectHashFolderName, &containsProjectHashFolder) == NoError && containsProjectHashFolder) {
+                previewFolderLoc = folder.GetLocation ();
+            }
+		}
+	});
+
+	if (previewFolderLoc.IsEmpty ())
+		return {};
+
+	return IO::Location (previewFolderLoc, projectHashFolderName);
+}
+
+#if defined (ServerMainVers_2700) && __has_include ("ACAPI/GSID.hpp")
+#include "ACAPI/GSID.hpp"
+#define TAPIR_HAS_GSID
+#endif
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -161,7 +209,7 @@ static GS::UniString ConvertWindowTypeToString (API_WindowTypeID type)
     }
 }
 
-static API_WindowTypeID ConvertWindowTypeToString (GS::UniString typeStr)
+static API_WindowTypeID ConvertStringToWindowType (GS::UniString typeStr)
 {
     if ("FloorPlan" == typeStr) {
         return APIWind_FloorPlanID;
@@ -311,7 +359,7 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
     }
 
     API_WindowInfo windowInfo = {};
-    windowInfo.typeID = ConvertWindowTypeToString (windowTypeStr);
+    windowInfo.typeID = ConvertStringToWindowType (windowTypeStr);
     if (windowInfo.typeID == API_ZombieWindowID) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: windowType.");
     }
@@ -360,3 +408,292 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         : CreateErrorResponse (err, "Failed to change the window!");
 }
 
+
+
+ShowAlertCommand::ShowAlertCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String ShowAlertCommand::GetName () const
+{
+    return "ShowAlert";
+}
+
+GS::Optional<GS::UniString> ShowAlertCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "alertType": {
+                "type": "string",
+                "enum": ["information", "warning", "error"],
+                "description": "The type of the alert dialog."
+            },
+            "title": {
+                "type": "string",
+                "description": "The title of the alert dialog."
+            },
+            "message": {
+                "type": "string",
+                "description": "The main message text."
+            },
+            "subMessage": {
+                "type": "string",
+                "description": "Optional smaller sub-message text below the main message."
+            },
+            "button1": {
+                "type": "string",
+                "description": "Label for the first (default) button."
+            },
+            "button2": {
+                "type": "string",
+                "description": "Label for the second button (e.g. Cancel)."
+            },
+            "button3": {
+                "type": "string",
+                "description": "Label for the optional third button."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["alertType", "title", "message", "button1"]
+    })";
+}
+
+GS::Optional<GS::UniString> ShowAlertCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "clickedButton": {
+                "type": "integer",
+                "description": "Index of the button the user clicked: 1 = button1, 2 = button2, 3 = button3."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["clickedButton"]
+    })";
+}
+
+GS::ObjectState ShowAlertCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString alertTypeStr;
+    parameters.Get ("alertType", alertTypeStr);
+
+    short alertType = DG_INFORMATION;
+    if (alertTypeStr == "warning") {
+        alertType = DG_WARNING;
+    } else if (alertTypeStr == "error") {
+        alertType = DG_ERROR;
+    }
+
+    GS::UniString title, message, subMessage, button1, button2, button3;
+    parameters.Get ("title", title);
+    parameters.Get ("message", message);
+    parameters.Get ("subMessage", subMessage);
+    parameters.Get ("button1", button1);
+    parameters.Get ("button2", button2);
+    parameters.Get ("button3", button3);
+
+    short clicked = DGAlert (alertType, title, message, subMessage, button1, button2, button3);
+
+    return GS::ObjectState ("clickedButton", static_cast<Int32> (clicked));
+}
+
+GetSpecialFoldersCommand::GetSpecialFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSpecialFoldersCommand::GetName () const
+{
+    return "GetSpecialFolders";
+}
+
+GS::Optional<GS::UniString> GetSpecialFoldersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folderTypes": {
+                "type": "array",
+                "description": "The types of the special folders to retrieve.",
+                "items": {
+                    "$ref": "#/SpecialFolderType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "folderTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSpecialFoldersCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folderPaths": {
+                "$ref": "#/SpecialFolderPathsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "folderPaths"
+        ]
+    })";
+}
+
+static GS::Optional<API_SpecFolderID> ConvertStringToSpecFolderID (const GS::UniString& folderTypeStr)
+{
+    if (folderTypeStr == "ApplicationPrefs") {
+        return API_ApplicationPrefsFolderID;
+    }
+    if (folderTypeStr == "GraphisoftPrefs") {
+        return API_GraphisoftPrefsFolderID;
+    }
+    if (folderTypeStr == "GraphisoftHome") {
+        return API_GraphisoftHomeFolderID;
+    }
+    if (folderTypeStr == "Cache") {
+        return API_CacheFolderID;
+    }
+    if (folderTypeStr == "Data") {
+        return API_DataFolderID;
+    }
+    if (folderTypeStr == "UserDocuments") {
+        return API_UserDocumentsFolderID;
+    }
+    if (folderTypeStr == "Temporary") {
+        return API_TemporaryFolderID;
+    }
+    if (folderTypeStr == "Application") {
+        return API_ApplicationFolderID;
+    }
+    if (folderTypeStr == "Defaults") {
+        return API_DefaultsFolderID;
+    }
+    if (folderTypeStr == "WebObjects") {
+        return API_WebObjectsFolderID;
+    }
+    if (folderTypeStr == "Templates") {
+        return API_TemplatesFolderID;
+    }
+    if (folderTypeStr == "Help") {
+        return API_HelpFolderID;
+    }
+    if (folderTypeStr == "EmbeddedProjectLibrary") {
+        return API_EmbeddedProjectLibraryFolderID;
+    }
+    if (folderTypeStr == "EmbeddedProjectLibraryHotlink") {
+        return API_EmbeddedProjectLibraryHotlinkFolderID;
+    }
+    return GS::NoValue;
+}
+
+GS::ObjectState GetSpecialFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> folderTypes;
+    parameters.Get ("folderTypes", folderTypes);
+
+    GS::ObjectState response;
+    const auto& folderPaths = response.AddList<GS::ObjectState> ("folderPaths");
+
+    for (const GS::UniString& folderTypeStr : folderTypes) {
+        if (folderTypeStr == "ProjectPreviews") {
+            API_ProjectInfo projectInfo = {};
+            const GSErrCode projectErr = ACAPI_ProjectOperation_Project (&projectInfo);
+            const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+            if (projectErr != NoError || projectInfo.untitled || projectLocation == nullptr) {
+                folderPaths (CreateErrorResponse (APIERR_NOPLAN, "ProjectPreviews requires a saved project."));
+                continue;
+            }
+
+            const IO::Location previewsFolder = GetProjectPreviewsFolder (*projectLocation);
+            if (previewsFolder.IsEmpty ()) {
+                folderPaths (CreateErrorResponse (APIERR_GENERAL, "Failed to find the previews folder of the current project."));
+                continue;
+            }
+
+            folderPaths (GS::ObjectState ("path", previewsFolder.ToDisplayText ()));
+            continue;
+        }
+
+        const GS::Optional<API_SpecFolderID> folderId = ConvertStringToSpecFolderID (folderTypeStr);
+        if (!folderId.HasValue ()) {
+            folderPaths (CreateErrorResponse (APIERR_BADPARS, "Invalid folder type: " + folderTypeStr));
+            continue;
+        }
+
+        API_SpecFolderID specFolderId = folderId.Get ();
+        IO::Location location;
+        const GSErrCode err = ACAPI_ProjectSettings_GetSpecFolder (&specFolderId, &location);
+        if (err != NoError) {
+            folderPaths (CreateErrorResponse (err, "Failed to get the path of the special folder: " + folderTypeStr));
+            continue;
+        }
+
+        folderPaths (GS::ObjectState ("path", location.ToDisplayText ()));
+    }
+
+    return response;
+}
+
+GetUserGSIDCommand::GetUserGSIDCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String GetUserGSIDCommand::GetName () const
+{
+    return "GetUserGSID";
+}
+
+GS::Optional<GS::UniString> GetUserGSIDCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "userId": {
+                "type": "string",
+                "description": "The stable GSID User ID of the logged-in user."
+            },
+            "organizationIds": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "The list of organization IDs the user belongs to. Empty if not part of any organization or if the information cannot be retrieved."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userId"
+        ]
+    })";
+}
+
+GS::ObjectState GetUserGSIDCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_GSID
+    auto gsid = ACAPI::CreateGSIDObject ();
+    if (gsid.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to create GSID object!");
+    }
+
+    auto userId = gsid->GetUserId ();
+    if (userId.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get GSID user ID. User may not be signed in.");
+    }
+    GS::Array<GS::UniString> orgIdsArray;
+    auto organizationIds = gsid->GetOrganizationIds ();
+    if (organizationIds.IsOk ()) {
+        for (const auto& orgId : *organizationIds) {
+            orgIdsArray.Push (orgId);
+        }
+    }
+    return GS::ObjectState ("userId", *userId, "organizationIds", orgIdsArray);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetUserGSID requires Archicad 27 or later.");
+#endif
+}

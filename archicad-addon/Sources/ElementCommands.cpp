@@ -14,6 +14,59 @@
 
 #include <algorithm>
 
+// Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
+// (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
+// NOTE: penWeight is deliberately NOT exposed here (GET or SET) - confirmed live that a raw
+// penWeight override does not reliably take visible effect in Archicad; line thickness is
+// controlled by which pen (linePenIndex) is assigned, since each pen has its own weight defined
+// in the project's pen table. Exposing a non-functional field would be misleading.
+static void AddLineFamilySettingsDetails (GS::ObjectState& os, const API_ExtendedPenType& linePen, API_AttributeIndex ltypeInd, bool roomSeparator)
+{
+    os.Add ("roomSeparator", roomSeparator);
+    os.Add ("linePenIndex", linePen.penIndex);
+    os.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, ltypeInd)));
+}
+
+// Returns true if any field was actually set (caller still needs to set its own type's mask bits).
+static bool SetLineFamilySettingsFields (const GS::ObjectState& typeSpecificDetails, API_ExtendedPenType& linePen, API_AttributeIndex& ltypeInd, bool& roomSeparator,
+                                         bool& penChanged, bool& ltypeChanged, bool& roomSepChanged)
+{
+    short penIndex = 0;
+    if (typeSpecificDetails.Get ("linePenIndex", penIndex)) {
+        linePen.penIndex = penIndex;
+        linePen.colorOverridePenIndex = 0;
+        penChanged = true;
+    }
+    const GS::ObjectState* lineTypeId = typeSpecificDetails.Get ("lineTypeId");
+    if (lineTypeId != nullptr) {
+        ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeId));
+        ltypeChanged = true;
+    }
+    if (typeSpecificDetails.Get ("roomSeparator", roomSeparator)) {
+        roomSepChanged = true;
+    }
+    return penChanged || ltypeChanged || roomSepChanged;
+}
+
+struct API_RoomUpdateParams {
+    bool keepStampPos;
+    bool undoTopTrim;
+    bool undoBotTrim;
+    bool filler_1[5];
+
+    API_RoomUpdateParams() : keepStampPos(true), undoTopTrim(false), undoBotTrim(false)
+    {}
+};
+
+typedef enum {
+    APIInternal_UpdateRoomsID    = 'UPDR',
+    APIInternal_PostCommandIdID  = 'ESPC',
+} API_InternalID;
+
+extern "C" {
+    GSErrCode ACAPI_Internal (API_InternalID code, void* par1 = nullptr, void* par2 = nullptr, void* par3 = nullptr);
+}
+
 static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filter)
 {
     if (filter == "IsEditable")
@@ -41,6 +94,44 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
     if (filter == "IsOverriddenByRenovation")
         return APIFilt_IsOverridden;
     return APIFilt_None;
+}
+
+static GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType)
+{
+    switch (nameType) {
+        case APIName_ViewIdAndName:  return "ViewIdAndName";
+        case APIName_CustomName:     return "CustomName";
+        default:
+        case APIName_ViewOrSrcFileName: return "ViewOrSourceFileName";
+    }
+}
+
+static API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str)
+{
+    if (str == "ViewIdAndName")
+        return APIName_ViewIdAndName;
+    if (str == "CustomName")
+        return APIName_CustomName;
+    return APIName_ViewOrSrcFileName;
+}
+
+static GS::UniString DrawingNumberingTypeToString (API_NumberingTypeValues numberingType)
+{
+    switch (numberingType) {
+        case APINumbering_ByViewId:   return "ByViewId";
+        case APINumbering_CustomNum:  return "CustomNumber";
+        default:
+        case APINumbering_ByLayout:   return "ByLayout";
+    }
+}
+
+static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniString& str)
+{
+    if (str == "ByViewId")
+        return APINumbering_ByViewId;
+    if (str == "CustomNumber")
+        return APINumbering_CustomNum;
+    return APINumbering_ByLayout;
 }
 
 static API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
@@ -289,7 +380,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () co
                                     "coordinates": {
                                         "type": "array",
                                         "items": {
-                                            "$ref": "#/2DCoordinate"
+                                            "$ref": "#/Coordinate2D"
                                         }
                                     }
                                 }
@@ -678,6 +769,66 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_PolyLineID: {
                 AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "coordinates", "arcs");
+                AddLineFamilySettingsDetails (typeSpecificDetails, elem.polyLine.linePen, elem.polyLine.ltypeInd, elem.polyLine.roomSeparator);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+            } break;
+
+            case API_HatchID: {
+                AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "coordinates", "arcs", "holes", "polygonOutline", "polygonArcs");
+                typeSpecificDetails.Add ("contourPenIndex", elem.hatch.contPen.penIndex);
+                typeSpecificDetails.Add ("fillPenIndex", elem.hatch.fillPen.penIndex);
+                typeSpecificDetails.Add ("fillBackgroundPenIndex", elem.hatch.fillBGPen);
+                typeSpecificDetails.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, elem.hatch.fillInd)));
+                typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.hatch.buildingMaterial)));
+                typeSpecificDetails.Add ("roomSpecial", (Int32) elem.hatch.roomSpecial);
+                typeSpecificDetails.Add ("showArea", elem.hatch.showArea);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+            } break;
+
+            case API_LineID: {
+                typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.line.begC));
+                typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.line.endC));
+                AddLineFamilySettingsDetails (typeSpecificDetails, elem.line.linePen, elem.line.ltypeInd, elem.line.roomSeparator);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+            } break;
+
+            case API_ArcID:
+            case API_CircleID: {
+                typeSpecificDetails.Add ("origin", Create2DCoordinateObjectState (elem.arc.origC));
+                typeSpecificDetails.Add ("radius", elem.arc.r);
+                typeSpecificDetails.Add ("angle", elem.arc.angle);
+                typeSpecificDetails.Add ("ratio", elem.arc.ratio);
+                if (typeID == API_ArcID) {
+                    typeSpecificDetails.Add ("begAngle", elem.arc.begAng);
+                    typeSpecificDetails.Add ("endAngle", elem.arc.endAng);
+                }
+                typeSpecificDetails.Add ("reflected", elem.arc.reflected);
+                AddLineFamilySettingsDetails (typeSpecificDetails, elem.arc.linePen, elem.arc.ltypeInd, elem.arc.roomSeparator);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+            } break;
+
+            case API_HotspotID: {
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (elem.hotspot.pos));
+                typeSpecificDetails.Add ("height", elem.hotspot.height);
+                typeSpecificDetails.Add ("penIndex", elem.hotspot.pen);
+            } break;
+
+            case API_SplineID: {
+                // Spline has no poly/nCoords summary field (unlike Line/PolyLine/Hatch) - the
+                // point count is implicit in the coords memo handle's byte size. Index 0 is a
+                // real point here (not a dummy sentinel), and no closing duplicate is stored even
+                // when closed=true (per the ACAPI_SplineType reference docs).
+                API_ElementMemo splineMemo = {};
+                if (ACAPI_Element_GetMemo (elem.header.guid, &splineMemo, APIMemoMask_Polygon) == NoError && splineMemo.coords != nullptr) {
+                    const Int32 nPoints = BMGetHandleSize (reinterpret_cast<GSHandle> (splineMemo.coords)) / sizeof (API_Coord);
+                    const auto& coords = typeSpecificDetails.AddList<GS::ObjectState> ("coordinates");
+                    for (Int32 i = 0; i < nPoints; ++i) {
+                        coords (Create2DCoordinateObjectState ((*splineMemo.coords)[i]));
+                    }
+                }
+                ACAPI_DisposeElemMemoHdls (&splineMemo);
+                typeSpecificDetails.Add ("closed", elem.spline.closed);
+                AddLineFamilySettingsDetails (typeSpecificDetails, elem.spline.linePen, elem.spline.ltypeInd, elem.spline.roomSeparator);
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -858,7 +1009,32 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (elem.drawing.isCutWithFrame) {
                     AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
                 }
+                typeSpecificDetails.Add ("nameType",      DrawingNameTypeToString (elem.drawing.nameType));
+                if (elem.drawing.nameType == APIName_CustomName) {
+                    typeSpecificDetails.Add ("customName", GS::UniString (elem.drawing.name));
+                }
+                typeSpecificDetails.Add ("numberingType",  DrawingNumberingTypeToString (elem.drawing.numberingType));
+                if (elem.drawing.numberingType == APINumbering_CustomNum) {
+                    typeSpecificDetails.Add ("customNumber", GS::UniString (elem.drawing.customNumber));
+                }
+                typeSpecificDetails.Add ("isInNumbering", elem.drawing.isInNumbering);
+                // Library part index of the title (API_DrawingTitle::libInd) - a negative/invalid
+                // index here means no title object is instantiated at all (nothing to show); setting
+                // it to a valid index (e.g. copied from another drawing) is what makes Archicad
+                // create the title's own placed element.
+                typeSpecificDetails.Add ("titleLibraryPartIndex", elem.drawing.title.libInd);
+                if (elem.drawing.title.guid != APINULLGuid) {
+                    // The drawing title is itself a placed, GDL-parameterized library part
+                    // element (API_DrawingTitle::guid, "object based elements from Archicad 10")
+                    // - its own settings (font/pen/size aside) are reachable like any other
+                    // element via this id, e.g. with Get/SetGDLParametersOfElements.
+                    typeSpecificDetails.Add ("titleElementId", CreateGuidObjectState (elem.drawing.title.guid));
+                }
             } break;
+
+            case API_MorphID:
+                AddMorphBodyFromMemo (elem, typeSpecificDetails);
+                break;
 
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
@@ -1246,6 +1422,80 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
                         }
                     } break;
+                    case API_LineID: {
+                        const GS::ObjectState* begCoordinate = typeSpecificDetails->Get ("begCoordinate");
+                        if (begCoordinate != nullptr) {
+                            elem.line.begC = Get2DCoordinateFromObjectState (*begCoordinate);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LineType, begC);
+                        }
+                        const GS::ObjectState* endCoordinate = typeSpecificDetails->Get ("endCoordinate");
+                        if (endCoordinate != nullptr) {
+                            elem.line.endC = Get2DCoordinateFromObjectState (*endCoordinate);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LineType, endC);
+                        }
+                        bool penChanged = false, ltypeChanged = false, roomSepChanged = false;
+                        SetLineFamilySettingsFields (*typeSpecificDetails, elem.line.linePen, elem.line.ltypeInd, elem.line.roomSeparator, penChanged, ltypeChanged, roomSepChanged);
+                        if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_LineType, linePen);
+                        if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_LineType, ltypeInd);
+                        if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_LineType, roomSeparator);
+                    } break;
+                    case API_ArcID:
+                    case API_CircleID: {
+                        const GS::ObjectState* origin = typeSpecificDetails->Get ("origin");
+                        if (origin != nullptr) {
+                            elem.arc.origC = Get2DCoordinateFromObjectState (*origin);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, origC);
+                        }
+                        if (typeSpecificDetails->Get ("radius", elem.arc.r)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, r);
+                        }
+                        if (typeSpecificDetails->Get ("angle", elem.arc.angle)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, angle);
+                        }
+                        if (typeSpecificDetails->Get ("ratio", elem.arc.ratio)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, ratio);
+                        }
+                        if (GetElemTypeId (elem.header) == API_ArcID) {
+                            if (typeSpecificDetails->Get ("begAngle", elem.arc.begAng)) {
+                                ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, begAng);
+                            }
+                            if (typeSpecificDetails->Get ("endAngle", elem.arc.endAng)) {
+                                ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, endAng);
+                            }
+                        }
+                        if (typeSpecificDetails->Get ("reflected", elem.arc.reflected)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, reflected);
+                        }
+                        bool penChanged = false, ltypeChanged = false, roomSepChanged = false;
+                        SetLineFamilySettingsFields (*typeSpecificDetails, elem.arc.linePen, elem.arc.ltypeInd, elem.arc.roomSeparator, penChanged, ltypeChanged, roomSepChanged);
+                        if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, linePen);
+                        if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, ltypeInd);
+                        if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, roomSeparator);
+                    } break;
+                    case API_HotspotID: {
+                        const GS::ObjectState* position = typeSpecificDetails->Get ("position");
+                        if (position != nullptr) {
+                            elem.hotspot.pos = Get2DCoordinateFromObjectState (*position);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_HotspotType, pos);
+                        }
+                        if (typeSpecificDetails->Get ("height", elem.hotspot.height)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_HotspotType, height);
+                        }
+                        short hotspotPen = 0;
+                        if (typeSpecificDetails->Get ("penIndex", hotspotPen)) {
+                            elem.hotspot.pen = hotspotPen;
+                            ACAPI_ELEMENT_MASK_SET (mask, API_HotspotType, pen);
+                        }
+                    } break;
+                    case API_SplineID: {
+                        // Geometry (coordinates/closed) cannot be modified via ACAPI_Element_Change
+                        // for Spline (documented ACAPI limitation) - only these settings fields.
+                        bool penChanged = false, ltypeChanged = false, roomSepChanged = false;
+                        SetLineFamilySettingsFields (*typeSpecificDetails, elem.spline.linePen, elem.spline.ltypeInd, elem.spline.roomSeparator, penChanged, ltypeChanged, roomSepChanged);
+                        if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_SplineType, linePen);
+                        if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_SplineType, ltypeInd);
+                        if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_SplineType, roomSeparator);
+                    } break;
                     case API_DrawingID: {
                         GS::Array<GS::ObjectState> clipCoords;
                         if (typeSpecificDetails->Get ("clipPolygon", clipCoords) && clipCoords.GetSize () >= 3) {
@@ -1285,6 +1535,28 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         // drawingGuid (the Drawing's source link) is intentionally not settable here:
                         // confirmed live that ACAPI_Element_Change silently discards any change to it
                         // after creation - it can only be set once, at CreateDrawings time.
+                        GS::UniString nameTypeStr;
+                        if (typeSpecificDetails->Get ("nameType", nameTypeStr)) {
+                            elem.drawing.nameType = DrawingNameTypeFromString (nameTypeStr);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, nameType);
+                        }
+                        if (SetCharProperty (typeSpecificDetails, "customName", elem.drawing.name)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, name);
+                        }
+                        GS::UniString numberingTypeStr;
+                        if (typeSpecificDetails->Get ("numberingType", numberingTypeStr)) {
+                            elem.drawing.numberingType = DrawingNumberingTypeFromString (numberingTypeStr);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, numberingType);
+                        }
+                        if (SetCharProperty (typeSpecificDetails, "customNumber", elem.drawing.customNumber)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, customNumber);
+                        }
+                        if (typeSpecificDetails->Get ("isInNumbering", elem.drawing.isInNumbering)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isInNumbering);
+                        }
+                        if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
+                        }
                     } break;
                     default:
                     break;
@@ -1319,6 +1591,181 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         memoMask = APIMemoMask_Polygon;
                         hasMemoChanges = true;
                     }
+                }
+            } else if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_PolyLineID) {
+                // vertexIDs[0] must hold the MAX vertex ID used across the shape (not be left at
+                // 0/uninitialized) - confirmed via a real ACAPI_Element_Create usage example
+                // (Graphisoft community forum). This was the missing piece in every earlier
+                // from-scratch attempt, which is why they all failed with APIERR_BADPOLY even for
+                // an identity write - nothing to do with mask bits, GetMemo-seeding, or the
+                // coords[0]=(-1,0) sentinel (which was already correct).
+                GS::Array<GS::ObjectState> coordinates;
+                if (typeSpecificDetails->Get ("coordinates", coordinates) && coordinates.GetSize () >= 2) {
+                    GS::Array<GS::ObjectState> arcs;
+                    typeSpecificDetails->Get ("arcs", arcs);
+                    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+
+                    const Int32 nCoords = (Int32) coordinates.GetSize ();
+                    clipMemo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+                    clipMemo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+                    clipMemo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+                    clipMemo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+                    if (clipMemo.coords != nullptr && clipMemo.pends != nullptr && clipMemo.vertexIDs != nullptr) {
+                        (*clipMemo.coords)[0] = { -1.0, 0.0 }; // open-polyline dummy coord
+                        (*clipMemo.vertexIDs)[0] = (UInt32) nCoords; // max vertex ID used
+                        for (Int32 i = 0; i < nCoords; ++i) {
+                            (*clipMemo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+                            (*clipMemo.vertexIDs)[i + 1] = (UInt32) (i + 1);
+                        }
+                        (*clipMemo.pends)[0] = 0;
+                        (*clipMemo.pends)[1] = nCoords;
+                        if (clipMemo.parcs != nullptr) {
+                            Int32 iArc = 0;
+                            for (const API_PolyArc& a : polyArcs)
+                                (*clipMemo.parcs)[iArc++] = a;
+                        }
+                        elem.polyLine.poly.nCoords   = nCoords;
+                        elem.polyLine.poly.nSubPolys = 1;
+                        elem.polyLine.poly.nArcs     = (Int32) polyArcs.GetSize ();
+                        ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, poly);
+                        memoMask = APIMemoMask_Polygon;
+                        hasMemoChanges = true;
+                        hasElementChanges = true;
+                    }
+                }
+                {
+                    bool penChanged = false, ltypeChanged = false, roomSepChanged = false;
+                    if (SetLineFamilySettingsFields (*typeSpecificDetails, elem.polyLine.linePen, elem.polyLine.ltypeInd, elem.polyLine.roomSeparator, penChanged, ltypeChanged, roomSepChanged)) {
+                        if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, linePen);
+                        if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, ltypeInd);
+                        if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, roomSeparator);
+                        hasElementChanges = true;
+                    }
+                }
+            } else if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_HatchID) {
+                // Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
+                // (-1,0), and every contour (the main outline, plus each hole) needs its own
+                // explicit closing vertex duplicating that contour's first point, whose vertexID
+                // also duplicates that first point's ID. Vertex IDs restart at 1 for EACH contour
+                // (not continued sequentially across contours) - confirmed live: global numbering
+                // across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
+                // per-contour numbering works.
+                GS::Array<GS::ObjectState> coordinates;
+                if (typeSpecificDetails->Get ("coordinates", coordinates) && coordinates.GetSize () >= 3) {
+                    GS::Array<GS::ObjectState> arcs;
+                    typeSpecificDetails->Get ("arcs", arcs);
+                    GS::Array<GS::ObjectState> holes;
+                    typeSpecificDetails->Get ("holes", holes);
+
+                    // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
+                    Int32 totalUnique = (Int32) coordinates.GetSize ();
+                    Int32 totalCoords = totalUnique + 1;
+                    Int32 totalArcs = (Int32) arcs.GetSize ();
+                    GS::Array<GS::Array<GS::ObjectState>> holeCoordsList;
+                    GS::Array<GS::Array<GS::ObjectState>> holeArcsList;
+                    for (const GS::ObjectState& hole : holes) {
+                        GS::Array<GS::ObjectState> holeCoords, holeArcs;
+                        if (GetHoleGeometry (hole, holeCoords, holeArcs) && holeCoords.GetSize () >= 3) {
+                            totalUnique += (Int32) holeCoords.GetSize ();
+                            totalCoords += (Int32) holeCoords.GetSize () + 1;
+                            totalArcs += (Int32) holeArcs.GetSize ();
+                            holeCoordsList.Push (holeCoords);
+                            holeArcsList.Push (holeArcs);
+                        }
+                    }
+                    const Int32 nSubPolys = 1 + (Int32) holeCoordsList.GetSize ();
+
+                    clipMemo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((totalCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+                    clipMemo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+                    clipMemo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (totalArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+                    clipMemo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((totalCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+                    if (clipMemo.coords != nullptr && clipMemo.pends != nullptr && clipMemo.vertexIDs != nullptr) {
+                        Int32 maxContourUnique = (Int32) coordinates.GetSize ();
+                        for (const auto& hc : holeCoordsList) {
+                            maxContourUnique = GS::Max (maxContourUnique, (Int32) hc.GetSize ());
+                        }
+                        (*clipMemo.coords)[0] = { 0.0, 0.0 };
+                        (*clipMemo.vertexIDs)[0] = (UInt32) maxContourUnique;
+                        (*clipMemo.pends)[0] = 0;
+
+                        Int32 iCoord = 0;
+                        Int32 iArc = 0;
+                        Int32 subPolyIndex = 1;
+
+                        auto writeContour = [&] (const GS::Array<GS::ObjectState>& contourCoords, const GS::Array<GS::ObjectState>& contourArcs) {
+                            const Int32 firstIndex = iCoord + 1;
+                            const Int32 nUniqueLocal = (Int32) contourCoords.GetSize ();
+                            for (Int32 i = 0; i < nUniqueLocal; ++i) {
+                                ++iCoord;
+                                (*clipMemo.coords)[iCoord] = Get2DCoordinateFromObjectState (contourCoords[i]);
+                                (*clipMemo.vertexIDs)[iCoord] = (UInt32) (i + 1); // per-contour, restarts at 1
+                            }
+                            ++iCoord;
+                            (*clipMemo.coords)[iCoord] = (*clipMemo.coords)[firstIndex]; // closing duplicate
+                            (*clipMemo.vertexIDs)[iCoord] = (*clipMemo.vertexIDs)[firstIndex];
+                            (*clipMemo.pends)[subPolyIndex++] = iCoord;
+
+                            if (clipMemo.parcs != nullptr) {
+                                const GS::Array<API_PolyArc> localArcs = GetPolyArcs (contourArcs, firstIndex);
+                                for (const API_PolyArc& a : localArcs)
+                                    (*clipMemo.parcs)[iArc++] = a;
+                            }
+                        };
+
+                        writeContour (coordinates, arcs);
+                        for (Int32 i = 0; i < (Int32) holeCoordsList.GetSize (); ++i) {
+                            writeContour (holeCoordsList[i], holeArcsList[i]);
+                        }
+
+                        elem.hatch.poly.nCoords   = totalCoords;
+                        elem.hatch.poly.nSubPolys = nSubPolys;
+                        elem.hatch.poly.nArcs     = totalArcs;
+                        ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, poly);
+                        memoMask = APIMemoMask_Polygon;
+                        hasMemoChanges = true;
+                        hasElementChanges = true;
+                    }
+                }
+
+                short contourPenIndex = 0;
+                if (typeSpecificDetails->Get ("contourPenIndex", contourPenIndex)) {
+                    elem.hatch.contPen.penIndex = contourPenIndex;
+                    elem.hatch.contPen.colorOverridePenIndex = 0;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, contPen);
+                    hasElementChanges = true;
+                }
+                short fillPenIndex = 0;
+                if (typeSpecificDetails->Get ("fillPenIndex", fillPenIndex)) {
+                    elem.hatch.fillPen.penIndex = fillPenIndex;
+                    elem.hatch.fillPen.colorOverridePenIndex = 0;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, fillPen);
+                    hasElementChanges = true;
+                }
+                if (typeSpecificDetails->Get ("fillBackgroundPenIndex", elem.hatch.fillBGPen)) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, fillBGPen);
+                    hasElementChanges = true;
+                }
+                const GS::ObjectState* fillId = typeSpecificDetails->Get ("fillId");
+                if (fillId != nullptr) {
+                    elem.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, fillInd);
+                    hasElementChanges = true;
+                }
+                const GS::ObjectState* buildingMaterialId = typeSpecificDetails->Get ("buildingMaterialId");
+                if (buildingMaterialId != nullptr) {
+                    elem.hatch.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialId));
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, buildingMaterial);
+                    hasElementChanges = true;
+                }
+                Int32 roomSpecial = 0;
+                if (typeSpecificDetails->Get ("roomSpecial", roomSpecial)) {
+                    elem.hatch.roomSpecial = (char) roomSpecial;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, roomSpecial);
+                    hasElementChanges = true;
+                }
+                if (typeSpecificDetails->Get ("showArea", elem.hatch.showArea)) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, showArea);
+                    hasElementChanges = true;
                 }
             }
 
@@ -1933,6 +2380,67 @@ GS::ObjectState GetZoneBoundariesCommand::Execute (
 #endif
 }
 
+UpdateZonesCommand::UpdateZonesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String UpdateZonesCommand::GetName () const
+{
+    return "UpdateZones";
+}
+
+GS::Optional<GS::UniString> UpdateZonesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "keepStampPosition": {
+                "type": "boolean",
+                "description": "Keep the position of the Zone Stamps. The default is true."
+            },
+            "undoTopTrim": {
+                "type": "boolean",
+                "description": "Undo the trimming of the top of the Zones. The default is false."
+            },
+            "undoBottomTrim": {
+                "type": "boolean",
+                "description": "Undo the trimming of the bottom of the Zones. The default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdateZonesCommand::GetResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState UpdateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_RoomUpdateParams roomUpdateParams;
+    parameters.Get ("keepStampPosition", roomUpdateParams.keepStampPos);
+    parameters.Get ("undoTopTrim", roomUpdateParams.undoTopTrim);
+    parameters.Get ("undoBottomTrim", roomUpdateParams.undoBotTrim);
+
+    GSErrCode err = NoError;
+
+    ACAPI_CallUndoableCommand ("UpdateZonesCommand", [&]() {
+        err = ACAPI_Internal (APIInternal_UpdateRoomsID, &roomUpdateParams);
+
+        return err;
+    });
+
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to update zones.");
+}
+
 GetCollisionsCommand::GetCollisionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -2060,7 +2568,11 @@ GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters
             "elementId1", CreateGuidObjectState (collisionElement.first.collidedElemGuid),
             "elementId2", CreateGuidObjectState (collisionElement.second.collidedElemGuid),
             "hasBodyCollision", collisionElement.first.hasBodyCollision,
+#ifdef ServerMainVers_3000
+            "hasClearanceCollision", collisionElement.second.hasClearanceCollision));
+#else
             "hasClearenceCollision", collisionElement.second.hasClearenceCollision));
+#endif
     }
 
     return response;

@@ -17,7 +17,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ZoneBoundaries",
                 "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 
@@ -99,6 +99,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 response.ZoneBoundaries.Select(x =>
                     Helps.Convert.ToPolyCurve(x.PolygonCoordinates)));
         }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ZoneBoundaries;
 
         public override Guid ComponentGuid =>
             new Guid("50a6793f-e9ba-4a6f-a20d-bcaccaa3e6d9");

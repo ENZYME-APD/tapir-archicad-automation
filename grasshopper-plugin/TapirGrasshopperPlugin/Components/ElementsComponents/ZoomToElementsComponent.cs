@@ -51,6 +51,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             }
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ZoomToElements;
+
         public override Guid ComponentGuid =>
             new Guid("30bf1eeb-6542-4d37-81ea-20d5cff55d72");
     }

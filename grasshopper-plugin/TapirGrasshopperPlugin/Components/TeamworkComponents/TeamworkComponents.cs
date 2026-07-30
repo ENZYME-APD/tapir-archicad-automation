@@ -45,6 +45,9 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
         {
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.TeamworkReceive;
+
         public override Guid ComponentGuid =>
             new Guid("8ee23aed-ee26-4966-ba00-6d718e844dbd");
     }
@@ -59,6 +62,9 @@ namespace TapirGrasshopperPlugin.Components.TeamworkComponents
                 "Performs a send operation on the currently opened Teamwork project.")
         {
         }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.TeamworkSend;
 
         public override Guid ComponentGuid =>
             new Guid("2684e26e-34f1-4315-89f8-136d46e54c52");

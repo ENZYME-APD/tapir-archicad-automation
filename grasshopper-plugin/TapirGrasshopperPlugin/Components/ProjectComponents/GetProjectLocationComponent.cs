@@ -88,6 +88,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 response.Survey.GeoReferencingParams.MapZone);
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.ProjectLocation;
+
         public override Guid ComponentGuid =>
             new Guid("57989cda-f956-4b2a-9ce3-a7b4503ea158");
     }

@@ -49,6 +49,54 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+class CreateLineElementsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateLineElementsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateArcsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateArcsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateCirclesCommand : public CreateElementsCommandBase
+{
+public:
+    CreateCirclesCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateHotspotsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateHotspotsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateHatchesCommand : public CreateElementsCommandBase
+{
+public:
+    CreateHatchesCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateSplinesCommand : public CreateElementsCommandBase
+{
+public:
+    CreateSplinesCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
 class CreateObjectsCommand : public CreateElementsCommandBase
 {
 public:

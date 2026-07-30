@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ElementGDLParameters",
                 "Get GDL parameter values of elements.",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 
