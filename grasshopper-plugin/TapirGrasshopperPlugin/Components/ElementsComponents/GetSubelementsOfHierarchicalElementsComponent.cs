@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "Subelements",
                 "Gets the subelements of the given hierarchical elements.",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 

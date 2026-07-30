@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateDoors",
                 "Create Door elements in host walls based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"wallId\":{\"guid\":\"...\"},\"libraryPartName\":\"Door 26\",\"position\":1.0}.",
-                GroupNames.Elements,
+                GroupNames.ElementCreation,
                 "doorsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

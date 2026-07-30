@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateWallThicknessDimensions",
                 "Create associative wall thickness dimensions for the given walls. Each input item is a JSON object matching the command's documented item schema, e.g. {\"wallId\":{\"guid\":\"...\"},\"linePosition\":{\"x\":0,\"y\":0}}.",
-                GroupNames.Elements,
+                GroupNames.ElementCreation,
                 "dimensionsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

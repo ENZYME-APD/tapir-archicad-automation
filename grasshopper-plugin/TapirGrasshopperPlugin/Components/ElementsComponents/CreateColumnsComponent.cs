@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateColumns",
                 "Create Column elements based on the given parameters.",
-                GroupNames.Elements)
+                GroupNames.ElementCreation)
         {
         }
 

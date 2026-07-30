@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateStairs",
                 "Create Stair elements based on the given baseline and parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"baseline\":[{\"x\":0,\"y\":0},...],\"width\":1.2}.",
-                GroupNames.Elements,
+                GroupNames.ElementCreation,
                 "stairsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

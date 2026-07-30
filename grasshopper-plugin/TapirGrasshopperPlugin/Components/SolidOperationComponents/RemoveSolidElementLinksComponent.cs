@@ -17,7 +17,7 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             : base(
                 "RemoveSolidElementLinks",
                 "Remove solid element operation links between target and operator elements.",
-                GroupNames.Elements)
+                GroupNames.ElementSolidOperations)
         {
         }
 

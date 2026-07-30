@@ -13,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "GetSuspendGroupsMode",
                 "Get the current state of the Suspend Groups mode.",
-                GroupNames.Elements)
+                GroupNames.ElementGrouping)
         {
         }
 

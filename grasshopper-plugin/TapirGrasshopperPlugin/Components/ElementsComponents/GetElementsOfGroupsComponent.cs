@@ -19,7 +19,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "GetElementsOfGroups",
                 "Get the elements directly contained by each given group.",
-                GroupNames.Elements)
+                GroupNames.ElementGrouping)
         {
         }
 

@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ModifyMorphs",
                 "Modify Morph elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"elementId\":{\"guid\":\"...\"},...}.",
-                GroupNames.Elements,
+                GroupNames.ElementModification,
                 "morphsWithDetails",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")
