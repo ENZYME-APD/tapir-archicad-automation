@@ -5,6 +5,11 @@
 #include "MigrationHelper.hpp"
 #include "DGModule.hpp"
 
+#if defined (ServerMainVers_2700) && __has_include ("ACAPI/GSID.hpp")
+#include "ACAPI/GSID.hpp"
+#define TAPIR_HAS_GSID
+#endif
+
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -362,6 +367,7 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
 }
 
 
+
 ShowAlertCommand::ShowAlertCommand () :
     CommandBase (CommonSchema::NotUsed)
 {}
@@ -449,4 +455,63 @@ GS::ObjectState ShowAlertCommand::Execute (const GS::ObjectState& parameters, GS
     short clicked = DGAlert (alertType, title, message, subMessage, button1, button2, button3);
 
     return GS::ObjectState ("clickedButton", static_cast<Int32> (clicked));
+}
+
+
+GetUserGSIDCommand::GetUserGSIDCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{}
+
+GS::String GetUserGSIDCommand::GetName () const
+{
+    return "GetUserGSID";
+}
+
+GS::Optional<GS::UniString> GetUserGSIDCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "userId": {
+                "type": "string",
+                "description": "The stable GSID User ID of the logged-in user."
+            },
+            "organizationIds": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "The list of organization IDs the user belongs to. Empty if not part of any organization or if the information cannot be retrieved."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userId"
+        ]
+    })";
+}
+
+GS::ObjectState GetUserGSIDCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_GSID
+    auto gsid = ACAPI::CreateGSIDObject ();
+    if (gsid.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to create GSID object!");
+    }
+
+    auto userId = gsid->GetUserId ();
+    if (userId.IsErr ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get GSID user ID. User may not be signed in.");
+    }
+    GS::Array<GS::UniString> orgIdsArray;
+    auto organizationIds = gsid->GetOrganizationIds ();
+    if (organizationIds.IsOk ()) {
+        for (const auto& orgId : *organizationIds) {
+            orgIdsArray.Push (orgId);
+        }
+    }
+    return GS::ObjectState ("userId", *userId, "organizationIds", orgIdsArray);
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetUserGSID requires Archicad 27 or later.");
+#endif
 }
