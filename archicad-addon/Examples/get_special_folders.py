@@ -15,6 +15,7 @@ response = aclib.RunTapirCommand ('GetSpecialFolders', {
         'Templates',
         'Help',
         'EmbeddedProjectLibrary',
-        'EmbeddedProjectLibraryHotlink'
+        'EmbeddedProjectLibraryHotlink',
+        'ProjectPreviews'
     ]
 })

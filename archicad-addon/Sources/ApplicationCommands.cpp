@@ -4,6 +4,48 @@
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
 #include "DGModule.hpp"
+#include "Folder.hpp"
+
+static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
+{
+    ULong hashValue = projectLocation.GenerateHashValue ();
+    const GS::UniString username = projectLocation.GetUserName ();
+    if (username.IsEmpty ()) {
+        return hashValue;
+    } else {
+        return hashValue * 65599 + username.GenerateHashValue ();
+    }
+}
+
+static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocation)
+{
+    const auto hashValue = GenerateProjectLocationHashValue (projectLocation);
+    const auto projectHashFolderName = IO::Name (GS::UniString::Printf ("%lu", hashValue));
+
+    API_SpecFolderID specFolderId = API_ApplicationPrefsFolderID;
+    IO::Location applicationPrefSpecFolderLoc;
+    ACAPI_ProjectSettings_GetSpecFolder (&specFolderId, &applicationPrefSpecFolderLoc);
+
+	IO::Folder applicationPrefSpecFolder (applicationPrefSpecFolderLoc);
+	if (applicationPrefSpecFolder.GetStatus () != NoError)
+		return {};
+
+    IO::Location previewFolderLoc = {};
+	applicationPrefSpecFolder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+		if (isFolder && previewFolderLoc.IsEmpty ()) {
+            const IO::Folder folder (IO::Location (applicationPrefSpecFolderLoc, name));
+            bool containsProjectHashFolder = false;
+            if (folder.Contains (projectHashFolderName, &containsProjectHashFolder) == NoError && containsProjectHashFolder) {
+                previewFolderLoc = folder.GetLocation ();
+            }
+		}
+	});
+
+	if (previewFolderLoc.IsEmpty ())
+		return {};
+
+	return IO::Location (previewFolderLoc, projectHashFolderName);
+}
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -553,6 +595,25 @@ GS::ObjectState GetSpecialFoldersCommand::Execute (const GS::ObjectState& parame
     const auto& folderPaths = response.AddList<GS::ObjectState> ("folderPaths");
 
     for (const GS::UniString& folderTypeStr : folderTypes) {
+        if (folderTypeStr == "ProjectPreviews") {
+            API_ProjectInfo projectInfo = {};
+            const GSErrCode projectErr = ACAPI_ProjectOperation_Project (&projectInfo);
+            const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+            if (projectErr != NoError || projectInfo.untitled || projectLocation == nullptr) {
+                folderPaths (CreateErrorResponse (APIERR_NOPLAN, "ProjectPreviews requires a saved project."));
+                continue;
+            }
+
+            const IO::Location previewsFolder = GetProjectPreviewsFolder (*projectLocation);
+            if (previewsFolder.IsEmpty ()) {
+                folderPaths (CreateErrorResponse (APIERR_GENERAL, "Failed to find the previews folder of the current project."));
+                continue;
+            }
+
+            folderPaths (GS::ObjectState ("path", previewsFolder.ToDisplayText ()));
+            continue;
+        }
+
         const GS::Optional<API_SpecFolderID> folderId = ConvertStringToSpecFolderID (folderTypeStr);
         if (!folderId.HasValue ()) {
             folderPaths (CreateErrorResponse (APIERR_BADPARS, "Invalid folder type: " + folderTypeStr));

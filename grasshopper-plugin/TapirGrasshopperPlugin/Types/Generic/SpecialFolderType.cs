@@ -15,6 +15,7 @@ namespace TapirGrasshopperPlugin.Types.Generic
         Templates,
         Help,
         EmbeddedProjectLibrary,
-        EmbeddedProjectLibraryHotlink
+        EmbeddedProjectLibraryHotlink,
+        ProjectPreviews
     }
 }

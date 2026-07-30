@@ -7094,7 +7094,8 @@
             "Templates",
             "Help",
             "EmbeddedProjectLibrary",
-            "EmbeddedProjectLibraryHotlink"
+            "EmbeddedProjectLibraryHotlink",
+            "ProjectPreviews"
         ]
     },
     "SpecialFolderPath": {
