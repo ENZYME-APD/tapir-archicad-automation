@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateWindows",
                 "Create Window elements in host walls based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"wallId\":{\"guid\":\"...\"},\"libraryPartName\":\"Window 26\",\"position\":1.0}.",
-                GroupNames.CreateElements,
+                GroupNames.ElementCreation,
                 "windowsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

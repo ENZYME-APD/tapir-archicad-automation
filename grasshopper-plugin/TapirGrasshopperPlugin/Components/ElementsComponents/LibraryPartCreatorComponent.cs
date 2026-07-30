@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 name,
                 description,
-                GroupNames.CreateElements)
+                GroupNames.ElementCreation)
         {
             _dataArrayKey = dataArrayKey;
         }

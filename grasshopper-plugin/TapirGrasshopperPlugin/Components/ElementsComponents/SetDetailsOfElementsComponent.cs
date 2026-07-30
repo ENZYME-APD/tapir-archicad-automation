@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "SetWallDetails",
                 "Set details of Wall elements.",
-                GroupNames.ModifyElements)
+                GroupNames.ElementModification)
         {
         }
 

@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Create Slab elements based on the given parameters. " +
                 "The polygon points are given as a tree with one branch per slab; " +
                 "if no Levels are given, the Z coordinate of each branch's first point is used as the slab level.",
-                GroupNames.CreateElements)
+                GroupNames.ElementCreation)
         {
         }
 

@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateZones",
                 "Create Zone elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"name\":\"Room\",\"numberStr\":\"01\",\"polygonCoordinates\":[{\"x\":0,\"y\":0},...]}.",
-                GroupNames.CreateElements,
+                GroupNames.ElementCreation,
                 "zonesData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

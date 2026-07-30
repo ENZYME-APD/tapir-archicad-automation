@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateOpenings",
                 "Create Opening elements in the given host elements. Each input item is a JSON object matching the command's documented item schema, e.g. {\"hostElementId\":{\"guid\":\"...\"},\"position\":{\"x\":0,\"y\":0,\"z\":1.0}}.",
-                GroupNames.CreateElements,
+                GroupNames.ElementCreation,
                 "openingsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

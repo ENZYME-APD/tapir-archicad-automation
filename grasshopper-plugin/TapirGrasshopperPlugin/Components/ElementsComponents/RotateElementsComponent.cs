@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "RotateElements",
                 "Rotate elements",
-                GroupNames.ModifyElements)
+                GroupNames.ElementModification)
         {
         }
 

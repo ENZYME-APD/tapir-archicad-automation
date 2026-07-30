@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel;
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "LabelElements",
                 "Label elements",
-                GroupNames.CreateElements)
+                GroupNames.ElementCreation)
         {
         }
 

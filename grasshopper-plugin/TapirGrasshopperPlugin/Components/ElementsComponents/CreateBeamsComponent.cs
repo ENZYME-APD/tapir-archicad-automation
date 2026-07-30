@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "CreateBeams",
                 "Create Beam elements based on the given parameters. " +
                 "The Z coordinate of each line's start point is used as the beam's Z coordinate.",
-                GroupNames.CreateElements)
+                GroupNames.ElementCreation)
         {
         }
 

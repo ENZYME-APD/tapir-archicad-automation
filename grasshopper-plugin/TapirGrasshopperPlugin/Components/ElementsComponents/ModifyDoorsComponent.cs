@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ModifyDoors",
                 "Modify Door elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"elementId\":{\"guid\":\"...\"},\"position\":1.5}.",
-                GroupNames.ModifyElements,
+                GroupNames.ElementModification,
                 "doorsWithDetails",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

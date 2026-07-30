@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateAssociativeDimensions",
                 "Create associative linear dimensions from explicit witness point references. Each input item is a JSON object matching the command's documented item schema, e.g. {\"witnessPoints\":[...],\"lineCoordinate\":{\"x\":0,\"y\":0}}.",
-                GroupNames.CreateElements,
+                GroupNames.ElementCreation,
                 "dimensionsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

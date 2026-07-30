@@ -17,7 +17,7 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             : base(
                 "CreateSolidElementLinks",
                 "Create solid element operation links between target and operator elements.",
-                GroupNames.SolidOperations)
+                GroupNames.ElementSolidOperations)
         {
         }
 

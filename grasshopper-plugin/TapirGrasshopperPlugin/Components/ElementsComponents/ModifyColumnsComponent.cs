@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ModifyColumns",
                 "Modify Column elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"elementId\":{\"guid\":\"...\"},\"height\":3.0}.",
-                GroupNames.ModifyElements,
+                GroupNames.ElementModification,
                 "columnsWithDetails",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

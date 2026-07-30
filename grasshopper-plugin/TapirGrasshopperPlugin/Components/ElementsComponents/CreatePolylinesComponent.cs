@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreatePolylines",
                 "Create Polyline elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"coordinates\":[{\"x\":0,\"y\":0},...],\"floorIndex\":0}.",
-                GroupNames.CreateElements,
+                GroupNames.ElementCreation,
                 "polylinesData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")

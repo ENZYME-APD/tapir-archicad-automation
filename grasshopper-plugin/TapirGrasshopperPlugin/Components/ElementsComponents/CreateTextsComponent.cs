@@ -10,7 +10,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateTexts",
                 "Create standalone Text elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"text\":\"Hello\",\"coordinate\":{\"x\":0,\"y\":0},\"height\":2.0}.",
-                GroupNames.CreateElements,
+                GroupNames.ElementCreation,
                 "textsData",
                 "ItemsData",
                 "One JSON object per item, matching the command's documented item schema (see component description).")
