@@ -998,20 +998,76 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         }
     }
 
-    // A multi-plane roof (API_PolyRoofData) needs BOTH a pivot polygon (set above via the
-    // additionalPoly* memo) AND a contour polygon (memo.coords/pends/parcs). The contour was
-    // never populated, leaving the roof under-specified so ACAPI_Element_Create throws a
-    // GSException. Use the same outline for the contour as for the pivot polygon by
-    // duplicating the handles.
-    element.roof.u.polyRoof.contourPolygon = element.roof.u.polyRoof.pivotPolygon;
-    if (memo.additionalPolyCoords != nullptr) {
-        BMHandleToHandle (reinterpret_cast<GSConstHandle> (memo.additionalPolyCoords), reinterpret_cast<GSHandle*> (&memo.coords));
+    // A multi-plane roof (API_PolyRoofData) needs a pivot polygon (set above via the
+    // additionalPoly* memo) and a contour polygon. With API_OffsetOverhang the contour
+    // polygon is derived automatically by offsetting the pivot polygon (see
+    // Do_CreatePolyRoof in the DevKit's Element_Test example), so no contour memo has to
+    // be built here. The tool default can be API_ContourOverhang, which would require
+    // explicit contour data - force the offset mode instead; eavesOverHang keeps the tool
+    // default unless the optional 'eavesOverhang' parameter was applied.
+    element.roof.u.polyRoof.overHangType = API_OffsetOverhang;
+
+    return {};
+}
+
+GS::Optional<GS::UniString> BuildPlaneRoofMemoFromGeometry (
+    API_Element& element,
+    API_ElementMemo& memo,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes)
+{
+    if (polygonOutline.GetSize () < 3) {
+        return "'polygonOutline' must contain at least 3 coordinates.";
     }
-    if (memo.additionalPolyPends != nullptr) {
-        BMHandleToHandle (reinterpret_cast<GSConstHandle> (memo.additionalPolyPends), reinterpret_cast<GSHandle*> (&memo.pends));
+
+    if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
+        polygonOutline.Pop ();
     }
-    if (memo.additionalPolyParcs != nullptr) {
-        BMHandleToHandle (reinterpret_cast<GSConstHandle> (memo.additionalPolyParcs), reinterpret_cast<GSHandle*> (&memo.parcs));
+
+    element.roof.u.planeRoof.poly.nCoords = polygonOutline.GetSize () + 1;
+    element.roof.u.planeRoof.poly.nSubPolys = 1;
+    element.roof.u.planeRoof.poly.nArcs = polygonArcs.GetSize ();
+
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holePolygonOutline;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            element.roof.u.planeRoof.poly.nCoords += holePolygonOutline.GetSize () + 1;
+            ++element.roof.u.planeRoof.poly.nSubPolys;
+            element.roof.u.planeRoof.poly.nArcs += holePolygonArcs.GetSize ();
+        }
+    }
+
+    // GetDefaults typically leaves the roof polygon memo handles null; BMReallocHandle
+    // does not allocate from a null handle, so allocate fresh when null (same pattern as
+    // the slab path). The edge trims / side materials are optional for roofs and left out.
+    const Int32 nCoords   = element.roof.u.planeRoof.poly.nCoords;
+    const Int32 nSubPolys = element.roof.u.planeRoof.poly.nSubPolys;
+    const Int32 nArcs     = element.roof.u.planeRoof.poly.nArcs;
+    memo.coords = reinterpret_cast<API_Coord**> (memo.coords == nullptr
+        ? BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0)
+        : BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords), (nCoords + 1) * sizeof (API_Coord), REALLOC_CLEAR, 0));
+    memo.pends = reinterpret_cast<Int32**> (memo.pends == nullptr
+        ? BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0)
+        : BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
+    if (nArcs > 0) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (memo.parcs == nullptr
+            ? BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0)
+            : BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    }
+
+    Int32 iCoord = 1;
+    Int32 iArc = 0;
+    Int32 iPends = 1;
+    AddPolyToMemo (polygonOutline, polygonArcs, iCoord, iArc, iPends, memo, nullptr, nullptr, false);
+
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holePolygonOutline;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            AddPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo, nullptr, nullptr, false);
+        }
     }
 
     return {};
@@ -3411,6 +3467,21 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                             "items": { "$ref": "#/PolyArc" }
                         },
                         "holes": { "$ref": "#/Holes2D" },
+                        "pivotLine": {
+                            "type": "object",
+                            "description": "If given, a single-plane roof is created instead of a multi-plane roof: one plane tilted along this pivot line. The plane rises on the left side of the line direction (begCoordinate towards endCoordinate); flip the line to tilt towards the other side.",
+                            "properties": {
+                                "begCoordinate": { "$ref": "#/Coordinate2D" },
+                                "endCoordinate": { "$ref": "#/Coordinate2D" }
+                            },
+                            "additionalProperties": false,
+                            "required": ["begCoordinate", "endCoordinate"]
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "Slope angle of the single-plane roof in radians. Only valid together with 'pivotLine'.",
+                            "exclusiveMinimum": 0.0
+                        },
                         "eavesOverhang": { "type": "number" },
                         "levels": {
                             "type": "array",
@@ -3466,10 +3537,22 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
             #else
             element.header.typeID = API_RoofID;
             #endif
-            element.roof.roofClass = API_PolyRoofID;
+            GS::ObjectState pivotLine;
+            const bool isSinglePlane = data.Get ("pivotLine", pivotLine);
+            element.roof.roofClass = isSinglePlane ? API_PlaneRoofID : API_PolyRoofID;
             GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to prepare roof defaults."));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> roofLevels;
+            if (isSinglePlane && (data.Get ("levels", roofLevels) || GetOptionalDouble (data, "eavesOverhang").HasValue ())) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'levels' and 'eavesOverhang' are only valid for multi-plane roofs (omit 'pivotLine' to create one)."));
+                continue;
+            }
+            if (!isSinglePlane && GetOptionalDouble (data, "angle").HasValue ()) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'angle' is only valid for single-plane roofs (add 'pivotLine' to create one)."));
                 continue;
             }
 
@@ -3500,21 +3583,43 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
             const GS::OnExit cleanup ([&]() {
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
-            auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
-            if (error.HasValue ()) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
+            {
+                auto error = isSinglePlane
+                    ? BuildPlaneRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes)
+                    : BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
+                if (error.HasValue ()) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, error.Get ()));
+                    continue;
+                }
+            }
+
+            if (isSinglePlane) {
+                GS::ObjectState begCoordinate;
+                GS::ObjectState endCoordinate;
+                if (!pivotLine.Get ("begCoordinate", begCoordinate) || !pivotLine.Get ("endCoordinate", endCoordinate)) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, "'pivotLine' must contain 'begCoordinate' and 'endCoordinate'."));
+                    continue;
+                }
+                if (IsSame2DCoordinate (begCoordinate, endCoordinate)) {
+                    elements.Push (CreateErrorResponse (APIERR_BADPARS, "Zero-length pivot line: 'begCoordinate' and 'endCoordinate' are identical."));
+                    continue;
+                }
+                element.roof.u.planeRoof.baseLine.c1 = Get2DCoordinateFromObjectState (begCoordinate);
+                element.roof.u.planeRoof.baseLine.c2 = Get2DCoordinateFromObjectState (endCoordinate);
+                element.roof.u.planeRoof.posSign = true;
+                auto angle = GetOptionalDouble (data, "angle");
+                if (angle.HasValue ()) {
+                    element.roof.u.planeRoof.angle = angle.Get ();
+                }
+            }
+
+            err = ACAPI_Element_Create (&element, &memo);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to create roof."));
                 continue;
             }
 
-            // Multi-plane roof creation is NOT yet supported. ACAPI_Element_Create for an
-            // API_PolyRoofID requires pivot-edge plane data (memo.pivotPolyEdges holding
-            // per-edge API_RoofSegmentData keyed by the pivot polygon's edge unique IDs),
-            // which is not built here. Calling Create without it makes the Archicad core
-            // THROW a GSException AND pop a modal dialog that hangs the JSON API. Until that
-            // plane setup is implemented, reject cleanly without ever calling Create so the
-            // command can never crash or hang the application.
-            (void) err;
-            elements.Push (CreateErrorResponse (APIERR_GENERAL, "Multi-plane roof creation is not yet supported (incomplete pivot-edge plane setup)."));
+            elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
 }
