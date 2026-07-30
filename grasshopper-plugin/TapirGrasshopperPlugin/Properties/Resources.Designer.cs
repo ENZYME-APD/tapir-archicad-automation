@@ -2191,6 +2191,22 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetSpecialFolders
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSpecialFolders", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SpecialFolderTypeValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SpecialFolderTypeValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetElementsOfGroups
         {
             get {

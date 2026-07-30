@@ -4,6 +4,48 @@
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
 #include "DGModule.hpp"
+#include "Folder.hpp"
+
+static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
+{
+    ULong hashValue = projectLocation.GenerateHashValue ();
+    const GS::UniString username = projectLocation.GetUserName ();
+    if (username.IsEmpty ()) {
+        return hashValue;
+    } else {
+        return hashValue * 65599 + username.GenerateHashValue ();
+    }
+}
+
+static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocation)
+{
+    const auto hashValue = GenerateProjectLocationHashValue (projectLocation);
+    const auto projectHashFolderName = IO::Name (GS::UniString::Printf ("%lu", hashValue));
+
+    API_SpecFolderID specFolderId = API_ApplicationPrefsFolderID;
+    IO::Location applicationPrefSpecFolderLoc;
+    ACAPI_ProjectSettings_GetSpecFolder (&specFolderId, &applicationPrefSpecFolderLoc);
+
+	IO::Folder applicationPrefSpecFolder (applicationPrefSpecFolderLoc);
+	if (applicationPrefSpecFolder.GetStatus () != NoError)
+		return {};
+
+    IO::Location previewFolderLoc = {};
+	applicationPrefSpecFolder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+		if (isFolder && previewFolderLoc.IsEmpty ()) {
+            const IO::Folder folder (IO::Location (applicationPrefSpecFolderLoc, name));
+            bool containsProjectHashFolder = false;
+            if (folder.Contains (projectHashFolderName, &containsProjectHashFolder) == NoError && containsProjectHashFolder) {
+                previewFolderLoc = folder.GetLocation ();
+            }
+		}
+	});
+
+	if (previewFolderLoc.IsEmpty ())
+		return {};
+
+	return IO::Location (previewFolderLoc, projectHashFolderName);
+}
 
 #if defined (ServerMainVers_2700) && __has_include ("ACAPI/GSID.hpp")
 #include "ACAPI/GSID.hpp"
@@ -457,6 +499,146 @@ GS::ObjectState ShowAlertCommand::Execute (const GS::ObjectState& parameters, GS
     return GS::ObjectState ("clickedButton", static_cast<Int32> (clicked));
 }
 
+GetSpecialFoldersCommand::GetSpecialFoldersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSpecialFoldersCommand::GetName () const
+{
+    return "GetSpecialFolders";
+}
+
+GS::Optional<GS::UniString> GetSpecialFoldersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folderTypes": {
+                "type": "array",
+                "description": "The types of the special folders to retrieve.",
+                "items": {
+                    "$ref": "#/SpecialFolderType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "folderTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSpecialFoldersCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "folderPaths": {
+                "$ref": "#/SpecialFolderPathsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "folderPaths"
+        ]
+    })";
+}
+
+static GS::Optional<API_SpecFolderID> ConvertStringToSpecFolderID (const GS::UniString& folderTypeStr)
+{
+    if (folderTypeStr == "ApplicationPrefs") {
+        return API_ApplicationPrefsFolderID;
+    }
+    if (folderTypeStr == "GraphisoftPrefs") {
+        return API_GraphisoftPrefsFolderID;
+    }
+    if (folderTypeStr == "GraphisoftHome") {
+        return API_GraphisoftHomeFolderID;
+    }
+    if (folderTypeStr == "Cache") {
+        return API_CacheFolderID;
+    }
+    if (folderTypeStr == "Data") {
+        return API_DataFolderID;
+    }
+    if (folderTypeStr == "UserDocuments") {
+        return API_UserDocumentsFolderID;
+    }
+    if (folderTypeStr == "Temporary") {
+        return API_TemporaryFolderID;
+    }
+    if (folderTypeStr == "Application") {
+        return API_ApplicationFolderID;
+    }
+    if (folderTypeStr == "Defaults") {
+        return API_DefaultsFolderID;
+    }
+    if (folderTypeStr == "WebObjects") {
+        return API_WebObjectsFolderID;
+    }
+    if (folderTypeStr == "Templates") {
+        return API_TemplatesFolderID;
+    }
+    if (folderTypeStr == "Help") {
+        return API_HelpFolderID;
+    }
+    if (folderTypeStr == "EmbeddedProjectLibrary") {
+        return API_EmbeddedProjectLibraryFolderID;
+    }
+    if (folderTypeStr == "EmbeddedProjectLibraryHotlink") {
+        return API_EmbeddedProjectLibraryHotlinkFolderID;
+    }
+    return GS::NoValue;
+}
+
+GS::ObjectState GetSpecialFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> folderTypes;
+    parameters.Get ("folderTypes", folderTypes);
+
+    GS::ObjectState response;
+    const auto& folderPaths = response.AddList<GS::ObjectState> ("folderPaths");
+
+    for (const GS::UniString& folderTypeStr : folderTypes) {
+        if (folderTypeStr == "ProjectPreviews") {
+            API_ProjectInfo projectInfo = {};
+            const GSErrCode projectErr = ACAPI_ProjectOperation_Project (&projectInfo);
+            const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+            if (projectErr != NoError || projectInfo.untitled || projectLocation == nullptr) {
+                folderPaths (CreateErrorResponse (APIERR_NOPLAN, "ProjectPreviews requires a saved project."));
+                continue;
+            }
+
+            const IO::Location previewsFolder = GetProjectPreviewsFolder (*projectLocation);
+            if (previewsFolder.IsEmpty ()) {
+                folderPaths (CreateErrorResponse (APIERR_GENERAL, "Failed to find the previews folder of the current project."));
+                continue;
+            }
+
+            folderPaths (GS::ObjectState ("path", previewsFolder.ToDisplayText ()));
+            continue;
+        }
+
+        const GS::Optional<API_SpecFolderID> folderId = ConvertStringToSpecFolderID (folderTypeStr);
+        if (!folderId.HasValue ()) {
+            folderPaths (CreateErrorResponse (APIERR_BADPARS, "Invalid folder type: " + folderTypeStr));
+            continue;
+        }
+
+        API_SpecFolderID specFolderId = folderId.Get ();
+        IO::Location location;
+        const GSErrCode err = ACAPI_ProjectSettings_GetSpecFolder (&specFolderId, &location);
+        if (err != NoError) {
+            folderPaths (CreateErrorResponse (err, "Failed to get the path of the special folder: " + folderTypeStr));
+            continue;
+        }
+
+        folderPaths (GS::ObjectState ("path", location.ToDisplayText ()));
+    }
+
+    return response;
+}
 
 GetUserGSIDCommand::GetUserGSIDCommand () :
     CommandBase (CommonSchema::NotUsed)
