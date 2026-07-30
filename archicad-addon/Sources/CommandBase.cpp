@@ -371,6 +371,15 @@ double GetZPos (const short floorIndex, const double offset, const Stories& stor
     return story.level + offset;
 }
 
+GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& parameters, const char* floorIndexFieldName, const double zPos, const Stories& stories)
+{
+    short floorIndex = 0;
+    if (parameters.Get (floorIndexFieldName, floorIndex)) {
+        return { floorIndex, zPos - GetZPos (floorIndex, 0.0, stories) };
+    }
+    return GetFloorIndexAndOffset (zPos, stories);
+}
+
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID)
 {
     switch (typeID) {

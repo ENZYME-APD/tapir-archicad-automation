@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel;
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "LabelElements",
                 "Label elements",
-                GroupNames.Elements)
+                GroupNames.ElementCreation)
         {
         }
 
@@ -46,6 +46,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 },
                 ToAddOn);
         }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.LabelElements;
 
         public override Guid ComponentGuid =>
             new Guid("ecdb0a59-f928-4ed3-88e1-cd9aea737b39");

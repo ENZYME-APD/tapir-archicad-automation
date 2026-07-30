@@ -175,6 +175,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 hasClearenceCollisions);
         }
 
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.Collisions;
+
         public override Guid ComponentGuid =>
             new Guid("6ff649b0-89a0-466a-aaa6-3b0b5eef70ee");
     }

@@ -24,7 +24,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 name,
                 "Get details of elements.",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 

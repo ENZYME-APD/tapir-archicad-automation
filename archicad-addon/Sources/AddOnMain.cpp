@@ -14,9 +14,11 @@
 
 #include "AboutDialog.hpp"
 #include "TapirPalette.hpp"
+#include "ScriptUIPalette.hpp"
 #include "VersionChecker.hpp"
 
 #include "ApplicationCommands.hpp"
+#include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
@@ -38,6 +40,8 @@
 #include "DesignOptionCommands.hpp"
 #include "IFCCommands.hpp"
 #include "SolidElementOperationCommands.hpp"
+#include "MEPCommands.hpp"
+#include "KeynoteCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -101,6 +105,21 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     break;
             }
             break;
+        case ID_ADDON_MENU_FOR_SHORTCUTS:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_MANAGE_SHORTCUTS:
+                    TapirPalette::Instance ().OpenShortcutsDialog ();
+                    break;
+            }
+            break;
+        // Each shortcut slot is its own top-level menu group (see ResourceIds.hpp) —
+        // RunShortcutSlot takes a 0-based slot index.
+        case ID_ADDON_MENU_RUNSCRIPT_1: TapirPalette::Instance ().RunShortcutSlot (0); break;
+        case ID_ADDON_MENU_RUNSCRIPT_2: TapirPalette::Instance ().RunShortcutSlot (1); break;
+        case ID_ADDON_MENU_RUNSCRIPT_3: TapirPalette::Instance ().RunShortcutSlot (2); break;
+        case ID_ADDON_MENU_RUNSCRIPT_4: TapirPalette::Instance ().RunShortcutSlot (3); break;
+        case ID_ADDON_MENU_RUNSCRIPT_5: TapirPalette::Instance ().RunShortcutSlot (4); break;
+        case ID_ADDON_MENU_RUNSCRIPT_6: TapirPalette::Instance ().RunShortcutSlot (5); break;
     }
 
     return NoError;
@@ -122,6 +141,13 @@ GSErrCode RegisterInterface (void)
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_PALETTE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_UPDATE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SHORTCUTS, 0, MenuCode_UserDef, MenuFlag_SeparatorBefore);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_1, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_2, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_3, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_4, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_5, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_6, 0, MenuCode_UserDef, MenuFlag_Default);
 
     return err;
 }
@@ -133,7 +159,20 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_PALETTE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_UPDATE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SHORTCUTS, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_1, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_2, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_3, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_4, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_5, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_6, MenuCommandHandler);
     err |= TapirPalette::RegisterPaletteControlCallBack ();
+    err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
+
+    // Forces the palette singleton (and its saved shortcut-slot preferences) to load immediately,
+    // so custom shortcut menu labels and the enabled state of the shortcut menu items are applied
+    // at startup rather than only after the user first opens the palette or triggers a shortcut.
+    TapirPalette::Instance ();
 
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
@@ -157,6 +196,19 @@ GSErrCode Initialize (void)
             applicationCommands, "1.3.1",
             "Changes the current (active) window to the given window."
         );
+        err |= RegisterCommand<GetUserGSIDCommand> (
+            applicationCommands, "1.5.6",
+            "Get the current registered User-GSID and OrganizationsID. Requires Archicad 27 or later."
+        );
+        err |= RegisterCommand<ShowAlertCommand>(
+            applicationCommands,"1.5.6",
+            "Display a dialog with up to three buttons."
+        );
+        err |= RegisterCommand<GetSpecialFoldersCommand> (
+            applicationCommands, "1.5.6",
+            "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.)."
+        );
+
         AddCommandGroup (applicationCommands);
     }
 
@@ -252,7 +304,7 @@ GSErrCode Initialize (void)
             "Tests an elements by the given criterias."
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
-            elementCommands, "1.1.0",
+            elementCommands, "1.5.7",
             "Gets the details of the given elements (geometry parameters etc)."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
@@ -274,6 +326,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetZoneBoundariesCommand> (
             elementCommands, "1.2.3",
             "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.)."
+        );
+        err |= RegisterCommand<UpdateZonesCommand> (
+            elementCommands, "1.5.4",
+            "Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements)."
         );
         err |= RegisterCommand<GetCollisionsCommand> (
             elementCommands, "1.2.2",
@@ -304,11 +360,11 @@ GSErrCode Initialize (void)
             "Unlocks the given elements. Manual lock, not teamwork!"
         );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
-            elementCommands, "1.1.0",
+            elementCommands, "1.5.7",
             "Gets all the GDL parameters (name, type, value) of the given elements."
         );
         err |= RegisterCommand<SetGDLParametersOfElementsCommand> (
-            elementCommands, "1.1.0",
+            elementCommands, "1.5.7",
             "Sets the given GDL parameters of the given elements."
         );
         err |= RegisterCommand<CreateColumnsCommand> (
@@ -349,7 +405,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateRoofsCommand> (
             elementCommands, "1.4.0",
-            "Creates multi-plane Roof elements based on footprint, level and roof profile data."
+            "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead."
         );
         err |= RegisterCommand<CreateAssociativeDimensionsCommand> (
             elementCommands, "1.4.0",
@@ -375,12 +431,36 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.5",
             "Creates Polyline elements based on the given parameters."
         );
+        err |= RegisterCommand<CreateLineElementsCommand> (
+            elementCommands, "1.5.7",
+            "Creates Line elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateArcsCommand> (
+            elementCommands, "1.5.7",
+            "Creates Arc elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateCirclesCommand> (
+            elementCommands, "1.5.7",
+            "Creates Circle elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateHotspotsCommand> (
+            elementCommands, "1.5.7",
+            "Creates Hotspot elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateHatchesCommand> (
+            elementCommands, "1.5.7",
+            "Creates Hatch elements based on the given parameters."
+        );
+        err |= RegisterCommand<CreateSplinesCommand> (
+            elementCommands, "1.5.7",
+            "Creates Spline elements based on the given parameters."
+        );
         err |= RegisterCommand<CreateObjectsCommand> (
-            elementCommands, "1.6.0",
+            elementCommands, "1.5.7",
             "Creates Object elements based on the given parameters."
         );
         err |= RegisterCommand<CreateLampsCommand> (
-            elementCommands, "1.6.0",
+            elementCommands, "1.5.7",
             "Creates Lamp elements based on the given parameters."
         );
         err |= RegisterCommand<CreateMeshesCommand> (
@@ -432,11 +512,11 @@ GSErrCode Initialize (void)
             "Modifies the attributes of Mesh elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyObjectsCommand> (
-            elementCommands, "1.5.4",
+            elementCommands, "1.5.7",
             "Modifies Object elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyLampsCommand> (
-            elementCommands, "1.5.4",
+            elementCommands, "1.5.7",
             "Modifies Lamp elements based on the given parameters."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
@@ -463,6 +543,22 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateGroupsCommand> (
             elementGroupingCommands, "1.4.0",
             "Creates groups of the passed elements"
+        );
+        err |= RegisterCommand<GetGroupsOfElementsCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the identifier of the group that directly contains each given element. Returns an error for elements that are not part of any group."
+        );
+        err |= RegisterCommand<GetElementsOfGroupsCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the elements directly contained by each given group."
+        );
+        err |= RegisterCommand<GetSuspendGroupsModeCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Gets the current state of the Suspend Groups mode."
+        );
+        err |= RegisterCommand<SetSuspendGroupsModeCommand> (
+            elementGroupingCommands, "1.5.6",
+            "Turns the Suspend Groups mode on or off. Suspend groups to perform operations on elements that are part of a group; remember to restore the previous state afterwards."
         );
         AddCommandGroup (elementGroupingCommands);
     }
@@ -492,6 +588,25 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ExportFavoritesCommand> (
             favoritesCommands, "1.5.0",
             "Export the project's Favorites to a .prefs file or folder."
+        );
+        err |= RegisterCommand<ApplyFavoritesToElementsCommand> (
+            favoritesCommands, "1.5.4",
+            "Apply the given favorites to existing elements. Only settings-type parameters are changed - "
+            "geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying "
+            "a Favorite never moves or resizes the target element. By default settings, classifications, "
+            "categories and properties are all applied; each can be opted out of individually."
+        );
+        err |= RegisterCommand<UpdateFavoritesFromElementsCommand> (
+            favoritesCommands, "1.5.4",
+            "Update existing favorites from the given elements."
+        );
+        err |= RegisterCommand<RenameFavoritesCommand> (
+            favoritesCommands, "1.5.4",
+            "Rename existing favorites."
+        );
+        err |= RegisterCommand<DeleteFavoritesCommand> (
+            favoritesCommands, "1.5.4",
+            "Delete existing favorites."
         );
         AddCommandGroup (favoritesCommands);
     }
@@ -577,6 +692,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.1.3",
             "Returns the details of every attribute of the given type."
         );
+        err |= RegisterCommand<DeleteAttributesCommand> (
+            attributeCommands, "1.5.4",
+            "Deletes the given attributes."
+        );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
             "Creates or overwrites Layer attributes based on the given parameters."
@@ -584,6 +703,30 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLayerCombinationsCommand> (
             attributeCommands, "1.2.4",
             "Creates or overwrites Layer Combination attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateLinesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Line attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateFillsCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Fill attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateZoneCategoriesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Zone Category attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateMEPSystemsCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites MEP System attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreatePenTablesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Pen Table attributes based on the given parameters."
+        );
+        err |= RegisterCommand<CreateProfilesCommand> (
+            attributeCommands, "1.5.4",
+            "Creates or overwrites Profile attributes as a copy of an existing Profile's geometry, based on the given parameters."
         );
         err |= RegisterCommand<CreateBuildingMaterialsCommand> (
             attributeCommands, "1.0.1",
@@ -604,6 +747,46 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetLayerCombinationsCommand> (
             attributeCommands, "1.2.4",
             "Returns the details of layer combination attributes."
+        );
+        err |= RegisterCommand<GetLinesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Line attributes."
+        );
+        err |= RegisterCommand<GetFillsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Fill attributes."
+        );
+        err |= RegisterCommand<GetZoneCategoriesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Zone Category attributes."
+        );
+        err |= RegisterCommand<GetMEPSystemsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given MEP System attributes."
+        );
+        err |= RegisterCommand<GetPenTablesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Pen Table attributes."
+        );
+        err |= RegisterCommand<GetProfilesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Profile attributes."
+        );
+        err |= RegisterCommand<GetCompositesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Composite attributes."
+        );
+        err |= RegisterCommand<GetSurfacesCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Surface attributes."
+        );
+        err |= RegisterCommand<GetLayersCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Layer attributes."
+        );
+        err |= RegisterCommand<GetBuildingMaterialsCommand> (
+            attributeCommands, "1.5.4",
+            "Returns the details of the given Building Material attributes."
         );
         AddCommandGroup (attributeCommands);
     }
@@ -903,6 +1086,84 @@ GSErrCode Initialize (void)
         AddCommandGroup (designOptionsCommands);
     }
 
+    { // Keynote Commands
+        CommandGroup keynoteCommands ("Keynote Commands");
+        err |= RegisterCommand<GetKeynoteTreeCommand> (
+            keynoteCommands, "1.5.6",
+            "Retrieves the whole keynote folder and item hierarchy. The technical root folder is not included in the output; the top-level folders and items are returned directly. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetKeynoteAutoTextsCommand> (
+            keynoteCommands, "1.5.6",
+            "Retrieves the autotext tokens of the given keynote items. The tokens can be used as label text content to reference the fields of a keynote item. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates keynote folders under the given parent folders (or under the root folder). Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates keynote items in the given parent folders (or in the root folder). Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Modifies the key, title or reference of the given keynote folders. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Modifies the key, title, description or reference of the given keynote items. Available from Archicad 28."
+        );
+        err |= RegisterCommand<DeleteKeynoteFoldersCommand> (
+            keynoteCommands, "1.5.6",
+            "Deletes the given keynote folders including their content. Available from Archicad 28."
+        );
+        err |= RegisterCommand<DeleteKeynoteItemsCommand> (
+            keynoteCommands, "1.5.6",
+            "Deletes the given keynote items. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateKeynoteLabelsCommand> (
+            keynoteCommands, "1.5.6",
+            "Creates Label elements that reference the given keynote items via autotext. Available from Archicad 28."
+        );
+        AddCommandGroup (keynoteCommands);
+    }
+
+    { // MEP Commands
+        CommandGroup mepCommands ("MEP Commands");
+        err |= RegisterCommand<GetMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the details of the given MEP routing elements: domain, MEP system, route polyline, segments with cross section data and nodes. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPPortsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the ports of the given MEP elements including position, shape, size and connection status. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetMEPDistributionSystemsCommand> (
+            mepCommands, "1.5.6",
+            "Retrieves the MEP distribution systems of the project with their domain, MEP system attribute and member elements. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Creates MEP routing elements (duct, pipe or cable carrier routes) along the given polylines with optional cross section data and MEP system. Available from Archicad 28."
+        );
+        err |= RegisterCommand<CreateMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ModifyMEPRoutingElementsCommand> (
+            mepCommands, "1.5.6",
+            "Modifies the given MEP routing elements: MEP system, cross section data of all segments and node positions. Available from Archicad 28."
+        );
+        err |= RegisterCommand<ConnectMEPElementsCommand> (
+            mepCommands, "1.5.6",
+            "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Available from Archicad 28."
+        );
+        AddCommandGroup (mepCommands);
+    }
+
     { // Solid Element Operation Commands
         CommandGroup solidElementOperationCommands ("Solid Element Operation Commands");
         err |= RegisterCommand<CreateSolidElementLinksCommand> (
@@ -918,6 +1179,19 @@ GSErrCode Initialize (void)
             "Returns solid element operation links for each queried element, grouped by role (target or operator)."
         );
         AddCommandGroup (solidElementOperationCommands);
+    }
+
+    { // Script UI Commands
+        CommandGroup scriptUICommands ("Script UI Commands");
+        err |= RegisterCommand<ShowScriptUICommand> (
+            scriptUICommands, "1.5.4",
+            "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts)."
+        );
+        err |= RegisterCommand<GetScriptUIResultCommand> (
+            scriptUICommands, "1.5.4",
+            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any."
+        );
+        AddCommandGroup (scriptUICommands);
     }
 
     { // Developer Commands

@@ -15,7 +15,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ConnectedElements",
                 "Gets the connected elements of the given elements.",
-                GroupNames.Elements)
+                GroupNames.ElementDetails)
         {
         }
 

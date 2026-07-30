@@ -75,6 +75,13 @@ void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, co
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
 
+// Defined in ExtendedElementCommands.cpp (not ElementCommands.cpp, where it's called from) -
+// reading a Morph's body needs Model3D/MeshBody.hpp, which cannot be included in the same
+// translation unit as ModelMeshBody.hpp (already required by ElementCommands.cpp for zone
+// boundaries) without a "'GS' n'est pas membre de 'GS'" GDL header conflict - confirmed live,
+// root cause not fully understood, kept as two separate translation units instead.
+void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
 struct Story {
     Story (short _index, double _level)
         : index (_index)
@@ -89,6 +96,13 @@ using Stories = std::map<short, Story>;
 Stories GetStories ();
 GS::Pair<short, double> GetFloorIndexAndOffset (const double zPos, const Stories& stories);
 double GetZPos (const short floorIndex, const double offset, const Stories& stories);
+// Same result as GetFloorIndexAndOffset (zPos, stories), except an explicit floorIndex value under
+// floorIndexFieldName in `parameters` (when present) picks the floor directly instead of it being
+// derived from zPos - the offset is still computed against zPos, just relative to the chosen
+// floor's own base level. Use this wherever a Create/Modify command currently derives floorInd
+// purely from a Z coordinate, to let callers pin the floor explicitly instead of relying on a
+// guess that can land on the wrong floor for a Z value shared by more than one story.
+GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& parameters, const char* floorIndexFieldName, const double zPos, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
 short ParseAnchorPointString (const GS::UniString& anchorPoint);

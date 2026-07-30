@@ -1,0 +1,11 @@
+Command: UpdateZones
+Parameters:
+{
+    "keepStampPosition": true,
+    "undoTopTrim": false,
+    "undoBottomTrim": false
+}
+Response:
+{
+    "success": true
+}

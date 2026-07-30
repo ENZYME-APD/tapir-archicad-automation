@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "SetElementGDLs",
                 "Sets the given GDL parameters of the given elements.",
-                GroupNames.Elements)
+                GroupNames.ElementModification)
         {
         }
 
@@ -171,6 +171,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 0,
                 response.ExecutionResults.Select(x => x.Message()));
         }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.SetElementGDLs;
 
         public override Guid ComponentGuid =>
             new Guid("c6e20c16-6edc-446d-88c2-c83f2e30c0b3");
