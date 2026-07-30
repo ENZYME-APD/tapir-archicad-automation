@@ -196,6 +196,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.3.1",
             "Changes the current (active) window to the given window."
         );
+        err |= RegisterCommand<GetUserGSIDCommand> (
+            applicationCommands, "1.5.6",
+            "Get the current registered User-GSID and OrganizationsID. Requires Archicad 27 or later."
+        );
         err |= RegisterCommand<ShowAlertCommand>(
             applicationCommands,"1.5.6",
             "Display a dialog with up to three buttons."
@@ -401,7 +405,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateRoofsCommand> (
             elementCommands, "1.4.0",
-            "Creates multi-plane Roof elements based on footprint, level and roof profile data."
+            "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead."
         );
         err |= RegisterCommand<CreateAssociativeDimensionsCommand> (
             elementCommands, "1.4.0",
