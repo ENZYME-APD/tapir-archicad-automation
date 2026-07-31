@@ -1172,6 +1172,10 @@ GSErrCode Initialize (void)
             mepCommands, "1.5.6",
             "Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Available from Archicad 28."
         );
+        err |= RegisterCommand<GetMEPPreferenceTablesCommand> (
+            mepCommands, "1.5.7",
+            "Gets the circular cross section preference tables (referenceId, diameter, description) of the Piping or Ventilation domain. Available from Archicad 28."
+        );
         AddCommandGroup (mepCommands);
     }
 
