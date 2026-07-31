@@ -840,7 +840,6 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         polygonOutline.Pop ();
     }
 
-    const API_Polygon oldPoly = element.slab.poly;
     element.slab.poly.nCoords = polygonOutline.GetSize () + 1;
     element.slab.poly.nSubPolys = 1;
     element.slab.poly.nArcs = polygonArcs.GetSize ();
@@ -855,59 +854,59 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         }
     }
 
-    // ACAPI_Element_GetDefaults does not always allocate the polygon memo handles for
-    // slabs (e.g. the default slab reports nCoords but leaves memo.coords == nullptr).
-    // The original size-change-only guards skipped allocation whenever the requested
-    // polygon matched the default size, leaving memo.coords null and crashing
-    // AddPolyToMemo with a null dereference. BMReallocHandle does NOT allocate from a
-    // null handle, so a null handle must be created fresh with BMAllocateHandle (as the
-    // mesh/zone commands do); only an existing handle is resized with BMReallocHandle.
+    // The polygon handles are always rebuilt from scratch. The previous
+    // size-comparison-based reuse (against element.slab.poly before the counts
+    // above were applied) was fragile: in the batched create loop the element
+    // and memo are reused across items and ACAPI_Element_Create may regularize
+    // the polygon and update element.slab.poly without resizing the caller's
+    // handles, so the stale sizes made the next item write out of bounds and
+    // crash Archicad whenever the requests mixed different vertex counts
+    // (#417, #439, #440); the modify path fed handles from
+    // ACAPI_Element_GetMemo through the same guards (#452).
     const Int32 nCoords    = element.slab.poly.nCoords;
     const Int32 nSubPolys  = element.slab.poly.nSubPolys;
     const Int32 nArcs      = element.slab.poly.nArcs;
-    const bool  coordsWereNull = (memo.coords == nullptr);
 
-    if (coordsWereNull) {
-        memo.coords        = reinterpret_cast<API_Coord**>             (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
-        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
-        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim),            ALLOCATE_CLEAR, 0));
-        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMAllocatePtr    ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
-    } else if (oldPoly.nCoords != nCoords) {
-        memo.coords        = reinterpret_cast<API_Coord**>             (BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords),        (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
-        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMReallocHandle (reinterpret_cast<GSHandle> (memo.vertexIDs),     (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
-        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMReallocHandle (reinterpret_cast<GSHandle> (memo.edgeTrims),     (nCoords + 1) * sizeof (API_EdgeTrim),            REALLOC_CLEAR, 0));
-        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMReallocPtr    (reinterpret_cast<GSPtr> (memo.sideMaterials), (nCoords + 1) * sizeof (API_OverriddenAttribute), REALLOC_CLEAR, 0));
-    }
-    if (memo.pends == nullptr) {
-        memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    } else if (oldPoly.nSubPolys != nSubPolys) {
-        memo.pends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
-    }
+    BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&memo.vertexIDs));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&memo.edgeTrims));
+    BMKillPtr    (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&memo.pends));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+
+    memo.coords        = reinterpret_cast<API_Coord**>             (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
+    memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32),                  ALLOCATE_CLEAR, 0));
+    memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim),            ALLOCATE_CLEAR, 0));
+    memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMAllocatePtr    ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+    memo.pends         = reinterpret_cast<Int32**>                 (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32),                 ALLOCATE_CLEAR, 0));
     if (nArcs > 0) {
-        if (memo.parcs == nullptr) {
-            memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-        } else if (oldPoly.nArcs != nArcs) {
-            memo.parcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
-        }
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
     }
-    const bool needToProcessVertexIDs =
-        coordsWereNull ||
-        oldPoly.nCoords != element.slab.poly.nCoords ||
-        oldPoly.nSubPolys != element.slab.poly.nSubPolys;
+    if (memo.coords == nullptr || memo.vertexIDs == nullptr || memo.edgeTrims == nullptr ||
+        memo.sideMaterials == nullptr || memo.pends == nullptr || (nArcs > 0 && memo.parcs == nullptr)) {
+        return "Failed to allocate the polygon data.";
+    }
 
     const API_EdgeTrimID edgeTrimSideType = APIEdgeTrim_Vertical;
     Int32 iCoord = 1;
     Int32 iArc = 0;
     Int32 iPends = 1;
-    AddPolyToMemo (polygonOutline, polygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, needToProcessVertexIDs);
+    AddPolyToMemo (polygonOutline, polygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, true);
 
     for (const GS::ObjectState& hole : holes) {
         GS::Array<GS::ObjectState> holePolygonOutline;
         GS::Array<GS::ObjectState> holePolygonArcs;
         if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            AddPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, needToProcessVertexIDs);
+            AddPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, true);
         }
     }
+
+    // API convention: the first entry of the vertexIDs array holds the highest
+    // vertex id used in the polygon (AddPolyToMemo assigns ids equal to the
+    // coordinate positions, with each contour's closing vertex repeating its
+    // first vertex's id, so the maximum is the position before the last
+    // closing vertex).
+    (*memo.vertexIDs)[0] = (UInt32) (nCoords - 1);
 
     return {};
 }
