@@ -54,6 +54,13 @@ public:
     static bool            HasInstance ();
     static ScriptUIPalette& Instance ();
 
+    // Explicitly tears down the browser control while Archicad's own environment (including its
+    // CEF/browser subsystem) is still fully alive - must be called from FreeData, not left to run
+    // via the static GS::Ref's destructor at DLL/dylib unload time (confirmed via a real macOS
+    // crash report: EXC_BAD_ACCESS in the DG::Browser destructor when it ran during add-on
+    // finalization, after Archicad had already begun tearing down its own browser subsystem).
+    static void             Release ();
+
     void ShowWithHTML (const GS::UniString& htmlContent, const ScriptUIOptions& options = ScriptUIOptions ());
     void Hide ();
 
@@ -73,6 +80,11 @@ private:
     // page was opened with options.autoHeight = true (and therefore has the auto-height observer
     // script injected - see InjectAutoHeightScript in ScriptUIPalette.cpp).
     bool autoHeightEnabled = false;
+
+    // Set only when APIPalMsg_HidePalette_Begin itself hid a visible palette. Guards
+    // APIPalMsg_HidePalette_End so it only restores visibility it took away - not a palette the
+    // user (or the script, via ClosePalette) had already explicitly closed beforehand.
+    bool hiddenByForcedHideBegin = false;
 
     // Used only by PaletteControlCallBack, e.g. when Archicad restores a saved window layout that
     // had this palette open - just redisplays whatever HTML was last loaded (or a blank palette).

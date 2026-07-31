@@ -130,6 +130,11 @@ ScriptUIPalette& ScriptUIPalette::Instance ()
     return *instance;
 }
 
+void ScriptUIPalette::Release ()
+{
+    instance = nullptr;
+}
+
 void ScriptUIPalette::Show ()
 {
     DG::Palette::Show ();
@@ -184,6 +189,7 @@ bool ScriptUIPalette::ConsumeResult (GS::UniString* outResult)
 
 void ScriptUIPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool* accepted)
 {
+    hiddenByForcedHideBegin = false;
     Hide ();
     *accepted = true;
 }
@@ -212,7 +218,9 @@ void ScriptUIPalette::RegisterACAPIJavaScriptObject ()
 
     jsACAPI->AddItem (new JS::Function ("ClosePalette", [] (GS::Ref<JS::Base>) {
         if (ScriptUIPalette::HasInstance ()) {
-            ScriptUIPalette::Instance ().Hide ();
+            ScriptUIPalette& palette = ScriptUIPalette::Instance ();
+            palette.hiddenByForcedHideBegin = false;
+            palette.Hide ();
         }
         return GS::Ref<JS::Base> (new JS::Value (true));
     }));
@@ -246,13 +254,21 @@ GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID m
             break;
 
         case APIPalMsg_HidePalette_Begin:
-            if (HasInstance () && Instance ().IsVisible ())
-                Instance ().Hide ();
+            if (HasInstance ()) {
+                ScriptUIPalette& palette = Instance ();
+                palette.hiddenByForcedHideBegin = palette.IsVisible ();
+                if (palette.hiddenByForcedHideBegin)
+                    palette.Hide ();
+            }
             break;
 
         case APIPalMsg_HidePalette_End:
-            if (HasInstance () && !Instance ().IsVisible ())
-                Instance ().Show ();
+            if (HasInstance ()) {
+                ScriptUIPalette& palette = Instance ();
+                if (palette.hiddenByForcedHideBegin)
+                    palette.Show ();
+                palette.hiddenByForcedHideBegin = false;
+            }
             break;
 
         case APIPalMsg_IsPaletteVisible:
