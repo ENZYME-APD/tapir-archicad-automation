@@ -45,6 +45,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetOptionality(new[] { 1, 2 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "ElementGuids",
+                "Identifiers of the created slabs (null for failed items).");
+
+            OutTexts(
+                "ErrorMessages",
+                "Error message for each item (empty when the slab was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -149,11 +160,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var parameters = new JObject { ["slabsData"] = items };
 
-            TryGetCadResponse(
-                CommandName,
-                parameters,
-                ToAddOn,
-                out _);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);
         }
 
         protected override System.Drawing.Bitmap Icon =>

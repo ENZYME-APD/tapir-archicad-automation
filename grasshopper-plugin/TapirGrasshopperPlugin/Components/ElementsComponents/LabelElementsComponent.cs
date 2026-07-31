@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
@@ -25,6 +26,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "IDs of Elements to create labels for.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "LabelGuids",
+                "Identifiers of the created labels (null for failed items).");
+
+            OutTexts(
+                "ErrorMessages",
+                "Error message for each item (empty when the label was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -35,16 +47,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            SetCadValues(
-                CommandName,
+            var parameters = JObject.FromObject(
                 new
                 {
                     labelsData = elements
                         .Elements.Select(element =>
                             new { parentElementId = element.ElementId })
                         .ToList()
-                },
-                ToAddOn);
+                });
+
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);
         }
 
         protected override System.Drawing.Bitmap Icon =>

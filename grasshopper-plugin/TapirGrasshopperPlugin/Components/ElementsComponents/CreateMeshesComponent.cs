@@ -1,19 +1,29 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateMeshesComponent : JsonItemsExecutorComponent
+    public class CreateMeshesComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateMeshes";
 
         public CreateMeshesComponent()
             : base(
                 "CreateMeshes",
-                "Create Mesh elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"level\":0,\"polygonCoordinates\":[{\"x\":0,\"y\":0,\"z\":0},...]}.",
+                "Create Mesh elements based on the given parameters. " +
+                "Holes, arcs and sublines can be given through the AdditionalSettings input " +
+                "(polygonArcs, holes, sublines).",
                 GroupNames.ElementCreation,
                 "meshesData",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("Polygons", "polygonCoordinates", FieldKind.PointsTree3D, "Boundary points of each mesh (one branch per mesh, at least 3 points).", required: true, minPointsPerBranch: 3),
+                    new Field("Levels", "level", FieldKind.Number, "Z reference level of the mesh coordinates."),
+                    new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt."),
+                    new Field("SkirtLevels", "skirtLevel", FieldKind.Number, "Height of the mesh skirt."),
+                    new Field("Ridges", "ridges", FieldKind.Text, "Ridge type: AllSharp, AllSmooth or UserDefined."),
+                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the mesh.")
+                })
         {
         }
 

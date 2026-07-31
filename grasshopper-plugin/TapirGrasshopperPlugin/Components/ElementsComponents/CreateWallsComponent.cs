@@ -46,6 +46,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             SetOptionality(3);
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "ElementGuids",
+                "Identifiers of the created walls (null for failed items).");
+
+            OutTexts(
+                "ErrorMessages",
+                "Error message for each item (empty when the wall was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -144,11 +155,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var parameters = new JObject { ["wallsData"] = items };
 
-            TryGetCadResponse(
-                CommandName,
-                parameters,
-                ToAddOn,
-                out _);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -1,19 +1,30 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateWindowsComponent : JsonItemsExecutorComponent
+    public class CreateWindowsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateWindows";
 
         public CreateWindowsComponent()
             : base(
                 "CreateWindows",
-                "Create Window elements in host walls based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"wallId\":{\"guid\":\"...\"},\"libraryPartName\":\"Window 26\",\"position\":1.0}.",
+                "Create Window elements in the given owner walls.",
                 GroupNames.ElementCreation,
                 "windowsData",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("OwnerWallGuids", "ownerWallId", FieldKind.ElementGuid, "Identifiers of the walls to place the windows into.", required: true),
+                    new Field("CenterOffsets", "centerOffset", FieldKind.Number, "Distance of the window center from the beginning point of the owner wall.", required: true),
+                    new Field("SillHeights", "sillHeight", FieldKind.Number, "Sill height of the window."),
+                    new Field("Widths", "width", FieldKind.Number, "Width of the window."),
+                    new Field("Heights", "height", FieldKind.Number, "Height of the window."),
+                    new Field("Reflected", "reflected", FieldKind.Boolean, "Mirror the window on its vertical axis."),
+                    new Field("RefSide", "refSide", FieldKind.Boolean, "Place the window on the reference line side of the owner wall."),
+                    new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall."),
+                    new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of the favorite to use as a base for the window.")
+                })
         {
         }
 
