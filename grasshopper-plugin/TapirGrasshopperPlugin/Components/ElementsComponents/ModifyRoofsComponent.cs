@@ -1,19 +1,29 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class ModifyRoofsComponent : JsonItemsExecutorComponent
+    public class ModifyRoofsComponent : ModifyElementsComponentBase
     {
         public override string CommandName => "ModifyRoofs";
 
         public ModifyRoofsComponent()
             : base(
                 "ModifyRoofs",
-                "Modify multi-plane Roof elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"elementId\":{\"guid\":\"...\"},...}.",
+                "Modify multi-plane Roof elements. Only the connected optional inputs are changed on the elements. " +
+                "The roof levels, the outline polygon and holes can be modified through the AdditionalSettings " +
+                "input (levels, polygonOutline, polygonArcs, holes).",
                 GroupNames.ElementModification,
                 "roofsWithDetails",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("Levels", "level", FieldKind.Number, "Reference level of the roof."),
+                    new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the roof."),
+                    new Field("EavesOverhangs", "eavesOverhang", FieldKind.Number, "Eaves overhang of the roof."),
+                    new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic or Composite."),
+                    new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute for Basic structure."),
+                    new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure.")
+                })
         {
         }
 

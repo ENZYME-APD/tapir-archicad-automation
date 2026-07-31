@@ -1,19 +1,30 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class ModifyMorphsComponent : JsonItemsExecutorComponent
+    public class ModifyMorphsComponent : ModifyElementsComponentBase
     {
         public override string CommandName => "ModifyMorphs";
 
         public ModifyMorphsComponent()
             : base(
                 "ModifyMorphs",
-                "Modify Morph elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"elementId\":{\"guid\":\"...\"},...}.",
+                "Modify Morph elements. Only the connected optional inputs are changed on the elements. " +
+                "The body geometry, floor plan display and texture settings can be modified through the " +
+                "AdditionalSettings input (body, showContour, displayOption, coverFillType, etc.).",
                 GroupNames.ElementModification,
                 "morphsWithDetails",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("Translations", "translation", FieldKind.Point3D, "Translation vector applied to the morph."),
+                    new Field("RotationDegreesZ", "rotationDegreesZ", FieldKind.Number, "Rotation around the vertical axis in degrees."),
+                    new Field("Levels", "level", FieldKind.Number, "Base level of the morph relative to the home story."),
+                    new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute of the morph body."),
+                    new Field("SurfaceGuids", "surfaceId", FieldKind.AttributeGuid, "Surface attribute override of the morph body."),
+                    new Field("CastShadows", "castShadow", FieldKind.Boolean, "The morph casts shadow in 3D."),
+                    new Field("ReceiveShadows", "receiveShadow", FieldKind.Boolean, "The morph receives shadow in 3D.")
+                })
         {
         }
 
