@@ -10,15 +10,19 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             : base(
                 "CreateClassificationItems",
                 "Create Classification Items in the given Classification Systems based on the given parameters.",
-                GroupNames.Classifications,
-                "newClassificationItems",
-                "NewItems",
-                "One JSON object per classification item, e.g. " +
-                "{\"classificationSystemId\":{\"guid\":\"...\"}," +
-                "\"classificationItemDetails\":{\"id\":\"01\",\"name\":\"...\"}," +
-                "\"parentClassificationItemId\":{\"guid\":\"...\"}}.")
+                GroupNames.Classifications)
         {
         }
+
+        protected override string ArrayKey => "newClassificationItems";
+
+        protected override string InputName => "NewItems";
+
+        protected override string InputDescription =>
+            "One JSON object per classification item, e.g. " +
+            "{\"classificationSystemId\":{\"guid\":\"...\"}," +
+            "\"classificationItemDetails\":{\"id\":\"01\",\"name\":\"...\"}," +
+            "\"parentClassificationItemId\":{\"guid\":\"...\"}}.";
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateClassificationItems;

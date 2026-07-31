@@ -11,18 +11,23 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateOpenings",
                 "Create Opening elements in the given owner elements (walls, slabs, beams or meshes).",
-                GroupNames.ElementCreation,
-                "openingsData",
-                new List<Field>
-                {
-                    new Field("OwnerElementGuids", "ownerElementId", FieldKind.ElementGuid, "Identifiers of the elements to cut the openings into.", required: true),
-                    new Field("BasePoints", "basePoint", FieldKind.Point3D, "Base point of the opening.", required: true),
-                    new Field("Widths", "width", FieldKind.Number, "Width of the opening."),
-                    new Field("Heights", "height", FieldKind.Number, "Height of the opening.")
-                },
-                addAdditionalSettings: false)
+                GroupNames.ElementCreation)
         {
         }
+
+        protected override string ArrayKey => "openingsData";
+
+        protected override bool HasAdditionalSettingsInput => false;
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("OwnerElementGuids", "ownerElementId", FieldKind.ElementGuid, "Identifiers of the elements to cut the openings into.", required: true),
+            new Field("BasePoints", "basePoint", FieldKind.Point3D, "Base point of the opening.", required: true),
+            new Field("Widths", "width", FieldKind.Number, "Width of the opening."),
+            new Field("Heights", "height", FieldKind.Number, "Height of the opening.")
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateOpenings;

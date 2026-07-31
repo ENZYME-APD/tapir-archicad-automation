@@ -13,22 +13,27 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Modify Mesh elements. Only the connected optional inputs are changed on the elements. " +
                 "The boundary polygon, holes and sublines can be modified through the AdditionalSettings " +
                 "input (polygonCoordinates, polygonArcs, holes, sublines).",
-                GroupNames.ElementModification,
-                "meshesData",
-                new List<Field>
-                {
-                    new Field("Levels", "level", FieldKind.Number, "Z reference level of the mesh coordinates."),
-                    new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt."),
-                    new Field("SkirtLevels", "skirtLevel", FieldKind.Number, "Height of the mesh skirt."),
-                    new Field("Ridges", "ridges", FieldKind.Text, "Ridge type: AllSharp, AllSmooth or UserDefined."),
-                    new Field("ShowLines", "showLines", FieldKind.Boolean, "Show the secondary mesh lines on the floor plan."),
-                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the mesh."),
-                    new Field("ContourPens", "contourPen", FieldKind.Integer, "Pen index of the mesh contour."),
-                    new Field("LevelPens", "levelPen", FieldKind.Integer, "Pen index of the mesh level lines.")
-                },
-                itemWrapKey: "meshData")
+                GroupNames.ElementModification)
         {
         }
+
+        protected override string ArrayKey => "meshesData";
+
+        protected override string ItemWrapKey => "meshData";
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("Levels", "level", FieldKind.Number, "Z reference level of the mesh coordinates."),
+            new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt."),
+            new Field("SkirtLevels", "skirtLevel", FieldKind.Number, "Height of the mesh skirt."),
+            new Field("Ridges", "ridges", FieldKind.Text, "Ridge type: AllSharp, AllSmooth or UserDefined."),
+            new Field("ShowLines", "showLines", FieldKind.Boolean, "Show the secondary mesh lines on the floor plan."),
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the mesh."),
+            new Field("ContourPens", "contourPen", FieldKind.Integer, "Pen index of the mesh contour."),
+            new Field("LevelPens", "levelPen", FieldKind.Integer, "Pen index of the mesh level lines.")
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.ModifyMeshes;

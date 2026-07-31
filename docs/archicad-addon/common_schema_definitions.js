@@ -1708,21 +1708,26 @@ var gSchemaDefinitions = {
             "properties": {
                 "value": {
                     "type": "number",
-                    "description": "The numeric value."
+                    "description": "The numeric value. Present for all flags except 'Step', which instead carries stepBegin/stepValue."
                 },
                 "flag": {
                     "type": "string",
                     "description": "The flag."
+                },
+                "stepBegin": {
+                    "type": "number",
+                    "description": "Only present when flag is 'Step': the value is stepBegin + n*stepValue for n >= 0."
+                },
+                "stepValue": {
+                    "type": "number",
+                    "description": "Only present when flag is 'Step' - see stepBegin."
                 },
                 "description": {
                     "type": "string",
                     "description": "The description of the value."
                 }
             },
-            "additionalProperties": false,
-            "required": [
-                "value"
-            ]
+            "additionalProperties": false
         }
     },
     "GDLParameterDetails": {
@@ -1775,7 +1780,9 @@ var gSchemaDefinitions = {
                         "Disabled",
                         "Child",
                         "Unique",
-                        "Fixed"
+                        "Fixed",
+                        "BoldName",
+                        "Open"
                     ]
                 }
             },
@@ -1792,6 +1799,13 @@ var gSchemaDefinitions = {
             "canHaveCustomValue": {
                 "type": "boolean",
                 "description": "The parameter can have a custom value."
+            },
+            "itemDescriptions": {
+                "type": "array",
+                "description": "Per-item text labels for an array-type parameter (API_AddParType.arrayDescriptions), one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "additionalProperties": false,
@@ -4485,6 +4499,7 @@ var gSchemaDefinitions = {
     },
     "ObjectDetails": {
         "$ref": "#/LibPartBasedElementDetails",
+        "description": "Shared shape for Object and Lamp elements (both use the same API_ObjectType struct). lightColor/lightIsOn only apply to Lamps. Per the Archicad SDK's own remarks, per-story visibility (visibility.showRelAbove/showRelBelow) and visibility.linkToSettings.newCreationMode were 'not extended' for Object/Lamp the way they were for other element types - still settable here for schema symmetry, but Archicad may silently ignore them.",
         "properties": {
             "origin": {
                 "$ref": "#/Coordinate3D"
@@ -4494,6 +4509,110 @@ var gSchemaDefinitions = {
             },
             "angle": {
                 "type": "number"
+            },
+            "pen": {
+                "type": "integer"
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "Material/Surface override (API_ObjectType.mat)."
+            },
+            "sectionFillId": {
+                "$ref": "#/AttributeId"
+            },
+            "sectionFillPen": {
+                "type": "integer"
+            },
+            "sectionFillBackgroundPen": {
+                "type": "integer"
+            },
+            "sectionContourPen": {
+                "type": "integer"
+            },
+            "useObjectPens": {
+                "type": "boolean",
+                "description": "Use the pen defined in the library part instead of 'pen'."
+            },
+            "useObjectLineTypes": {
+                "type": "boolean",
+                "description": "Use the line type defined in the library part instead of 'lineTypeId'."
+            },
+            "useObjectMaterials": {
+                "type": "boolean",
+                "description": "Use the materials defined in the library part instead of 'surfaceId'."
+            },
+            "useObjectSectionAttributes": {
+                "type": "boolean",
+                "description": "Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'."
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "useFixSize": {
+                "type": "boolean",
+                "description": "Use the A/B (dimensions.x/dimensions.y) values as fixed sizes."
+            },
+            "fixPoint": {
+                "type": "integer",
+                "description": "0-based index of the hotspot to keep fixed when the object is resized (raw API_ObjectType.fixPoint value, not 1-based)."
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level."
+            },
+            "useFixedAngle": {
+                "type": "boolean",
+                "description": "Use a fixed rotation angle (API_ObjectType.fixedAngle - stored as Int32 in the API despite being boolean in practice). Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "Recalculate per-story visibility automatically from the object's vertical extent ('All Relevant Stories')."
+            },
+            "lightColor": {
+                "$ref": "#/ColorRGB",
+                "description": "Lamp only. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default light color). lightIsOn (the on/off state) does not have this problem."
+            },
+            "lightIsOn": {
+                "type": "boolean",
+                "description": "Lamp only."
+            },
+            "visibility": {
+                "type": "object",
+                "description": "Per-story visibility settings.",
+                "properties": {
+                    "showOnHome": {
+                        "type": "boolean"
+                    },
+                    "showAllAbove": {
+                        "type": "boolean"
+                    },
+                    "showAllBelow": {
+                        "type": "boolean"
+                    },
+                    "showRelAbove": {
+                        "type": "integer"
+                    },
+                    "showRelBelow": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "linkToSettings": {
+                "type": "object",
+                "description": "Mode of linking to the home story.",
+                "properties": {
+                    "homeStoryDifference": {
+                        "type": "integer"
+                    },
+                    "newCreationMode": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false
             }
         },
         "additionalProperties": false,
@@ -5501,6 +5620,10 @@ var gSchemaDefinitions = {
                 },
                 "minItems": 3
             },
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The identifier of the navigator item (view/layout) this Drawing was created from. Read-only: Archicad only lets this be set at creation time (see CreateDrawings) - it cannot be changed afterwards to relink the Drawing to a different source."
+            },
             "nameType": {
                 "type": "string",
                 "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
@@ -5541,6 +5664,7 @@ var gSchemaDefinitions = {
             "modelOffset",
             "isCutWithFrame",
             "bounds",
+            "navigatorItemId",
             "nameType",
             "numberingType",
             "isInNumbering",
@@ -6281,6 +6405,26 @@ var gSchemaDefinitions = {
         "description": "Modifiable settings for a Drawing element placed on a layout.",
         "type": "object",
         "properties": {
+            "pos": {
+                "$ref": "#/Coordinate2D",
+                "description": "Position of the drawing's reference point on the layout."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Rotation angle of the drawing in radians."
+            },
+            "ratio": {
+                "type": "number",
+                "description": "Scale ratio applied to the drawing relative to its source view."
+            },
+            "drawingScale": {
+                "type": "number",
+                "description": "The nominal scale of the drawing."
+            },
+            "modelOffset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Offset of the model origin within the drawing."
+            },
             "clipPolygon": {
                 "type": "array",
                 "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (useDrawingPolyClip).",
@@ -7129,6 +7273,263 @@ var gSchemaDefinitions = {
         "items": {
             "$ref": "#/SpecialFolderPathOrError"
         }
+    },
+    "ConnectionItem": {
+        "type": "object",
+        "description": "An element connected with its beginning or end point.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "connectedWithBeginPoint": {
+                "type": "boolean",
+                "description": "True if the element is connected with its beginning point, false if it is connected with its end point."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "connectedWithBeginPoint"
+        ]
+    },
+    "EndpointConnections": {
+        "type": "object",
+        "description": "The connections of a wall, beam or beam segment.",
+        "properties": {
+            "connectedToBeginPoint": {
+                "type": "array",
+                "description": "Elements connected to the beginning point of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "connectedToEndPoint": {
+                "type": "array",
+                "description": "Elements connected to the end point of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "connectedWithReferenceLineToEndPoints": {
+                "type": "array",
+                "description": "Elements connected with their reference line to the beginning or end point of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "connectedToReferenceLine": {
+                "type": "array",
+                "description": "Elements connected to the reference line of the element, not at its endpoints.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "crossingReferenceLine": {
+                "type": "array",
+                "description": "Elements whose reference line intersects the reference line of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectedToBeginPoint",
+            "connectedToEndPoint",
+            "connectedWithReferenceLineToEndPoints",
+            "connectedToReferenceLine",
+            "crossingReferenceLine"
+        ]
+    },
+    "ElementsOfElementType": {
+        "type": "object",
+        "description": "Elements of a given type.",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "elements"
+        ]
+    },
+    "ZoneBoundaryPart": {
+        "type": "object",
+        "description": "Section of a wall, beam or curtain wall segment related to a zone.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "roomEdgeIndex": {
+                "type": "integer",
+                "description": "Index of the zone polygon edge adjacent to the element (not present for beams)."
+            },
+            "begDistance": {
+                "type": "number",
+                "description": "Beginning distance of the section from the beginning point of the element."
+            },
+            "endDistance": {
+                "type": "number",
+                "description": "End distance of the section from the beginning point of the element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "begDistance",
+            "endDistance"
+        ]
+    },
+    "ZoneRelations": {
+        "type": "object",
+        "description": "The relations of a zone: the related elements grouped by type and the boundary sections of walls, beams and curtain wall segments.",
+        "properties": {
+            "elementsGroupedByType": {
+                "type": "array",
+                "description": "The elements related to the zone, grouped by element type.",
+                "items": {
+                    "$ref": "#/ElementsOfElementType"
+                }
+            },
+            "wallParts": {
+                "type": "array",
+                "description": "Sections of walls that border the zone.",
+                "items": {
+                    "$ref": "#/ZoneBoundaryPart"
+                }
+            },
+            "beamParts": {
+                "type": "array",
+                "description": "Sections of beams related to the zone.",
+                "items": {
+                    "$ref": "#/ZoneBoundaryPart"
+                }
+            },
+            "curtainWallSegmentParts": {
+                "type": "array",
+                "description": "Sections of curtain wall segments that border the zone.",
+                "items": {
+                    "$ref": "#/ZoneBoundaryPart"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsGroupedByType",
+            "wallParts",
+            "beamParts",
+            "curtainWallSegmentParts"
+        ]
+    },
+    "ElementRelationsOrError": {
+        "type": "object",
+        "description": "The type-specific relations of an element or an error. The variant depends on the type of the input element.",
+        "oneOf": [
+            {
+                "type": "object",
+                "description": "Relations of a wall.",
+                "properties": {
+                    "wallConnections": {
+                        "$ref": "#/EndpointConnections"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "wallConnections"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a beam.",
+                "properties": {
+                    "beamConnections": {
+                        "$ref": "#/EndpointConnections"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "beamConnections"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a beam segment.",
+                "properties": {
+                    "beamSegmentConnections": {
+                        "$ref": "#/EndpointConnections"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "beamSegmentConnections"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a zone.",
+                "properties": {
+                    "zoneRelations": {
+                        "$ref": "#/ZoneRelations"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "zoneRelations"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a curtain wall panel, skylight, window or door: the zones on the two sides of the opening.",
+                "properties": {
+                    "openingRelations": {
+                        "type": "object",
+                        "properties": {
+                            "fromRoom": {
+                                "$ref": "#/ElementId"
+                            },
+                            "toRoom": {
+                                "$ref": "#/ElementId"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "openingRelations"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a roof or shell: the connected zones.",
+                "properties": {
+                    "roofOrShellRelations": {
+                        "type": "object",
+                        "properties": {
+                            "connectedRooms": {
+                                "$ref": "#/Elements"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "connectedRooms"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "roofOrShellRelations"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 }
 ;

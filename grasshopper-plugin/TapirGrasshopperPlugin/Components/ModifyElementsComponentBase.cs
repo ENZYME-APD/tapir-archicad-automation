@@ -16,6 +16,13 @@ namespace TapirGrasshopperPlugin.Components
     // accepts a single value (applied to every element) or one value per
     // element. The rarely used or deeply nested fields remain available
     // through the optional AdditionalSettings JSON input.
+    //
+    // The configuration is provided through overridable members instead of
+    // constructor parameters on purpose: GH_Component's constructor calls
+    // RegisterInputParams (and thus AddInputs) before the derived
+    // constructor bodies run, so constructor-assigned fields would still be
+    // null at that point. Overrides must not depend on instance state
+    // (return constants or static data).
     public abstract class ModifyElementsComponentBase : ArchicadExecutorComponent
     {
         protected enum FieldKind
@@ -49,25 +56,25 @@ namespace TapirGrasshopperPlugin.Components
             public string Description { get; }
         }
 
-        private readonly string _arrayKey;
-        private readonly string _itemWrapKey;
-        private readonly List<Field> _fields;
+        // The name of the command's array parameter (e.g. "wallsWithDetails").
+        protected abstract string ArrayKey { get; }
+
+        // When set, the field values are written into a nested object with
+        // this key instead of the item itself (e.g. "meshData").
+        protected virtual string ItemWrapKey => null;
+
+        // The typed detail fields of the command.
+        protected abstract IReadOnlyList<Field> Fields { get; }
 
         protected ModifyElementsComponentBase(
             string name,
             string description,
-            string subCategory,
-            string arrayKey,
-            List<Field> fields,
-            string itemWrapKey = null)
+            string subCategory)
             : base(
                 name,
                 description,
                 subCategory)
         {
-            _arrayKey = arrayKey;
-            _itemWrapKey = itemWrapKey;
-            _fields = fields;
         }
 
         protected override void AddInputs()
@@ -77,7 +84,7 @@ namespace TapirGrasshopperPlugin.Components
                 "Identifiers of the elements to modify.");
 
             var index = 1;
-            foreach (var field in _fields)
+            foreach (var field in Fields)
             {
                 var description = field.Description +
                     " Input only 1 to use the same value for all elements. Optional.";
@@ -118,7 +125,7 @@ namespace TapirGrasshopperPlugin.Components
         private bool TryApply<T>(
             IGH_DataAccess da,
             int inputIndex,
-            string inputName,
+            Field field,
             IReadOnlyList<JObject> targets,
             Func<T, JToken> convert)
         {
@@ -133,18 +140,17 @@ namespace TapirGrasshopperPlugin.Components
             if (values.Count != 1 && values.Count != targets.Count)
             {
                 this.AddError(
-                    $"The size of the input {inputName} must be 0, 1 or equal to the size of the input ElementGuids.");
+                    $"The size of the input {field.InputName} must be 0, 1 or equal to the size of the input ElementGuids.");
                 return false;
             }
 
-            var field = _fields[inputIndex - 1];
             for (var i = 0; i < targets.Count; i++)
             {
                 var token = convert(values[values.Count == 1 ? 0 : i]);
                 if (token == null)
                 {
                     this.AddError(
-                        $"Invalid value in the {inputName} input.");
+                        $"Invalid value in the {field.InputName} input.");
                     return false;
                 }
                 targets[i][field.JsonKey] = token;
@@ -163,15 +169,18 @@ namespace TapirGrasshopperPlugin.Components
                 return;
             }
 
+            var fields = Fields;
+            var itemWrapKey = ItemWrapKey;
+
             var items = new JArray();
             var targets = new List<JObject>();
             foreach (var element in elements.Elements)
             {
                 var item = JObject.FromObject(element);
-                if (_itemWrapKey != null)
+                if (itemWrapKey != null)
                 {
                     var wrapped = new JObject();
-                    item[_itemWrapKey] = wrapped;
+                    item[itemWrapKey] = wrapped;
                     targets.Add(wrapped);
                 }
                 else
@@ -181,35 +190,35 @@ namespace TapirGrasshopperPlugin.Components
                 items.Add(item);
             }
 
-            for (var fieldIndex = 0; fieldIndex < _fields.Count; fieldIndex++)
+            for (var fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
             {
-                var field = _fields[fieldIndex];
+                var field = fields[fieldIndex];
                 var inputIndex = fieldIndex + 1;
                 bool ok;
                 switch (field.Kind)
                 {
                     case FieldKind.Number:
-                        ok = TryApply<double>(da, inputIndex, field.InputName, targets, v => v);
+                        ok = TryApply<double>(da, inputIndex, field, targets, v => v);
                         break;
                     case FieldKind.Integer:
-                        ok = TryApply<int>(da, inputIndex, field.InputName, targets, v => v);
+                        ok = TryApply<int>(da, inputIndex, field, targets, v => v);
                         break;
                     case FieldKind.Boolean:
-                        ok = TryApply<bool>(da, inputIndex, field.InputName, targets, v => v);
+                        ok = TryApply<bool>(da, inputIndex, field, targets, v => v);
                         break;
                     case FieldKind.Text:
-                        ok = TryApply<string>(da, inputIndex, field.InputName, targets, v => v);
+                        ok = TryApply<string>(da, inputIndex, field, targets, v => v);
                         break;
                     case FieldKind.Point2D:
-                        ok = TryApply<Point3d>(da, inputIndex, field.InputName, targets, v =>
+                        ok = TryApply<Point3d>(da, inputIndex, field, targets, v =>
                             new JObject { ["x"] = v.X, ["y"] = v.Y });
                         break;
                     case FieldKind.Point3D:
-                        ok = TryApply<Point3d>(da, inputIndex, field.InputName, targets, v =>
+                        ok = TryApply<Point3d>(da, inputIndex, field, targets, v =>
                             new JObject { ["x"] = v.X, ["y"] = v.Y, ["z"] = v.Z });
                         break;
                     case FieldKind.AttributeGuid:
-                        ok = TryApply<GH_ObjectWrapper>(da, inputIndex, field.InputName, targets, v =>
+                        ok = TryApply<GH_ObjectWrapper>(da, inputIndex, field, targets, v =>
                         {
                             var id = GuidObject<AttributeGuidObject>.CreateFromWrapper(v);
                             return id == null
@@ -229,7 +238,7 @@ namespace TapirGrasshopperPlugin.Components
             }
 
             var additionalSettings = new List<string>();
-            da.GetDataList(_fields.Count + 1, additionalSettings);
+            da.GetDataList(fields.Count + 1, additionalSettings);
             if (additionalSettings.Count > 0)
             {
                 if (additionalSettings.Count != 1 &&
@@ -261,7 +270,7 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
-            var parameters = new JObject { [_arrayKey] = items };
+            var parameters = new JObject { [ArrayKey] = items };
 
             TryGetCadResponse(
                 CommandName,

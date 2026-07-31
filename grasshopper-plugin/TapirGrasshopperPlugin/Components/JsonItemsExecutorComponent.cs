@@ -9,37 +9,40 @@ namespace TapirGrasshopperPlugin.Components
     // Shared base for executor commands whose input is an array of deeply
     // nested objects. Each item is passed as a JSON object matching the
     // command's documented item schema.
+    //
+    // The configuration is provided through overridable members instead of
+    // constructor parameters on purpose: GH_Component's constructor calls
+    // RegisterInputParams (and thus AddInputs) before the derived
+    // constructor bodies run, so constructor-assigned fields would still be
+    // null at that point. Overrides must not depend on instance state.
     public abstract class JsonItemsExecutorComponent : ArchicadExecutorComponent
     {
-        private readonly string _arrayKey;
-        private readonly string _itemWrapKey;
-        private readonly string _inputName;
-        private readonly string _inputDescription;
+        // The name of the command's array parameter (e.g. "subsetsData").
+        protected abstract string ArrayKey { get; }
+
+        // When set, each parsed item is wrapped as { ItemWrapKey: item }.
+        protected virtual string ItemWrapKey => null;
+
+        // Name and description of the JSON text input.
+        protected abstract string InputName { get; }
+        protected abstract string InputDescription { get; }
 
         protected JsonItemsExecutorComponent(
             string name,
             string description,
-            string subCategory,
-            string arrayKey,
-            string inputName,
-            string inputDescription,
-            string itemWrapKey = null)
+            string subCategory)
             : base(
                 name,
                 description,
                 subCategory)
         {
-            _arrayKey = arrayKey;
-            _itemWrapKey = itemWrapKey;
-            _inputName = inputName;
-            _inputDescription = inputDescription;
         }
 
         protected override void AddInputs()
         {
             InTexts(
-                _inputName,
-                _inputDescription);
+                InputName,
+                InputDescription);
         }
 
         protected override void Solve(
@@ -63,13 +66,13 @@ namespace TapirGrasshopperPlugin.Components
                 catch (Exception ex)
                 {
                     this.AddError(
-                        $"Invalid JSON in the {_inputName} input: {ex.Message}");
+                        $"Invalid JSON in the {InputName} input: {ex.Message}");
                     return;
                 }
 
-                if (_itemWrapKey != null)
+                if (ItemWrapKey != null)
                 {
-                    items.Add(new JObject { [_itemWrapKey] = item });
+                    items.Add(new JObject { [ItemWrapKey] = item });
                 }
                 else
                 {
@@ -77,7 +80,7 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
-            var parameters = new JObject { [_arrayKey] = items };
+            var parameters = new JObject { [ArrayKey] = items };
 
             TryGetCadResponse(
                 CommandName,

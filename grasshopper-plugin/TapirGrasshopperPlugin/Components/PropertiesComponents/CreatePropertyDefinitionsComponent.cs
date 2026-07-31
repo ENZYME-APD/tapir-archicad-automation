@@ -10,15 +10,20 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             : base(
                 "CreatePropertyDefinitions",
                 "Create Custom Property Definitions based on the given parameters.",
-                GroupNames.Properties,
-                "propertyDefinitions",
-                "PropertyDefinitions",
-                "One JSON object per property definition, e.g. " +
-                "{\"name\":\"MyProperty\",\"description\":\"...\",\"type\":\"string\"," +
-                "\"isEditable\":true,\"defaultValue\":{...},\"availability\":[...],\"group\":{\"name\":\"My Group\"}}.",
-                "propertyDefinition")
+                GroupNames.Properties)
         {
         }
+
+        protected override string ArrayKey => "propertyDefinitions";
+
+        protected override string ItemWrapKey => "propertyDefinition";
+
+        protected override string InputName => "PropertyDefinitions";
+
+        protected override string InputDescription =>
+            "One JSON object per property definition, e.g. " +
+            "{\"name\":\"MyProperty\",\"description\":\"...\",\"type\":\"string\"," +
+            "\"isEditable\":true,\"defaultValue\":{...},\"availability\":[...],\"group\":{\"name\":\"My Group\"}}.";
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreatePropertyDefinitions;

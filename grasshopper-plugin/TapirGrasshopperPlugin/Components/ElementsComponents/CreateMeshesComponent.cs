@@ -13,19 +13,23 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Create Mesh elements based on the given parameters. " +
                 "Holes, arcs and sublines can be given through the AdditionalSettings input " +
                 "(polygonArcs, holes, sublines).",
-                GroupNames.ElementCreation,
-                "meshesData",
-                new List<Field>
-                {
-                    new Field("Polygons", "polygonCoordinates", FieldKind.PointsTree3D, "Boundary points of each mesh (one branch per mesh, at least 3 points).", required: true, minPointsPerBranch: 3),
-                    new Field("Levels", "level", FieldKind.Number, "Z reference level of the mesh coordinates."),
-                    new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt."),
-                    new Field("SkirtLevels", "skirtLevel", FieldKind.Number, "Height of the mesh skirt."),
-                    new Field("Ridges", "ridges", FieldKind.Text, "Ridge type: AllSharp, AllSmooth or UserDefined."),
-                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the mesh.")
-                })
+                GroupNames.ElementCreation)
         {
         }
+
+        protected override string ArrayKey => "meshesData";
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("Polygons", "polygonCoordinates", FieldKind.PointsTree3D, "Boundary points of each mesh (one branch per mesh, at least 3 points).", required: true, minPointsPerBranch: 3),
+            new Field("Levels", "level", FieldKind.Number, "Z reference level of the mesh coordinates."),
+            new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt."),
+            new Field("SkirtLevels", "skirtLevel", FieldKind.Number, "Height of the mesh skirt."),
+            new Field("Ridges", "ridges", FieldKind.Text, "Ridge type: AllSharp, AllSmooth or UserDefined."),
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the mesh.")
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateMeshes;

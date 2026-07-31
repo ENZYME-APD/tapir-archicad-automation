@@ -11,23 +11,28 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateWindows",
                 "Create Window elements in the given owner walls.",
-                GroupNames.ElementCreation,
-                "windowsData",
-                new List<Field>
-                {
-                    new Field("OwnerWallGuids", "ownerWallId", FieldKind.ElementGuid, "Identifiers of the walls to place the windows into.", required: true),
-                    new Field("CenterOffsets", "centerOffset", FieldKind.Number, "Distance of the window center from the beginning point of the owner wall.", required: true),
-                    new Field("SillHeights", "sillHeight", FieldKind.Number, "Sill height of the window."),
-                    new Field("Widths", "width", FieldKind.Number, "Width of the window."),
-                    new Field("Heights", "height", FieldKind.Number, "Height of the window."),
-                    new Field("Reflected", "reflected", FieldKind.Boolean, "Mirror the window on its vertical axis."),
-                    new Field("RefSide", "refSide", FieldKind.Boolean, "Place the window on the reference line side of the owner wall."),
-                    new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall."),
-                    new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of the favorite to use as a base for the window.")
-                },
-                addAdditionalSettings: false)
+                GroupNames.ElementCreation)
         {
         }
+
+        protected override string ArrayKey => "windowsData";
+
+        protected override bool HasAdditionalSettingsInput => false;
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("OwnerWallGuids", "ownerWallId", FieldKind.ElementGuid, "Identifiers of the walls to place the windows into.", required: true),
+            new Field("CenterOffsets", "centerOffset", FieldKind.Number, "Distance of the window center from the beginning point of the owner wall.", required: true),
+            new Field("SillHeights", "sillHeight", FieldKind.Number, "Sill height of the window."),
+            new Field("Widths", "width", FieldKind.Number, "Width of the window."),
+            new Field("Heights", "height", FieldKind.Number, "Height of the window."),
+            new Field("Reflected", "reflected", FieldKind.Boolean, "Mirror the window on its vertical axis."),
+            new Field("RefSide", "refSide", FieldKind.Boolean, "Place the window on the reference line side of the owner wall."),
+            new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of the favorite to use as a base for the window.")
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateWindows;
