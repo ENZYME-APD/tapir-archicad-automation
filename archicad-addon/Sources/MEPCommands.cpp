@@ -18,6 +18,11 @@
 #include "ACAPI/MEPFittingDefault.hpp"
 #include "ACAPI/MEPDistributionSystemsGraph.hpp"
 #include "ACAPI/MEPDistributionSystem.hpp"
+#include "ACAPI/MEPUniqueID.hpp"
+#include "ACAPI/MEPPipeSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
 
 #include <optional>
 
@@ -1214,3 +1219,137 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }
+
+GetMEPPreferenceTablesCommand::GetMEPPreferenceTablesCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetMEPPreferenceTablesCommand::GetName () const
+{
+    return "GetMEPPreferenceTables";
+}
+
+GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "domain": {
+                "type": "string",
+                "description": "The MEP domain of the segment preference tables.",
+                "enum": ["Piping", "Ventilation"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["domain"]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "tables": {
+                "type": "array",
+                "description": "The circular segment preference tables of the domain.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "rows": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "referenceId": { "type": "integer" },
+                                    "diameter": { "type": "number" },
+                                    "description": { "type": "string" }
+                                },
+                                "required": ["referenceId", "diameter"],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": ["guid", "rows"],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["tables"]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+template <typename TableT>
+static GS::ObjectState DumpPreferenceTable (const TableT& table, const GS::Guid& tableGuid)
+{
+    GS::ObjectState tableOS;
+    tableOS.Add ("guid", tableGuid.ToUniString ());
+    const auto& rows = tableOS.AddList<GS::ObjectState> ("rows");
+    const uint32_t size = table.GetSize ();
+    for (uint32_t i = 0; i < size; ++i) {
+        auto rowDiameter = table.GetDiameter (i);
+        auto rowReferenceId = table.GetReferenceId (i);
+        if (rowDiameter.IsErr () || rowReferenceId.IsErr ()) {
+            continue;
+        }
+        GS::ObjectState rowOS;
+        rowOS.Add ("referenceId", static_cast<Int32> (*rowReferenceId));
+        rowOS.Add ("diameter", *rowDiameter);
+        auto rowDescription = table.GetDescription (i);
+        if (rowDescription.IsOk ()) {
+            rowOS.Add ("description", *rowDescription);
+        }
+        rows (rowOS);
+    }
+    return tableOS;
+}
+
+GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString domainStr;
+    parameters.Get ("domain", domainStr);
+    const std::optional<Domain> domain = DomainFromString (domainStr);
+    if (!domain.has_value () || *domain == Domain::CableCarrier) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid MEP domain: " + domainStr);
+    }
+
+    GS::ObjectState response;
+    const auto& tables = response.AddList<GS::ObjectState> ("tables");
+
+    if (*domain == Domain::Piping) {
+        auto container = GetPipeSegmentPreferenceTableContainer ();
+        if (container.IsErr ()) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to get the pipe segment preference table container: ") + container.UnwrapErr ().text.c_str ());
+        }
+        for (const UniqueID& id : container->GetPreferenceTables ()) {
+            auto table = PipeSegmentPreferenceTable::Get (id);
+            if (table.IsOk ()) {
+                tables (DumpPreferenceTable (*table, id.GetGuid ()));
+            }
+        }
+    } else {
+        auto container = GetDuctSegmentPreferenceTableContainer ();
+        if (container.IsErr ()) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to get the duct segment preference table container: ") + container.UnwrapErr ().text.c_str ());
+        }
+        for (const UniqueID& id : container->GetPreferenceTables ()) {
+            auto table = DuctCircularSegmentPreferenceTable::Get (id);
+            if (table.IsOk ()) {
+                tables (DumpPreferenceTable (*table, id.GetGuid ()));
+            }
+        }
+    }
+
+    return response;
+}
+#else
+GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+}
+#endif
