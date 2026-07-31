@@ -144,6 +144,19 @@ code.language-python.hljs {
         width: auto;
     }
 
+    /* Long command names (e.g. GetSubelementsOfHierarchicalElements) were
+       clipped to invisibility by the nowrap + hidden overflow of the header
+       on narrow screens - let them wrap instead. */
+    summary.command_header {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    span.command_name {
+        word-break: break-word;
+    }
+
 }
 
 .footer {
