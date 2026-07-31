@@ -2332,6 +2332,322 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+GetRelationsOfElementsCommand::GetRelationsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRelationsOfElementsCommand::GetName () const
+{
+    return "GetRelationsOfElements";
+}
+
+GS::Optional<GS::UniString> GetRelationsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "otherElementType": {
+                "$ref": "#/ElementType",
+                "description": "Optional filter: only relations to elements of this type are returned."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetRelationsOfElementsCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "relations": {
+                "type": "array",
+                "description": "Type-specific relations of each element, aligned with the input.",
+                "items": {
+                    "$ref": "#/ElementRelationsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "relations"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2600
+
+static GS::ObjectState ConvertConnectionGuidItem (const API_ConnectionGuidItem& item)
+{
+    GS::ObjectState itemOS;
+    itemOS.Add ("elementId", CreateGuidObjectState (item.guid));
+    itemOS.Add ("connectedWithBeginPoint", item.conWithBeg);
+    return itemOS;
+}
+
+static void AddConnectionList (GS::ObjectState& os, const char* fieldName, const API_ConnectionGuidItem* const* itemsHandle, Int32 itemCount)
+{
+    const auto& list = os.AddList<GS::ObjectState> (fieldName);
+    if (itemsHandle == nullptr || *itemsHandle == nullptr) {
+        return;
+    }
+    for (Int32 i = 0; i < itemCount; ++i) {
+        list (ConvertConnectionGuidItem ((*itemsHandle)[i]));
+    }
+}
+
+static void AddConnectionList (GS::ObjectState& os, const char* fieldName, const GS::Array<API_ConnectionGuidItem>* items)
+{
+    const auto& list = os.AddList<GS::ObjectState> (fieldName);
+    if (items == nullptr) {
+        return;
+    }
+    for (const API_ConnectionGuidItem& item : *items) {
+        list (ConvertConnectionGuidItem (item));
+    }
+}
+
+static GS::ObjectState ConvertZoneBoundaryPart (const API_WallPart& part, bool addRoomEdgeIndex)
+{
+    GS::ObjectState partOS;
+    partOS.Add ("elementId", CreateGuidObjectState (part.guid));
+    if (addRoomEdgeIndex) {
+        partOS.Add ("roomEdgeIndex", part.roomEdge);
+    }
+    partOS.Add ("begDistance", part.tBeg);
+    partOS.Add ("endDistance", part.tEnd);
+    return partOS;
+}
+
+static GS::ObjectState GetWallRelations (const API_Guid& guid, const API_ElemType& otherType)
+{
+    API_WallRelation relation = {};
+    const GSErrCode err = ACAPI_Element_GetRelations (guid, otherType, &relation);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the relations of the element.");
+    }
+
+    GS::ObjectState connections;
+    AddConnectionList (connections, "connectedToBeginPoint", relation.conBeg, relation.nConBeg);
+    AddConnectionList (connections, "connectedToEndPoint", relation.conEnd, relation.nConEnd);
+    AddConnectionList (connections, "connectedWithReferenceLineToEndPoints", relation.conRef, relation.nConRef);
+    AddConnectionList (connections, "connectedToReferenceLine", relation.con, relation.nCon);
+    AddConnectionList (connections, "crossingReferenceLine", relation.conX, relation.nConX);
+    ACAPI_DisposeWallRelationHdls (&relation);
+
+    return GS::ObjectState ("wallConnections", connections);
+}
+
+static GS::ObjectState GetBeamRelations (const API_Guid& guid, const API_ElemType& otherType)
+{
+    API_BeamRelation relation = {};
+    const GSErrCode err = ACAPI_Element_GetRelations (guid, otherType, &relation);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the relations of the element.");
+    }
+
+    GS::ObjectState connections;
+    AddConnectionList (connections, "connectedToBeginPoint", relation.conBeg);
+    AddConnectionList (connections, "connectedToEndPoint", relation.conEnd);
+    AddConnectionList (connections, "connectedWithReferenceLineToEndPoints", relation.conRef);
+    AddConnectionList (connections, "connectedToReferenceLine", relation.con);
+    AddConnectionList (connections, "crossingReferenceLine", relation.conX);
+    ACAPI_DisposeBeamRelationHdls (&relation);
+
+    return GS::ObjectState ("beamConnections", connections);
+}
+
+static GS::ObjectState GetBeamSegmentRelations (const API_Guid& guid, const API_ElemType& otherType)
+{
+    API_BeamSegmentRelation relation = {};
+    const GSErrCode err = ACAPI_Element_GetRelations (guid, otherType, &relation);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the relations of the element.");
+    }
+
+    GS::ObjectState connections;
+    AddConnectionList (connections, "connectedToBeginPoint", relation.conBeg);
+    AddConnectionList (connections, "connectedToEndPoint", relation.conEnd);
+    AddConnectionList (connections, "connectedWithReferenceLineToEndPoints", relation.conRef);
+    AddConnectionList (connections, "connectedToReferenceLine", relation.con);
+    AddConnectionList (connections, "crossingReferenceLine", relation.conX);
+    ACAPI_DisposeBeamSegmentRelationHdls (&relation);
+
+    return GS::ObjectState ("beamSegmentConnections", connections);
+}
+
+static GS::ObjectState GetZoneRelations (const API_Guid& guid, const API_ElemType& otherType)
+{
+    API_RoomRelation relation = {};
+    const GSErrCode err = ACAPI_Element_GetRelations (guid, otherType, &relation);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the relations of the element.");
+    }
+
+    GS::ObjectState zoneRelations;
+    const auto& elementsGroupedByType = zoneRelations.AddList<GS::ObjectState> ("elementsGroupedByType");
+    relation.elementsGroupedByType.Enumerate ([&] (const API_ElemType& elemType, const GS::Array<API_Guid>& elemGuids) {
+        GS::ObjectState elementsOfTypeOS;
+        elementsOfTypeOS.Add ("elementType", GetElementTypeNonLocalizedName (elemType.typeID));
+        const auto& elementsOS = elementsOfTypeOS.AddList<GS::ObjectState> ("elements");
+        for (const API_Guid& elemGuid : elemGuids) {
+            elementsOS (CreateElementIdObjectState (elemGuid));
+        }
+        elementsGroupedByType (elementsOfTypeOS);
+    });
+
+    const auto& wallParts = zoneRelations.AddList<GS::ObjectState> ("wallParts");
+    for (const API_WallPart& part : relation.wallPart) {
+        wallParts (ConvertZoneBoundaryPart (part, true));
+    }
+
+    const auto& beamParts = zoneRelations.AddList<GS::ObjectState> ("beamParts");
+    for (const API_BeamPart& part : relation.beamPart) {
+        GS::ObjectState partOS;
+        partOS.Add ("elementId", CreateGuidObjectState (part.guid));
+        partOS.Add ("begDistance", part.tBeg);
+        partOS.Add ("endDistance", part.tEnd);
+        beamParts (partOS);
+    }
+
+    const auto& curtainWallSegmentParts = zoneRelations.AddList<GS::ObjectState> ("curtainWallSegmentParts");
+    for (const API_CWSegmentPart& part : relation.cwSegmentPart) {
+        curtainWallSegmentParts (ConvertZoneBoundaryPart (part, true));
+    }
+
+    ACAPI_DisposeRoomRelationHdls (&relation);
+
+    return GS::ObjectState ("zoneRelations", zoneRelations);
+}
+
+static GS::ObjectState GetOpeningRelations (const API_Guid& guid, const API_ElemType& otherType)
+{
+    API_CWPanelRelation relation = {};
+    const GSErrCode err = ACAPI_Element_GetRelations (guid, otherType, &relation);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the relations of the element.");
+    }
+
+    GS::ObjectState openingRelations;
+    if (relation.fromRoom != APINULLGuid) {
+        openingRelations.Add ("fromRoom", CreateGuidObjectState (relation.fromRoom));
+    }
+    if (relation.toRoom != APINULLGuid) {
+        openingRelations.Add ("toRoom", CreateGuidObjectState (relation.toRoom));
+    }
+
+    return GS::ObjectState ("openingRelations", openingRelations);
+}
+
+static GS::ObjectState GetRoofOrShellRelations (const API_Guid& guid, const API_ElemType& otherType)
+{
+    API_RoofRelation relation = {};
+    // The rooms array is provided by the caller; if the API replaces the
+    // pointer with its own allocation, that one is released below.
+    GS::Array<API_Guid> roomGuids;
+    relation.rooms = &roomGuids;
+    const GSErrCode err = ACAPI_Element_GetRelations (guid, otherType, &relation);
+    if (err != NoError) {
+        if (relation.rooms != nullptr && relation.rooms != &roomGuids) {
+            delete relation.rooms;
+        }
+        return CreateErrorResponse (err, "Failed to get the relations of the element.");
+    }
+
+    GS::ObjectState roofOrShellRelations;
+    const auto& connectedRooms = roofOrShellRelations.AddList<GS::ObjectState> ("connectedRooms");
+    if (relation.rooms != nullptr) {
+        for (const API_Guid& roomGuid : *relation.rooms) {
+            connectedRooms (CreateElementIdObjectState (roomGuid));
+        }
+    }
+    if (relation.rooms != nullptr && relation.rooms != &roomGuids) {
+        delete relation.rooms;
+    }
+
+    return GS::ObjectState ("roofOrShellRelations", roofOrShellRelations);
+}
+
+#endif
+
+GS::ObjectState GetRelationsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2600
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    API_ElemType otherType = API_ZombieElemID;
+    GS::UniString otherTypeStr;
+    if (parameters.Get ("otherElementType", otherTypeStr)) {
+        otherType = GetElementTypeFromNonLocalizedName (otherTypeStr);
+        if (otherType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid otherElementType '%T'.", otherTypeStr.ToPrintf ()));
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& relations = response.AddList<GS::ObjectState> ("relations");
+
+    for (const GS::ObjectState& elementOS : elements) {
+        const GS::ObjectState* elementId = elementOS.Get ("elementId");
+        if (elementId == nullptr) {
+            relations (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            relations (CreateErrorResponse (APIERR_BADID, "Failed to find the element."));
+            continue;
+        }
+
+        switch (elemHead.type.typeID) {
+            case API_WallID:
+                relations (GetWallRelations (elemHead.guid, otherType));
+                break;
+            case API_BeamID:
+                relations (GetBeamRelations (elemHead.guid, otherType));
+                break;
+            case API_BeamSegmentID:
+                relations (GetBeamSegmentRelations (elemHead.guid, otherType));
+                break;
+            case API_ZoneID:
+                relations (GetZoneRelations (elemHead.guid, otherType));
+                break;
+            case API_CurtainWallPanelID:
+            case API_SkylightID:
+            case API_WindowID:
+            case API_DoorID:
+                relations (GetOpeningRelations (elemHead.guid, otherType));
+                break;
+            case API_RoofID:
+            case API_ShellID:
+                relations (GetRoofOrShellRelations (elemHead.guid, otherType));
+                break;
+            default:
+                relations (CreateErrorResponse (APIERR_BADPARS,
+                    GS::UniString::Printf ("Element type '%T' is not supported. Supported types: Wall, Beam, BeamSegment, Zone, CurtainWallPanel, Skylight, Window, Door, Roof, Shell.",
+                        GetElementTypeNonLocalizedName (elemHead.type.typeID).ToPrintf ())));
+                break;
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetRelationsOfElements requires Archicad 26 or newer.");
+#endif
+}
+
 GetZoneBoundariesCommand::GetZoneBoundariesCommand () :
     CommandBase (CommonSchema::Used)
 {

@@ -323,6 +323,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.4",
             "Gets connected elements of the given elements."
         );
+        err |= RegisterCommand<GetRelationsOfElementsCommand> (
+            elementCommands, "1.5.7",
+            "Gets the type-specific relations of the given elements: endpoint and reference line connections of walls, beams and beam segments, boundary elements and boundary sections of zones, the zones on the two sides of windows, doors, skylights and curtain wall panels, and the zones connected to roofs and shells. Available from Archicad 26."
+        );
         err |= RegisterCommand<GetZoneBoundariesCommand> (
             elementCommands, "1.2.3",
             "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.)."

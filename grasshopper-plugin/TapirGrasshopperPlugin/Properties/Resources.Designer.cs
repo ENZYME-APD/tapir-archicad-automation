@@ -2191,6 +2191,14 @@ namespace TapirGrasshopperPlugin.Properties
             }
         }
 
+        internal static System.Drawing.Bitmap GetRelationsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetRelationsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
         internal static System.Drawing.Bitmap GetSpecialFolders
         {
             get {

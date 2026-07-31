@@ -7273,5 +7273,262 @@
         "items": {
             "$ref": "#/SpecialFolderPathOrError"
         }
+    },
+    "ConnectionItem": {
+        "type": "object",
+        "description": "An element connected with its beginning or end point.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "connectedWithBeginPoint": {
+                "type": "boolean",
+                "description": "True if the element is connected with its beginning point, false if it is connected with its end point."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "connectedWithBeginPoint"
+        ]
+    },
+    "EndpointConnections": {
+        "type": "object",
+        "description": "The connections of a wall, beam or beam segment.",
+        "properties": {
+            "connectedToBeginPoint": {
+                "type": "array",
+                "description": "Elements connected to the beginning point of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "connectedToEndPoint": {
+                "type": "array",
+                "description": "Elements connected to the end point of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "connectedWithReferenceLineToEndPoints": {
+                "type": "array",
+                "description": "Elements connected with their reference line to the beginning or end point of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "connectedToReferenceLine": {
+                "type": "array",
+                "description": "Elements connected to the reference line of the element, not at its endpoints.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            },
+            "crossingReferenceLine": {
+                "type": "array",
+                "description": "Elements whose reference line intersects the reference line of the element.",
+                "items": {
+                    "$ref": "#/ConnectionItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectedToBeginPoint",
+            "connectedToEndPoint",
+            "connectedWithReferenceLineToEndPoints",
+            "connectedToReferenceLine",
+            "crossingReferenceLine"
+        ]
+    },
+    "ElementsOfElementType": {
+        "type": "object",
+        "description": "Elements of a given type.",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "elements"
+        ]
+    },
+    "ZoneBoundaryPart": {
+        "type": "object",
+        "description": "Section of a wall, beam or curtain wall segment related to a zone.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "roomEdgeIndex": {
+                "type": "integer",
+                "description": "Index of the zone polygon edge adjacent to the element (not present for beams)."
+            },
+            "begDistance": {
+                "type": "number",
+                "description": "Beginning distance of the section from the beginning point of the element."
+            },
+            "endDistance": {
+                "type": "number",
+                "description": "End distance of the section from the beginning point of the element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "begDistance",
+            "endDistance"
+        ]
+    },
+    "ZoneRelations": {
+        "type": "object",
+        "description": "The relations of a zone: the related elements grouped by type and the boundary sections of walls, beams and curtain wall segments.",
+        "properties": {
+            "elementsGroupedByType": {
+                "type": "array",
+                "description": "The elements related to the zone, grouped by element type.",
+                "items": {
+                    "$ref": "#/ElementsOfElementType"
+                }
+            },
+            "wallParts": {
+                "type": "array",
+                "description": "Sections of walls that border the zone.",
+                "items": {
+                    "$ref": "#/ZoneBoundaryPart"
+                }
+            },
+            "beamParts": {
+                "type": "array",
+                "description": "Sections of beams related to the zone.",
+                "items": {
+                    "$ref": "#/ZoneBoundaryPart"
+                }
+            },
+            "curtainWallSegmentParts": {
+                "type": "array",
+                "description": "Sections of curtain wall segments that border the zone.",
+                "items": {
+                    "$ref": "#/ZoneBoundaryPart"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsGroupedByType",
+            "wallParts",
+            "beamParts",
+            "curtainWallSegmentParts"
+        ]
+    },
+    "ElementRelationsOrError": {
+        "type": "object",
+        "description": "The type-specific relations of an element or an error. The variant depends on the type of the input element.",
+        "oneOf": [
+            {
+                "type": "object",
+                "description": "Relations of a wall.",
+                "properties": {
+                    "wallConnections": {
+                        "$ref": "#/EndpointConnections"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "wallConnections"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a beam.",
+                "properties": {
+                    "beamConnections": {
+                        "$ref": "#/EndpointConnections"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "beamConnections"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a beam segment.",
+                "properties": {
+                    "beamSegmentConnections": {
+                        "$ref": "#/EndpointConnections"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "beamSegmentConnections"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a zone.",
+                "properties": {
+                    "zoneRelations": {
+                        "$ref": "#/ZoneRelations"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "zoneRelations"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a curtain wall panel, skylight, window or door: the zones on the two sides of the opening.",
+                "properties": {
+                    "openingRelations": {
+                        "type": "object",
+                        "properties": {
+                            "fromRoom": {
+                                "$ref": "#/ElementId"
+                            },
+                            "toRoom": {
+                                "$ref": "#/ElementId"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "openingRelations"
+                ]
+            },
+            {
+                "type": "object",
+                "description": "Relations of a roof or shell: the connected zones.",
+                "properties": {
+                    "roofOrShellRelations": {
+                        "type": "object",
+                        "properties": {
+                            "connectedRooms": {
+                                "$ref": "#/Elements"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "connectedRooms"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "roofOrShellRelations"
+                ]
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
     }
 }
