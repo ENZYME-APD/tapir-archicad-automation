@@ -856,4 +856,43 @@
   <data name="SetSuspendGroupsMode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SetSuspendGroupsMode.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CreateLineElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateLineElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateArcs" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateArcs.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateCircles" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateCircles.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateHotspots" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateHotspots.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateHatches" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateHatches.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateSplines" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateSplines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateZones" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateZones.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetUserGSID" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetUserGSID.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ChangeDrawingLink" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ChangeDrawingLink.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ShowAlert" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ShowAlert.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyObjects" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyObjects.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyLamps" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyLamps.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetMEPPreferenceTables" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMEPPreferenceTables.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

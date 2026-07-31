@@ -11,20 +11,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ModifyWindows",
                 "Modify Window elements. Only the connected optional inputs are changed on the elements.",
-                GroupNames.ElementModification,
-                "windowsWithDetails",
-                new List<Field>
-                {
-                    new Field("Widths", "width", FieldKind.Number, "Width of the window."),
-                    new Field("Heights", "height", FieldKind.Number, "Height of the window."),
-                    new Field("SillHeights", "sillHeight", FieldKind.Number, "Sill height of the window."),
-                    new Field("CenterOffsets", "centerOffset", FieldKind.Number, "Distance of the window center from the beginning point of the owner wall."),
-                    new Field("Reflected", "reflected", FieldKind.Boolean, "Mirror the window on its vertical axis."),
-                    new Field("RefSide", "refSide", FieldKind.Boolean, "Place the window on the reference line side of the owner wall."),
-                    new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall.")
-                })
+                GroupNames.ElementModification)
         {
         }
+
+        protected override string ArrayKey => "windowsWithDetails";
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("Widths", "width", FieldKind.Number, "Width of the window."),
+            new Field("Heights", "height", FieldKind.Number, "Height of the window."),
+            new Field("SillHeights", "sillHeight", FieldKind.Number, "Sill height of the window."),
+            new Field("CenterOffsets", "centerOffset", FieldKind.Number, "Distance of the window center from the beginning point of the owner wall."),
+            new Field("Reflected", "reflected", FieldKind.Boolean, "Mirror the window on its vertical axis."),
+            new Field("RefSide", "refSide", FieldKind.Boolean, "Place the window on the reference line side of the owner wall."),
+            new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall.")
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.ModifyWindows;

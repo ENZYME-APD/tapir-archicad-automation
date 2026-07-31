@@ -19,6 +19,13 @@ namespace TapirGrasshopperPlugin.Components
     // nested fields remain available through the optional AdditionalSettings
     // JSON input. The identifiers of the created elements are returned in the
     // ElementGuids output.
+    //
+    // The configuration is provided through overridable members instead of
+    // constructor parameters on purpose: GH_Component's constructor calls
+    // RegisterInputParams (and thus AddInputs) before the derived
+    // constructor bodies run, so constructor-assigned fields would still be
+    // null at that point. Overrides must not depend on instance state
+    // (return constants or static data).
     public abstract class CreateElementsComponentBase : ArchicadExecutorComponent
     {
         protected enum FieldKind
@@ -64,37 +71,36 @@ namespace TapirGrasshopperPlugin.Components
             public int MinPointsPerBranch { get; }
         }
 
-        private readonly string _arrayKey;
-        private readonly List<Field> _fields;
-        private readonly bool _addAdditionalSettings;
+        // The name of the command's array parameter (e.g. "wallsData").
+        protected abstract string ArrayKey { get; }
 
-        // The first field must be required; it defines the number of created
-        // elements (its list length, or its branch count for tree kinds).
-        // Tree kinds are only supported as the first field. Pass
-        // addAdditionalSettings: false when the typed inputs cover the
-        // command's complete item schema.
+        // The typed fields of the command. The first field must be required;
+        // it defines the number of created elements (its list length, or its
+        // branch count for tree kinds). Tree kinds are only supported as the
+        // first field.
+        protected abstract IReadOnlyList<Field> Fields { get; }
+
+        // Override with false when the typed inputs cover the command's
+        // complete item schema.
+        protected virtual bool HasAdditionalSettingsInput => true;
+
         protected CreateElementsComponentBase(
             string name,
             string description,
-            string subCategory,
-            string arrayKey,
-            List<Field> fields,
-            bool addAdditionalSettings = true)
+            string subCategory)
             : base(
                 name,
                 description,
                 subCategory)
         {
-            _arrayKey = arrayKey;
-            _fields = fields;
-            _addAdditionalSettings = addAdditionalSettings;
         }
 
         protected override void AddInputs()
         {
-            for (var index = 0; index < _fields.Count; index++)
+            var fields = Fields;
+            for (var index = 0; index < fields.Count; index++)
             {
-                var field = _fields[index];
+                var field = fields[index];
                 var description = field.Description;
                 if (index > 0)
                 {
@@ -148,13 +154,13 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
-            if (_addAdditionalSettings)
+            if (HasAdditionalSettingsInput)
             {
                 InTexts(
                     "AdditionalSettings",
                     "One JSON object per element with further optional settings matching the " +
                     "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
-                SetOptionality(_fields.Count);
+                SetOptionality(fields.Count);
             }
         }
 
@@ -372,7 +378,8 @@ namespace TapirGrasshopperPlugin.Components
         protected override void Solve(
             IGH_DataAccess da)
         {
-            var firstField = _fields[0];
+            var fields = Fields;
+            var firstField = fields[0];
             var isTreeFirst = firstField.Kind == FieldKind.PointsTree2D ||
                               firstField.Kind == FieldKind.PointsTree3D;
 
@@ -430,9 +437,9 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
-            for (var fieldIndex = 1; fieldIndex < _fields.Count; fieldIndex++)
+            for (var fieldIndex = 1; fieldIndex < fields.Count; fieldIndex++)
             {
-                var field = _fields[fieldIndex];
+                var field = fields[fieldIndex];
                 if (!TryReadTokens(da, fieldIndex, field, out List<JToken> tokens))
                 {
                     return;
@@ -466,9 +473,9 @@ namespace TapirGrasshopperPlugin.Components
             }
 
             var additionalSettings = new List<string>();
-            if (_addAdditionalSettings)
+            if (HasAdditionalSettingsInput)
             {
-                da.GetDataList(_fields.Count, additionalSettings);
+                da.GetDataList(fields.Count, additionalSettings);
             }
             if (additionalSettings.Count > 0)
             {
@@ -506,7 +513,7 @@ namespace TapirGrasshopperPlugin.Components
             {
                 itemsArray.Add(item);
             }
-            var parameters = new JObject { [_arrayKey] = itemsArray };
+            var parameters = new JObject { [ArrayKey] = itemsArray };
 
             if (!TryGetCadResponse(
                     CommandName,
