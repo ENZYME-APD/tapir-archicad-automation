@@ -11,21 +11,26 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateColumns",
                 "Create Column elements based on the given parameters.",
-                GroupNames.ElementCreation,
-                "columnsData",
-                new List<Field>
-                {
-                    new Field("Points", "coordinates", FieldKind.Point3D, "Insertion points of the columns.", required: true),
-                    new Field("Heights", "height", FieldKind.Number, "Height of the column."),
-                    new Field("Widths", "width", FieldKind.Number, "Width of the column core."),
-                    new Field("Depths", "depth", FieldKind.Number, "Depth of the column core."),
-                    new Field("AxisRotationAngles", "axisRotationAngle", FieldKind.Number, "Rotation angle of the column axis in radians."),
-                    new Field("CoreAnchors", "coreAnchor", FieldKind.Text, "Core anchor: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight."),
-                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the column.")
-                },
-                addAdditionalSettings: false)
+                GroupNames.ElementCreation)
         {
         }
+
+        protected override string ArrayKey => "columnsData";
+
+        protected override bool HasAdditionalSettingsInput => false;
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("Points", "coordinates", FieldKind.Point3D, "Insertion points of the columns.", required: true),
+            new Field("Heights", "height", FieldKind.Number, "Height of the column."),
+            new Field("Widths", "width", FieldKind.Number, "Width of the column core."),
+            new Field("Depths", "depth", FieldKind.Number, "Depth of the column core."),
+            new Field("AxisRotationAngles", "axisRotationAngle", FieldKind.Number, "Rotation angle of the column axis in radians."),
+            new Field("CoreAnchors", "coreAnchor", FieldKind.Text, "Core anchor: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight."),
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the column.")
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateColumns;

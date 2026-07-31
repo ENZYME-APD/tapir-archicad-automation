@@ -10,14 +10,18 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             : base(
                 "CreateLayoutSubset",
                 "Create Layout Book subsets.",
-                GroupNames.Navigator,
-                "subsetsData",
-                "SubsetsData",
-                "One JSON object per subset, e.g. " +
-                "{\"name\":\"My Subset\",\"parentNavigatorItemId\":{\"guid\":\"...\"}," +
-                "\"numberingStyle\":\"1\",\"startAt\":1,\"customNumbering\":false}.")
+                GroupNames.Navigator)
         {
         }
+
+        protected override string ArrayKey => "subsetsData";
+
+        protected override string InputName => "SubsetsData";
+
+        protected override string InputDescription =>
+            "One JSON object per subset, e.g. " +
+            "{\"name\":\"My Subset\",\"parentNavigatorItemId\":{\"guid\":\"...\"}," +
+            "\"numberingStyle\":\"1\",\"startAt\":1,\"customNumbering\":false}.";
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateLayoutSubset;
