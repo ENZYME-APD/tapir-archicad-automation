@@ -588,6 +588,93 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetResponseSchema () const
     return R"({"type":"object","properties":{"elements":{"$ref":"#/Elements"}},"additionalProperties":false,"required":["elements"]})";
 }
 
+// Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, name, position,
+// scale, optional clipPolygon). Shared by CreateDrawingsCommand and ChangeDrawingLinkCommand,
+// which synthesizes the same item shape from an existing Drawing's own current appearance.
+static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
+{
+    API_Element element = {};
+#ifdef ServerMainVers_2600
+    element.header.type   = API_DrawingID;
+#else
+    element.header.typeID = API_DrawingID;
+#endif
+    GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get drawing defaults.");
+    }
+
+    element.drawing.drawingGuid = GetGuidFromObjectState (*item.Get ("navigatorItemId"));
+    SetCharProperty (&item, "name", element.drawing.name);
+    element.drawing.nameType = APIName_CustomName;
+    element.drawing.anchorPoint = APIAnc_MM;
+    element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
+    if (!item.Get ("scale", element.drawing.ratio)) {
+        element.drawing.ratio = 1.0;
+    }
+    // Optional, not part of CreateDrawings' own public schema - only used internally by
+    // ChangeDrawingLink, which needs to set these at creation time rather than via a follow-up
+    // ACAPI_Element_Change (changing an element immediately after creating it, within the same
+    // undoable command, is unreliable).
+    item.Get ("angle", element.drawing.angle);
+    item.Get ("drawingScale", element.drawing.drawingScale);
+    const GS::ObjectState* modelOffsetState = item.Get ("modelOffset");
+    if (modelOffsetState != nullptr) {
+        element.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
+    }
+
+    // Optional clip polygon — drop closing vertex if present, then build memo
+    GS::Array<GS::ObjectState> clipCoords;
+    item.Get ("clipPolygon", clipCoords);
+    if (clipCoords.GetSize () > 1) {
+        API_Coord first = Get2DCoordinateFromObjectState (clipCoords.GetFirst ());
+        API_Coord last  = Get2DCoordinateFromObjectState (clipCoords.GetLast ());
+        if (IsSame2DCoordinate (first, last))
+            clipCoords.Pop ();
+    }
+    const Int32 nClip = (Int32) clipCoords.GetSize ();
+
+    API_ElementMemo memo = {};
+    if (nClip >= 3) {
+        element.drawing.isCutWithFrame = true;
+        element.drawing.poly.nSubPolys = 1;
+        element.drawing.poly.nCoords   = nClip + 1;
+        element.drawing.poly.nArcs     = 0;
+        memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nClip + 2) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+        memo.pends  = reinterpret_cast<Int32**>     (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+        if (memo.coords != nullptr && memo.pends != nullptr) {
+            for (Int32 i = 0; i < nClip; ++i)
+                (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (clipCoords[i]);
+            (*memo.coords)[nClip + 1] = (*memo.coords)[1];
+            (*memo.pends)[1] = nClip + 1;
+        }
+    }
+    err = ACAPI_Element_Create (&element, &memo);
+    ACAPI_DisposeElemMemoHdls (&memo);
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create drawing.");
+    }
+    return CreateElementIdObjectState (element.header.guid);
+}
+
+// Switches to the layout database identified by layoutDatabaseId (the same database-activation
+// dance CreateDrawingsCommand and ChangeDrawingLinkCommand both need before creating a Drawing).
+static GSErrCode ActivateLayoutDatabase (const API_Guid& layoutDatabaseGuid)
+{
+    API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (layoutDatabaseGuid);
+    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    err = ACAPI_Database_ChangeCurrentDatabase (&targetDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    API_WindowInfo windowInfo = targetDatabase;
+    return ACAPI_Window_ChangeWindow (&windowInfo);
+}
+
 GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -605,83 +692,15 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
             if (startingDatabaseErr == NoError) {
                 const GS::ObjectState* layoutDatabaseId = item.Get ("layoutDatabaseId");
                 if (layoutDatabaseId != nullptr) {
-                    API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*layoutDatabaseId));
-                    GSErrCode err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
+                    const GSErrCode err = ActivateLayoutDatabase (GetGuidFromObjectState (*layoutDatabaseId));
                     if (err != NoError) {
-                        elementResults.Push (CreateErrorResponse (err, "Failed to resolve layout database."));
-                        continue;
-                    }
-
-                    err = ACAPI_Database_ChangeCurrentDatabase (&targetDatabase);
-                    if (err != NoError) {
-                        elementResults.Push (CreateErrorResponse (err, "Failed to activate layout database."));
-                        continue;
-                    }
-
-                    API_WindowInfo windowInfo = targetDatabase;
-                    err = ACAPI_Window_ChangeWindow (&windowInfo);
-                    if (err != NoError) {
-                        elementResults.Push (CreateErrorResponse (err, "Failed to activate layout window."));
+                        elementResults.Push (CreateErrorResponse (err, "Failed to activate the layout database."));
                         continue;
                     }
                 }
             }
 
-            API_Element element = {};
-#ifdef ServerMainVers_2600
-            element.header.type   = API_DrawingID;
-#else
-            element.header.typeID = API_DrawingID;
-#endif
-            GSErrCode err = ACAPI_Element_GetDefaults (&element, nullptr);
-            if (err != NoError) {
-                elementResults.Push (CreateErrorResponse (err, "Failed to get drawing defaults."));
-                continue;
-            }
-
-            element.drawing.drawingGuid = GetGuidFromObjectState (*item.Get ("navigatorItemId"));
-            SetCharProperty (&item, "name", element.drawing.name);
-            element.drawing.nameType = APIName_CustomName;
-            element.drawing.anchorPoint = APIAnc_MM;
-            element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
-            if (!item.Get ("scale", element.drawing.ratio)) {
-                element.drawing.ratio = 1.0;
-            }
-
-            // Optional clip polygon — drop closing vertex if present, then build memo
-            GS::Array<GS::ObjectState> clipCoords;
-            item.Get ("clipPolygon", clipCoords);
-            if (clipCoords.GetSize () > 1) {
-                API_Coord first = Get2DCoordinateFromObjectState (clipCoords.GetFirst ());
-                API_Coord last  = Get2DCoordinateFromObjectState (clipCoords.GetLast ());
-                if (IsSame2DCoordinate (first, last))
-                    clipCoords.Pop ();
-            }
-            const Int32 nClip = (Int32) clipCoords.GetSize ();
-
-            API_ElementMemo memo = {};
-            if (nClip >= 3) {
-                element.drawing.isCutWithFrame = true;
-                element.drawing.poly.nSubPolys = 1;
-                element.drawing.poly.nCoords   = nClip + 1;
-                element.drawing.poly.nArcs     = 0;
-                memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nClip + 2) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
-                memo.pends  = reinterpret_cast<Int32**>     (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
-                if (memo.coords != nullptr && memo.pends != nullptr) {
-                    for (Int32 i = 0; i < nClip; ++i)
-                        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (clipCoords[i]);
-                    (*memo.coords)[nClip + 1] = (*memo.coords)[1];
-                    (*memo.pends)[1] = nClip + 1;
-                }
-            }
-            err = ACAPI_Element_Create (&element, &memo);
-            ACAPI_DisposeElemMemoHdls (&memo);
-
-            if (err != NoError) {
-                elementResults.Push (CreateErrorResponse (err, "Failed to create drawing."));
-                continue;
-            }
-            elementResults.Push (CreateElementIdObjectState (element.header.guid));
+            elementResults.Push (CreateOneDrawing (item));
         }
 
         return NoError;
@@ -698,6 +717,190 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
     for (const auto& elementResult : elementResults) {
         elements (elementResult);
+    }
+    return response;
+}
+
+// ============================================================================
+// ChangeDrawingLink — simulates relinking a Drawing to a different source.
+//
+// Archicad has no API to change a Drawing's source link (API_DrawingType::drawingGuid)
+// in place: confirmed live that ACAPI_Element_Change silently ignores any change to that
+// field once the Drawing already exists, even though other fields (pos, angle, ...) change
+// correctly through the same call. The only way to relink is what Graphisoft's own support
+// engineers recommend on the forums for this exact problem: capture the old Drawing's
+// appearance, create a brand new Drawing against the new source, reapply the appearance,
+// then delete the old one. The new Drawing necessarily gets a new guid - any external
+// references to the old guid (dimensions, markers, IDs) will need updating separately.
+//
+// All of the old Drawing's appearance (pos, angle, ratio, drawingScale, modelOffset,
+// clipPolygon) is set on the new element BEFORE creation (via CreateOneDrawing), not through
+// a follow-up ACAPI_Element_Change - calling Change on an element immediately after creating
+// it, within the same undoable command, crashed Archicad's command layer in testing.
+//
+// Known gap: the Drawing Title marker's own position (a "Neig" sub-element,
+// APINeig_DrawingTitle) is not carried over. Neither the ACAPI documentation nor
+// Graphisoft's own support responses address this - it appears to be an unresolved,
+// undocumented corner of the API rather than something this command works around.
+// ============================================================================
+
+ChangeDrawingLinkCommand::ChangeDrawingLinkCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeDrawingLinkCommand::GetName () const
+{
+    return "ChangeDrawingLink";
+}
+
+GS::Optional<GS::UniString> ChangeDrawingLinkCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "drawingsWithNewLinks": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "An existing Drawing and the navigator item it should be relinked to.",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "navigatorItemId": { "$ref": "#/NavigatorItemId" },
+                        "layoutDatabaseId": { "$ref": "#/DatabaseId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "navigatorItemId", "layoutDatabaseId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["drawingsWithNewLinks"]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeDrawingLinkCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "One result per input item. On success, elementId is the NEW Drawing's identifier - relinking necessarily replaces the element, it cannot keep the original guid.",
+                "items": {
+                    "$ref": "#/ElementIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "drawingsWithNewLinks", items, errorResponse)) {
+        return errorResponse;
+    }
+
+    API_DatabaseInfo startingDatabase = {};
+    const GSErrCode startingDatabaseErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+
+    GS::Array<GS::ObjectState> results;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("ChangeDrawingLinkCommand", [&]() -> GSErrCode {
+        for (const auto& item : items) {
+            const GS::ObjectState* elementIdState        = item.Get ("elementId");
+            const GS::ObjectState* navigatorItemIdState  = item.Get ("navigatorItemId");
+            const GS::ObjectState* layoutDatabaseIdState = item.Get ("layoutDatabaseId");
+            if (elementIdState == nullptr || navigatorItemIdState == nullptr || layoutDatabaseIdState == nullptr) {
+                results.Push (CreateErrorResponse (APIERR_BADPARS, "elementId, navigatorItemId and layoutDatabaseId are all required."));
+                continue;
+            }
+
+            const API_Guid oldGuid = GetGuidFromObjectState (*elementIdState);
+
+            API_Element oldElement = {};
+            oldElement.header.guid = oldGuid;
+            GSErrCode err = ACAPI_Element_Get (&oldElement);
+            if (err != NoError) {
+                results.Push (CreateErrorResponse (err, "Failed to find the Drawing to relink."));
+                continue;
+            }
+#ifdef ServerMainVers_2600
+            if (oldElement.header.type != API_DrawingID) {
+#else
+            if (oldElement.header.typeID != API_DrawingID) {
+#endif
+                results.Push (CreateErrorResponse (APIERR_BADID, "The given element is not a Drawing."));
+                continue;
+            }
+
+            // Capture the old Drawing's clip polygon (if any) before it's deleted.
+            GS::Array<GS::ObjectState> oldClipCoords;
+            if (oldElement.drawing.isCutWithFrame) {
+                GS::ObjectState oldClip;
+                AddPolygonFromMemoCoords (oldGuid, oldClip, "clipPolygon");
+                oldClip.Get ("clipPolygon", oldClipCoords);
+            }
+
+            if (startingDatabaseErr == NoError) {
+                err = ActivateLayoutDatabase (GetGuidFromObjectState (*layoutDatabaseIdState));
+                if (err != NoError) {
+                    results.Push (CreateErrorResponse (err, "Failed to activate the layout database."));
+                    continue;
+                }
+            }
+
+            GS::ObjectState newDrawingItem;
+            newDrawingItem.Add ("navigatorItemId", *navigatorItemIdState);
+            newDrawingItem.Add ("name", GS::UniString (oldElement.drawing.name));
+            newDrawingItem.Add ("position", Create2DCoordinateObjectState (oldElement.drawing.pos));
+            newDrawingItem.Add ("scale", oldElement.drawing.ratio);
+            newDrawingItem.Add ("angle", oldElement.drawing.angle);
+            newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);
+            newDrawingItem.Add ("modelOffset", Create2DCoordinateObjectState (oldElement.drawing.modelOffset));
+            if (!oldClipCoords.IsEmpty ()) {
+                const auto& clipList = newDrawingItem.AddList<GS::ObjectState> ("clipPolygon");
+                for (const auto& coord : oldClipCoords) {
+                    clipList (coord);
+                }
+            }
+
+            const GS::ObjectState createResult = CreateOneDrawing (newDrawingItem);
+            const GS::ObjectState* newElementIdState = createResult.Get ("elementId");
+            if (newElementIdState == nullptr) {
+                results.Push (createResult);
+                continue;
+            }
+            const API_Guid newGuid = GetGuidFromObjectState (*newElementIdState);
+
+            GS::Array<API_Guid> toDelete;
+            toDelete.Push (oldGuid);
+            err = ACAPI_Element_Delete (toDelete);
+            if (err != NoError) {
+                results.Push (CreateErrorResponse (err, "The relinked Drawing was created, but the old one could not be deleted."));
+                continue;
+            }
+
+            results.Push (CreateElementIdObjectState (newGuid));
+        }
+
+        return NoError;
+    });
+
+    if (startingDatabaseErr == NoError) {
+        ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    }
+    if (undoErr != NoError) {
+        results.Push (CreateErrorResponse (undoErr, "Failed to execute command in undo scope."));
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const auto& result : results) {
+        elements (result);
     }
     return response;
 }

@@ -304,7 +304,7 @@ GSErrCode Initialize (void)
             "Tests an elements by the given criterias."
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
-            elementCommands, "1.0.7",
+            elementCommands, "1.5.7",
             "Gets the details of the given elements (geometry parameters etc)."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
@@ -883,6 +883,13 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateDrawingsCommand> (
             navigatorCommands, "1.4.0",
             "Creates Drawing elements on the specified or active layout from navigator items."
+        );
+        err |= RegisterCommand<ChangeDrawingLinkCommand> (
+            navigatorCommands, "1.5.7",
+            "Relinks a Drawing to a different source navigator item. Archicad has no in-place relink "
+            "API, so this recreates the Drawing against the new source and deletes the original - the "
+            "returned elementId is a NEW guid, not the input one. The Drawing Title marker's own "
+            "position is not preserved (undocumented Archicad limitation)."
         );
         err |= RegisterCommand<GetLayoutSettingsCommand> (
             navigatorCommands, "1.1.7",
