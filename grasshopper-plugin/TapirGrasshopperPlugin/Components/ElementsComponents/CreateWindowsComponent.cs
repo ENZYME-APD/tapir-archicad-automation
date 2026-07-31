@@ -24,7 +24,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new Field("RefSide", "refSide", FieldKind.Boolean, "Place the window on the reference line side of the owner wall."),
                     new Field("OSide", "oSide", FieldKind.Boolean, "Place the window on the side opposite to the reference line of the owner wall."),
                     new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of the favorite to use as a base for the window.")
-                })
+                },
+                addAdditionalSettings: false)
         {
         }
 

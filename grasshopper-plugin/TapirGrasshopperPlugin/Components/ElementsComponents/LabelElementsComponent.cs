@@ -1,71 +1,29 @@
-using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Linq;
-using TapirGrasshopperPlugin.Helps;
-using TapirGrasshopperPlugin.Types.Element;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class LabelElementsComponent : ArchicadExecutorComponent
+    public class LabelElementsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateLabels";
 
         public LabelElementsComponent()
             : base(
                 "LabelElements",
-                "Label elements",
-                GroupNames.ElementCreation)
-        {
-        }
-
-        protected override void AddInputs()
-        {
-            InGenerics(
-                "ElementGuids",
-                "IDs of Elements to create labels for.");
-        }
-
-        protected override void AddOutputs()
-        {
-            OutGenerics(
-                "LabelGuids",
-                "Identifiers of the created labels (null for failed items).");
-
-            OutTexts(
-                "ErrorMessages",
-                "Error message for each item (empty when the label was created successfully).");
-        }
-
-        protected override void Solve(
-            IGH_DataAccess da)
-        {
-            if (!da.TryCreateFromList(
-                    0,
-                    out ElementsObject elements))
-            {
-                return;
-            }
-
-            var parameters = JObject.FromObject(
-                new
+                "Create Label elements for the given elements.",
+                GroupNames.ElementCreation,
+                "labelsData",
+                new List<Field>
                 {
-                    labelsData = elements
-                        .Elements.Select(element =>
-                            new { parentElementId = element.ElementId })
-                        .ToList()
-                });
-
-            if (!TryGetCadResponse(
-                    CommandName,
-                    parameters,
-                    ToAddOn,
-                    out JObject response))
-            {
-                return;
-            }
-
-            CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);
+                    new Field("ElementGuids", "parentElementId", FieldKind.ElementGuid, "Identifiers of the elements to create labels for.", required: true),
+                    new Field("Texts", "text", FieldKind.Text, "Content of the label (required for text labels)."),
+                    new Field("BegPoints", "begCoordinate", FieldKind.Point2D, "Beginning point of the label pointer line (only X and Y are used)."),
+                    new Field("MidPoints", "midCoordinate", FieldKind.Point2D, "Middle point of the label pointer line (only X and Y are used)."),
+                    new Field("EndPoints", "endCoordinate", FieldKind.Point2D, "End point of the label pointer line (only X and Y are used)."),
+                    new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the label.")
+                },
+                addAdditionalSettings: false)
+        {
         }
 
         protected override System.Drawing.Bitmap Icon =>

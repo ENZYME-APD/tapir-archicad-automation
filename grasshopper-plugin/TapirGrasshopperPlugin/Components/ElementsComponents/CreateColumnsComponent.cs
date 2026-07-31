@@ -1,13 +1,9 @@
-using Grasshopper.Kernel;
-using Newtonsoft.Json.Linq;
-using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
-using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateColumnsComponent : ArchicadExecutorComponent
+    public class CreateColumnsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateColumns";
 
@@ -15,107 +11,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateColumns",
                 "Create Column elements based on the given parameters.",
-                GroupNames.ElementCreation)
-        {
-        }
-
-        protected override void AddInputs()
-        {
-            InPoints(
-                "Points",
-                "Insertion points of the columns.");
-
-            InTexts(
-                "AdditionalSettings",
-                "One JSON object per column with further optional settings " +
-                "(e.g. {\"height\":3.0,\"width\":0.4,\"depth\":0.4," +
-                "\"axisRotationAngle\":0,\"coreAnchor\":\"Center\",\"floorIndex\":0}). " +
-                "Input only 1 to use the same settings for all. Optional.");
-
-            SetOptionality(1);
-        }
-
-        protected override void AddOutputs()
-        {
-            OutGenerics(
-                "ElementGuids",
-                "Identifiers of the created columns (null for failed items).");
-
-            OutTexts(
-                "ErrorMessages",
-                "Error message for each item (empty when the column was created successfully).");
-        }
-
-        protected override void Solve(
-            IGH_DataAccess da)
-        {
-            if (!da.TryGetList(
-                    0,
-                    out List<Point3d> points))
-            {
-                return;
-            }
-
-            da.TryGetList(
-                1,
-                out List<string> additionalSettings);
-            additionalSettings = additionalSettings ?? new List<string>();
-            if (additionalSettings.Count > 1 &&
-                additionalSettings.Count != points.Count)
-            {
-                this.AddError(
-                    "The size of the input AdditionalSettings must be 0, 1 or equal to the size of the input Points.");
-                return;
-            }
-
-            var items = new JArray();
-            for (var i = 0; i < points.Count; i++)
-            {
-                var item = new JObject
+                GroupNames.ElementCreation,
+                "columnsData",
+                new List<Field>
                 {
-                    ["coordinates"] = new JObject
-                    {
-                        ["x"] = points[i].X,
-                        ["y"] = points[i].Y,
-                        ["z"] = points[i].Z
-                    }
-                };
-
-                if (additionalSettings.Count > 0)
-                {
-                    var json = additionalSettings[additionalSettings.Count == 1 ? 0 : i];
-                    try
-                    {
-                        item.Merge(
-                            JObject.Parse(json),
-                            new JsonMergeSettings
-                            {
-                                MergeArrayHandling = MergeArrayHandling.Replace
-                            });
-                    }
-                    catch (Exception ex)
-                    {
-                        this.AddError(
-                            $"Invalid JSON in the AdditionalSettings input: {ex.Message}");
-                        return;
-                    }
-                }
-
-                items.Add(item);
-            }
-
-            var parameters = new JObject { ["columnsData"] = items };
-
-            if (!TryGetCadResponse(
-                    CommandName,
-                    parameters,
-                    ToAddOn,
-                    out JObject response))
-            {
-                return;
-            }
-
-            CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);
+                    new Field("Points", "coordinates", FieldKind.Point3D, "Insertion points of the columns.", required: true),
+                    new Field("Heights", "height", FieldKind.Number, "Height of the column."),
+                    new Field("Widths", "width", FieldKind.Number, "Width of the column core."),
+                    new Field("Depths", "depth", FieldKind.Number, "Depth of the column core."),
+                    new Field("AxisRotationAngles", "axisRotationAngle", FieldKind.Number, "Rotation angle of the column axis in radians."),
+                    new Field("CoreAnchors", "coreAnchor", FieldKind.Text, "Core anchor: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight."),
+                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the column.")
+                },
+                addAdditionalSettings: false)
+        {
         }
 
         protected override System.Drawing.Bitmap Icon =>

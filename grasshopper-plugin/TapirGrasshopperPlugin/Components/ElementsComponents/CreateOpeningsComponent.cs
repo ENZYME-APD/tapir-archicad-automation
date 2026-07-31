@@ -19,7 +19,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new Field("BasePoints", "basePoint", FieldKind.Point3D, "Base point of the opening.", required: true),
                     new Field("Widths", "width", FieldKind.Number, "Width of the opening."),
                     new Field("Heights", "height", FieldKind.Number, "Height of the opening.")
-                })
+                },
+                addAdditionalSettings: false)
         {
         }
 

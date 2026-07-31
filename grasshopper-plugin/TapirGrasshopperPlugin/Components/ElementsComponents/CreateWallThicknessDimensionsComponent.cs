@@ -18,7 +18,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new Field("WallGuids", "wallId", FieldKind.ElementGuid, "Identifiers of the walls to dimension.", required: true),
                     new Field("ReferencePoints", "referencePoint", FieldKind.Point2D, "Point on the wall where the thickness is measured (only X and Y are used).", required: true),
                     new Field("Directions", "direction", FieldKind.Point2D, "Direction of the dimension line (only X and Y are used).", required: true)
-                })
+                },
+                addAdditionalSettings: false)
         {
         }
 

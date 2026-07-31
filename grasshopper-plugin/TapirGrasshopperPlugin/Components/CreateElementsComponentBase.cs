@@ -29,6 +29,9 @@ namespace TapirGrasshopperPlugin.Components
             Text,
             Point2D,
             Point3D,
+            // A line writes begCoordinate, endCoordinate and zCoordinate (the
+            // start point's Z) into the item; its JsonKey is unused.
+            Line,
             ElementGuid,
             AttributeGuid,
             PointsTree2D,
@@ -63,16 +66,20 @@ namespace TapirGrasshopperPlugin.Components
 
         private readonly string _arrayKey;
         private readonly List<Field> _fields;
+        private readonly bool _addAdditionalSettings;
 
         // The first field must be required; it defines the number of created
         // elements (its list length, or its branch count for tree kinds).
-        // Tree kinds are only supported as the first field.
+        // Tree kinds are only supported as the first field. Pass
+        // addAdditionalSettings: false when the typed inputs cover the
+        // command's complete item schema.
         protected CreateElementsComponentBase(
             string name,
             string description,
             string subCategory,
             string arrayKey,
-            List<Field> fields)
+            List<Field> fields,
+            bool addAdditionalSettings = true)
             : base(
                 name,
                 description,
@@ -80,6 +87,7 @@ namespace TapirGrasshopperPlugin.Components
         {
             _arrayKey = arrayKey;
             _fields = fields;
+            _addAdditionalSettings = addAdditionalSettings;
         }
 
         protected override void AddInputs()
@@ -113,6 +121,13 @@ namespace TapirGrasshopperPlugin.Components
                     case FieldKind.Point3D:
                         InPoints(field.InputName, description);
                         break;
+                    case FieldKind.Line:
+                        inManager.AddLineParameter(
+                            field.InputName,
+                            field.InputName,
+                            description,
+                            GH_ParamAccess.list);
+                        break;
                     case FieldKind.ElementGuid:
                     case FieldKind.AttributeGuid:
                         InGenerics(field.InputName, description);
@@ -133,11 +148,14 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
-            InTexts(
-                "AdditionalSettings",
-                "One JSON object per element with further optional settings matching the " +
-                "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
-            SetOptionality(_fields.Count);
+            if (_addAdditionalSettings)
+            {
+                InTexts(
+                    "AdditionalSettings",
+                    "One JSON object per element with further optional settings matching the " +
+                    "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
+                SetOptionality(_fields.Count);
+            }
         }
 
         protected override void AddOutputs()
@@ -289,6 +307,19 @@ namespace TapirGrasshopperPlugin.Components
                             (JToken)new JObject { ["x"] = v.X, ["y"] = v.Y, ["z"] = v.Z });
                         break;
                     }
+                case FieldKind.Line:
+                    {
+                        var values = new List<Line>();
+                        da.GetDataList(inputIndex, values);
+                        tokens = ConvertValues(values, v =>
+                            (JToken)new JObject
+                            {
+                                ["begCoordinate"] = new JObject { ["x"] = v.From.X, ["y"] = v.From.Y },
+                                ["endCoordinate"] = new JObject { ["x"] = v.To.X, ["y"] = v.To.Y },
+                                ["zCoordinate"] = v.From.Z
+                            });
+                        break;
+                    }
                 case FieldKind.ElementGuid:
                     {
                         var values = new List<GH_ObjectWrapper>();
@@ -318,6 +349,24 @@ namespace TapirGrasshopperPlugin.Components
             }
 
             return true;
+        }
+
+        private static void AssignToken(
+            JObject item,
+            Field field,
+            JToken token)
+        {
+            if (field.Kind == FieldKind.Line)
+            {
+                foreach (var property in ((JObject)token).Properties())
+                {
+                    item[property.Name] = property.Value.DeepClone();
+                }
+            }
+            else
+            {
+                item[field.JsonKey] = token;
+            }
         }
 
         protected override void Solve(
@@ -375,10 +424,9 @@ namespace TapirGrasshopperPlugin.Components
 
                 for (var i = 0; i < itemCount; i++)
                 {
-                    items.Add(new JObject
-                    {
-                        [firstField.JsonKey] = firstTokens[i]
-                    });
+                    var item = new JObject();
+                    AssignToken(item, firstField, firstTokens[i]);
+                    items.Add(item);
                 }
             }
 
@@ -410,14 +458,18 @@ namespace TapirGrasshopperPlugin.Components
 
                 for (var i = 0; i < itemCount; i++)
                 {
-                    items[i][field.JsonKey] = tokens.Count == 1
-                        ? tokens[0].DeepClone()
-                        : tokens[i];
+                    AssignToken(
+                        items[i],
+                        field,
+                        tokens.Count == 1 ? tokens[0].DeepClone() : tokens[i]);
                 }
             }
 
             var additionalSettings = new List<string>();
-            da.GetDataList(_fields.Count, additionalSettings);
+            if (_addAdditionalSettings)
+            {
+                da.GetDataList(_fields.Count, additionalSettings);
+            }
             if (additionalSettings.Count > 0)
             {
                 if (additionalSettings.Count != 1 &&

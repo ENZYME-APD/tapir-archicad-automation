@@ -1,16 +1,27 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateObjectsComponent : LibraryPartCreatorComponent
+    public class CreateObjectsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateObjects";
 
         public CreateObjectsComponent()
             : base(
                 "CreateObjects",
-                "Create Object elements based on the given parameters.",
-                "objectsData")
+                "Place Object elements from the loaded libraries. " +
+                "Dimensions, pens, attributes and visibility settings can be given through the " +
+                "AdditionalSettings input (dimensions, pen, surfaceId, visibility, etc.).",
+                GroupNames.ElementCreation,
+                "objectsData",
+                new List<Field>
+                {
+                    new Field("Points", "coordinates", FieldKind.Point3D, "Insertion points of the objects.", required: true),
+                    new Field("LibraryPartNames", "libraryPartName", FieldKind.Text, "Name of the library part to place.", required: true),
+                    new Field("Angles", "angle", FieldKind.Number, "Rotation angle in radians."),
+                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the object.")
+                })
         {
         }
 

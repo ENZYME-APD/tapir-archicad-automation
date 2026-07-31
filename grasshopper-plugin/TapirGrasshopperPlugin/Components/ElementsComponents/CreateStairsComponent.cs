@@ -23,7 +23,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new Field("RiserHeights", "riserHeight", FieldKind.Number, "Height of the risers."),
                     new Field("TreadDepths", "treadDepth", FieldKind.Number, "Depth of the treads."),
                     new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the stair.")
-                })
+                },
+                addAdditionalSettings: false)
         {
         }
 

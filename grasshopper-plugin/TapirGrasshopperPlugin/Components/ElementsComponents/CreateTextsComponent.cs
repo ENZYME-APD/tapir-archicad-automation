@@ -22,7 +22,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new Field("Justifications", "justification", FieldKind.Text, "Justification: Left, Center, Right or Full."),
                     new Field("Pens", "pen", FieldKind.Integer, "Pen index of the text."),
                     new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the text.")
-                })
+                },
+                addAdditionalSettings: false)
         {
         }
 
