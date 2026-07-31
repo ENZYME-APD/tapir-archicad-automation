@@ -25,16 +25,30 @@ def RunTapirCommand (host, port, command):
         }
     }
     request_string = json.dumps (request_data).encode ('utf8')
-    response_data = urllib.request.urlopen (connection_object, request_string)
+    response_data = urllib.request.urlopen (connection_object, request_string, timeout=10)
     response_json = json.loads (response_data.read())
     return response_json['result']['addOnCommandResponse']
 
 def QuitArchicad (host, port):
     archicadLocation = RunTapirCommand (host, port, 'GetArchicadLocation')['archicadLocation']
-    if IsUsingMacOS ():
-        return f"{archicadLocation}/Contents/MacOS/ARCHICAD"
-    RunTapirCommand (host, port, 'QuitArchicad')
+    try:
+        RunTapirCommand (host, port, 'QuitArchicad')
+    except Exception:
+        pass # the connection may drop while Archicad is quitting
     return archicadLocation
+
+def WaitForArchicadToQuit (host, port, maxRetries = 60):
+    # On Windows the file replacement below fails while Archicad still locks
+    # the add-on, so the retry loop is enough to wait. On macOS the files of a
+    # running process can be overwritten, so the shutdown must be awaited
+    # explicitly, otherwise Archicad would be relaunched while the old
+    # instance is still running.
+    for _ in range (maxRetries):
+        try:
+            RunTapirCommand (host, port, 'GetAddOnVersion')
+        except Exception:
+            return
+        time.sleep (1)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -49,13 +63,19 @@ def main():
     downloadedFile, headers = urllib.request.urlretrieve (args.downloadUrl)
 
     archicadLocation = QuitArchicad (host, port)
+    WaitForArchicadToQuit (host, port)
 
     maxRetries = 20
     for attempt in range(maxRetries):
         try:
             if downloadedFile.endswith ('.zip'):
-                with zipfile.ZipFile (downloadedFile, 'r') as zip_ref:
-                    zip_ref.extractall (os.path.dirname (args.addOnLocation))
+                if IsUsingMacOS ():
+                    # ditto keeps the permission bits and symlinks of the
+                    # bundle, which zipfile.extractall would drop.
+                    subprocess.run (['ditto', '-x', '-k', downloadedFile, os.path.dirname (args.addOnLocation)], check=True)
+                else:
+                    with zipfile.ZipFile (downloadedFile, 'r') as zip_ref:
+                        zip_ref.extractall (os.path.dirname (args.addOnLocation))
             else:
                 shutil.copyfile(downloadedFile, args.addOnLocation)
             break
@@ -64,7 +84,13 @@ def main():
                 raise
             time.sleep(1)
 
-    subprocess.Popen ([archicadLocation], shell=True)
+    # A list argument combined with shell=True must be avoided: on POSIX it
+    # runs 'sh -c <first item>', and the Archicad path contains spaces, so the
+    # shell would split it into multiple words.
+    if IsUsingMacOS ():
+        subprocess.Popen (['open', archicadLocation])
+    else:
+        subprocess.Popen ([archicadLocation])
 
 if __name__ == '__main__':
     main()
