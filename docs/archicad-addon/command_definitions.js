@@ -1271,6 +1271,42 @@ var gCommands = [{
         "$ref": "#/ConnectedElementsOrError"
     }
             },{
+                "name": "GetRelationsOfElements",
+                "version": "1.5.7",
+                "description": "Gets the type-specific relations of the given elements: endpoint and reference line connections of walls, beams and beam segments, boundary elements and boundary sections of zones, the zones on the two sides of windows, doors, skylights and curtain wall panels, and the zones connected to roofs and shells. Available from Archicad 26.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "otherElementType": {
+                "$ref": "#/ElementType",
+                "description": "Optional filter: only relations to elements of this type are returned."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "relations": {
+                "type": "array",
+                "description": "Type-specific relations of each element, aligned with the input.",
+                "items": {
+                    "$ref": "#/ElementRelationsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "relations"
+        ]
+    }
+            },{
                 "name": "GetZoneBoundaries",
                 "version": "1.2.3",
                 "description": "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).",
@@ -1681,7 +1717,7 @@ var gCommands = [{
 }
             },{
                 "name": "SetGDLParametersOfElements",
-                "version": "1.0.8",
+                "version": "1.5.7",
                 "description": "Sets the given GDL parameters of the given elements.",
                 "inputScheme": {
     "type": "object",
@@ -3131,7 +3167,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateObjects",
-                "version": "1.0.3",
+                "version": "1.5.7",
                 "description": "Creates Object elements based on the given parameters.",
                 "inputScheme": {
         "type": "object",
@@ -3153,6 +3189,44 @@ var gCommands = [{
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
                         },
+                        
+        "angle": { "type": "number" },
+        "pen": { "type": "integer" },
+        "lineTypeId": { "$ref": "#/AttributeId" },
+        "surfaceId": { "$ref": "#/AttributeId", "description": "Material/Surface override (API_ObjectType.mat)." },
+        "sectionFillId": { "$ref": "#/AttributeId" },
+        "sectionFillPen": { "type": "integer" },
+        "sectionFillBackgroundPen": { "type": "integer" },
+        "sectionContourPen": { "type": "integer" },
+        "useObjectPens": { "type": "boolean" },
+        "useObjectLineTypes": { "type": "boolean" },
+        "useObjectMaterials": { "type": "boolean" },
+        "useObjectSectionAttributes": { "type": "boolean" },
+        "reflected": { "type": "boolean" },
+        "useFixSize": { "type": "boolean" },
+        "fixPoint": { "type": "integer", "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)." },
+        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level." },
+        "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
+        "isAutoOnStoryVisibility": { "type": "boolean" },
+        "visibility": {
+            "type": "object",
+            "properties": {
+                "showOnHome": { "type": "boolean" },
+                "showAllAbove": { "type": "boolean" },
+                "showAllBelow": { "type": "boolean" },
+                "showRelAbove": { "type": "integer" },
+                "showRelBelow": { "type": "integer" }
+            },
+            "additionalProperties": false
+        },
+        "linkToSettings": {
+            "type": "object",
+            "properties": {
+                "homeStoryDifference": { "type": "integer" },
+                "newCreationMode": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -3185,7 +3259,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateLamps",
-                "version": "1.5.0",
+                "version": "1.5.7",
                 "description": "Creates Lamp elements based on the given parameters.",
                 "inputScheme": {
         "type": "object",
@@ -3207,6 +3281,46 @@ var gCommands = [{
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
                         },
+                        
+        "angle": { "type": "number" },
+        "pen": { "type": "integer" },
+        "lineTypeId": { "$ref": "#/AttributeId" },
+        "surfaceId": { "$ref": "#/AttributeId", "description": "Material/Surface override (API_ObjectType.mat)." },
+        "sectionFillId": { "$ref": "#/AttributeId" },
+        "sectionFillPen": { "type": "integer" },
+        "sectionFillBackgroundPen": { "type": "integer" },
+        "sectionContourPen": { "type": "integer" },
+        "useObjectPens": { "type": "boolean" },
+        "useObjectLineTypes": { "type": "boolean" },
+        "useObjectMaterials": { "type": "boolean" },
+        "useObjectSectionAttributes": { "type": "boolean" },
+        "reflected": { "type": "boolean" },
+        "useFixSize": { "type": "boolean" },
+        "fixPoint": { "type": "integer", "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)." },
+        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level." },
+        "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
+        "isAutoOnStoryVisibility": { "type": "boolean" },
+        "visibility": {
+            "type": "object",
+            "properties": {
+                "showOnHome": { "type": "boolean" },
+                "showAllAbove": { "type": "boolean" },
+                "showAllBelow": { "type": "boolean" },
+                "showRelAbove": { "type": "integer" },
+                "showRelBelow": { "type": "integer" }
+            },
+            "additionalProperties": false
+        },
+        "linkToSettings": {
+            "type": "object",
+            "properties": {
+                "homeStoryDifference": { "type": "integer" },
+                "newCreationMode": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "lightColor": { "$ref": "#/ColorRGB", "description": "Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default light color). lightIsOn (the on/off state, as opposed to the color) does not have this problem." },
+        "lightIsOn": { "type": "boolean" },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -3930,6 +4044,178 @@ var gCommands = [{
         "meshesData"
     ]
 },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "ModifyObjects",
+                "version": "1.5.7",
+                "description": "Modifies Object elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "objectsWithDetails": {
+                "type": "array",
+                "description": "Array of elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "coordinates": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensions": {
+                            "$ref": "#/Dimensions3D"
+                        },
+                        
+        "angle": { "type": "number" },
+        "pen": { "type": "integer" },
+        "lineTypeId": { "$ref": "#/AttributeId" },
+        "surfaceId": { "$ref": "#/AttributeId", "description": "Material/Surface override (API_ObjectType.mat)." },
+        "sectionFillId": { "$ref": "#/AttributeId" },
+        "sectionFillPen": { "type": "integer" },
+        "sectionFillBackgroundPen": { "type": "integer" },
+        "sectionContourPen": { "type": "integer" },
+        "useObjectPens": { "type": "boolean" },
+        "useObjectLineTypes": { "type": "boolean" },
+        "useObjectMaterials": { "type": "boolean" },
+        "useObjectSectionAttributes": { "type": "boolean" },
+        "reflected": { "type": "boolean" },
+        "useFixSize": { "type": "boolean" },
+        "fixPoint": { "type": "integer", "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)." },
+        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level." },
+        "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
+        "isAutoOnStoryVisibility": { "type": "boolean" },
+        "visibility": {
+            "type": "object",
+            "properties": {
+                "showOnHome": { "type": "boolean" },
+                "showAllAbove": { "type": "boolean" },
+                "showAllBelow": { "type": "boolean" },
+                "showRelAbove": { "type": "integer" },
+                "showRelBelow": { "type": "integer" }
+            },
+            "additionalProperties": false
+        },
+        "linkToSettings": {
+            "type": "object",
+            "properties": {
+                "homeStoryDifference": { "type": "integer" },
+                "newCreationMode": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "objectsWithDetails"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "ModifyLamps",
+                "version": "1.5.7",
+                "description": "Modifies Lamp elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "lampsWithDetails": {
+                "type": "array",
+                "description": "Array of elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "coordinates": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensions": {
+                            "$ref": "#/Dimensions3D"
+                        },
+                        
+        "angle": { "type": "number" },
+        "pen": { "type": "integer" },
+        "lineTypeId": { "$ref": "#/AttributeId" },
+        "surfaceId": { "$ref": "#/AttributeId", "description": "Material/Surface override (API_ObjectType.mat)." },
+        "sectionFillId": { "$ref": "#/AttributeId" },
+        "sectionFillPen": { "type": "integer" },
+        "sectionFillBackgroundPen": { "type": "integer" },
+        "sectionContourPen": { "type": "integer" },
+        "useObjectPens": { "type": "boolean" },
+        "useObjectLineTypes": { "type": "boolean" },
+        "useObjectMaterials": { "type": "boolean" },
+        "useObjectSectionAttributes": { "type": "boolean" },
+        "reflected": { "type": "boolean" },
+        "useFixSize": { "type": "boolean" },
+        "fixPoint": { "type": "integer", "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)." },
+        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level." },
+        "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
+        "isAutoOnStoryVisibility": { "type": "boolean" },
+        "visibility": {
+            "type": "object",
+            "properties": {
+                "showOnHome": { "type": "boolean" },
+                "showAllAbove": { "type": "boolean" },
+                "showAllBelow": { "type": "boolean" },
+                "showRelAbove": { "type": "integer" },
+                "showRelBelow": { "type": "integer" }
+            },
+            "additionalProperties": false
+        },
+        "linkToSettings": {
+            "type": "object",
+            "properties": {
+                "homeStoryDifference": { "type": "integer" },
+                "newCreationMode": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "lightColor": { "$ref": "#/ColorRGB", "description": "Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default light color). lightIsOn (the on/off state, as opposed to the color) does not have this problem." },
+        "lightIsOn": { "type": "boolean" }
+                    },
+                    "additionalProperties": false,
+                    "required" : [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lampsWithDetails"
+        ]
+    },
                 "outputScheme": {
         "type": "object",
         "properties": {
@@ -7583,6 +7869,45 @@ var gCommands = [{
     },
                 "outputScheme": {"type":"object","properties":{"elements":{"$ref":"#/Elements"}},"additionalProperties":false,"required":["elements"]}
             },{
+                "name": "ChangeDrawingLink",
+                "version": "1.5.7",
+                "description": "Relinks a Drawing to a different source navigator item. Archicad has no in-place relink API, so this recreates the Drawing against the new source and deletes the original - the returned elementId is a NEW guid, not the input one. The Drawing Title marker's own position is not preserved (undocumented Archicad limitation).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "drawingsWithNewLinks": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "description": "An existing Drawing and the navigator item it should be relinked to.",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "navigatorItemId": { "$ref": "#/NavigatorItemId" },
+                        "layoutDatabaseId": { "$ref": "#/DatabaseId" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "navigatorItemId", "layoutDatabaseId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["drawingsWithNewLinks"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "One result per input item. On success, elementId is the NEW Drawing's identifier - relinking necessarily replaces the element, it cannot keep the original guid.",
+                "items": {
+                    "$ref": "#/ElementIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
                 "name": "GetLayoutSettings",
                 "version": "1.1.7",
                 "description": "Gets settings of layouts, including Layout Info Panel custom data fields.",
@@ -9909,6 +10234,54 @@ var gCommands = [{
         "required": [
             "connectionResults"
         ]
+    }
+            },{
+                "name": "GetMEPPreferenceTables",
+                "version": "1.5.7",
+                "description": "Gets the circular cross section preference tables (referenceId, diameter, description) of the Piping or Ventilation domain. Available from Archicad 28.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "domain": {
+                "type": "string",
+                "description": "The MEP domain of the segment preference tables.",
+                "enum": ["Piping", "Ventilation"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["domain"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "tables": {
+                "type": "array",
+                "description": "The circular segment preference tables of the domain.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "rows": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "referenceId": { "type": "integer" },
+                                    "diameter": { "type": "number" },
+                                    "description": { "type": "string" }
+                                },
+                                "required": ["referenceId", "diameter"],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": ["guid", "rows"],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["tables"]
     }
             }]
         },{
