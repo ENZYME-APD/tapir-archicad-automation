@@ -18,7 +18,6 @@
 #include "ACAPI/MEPFittingDefault.hpp"
 #include "ACAPI/MEPDistributionSystemsGraph.hpp"
 #include "ACAPI/MEPDistributionSystem.hpp"
-#include "ACAPI/MEPUniqueID.hpp"
 #include "ACAPI/MEPPipeSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
@@ -1325,7 +1324,7 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
         if (container.IsErr ()) {
             return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to get the pipe segment preference table container: ") + container.UnwrapErr ().text.c_str ());
         }
-        for (const UniqueID& id : container->GetPreferenceTables ()) {
+        for (const auto& id : container->GetPreferenceTables ()) {
             auto table = PipeSegmentPreferenceTable::Get (id);
             if (table.IsOk ()) {
                 tables (DumpPreferenceTable (*table, id.GetGuid ()));
@@ -1336,7 +1335,7 @@ GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& p
         if (container.IsErr ()) {
             return CreateErrorResponse (APIERR_GENERAL, GS::UniString ("Failed to get the duct segment preference table container: ") + container.UnwrapErr ().text.c_str ());
         }
-        for (const UniqueID& id : container->GetPreferenceTables ()) {
+        for (const auto& id : container->GetPreferenceTables ()) {
             auto table = DuctCircularSegmentPreferenceTable::Get (id);
             if (table.IsOk ()) {
                 tables (DumpPreferenceTable (*table, id.GetGuid ()));
