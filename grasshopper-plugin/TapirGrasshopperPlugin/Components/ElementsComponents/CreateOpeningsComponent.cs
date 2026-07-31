@@ -1,19 +1,26 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateOpeningsComponent : JsonItemsExecutorComponent
+    public class CreateOpeningsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateOpenings";
 
         public CreateOpeningsComponent()
             : base(
                 "CreateOpenings",
-                "Create Opening elements in the given host elements. Each input item is a JSON object matching the command's documented item schema, e.g. {\"hostElementId\":{\"guid\":\"...\"},\"position\":{\"x\":0,\"y\":0,\"z\":1.0}}.",
+                "Create Opening elements in the given owner elements (walls, slabs, beams or meshes).",
                 GroupNames.ElementCreation,
                 "openingsData",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("OwnerElementGuids", "ownerElementId", FieldKind.ElementGuid, "Identifiers of the elements to cut the openings into.", required: true),
+                    new Field("BasePoints", "basePoint", FieldKind.Point3D, "Base point of the opening.", required: true),
+                    new Field("Widths", "width", FieldKind.Number, "Width of the opening."),
+                    new Field("Heights", "height", FieldKind.Number, "Height of the opening.")
+                },
+                addAdditionalSettings: false)
         {
         }
 

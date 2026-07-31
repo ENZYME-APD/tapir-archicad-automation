@@ -1,19 +1,30 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateStairsComponent : JsonItemsExecutorComponent
+    public class CreateStairsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateStairs";
 
         public CreateStairsComponent()
             : base(
                 "CreateStairs",
-                "Create Stair elements based on the given baseline and parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"baseline\":[{\"x\":0,\"y\":0},...],\"width\":1.2}.",
+                "Create Stair elements based on the given parameters.",
                 GroupNames.ElementCreation,
                 "stairsData",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("BaseLines", "baseLinePoints", FieldKind.PointsTree2D, "Base line points of each stair (one branch per stair, at least 2 points; only X and Y are used).", required: true, minPointsPerBranch: 2),
+                    new Field("ZCoordinates", "zCoordinate", FieldKind.Number, "Bottom level of the stair.", required: true),
+                    new Field("TotalHeights", "totalHeight", FieldKind.Number, "Total height of the stair."),
+                    new Field("FlightWidths", "flightWidth", FieldKind.Number, "Width of the stair flight."),
+                    new Field("StepNums", "stepNum", FieldKind.Integer, "Number of steps."),
+                    new Field("RiserHeights", "riserHeight", FieldKind.Number, "Height of the risers."),
+                    new Field("TreadDepths", "treadDepth", FieldKind.Number, "Depth of the treads."),
+                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the stair.")
+                },
+                addAdditionalSettings: false)
         {
         }
 

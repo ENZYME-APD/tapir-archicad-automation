@@ -1,19 +1,29 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateTextsComponent : JsonItemsExecutorComponent
+    public class CreateTextsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateTexts";
 
         public CreateTextsComponent()
             : base(
                 "CreateTexts",
-                "Create standalone Text elements based on the given parameters. Each input item is a JSON object matching the command's documented item schema, e.g. {\"text\":\"Hello\",\"coordinate\":{\"x\":0,\"y\":0},\"height\":2.0}.",
+                "Create Text elements based on the given parameters.",
                 GroupNames.ElementCreation,
                 "textsData",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("Positions", "coordinate", FieldKind.Point3D, "Position of each text element.", required: true),
+                    new Field("Texts", "text", FieldKind.Text, "Content of the text element.", required: true),
+                    new Field("Heights", "height", FieldKind.Number, "Text height in millimeters."),
+                    new Field("Angles", "angle", FieldKind.Number, "Rotation angle in radians."),
+                    new Field("Justifications", "justification", FieldKind.Text, "Justification: Left, Center, Right or Full."),
+                    new Field("Pens", "pen", FieldKind.Integer, "Pen index of the text."),
+                    new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the text.")
+                },
+                addAdditionalSettings: false)
         {
         }
 

@@ -1,19 +1,25 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateWallThicknessDimensionsComponent : JsonItemsExecutorComponent
+    public class CreateWallThicknessDimensionsComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateWallThicknessDimensions";
 
         public CreateWallThicknessDimensionsComponent()
             : base(
                 "CreateWallThicknessDimensions",
-                "Create associative wall thickness dimensions for the given walls. Each input item is a JSON object matching the command's documented item schema, e.g. {\"wallId\":{\"guid\":\"...\"},\"linePosition\":{\"x\":0,\"y\":0}}.",
+                "Create dimensions measuring the thickness of the given walls.",
                 GroupNames.ElementCreation,
                 "dimensionsData",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("WallGuids", "wallId", FieldKind.ElementGuid, "Identifiers of the walls to dimension.", required: true),
+                    new Field("ReferencePoints", "referencePoint", FieldKind.Point2D, "Point on the wall where the thickness is measured (only X and Y are used).", required: true),
+                    new Field("Directions", "direction", FieldKind.Point2D, "Direction of the dimension line (only X and Y are used).", required: true)
+                },
+                addAdditionalSettings: false)
         {
         }
 

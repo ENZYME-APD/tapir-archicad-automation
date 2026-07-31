@@ -1,19 +1,27 @@
 using System;
+using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class CreateAssociativeDimensionsOnSectionComponent : JsonItemsExecutorComponent
+    public class CreateAssociativeDimensionsOnSectionComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateAssociativeDimensionsOnSection";
 
         public CreateAssociativeDimensionsOnSectionComponent()
             : base(
                 "CreateAssociativeDimensionsOnSection",
-                "Create associative linear dimensions on section elements using common wall, slab, beam, column and opening presets. Each input item is a JSON object matching the command's documented item schema, e.g. {\"databaseId\":{\"guid\":\"...\"},\"elements\":[...]}.",
+                "Create associative dimensions on a section database based on a preset. " +
+                "Further options (skinBorderIndices, beginPlane, totalSizePlane, placeOnTop) " +
+                "can be given through the AdditionalSettings input.",
                 GroupNames.ElementCreation,
                 "dimensionsData",
-                "ItemsData",
-                "One JSON object per item, matching the command's documented item schema (see component description).")
+                new List<Field>
+                {
+                    new Field("SectionElementGuids", "sectionElementId", FieldKind.ElementGuid, "Identifiers of the section elements to dimension on.", required: true),
+                    new Field("ReferencePoints", "referencePoint", FieldKind.Point2D, "Placement point of the dimension line in the section database (only X and Y are used).", required: true),
+                    new Field("Presets", "preset", FieldKind.Text, "Dimensioning preset: WallCompositeFaces, WallSkinBorders, SlabCompositeFaces, SlabSkinBorders, BeamOrColumnRefLineEndPoints, BeamOrColumnBoundingBoxCorners, DoorWindowWallHoleCorners or DoorWindowModelHotspots.", required: true),
+                    new Field("Directions", "direction", FieldKind.Point2D, "Direction of the dimension line (only X and Y are used).")
+                })
         {
         }
 
