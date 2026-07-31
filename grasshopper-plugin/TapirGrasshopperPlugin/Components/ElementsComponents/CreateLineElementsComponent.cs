@@ -11,21 +11,26 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateLineElements",
                 "Create 2D Line elements based on the given parameters.",
-                GroupNames.ElementCreation,
-                "linesData",
-                new List<Field>
-                {
-                    new Field("BegPoints", "begCoordinate", FieldKind.Point2D, "Beginning point of the line (only X and Y are used).", required: true),
-                    new Field("EndPoints", "endCoordinate", FieldKind.Point2D, "End point of the line (only X and Y are used).", required: true),
-                    new Field("LinePenIndices", "linePenIndex", FieldKind.Integer, "Pen index of the line."),
-                    new Field("LineTypeGuids", "lineTypeId", FieldKind.AttributeGuid, "Line type attribute of the line."),
-                    new Field("RoomSeparators", "roomSeparator", FieldKind.Boolean, "The line acts as a zone boundary."),
-                    new Field("LayerIndices", "layerIndex", FieldKind.Integer, "Layer attribute index to place the line on."),
-                    new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the line.")
-                },
-                addAdditionalSettings: false)
+                GroupNames.ElementCreation)
         {
         }
+
+        protected override string ArrayKey => "linesData";
+
+        protected override bool HasAdditionalSettingsInput => false;
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("BegPoints", "begCoordinate", FieldKind.Point2D, "Beginning point of the line (only X and Y are used).", required: true),
+            new Field("EndPoints", "endCoordinate", FieldKind.Point2D, "End point of the line (only X and Y are used).", required: true),
+            new Field("LinePenIndices", "linePenIndex", FieldKind.Integer, "Pen index of the line."),
+            new Field("LineTypeGuids", "lineTypeId", FieldKind.AttributeGuid, "Line type attribute of the line."),
+            new Field("RoomSeparators", "roomSeparator", FieldKind.Boolean, "The line acts as a zone boundary."),
+            new Field("LayerIndices", "layerIndex", FieldKind.Integer, "Layer attribute index to place the line on."),
+            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the line.")
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateLineElements;

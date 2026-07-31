@@ -13,17 +13,22 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "Relink existing Drawing elements to different source navigator items. " +
                 "Relinking replaces the Drawing element, so the ElementGuids output contains " +
                 "the NEW identifier of each Drawing.",
-                GroupNames.Navigator,
-                "drawingsWithNewLinks",
-                new List<Field>
-                {
-                    new Field("DrawingGuids", "elementId", FieldKind.ElementGuid, "Identifiers of the Drawing elements to relink.", required: true),
-                    new Field("NavigatorItemGuids", "navigatorItemId", FieldKind.ElementGuid, "Identifiers of the navigator items to link the Drawings to.", required: true),
-                    new Field("LayoutDatabaseGuids", "layoutDatabaseId", FieldKind.ElementGuid, "Identifiers of the layout databases containing the Drawings.", required: true)
-                },
-                addAdditionalSettings: false)
+                GroupNames.Navigator)
         {
         }
+
+        protected override string ArrayKey => "drawingsWithNewLinks";
+
+        protected override bool HasAdditionalSettingsInput => false;
+
+        private static readonly List<Field> FieldDefinitions = new List<Field>
+        {
+            new Field("DrawingGuids", "elementId", FieldKind.ElementGuid, "Identifiers of the Drawing elements to relink.", required: true),
+            new Field("NavigatorItemGuids", "navigatorItemId", FieldKind.ElementGuid, "Identifiers of the navigator items to link the Drawings to.", required: true),
+            new Field("LayoutDatabaseGuids", "layoutDatabaseId", FieldKind.ElementGuid, "Identifiers of the layout databases containing the Drawings.", required: true)
+        };
+
+        protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.ChangeDrawingLink;
