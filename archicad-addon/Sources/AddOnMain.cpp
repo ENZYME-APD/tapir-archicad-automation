@@ -52,7 +52,7 @@ GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, co
         description,
         version,
         command->GetInputParametersSchema (),
-        command->GetResponseSchema ())
+        command->GetRawResponseSchema ())
     );
 
     GSErrCode err = ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (command.Pass ());
