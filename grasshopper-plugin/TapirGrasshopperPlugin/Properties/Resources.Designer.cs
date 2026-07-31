@@ -2319,5 +2319,29 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap ModifyObjects
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyObjects", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyLamps
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyLamps", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMEPPreferenceTables
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMEPPreferenceTables", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

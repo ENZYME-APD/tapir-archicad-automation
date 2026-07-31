@@ -886,4 +886,13 @@
   <data name="ShowAlert" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ShowAlert.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ModifyObjects" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyObjects.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyLamps" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyLamps.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetMEPPreferenceTables" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMEPPreferenceTables.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
