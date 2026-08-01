@@ -16,6 +16,7 @@
 #include "Polygon2D.hpp"
 #endif
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -859,41 +860,71 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
     // slabs (e.g. the default slab reports nCoords but leaves memo.coords == nullptr).
     // The original size-change-only guards skipped allocation whenever the requested
     // polygon matched the default size, leaving memo.coords null and crashing
-    // AddPolyToMemo with a null dereference. BMReallocHandle does NOT allocate from a
-    // null handle, so a null handle must be created fresh with BMAllocateHandle (as the
-    // mesh/zone commands do); only an existing handle is resized with BMReallocHandle.
+    // AddPolyToMemo with a null dereference.
+    //
+    // Each handle below is checked independently rather than bundled behind a single
+    // coords-based guard: ACAPI_Element_GetMemo can legitimately return edgeTrims/
+    // sideMaterials/vertexIDs as null even when coords itself is populated (e.g. a slab
+    // that has never had a custom edge trim never materializes memo.edgeTrims), and
+    // AddPolyToMemo below unconditionally writes through edgeTrims/sideMaterials whenever
+    // a non-null override pointer is passed in (as it is here).
+    //
+    // On a real size change, existing handles are freed with BMKillHandle/BMKillPtr and
+    // reallocated fresh, not resized in place with BMReallocHandle/BMReallocPtr - confirmed
+    // via a real crash report (issue #452, "Fatal memory error in BMReallocPtr... Requested
+    // memory size is 48 bytes" / BNValidWritePtr failure) that a handle coming back from
+    // ACAPI_Element_GetMemo is not safe to hand to BMRealloc*, even though it reads back
+    // non-null and its contents are valid. This is the same free-then-allocate pattern
+    // already used for the Stair baseline memo rebuild elsewhere in this file.
     const Int32 nCoords    = element.slab.poly.nCoords;
     const Int32 nSubPolys  = element.slab.poly.nSubPolys;
     const Int32 nArcs      = element.slab.poly.nArcs;
-    const bool  coordsWereNull = (memo.coords == nullptr);
+    const bool  sizeChanged = (oldPoly.nCoords != nCoords);
 
-    if (coordsWereNull) {
-        memo.coords        = reinterpret_cast<API_Coord**>             (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
-        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
-        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim),            ALLOCATE_CLEAR, 0));
-        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMAllocatePtr    ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
-    } else if (oldPoly.nCoords != nCoords) {
-        memo.coords        = reinterpret_cast<API_Coord**>             (BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords),        (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
-        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMReallocHandle (reinterpret_cast<GSHandle> (memo.vertexIDs),     (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
-        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMReallocHandle (reinterpret_cast<GSHandle> (memo.edgeTrims),     (nCoords + 1) * sizeof (API_EdgeTrim),            REALLOC_CLEAR, 0));
-        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMReallocPtr    (reinterpret_cast<GSPtr> (memo.sideMaterials), (nCoords + 1) * sizeof (API_OverriddenAttribute), REALLOC_CLEAR, 0));
+    if (memo.coords != nullptr && sizeChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.coords == nullptr) {
+        memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.vertexIDs != nullptr && sizeChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.vertexIDs));
+    }
+    if (memo.vertexIDs == nullptr) {
+        memo.vertexIDs = reinterpret_cast<UInt32**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.edgeTrims != nullptr && sizeChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.edgeTrims));
+    }
+    if (memo.edgeTrims == nullptr) {
+        memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.sideMaterials != nullptr && sizeChanged) {
+        BMKillPtr (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
+    }
+    if (memo.sideMaterials == nullptr) {
+        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+    }
+    const bool subPolysChanged = (oldPoly.nSubPolys != nSubPolys);
+    if (memo.pends != nullptr && subPolysChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.pends));
     }
     if (memo.pends == nullptr) {
         memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    } else if (oldPoly.nSubPolys != nSubPolys) {
-        memo.pends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
     }
     if (nArcs > 0) {
+        const bool arcsChanged = (oldPoly.nArcs != nArcs);
+        if (memo.parcs != nullptr && arcsChanged) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+        }
         if (memo.parcs == nullptr) {
             memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-        } else if (oldPoly.nArcs != nArcs) {
-            memo.parcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
         }
     }
-    const bool needToProcessVertexIDs =
-        coordsWereNull ||
-        oldPoly.nCoords != element.slab.poly.nCoords ||
-        oldPoly.nSubPolys != element.slab.poly.nSubPolys;
+    // Always rewrite vertex IDs: with the free-then-allocate pattern above, any size change
+    // yields freshly zeroed (and therefore always-stale) vertex ID slots, and a same-size
+    // in-place reuse still needs correct IDs recomputed for the new geometry.
+    const bool needToProcessVertexIDs = true;
 
     const API_EdgeTrimID edgeTrimSideType = APIEdgeTrim_Vertical;
     Int32 iCoord = 1;
@@ -907,6 +938,210 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
             AddPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, needToProcessVertexIDs);
         }
+    }
+
+    // vertexIDs[0] must hold the max vertex ID used across the whole shape - an undocumented
+    // ACAPI_Element_Change requirement (confirmed live in this repo's PolyLine/Hatch geometry
+    // SET work) without which ACAPI_Element_Change rejects the polygon with APIERR_BADPOLY.
+    // AddPolyToMemo never writes index 0 itself, so it is filled in here by scanning the IDs
+    // it did write.
+    if (memo.vertexIDs != nullptr) {
+        UInt32 maxVertexID = 0;
+        for (Int32 i = 1; i <= nCoords; ++i) {
+            maxVertexID = std::max (maxVertexID, (*memo.vertexIDs)[i]);
+        }
+        (*memo.vertexIDs)[0] = maxVertexID;
+    }
+
+    return {};
+}
+
+// Applies a new outline/arcs/holes shape to an EXISTING slab's memo (already populated via
+// ACAPI_Element_GetMemo), for use with ACAPI_Element_Change. Mirrors BuildMeshPolyMemoFromGeometry
+// further down in this file (used by ModifyMeshes, and proven working live for exactly this
+// "rebuild a memo obtained from GetMemo" scenario): coords/vertexIDs/edgeTrims/pends/parcs are all
+// plain GS Handles (**) and BMReallocHandle on a non-null GetMemo-provided handle works fine for
+// them. sideMaterials is the sole exception - it is a raw Ptr (*, allocated with
+// BMAllocatePtr/BMReallocPtr, not a Handle), and reallocating a GetMemo-provided one with
+// BMReallocPtr reliably corrupted the heap (a real crash report, issue #452: "Fatal memory error
+// in BMReallocPtr... Requested memory size is 48 bytes" / BNValidWritePtr failure) - confirmed by
+// isolating it as the only field Mesh's own polygon memo doesn't have. sideMaterials alone is
+// freed and reallocated fresh instead (BMKillPtr + BMAllocatePtr). An earlier attempt at this
+// function used Graphisoft's ACAPI_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/
+// DeleteSubPoly primitives (matching the DevKit's Element_Test/Element_Modify_Polygon.cpp
+// reference) instead of a from-scratch rebuild, on the mistaken assumption that BMReallocHandle
+// itself (not just BMReallocPtr) was unsafe on a GetMemo handle - Mesh's own working code disproves
+// that.
+static GS::Optional<GS::UniString> ApplySlabPolygonChange (
+    API_ElementMemo& memo,
+    const API_OverriddenAttribute& sideMat,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes)
+{
+    if (polygonOutline.GetSize () < 3) {
+        return "'polygonOutline' must contain at least 3 coordinates.";
+    }
+    if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
+        polygonOutline.Pop ();
+    }
+    if (memo.coords == nullptr || memo.pends == nullptr) {
+        return "Slab has no polygon data to modify.";
+    }
+
+    // A from-scratch memo rebuild (matching CreateSlabs, and BuildMeshPolyMemoFromGeometry's own
+    // proven-working pattern for ModifyMeshes) plus ACAPI_Element_Change reliably fails with
+    // APIERR_BADPOLY here whenever nCoords changes at all - confirmed live on the plain point-count
+    // case alone (no holes involved), so this is not a vertexIDs-numbering issue as first assumed
+    // (tried: global sequential, global with the closing duplicate mirroring the first point, and
+    // per-contour restart - all three failed identically). Graphisoft's own polygon-editing
+    // primitives - ACAPI_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/DeleteSubPoly, used by
+    // the DevKit's own reference example (Element_Test/Element_Modify_Polygon.cpp, targeting the
+    // same element types including API_SlabID) together with ACAPI_Element_ChangeMemo - keep the
+    // existing GetMemo-provided handles' internal consistency intact across a size change, which a
+    // full replacement apparently cannot always reproduce. They document that memo's coords/pends/
+    // parcs/vertexIDs handles "must be initialized"; ACAPI_Element_GetMemo can legitimately leave
+    // vertexIDs/parcs null (e.g. a slab with no per-edge customization/arcs), so those are seeded
+    // here first.
+    if (memo.vertexIDs == nullptr) {
+        // Per Graphisoft's own API_ElementMemo documentation: "If you retrieve an array of
+        // vertices, edges or contours with ACAPI_Element_GetMemo, do not change the IDs in these
+        // arrays. New vertices, edges and contours should be inserted with ID = 0." "Initialized"
+        // (as InsertPolyNode/DeleteSubPoly/etc. require) means the handle must exist at the right
+        // size, not that it must be pre-filled with a manually invented ID scheme - Archicad
+        // itself assigns real IDs to zero-ID vertices. Earlier attempts at manually numbering this
+        // (global sequential, per-contour restart, with/without mirroring the closing duplicate)
+        // were all guesses at an ID scheme Archicad was never asking for.
+        const Int32 existingNCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+        memo.vertexIDs = reinterpret_cast<UInt32**> (BMAllocateHandle ((existingNCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.parcs == nullptr) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+    }
+
+    // Step 1: remove every existing hole (subpoly index >= 2), highest index first so earlier
+    // deletions don't shift the indices of subpolys not yet processed.
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPolyIndex = nSubPolys; subPolyIndex >= 2; --subPolyIndex) {
+        Int32 idx = subPolyIndex;
+        GSErrCode err = ACAPI_Polygon_DeleteSubPoly (&memo, &idx);
+        if (err != NoError) {
+            return "Failed to remove an existing slab hole.";
+        }
+    }
+
+    // Step 2: resize the main outline (subpoly 1) to the requested point count by repeatedly
+    // inserting/deleting node 1 - the coordinate value used for an inserted placeholder node does
+    // not matter, every point is overwritten with the real final coordinates right after.
+    Int32 outlineCount = (*memo.pends)[1] - 1; // real points, excluding the closing duplicate
+    const Int32 desiredOutlineCount = (Int32) polygonOutline.GetSize ();
+    while (outlineCount > desiredOutlineCount) {
+        Int32 idx = 1;
+        GSErrCode err = ACAPI_Polygon_DeletePolyNode (&memo, &idx);
+        if (err != NoError) {
+            return "Failed to adjust the slab outline's point count.";
+        }
+        --outlineCount;
+    }
+    while (outlineCount < desiredOutlineCount) {
+        // Per Graphisoft's own DevKit reference example (Do_Poly_InsertNode), nodeIndex is set to
+        // the clicked edge's begin-node index + 1 - i.e. the position the NEW node will occupy
+        // (shifting what was there up by one), not "insert after this existing node" as the header
+        // doc's wording alone suggests. To insert between existing nodes 1 and 2, that means
+        // nodeIndex = 2, not 1.
+        Int32 idx = 2;
+        const API_Coord& p1 = (*memo.coords)[1];
+        const API_Coord& p2 = (*memo.coords)[2];
+        API_Coord placeholder = {(p1.x + p2.x) / 2.0, (p1.y + p2.y) / 2.0};
+        GSErrCode err = ACAPI_Polygon_InsertPolyNode (&memo, &idx, &placeholder);
+        if (err != NoError) {
+            return "Failed to adjust the slab outline's point count.";
+        }
+        ++outlineCount;
+    }
+
+    for (Int32 i = 0; i < desiredOutlineCount; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (polygonOutline[i]);
+    }
+    (*memo.coords)[desiredOutlineCount + 1] = (*memo.coords)[1];
+
+    // Resized to the EXACT new arc count, not just overwritten in place: reusing a stale-sized
+    // handle left old arc entries beyond the new count untouched (e.g. going from 2 arcs to 1, or
+    // to 0, silently kept the old 2nd arc around) - confirmed live, arcs "stuck" across modify
+    // calls that were supposed to remove/replace them.
+    {
+        const GS::Array<API_PolyArc> arcs = GetPolyArcs (polygonArcs, 1);
+        if (memo.parcs != nullptr) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+        }
+        if (!arcs.IsEmpty ()) {
+            memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (arcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+            for (UIndex i = 0; i < arcs.GetSize (); ++i) {
+                (*memo.parcs)[i] = arcs[i];
+            }
+        } else {
+            memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+        }
+    }
+
+    // Step 3: add the requested holes back, each as a fresh subpoly.
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holePolygonOutline;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        if (!GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs) || holePolygonOutline.GetSize () < 3) {
+            continue;
+        }
+        const Int32 holeNCoords = (Int32) holePolygonOutline.GetSize ();
+        API_ElementMemo insMemo = {};
+        const GS::OnExit insCleanup ([&insMemo] () { ACAPI_DisposeElemMemoHdls (&insMemo); });
+        // +2, not +1: index 0 is the unused dummy slot and index holeNCoords+1 holds the closing
+        // duplicate point written below - allocating only holeNCoords+1 slots left that last write
+        // one element past the end of the handle, corrupting adjacent heap memory (a delayed,
+        // hard-to-diagnose C0000374 crash reported by Archicad much later during an unrelated
+        // commit - confirmed live by reproducing it on a plain hole-add).
+        insMemo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((holeNCoords + 2) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+        for (Int32 i = 0; i < holeNCoords; ++i) {
+            (*insMemo.coords)[i + 1] = Get2DCoordinateFromObjectState (holePolygonOutline[i]);
+        }
+        (*insMemo.coords)[holeNCoords + 1] = (*insMemo.coords)[1];
+        insMemo.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+        (*insMemo.pends)[0] = 0;
+        (*insMemo.pends)[1] = holeNCoords + 1;
+        if (!holePolygonArcs.IsEmpty ()) {
+            const GS::Array<API_PolyArc> holeArcs = GetPolyArcs (holePolygonArcs, 1);
+            insMemo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (holeArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+            for (UIndex i = 0; i < holeArcs.GetSize (); ++i) {
+                (*insMemo.parcs)[i] = holeArcs[i];
+            }
+        }
+        GSErrCode err = ACAPI_Polygon_InsertSubPoly (&memo, &insMemo);
+        if (err != NoError) {
+            return "Failed to add a slab hole.";
+        }
+    }
+
+    // edgeTrims/sideMaterials are not touched by the Insert/Delete primitives above (per their own
+    // documentation - "other memo handles are not touched"), so they are resized fresh to match the
+    // final coordinate count. edgeTrims is a plain Handle (BMKillHandle+BMAllocateHandle is safe);
+    // sideMaterials is a raw Ptr, and BMReallocPtr on a GetMemo-provided one reliably corrupted the
+    // heap (issue #452's original crash report) - so it is freed and reallocated fresh too, never
+    // resized in place. Despite the DevKit's own Do_Poly_InsertNode/DeleteNode reference example
+    // treating this as unnecessary for API_SlabID and using APIMemoMask_Polygon alone for
+    // ACAPI_Element_ChangeMemo, using that narrower mask here reproducibly failed with
+    // APIERR_BADPARS on this exact hole-removal case - live-confirmed; the combined mask plus this
+    // rebuild is what actually works for hole add/remove, multi-hole, and arcs.
+    const Int32 finalNCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+    if (memo.edgeTrims != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.edgeTrims));
+    }
+    memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((finalNCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
+    if (memo.sideMaterials != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
+    }
+    memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((finalNCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+    for (Int32 i = 1; i <= finalNCoords; ++i) {
+        (*memo.edgeTrims)[i].sideType = APIEdgeTrim_Vertical;
+        memo.sideMaterials[i] = sideMat;
     }
 
     return {};
@@ -4270,7 +4505,10 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": { "$ref": "#/Holes2D" }
+                        "holes": {
+                            "$ref": "#/Holes2D",
+                            "description": "Can be given on its own, without polygonOutline, to add/remove/clear holes in place (an empty array clears all holes) - the slab's current outline is reused unchanged."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -4321,10 +4559,27 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             GS::Array<GS::ObjectState> polygonOutline;
-            if (item.Get ("polygonOutline", polygonOutline)) {
-                if (polygonOutline.GetSize () < 3) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
-                    continue;
+            const bool hasNewOutline = item.Get ("polygonOutline", polygonOutline);
+            GS::Array<GS::ObjectState> holes;
+            const bool hasHolesField = item.Get ("holes", holes);
+            if (hasNewOutline || hasHolesField) {
+                // holes can be given on its own (no polygonOutline) to add/remove/clear holes
+                // in place - including an explicit empty array to clear all holes - without
+                // forcing the caller to resend the (possibly large) outline unchanged. Previously
+                // this whole branch was gated on polygonOutline alone, so a holes-only request
+                // fell through to "No slab fields to modify." below (issue #452).
+                GS::Array<GS::ObjectState> polygonArcs;
+                if (hasNewOutline) {
+                    if (polygonOutline.GetSize () < 3) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
+                        continue;
+                    }
+                    item.Get ("polygonArcs", polygonArcs);
+                } else {
+                    GS::ObjectState currentGeometry;
+                    AddPolygonWithHolesFromMemoCoords (element.header.guid, currentGeometry, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+                    currentGeometry.Get ("polygonOutline", polygonOutline);
+                    currentGeometry.Get ("polygonArcs", polygonArcs);
                 }
 
                 API_ElementMemo memo = {};
@@ -4333,17 +4588,28 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                 });
                 ACAPI_Element_GetMemo (element.header.guid, &memo);
 
-                GS::Array<GS::ObjectState> polygonArcs;
-                GS::Array<GS::ObjectState> holes;
-                item.Get ("polygonArcs", polygonArcs);
-                item.Get ("holes", holes);
-                auto error = BuildSlabMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
+                auto error = ApplySlabPolygonChange (memo, element.slab.sideMat, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
                 }
 
-                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, true);
+                // Non-geometry field changes (thickness/level/etc, accumulated into mask above)
+                // are applied first via ACAPI_Element_Change; the polygon itself goes through
+                // ACAPI_Element_ChangeMemo, matching the DevKit's own reference example
+                // (ApplySlabPolygonChange mutates the memo via Graphisoft's polygon-editing
+                // primitives, not a from-scratch replacement, so element.slab.poly's counts are
+                // deliberately not touched here).
+                if (changed) {
+                    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Failed to modify slab."));
+                        continue;
+                    }
+                }
+
+                API_Guid slabGuid = element.header.guid;
+                err = ACAPI_Element_ChangeMemo (slabGuid, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, &memo);
                 results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify slab geometry."));
                 continue;
             }
