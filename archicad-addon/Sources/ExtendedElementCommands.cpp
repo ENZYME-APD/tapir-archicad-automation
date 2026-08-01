@@ -956,22 +956,62 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
     return {};
 }
 
+// The new-style ACAPI_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/DeleteSubPoly functions
+// (declared in ACAPI_Goodies.h) do not exist before Archicad 27 - confirmed via the DevKit headers
+// directly, AC25/26 have no ACAPI_Goodies.h at all. Pre-27, the same operations are reached through
+// the older, untyped ACAPI_Goodies (API_GoodiesID, void*, void*, void*, void*) dispatcher with the
+// APIAny_*PolyNodeID/APIAny_*SubPolyID constants (APIdefs_Goodies.h) - these wrappers keep
+// ApplySlabPolygonChange version-agnostic, mirroring the TAPIR_Browser_* pattern in
+// ScriptUIPalette.cpp for the same AC25/26-vs-27+ split.
+#ifdef ServerMainVers_2700
+static GSErrCode TAPIR_Polygon_InsertPolyNode (API_ElementMemo* memo, Int32* nodeIndex, API_Coord* coord)
+{
+    return ACAPI_Polygon_InsertPolyNode (memo, nodeIndex, coord);
+}
+static GSErrCode TAPIR_Polygon_DeletePolyNode (API_ElementMemo* memo, Int32* nodeIndex)
+{
+    return ACAPI_Polygon_DeletePolyNode (memo, nodeIndex);
+}
+static GSErrCode TAPIR_Polygon_InsertSubPoly (API_ElementMemo* memo, API_ElementMemo* insMemo)
+{
+    return ACAPI_Polygon_InsertSubPoly (memo, insMemo);
+}
+static GSErrCode TAPIR_Polygon_DeleteSubPoly (API_ElementMemo* memo, Int32* subPolyIndex)
+{
+    return ACAPI_Polygon_DeleteSubPoly (memo, subPolyIndex);
+}
+#else
+static GSErrCode TAPIR_Polygon_InsertPolyNode (API_ElementMemo* memo, Int32* nodeIndex, API_Coord* coord)
+{
+    return ACAPI_Goodies (APIAny_InsertPolyNodeID, memo, nodeIndex, coord);
+}
+static GSErrCode TAPIR_Polygon_DeletePolyNode (API_ElementMemo* memo, Int32* nodeIndex)
+{
+    return ACAPI_Goodies (APIAny_DeletePolyNodeID, memo, nodeIndex);
+}
+static GSErrCode TAPIR_Polygon_InsertSubPoly (API_ElementMemo* memo, API_ElementMemo* insMemo)
+{
+    return ACAPI_Goodies (APIAny_InsertSubPolyID, memo, insMemo);
+}
+static GSErrCode TAPIR_Polygon_DeleteSubPoly (API_ElementMemo* memo, Int32* subPolyIndex)
+{
+    return ACAPI_Goodies (APIAny_DeleteSubPolyID, memo, subPolyIndex);
+}
+#endif
+
 // Applies a new outline/arcs/holes shape to an EXISTING slab's memo (already populated via
-// ACAPI_Element_GetMemo), for use with ACAPI_Element_Change. Mirrors BuildMeshPolyMemoFromGeometry
-// further down in this file (used by ModifyMeshes, and proven working live for exactly this
-// "rebuild a memo obtained from GetMemo" scenario): coords/vertexIDs/edgeTrims/pends/parcs are all
-// plain GS Handles (**) and BMReallocHandle on a non-null GetMemo-provided handle works fine for
-// them. sideMaterials is the sole exception - it is a raw Ptr (*, allocated with
-// BMAllocatePtr/BMReallocPtr, not a Handle), and reallocating a GetMemo-provided one with
-// BMReallocPtr reliably corrupted the heap (a real crash report, issue #452: "Fatal memory error
-// in BMReallocPtr... Requested memory size is 48 bytes" / BNValidWritePtr failure) - confirmed by
-// isolating it as the only field Mesh's own polygon memo doesn't have. sideMaterials alone is
-// freed and reallocated fresh instead (BMKillPtr + BMAllocatePtr). An earlier attempt at this
-// function used Graphisoft's ACAPI_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/
-// DeleteSubPoly primitives (matching the DevKit's Element_Test/Element_Modify_Polygon.cpp
-// reference) instead of a from-scratch rebuild, on the mistaken assumption that BMReallocHandle
-// itself (not just BMReallocPtr) was unsafe on a GetMemo handle - Mesh's own working code disproves
-// that.
+// ACAPI_Element_GetMemo), for use with ACAPI_Element_ChangeMemo. Uses Graphisoft's own
+// polygon-editing primitives - TAPIR_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/
+// DeleteSubPoly above, matching the DevKit's own Element_Test/Element_Modify_Polygon.cpp reference
+// example for these exact element types (including API_SlabID) - to keep the coords/pends/parcs/
+// vertexIDs handles obtained from GetMemo internally consistent under a point/hole count change.
+// A from-scratch memo rebuild (the same approach BuildSlabMemoFromGeometry above uses for a fresh
+// Create) reliably failed with APIERR_BADPOLY via ACAPI_Element_Change here whenever the point or
+// subpoly count actually changed - even with every vertexIDs numbering scheme tried (sequential,
+// per-contour, mirrored closing duplicates) - while these primitives, paired with
+// ACAPI_Element_ChangeMemo and vertexIDs left untouched/zero for new vertices (see
+// API_ElementMemo's own documented convention - existing IDs must never be renumbered, new ones
+// get ID 0 for Archicad to assign), work correctly for every case tested (issue #452).
 static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     API_ElementMemo& memo,
     const API_OverriddenAttribute& sideMat,
@@ -1024,7 +1064,7 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
     for (Int32 subPolyIndex = nSubPolys; subPolyIndex >= 2; --subPolyIndex) {
         Int32 idx = subPolyIndex;
-        GSErrCode err = ACAPI_Polygon_DeleteSubPoly (&memo, &idx);
+        GSErrCode err = TAPIR_Polygon_DeleteSubPoly (&memo, &idx);
         if (err != NoError) {
             return "Failed to remove an existing slab hole.";
         }
@@ -1037,7 +1077,7 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     const Int32 desiredOutlineCount = (Int32) polygonOutline.GetSize ();
     while (outlineCount > desiredOutlineCount) {
         Int32 idx = 1;
-        GSErrCode err = ACAPI_Polygon_DeletePolyNode (&memo, &idx);
+        GSErrCode err = TAPIR_Polygon_DeletePolyNode (&memo, &idx);
         if (err != NoError) {
             return "Failed to adjust the slab outline's point count.";
         }
@@ -1053,7 +1093,7 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
         const API_Coord& p1 = (*memo.coords)[1];
         const API_Coord& p2 = (*memo.coords)[2];
         API_Coord placeholder = {(p1.x + p2.x) / 2.0, (p1.y + p2.y) / 2.0};
-        GSErrCode err = ACAPI_Polygon_InsertPolyNode (&memo, &idx, &placeholder);
+        GSErrCode err = TAPIR_Polygon_InsertPolyNode (&memo, &idx, &placeholder);
         if (err != NoError) {
             return "Failed to adjust the slab outline's point count.";
         }
@@ -1114,7 +1154,7 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
                 (*insMemo.parcs)[i] = holeArcs[i];
             }
         }
-        GSErrCode err = ACAPI_Polygon_InsertSubPoly (&memo, &insMemo);
+        GSErrCode err = TAPIR_Polygon_InsertSubPoly (&memo, &insMemo);
         if (err != NoError) {
             return "Failed to add a slab hole.";
         }
