@@ -1679,6 +1679,9 @@ bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo&
     bodyOS.Get ("bodyType", bodyTypeStr);
     const bool isSurfaceBody = (bodyTypeStr == "Surface");
     if (isSurfaceBody) {
+        // Confirmed live: a lone vertex with no edge at all is rejected by Archicad itself
+        // (ACAPI_Element_Create fails outright) - a Morph needs at least one edge to exist as a
+        // valid element, whether that's a real face loop or just a single standalone wireEdge.
         if (verticesOS.GetSize () < 2 || (polygonsOS.GetSize () < 1 && wireEdgesOS.GetSize () < 1)) {
             errorOut = "A Morph body needs at least 2 vertices and 1 face or wire edge.";
             return false;

@@ -42,6 +42,32 @@ def decode_edges(body, field):
         out.append(frozenset([(va['x'], va['y'], va['z']), (vb['x'], vb['y'], vb['z'])]))
     return out
 
+print('TEST -- absolute minimum: 2 vertices, 1 standalone wire edge, no face at all')
+r = run('CreateMorphs', {'morphsData': [{
+    'basePoint': {'x': 6990, 'y': 0, 'z': 0},
+    'body': {
+        'bodyType': 'Surface',
+        'vertices': [{'x': 0, 'y': 0, 'z': 0}, {'x': 2, 'y': 0, 'z': 0}],
+        'wireEdges': [{'vertexIds': [0, 1]}],
+    },
+}]})
+check('single-edge CreateMorphs succeeds', True, 'elementId' in r['elements'][0])
+guid = r['elements'][0]['elementId']['guid']
+created.append(guid)
+d = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': guid}}]})['detailsOfElements'][0]['details']
+body = d.get('body', {})
+check('0 polygons', 0, len(body.get('polygons', [])))
+check('1 wire edge', 1, len(body.get('wireEdges', [])))
+print()
+
+print('TEST -- a lone vertex with no edge at all is rejected (confirmed an Archicad limitation, not Tapir)')
+r = run('CreateMorphs', {'morphsData': [{
+    'basePoint': {'x': 6980, 'y': 0, 'z': 0},
+    'body': {'bodyType': 'Surface', 'vertices': [{'x': 0, 'y': 0, 'z': 0}]},
+}]})
+check('lone-vertex CreateMorphs fails cleanly (no crash)', True, 'error' in r['elements'][0])
+print()
+
 print('TEST -- single open quad face (bodyType Surface, previously rejected: needed >=4 faces)')
 r = run('CreateMorphs', {'morphsData': [{
     'basePoint': {'x': 7000, 'y': 0, 'z': 0},
