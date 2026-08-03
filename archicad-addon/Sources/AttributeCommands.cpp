@@ -3078,27 +3078,69 @@ GS::Optional<GS::UniString> CreateLayerCombinationsCommand::GetInputParametersSc
     })";
 }
 
+// A layer combination's stat table is NOT sparse: per the AC27 devkit's own remark on
+// API_LayerCombType, "the number of layers (the lNumb field) has the same value in all layer
+// combinations" - i.e. lNumb is the project's total layer count, not however many layers the
+// caller happens to mention, and Archicad expects one API_LayerStat entry per project layer, not
+// just for the ones being overridden. Confirmed live: populating layer_statItems with only the
+// requested layer(s) still reports lNumb layers back once read (Archicad fills in the rest
+// itself), but every layer we did NOT explicitly add came back with garbage/inconsistent flags
+// (mostly isHidden=true, one random layer with isWireframe=true, scattered with no pattern
+// matching the request) instead of the documented "new layers appear as unlocked and visible" -
+// i.e. Archicad reads past our sparse table into uninitialized memory for any layer index we
+// left out, rather than defaulting it. The fix is to always seed a full entry for every project
+// layer (visible/unlocked/not wireframe/group 1, matching a brand new layer's real defaults) and
+// only then apply the caller's overrides on top - mirroring how CreatePenTables/CreateProfiles
+// already seed a full table from a source attribute before overriding parts of it.
+static API_LayerStat DefaultLayerStat ()
+{
+    API_LayerStat layerStat = {};
+    layerStat.conClassId = 1;
+    return layerStat;
+}
+
 void CreateLayerCombinationsCommand::SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const
 {
     GS::Array<GS::ObjectState> layers;
     parameters.Get ("layers", layers);
 
-    attribute.layerComb.lNumb = layers.GetSize ();
-
+    // Seed every project layer with a default stat, preferring the layer combination's own
+    // current table (if we are modifying one that already exists) so that layers not mentioned
+    // in this request keep whatever hidden/locked/wireframe/group state they already had, rather
+    // than being reset to defaults on every edit.
+    GS::HashTable<API_AttributeIndex, API_LayerStat> seedStats;
+    API_AttributeDef existingDef = {};
+    bool hasExistingDef = false;
+    if (attribute.header.index != APIInvalidAttributeIndex && ACAPI_Attribute_GetDef (API_LayerCombID, attribute.header.index, &existingDef) == NoError) {
+        hasExistingDef = true;
 #ifdef ServerMainVers_2700
-	attributeDef.layer_statItems = new GS::HashTable<API_AttributeIndex, API_LayerStat> ();
+        for (const auto& kv : *existingDef.layer_statItems) {
+#ifdef ServerMainVers_2800
+            seedStats.Add (kv.key, kv.value);
 #else
-	attributeDef.layer_statItems = (API_LayerStat **) BMAllocateHandle (attribute.layerComb.lNumb * sizeof (API_LayerStat), ALLOCATE_CLEAR, 0);
+            seedStats.Add (*kv.key, *kv.value);
 #endif
+        }
+#else
+        for (Int32 i = 0; i < attribute.layerComb.lNumb; ++i) {
+            const API_LayerStat& layerStat = (*existingDef.layer_statItems)[i];
+            seedStats.Add (layerStat.lInd, layerStat);
+        }
+#endif
+    }
 
-    size_t i = 0;
+    GS::Array<API_Attribute> allLayers;
+    ACAPI_Attribute_GetAttributesByType (API_LayerID, allLayers);
+    for (API_Attribute& layerAttr : allLayers) {
+        if (!seedStats.ContainsKey (layerAttr.header.index)) {
+            seedStats.Add (layerAttr.header.index, DefaultLayerStat ());
+        }
+        DisposeAttribute (layerAttr);
+    }
+
     for (const GS::ObjectState& layer : layers) {
-#ifdef ServerMainVers_2700
-        UNUSED_VARIABLE(i);
-		API_LayerStat layerStat = {};
-#else
-        API_LayerStat& layerStat = (*attributeDef.layer_statItems)[i++];
-#endif
+        API_LayerStat layerStat = DefaultLayerStat ();
+
         bool isHidden = false;
         layer.Get ("isHidden", isHidden);
         if (isHidden)
@@ -3114,18 +3156,39 @@ void CreateLayerCombinationsCommand::SetTypeSpecificParameters (const GS::Object
         if (isWireframe)
             layerStat.lFlags |= APILay_ForceToWire;
 
-        Int32 intersectionGroupNr = 0;
+        Int32 intersectionGroupNr = 1;
         layer.Get ("intersectionGroupNr", intersectionGroupNr);
         layerStat.conClassId = intersectionGroupNr;
 
         API_AttributeIndex layerIndex;
         if (GetAttributeIndexFromAttributeId (layer, API_LayerID, layerIndex)) {
-#ifdef ServerMainVers_2700
-            attributeDef.layer_statItems->Add (layerIndex, layerStat);
-#else
-            layerStat.lInd = layerIndex;
-#endif
+            // Put, not Add: this layer's key was already seeded above with a default stat (every
+            // project layer is seeded first), and GS::HashTable::Add is a no-op returning false
+            // when the key already exists - it does NOT overwrite. Confirmed live: using Add here
+            // silently dropped every override, leaving the seeded defaults in place even though
+            // the request came back accepted. Put unconditionally replaces the existing entry.
+            seedStats.Put (layerIndex, layerStat);
         }
+    }
+
+    attribute.layerComb.lNumb = static_cast<Int32> (seedStats.GetSize ());
+
+#ifdef ServerMainVers_2700
+    attributeDef.layer_statItems = new GS::HashTable<API_AttributeIndex, API_LayerStat> (seedStats);
+#else
+    attributeDef.layer_statItems = (API_LayerStat **) BMAllocateHandle (attribute.layerComb.lNumb * sizeof (API_LayerStat), ALLOCATE_CLEAR, 0);
+    Int32 i = 0;
+    for (const auto& kv : seedStats) {
+        // Pre-2700 GS::HashTable's const range-for pair exposes pointer members (unlike 2800+'s
+        // references) - matches the same distinction already handled above for existingDef.
+        API_LayerStat& layerStat = (*attributeDef.layer_statItems)[i++];
+        layerStat = *kv.value;
+        layerStat.lInd = *kv.key;
+    }
+#endif
+
+    if (hasExistingDef) {
+        ACAPI_DisposeAttrDefsHdls (&existingDef);
     }
 }
 
