@@ -74,6 +74,34 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
 void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName = {});
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
+void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName);
+void AddColumnSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
+void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
+GS::UniString AnchorIdToString (API_AnchorID anchorId);
+API_AnchorID AnchorIdFromString (const GS::UniString& str, API_AnchorID defaultValue = APIAnc_MM);
+GS::UniString WallReferenceLineLocationToString (API_WallReferenceLineLocationID location);
+API_WallReferenceLineLocationID WallReferenceLineLocationFromString (const GS::UniString& str, API_WallReferenceLineLocationID defaultValue = APIWallRefLine_Outside);
+GS::UniString ZoneRelToString (API_ZoneRelID zoneRel);
+API_ZoneRelID ZoneRelFromString (const GS::UniString& str, API_ZoneRelID defaultValue = APIZRel_Boundary);
+GS::ObjectState CreateStoryVisibilityObjectState (const API_StoryVisibility& visibility);
+API_StoryVisibility GetStoryVisibilityFromObjectState (const GS::ObjectState& os);
+GS::UniString SlabReferencePlaneLocationToString (API_SlabReferencePlaneLocationID location);
+API_SlabReferencePlaneLocationID SlabReferencePlaneLocationFromString (const GS::UniString& str, API_SlabReferencePlaneLocationID defaultValue = APISlabRefPlane_Top);
+GS::ObjectState CreateOverriddenMaterialObjectState (const API_OverriddenAttribute& attr);
+API_OverriddenAttribute GetOverriddenMaterialFromObjectState (const GS::ObjectState& os);
+#ifdef ServerMainVers_2700
+GS::ObjectState CreateOverriddenPenObjectState (const API_OverriddenPen& pen);
+API_OverriddenPen GetOverriddenPenFromObjectState (const GS::ObjectState& os);
+#endif
+GS::UniString CoverFillTransformationTypeToString (API_CoverFillTransformationTypeID type);
+API_CoverFillTransformationTypeID CoverFillTransformationTypeFromString (const GS::UniString& str, API_CoverFillTransformationTypeID defaultValue = API_CoverFillTransformationType_Global);
+GS::ObjectState CreateCoverFillTransformationObjectState (const API_CoverFillTransformation& transformation);
+API_CoverFillTransformation GetCoverFillTransformationFromObjectState (const GS::ObjectState& os);
+GS::ObjectState CreateCoverFillObjectState (bool use, bool useFromSurface, bool orientationComesFrom3D, API_AttributeIndex fillIndex, short foregroundPen, short backgroundPen, API_CoverFillTransformationTypeID transformationType, const API_CoverFillTransformation& transformation);
+GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
+API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
+GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
+API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os);
 
 // Defined in ExtendedElementCommands.cpp (not ElementCommands.cpp, where it's called from) -
 // reading a Morph's body needs Model3D/MeshBody.hpp, which cannot be included in the same
