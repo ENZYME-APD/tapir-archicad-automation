@@ -4301,6 +4301,10 @@
                 "type": "number",
                 "description": "The slant angle of the beam in radians."
             },
+            "profileAngle": {
+                "type": "number",
+                "description": "The profile rotation angle of the beam around its axis in radians."
+            },
             "arcAngle": {
                 "type": "number",
                 "description": "The arc angle of the (horizontally) curved beam in radians."
@@ -4318,6 +4322,7 @@
             "level",
             "offset",
             "slantAngle",
+            "profileAngle",
             "arcAngle",
             "verticalCurveHeight"
         ]

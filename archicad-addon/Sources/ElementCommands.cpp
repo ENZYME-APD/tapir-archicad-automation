@@ -748,7 +748,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.beam.endC));
                 typeSpecificDetails.Add ("level", elem.beam.level);
                 typeSpecificDetails.Add ("offset", elem.beam.offset);
-                typeSpecificDetails.Add ("slantAngle", elem.beam.slantAngle);
+                typeSpecificDetails.Add ("slantAngle", elem.beam.isSlanted ? elem.beam.slantAngle : 0.0);
+                typeSpecificDetails.Add ("profileAngle", elem.beam.profileAngle);
                 typeSpecificDetails.Add ("arcAngle", elem.beam.curveAngle);
                 typeSpecificDetails.Add ("verticalCurveHeight", elem.beam.verticalCurveHeight);
                 break;

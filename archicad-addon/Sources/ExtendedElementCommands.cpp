@@ -1449,7 +1449,15 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     auto slantAngle = GetOptionalDouble (details, "slantAngle");
     if (slantAngle.HasValue ()) {
         element.beam.slantAngle = slantAngle.Get ();
+        element.beam.isSlanted = slantAngle.Get () != 0.0;
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, slantAngle);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, isSlanted);
+        changed = true;
+    }
+    auto profileAngle = GetOptionalDouble (details, "profileAngle");
+    if (profileAngle.HasValue ()) {
+        element.beam.profileAngle = profileAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, profileAngle);
         changed = true;
     }
     auto arcAngle = GetOptionalDouble (details, "arcAngle");
@@ -2542,7 +2550,8 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
                         "zCoordinate": { "type": "number" },
                         "offset": { "type": "number" },
-                        "slantAngle": { "type": "number" },
+                        "slantAngle": { "type": "number", "description": "Slant angle in radians. A non-zero value switches the beam to slanted mode; 0 makes it horizontal." },
+                        "profileAngle": { "type": "number", "description": "Profile rotation angle around the beam axis in radians." },
                         "arcAngle": { "type": "number" },
                         "verticalCurveHeight": { "type": "number" },
                         "width": {
@@ -2596,6 +2605,11 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     auto slantAngle = GetOptionalDouble (parameters, "slantAngle");
     if (slantAngle.HasValue ()) {
         element.beam.slantAngle = slantAngle.Get ();
+        element.beam.isSlanted = slantAngle.Get () != 0.0;
+    }
+    auto profileAngle = GetOptionalDouble (parameters, "profileAngle");
+    if (profileAngle.HasValue ()) {
+        element.beam.profileAngle = profileAngle.Get ();
     }
     auto arcAngle = GetOptionalDouble (parameters, "arcAngle");
     if (arcAngle.HasValue ()) {
@@ -4177,7 +4191,8 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "level": { "type": "number" },
                         "offset": { "type": "number" },
-                        "slantAngle": { "type": "number" },
+                        "slantAngle": { "type": "number", "description": "Slant angle in radians. A non-zero value switches the beam to slanted mode; 0 makes it horizontal." },
+                        "profileAngle": { "type": "number", "description": "Profile rotation angle around the beam axis in radians." },
                         "arcAngle": { "type": "number" },
                         "verticalCurveHeight": { "type": "number" }
                     },
