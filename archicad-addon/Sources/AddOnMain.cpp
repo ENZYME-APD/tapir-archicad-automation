@@ -1271,7 +1271,8 @@ GSErrCode Initialize (void)
         AddCommandGroup (scriptUICommands);
     }
 
-    { // Graphical Override Commands
+#ifdef ServerMainVers_2700
+    { // Graphical Override Commands - ACAPI_GraphicalOverride_* functions require Archicad 27+
         CommandGroup graphicalOverrideCommands ("Graphical Override Commands");
         err |= RegisterCommand<GetGraphicalOverrideCombinationsCommand> (
             graphicalOverrideCommands, "1.5.7",
@@ -1311,6 +1312,7 @@ GSErrCode Initialize (void)
         );
         AddCommandGroup (graphicalOverrideCommands);
     }
+#endif // ServerMainVers_2700
 
     { // Developer Commands
         CommandGroup developerCommands ("Developer Commands");
