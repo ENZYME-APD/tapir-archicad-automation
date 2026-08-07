@@ -4498,9 +4498,18 @@ var gSchemaDefinitions = {
         ]
     },
     "ObjectDetails": {
-        "$ref": "#/LibPartBasedElementDetails",
+        "type": "object",
         "description": "Shared shape for Object and Lamp elements (both use the same API_ObjectType struct). lightColor/lightIsOn only apply to Lamps. Per the Archicad SDK's own remarks, per-story visibility (visibility.showRelAbove/showRelBelow) and visibility.linkToSettings.newCreationMode were 'not extended' for Object/Lamp the way they were for other element types - still settable here for schema symmetry, but Archicad may silently ignore them.",
         "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails"
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
             "origin": {
                 "$ref": "#/Coordinate3D"
             },
@@ -4617,14 +4626,24 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false,
         "required": [
+            "libPart",
             "origin",
             "dimensions",
             "angle"
         ]
     },
     "WindowDoorDetails": {
-        "$ref": "#/LibPartBasedElementDetails",
+        "type": "object",
         "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails"
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
             "width": {
                 "type": "number",
                 "description": "Opening width."
@@ -4653,6 +4672,7 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false,
         "required": [
+            "libPart",
             "width",
             "height",
             "sillHeight",
@@ -5672,8 +5692,17 @@ var gSchemaDefinitions = {
         ]
     },
     "LabelDetails": {
-        "$ref": "#/LibPartBasedElementDetails",
+        "type": "object",
         "properties": {
+          "libPart": {
+            "$ref": "#/LibPartDetails"
+          },
+          "ownerElementId": {
+            "$ref": "#/ElementId"
+          },
+          "ownerElementType": {
+            "$ref": "#/ElementType"
+          },
           "begCoordinate": {
             "$ref": "#/Coordinate2D"
           },
