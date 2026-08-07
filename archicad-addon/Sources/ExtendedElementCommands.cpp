@@ -16,6 +16,7 @@
 #include "Polygon2D.hpp"
 #endif
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -859,41 +860,71 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
     // slabs (e.g. the default slab reports nCoords but leaves memo.coords == nullptr).
     // The original size-change-only guards skipped allocation whenever the requested
     // polygon matched the default size, leaving memo.coords null and crashing
-    // AddPolyToMemo with a null dereference. BMReallocHandle does NOT allocate from a
-    // null handle, so a null handle must be created fresh with BMAllocateHandle (as the
-    // mesh/zone commands do); only an existing handle is resized with BMReallocHandle.
+    // AddPolyToMemo with a null dereference.
+    //
+    // Each handle below is checked independently rather than bundled behind a single
+    // coords-based guard: ACAPI_Element_GetMemo can legitimately return edgeTrims/
+    // sideMaterials/vertexIDs as null even when coords itself is populated (e.g. a slab
+    // that has never had a custom edge trim never materializes memo.edgeTrims), and
+    // AddPolyToMemo below unconditionally writes through edgeTrims/sideMaterials whenever
+    // a non-null override pointer is passed in (as it is here).
+    //
+    // On a real size change, existing handles are freed with BMKillHandle/BMKillPtr and
+    // reallocated fresh, not resized in place with BMReallocHandle/BMReallocPtr - confirmed
+    // via a real crash report (issue #452, "Fatal memory error in BMReallocPtr... Requested
+    // memory size is 48 bytes" / BNValidWritePtr failure) that a handle coming back from
+    // ACAPI_Element_GetMemo is not safe to hand to BMRealloc*, even though it reads back
+    // non-null and its contents are valid. This is the same free-then-allocate pattern
+    // already used for the Stair baseline memo rebuild elsewhere in this file.
     const Int32 nCoords    = element.slab.poly.nCoords;
     const Int32 nSubPolys  = element.slab.poly.nSubPolys;
     const Int32 nArcs      = element.slab.poly.nArcs;
-    const bool  coordsWereNull = (memo.coords == nullptr);
+    const bool  sizeChanged = (oldPoly.nCoords != nCoords);
 
-    if (coordsWereNull) {
-        memo.coords        = reinterpret_cast<API_Coord**>             (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
-        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord),               ALLOCATE_CLEAR, 0));
-        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim),            ALLOCATE_CLEAR, 0));
-        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMAllocatePtr    ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
-    } else if (oldPoly.nCoords != nCoords) {
-        memo.coords        = reinterpret_cast<API_Coord**>             (BMReallocHandle (reinterpret_cast<GSHandle> (memo.coords),        (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
-        memo.vertexIDs     = reinterpret_cast<UInt32**>                (BMReallocHandle (reinterpret_cast<GSHandle> (memo.vertexIDs),     (nCoords + 1) * sizeof (API_Coord),               REALLOC_CLEAR, 0));
-        memo.edgeTrims     = reinterpret_cast<API_EdgeTrim**>          (BMReallocHandle (reinterpret_cast<GSHandle> (memo.edgeTrims),     (nCoords + 1) * sizeof (API_EdgeTrim),            REALLOC_CLEAR, 0));
-        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*>(BMReallocPtr    (reinterpret_cast<GSPtr> (memo.sideMaterials), (nCoords + 1) * sizeof (API_OverriddenAttribute), REALLOC_CLEAR, 0));
+    if (memo.coords != nullptr && sizeChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+    }
+    if (memo.coords == nullptr) {
+        memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.vertexIDs != nullptr && sizeChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.vertexIDs));
+    }
+    if (memo.vertexIDs == nullptr) {
+        memo.vertexIDs = reinterpret_cast<UInt32**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.edgeTrims != nullptr && sizeChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.edgeTrims));
+    }
+    if (memo.edgeTrims == nullptr) {
+        memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.sideMaterials != nullptr && sizeChanged) {
+        BMKillPtr (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
+    }
+    if (memo.sideMaterials == nullptr) {
+        memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+    }
+    const bool subPolysChanged = (oldPoly.nSubPolys != nSubPolys);
+    if (memo.pends != nullptr && subPolysChanged) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.pends));
     }
     if (memo.pends == nullptr) {
         memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    } else if (oldPoly.nSubPolys != nSubPolys) {
-        memo.pends = reinterpret_cast<Int32**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.pends), (nSubPolys + 1) * sizeof (Int32), REALLOC_CLEAR, 0));
     }
     if (nArcs > 0) {
+        const bool arcsChanged = (oldPoly.nArcs != nArcs);
+        if (memo.parcs != nullptr && arcsChanged) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+        }
         if (memo.parcs == nullptr) {
             memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
-        } else if (oldPoly.nArcs != nArcs) {
-            memo.parcs = reinterpret_cast<API_PolyArc**> (BMReallocHandle (reinterpret_cast<GSHandle> (memo.parcs), nArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
         }
     }
-    const bool needToProcessVertexIDs =
-        coordsWereNull ||
-        oldPoly.nCoords != element.slab.poly.nCoords ||
-        oldPoly.nSubPolys != element.slab.poly.nSubPolys;
+    // Always rewrite vertex IDs: with the free-then-allocate pattern above, any size change
+    // yields freshly zeroed (and therefore always-stale) vertex ID slots, and a same-size
+    // in-place reuse still needs correct IDs recomputed for the new geometry.
+    const bool needToProcessVertexIDs = true;
 
     const API_EdgeTrimID edgeTrimSideType = APIEdgeTrim_Vertical;
     Int32 iCoord = 1;
@@ -907,6 +938,250 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
             AddPolyToMemo (holePolygonOutline, holePolygonArcs, iCoord, iArc, iPends, memo, &edgeTrimSideType, &element.slab.sideMat, needToProcessVertexIDs);
         }
+    }
+
+    // vertexIDs[0] must hold the max vertex ID used across the whole shape - an undocumented
+    // ACAPI_Element_Change requirement (confirmed live in this repo's PolyLine/Hatch geometry
+    // SET work) without which ACAPI_Element_Change rejects the polygon with APIERR_BADPOLY.
+    // AddPolyToMemo never writes index 0 itself, so it is filled in here by scanning the IDs
+    // it did write.
+    if (memo.vertexIDs != nullptr) {
+        UInt32 maxVertexID = 0;
+        for (Int32 i = 1; i <= nCoords; ++i) {
+            maxVertexID = std::max (maxVertexID, (*memo.vertexIDs)[i]);
+        }
+        (*memo.vertexIDs)[0] = maxVertexID;
+    }
+
+    return {};
+}
+
+// The new-style ACAPI_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/DeleteSubPoly functions
+// (declared in ACAPI_Goodies.h) do not exist before Archicad 27 - confirmed via the DevKit headers
+// directly, AC25/26 have no ACAPI_Goodies.h at all. Pre-27, the same operations are reached through
+// the older, untyped ACAPI_Goodies (API_GoodiesID, void*, void*, void*, void*) dispatcher with the
+// APIAny_*PolyNodeID/APIAny_*SubPolyID constants (APIdefs_Goodies.h) - these wrappers keep
+// ApplySlabPolygonChange version-agnostic, mirroring the TAPIR_Browser_* pattern in
+// ScriptUIPalette.cpp for the same AC25/26-vs-27+ split.
+#ifdef ServerMainVers_2700
+static GSErrCode TAPIR_Polygon_InsertPolyNode (API_ElementMemo* memo, Int32* nodeIndex, API_Coord* coord)
+{
+    return ACAPI_Polygon_InsertPolyNode (memo, nodeIndex, coord);
+}
+static GSErrCode TAPIR_Polygon_DeletePolyNode (API_ElementMemo* memo, Int32* nodeIndex)
+{
+    return ACAPI_Polygon_DeletePolyNode (memo, nodeIndex);
+}
+static GSErrCode TAPIR_Polygon_InsertSubPoly (API_ElementMemo* memo, API_ElementMemo* insMemo)
+{
+    return ACAPI_Polygon_InsertSubPoly (memo, insMemo);
+}
+static GSErrCode TAPIR_Polygon_DeleteSubPoly (API_ElementMemo* memo, Int32* subPolyIndex)
+{
+    return ACAPI_Polygon_DeleteSubPoly (memo, subPolyIndex);
+}
+#else
+static GSErrCode TAPIR_Polygon_InsertPolyNode (API_ElementMemo* memo, Int32* nodeIndex, API_Coord* coord)
+{
+    return ACAPI_Goodies (APIAny_InsertPolyNodeID, memo, nodeIndex, coord);
+}
+static GSErrCode TAPIR_Polygon_DeletePolyNode (API_ElementMemo* memo, Int32* nodeIndex)
+{
+    return ACAPI_Goodies (APIAny_DeletePolyNodeID, memo, nodeIndex);
+}
+static GSErrCode TAPIR_Polygon_InsertSubPoly (API_ElementMemo* memo, API_ElementMemo* insMemo)
+{
+    return ACAPI_Goodies (APIAny_InsertSubPolyID, memo, insMemo);
+}
+static GSErrCode TAPIR_Polygon_DeleteSubPoly (API_ElementMemo* memo, Int32* subPolyIndex)
+{
+    return ACAPI_Goodies (APIAny_DeleteSubPolyID, memo, subPolyIndex);
+}
+#endif
+
+// Applies a new outline/arcs/holes shape to an EXISTING slab's memo (already populated via
+// ACAPI_Element_GetMemo), for use with ACAPI_Element_ChangeMemo. Uses Graphisoft's own
+// polygon-editing primitives - TAPIR_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/
+// DeleteSubPoly above, matching the DevKit's own Element_Test/Element_Modify_Polygon.cpp reference
+// example for these exact element types (including API_SlabID) - to keep the coords/pends/parcs/
+// vertexIDs handles obtained from GetMemo internally consistent under a point/hole count change.
+// A from-scratch memo rebuild (the same approach BuildSlabMemoFromGeometry above uses for a fresh
+// Create) reliably failed with APIERR_BADPOLY via ACAPI_Element_Change here whenever the point or
+// subpoly count actually changed - even with every vertexIDs numbering scheme tried (sequential,
+// per-contour, mirrored closing duplicates) - while these primitives, paired with
+// ACAPI_Element_ChangeMemo and vertexIDs left untouched/zero for new vertices (see
+// API_ElementMemo's own documented convention - existing IDs must never be renumbered, new ones
+// get ID 0 for Archicad to assign), work correctly for every case tested (issue #452).
+static GS::Optional<GS::UniString> ApplySlabPolygonChange (
+    API_ElementMemo& memo,
+    const API_OverriddenAttribute& sideMat,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes)
+{
+    if (polygonOutline.GetSize () < 3) {
+        return "'polygonOutline' must contain at least 3 coordinates.";
+    }
+    if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
+        polygonOutline.Pop ();
+    }
+    if (memo.coords == nullptr || memo.pends == nullptr) {
+        return "Slab has no polygon data to modify.";
+    }
+
+    // A from-scratch memo rebuild (matching CreateSlabs, and BuildMeshPolyMemoFromGeometry's own
+    // proven-working pattern for ModifyMeshes) plus ACAPI_Element_Change reliably fails with
+    // APIERR_BADPOLY here whenever nCoords changes at all - confirmed live on the plain point-count
+    // case alone (no holes involved), so this is not a vertexIDs-numbering issue as first assumed
+    // (tried: global sequential, global with the closing duplicate mirroring the first point, and
+    // per-contour restart - all three failed identically). Graphisoft's own polygon-editing
+    // primitives - ACAPI_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/DeleteSubPoly, used by
+    // the DevKit's own reference example (Element_Test/Element_Modify_Polygon.cpp, targeting the
+    // same element types including API_SlabID) together with ACAPI_Element_ChangeMemo - keep the
+    // existing GetMemo-provided handles' internal consistency intact across a size change, which a
+    // full replacement apparently cannot always reproduce. They document that memo's coords/pends/
+    // parcs/vertexIDs handles "must be initialized"; ACAPI_Element_GetMemo can legitimately leave
+    // vertexIDs/parcs null (e.g. a slab with no per-edge customization/arcs), so those are seeded
+    // here first.
+    if (memo.vertexIDs == nullptr) {
+        // Per Graphisoft's own API_ElementMemo documentation: "If you retrieve an array of
+        // vertices, edges or contours with ACAPI_Element_GetMemo, do not change the IDs in these
+        // arrays. New vertices, edges and contours should be inserted with ID = 0." "Initialized"
+        // (as InsertPolyNode/DeleteSubPoly/etc. require) means the handle must exist at the right
+        // size, not that it must be pre-filled with a manually invented ID scheme - Archicad
+        // itself assigns real IDs to zero-ID vertices. Earlier attempts at manually numbering this
+        // (global sequential, per-contour restart, with/without mirroring the closing duplicate)
+        // were all guesses at an ID scheme Archicad was never asking for.
+        const Int32 existingNCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+        memo.vertexIDs = reinterpret_cast<UInt32**> (BMAllocateHandle ((existingNCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    }
+    if (memo.parcs == nullptr) {
+        memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+    }
+
+    // Step 1: remove every existing hole (subpoly index >= 2), highest index first so earlier
+    // deletions don't shift the indices of subpolys not yet processed.
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPolyIndex = nSubPolys; subPolyIndex >= 2; --subPolyIndex) {
+        Int32 idx = subPolyIndex;
+        GSErrCode err = TAPIR_Polygon_DeleteSubPoly (&memo, &idx);
+        if (err != NoError) {
+            return "Failed to remove an existing slab hole.";
+        }
+    }
+
+    // Step 2: resize the main outline (subpoly 1) to the requested point count by repeatedly
+    // inserting/deleting node 1 - the coordinate value used for an inserted placeholder node does
+    // not matter, every point is overwritten with the real final coordinates right after.
+    Int32 outlineCount = (*memo.pends)[1] - 1; // real points, excluding the closing duplicate
+    const Int32 desiredOutlineCount = (Int32) polygonOutline.GetSize ();
+    while (outlineCount > desiredOutlineCount) {
+        Int32 idx = 1;
+        GSErrCode err = TAPIR_Polygon_DeletePolyNode (&memo, &idx);
+        if (err != NoError) {
+            return "Failed to adjust the slab outline's point count.";
+        }
+        --outlineCount;
+    }
+    while (outlineCount < desiredOutlineCount) {
+        // Per Graphisoft's own DevKit reference example (Do_Poly_InsertNode), nodeIndex is set to
+        // the clicked edge's begin-node index + 1 - i.e. the position the NEW node will occupy
+        // (shifting what was there up by one), not "insert after this existing node" as the header
+        // doc's wording alone suggests. To insert between existing nodes 1 and 2, that means
+        // nodeIndex = 2, not 1.
+        Int32 idx = 2;
+        const API_Coord& p1 = (*memo.coords)[1];
+        const API_Coord& p2 = (*memo.coords)[2];
+        API_Coord placeholder = {(p1.x + p2.x) / 2.0, (p1.y + p2.y) / 2.0};
+        GSErrCode err = TAPIR_Polygon_InsertPolyNode (&memo, &idx, &placeholder);
+        if (err != NoError) {
+            return "Failed to adjust the slab outline's point count.";
+        }
+        ++outlineCount;
+    }
+
+    for (Int32 i = 0; i < desiredOutlineCount; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (polygonOutline[i]);
+    }
+    (*memo.coords)[desiredOutlineCount + 1] = (*memo.coords)[1];
+
+    // Resized to the EXACT new arc count, not just overwritten in place: reusing a stale-sized
+    // handle left old arc entries beyond the new count untouched (e.g. going from 2 arcs to 1, or
+    // to 0, silently kept the old 2nd arc around) - confirmed live, arcs "stuck" across modify
+    // calls that were supposed to remove/replace them.
+    {
+        const GS::Array<API_PolyArc> arcs = GetPolyArcs (polygonArcs, 1);
+        if (memo.parcs != nullptr) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+        }
+        if (!arcs.IsEmpty ()) {
+            memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (arcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+            for (UIndex i = 0; i < arcs.GetSize (); ++i) {
+                (*memo.parcs)[i] = arcs[i];
+            }
+        } else {
+            memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+        }
+    }
+
+    // Step 3: add the requested holes back, each as a fresh subpoly.
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holePolygonOutline;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        if (!GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs) || holePolygonOutline.GetSize () < 3) {
+            continue;
+        }
+        const Int32 holeNCoords = (Int32) holePolygonOutline.GetSize ();
+        API_ElementMemo insMemo = {};
+        const GS::OnExit insCleanup ([&insMemo] () { ACAPI_DisposeElemMemoHdls (&insMemo); });
+        // +2, not +1: index 0 is the unused dummy slot and index holeNCoords+1 holds the closing
+        // duplicate point written below - allocating only holeNCoords+1 slots left that last write
+        // one element past the end of the handle, corrupting adjacent heap memory (a delayed,
+        // hard-to-diagnose C0000374 crash reported by Archicad much later during an unrelated
+        // commit - confirmed live by reproducing it on a plain hole-add).
+        insMemo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((holeNCoords + 2) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+        for (Int32 i = 0; i < holeNCoords; ++i) {
+            (*insMemo.coords)[i + 1] = Get2DCoordinateFromObjectState (holePolygonOutline[i]);
+        }
+        (*insMemo.coords)[holeNCoords + 1] = (*insMemo.coords)[1];
+        insMemo.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+        (*insMemo.pends)[0] = 0;
+        (*insMemo.pends)[1] = holeNCoords + 1;
+        if (!holePolygonArcs.IsEmpty ()) {
+            const GS::Array<API_PolyArc> holeArcs = GetPolyArcs (holePolygonArcs, 1);
+            insMemo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (holeArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+            for (UIndex i = 0; i < holeArcs.GetSize (); ++i) {
+                (*insMemo.parcs)[i] = holeArcs[i];
+            }
+        }
+        GSErrCode err = TAPIR_Polygon_InsertSubPoly (&memo, &insMemo);
+        if (err != NoError) {
+            return "Failed to add a slab hole.";
+        }
+    }
+
+    // edgeTrims/sideMaterials are not touched by the Insert/Delete primitives above (per their own
+    // documentation - "other memo handles are not touched"), so they are resized fresh to match the
+    // final coordinate count. edgeTrims is a plain Handle (BMKillHandle+BMAllocateHandle is safe);
+    // sideMaterials is a raw Ptr, and BMReallocPtr on a GetMemo-provided one reliably corrupted the
+    // heap (issue #452's original crash report) - so it is freed and reallocated fresh too, never
+    // resized in place. Despite the DevKit's own Do_Poly_InsertNode/DeleteNode reference example
+    // treating this as unnecessary for API_SlabID and using APIMemoMask_Polygon alone for
+    // ACAPI_Element_ChangeMemo, using that narrower mask here reproducibly failed with
+    // APIERR_BADPARS on this exact hole-removal case - live-confirmed; the combined mask plus this
+    // rebuild is what actually works for hole add/remove, multi-hole, and arcs.
+    const Int32 finalNCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+    if (memo.edgeTrims != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.edgeTrims));
+    }
+    memo.edgeTrims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((finalNCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
+    if (memo.sideMaterials != nullptr) {
+        BMKillPtr (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
+    }
+    memo.sideMaterials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((finalNCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+    for (Int32 i = 1; i <= finalNCoords; ++i) {
+        (*memo.edgeTrims)[i].sideType = APIEdgeTrim_Vertical;
+        memo.sideMaterials[i] = sideMat;
     }
 
     return {};
@@ -1116,7 +1391,12 @@ GS::Optional<GS::UniString> ApplyWallStructure (
             if (selection.profile != APIInvalidAttributeIndex) {
                 element.wall.profileAttr = selection.profile;
             }
-            element.wall.type = APIWtyp_Poly;
+            // Note: unlike Basic/Composite above, wall.type (the plan outline shape) is left
+            // untouched here - it is orthogonal to modelElemStructureType (the cross section),
+            // same relationship as profileType/slantAlpha for a Slanted/Trapez wall. Forcing
+            // APIWtyp_Poly here previously made ACAPI_Element_Create/_Change fail outright,
+            // since a Poly wall needs an actual polygon memo that neither CreateWalls nor
+            // ModifyWalls builds.
             break;
         case StructureSelectionKind::Unspecified:
             break;
@@ -1224,6 +1504,22 @@ GS::Optional<GS::UniString> ApplySlabStructure (
 bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {
     bool changed = false;
+    GS::UniString geometryType;
+    if (details.Get ("geometryType", geometryType)) {
+        // Only Straight/Trapezoid are settable here: Polygonal would need a full outline/arc
+        // memo (like ModifySlabs' polygonOutline), which the wall's Modify command does not
+        // take as input at all yet. This is the plan outline shape (wall.type), unrelated to
+        // profileType/slantAlpha/slantBeta below (the cross section shape).
+        if (geometryType == "Trapezoid") {
+            element.wall.type = APIWtyp_Trapez;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, type);
+            changed = true;
+        } else if (geometryType == "Straight") {
+            element.wall.type = APIWtyp_Normal;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, type);
+            changed = true;
+        }
+    }
     auto begCoordinate = GetOptionalCoordinate2D (details, "begCoordinate");
     if (begCoordinate.HasValue ()) {
         element.wall.begC = begCoordinate.Get ();
@@ -1268,6 +1564,114 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, bottomOffset);
         changed = true;
     }
+    GS::UniString referenceLineLocationStr;
+    if (details.Get ("referenceLineLocation", referenceLineLocationStr)) {
+        element.wall.referenceLineLocation = WallReferenceLineLocationFromString (referenceLineLocationStr);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, referenceLineLocation);
+        changed = true;
+    }
+    GS::UniString profileTypeStr;
+    if (details.Get ("profileType", profileTypeStr)) {
+        // Distinct from geometryType/wall.type above: this is the cross section shape
+        // (APISect_*), not the plan outline. slantAlpha/slantBeta only have an effect once
+        // this is set to Slanted (Poly is not settable here - it needs a profile attribute
+        // wired through a separate mechanism, out of scope).
+        if (profileTypeStr == "Slanted") {
+            element.wall.profileType = APISect_Slanted;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, profileType);
+            changed = true;
+        } else if (profileTypeStr == "Trapez") {
+            element.wall.profileType = APISect_Trapez;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, profileType);
+            changed = true;
+        } else if (profileTypeStr == "Normal") {
+            element.wall.profileType = APISect_Normal;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, profileType);
+            changed = true;
+        }
+    }
+    auto slantAlpha = GetOptionalDouble (details, "slantAlpha");
+    if (slantAlpha.HasValue ()) {
+        element.wall.slantAlpha = slantAlpha.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, slantAlpha);
+        changed = true;
+    }
+    auto slantBeta = GetOptionalDouble (details, "slantBeta");
+    if (slantBeta.HasValue ()) {
+        element.wall.slantBeta = slantBeta.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, slantBeta);
+        changed = true;
+    }
+    auto topOffset = GetOptionalDouble (details, "topOffset");
+    if (topOffset.HasValue ()) {
+        element.wall.topOffset = topOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, topOffset);
+        changed = true;
+    }
+    auto relativeTopStory = GetOptionalDouble (details, "relativeTopStory");
+    if (relativeTopStory.HasValue ()) {
+        element.wall.relativeTopStory = static_cast<short> (relativeTopStory.Get ());
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, relativeTopStory);
+        changed = true;
+    }
+    GS::UniString zoneRelStr;
+    if (details.Get ("zoneRel", zoneRelStr)) {
+        element.wall.zoneRel = ZoneRelFromString (zoneRelStr);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, zoneRel);
+        changed = true;
+    }
+    GS::ObjectState visibilityOs;
+    if (details.Get ("visibility", visibilityOs)) {
+        element.wall.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, visibility);
+        changed = true;
+        if (!details.Contains ("isAutoOnStoryVisibility")) {
+            // isAutoOnStoryVisibility defaults to true on a wall, in which case Archicad
+            // recomputes 'visibility' from the wall's vertical extent and silently discards
+            // whatever was just requested above - explicitly setting 'visibility' only makes
+            // sense once auto mode is off, so turn it off unless the caller says otherwise.
+            element.wall.isAutoOnStoryVisibility = false;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, isAutoOnStoryVisibility);
+        }
+    }
+    bool isAutoOnStoryVisibility = false;
+    if (details.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility)) {
+        element.wall.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, isAutoOnStoryVisibility);
+        changed = true;
+    }
+    GS::ObjectState referenceMaterialOs;
+    if (details.Get ("referenceMaterial", referenceMaterialOs)) {
+        element.wall.refMat = GetOverriddenMaterialFromObjectState (referenceMaterialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, refMat);
+        changed = true;
+    }
+    GS::ObjectState oppositeMaterialOs;
+    if (details.Get ("oppositeMaterial", oppositeMaterialOs)) {
+        element.wall.oppMat = GetOverriddenMaterialFromObjectState (oppositeMaterialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, oppMat);
+        changed = true;
+    }
+    GS::ObjectState sideMaterialOs;
+    if (details.Get ("sideMaterial", sideMaterialOs)) {
+        element.wall.sidMat = GetOverriddenMaterialFromObjectState (sideMaterialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, sidMat);
+        changed = true;
+    }
+#ifdef ServerMainVers_2700
+    GS::ObjectState cutFillPenOs;
+    if (details.Get ("cutFillPen", cutFillPenOs)) {
+        element.wall.cutFillPen = GetOverriddenPenFromObjectState (cutFillPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, cutFillPen);
+        changed = true;
+    }
+    GS::ObjectState cutFillBackgroundPenOs;
+    if (details.Get ("cutFillBackgroundPen", cutFillBackgroundPenOs)) {
+        element.wall.cutFillBackgroundPen = GetOverriddenPenFromObjectState (cutFillBackgroundPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, cutFillBackgroundPen);
+        changed = true;
+    }
+#endif
     return changed;
 }
 
@@ -1328,6 +1732,75 @@ bool ApplySlabDetails (API_Element& element, API_Element& mask, const GS::Object
         element.slab.level = floorIndexAndOffset.second;
         ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
+        changed = true;
+    }
+
+    GS::UniString referencePlaneLocationStr;
+    if (details.Get ("referencePlaneLocation", referencePlaneLocationStr)) {
+        element.slab.referencePlaneLocation = SlabReferencePlaneLocationFromString (referencePlaneLocationStr);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, referencePlaneLocation);
+        changed = true;
+    }
+
+    GS::ObjectState topMaterialOs;
+    if (details.Get ("topMaterial", topMaterialOs)) {
+        element.slab.topMat = GetOverriddenMaterialFromObjectState (topMaterialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat);
+        changed = true;
+    }
+    GS::ObjectState sideMaterialOs;
+    if (details.Get ("sideMaterial", sideMaterialOs)) {
+        element.slab.sideMat = GetOverriddenMaterialFromObjectState (sideMaterialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat);
+        changed = true;
+    }
+    GS::ObjectState bottomMaterialOs;
+    if (details.Get ("bottomMaterial", bottomMaterialOs)) {
+        element.slab.botMat = GetOverriddenMaterialFromObjectState (bottomMaterialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat);
+        changed = true;
+    }
+#ifdef ServerMainVers_2700
+    GS::ObjectState cutFillPenOs;
+    if (details.Get ("cutFillPen", cutFillPenOs)) {
+        element.slab.cutFillPen = GetOverriddenPenFromObjectState (cutFillPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, cutFillPen);
+        changed = true;
+    }
+    GS::ObjectState cutFillBackgroundPenOs;
+    if (details.Get ("cutFillBackgroundPen", cutFillBackgroundPenOs)) {
+        element.slab.cutFillBackgroundPen = GetOverriddenPenFromObjectState (cutFillBackgroundPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, cutFillBackgroundPen);
+        changed = true;
+    }
+#endif
+
+    GS::ObjectState floorFillOs;
+    if (details.Get ("floorFill", floorFillOs)) {
+        floorFillOs.Get ("use", element.slab.useFloorFill);
+        Int32 foregroundPen = 0;
+        if (floorFillOs.Get ("foregroundPen", foregroundPen)) {
+            element.slab.floorFillPen = static_cast<short> (foregroundPen);
+        }
+        Int32 backgroundPen = 0;
+        if (floorFillOs.Get ("backgroundPen", backgroundPen)) {
+            element.slab.floorFillBGPen = static_cast<short> (backgroundPen);
+        }
+        GS::ObjectState fillIdOs;
+        if (floorFillOs.Get ("fillId", fillIdOs)) {
+            element.slab.floorFillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (fillIdOs));
+        }
+        floorFillOs.Get ("use3DHatching", element.slab.use3DHatching);
+        GS::ObjectState orientationOs;
+        if (floorFillOs.Get ("orientation", orientationOs)) {
+            element.slab.hatchOrientation = GetHatchOrientationFromObjectState (orientationOs);
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, useFloorFill);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillBGPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillInd);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, use3DHatching);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation);
         changed = true;
     }
 
@@ -1416,6 +1889,103 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, axisRotationAngle);
         changed = true;
     }
+    GS::UniString coreAnchor;
+    if (details.Get ("coreAnchor", coreAnchor)) {
+        element.column.coreAnchor = static_cast<short> (AnchorIdFromString (coreAnchor));
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coreAnchor);
+        changed = true;
+    }
+    bool isSlanted = false;
+    if (details.Get ("isSlanted", isSlanted)) {
+        element.column.isSlanted = isSlanted;
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, isSlanted);
+        changed = true;
+    }
+    auto slantAngle = GetOptionalDouble (details, "slantAngle");
+    if (slantAngle.HasValue ()) {
+        element.column.slantAngle = slantAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, slantAngle);
+        changed = true;
+    }
+    auto slantDirectionAngle = GetOptionalDouble (details, "slantDirectionAngle");
+    if (slantDirectionAngle.HasValue ()) {
+        element.column.slantDirectionAngle = slantDirectionAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, slantDirectionAngle);
+        changed = true;
+    }
+    bool isFlipped = false;
+    if (details.Get ("isFlipped", isFlipped)) {
+        element.column.isFlipped = isFlipped;
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, isFlipped);
+        changed = true;
+    }
+    bool wrapping = false;
+    if (details.Get ("wrapping", wrapping)) {
+        element.column.wrapping = wrapping;
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, wrapping);
+        changed = true;
+    }
+    auto topOffset = GetOptionalDouble (details, "topOffset");
+    if (topOffset.HasValue ()) {
+        element.column.topOffset = topOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, topOffset);
+        changed = true;
+    }
+    auto relativeTopStory = GetOptionalDouble (details, "relativeTopStory");
+    if (relativeTopStory.HasValue ()) {
+        element.column.relativeTopStory = static_cast<short> (relativeTopStory.Get ());
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, relativeTopStory);
+        changed = true;
+    }
+#ifdef ServerMainVers_2700
+    GS::ObjectState cutFillPenOs;
+    if (details.Get ("cutFillPen", cutFillPenOs)) {
+        element.column.cutFillPen = GetOverriddenPenFromObjectState (cutFillPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, cutFillPen);
+        changed = true;
+    }
+    GS::ObjectState cutFillBackgroundPenOs;
+    if (details.Get ("cutFillBackgroundPen", cutFillBackgroundPenOs)) {
+        element.column.cutFillBackgroundPen = GetOverriddenPenFromObjectState (cutFillBackgroundPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, cutFillBackgroundPen);
+        changed = true;
+    }
+#endif
+    GS::ObjectState coverFillOs;
+    if (details.Get ("coverFill", coverFillOs)) {
+        coverFillOs.Get ("use", element.column.useCoverFill);
+        coverFillOs.Get ("useFromSurface", element.column.useCoverFillFromSurface);
+        coverFillOs.Get ("orientationComesFrom3D", element.column.coverFillOrientationComesFrom3D);
+        GS::ObjectState fillIdOs;
+        if (coverFillOs.Get ("fillId", fillIdOs)) {
+            element.column.coverFillType = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (fillIdOs));
+        }
+        Int32 foregroundPen = 0;
+        if (coverFillOs.Get ("foregroundPen", foregroundPen)) {
+            element.column.coverFillForegroundPen = static_cast<short> (foregroundPen);
+        }
+        Int32 backgroundPen = 0;
+        if (coverFillOs.Get ("backgroundPen", backgroundPen)) {
+            element.column.coverFillBackgroundPen = static_cast<short> (backgroundPen);
+        }
+        GS::UniString transformationTypeStr;
+        if (coverFillOs.Get ("transformationType", transformationTypeStr)) {
+            element.column.coverFillTransformationType = CoverFillTransformationTypeFromString (transformationTypeStr);
+        }
+        GS::ObjectState transformationOs;
+        if (coverFillOs.Get ("transformation", transformationOs)) {
+            element.column.coverFillTransformation = GetCoverFillTransformationFromObjectState (transformationOs);
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, useCoverFill);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, useCoverFillFromSurface);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coverFillOrientationComesFrom3D);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coverFillType);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coverFillForegroundPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coverFillBackgroundPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coverFillTransformationType);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coverFillTransformation);
+        changed = true;
+    }
     return changed;
 }
 
@@ -1464,7 +2034,182 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, verticalCurveHeight);
         changed = true;
     }
+    GS::UniString beamShapeStr;
+    if (details.Get ("beamShape", beamShapeStr)) {
+        if (beamShapeStr == "HorizontallyCurved") {
+            element.beam.beamShape = API_HorizontallyCurvedBeam;
+        } else if (beamShapeStr == "VerticallyCurved") {
+            element.beam.beamShape = API_VerticallyCurvedBeam;
+        } else {
+            element.beam.beamShape = API_StraightBeam;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, beamShape);
+        changed = true;
+    }
+    bool isSlanted = false;
+    if (details.Get ("isSlanted", isSlanted)) {
+        element.beam.isSlanted = isSlanted;
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, isSlanted);
+        changed = true;
+    }
+    bool isFlipped = false;
+    if (details.Get ("isFlipped", isFlipped)) {
+        element.beam.isFlipped = isFlipped;
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, isFlipped);
+        changed = true;
+    }
+    auto profileAngle = GetOptionalDouble (details, "profileAngle");
+    if (profileAngle.HasValue ()) {
+        element.beam.profileAngle = profileAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, profileAngle);
+        changed = true;
+    }
+    GS::UniString anchorPointStr;
+    if (details.Get ("anchorPoint", anchorPointStr)) {
+        element.beam.anchorPoint = static_cast<short> (AnchorIdFromString (anchorPointStr));
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, anchorPoint);
+        changed = true;
+    }
+#ifdef ServerMainVers_2700
+    GS::ObjectState cutFillPenOs;
+    if (details.Get ("cutFillPen", cutFillPenOs)) {
+        element.beam.cutFillPen = GetOverriddenPenFromObjectState (cutFillPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, cutFillPen);
+        changed = true;
+    }
+    GS::ObjectState cutFillBackgroundPenOs;
+    if (details.Get ("cutFillBackgroundPen", cutFillBackgroundPenOs)) {
+        element.beam.cutFillBackgroundPen = GetOverriddenPenFromObjectState (cutFillBackgroundPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, cutFillBackgroundPen);
+        changed = true;
+    }
+#endif
+    GS::ObjectState coverFillOs;
+    if (details.Get ("coverFill", coverFillOs)) {
+        coverFillOs.Get ("use", element.beam.useCoverFill);
+        coverFillOs.Get ("useFromSurface", element.beam.useCoverFillFromSurface);
+        coverFillOs.Get ("orientationComesFrom3D", element.beam.coverFillOrientationComesFrom3D);
+        GS::ObjectState fillIdOs;
+        if (coverFillOs.Get ("fillId", fillIdOs)) {
+            element.beam.coverFillType = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (fillIdOs));
+        }
+        Int32 foregroundPen = 0;
+        if (coverFillOs.Get ("foregroundPen", foregroundPen)) {
+            element.beam.coverFillForegroundPen = static_cast<short> (foregroundPen);
+        }
+        Int32 backgroundPen = 0;
+        if (coverFillOs.Get ("backgroundPen", backgroundPen)) {
+            element.beam.coverFillBackgroundPen = static_cast<short> (backgroundPen);
+        }
+        GS::UniString transformationTypeStr;
+        if (coverFillOs.Get ("transformationType", transformationTypeStr)) {
+            element.beam.coverFillTransformationType = CoverFillTransformationTypeFromString (transformationTypeStr);
+        }
+        GS::ObjectState transformationOs;
+        if (coverFillOs.Get ("transformation", transformationOs)) {
+            element.beam.coverFillTransformation = GetCoverFillTransformationFromObjectState (transformationOs);
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, useCoverFill);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, useCoverFillFromSurface);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, coverFillOrientationComesFrom3D);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, coverFillType);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, coverFillForegroundPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, coverFillBackgroundPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, coverFillTransformationType);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, coverFillTransformation);
+        changed = true;
+    }
     return changed;
+}
+
+static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    auto width = GetOptionalDouble (details, "width");
+    auto depth = GetOptionalDouble (details, "depth");
+    bool circleBased = false;
+    const bool hasCircleBased = details.Get ("circleBased", circleBased);
+    bool isWidthAndHeightLinked = false;
+    const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
+    const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
+    const GS::ObjectState* profileIdOs = details.Get ("profileId");
+    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr) {
+        return true;
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+        return false;
+    }
+
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+    for (GSSize i = 0; i < nSegments; ++i) {
+        API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
+        if (hasIsWidthAndHeightLinked) {
+            segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
+        }
+        if (width.HasValue ()) {
+            segment.nominalWidth = width.Get ();
+        }
+        if (depth.HasValue ()) {
+            segment.nominalHeight = depth.Get ();
+        }
+        if (hasCircleBased) {
+            segment.circleBased = circleBased;
+        }
+        if (profileIdOs != nullptr) {
+            segment.modelElemStructureType = API_ProfileStructure;
+            segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+            segment.circleBased = false;
+        } else if (buildingMaterialIdOs != nullptr) {
+            segment.modelElemStructureType = API_BasicStructure;
+            segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        }
+    }
+
+    return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_ColumnSegment, &memo) == NoError;
+}
+
+static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    auto width = GetOptionalDouble (details, "width");
+    auto height = GetOptionalDouble (details, "height");
+    bool isWidthAndHeightLinked = false;
+    const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
+    const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
+    const GS::ObjectState* profileIdOs = details.Get ("profileId");
+    if (!width.HasValue () && !height.HasValue () && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr) {
+        return true;
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_BeamSegment) != NoError || memo.beamSegments == nullptr) {
+        return false;
+    }
+
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    for (GSSize i = 0; i < nSegments; ++i) {
+        API_AssemblySegmentData& segment = memo.beamSegments[i].assemblySegmentData;
+        if (hasIsWidthAndHeightLinked) {
+            segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
+        }
+        if (width.HasValue ()) {
+            segment.nominalWidth = width.Get ();
+        }
+        if (height.HasValue ()) {
+            segment.nominalHeight = height.Get ();
+        }
+        if (profileIdOs != nullptr) {
+            segment.modelElemStructureType = API_ProfileStructure;
+            segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+        } else if (buildingMaterialIdOs != nullptr) {
+            segment.modelElemStructureType = API_BasicStructure;
+            segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        }
+    }
+
+    return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_BeamSegment, &memo) == NoError;
 }
 
 bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo)
@@ -1613,7 +2358,11 @@ static bool TextureProjectionTypeFromString (const GS::UniString& s, API_Texture
     return false;
 }
 
-static GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID orientationType)
+// Named distinctly from CommandBase.hpp's HatchOrientationTypeToString/FromString (added
+// alongside the Slab cover-fill work): that pair has a different signature (returns the value
+// directly, with a fallback default) and cannot report an invalid string, whereas Morph's own
+// coverFillOrientation handling below specifically needs to reject an invalid type string outright.
+static GS::UniString MorphHatchOrientationTypeToString (API_HatchOrientationTypeID orientationType)
 {
     switch (orientationType) {
         case API_HatchRotated:   return "Rotated";
@@ -1624,7 +2373,7 @@ static GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID or
     }
 }
 
-static bool HatchOrientationTypeFromString (const GS::UniString& s, API_HatchOrientationTypeID& out)
+static bool MorphHatchOrientationTypeFromString (const GS::UniString& s, API_HatchOrientationTypeID& out)
 {
     if (s == "Global")     { out = API_HatchGlobal; return true; }
     if (s == "Rotated")    { out = API_HatchRotated; return true; }
@@ -2039,7 +2788,7 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
             GS::UniString typeStr;
             if (orientOS->Get ("type", typeStr)) {
                 API_HatchOrientationTypeID t;
-                if (!HatchOrientationTypeFromString (typeStr, t)) {
+                if (!MorphHatchOrientationTypeFromString (typeStr, t)) {
                     errorOut = "Invalid 'coverFillOrientation.type'.";
                     return false;
                 }
@@ -2269,7 +3018,7 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 
     {
         GS::ObjectState orientOS;
-        orientOS.Add ("type", HatchOrientationTypeToString (elem.morph.coverFillOrientation.type));
+        orientOS.Add ("type", MorphHatchOrientationTypeToString (elem.morph.coverFillOrientation.type));
         orientOS.Add ("origo", Create2DCoordinateObjectState (elem.morph.coverFillOrientation.origo));
         orientOS.Add ("matrix00", elem.morph.coverFillOrientation.matrix00);
         orientOS.Add ("matrix10", elem.morph.coverFillOrientation.matrix10);
@@ -2559,6 +3308,18 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "type": "string",
                             "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                        },
+                        "isWidthAndHeightLinked": {
+                            "type": "boolean",
+                            "description": "When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments."
+                        },
+                        "buildingMaterialId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Cross section building material. Applied to all segments."
+                        },
+                        "profileId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Switches the cross section to this custom extruded profile. Applied to all segments."
                         }
                     },
                     "additionalProperties": false,
@@ -2613,15 +3374,30 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 
     auto width = GetOptionalDouble (parameters, "width");
     auto height = GetOptionalDouble (parameters, "height");
+    bool isWidthAndHeightLinked = false;
+    const bool hasIsWidthAndHeightLinked = parameters.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
+    const GS::ObjectState* buildingMaterialIdOs = parameters.Get ("buildingMaterialId");
+    const GS::ObjectState* profileIdOs = parameters.Get ("profileId");
 
-    if ((width.HasValue () || height.HasValue ()) && memo.beamSegments != nullptr) {
+    if ((width.HasValue () || height.HasValue () || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr) && memo.beamSegments != nullptr) {
         GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
         for (GSSize i = 0; i < nSegments; ++i) {
+            API_AssemblySegmentData& segment = memo.beamSegments[i].assemblySegmentData;
+            if (hasIsWidthAndHeightLinked) {
+                segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
+            }
             if (width.HasValue ()) {
-                memo.beamSegments[i].assemblySegmentData.nominalWidth = width.Get ();
+                segment.nominalWidth = width.Get ();
             }
             if (height.HasValue ()) {
-                memo.beamSegments[i].assemblySegmentData.nominalHeight = height.Get ();
+                segment.nominalHeight = height.Get ();
+            }
+            if (profileIdOs != nullptr) {
+                segment.modelElemStructureType = API_ProfileStructure;
+                segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+            } else if (buildingMaterialIdOs != nullptr) {
+                segment.modelElemStructureType = API_BasicStructure;
+                segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
             }
         }
     }
@@ -4081,10 +4857,11 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
+                        "geometryType": { "type": "string", "enum": ["Straight", "Trapezoid"], "description": "The wall's plan outline shape (Polygonal is not settable here, read-only via GetDetailsOfElements). This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "bottomOffset": { "type": "number" },
                         "offset": { "type": "number" },
@@ -4094,7 +4871,28 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
-                        "profileId": { "$ref": "#/AttributeId" }
+                        "profileId": { "$ref": "#/AttributeId" },
+                        "referenceLineLocation": {
+                            "type": "string",
+                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"],
+                            "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin."
+                        },
+                        "profileType": { "type": "string", "enum": ["Normal", "Slanted", "Trapez"], "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). slantAlpha/slantBeta only have an effect once this is set to Slanted." },
+                        "slantAlpha": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
+                        "slantBeta": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
+                        "topOffset": { "type": "number", "description": "Only has an effect when relativeTopStory is non-zero." },
+                        "relativeTopStory": { "type": "number", "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
+                        "zoneRel": {
+                            "type": "string",
+                            "enum": ["Boundary", "ReduceArea", "None", "SubtractFromZone"]
+                        },
+                        "visibility": { "$ref": "#/StoryVisibility" },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically." },
+                        "referenceMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "oppositeMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -4179,7 +4977,37 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
                         "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" }
+                        "verticalCurveHeight": { "type": "number" },
+                        "beamShape": { "type": "string", "enum": ["Straight", "HorizontallyCurved", "VerticallyCurved"] },
+                        "isSlanted": { "type": "boolean" },
+                        "isFlipped": { "type": "boolean" },
+                        "profileAngle": { "type": "number" },
+                        "anchorPoint": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
+                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
+                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material. Applied to all segments." },
+                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile. Applied to all segments." },
+                        "holes": {
+                            "type": "array",
+                            "description": "Replaces all holes currently placed on the beam.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "type": { "type": "string", "enum": ["Rectangular", "Circular"] },
+                                    "showContour": { "type": "boolean" },
+                                    "centerX": { "type": "number" },
+                                    "centerZ": { "type": "number" },
+                                    "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                                    "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Only used for the Rectangular type." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["type", "centerX", "centerZ", "width"]
+                            }
+                        },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "coverFill": { "$ref": "#/CoverFill" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -4220,14 +5048,68 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            const bool changed = ApplyBeamDetails (element, mask, item);
-            if (!changed) {
+            bool changed = ApplyBeamDetails (element, mask, item);
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
+
+            GS::Array<GS::ObjectState> holes;
+            if (item.Get ("holes", holes)) {
+                API_ElementMemo memo = {};
+                const GS::OnExit cleanup ([&]() { ACAPI_DisposeElemMemoHdls (&memo); });
+                const GSSize nHoles = holes.GetSize ();
+                memo.beamHoles = reinterpret_cast<API_Beam_Hole**> (BMAllocateHandle (GS::Max<GSSize> (nHoles, 1) * sizeof (API_Beam_Hole), ALLOCATE_CLEAR, 0));
+                if (memo.beamHoles == nullptr) {
+                    results.Push (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate memory for beam holes."));
+                    continue;
+                }
+                for (GSIndex i = 0; i < nHoles; ++i) {
+                    const GS::ObjectState& holeOs = holes[i];
+                    API_Beam_Hole& hole = (*memo.beamHoles)[i];
+                    hole = {};
+                    hole.holeID = static_cast<Int32> (i + 1);
+                    GS::UniString typeStr;
+                    holeOs.Get ("type", typeStr);
+                    hole.holeType = (typeStr == "Circular") ? APIBHole_Circular : APIBHole_Rectangular;
+                    holeOs.Get ("showContour", hole.holeContureOn);
+                    holeOs.Get ("centerX", hole.centerx);
+                    holeOs.Get ("centerZ", hole.centerz);
+                    holeOs.Get ("width", hole.width);
+                    holeOs.Get ("height", hole.height);
+                }
+
+                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_BeamHole, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify beam holes."));
+                    continue;
+                }
+                if (hasSectionFields) {
+                    bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
+                    results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+                    continue;
+                }
+                results.Push (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
+            if (!changed && !hasSectionFields) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No beam fields to modify."));
                 continue;
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify beam."));
+            if (changed) {
+                err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify beam."));
+                    continue;
+                }
+            }
+
+            if (hasSectionFields) {
+                bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
+                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+                continue;
+            }
+
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }
@@ -4261,6 +5143,10 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
+                        "referencePlaneLocation": {
+                            "type": "string",
+                            "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                        },
                         "polygonOutline": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
@@ -4270,7 +5156,16 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": { "$ref": "#/Holes2D" }
+                        "holes": {
+                            "$ref": "#/Holes2D",
+                            "description": "Can be given on its own, without polygonOutline, to add/remove/clear holes in place (an empty array clears all holes) - the slab's current outline is reused unchanged."
+                        },
+                        "topMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "bottomMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "floorFill": { "$ref": "#/FloorFill" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -4321,10 +5216,27 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             GS::Array<GS::ObjectState> polygonOutline;
-            if (item.Get ("polygonOutline", polygonOutline)) {
-                if (polygonOutline.GetSize () < 3) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
-                    continue;
+            const bool hasNewOutline = item.Get ("polygonOutline", polygonOutline);
+            GS::Array<GS::ObjectState> holes;
+            const bool hasHolesField = item.Get ("holes", holes);
+            if (hasNewOutline || hasHolesField) {
+                // holes can be given on its own (no polygonOutline) to add/remove/clear holes
+                // in place - including an explicit empty array to clear all holes - without
+                // forcing the caller to resend the (possibly large) outline unchanged. Previously
+                // this whole branch was gated on polygonOutline alone, so a holes-only request
+                // fell through to "No slab fields to modify." below (issue #452).
+                GS::Array<GS::ObjectState> polygonArcs;
+                if (hasNewOutline) {
+                    if (polygonOutline.GetSize () < 3) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
+                        continue;
+                    }
+                    item.Get ("polygonArcs", polygonArcs);
+                } else {
+                    GS::ObjectState currentGeometry;
+                    AddPolygonWithHolesFromMemoCoords (element.header.guid, currentGeometry, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+                    currentGeometry.Get ("polygonOutline", polygonOutline);
+                    currentGeometry.Get ("polygonArcs", polygonArcs);
                 }
 
                 API_ElementMemo memo = {};
@@ -4333,17 +5245,28 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                 });
                 ACAPI_Element_GetMemo (element.header.guid, &memo);
 
-                GS::Array<GS::ObjectState> polygonArcs;
-                GS::Array<GS::ObjectState> holes;
-                item.Get ("polygonArcs", polygonArcs);
-                item.Get ("holes", holes);
-                auto error = BuildSlabMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
+                auto error = ApplySlabPolygonChange (memo, element.slab.sideMat, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
                 }
 
-                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, true);
+                // Non-geometry field changes (thickness/level/etc, accumulated into mask above)
+                // are applied first via ACAPI_Element_Change; the polygon itself goes through
+                // ACAPI_Element_ChangeMemo, matching the DevKit's own reference example
+                // (ApplySlabPolygonChange mutates the memo via Graphisoft's polygon-editing
+                // primitives, not a from-scratch replacement, so element.slab.poly's counts are
+                // deliberately not touched here).
+                if (changed) {
+                    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Failed to modify slab."));
+                        continue;
+                    }
+                }
+
+                API_Guid slabGuid = element.header.guid;
+                err = ACAPI_Element_ChangeMemo (slabGuid, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, &memo);
                 results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify slab geometry."));
                 continue;
             }
@@ -4672,9 +5595,26 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "elementId": { "$ref": "#/ElementId" },
                         "origin": { "$ref": "#/Coordinate2D" },
                         "zCoordinate": { "type": "number" },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
                         "bottomOffset": { "type": "number" },
-                        "axisRotationAngle": { "type": "number" }
+                        "axisRotationAngle": { "type": "number" },
+                        "coreAnchor": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "isSlanted": { "type": "boolean" },
+                        "slantAngle": { "type": "number" },
+                        "slantDirectionAngle": { "type": "number" },
+                        "isFlipped": { "type": "boolean", "description": "Has no visible effect on a circular column (circleBased cross section) - Archicad ignores it there." },
+                        "wrapping": { "type": "boolean" },
+                        "topOffset": { "type": "number" },
+                        "relativeTopStory": { "type": "number", "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column. Applied to all segments." },
+                        "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments." },
+                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and depth equal and setting one changes the other - set to false first to give width/depth independent values. Applied to all segments." },
+                        "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
+                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
+                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "coverFill": { "$ref": "#/CoverFill" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -4718,13 +5658,27 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             const bool changed = ApplyColumnDetails (element, mask, item, stories);
-            if (!changed) {
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
+            if (!changed && !hasSectionFields) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No column fields to modify."));
                 continue;
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify column."));
+            if (changed) {
+                err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify column."));
+                    continue;
+                }
+            }
+
+            if (hasSectionFields) {
+                bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item);
+                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section."));
+                continue;
+            }
+
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }

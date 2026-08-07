@@ -163,6 +163,22 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                             "description": "Optional anchor point of the column core on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         },
+                        "circleBased": {
+                            "type": "boolean",
+                            "description": "True for a round column cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments."
+                        },
+                        "isWidthAndHeightLinked": {
+                            "type": "boolean",
+                            "description": "When true (the default), Archicad keeps width and depth equal and setting one changes the other - set to false to give width/depth independent values. Applied to all segments."
+                        },
+                        "buildingMaterialId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments."
+                        },
+                        "profileId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -208,14 +224,36 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     bool hasWidth = parameters.Get ("width", width);
     bool hasDepth = parameters.Get ("depth", depth);
 
-    if ((hasWidth || hasDepth) && memo.columnSegments != nullptr) {
+    bool circleBased = false;
+    const bool hasCircleBased = parameters.Get ("circleBased", circleBased);
+    bool isWidthAndHeightLinked = false;
+    const bool hasIsWidthAndHeightLinked = parameters.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
+    const GS::ObjectState* buildingMaterialIdOs = parameters.Get ("buildingMaterialId");
+    const GS::ObjectState* profileIdOs = parameters.Get ("profileId");
+
+    if ((hasWidth || hasDepth || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr) && memo.columnSegments != nullptr) {
         GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
         for (GSSize i = 0; i < nSegments; ++i) {
+            API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
+            if (hasIsWidthAndHeightLinked) {
+                segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
+            }
             if (hasWidth) {
-                memo.columnSegments[i].assemblySegmentData.nominalWidth = width;
+                segment.nominalWidth = width;
             }
             if (hasDepth) {
-                memo.columnSegments[i].assemblySegmentData.nominalHeight = depth;
+                segment.nominalHeight = depth;
+            }
+            if (hasCircleBased) {
+                segment.circleBased = circleBased;
+            }
+            if (profileIdOs != nullptr) {
+                segment.modelElemStructureType = API_ProfileStructure;
+                segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+                segment.circleBased = false;
+            } else if (buildingMaterialIdOs != nullptr) {
+                segment.modelElemStructureType = API_BasicStructure;
+                segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
             }
         }
     }

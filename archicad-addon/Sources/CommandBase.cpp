@@ -188,6 +188,376 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
     return polygons;
 }
 
+GS::UniString AnchorIdToString (API_AnchorID anchorId)
+{
+    switch (anchorId) {
+        case APIAnc_LT: return "TopLeft";
+        case APIAnc_MT: return "TopCenter";
+        case APIAnc_RT: return "TopRight";
+        case APIAnc_LM: return "MiddleLeft";
+        case APIAnc_MM: return "Center";
+        case APIAnc_RM: return "MiddleRight";
+        case APIAnc_LB: return "BottomLeft";
+        case APIAnc_MB: return "BottomCenter";
+        case APIAnc_RB: return "BottomRight";
+        default:        return "Center";
+    }
+}
+
+API_AnchorID AnchorIdFromString (const GS::UniString& str, API_AnchorID defaultValue)
+{
+    if (str == "TopLeft")      return APIAnc_LT;
+    if (str == "TopCenter")    return APIAnc_MT;
+    if (str == "TopRight")     return APIAnc_RT;
+    if (str == "MiddleLeft")   return APIAnc_LM;
+    if (str == "Center")       return APIAnc_MM;
+    if (str == "MiddleRight")  return APIAnc_RM;
+    if (str == "BottomLeft")   return APIAnc_LB;
+    if (str == "BottomCenter") return APIAnc_MB;
+    if (str == "BottomRight")  return APIAnc_RB;
+    return defaultValue;
+}
+
+GS::UniString WallReferenceLineLocationToString (API_WallReferenceLineLocationID location)
+{
+    switch (location) {
+        case APIWallRefLine_Outside:     return "Outside";
+        case APIWallRefLine_Center:      return "Center";
+        case APIWallRefLine_Inside:      return "Inside";
+        case APIWallRefLine_CoreOutside: return "CoreOutside";
+        case APIWallRefLine_CoreCenter:  return "CoreCenter";
+        case APIWallRefLine_CoreInside:  return "CoreInside";
+        default:                         return "Outside";
+    }
+}
+
+API_WallReferenceLineLocationID WallReferenceLineLocationFromString (const GS::UniString& str, API_WallReferenceLineLocationID defaultValue)
+{
+    if (str == "Outside")     return APIWallRefLine_Outside;
+    if (str == "Center")      return APIWallRefLine_Center;
+    if (str == "Inside")      return APIWallRefLine_Inside;
+    if (str == "CoreOutside") return APIWallRefLine_CoreOutside;
+    if (str == "CoreCenter")  return APIWallRefLine_CoreCenter;
+    if (str == "CoreInside")  return APIWallRefLine_CoreInside;
+    return defaultValue;
+}
+
+GS::UniString ZoneRelToString (API_ZoneRelID zoneRel)
+{
+    switch (zoneRel) {
+        case APIZRel_Boundary:        return "Boundary";
+        case APIZRel_ReduceArea:      return "ReduceArea";
+        case APIZRel_None:            return "None";
+#ifdef ServerMainVers_2700
+        case APIZRel_SubtractFromZone:return "SubtractFromZone";
+#endif
+        default:                      return "Boundary";
+    }
+}
+
+API_ZoneRelID ZoneRelFromString (const GS::UniString& str, API_ZoneRelID defaultValue)
+{
+    if (str == "Boundary")         return APIZRel_Boundary;
+    if (str == "ReduceArea")       return APIZRel_ReduceArea;
+    if (str == "None")             return APIZRel_None;
+#ifdef ServerMainVers_2700
+    if (str == "SubtractFromZone") return APIZRel_SubtractFromZone;
+#endif
+    return defaultValue;
+}
+
+GS::ObjectState CreateStoryVisibilityObjectState (const API_StoryVisibility& visibility)
+{
+    return GS::ObjectState (
+        "showOnHome", visibility.showOnHome,
+        "showAllAbove", visibility.showAllAbove,
+        "showAllBelow", visibility.showAllBelow,
+        "showRelAbove", visibility.showRelAbove,
+        "showRelBelow", visibility.showRelBelow);
+}
+
+API_StoryVisibility GetStoryVisibilityFromObjectState (const GS::ObjectState& os)
+{
+    API_StoryVisibility visibility = {};
+    os.Get ("showOnHome", visibility.showOnHome);
+    os.Get ("showAllAbove", visibility.showAllAbove);
+    os.Get ("showAllBelow", visibility.showAllBelow);
+    short showRelAbove = 0;
+    if (os.Get ("showRelAbove", showRelAbove)) {
+        visibility.showRelAbove = showRelAbove;
+    }
+    short showRelBelow = 0;
+    if (os.Get ("showRelBelow", showRelBelow)) {
+        visibility.showRelBelow = showRelBelow;
+    }
+    return visibility;
+}
+
+GS::UniString SlabReferencePlaneLocationToString (API_SlabReferencePlaneLocationID location)
+{
+    switch (location) {
+        case APISlabRefPlane_Top:        return "Top";
+        case APISlabRefPlane_CoreTop:    return "CoreTop";
+        case APISlabRefPlane_CoreBottom: return "CoreBottom";
+        case APISlabRefPlane_Bottom:     return "Bottom";
+        default:                         return "Top";
+    }
+}
+
+API_SlabReferencePlaneLocationID SlabReferencePlaneLocationFromString (const GS::UniString& str, API_SlabReferencePlaneLocationID defaultValue)
+{
+    if (str == "Top")        return APISlabRefPlane_Top;
+    if (str == "CoreTop")    return APISlabRefPlane_CoreTop;
+    if (str == "CoreBottom") return APISlabRefPlane_CoreBottom;
+    if (str == "Bottom")     return APISlabRefPlane_Bottom;
+    return defaultValue;
+}
+
+GS::ObjectState CreateOverriddenMaterialObjectState (const API_OverriddenAttribute& attr)
+{
+#ifdef ServerMainVers_2700
+    const bool overridden = attr.hasValue;
+    const API_AttributeIndex index = attr.value;
+#else
+    const bool overridden = attr.overridden;
+    const API_AttributeIndex index = attr.attributeIndex;
+#endif
+    GS::ObjectState os ("overridden", overridden);
+    if (overridden) {
+        os.Add ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, index)));
+    }
+    return os;
+}
+
+API_OverriddenAttribute GetOverriddenMaterialFromObjectState (const GS::ObjectState& os)
+{
+    API_OverriddenAttribute attr = {};
+    bool overridden = false;
+    os.Get ("overridden", overridden);
+
+    API_AttributeIndex index = {};
+    GS::ObjectState attributeIdOs;
+    if (overridden && os.Get ("attributeId", attributeIdOs)) {
+        index = GetAttributeIndexFromGuid (API_MaterialID, GetGuidFromObjectState (attributeIdOs));
+    }
+
+#ifdef ServerMainVers_2700
+    attr.hasValue = overridden;
+    attr.value = index;
+#else
+    attr.overridden = overridden;
+    attr.attributeIndex = index;
+#endif
+    return attr;
+}
+
+#ifdef ServerMainVers_2700
+GS::ObjectState CreateOverriddenPenObjectState (const API_OverriddenPen& pen)
+{
+    GS::ObjectState os ("overridden", pen.hasValue);
+    if (pen.hasValue) {
+        os.Add ("penIndex", static_cast<Int32> (pen.value));
+    }
+    return os;
+}
+
+API_OverriddenPen GetOverriddenPenFromObjectState (const GS::ObjectState& os)
+{
+    API_OverriddenPen pen = {};
+    bool overridden = false;
+    os.Get ("overridden", overridden);
+    Int32 penIndex = 0;
+    if (overridden && os.Get ("penIndex", penIndex)) {
+        pen = static_cast<API_PenIndex> (penIndex);
+    } else {
+        pen = APINullValue;
+    }
+    return pen;
+}
+#endif
+
+GS::UniString CoverFillTransformationTypeToString (API_CoverFillTransformationTypeID type)
+{
+    switch (type) {
+        case API_CoverFillTransformationType_Rotated:   return "Rotated";
+        case API_CoverFillTransformationType_Distorted: return "Distorted";
+        case API_CoverFillTransformationType_Global:
+        default:                                        return "Global";
+    }
+}
+
+API_CoverFillTransformationTypeID CoverFillTransformationTypeFromString (const GS::UniString& str, API_CoverFillTransformationTypeID defaultValue)
+{
+    if (str == "Rotated")   return API_CoverFillTransformationType_Rotated;
+    if (str == "Distorted") return API_CoverFillTransformationType_Distorted;
+    if (str == "Global")    return API_CoverFillTransformationType_Global;
+    return defaultValue;
+}
+
+GS::ObjectState CreateCoverFillTransformationObjectState (const API_CoverFillTransformation& transformation)
+{
+    GS::ObjectState os;
+    os.Add ("origin", Create2DCoordinateObjectState (transformation.origo));
+    os.Add ("xAxis", GS::ObjectState ("x", transformation.xAxis.x, "y", transformation.xAxis.y));
+    os.Add ("yAxis", GS::ObjectState ("x", transformation.yAxis.x, "y", transformation.yAxis.y));
+    return os;
+}
+
+API_CoverFillTransformation GetCoverFillTransformationFromObjectState (const GS::ObjectState& os)
+{
+    API_CoverFillTransformation transformation = {};
+    GS::ObjectState originOs;
+    if (os.Get ("origin", originOs)) {
+        transformation.origo = Get2DCoordinateFromObjectState (originOs);
+    }
+    GS::ObjectState xAxisOs;
+    if (os.Get ("xAxis", xAxisOs)) {
+        xAxisOs.Get ("x", transformation.xAxis.x);
+        xAxisOs.Get ("y", transformation.xAxis.y);
+    }
+    GS::ObjectState yAxisOs;
+    if (os.Get ("yAxis", yAxisOs)) {
+        yAxisOs.Get ("x", transformation.yAxis.x);
+        yAxisOs.Get ("y", transformation.yAxis.y);
+    }
+    return transformation;
+}
+
+GS::ObjectState CreateCoverFillObjectState (bool use, bool useFromSurface, bool orientationComesFrom3D, API_AttributeIndex fillIndex, short foregroundPen, short backgroundPen, API_CoverFillTransformationTypeID transformationType, const API_CoverFillTransformation& transformation)
+{
+    GS::ObjectState os;
+    os.Add ("use", use);
+    os.Add ("useFromSurface", useFromSurface);
+    os.Add ("orientationComesFrom3D", orientationComesFrom3D);
+    os.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, fillIndex)));
+    os.Add ("foregroundPen", foregroundPen);
+    os.Add ("backgroundPen", backgroundPen);
+    os.Add ("transformationType", CoverFillTransformationTypeToString (transformationType));
+    os.Add ("transformation", CreateCoverFillTransformationObjectState (transformation));
+    return os;
+}
+
+GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type)
+{
+    switch (type) {
+        case API_HatchRotated:   return "Rotated";
+        case API_HatchDistorted: return "Distorted";
+        case API_HatchCentered:  return "Centered";
+        case API_HatchGlobal:
+        default:                 return "Global";
+    }
+}
+
+API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue)
+{
+    if (str == "Rotated")   return API_HatchRotated;
+    if (str == "Distorted") return API_HatchDistorted;
+    if (str == "Centered")  return API_HatchCentered;
+    if (str == "Global")    return API_HatchGlobal;
+    return defaultValue;
+}
+
+GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation)
+{
+    GS::ObjectState os;
+    os.Add ("type", HatchOrientationTypeToString (orientation.type));
+    os.Add ("origin", Create2DCoordinateObjectState (orientation.origo));
+    os.Add ("matrix00", orientation.matrix00);
+    os.Add ("matrix10", orientation.matrix10);
+    os.Add ("matrix01", orientation.matrix01);
+    os.Add ("matrix11", orientation.matrix11);
+    os.Add ("innerRadius", orientation.innerRadius);
+    return os;
+}
+
+API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os)
+{
+    API_HatchOrientation orientation = {};
+    GS::UniString typeStr;
+    if (os.Get ("type", typeStr)) {
+        orientation.type = HatchOrientationTypeFromString (typeStr);
+    }
+    GS::ObjectState originOs;
+    if (os.Get ("origin", originOs)) {
+        orientation.origo = Get2DCoordinateFromObjectState (originOs);
+    }
+    os.Get ("matrix00", orientation.matrix00);
+    os.Get ("matrix10", orientation.matrix10);
+    os.Get ("matrix01", orientation.matrix01);
+    os.Get ("matrix11", orientation.matrix11);
+    os.Get ("innerRadius", orientation.innerRadius);
+    return orientation;
+}
+
+void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName)
+{
+    const auto& holes = os.AddList<GS::ObjectState> (holesFieldName);
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_BeamHole) != NoError || memo.beamHoles == nullptr) {
+        return;
+    }
+
+    const GSSize nHoles = BMhGetSize (reinterpret_cast<GSHandle> (memo.beamHoles)) / sizeof (API_Beam_Hole);
+    for (GSIndex i = 0; i < nHoles; ++i) {
+        const API_Beam_Hole& hole = (*memo.beamHoles)[i];
+        holes (GS::ObjectState (
+            "holeId", hole.holeID,
+            "type", hole.holeType == APIBHole_Circular ? GS::UniString ("Circular") : GS::UniString ("Rectangular"),
+            "showContour", hole.holeContureOn,
+            "centerX", hole.centerx,
+            "centerZ", hole.centerz,
+            "width", hole.width,
+            "height", hole.height));
+    }
+}
+
+void AddColumnSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+        return;
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+    if (nSegments == 0) {
+        return;
+    }
+    const API_AssemblySegmentData& segment = memo.columnSegments[0].assemblySegmentData;
+    os.Add ("width", segment.nominalWidth);
+    os.Add ("depth", segment.nominalHeight);
+    os.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+    os.Add ("circleBased", segment.circleBased);
+    if (segment.modelElemStructureType == API_BasicStructure) {
+        os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
+    } else if (segment.modelElemStructureType == API_ProfileStructure) {
+        os.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
+    }
+}
+
+void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_BeamSegment) != NoError || memo.beamSegments == nullptr) {
+        return;
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    if (nSegments == 0) {
+        return;
+    }
+    const API_AssemblySegmentData& segment = memo.beamSegments[0].assemblySegmentData;
+    os.Add ("width", segment.nominalWidth);
+    os.Add ("height", segment.nominalHeight);
+    os.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+    if (segment.modelElemStructureType == API_BasicStructure) {
+        os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
+    } else if (segment.modelElemStructureType == API_ProfileStructure) {
+        os.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
+    }
+}
+
 void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName)
 {
     const auto& coords = os.AddList<GS::ObjectState> (coordsFieldName);
@@ -538,16 +908,7 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
 
 short ParseAnchorPointString (const GS::UniString& anchorPoint)
 {
-    if (anchorPoint == "TopLeft")      return 0;
-    if (anchorPoint == "TopCenter")    return 1;
-    if (anchorPoint == "TopRight")     return 2;
-    if (anchorPoint == "MiddleLeft")   return 3;
-    if (anchorPoint == "Center")       return 4;
-    if (anchorPoint == "MiddleRight")  return 5;
-    if (anchorPoint == "BottomLeft")   return 6;
-    if (anchorPoint == "BottomCenter") return 7;
-    if (anchorPoint == "BottomRight")  return 8;
-    return 4;
+    return static_cast<short> (AnchorIdFromString (anchorPoint));
 }
 
 API_Guid GetAttributeGuidFromIndex (API_AttrTypeID typeID, API_AttributeIndex index)
