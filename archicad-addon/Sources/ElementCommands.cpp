@@ -739,10 +739,43 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 if (StructureTypeToString (elem.wall.modelElemStructureType) == "Composite") {
                     typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, elem.wall.composite)));
+                } else if (StructureTypeToString (elem.wall.modelElemStructureType) == "Basic") {
+                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.wall.buildingMaterial)));
+                } else if (StructureTypeToString (elem.wall.modelElemStructureType) == "Profile") {
+                    typeSpecificDetails.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, elem.wall.profileAttr)));
                 }
+                typeSpecificDetails.Add ("referenceLineLocation", WallReferenceLineLocationToString (elem.wall.referenceLineLocation));
+                {
+                    const char* profileTypeStr = "Normal";
+                    if (elem.wall.profileType == APISect_Slanted) {
+                        profileTypeStr = "Slanted";
+                    } else if (elem.wall.profileType == APISect_Trapez) {
+                        profileTypeStr = "Trapez";
+                    } else if (elem.wall.profileType == APISect_Poly) {
+                        profileTypeStr = "Poly";
+                    }
+                    typeSpecificDetails.Add ("profileType", profileTypeStr);
+                }
+                typeSpecificDetails.Add ("slantAlpha", elem.wall.slantAlpha);
+                typeSpecificDetails.Add ("slantBeta", elem.wall.slantBeta);
+                typeSpecificDetails.Add ("topOffset", elem.wall.topOffset);
+                typeSpecificDetails.Add ("relativeTopStory", elem.wall.relativeTopStory);
+                typeSpecificDetails.Add ("zoneRel", ZoneRelToString (elem.wall.zoneRel));
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.wall.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.wall.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("referenceMaterial", CreateOverriddenMaterialObjectState (elem.wall.refMat));
+                typeSpecificDetails.Add ("oppositeMaterial", CreateOverriddenMaterialObjectState (elem.wall.oppMat));
+                typeSpecificDetails.Add ("sideMaterial", CreateOverriddenMaterialObjectState (elem.wall.sidMat));
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.wall.cutFillPen));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.wall.cutFillBackgroundPen));
+#else
+                typeSpecificDetails.Add ("cutFillPen", GS::ObjectState ("overridden", false));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", GS::ObjectState ("overridden", false));
+#endif
                 break;
 
-            case API_BeamID:
+            case API_BeamID: {
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.beam.level, stories));
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.beam.begC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.beam.endC));
@@ -751,7 +784,31 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("slantAngle", elem.beam.slantAngle);
                 typeSpecificDetails.Add ("arcAngle", elem.beam.curveAngle);
                 typeSpecificDetails.Add ("verticalCurveHeight", elem.beam.verticalCurveHeight);
-                break;
+                const char* beamShapeStr = "Straight";
+                if (elem.beam.beamShape == API_HorizontallyCurvedBeam) {
+                    beamShapeStr = "HorizontallyCurved";
+                } else if (elem.beam.beamShape == API_VerticallyCurvedBeam) {
+                    beamShapeStr = "VerticallyCurved";
+                }
+                typeSpecificDetails.Add ("beamShape", beamShapeStr);
+                typeSpecificDetails.Add ("isSlanted", elem.beam.isSlanted);
+                typeSpecificDetails.Add ("isFlipped", elem.beam.isFlipped);
+                typeSpecificDetails.Add ("profileAngle", elem.beam.profileAngle);
+                typeSpecificDetails.Add ("anchorPoint", AnchorIdToString (static_cast<API_AnchorID> (elem.beam.anchorPoint)));
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.beam.cutFillPen));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.beam.cutFillBackgroundPen));
+#else
+                typeSpecificDetails.Add ("cutFillPen", GS::ObjectState ("overridden", false));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", GS::ObjectState ("overridden", false));
+#endif
+                typeSpecificDetails.Add ("coverFill", CreateCoverFillObjectState (
+                    elem.beam.useCoverFill, elem.beam.useCoverFillFromSurface, elem.beam.coverFillOrientationComesFrom3D,
+                    elem.beam.coverFillType, elem.beam.coverFillForegroundPen, elem.beam.coverFillBackgroundPen,
+                    elem.beam.coverFillTransformationType, elem.beam.coverFillTransformation));
+                AddBeamHolesFromMemo (elem.header.guid, typeSpecificDetails, "holes");
+                AddBeamSectionFromMemo (elem.header.guid, typeSpecificDetails);
+            } break;
 
             case API_SlabID:
                 typeSpecificDetails.Add ("structureType", StructureTypeToString (elem.slab.modelElemStructureType));
@@ -759,6 +816,32 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("level", elem.slab.level);
                 typeSpecificDetails.Add ("offsetFromTop", elem.slab.offsetFromTop);
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.slab.level, stories));
+                typeSpecificDetails.Add ("referencePlaneLocation", SlabReferencePlaneLocationToString (elem.slab.referencePlaneLocation));
+                if (StructureTypeToString (elem.slab.modelElemStructureType) == "Composite") {
+                    typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, elem.slab.composite)));
+                } else {
+                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.slab.buildingMaterial)));
+                }
+                typeSpecificDetails.Add ("topMaterial", CreateOverriddenMaterialObjectState (elem.slab.topMat));
+                typeSpecificDetails.Add ("sideMaterial", CreateOverriddenMaterialObjectState (elem.slab.sideMat));
+                typeSpecificDetails.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (elem.slab.botMat));
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.slab.cutFillPen));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.slab.cutFillBackgroundPen));
+#else
+                typeSpecificDetails.Add ("cutFillPen", GS::ObjectState ("overridden", false));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", GS::ObjectState ("overridden", false));
+#endif
+                {
+                    GS::ObjectState floorFillOs;
+                    floorFillOs.Add ("use", elem.slab.useFloorFill);
+                    floorFillOs.Add ("foregroundPen", elem.slab.floorFillPen);
+                    floorFillOs.Add ("backgroundPen", elem.slab.floorFillBGPen);
+                    floorFillOs.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, elem.slab.floorFillInd)));
+                    floorFillOs.Add ("use3DHatching", elem.slab.use3DHatching);
+                    floorFillOs.Add ("orientation", CreateHatchOrientationObjectState (elem.slab.hatchOrientation));
+                    typeSpecificDetails.Add ("floorFill", floorFillOs);
+                }
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -776,9 +859,30 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_ColumnID:
                 typeSpecificDetails.Add ("origin", Create2DCoordinateObjectState (elem.column.origoPos));
+                typeSpecificDetails.Add ("coreAnchor", AnchorIdToString (static_cast<API_AnchorID> (elem.column.coreAnchor)));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.column.bottomOffset, stories));
                 typeSpecificDetails.Add ("height", elem.column.height);
                 typeSpecificDetails.Add ("bottomOffset", elem.column.bottomOffset);
+                typeSpecificDetails.Add ("axisRotationAngle", elem.column.axisRotationAngle);
+                typeSpecificDetails.Add ("isSlanted", elem.column.isSlanted);
+                typeSpecificDetails.Add ("slantAngle", elem.column.slantAngle);
+                typeSpecificDetails.Add ("slantDirectionAngle", elem.column.slantDirectionAngle);
+                typeSpecificDetails.Add ("isFlipped", elem.column.isFlipped);
+                typeSpecificDetails.Add ("wrapping", elem.column.wrapping);
+                typeSpecificDetails.Add ("topOffset", elem.column.topOffset);
+                typeSpecificDetails.Add ("relativeTopStory", elem.column.relativeTopStory);
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.column.cutFillPen));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.column.cutFillBackgroundPen));
+#else
+                typeSpecificDetails.Add ("cutFillPen", GS::ObjectState ("overridden", false));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", GS::ObjectState ("overridden", false));
+#endif
+                typeSpecificDetails.Add ("coverFill", CreateCoverFillObjectState (
+                    elem.column.useCoverFill, elem.column.useCoverFillFromSurface, elem.column.coverFillOrientationComesFrom3D,
+                    elem.column.coverFillType, elem.column.coverFillForegroundPen, elem.column.coverFillBackgroundPen,
+                    elem.column.coverFillTransformationType, elem.column.coverFillTransformation));
+                AddColumnSectionFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_DoorID:
@@ -2269,10 +2373,12 @@ GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchem
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/Elements",
+                "description": "The owner (host) elements whose connected elements are collected, e.g. Walls, Curtain Walls, Stairs or Railings."
             },
             "connectedElementType": {
-                "$ref": "#/ElementType"
+                "$ref": "#/ElementType",
+                "description": "The type of the connected elements to collect, e.g. Window or Door for a Wall owner, or a subelement type of a Curtain Wall, Stair or Railing owner."
             }
         },
         "additionalProperties": false,
