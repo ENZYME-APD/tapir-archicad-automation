@@ -4547,6 +4547,16 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
+            // With a section/elevation window active, ACAPI_Element_Create can report success
+            // and hand back a GUID although no dimension was created in any database (#510).
+            // Verify the element really exists before reporting it to the caller.
+            API_Element createdElement = {};
+            createdElement.header.guid = element.header.guid;
+            if (ACAPI_Element_Get (&createdElement) != NoError) {
+                elements.Push (CreateErrorResponse (APIERR_GENERAL, "The dimension was not created (is a section or elevation window active? Activate a floor plan window and retry)."));
+                continue;
+            }
+
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
@@ -4831,6 +4841,17 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
                 elements.Push (CreateErrorResponse (err, "Failed to create wall thickness dimension."));
                 continue;
             }
+
+            // Same ghost-guid failure mode as CreateAssociativeDimensions (#510): with a
+            // section/elevation window active the create reports success although nothing
+            // was created in any database. Verify before reporting the id.
+            API_Element createdElement = {};
+            createdElement.header.guid = element.header.guid;
+            if (ACAPI_Element_Get (&createdElement) != NoError) {
+                elements.Push (CreateErrorResponse (APIERR_GENERAL, "The dimension was not created (is a section or elevation window active? Activate a floor plan window and retry)."));
+                continue;
+            }
+
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
