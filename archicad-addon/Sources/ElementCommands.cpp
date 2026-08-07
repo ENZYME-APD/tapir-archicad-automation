@@ -2269,10 +2269,12 @@ GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchem
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/Elements",
+                "description": "The owner (host) elements whose connected elements are collected, e.g. Walls, Curtain Walls, Stairs or Railings."
             },
             "connectedElementType": {
-                "$ref": "#/ElementType"
+                "$ref": "#/ElementType",
+                "description": "The type of the connected elements to collect, e.g. Window or Door for a Wall owner, or a subelement type of a Curtain Wall, Stair or Railing owner."
             }
         },
         "additionalProperties": false,

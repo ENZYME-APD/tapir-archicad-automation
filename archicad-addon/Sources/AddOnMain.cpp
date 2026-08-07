@@ -321,7 +321,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetConnectedElementsCommand> (
             elementCommands, "1.1.4",
-            "Gets connected elements of the given elements."
+            "Gets the elements hosted by (connected to) the given owner elements, filtered to the given element type: for example the Windows or Doors of a Wall, the frames, panels, junctions and accessories of a Curtain Wall, the risers, treads and structures of a Stair, or the posts, rails and panels of a Railing."
         );
         err |= RegisterCommand<GetRelationsOfElementsCommand> (
             elementCommands, "1.5.7",
