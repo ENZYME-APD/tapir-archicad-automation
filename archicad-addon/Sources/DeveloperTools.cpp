@@ -124,7 +124,7 @@ GS::Optional<GS::UniString> GenerateDocumentationCommand::GetInputParametersSche
     })";
 }
 
-GS::Optional<GS::UniString> GenerateDocumentationCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GenerateDocumentationCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"

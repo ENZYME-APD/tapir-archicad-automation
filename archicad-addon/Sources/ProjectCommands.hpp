@@ -7,7 +7,7 @@ class GetProjectInfoCommand : public CommandBase
 public:
     GetProjectInfoCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -16,7 +16,7 @@ class GetProjectInfoFieldsCommand : public CommandBase
 public:
     GetProjectInfoFieldsCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -35,7 +35,7 @@ public:
     CreateProjectInfoFieldsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -45,7 +45,7 @@ public:
     DeleteProjectInfoFieldsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -54,7 +54,7 @@ class GetHotlinksCommand : public CommandBase
 public:
     GetHotlinksCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -63,7 +63,7 @@ class GetStoriesCommand : public CommandBase
 public:
     GetStoriesCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -73,7 +73,7 @@ public:
     SetStoriesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -83,7 +83,7 @@ public:
     OpenProjectCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -92,7 +92,7 @@ class CloseProjectCommand : public CommandBase
 public:
     CloseProjectCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -101,7 +101,7 @@ class SaveProjectCommand : public CommandBase
 public:
     SaveProjectCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -110,7 +110,7 @@ class GetGeoLocationCommand : public CommandBase
 public:
     GetGeoLocationCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -120,7 +120,7 @@ public:
     SetGeoLocationCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -129,7 +129,7 @@ class GetCalculationUnitsCommand : public CommandBase
 public:
     GetCalculationUnitsCommand ();
     virtual GS::String GetName () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -139,7 +139,7 @@ public:
     IFCFileOperationCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -149,7 +149,7 @@ public:
     PrintViewCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -159,6 +159,6 @@ public:
     RebuildViewCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };

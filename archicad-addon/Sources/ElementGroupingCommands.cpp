@@ -49,7 +49,7 @@ GS::Optional<GS::UniString> CreateGroupsCommand::GetInputParametersSchema() cons
     })";
 }
 
-GS::Optional<GS::UniString> CreateGroupsCommand::GetResponseSchema() const
+GS::Optional<GS::UniString> CreateGroupsCommand::GetRawResponseSchema() const
 {
     return R"({
         "type": "object",
@@ -156,7 +156,7 @@ GS::Optional<GS::UniString> GetGroupsOfElementsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> GetGroupsOfElementsCommand::GetResponseSchema() const
+GS::Optional<GS::UniString> GetGroupsOfElementsCommand::GetRawResponseSchema() const
 {
     return R"({
         "type": "object",
@@ -242,7 +242,7 @@ GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetResponseSchema() const
+GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetRawResponseSchema() const
 {
     return R"({
         "type": "object",
@@ -307,7 +307,7 @@ GS::String GetSuspendGroupsModeCommand::GetName() const
     return "GetSuspendGroupsMode";
 }
 
-GS::Optional<GS::UniString> GetSuspendGroupsModeCommand::GetResponseSchema() const
+GS::Optional<GS::UniString> GetSuspendGroupsModeCommand::GetRawResponseSchema() const
 {
     return R"({
         "type": "object",
@@ -362,7 +362,7 @@ GS::Optional<GS::UniString> SetSuspendGroupsModeCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> SetSuspendGroupsModeCommand::GetResponseSchema() const
+GS::Optional<GS::UniString> SetSuspendGroupsModeCommand::GetRawResponseSchema() const
 {
     return R"({
         "type": "object",

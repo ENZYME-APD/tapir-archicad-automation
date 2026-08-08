@@ -241,7 +241,7 @@ GS::Optional<GS::UniString> GetElementsByTypeCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> GetElementsByTypeCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetElementsByTypeCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ElementsWithExecutionResultsOrError"
@@ -342,7 +342,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1280,7 +1280,7 @@ GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> SetDetailsOfElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2011,7 +2011,7 @@ GS::String GetSelectedElementsCommand::GetName () const
     return "GetSelectedElements";
 }
 
-GS::Optional<GS::UniString> GetSelectedElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetSelectedElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2078,7 +2078,7 @@ GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetInputParameters
     })";
 }
 
-GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2168,7 +2168,7 @@ GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetInpu
     })";
 }
 
-GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetSubelementsOfHierarchicalElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2389,7 +2389,7 @@ GS::Optional<GS::UniString> GetConnectedElementsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> GetConnectedElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetConnectedElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ConnectedElementsOrError"
@@ -2468,7 +2468,7 @@ GS::Optional<GS::UniString> GetRelationsOfElementsCommand::GetInputParametersSch
     })";
 }
 
-GS::Optional<GS::UniString> GetRelationsOfElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetRelationsOfElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2780,7 +2780,7 @@ GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ZoneBoundariesOrError"
@@ -2902,7 +2902,7 @@ GS::Optional<GS::UniString> UpdateZonesCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> UpdateZonesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> UpdateZonesCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -2982,7 +2982,7 @@ GS::Optional<GS::UniString> GetCollisionsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::UniString> GetCollisionsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetCollisionsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3134,7 +3134,7 @@ GS::Optional<GS::UniString> MoveElementsCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> MoveElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> MoveElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3297,7 +3297,7 @@ GS::Optional<GS::UniString> RotateElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> RotateElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> RotateElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3400,7 +3400,7 @@ GS::Optional<GS::UniString> FilterElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> FilterElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> FilterElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3505,7 +3505,7 @@ GS::Optional<GS::UniString> HighlightElementsCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> HighlightElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> HighlightElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -3688,7 +3688,7 @@ GS::Optional<GS::UniString> Get3DBoundingBoxesCommand::GetInputParametersSchema 
     })";
 }
 
-GS::Optional<GS::UniString> Get3DBoundingBoxesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> Get3DBoundingBoxesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3777,7 +3777,7 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> DeleteElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -3828,7 +3828,7 @@ GS::Optional<GS::UniString> LockElementsCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> LockElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> LockElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -3878,7 +3878,7 @@ GS::Optional<GS::UniString> UnlockElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> UnlockElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> UnlockElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -3946,7 +3946,7 @@ GS::Optional<GS::UniString> GetElementPreviewImageCommand::GetInputParametersSch
     })";
 }
 
-GS::Optional<GS::UniString> GetElementPreviewImageCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetElementPreviewImageCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -4066,7 +4066,7 @@ GS::Optional<GS::UniString> GetRoomImageCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> GetRoomImageCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetRoomImageCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",

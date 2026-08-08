@@ -59,7 +59,7 @@ public:
     AddElementNotificationClientCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
     static void SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os);
@@ -90,6 +90,6 @@ public:
     RemoveElementNotificationClientCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
