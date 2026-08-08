@@ -5576,15 +5576,15 @@
             },
             "vertices": {
                 "type": "array",
-                "description": "Flat, indexed vertex list, local to the Morph's own placement (not world coordinates).",
+                "description": "Flat, indexed vertex list, local to the Morph's own placement (not world coordinates). A Solid body needs at least 4 (a tetrahedron, the minimum closed volume); a Surface body has no closedness requirement at all - the minimum is 2 vertices joined by a single wireEdge (a lone vertex with no edge at all is rejected by Archicad itself, confirmed live) - enforced with a bodyType-aware error message, not by this minItems floor alone.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 },
-                "minItems": 4
+                "minItems": 2
             },
             "polygons": {
                 "type": "array",
-                "description": "One entry per face. Each face is a closed loop of vertex indices (into `vertices`), counterclockwise as seen from outside the body.",
+                "description": "One entry per face loop (into `vertices`), counterclockwise as seen from outside the body. Optional - a body made entirely of wireEdges (see below) needs none. Set \"filled\": false on an entry to create only that loop's edges (e.g. the outline of a pyramid's side faces) without an actual filled face.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -5595,6 +5595,10 @@
                                 "type": "integer"
                             },
                             "minItems": 3
+                        },
+                        "filled": {
+                            "type": "boolean",
+                            "description": "Defaults to true. Set to false to create only this loop's edges (a wireframe outline, e.g. a bare rectangle with no surface fill) without an actual face - holes/surfaceId are ignored in that case, since there is no fill for them to apply to."
                         },
                         "holes": {
                             "type": "array",
@@ -5625,8 +5629,28 @@
                     "required": [
                         "vertexIds"
                     ]
-                },
-                "minItems": 4
+                }
+            },
+            "wireEdges": {
+                "type": "array",
+                "description": "Standalone edges that belong to no face at all (e.g. a bare rectangle outline, or a pyramid with a filled base but wireframe-only sides - set \"filled\": false on a polygons entry for a whole closed loop like that instead, this is for individual edges not already covered by any polygon loop). Reported accurately by GetDetailsOfElements (every edge with zero adjacent faces); accepted back by CreateMorphs/ModifyMorphs. Identifies an edge by the (unordered) pair of vertex indices it connects - reuses whatever edge already exists between those two vertices if the polygons above happen to share it.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertexIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertexIds"
+                    ]
+                }
             },
             "edgeOverrides": {
                 "type": "array",
@@ -5664,8 +5688,7 @@
         },
         "additionalProperties": false,
         "required": [
-            "vertices",
-            "polygons"
+            "vertices"
         ]
     },
     "MorphDetails": {

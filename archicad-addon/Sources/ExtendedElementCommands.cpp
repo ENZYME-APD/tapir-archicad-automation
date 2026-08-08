@@ -2414,9 +2414,29 @@ bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo&
     bodyOS.Get ("vertices", verticesOS);
     GS::Array<GS::ObjectState> polygonsOS;
     bodyOS.Get ("polygons", polygonsOS);
+    GS::Array<GS::ObjectState> wireEdgesOS;
+    bodyOS.Get ("wireEdges", wireEdgesOS);
 
-    if (verticesOS.GetSize () < 4 || polygonsOS.GetSize () < 4) {
-        errorOut = "A Morph body needs at least 4 vertices and 4 faces to form a closed volume.";
+    // A Solid body needs at least a tetrahedron (4 vertices, 4 faces) to be a valid closed
+    // volume. A Surface body is an open shell - it has no closedness requirement at all, so a
+    // single face (3 vertices, 1 polygon), or even just a couple of standalone wireEdges with no
+    // face at all, is already a legitimate Morph. ACAPI_Body_* itself never enforces closedness
+    // (an edge is only ever required to have *at most* two side polygons, per its own doc -
+    // having zero or one is a normal open/boundary/standalone edge); the stricter floor below
+    // only applies when the caller actually asked for a Solid.
+    GS::UniString bodyTypeStr;
+    bodyOS.Get ("bodyType", bodyTypeStr);
+    const bool isSurfaceBody = (bodyTypeStr == "Surface");
+    if (isSurfaceBody) {
+        // Confirmed live: a lone vertex with no edge at all is rejected by Archicad itself
+        // (ACAPI_Element_Create fails outright) - a Morph needs at least one edge to exist as a
+        // valid element, whether that's a real face loop or just a single standalone wireEdge.
+        if (verticesOS.GetSize () < 2 || (polygonsOS.GetSize () < 1 && wireEdgesOS.GetSize () < 1)) {
+            errorOut = "A Morph body needs at least 2 vertices and 1 face or wire edge.";
+            return false;
+        }
+    } else if (verticesOS.GetSize () < 4 || polygonsOS.GetSize () < 4) {
+        errorOut = "A Solid Morph body needs at least 4 vertices and 4 faces to form a closed volume.";
         return false;
     }
 
@@ -2475,6 +2495,17 @@ bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo&
             return false;
         }
 
+        bool filled = true;
+        polygonOS.Get ("filled", filled);
+        if (!filled) {
+            // Wire-only loop: the edges above still get created (so they're shared/reused
+            // correctly with any other face that also touches them), but no ACAPI_Body_AddPolygon
+            // call means no face fill - Modeler::MeshBody computes IsWireBody() from exactly this
+            // (a body with edges but no adjacent polygon on either side). holes/surfaceId make no
+            // sense without a fill, so they are not read for a wire loop.
+            continue;
+        }
+
         GS::Array<GS::ObjectState> holesOS;
         if (polygonOS.Get ("holes", holesOS)) {
             for (const GS::ObjectState& holeOS : holesOS) {
@@ -2518,6 +2549,26 @@ bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo&
             errorOut = "Failed to build one of the morph's faces - check winding order and vertex indices.";
             return false;
         }
+    }
+
+    // Standalone edges with no face at all - the input-side counterpart of the "wireEdges" Get
+    // reports (see AddMorphBodyFromMemo): unlike a "filled": false polygon loop above (which is
+    // still a whole closed cycle of edges), these are individual segments, so they reuse
+    // GetOrAddEdge directly instead of going through resolveLoopEdges' loop-with-wraparound logic.
+    for (const GS::ObjectState& wireEdgeOS : wireEdgesOS) {
+        GS::Array<Int32> edgeVertexIds;
+        wireEdgeOS.Get ("vertexIds", edgeVertexIds);
+        if (edgeVertexIds.GetSize () != 2) {
+            errorOut = "Every wire edge needs exactly 2 vertex indices.";
+            return false;
+        }
+        const Int32 vFrom = edgeVertexIds[0];
+        const Int32 vTo = edgeVertexIds[1];
+        if (vFrom < 0 || (GS::UIndex) vFrom >= vertexIndices.GetSize () || vTo < 0 || (GS::UIndex) vTo >= vertexIndices.GetSize ()) {
+            errorOut = "A wire edge references a vertex index that is out of range.";
+            return false;
+        }
+        GetOrAddEdge (bodyData, vertexIndices[vFrom], vertexIndices[vTo], edgeCache);
     }
 
     if (ACAPI_Body_Finish (bodyData, &memo.morphBody, &memo.morphMaterialMapTable) != NoError) {
@@ -3115,6 +3166,7 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 
     {
         GS::Array<GS::ObjectState> overrides;
+        GS::Array<GS::ObjectState> wireEdges;
         const ULong edgeCount = meshBody.GetEdgeCount ();
         for (ULong i = 0; i < edgeCount; ++i) {
             const EDGE& e = meshBody.GetConstEdge (i);
@@ -3122,6 +3174,21 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
             const bool hidden = attrs.IsInvisible ();
             const bool smooth = !attrs.IsSharp ();
             const bool silhouetteOnly = attrs.IsVisibleIfContour ();
+
+            // An edge with no adjacent polygon at all belongs to a wire-only loop (a "filled":
+            // false face in the input, or standalone edges some other tool created) - it never
+            // shows up in the "polygons" list above (which only ever walks GetPolygonCount()
+            // faces), so without this it would be entirely invisible to a caller: the vertices it
+            // references still appear in "vertices" (Archicad keeps its own separate vertex
+            // instances for wire geometry), but nothing would explain what they're for.
+            if (e.GetPolygonCount () == 0) {
+                GS::ObjectState wireEdge;
+                const auto& vertexIds = wireEdge.AddList<Int32> ("vertexIds");
+                vertexIds (static_cast<Int32> (e.vert1));
+                vertexIds (static_cast<Int32> (e.vert2));
+                wireEdges.Push (wireEdge);
+            }
+
             // Only emit an entry when it differs from the element-wide default, keeping
             // edgeOverrides sparse as documented in the schema.
             const bool defaultHidden = elem.morph.edgeType != APIMorphEdgeType_HardVisibleEdge;
@@ -3142,6 +3209,12 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
             const auto& edgeOverrides = body.AddList<GS::ObjectState> ("edgeOverrides");
             for (const auto& o : overrides) {
                 edgeOverrides (o);
+            }
+        }
+        if (!wireEdges.IsEmpty ()) {
+            const auto& wireEdgesList = body.AddList<GS::ObjectState> ("wireEdges");
+            for (const auto& w : wireEdges) {
+                wireEdgesList (w);
             }
         }
     }
