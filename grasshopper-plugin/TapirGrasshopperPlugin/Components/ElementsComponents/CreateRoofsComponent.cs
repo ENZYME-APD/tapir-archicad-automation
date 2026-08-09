@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Levels", "level", FieldKind.Number, "Reference level of the roof.", required: true),
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the roof."),
             new Field("EavesOverhangs", "eavesOverhang", FieldKind.Number, "Eaves overhang of the roof."),
-            new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic or Composite."),
+            new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic or Composite.", valueList: () => new StructureTypeValueList ()),
             new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute for Basic structure."),
             new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure."),
             new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the roof.")

@@ -24,9 +24,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
             new Field("Levels", "level", FieldKind.Number, "Z reference level of the mesh coordinates."),
-            new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt."),
+            new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt.", valueList: () => new MeshSkirtTypeValueList ()),
             new Field("SkirtLevels", "skirtLevel", FieldKind.Number, "Height of the mesh skirt."),
-            new Field("Ridges", "ridges", FieldKind.Text, "Ridge type: AllSharp, AllSmooth or UserDefined."),
+            new Field("Ridges", "ridges", FieldKind.Text, "Ridge type: AllSharp, AllSmooth or UserDefined.", valueList: () => new MeshRidgeTypeValueList ()),
             new Field("ShowLines", "showLines", FieldKind.Boolean, "Show the secondary mesh lines on the floor plan."),
             new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the mesh."),
             new Field("ContourPens", "contourPen", FieldKind.Integer, "Pen index of the mesh contour."),

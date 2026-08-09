@@ -23,7 +23,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Polygons", "polygonCoordinates", FieldKind.PointsTree2D, "Outline points of each slab (one branch per slab, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
             new Field("Levels", "level", FieldKind.Number, "The Z coordinate of the reference plane of the slab.", required: true),
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the slab."),
-            new Field("ReferencePlaneLocations", "referencePlaneLocation", FieldKind.Text, "Reference plane location: Top, CoreTop, CoreBottom or Bottom."),
+            new Field("ReferencePlaneLocations", "referencePlaneLocation", FieldKind.Text, "Reference plane location: Top, CoreTop, CoreBottom or Bottom.", valueList: () => new ReferencePlaneLocationValueList ()),
             new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the slab.")
         };
 
