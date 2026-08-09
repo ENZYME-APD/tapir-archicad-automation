@@ -169,11 +169,6 @@ GSErrCode Initialize (void)
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
 
-    // Forces the palette singleton (and its saved shortcut-slot preferences) to load immediately,
-    // so custom shortcut menu labels and the enabled state of the shortcut menu items are applied
-    // at startup rather than only after the user first opens the palette or triggers a shortcut.
-    TapirPalette::Instance ();
-
     { // Application Commands
         CommandGroup applicationCommands ("Application Commands");
         err |= RegisterCommand<GetAddOnVersionCommand> (
@@ -1216,6 +1211,21 @@ GSErrCode Initialize (void)
             "Generates files for the documentation. Used by Tapir developers only."
         );
         AddCommandGroup (developerCommands);
+    }
+
+    // Loading the palette singleton applies the custom shortcut menu labels and the enabled state
+    // of the shortcut menu items at startup, rather than only when the user first opens the
+    // palette or triggers a shortcut. It deliberately runs LAST and swallows every failure:
+    // constructing this DG::Palette from Initialize() aborted the rest of Initialize() on some
+    // configurations, which left every JSON command unregistered ("Archicad does not have the
+    // registered Add-On command", error 4010) while the add-on still looked healthy in the
+    // Add-On Manager and its menu worked - see #516. Registering the commands first makes that
+    // failure mode impossible; if the palette cannot be created this early, the shortcut labels
+    // are applied later, the first time the palette is actually used.
+    try {
+        TapirPalette::Instance ();
+    } catch (...) {
+        // Intentionally ignored: the menu labels are cosmetic, the commands above are not.
     }
 
     return err;
