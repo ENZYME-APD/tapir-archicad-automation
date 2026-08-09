@@ -129,7 +129,7 @@ GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetAttributesByTypeCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/AttributeHeadersOrError"
@@ -192,7 +192,7 @@ GS::Optional<GS::UniString> GetBuildingMaterialPhysicalPropertiesCommand::GetInp
     })";
 }
 
-GS::Optional<GS::UniString> GetBuildingMaterialPhysicalPropertiesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetBuildingMaterialPhysicalPropertiesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -273,7 +273,7 @@ GS::Optional<GS::UniString> GetLayerCombinationsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> GetLayerCombinationsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetLayerCombinationsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -405,7 +405,7 @@ GS::Optional<GS::UniString> GetLinesCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::Optional<GS::UniString> GetLinesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetLinesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -574,7 +574,7 @@ GS::Optional<GS::UniString> GetFillsCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::Optional<GS::UniString> GetFillsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetFillsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -764,7 +764,7 @@ GS::Optional<GS::UniString> GetZoneCategoriesCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> GetZoneCategoriesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetZoneCategoriesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -866,7 +866,7 @@ GS::Optional<GS::UniString> GetMEPSystemsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::UniString> GetMEPSystemsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetMEPSystemsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -997,7 +997,7 @@ GS::Optional<GS::UniString> GetPenTablesCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> GetPenTablesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetPenTablesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1159,7 +1159,7 @@ GS::Optional<GS::UniString> GetProfilesCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> GetProfilesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetProfilesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2004,7 +2004,7 @@ GS::Optional<GS::UniString> GetCompositesCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::UniString> GetCompositesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetCompositesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2166,7 +2166,7 @@ GS::Optional<GS::UniString> GetSurfacesCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> GetSurfacesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetSurfacesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2313,7 +2313,7 @@ GS::Optional<GS::UniString> GetLayersCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::Optional<GS::UniString> GetLayersCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetLayersCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2421,7 +2421,7 @@ GS::Optional<GS::UniString> GetBuildingMaterialsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> GetBuildingMaterialsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetBuildingMaterialsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2576,7 +2576,7 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> DeleteAttributesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteAttributesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2650,7 +2650,7 @@ GS::String CreateAttributesCommandBase::GetName () const
     return commandName;
 }
 
-GS::Optional<GS::UniString> CreateAttributesCommandBase::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateAttributesCommandBase::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3614,7 +3614,7 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> CreateFillsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateFillsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -4472,7 +4472,7 @@ GS::Optional<GS::UniString> CreatePenTablesCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> CreatePenTablesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreatePenTablesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -4994,7 +4994,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> CreateProfilesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateProfilesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -5318,7 +5318,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetInputParametersSchema ()
     })SCHEMA";
 }
 
-GS::Optional<GS::UniString> CreateCompositesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateCompositesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",

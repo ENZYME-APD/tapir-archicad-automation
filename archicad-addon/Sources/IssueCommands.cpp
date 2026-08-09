@@ -103,7 +103,7 @@ GS::Optional<GS::UniString> CreateIssueCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> CreateIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateIssueCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -176,7 +176,7 @@ GS::Optional<GS::UniString> DeleteIssueCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> DeleteIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteIssueCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -215,7 +215,7 @@ GS::String GetIssuesCommand::GetName () const
     return "GetIssues";
 }
 
-GS::Optional<GS::UniString> GetIssuesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetIssuesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -342,7 +342,7 @@ GS::Optional<GS::UniString> AddCommentToIssueCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> AddCommentToIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> AddCommentToIssueCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -418,7 +418,7 @@ GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetCommentsFromIssueCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -531,7 +531,7 @@ GS::Optional<GS::UniString> AttachElementsToIssueCommand::GetInputParametersSche
     })";
 }
 
-GS::Optional<GS::UniString> AttachElementsToIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> AttachElementsToIssueCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -606,7 +606,7 @@ GS::Optional<GS::UniString> DetachElementsFromIssueCommand::GetInputParametersSc
     })";
 }
 
-GS::Optional<GS::UniString> DetachElementsFromIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DetachElementsFromIssueCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -665,7 +665,7 @@ GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetInputParameter
     })";
 }
 
-GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetElementsAttachedToIssueCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -748,7 +748,7 @@ GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ExportIssuesToBCFCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -822,7 +822,7 @@ GS::Optional<GS::UniString> ImportIssuesFromBCFCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> ImportIssuesFromBCFCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ImportIssuesFromBCFCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"

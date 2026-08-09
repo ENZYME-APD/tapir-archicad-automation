@@ -149,7 +149,7 @@ GS::Optional<GS::UniString> CreateDetailsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::UniString> CreateDetailsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateDetailsCommand::GetRawResponseSchema () const
 {
     return R"({"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]})";
 }
@@ -213,9 +213,9 @@ GS::Optional<GS::UniString> CreateWorksheetsCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> CreateWorksheetsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateWorksheetsCommand::GetRawResponseSchema () const
 {
-    return CreateDetailsCommand ().GetResponseSchema ();
+    return CreateDetailsCommand ().GetRawResponseSchema ();
 }
 
 GS::ObjectState CreateWorksheetsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -295,9 +295,9 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> CreateLayoutCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateLayoutCommand::GetRawResponseSchema () const
 {
-    return CreateDetailsCommand ().GetResponseSchema ();
+    return CreateDetailsCommand ().GetRawResponseSchema ();
 }
 
 GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -454,7 +454,7 @@ GS::Optional<GS::UniString> CreateLayoutSubsetCommand::GetInputParametersSchema 
     })";
 }
 
-GS::Optional<GS::UniString> CreateLayoutSubsetCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateLayoutSubsetCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -583,7 +583,7 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> CreateDrawingsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateDrawingsCommand::GetRawResponseSchema () const
 {
     return R"({"type":"object","properties":{"elements":{"$ref":"#/Elements"}},"additionalProperties":false,"required":["elements"]})";
 }
@@ -779,7 +779,7 @@ GS::Optional<GS::UniString> ChangeDrawingLinkCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> ChangeDrawingLinkCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ChangeDrawingLinkCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -955,7 +955,7 @@ GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetLayoutSettingsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1143,7 +1143,7 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetRawResponseSchema () const
 {
     return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
 }
@@ -1307,7 +1307,7 @@ GS::Optional<GS::UniString> GetLayoutCustomSchemeCommand::GetInputParametersSche
     return GS::NoValue;
 }
 
-GS::Optional<GS::UniString> GetLayoutCustomSchemeCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetLayoutCustomSchemeCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",

@@ -29,7 +29,12 @@ public:
 #endif
     virtual GS::Optional<GS::UniString> GetSchemaDefinitions () const override final;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    // The API-facing response schema: the command's raw schema extended with the
+    // error response alternative, so Archicad does not reject the add-on's own
+    // {"error": {...}} responses (schema validation error 4009). Commands override
+    // GetRawResponseSchema instead.
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override final;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const;
 
 private:
     CommonSchema mCommonSchema;
