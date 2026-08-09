@@ -20,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
-            new Field("Polygons", "polygonCoordinates", FieldKind.PointsTree2D, "Outline points of each slab (one branch per slab, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
+            new Field("Vertices", "polygonCoordinates", FieldKind.PointsTree2D, "Outline points of each slab (one branch per slab, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
             new Field("Levels", "level", FieldKind.Number, "The Z coordinate of the reference plane of the slab.", required: true),
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the slab."),
             new Field("ReferencePlaneLocations", "referencePlaneLocation", FieldKind.Text, "Reference plane location: Top, CoreTop, CoreBottom or Bottom."),

@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
-            new Field("Polygons", "coordinates", FieldKind.PointsTree2D, "Outline points of each hatch (one branch per hatch, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
+            new Field("Vertices", "coordinates", FieldKind.PointsTree2D, "Outline points of each hatch (one branch per hatch, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
             new Field("ContourPenIndices", "contourPenIndex", FieldKind.Integer, "Pen index of the hatch contour."),
             new Field("FillPenIndices", "fillPenIndex", FieldKind.Integer, "Pen index of the fill."),
             new Field("FillBackgroundPenIndices", "fillBackgroundPenIndex", FieldKind.Integer, "Background pen index of the fill."),

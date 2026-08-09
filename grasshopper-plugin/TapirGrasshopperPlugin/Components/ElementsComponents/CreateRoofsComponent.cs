@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
-            new Field("Polygons", "polygonCoordinates", FieldKind.PointsTree2D, "Outline points of each roof (one branch per roof, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
+            new Field("Vertices", "polygonCoordinates", FieldKind.PointsTree2D, "Outline points of each roof (one branch per roof, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
             new Field("Levels", "level", FieldKind.Number, "Reference level of the roof.", required: true),
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the roof."),
             new Field("EavesOverhangs", "eavesOverhang", FieldKind.Number, "Eaves overhang of the roof."),

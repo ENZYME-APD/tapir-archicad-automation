@@ -34,14 +34,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Number string of each zone. Input only 1 to use the same value for all zones.");
 
             inManager.AddPointParameter(
-                "Polygons",
-                "Polygons",
+                "Vertices",
+                "Vertices",
                 "Outline points of each zone (one branch per zone, at least 3 points; only X and Y are used). Give either this or the ReferencePositions input.",
                 GH_ParamAccess.tree);
 
             InPoints(
                 "ReferencePositions",
-                "Reference position of each automatic zone (only X and Y are used). Give either this or the Polygons input.");
+                "Reference position of each automatic zone (only X and Y are used). Give either this or the Vertices input.");
 
             InTexts(
                 "AdditionalSettings",
@@ -104,7 +104,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if ((polygonBranchCount == 0) == (referencePositions.Count == 0))
             {
                 this.AddError(
-                    "Give exactly one of the Polygons and ReferencePositions inputs.");
+                    "Give exactly one of the Vertices and ReferencePositions inputs.");
                 return;
             }
 
@@ -112,7 +112,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 polygonBranchCount != 1 && polygonBranchCount != zoneCount)
             {
                 this.AddError(
-                    "The number of branches in the Polygons input must be 1 or equal to the size of the input Names.");
+                    "The number of branches in the Vertices input must be 1 or equal to the size of the input Names.");
                 return;
             }
 

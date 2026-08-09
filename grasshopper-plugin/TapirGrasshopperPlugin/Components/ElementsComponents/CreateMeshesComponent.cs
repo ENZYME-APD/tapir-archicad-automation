@@ -21,7 +21,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
-            new Field("Polygons", "polygonCoordinates", FieldKind.PointsTree3D, "Boundary points of each mesh (one branch per mesh, at least 3 points).", required: true, minPointsPerBranch: 3),
+            new Field("Vertices", "polygonCoordinates", FieldKind.PointsTree3D, "Boundary points of each mesh (one branch per mesh, at least 3 points).", required: true, minPointsPerBranch: 3),
             new Field("Levels", "level", FieldKind.Number, "Z reference level of the mesh coordinates."),
             new Field("SkirtTypes", "skirtType", FieldKind.Text, "Skirt type: SurfaceOnlyWithoutSkirt, WithSkirt or SolidBodyWithSkirt."),
             new Field("SkirtLevels", "skirtLevel", FieldKind.Number, "Height of the mesh skirt."),
