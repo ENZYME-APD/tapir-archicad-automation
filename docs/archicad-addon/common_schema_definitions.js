@@ -1814,8 +1814,6 @@ var gSchemaDefinitions = {
             "displayName",
             "index",
             "type",
-            "dimension1",
-            "dimension2",
             "value",
             "isLocked",
             "flags"
@@ -4264,6 +4262,75 @@ var gSchemaDefinitions = {
             },
             "profileId": {
                 "$ref": "#/AttributeId"
+            },
+            "referenceLineLocation": {
+                "type": "string",
+                "enum": [
+                    "Outside",
+                    "Center",
+                    "Inside",
+                    "CoreOutside",
+                    "CoreCenter",
+                    "CoreInside"
+                ],
+                "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin, and Archicad falls back to the nearest non-core equivalent (e.g. CoreCenter becomes Center)."
+            },
+            "profileType": {
+                "type": "string",
+                "enum": [
+                    "Normal",
+                    "Slanted",
+                    "Trapez",
+                    "Poly"
+                ],
+                "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). Only Normal/Slanted/Trapez are settable via ModifyWalls - Poly needs a profile attribute wired through a separate mechanism. slantAlpha/slantBeta only have an effect once this is Slanted or Trapez."
+            },
+            "slantAlpha": {
+                "type": "number",
+                "description": "Only has an effect once profileType is set to Slanted or Trapez."
+            },
+            "slantBeta": {
+                "type": "number",
+                "description": "Only has an effect once profileType is set to Slanted or Trapez."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "Only has an effect when relativeTopStory is non-zero."
+            },
+            "relativeTopStory": {
+                "type": "number",
+                "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' via ModifyWalls in the same call."
+            },
+            "zoneRel": {
+                "type": "string",
+                "enum": [
+                    "Boundary",
+                    "ReduceArea",
+                    "None",
+                    "SubtractFromZone"
+                ]
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility"
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it."
+            },
+            "referenceMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "oppositeMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen"
             }
         },
         "additionalProperties": false,
@@ -4308,6 +4375,107 @@ var gSchemaDefinitions = {
             "verticalCurveHeight": {
                 "type": "number",
                 "description": "The height of the vertical curve of the beam."
+            },
+            "beamShape": {
+                "type": "string",
+                "enum": [
+                    "Straight",
+                    "HorizontallyCurved",
+                    "VerticallyCurved"
+                ]
+            },
+            "isSlanted": {
+                "type": "boolean"
+            },
+            "isFlipped": {
+                "type": "boolean"
+            },
+            "profileAngle": {
+                "type": "number"
+            },
+            "anchorPoint": {
+                "type": "string",
+                "enum": [
+                    "TopLeft",
+                    "TopCenter",
+                    "TopRight",
+                    "MiddleLeft",
+                    "Center",
+                    "MiddleRight",
+                    "BottomLeft",
+                    "BottomCenter",
+                    "BottomRight"
+                ]
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "coverFill": {
+                "$ref": "#/CoverFill"
+            },
+            "holes": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "holeId": {
+                            "type": "number"
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "Rectangular",
+                                "Circular"
+                            ]
+                        },
+                        "showContour": {
+                            "type": "boolean"
+                        },
+                        "centerX": {
+                            "type": "number"
+                        },
+                        "centerZ": {
+                            "type": "number"
+                        },
+                        "width": {
+                            "type": "number"
+                        },
+                        "height": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "holeId",
+                        "type",
+                        "centerX",
+                        "centerZ",
+                        "width"
+                    ]
+                }
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the beam (all segments)."
+            },
+            "height": {
+                "type": "number",
+                "description": "Cross section height of the beam (all segments)."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "When true, Archicad keeps width and height equal - set to false via ModifyBeams/CreateBeams to give them independent values."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
             }
         },
         "additionalProperties": false,
@@ -4369,6 +4537,33 @@ var gSchemaDefinitions = {
             },
             "compositeId": {
                 "$ref": "#/AttributeId"
+            },
+            "referencePlaneLocation": {
+                "type": "string",
+                "enum": [
+                    "Top",
+                    "CoreTop",
+                    "CoreBottom",
+                    "Bottom"
+                ]
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial"
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "floorFill": {
+                "$ref": "#/FloorFill"
             }
         },
         "additionalProperties": false,
@@ -4397,6 +4592,79 @@ var gSchemaDefinitions = {
             "bottomOffset": {
                 "type": "number",
                 "description": "base level of the column relative to the floor level"
+            },
+            "axisRotationAngle": {
+                "type": "number"
+            },
+            "coreAnchor": {
+                "type": "string",
+                "enum": [
+                    "TopLeft",
+                    "TopCenter",
+                    "TopRight",
+                    "MiddleLeft",
+                    "Center",
+                    "MiddleRight",
+                    "BottomLeft",
+                    "BottomCenter",
+                    "BottomRight"
+                ]
+            },
+            "isSlanted": {
+                "type": "boolean"
+            },
+            "slantAngle": {
+                "type": "number"
+            },
+            "slantDirectionAngle": {
+                "type": "number"
+            },
+            "isFlipped": {
+                "type": "boolean",
+                "description": "Has no visible effect on a circular column (circleBased cross section) - Archicad ignores it there."
+            },
+            "wrapping": {
+                "type": "boolean"
+            },
+            "topOffset": {
+                "type": "number"
+            },
+            "relativeTopStory": {
+                "type": "number",
+                "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' via ModifyColumns in the same call."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen"
+            },
+            "coverFill": {
+                "$ref": "#/CoverFill"
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the column (all segments)."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Cross section depth (height) of the column (all segments)."
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round column cross section, false for rectangular."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "When true, Archicad keeps width and depth equal - set to false via ModifyColumns/CreateColumns to give them independent values."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
             }
         },
         "additionalProperties": false,
@@ -5306,15 +5574,15 @@ var gSchemaDefinitions = {
             },
             "vertices": {
                 "type": "array",
-                "description": "Flat, indexed vertex list, local to the Morph's own placement (not world coordinates).",
+                "description": "Flat, indexed vertex list, local to the Morph's own placement (not world coordinates). A Solid body needs at least 4 (a tetrahedron, the minimum closed volume); a Surface body has no closedness requirement at all - the minimum is 2 vertices joined by a single wireEdge (a lone vertex with no edge at all is rejected by Archicad itself, confirmed live) - enforced with a bodyType-aware error message, not by this minItems floor alone.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 },
-                "minItems": 4
+                "minItems": 2
             },
             "polygons": {
                 "type": "array",
-                "description": "One entry per face. Each face is a closed loop of vertex indices (into `vertices`), counterclockwise as seen from outside the body.",
+                "description": "One entry per face loop (into `vertices`), counterclockwise as seen from outside the body. Optional - a body made entirely of wireEdges (see below) needs none. Set \"filled\": false on an entry to create only that loop's edges (e.g. the outline of a pyramid's side faces) without an actual filled face.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -5325,6 +5593,10 @@ var gSchemaDefinitions = {
                                 "type": "integer"
                             },
                             "minItems": 3
+                        },
+                        "filled": {
+                            "type": "boolean",
+                            "description": "Defaults to true. Set to false to create only this loop's edges (a wireframe outline, e.g. a bare rectangle with no surface fill) without an actual face - holes/surfaceId are ignored in that case, since there is no fill for them to apply to."
                         },
                         "holes": {
                             "type": "array",
@@ -5355,8 +5627,28 @@ var gSchemaDefinitions = {
                     "required": [
                         "vertexIds"
                     ]
-                },
-                "minItems": 4
+                }
+            },
+            "wireEdges": {
+                "type": "array",
+                "description": "Standalone edges that belong to no face at all (e.g. a bare rectangle outline, or a pyramid with a filled base but wireframe-only sides - set \"filled\": false on a polygons entry for a whole closed loop like that instead, this is for individual edges not already covered by any polygon loop). Reported accurately by GetDetailsOfElements (every edge with zero adjacent faces); accepted back by CreateMorphs/ModifyMorphs. Identifies an edge by the (unordered) pair of vertex indices it connects - reuses whatever edge already exists between those two vertices if the polygons above happen to share it.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertexIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertexIds"
+                    ]
+                }
             },
             "edgeOverrides": {
                 "type": "array",
@@ -5394,8 +5686,7 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false,
         "required": [
-            "vertices",
-            "polygons"
+            "vertices"
         ]
     },
     "MorphDetails": {
@@ -7558,6 +7849,197 @@ var gSchemaDefinitions = {
             {
                 "$ref": "#/ErrorItem"
             }
+        ]
+    },
+    "CoverFill": {
+        "type": "object",
+        "description": "Floor plan cover fill settings of a Column or Beam.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is shown on the floor plan."
+            },
+            "useFromSurface": {
+                "type": "boolean",
+                "description": "Whether the fill is taken from the top surface material of the element."
+            },
+            "orientationComesFrom3D": {
+                "type": "boolean",
+                "description": "Whether the cover fill orientation comes from the 3D view of the element."
+            },
+            "fillId": {
+                "$ref": "#/AttributeId"
+            },
+            "foregroundPen": {
+                "type": "integer"
+            },
+            "backgroundPen": {
+                "type": "integer"
+            },
+            "transformationType": {
+                "type": "string",
+                "enum": [
+                    "Global",
+                    "Rotated",
+                    "Distorted"
+                ]
+            },
+            "transformation": {
+                "$ref": "#/CoverFillTransformation"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "use",
+            "useFromSurface",
+            "orientationComesFrom3D",
+            "fillId",
+            "foregroundPen",
+            "backgroundPen",
+            "transformationType",
+            "transformation"
+        ]
+    },
+    "CoverFillTransformation": {
+        "type": "object",
+        "description": "Orientation and distortion parameters of a cover fill.",
+        "properties": {
+            "origin": {
+                "$ref": "#/Coordinate2D",
+                "description": "The origin of the fill relative to the center of the element."
+            },
+            "xAxis": {
+                "$ref": "#/Coordinate2D",
+                "description": "Primary distortion (direction) vector."
+            },
+            "yAxis": {
+                "$ref": "#/Coordinate2D",
+                "description": "Secondary distortion (direction) vector."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "origin",
+            "xAxis",
+            "yAxis"
+        ]
+    },
+    "FloorFill": {
+        "type": "object",
+        "description": "Floor plan cover fill settings of a Slab.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is shown on the floor plan."
+            },
+            "foregroundPen": {
+                "type": "integer"
+            },
+            "backgroundPen": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeId"
+            },
+            "use3DHatching": {
+                "type": "boolean",
+                "description": "Use Vectorial 3D Hatch patterns in Floor Plan view, taken from the top side material."
+            },
+            "orientation": {
+                "$ref": "#/HatchOrientation"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "use",
+            "foregroundPen",
+            "backgroundPen",
+            "fillId",
+            "use3DHatching",
+            "orientation"
+        ]
+    },
+    "HatchOrientation": {
+        "type": "object",
+        "description": "Orientation and distortion parameters of a fill.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Global",
+                    "Rotated",
+                    "Distorted",
+                    "Centered"
+                ]
+            },
+            "origin": {
+                "$ref": "#/Coordinate2D",
+                "description": "The origin of the fill relative to the project origin."
+            },
+            "matrix00": {
+                "type": "number",
+                "description": "X component of the primary distortion (direction) vector."
+            },
+            "matrix10": {
+                "type": "number",
+                "description": "Y component of the primary distortion (direction) vector."
+            },
+            "matrix01": {
+                "type": "number",
+                "description": "X component of the secondary distortion vector."
+            },
+            "matrix11": {
+                "type": "number",
+                "description": "Y component of the secondary distortion vector."
+            },
+            "innerRadius": {
+                "type": "number",
+                "description": "Radius for circular fill distortion, used when type is Centered."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "origin",
+            "matrix00",
+            "matrix10",
+            "matrix01",
+            "matrix11",
+            "innerRadius"
+        ]
+    },
+    "OverriddenMaterial": {
+        "type": "object",
+        "description": "A surface material that may override the one inherited from the element's structure (building material, composite or profile).",
+        "properties": {
+            "overridden": {
+                "type": "boolean",
+                "description": "True if the material is overridden on the element level."
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "overridden"
+        ]
+    },
+    "OverriddenPen": {
+        "type": "object",
+        "description": "A pen index that may override the one inherited from the element's structure. On Archicad versions where the underlying element does not support this override, 'overridden' is always false.",
+        "properties": {
+            "overridden": {
+                "type": "boolean",
+                "description": "True if the pen is overridden on the element level."
+            },
+            "penIndex": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "overridden"
         ]
     }
 }
