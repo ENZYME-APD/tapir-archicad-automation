@@ -3253,6 +3253,10 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
@@ -3375,6 +3379,10 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
@@ -3533,6 +3541,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                     "type": "object",
                     "description": "The parameters of the new Stair.",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "baseLinePoints": {
                             "type": "array",
                             "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
@@ -6789,4 +6801,59 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
     });
 
     return response;
+}
+
+// The element-type agnostic counterpart of ApplyWindowOrDoorFavoriteToDefaults, used by
+// the per-item "favoriteName" support of CreateElementsCommandBase. Windows and Doors keep
+// their own variant above: they are markered types that need ChangeDefaultsExt with the
+// favorite's marker sub-element, and their create path clones the tool defaults itself.
+GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API_ElemTypeID expectedTypeId)
+{
+    if (favoriteName.IsEmpty ()) {
+        return NoError;
+    }
+
+    API_Favorite favorite;
+    favorite.name = favoriteName;
+    favorite.memo.New ();
+    favorite.properties.New ();
+    favorite.classifications.New ();
+    favorite.elemCategoryValues.New ();
+
+    GSErrCode err = ACAPI_Favorite_Get (&favorite);
+    const auto disposeFavoriteMemos = [&] () {
+        ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+    };
+    if (err != NoError) {
+        disposeFavoriteMemos ();
+        return err;
+    }
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID favoriteTypeId = favorite.element.header.type.typeID;
+#else
+    const API_ElemTypeID favoriteTypeId = favorite.element.header.typeID;
+#endif
+    if (favoriteTypeId != expectedTypeId) {
+        disposeFavoriteMemos ();
+        return APIERR_REFUSEDPAR;
+    }
+
+    API_Element mask;
+    ACAPI_ELEMENT_MASK_SETFULL (mask);
+    err = ACAPI_Element_ChangeDefaults (&favorite.element, favorite.memo.GetPtr (), &mask);
+    disposeFavoriteMemos ();
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
+        TAPIR_Element_AddClassificationItemDefault (favorite.element.header, pair.second);
+    }
+    for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+        TAPIR_Element_SetCategoryValueDefault (favorite.element.header, categoryValue);
+    }
+    TAPIR_Element_SetPropertiesOfDefaultElem (favorite.element.header, *favorite.properties);
+
+    return NoError;
 }
