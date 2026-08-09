@@ -27,7 +27,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Angles", "angle", FieldKind.Number, "Rotation angle in radians."),
             new Field("Justifications", "justification", FieldKind.Text, "Justification: Left, Center, Right or Full."),
             new Field("Pens", "pen", FieldKind.Integer, "Pen index of the text."),
-            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the text.")
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the text."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

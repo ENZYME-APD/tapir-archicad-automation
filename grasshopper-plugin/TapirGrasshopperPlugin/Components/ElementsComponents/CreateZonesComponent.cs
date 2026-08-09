@@ -48,7 +48,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "One JSON object per zone with further optional settings matching the " +
                 "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
 
-            SetOptionality(new[] { 2, 3, 4 });
+            InTexts(
+                "FavoriteNames",
+                "Name of a favorite to base the new zone on. Its settings are applied first, " +
+                "then the other inputs override them. Input only 1 to use the same favorite for all. Optional.");
+
+            SetOptionality(new[] { 2, 3, 4, 5 });
         }
 
         protected override void AddOutputs()
@@ -128,6 +133,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 4,
                 out List<string> additionalSettings);
             additionalSettings = additionalSettings ?? new List<string>();
+
+            da.TryGetList(
+                5,
+                out List<string> favoriteNames);
+            favoriteNames = favoriteNames ?? new List<string>();
+            if (favoriteNames.Count > 1 &&
+                favoriteNames.Count != zoneCount)
+            {
+                this.AddError(
+                    "The size of the input FavoriteNames must be 0, 1 or equal to the size of the input Names.");
+                return;
+            }
             if (additionalSettings.Count > 1 &&
                 additionalSettings.Count != zoneCount)
             {
@@ -185,6 +202,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     ["numberStr"] = numberStrs[numberStrs.Count == 1 ? 0 : i],
                     ["geometry"] = geometry
                 };
+
+                if (favoriteNames.Count > 0)
+                {
+                    var favoriteName = favoriteNames[favoriteNames.Count == 1 ? 0 : i];
+                    if (!string.IsNullOrEmpty(favoriteName))
+                    {
+                        item["favoriteName"] = favoriteName;
+                    }
+                }
 
                 if (additionalSettings.Count > 0)
                 {

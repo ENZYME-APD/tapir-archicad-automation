@@ -28,7 +28,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("LineTypeGuids", "lineTypeId", FieldKind.AttributeGuid, "Line type attribute of the spline."),
             new Field("RoomSeparators", "roomSeparator", FieldKind.Boolean, "The spline acts as a zone boundary."),
             new Field("LayerIndices", "layerIndex", FieldKind.Integer, "Layer attribute index to place the spline on."),
-            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the spline.")
+            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the spline."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

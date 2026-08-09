@@ -29,7 +29,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute of the hatch."),
             new Field("ShowAreas", "showArea", FieldKind.Boolean, "Show the area text of the hatch."),
             new Field("LayerIndices", "layerIndex", FieldKind.Integer, "Layer attribute index to place the hatch on."),
-            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the hatch.")
+            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the hatch."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

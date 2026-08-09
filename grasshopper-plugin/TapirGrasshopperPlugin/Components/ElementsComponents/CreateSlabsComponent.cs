@@ -24,7 +24,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Levels", "level", FieldKind.Number, "The Z coordinate of the reference plane of the slab.", required: true),
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the slab."),
             new Field("ReferencePlaneLocations", "referencePlaneLocation", FieldKind.Text, "Reference plane location: Top, CoreTop, CoreBottom or Bottom."),
-            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the slab.")
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the slab."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
