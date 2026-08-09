@@ -6055,6 +6055,9 @@
                 "$ref": "#/LibPartBasedElementDetails"
             },
             {
+                "$ref": "#/ObjectDetails"
+            },
+            {
                 "$ref": "#/PolylineDetails"
             },
             {
