@@ -17,7 +17,7 @@ GS::String CreateElementsCommandBase::GetName () const
     return commandName;
 }
 
-GS::Optional<GS::UniString> CreateElementsCommandBase::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateElementsCommandBase::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1879,7 +1879,7 @@ GS::Optional<GS::UniString> ModifyObjectsCommand::GetInputParametersSchema () co
     return BuildLibraryPartBasedModifySchema ("objectsWithDetails", false);
 }
 
-GS::Optional<GS::UniString> ModifyObjectsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ModifyObjectsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1915,7 +1915,7 @@ GS::Optional<GS::UniString> ModifyLampsCommand::GetInputParametersSchema () cons
     return BuildLibraryPartBasedModifySchema ("lampsWithDetails", true);
 }
 
-GS::Optional<GS::UniString> ModifyLampsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ModifyLampsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
