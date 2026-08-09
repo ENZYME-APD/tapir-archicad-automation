@@ -1905,6 +1905,13 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     if (slantAngle.HasValue ()) {
         element.column.slantAngle = slantAngle.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, slantAngle);
+        // Same as for beams: without isSlanted the column stays vertical and the angle is
+        // discarded. An explicit isSlanted (handled above) wins over this default.
+        bool explicitIsSlanted = false;
+        if (!details.Get ("isSlanted", explicitIsSlanted)) {
+            element.column.isSlanted = (slantAngle.Get () != 0.0);
+            ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, isSlanted);
+        }
         changed = true;
     }
     auto slantDirectionAngle = GetOptionalDouble (details, "slantDirectionAngle");
@@ -2020,6 +2027,15 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     if (slantAngle.HasValue ()) {
         element.beam.slantAngle = slantAngle.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, slantAngle);
+        // Archicad keeps the beam in "Horizontal" mode and discards the angle unless isSlanted
+        // is set too, so a slantAngle on its own used to report success and change nothing
+        // (#508). Only derived when the caller does not state isSlanted explicitly - that one
+        // is applied below and wins.
+        bool explicitIsSlanted = false;
+        if (!details.Get ("isSlanted", explicitIsSlanted)) {
+            element.beam.isSlanted = (slantAngle.Get () != 0.0);
+            ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, isSlanted);
+        }
         changed = true;
     }
     auto arcAngle = GetOptionalDouble (details, "arcAngle");
@@ -3364,7 +3380,18 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
                         "zCoordinate": { "type": "number" },
                         "offset": { "type": "number" },
-                        "slantAngle": { "type": "number" },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Slant angle in radians. A non-zero value also switches the beam to slanted, unless isSlanted is given explicitly."
+                        },
+                        "isSlanted": {
+                            "type": "boolean",
+                            "description": "Optional explicit slanted state. By default it is derived from slantAngle."
+                        },
+                        "profileAngle": {
+                            "type": "number",
+                            "description": "Rotation angle of the profile around the beam's center line, in radians."
+                        },
                         "arcAngle": { "type": "number" },
                         "verticalCurveHeight": { "type": "number" },
                         "width": {
@@ -3430,6 +3457,17 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     auto slantAngle = GetOptionalDouble (parameters, "slantAngle");
     if (slantAngle.HasValue ()) {
         element.beam.slantAngle = slantAngle.Get ();
+        // Without isSlanted the new beam is created horizontal and the angle is discarded,
+        // see ApplyBeamDetails (#508).
+        element.beam.isSlanted = (slantAngle.Get () != 0.0);
+    }
+    bool isSlanted = false;
+    if (parameters.Get ("isSlanted", isSlanted)) {
+        element.beam.isSlanted = isSlanted;
+    }
+    auto profileAngle = GetOptionalDouble (parameters, "profileAngle");
+    if (profileAngle.HasValue ()) {
+        element.beam.profileAngle = profileAngle.Get ();
     }
     auto arcAngle = GetOptionalDouble (parameters, "arcAngle");
     if (arcAngle.HasValue ()) {
