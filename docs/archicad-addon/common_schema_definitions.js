@@ -1814,8 +1814,6 @@ var gSchemaDefinitions = {
             "displayName",
             "index",
             "type",
-            "dimension1",
-            "dimension2",
             "value",
             "isLocked",
             "flags"

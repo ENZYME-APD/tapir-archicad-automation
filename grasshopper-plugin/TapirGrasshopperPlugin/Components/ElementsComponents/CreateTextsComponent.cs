@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Texts", "text", FieldKind.Text, "Content of the text element.", required: true),
             new Field("Heights", "height", FieldKind.Number, "Text height in millimeters."),
             new Field("Angles", "angle", FieldKind.Number, "Rotation angle in radians."),
-            new Field("Justifications", "justification", FieldKind.Text, "Justification: Left, Center, Right or Full."),
+            new Field("Justifications", "justification", FieldKind.Text, "Justification: Left, Center, Right or Full.", valueList: () => new TextJustificationValueList ()),
             new Field("Pens", "pen", FieldKind.Integer, "Pen index of the text."),
             new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the text."),
             new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")

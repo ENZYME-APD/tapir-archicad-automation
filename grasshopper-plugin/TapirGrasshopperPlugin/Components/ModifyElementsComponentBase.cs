@@ -42,18 +42,23 @@ namespace TapirGrasshopperPlugin.Components
                 string inputName,
                 string jsonKey,
                 FieldKind kind,
-                string description)
+                string description,
+                Func<ValueList> valueList = null)
             {
                 InputName = inputName;
                 JsonKey = jsonKey;
                 Kind = kind;
                 Description = description;
+                ValueList = valueList;
             }
 
             public string InputName { get; }
             public string JsonKey { get; }
             public FieldKind Kind { get; }
             public string Description { get; }
+            // Creates the value list offering the accepted options of a string
+            // valued input; attached to the input automatically on the canvas.
+            public Func<ValueList> ValueList { get; }
         }
 
         // The name of the command's array parameter (e.g. "wallsWithDetails").
@@ -75,6 +80,19 @@ namespace TapirGrasshopperPlugin.Components
                 description,
                 subCategory)
         {
+        }
+
+        public override void AddedToDocument(
+            GH_Document document)
+        {
+            base.AddedToDocument(document);
+
+            var fields = Fields;
+            for (var i = 0; i < fields.Count; i++)
+            {
+                // + 1: the ElementGuids input comes before the field inputs.
+                fields[i].ValueList?.Invoke ().AddAsSource(this, i + 1);
+            }
         }
 
         protected override void AddInputs()
