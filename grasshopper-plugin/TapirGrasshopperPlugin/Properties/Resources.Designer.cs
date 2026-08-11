@@ -2343,5 +2343,77 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap StructureTypeValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("StructureTypeValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReferenceLineLocationValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReferenceLineLocationValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ReferencePlaneLocationValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ReferencePlaneLocationValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap AnchorPointValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AnchorPointValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap TextJustificationValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("TextJustificationValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MeshSkirtTypeValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MeshSkirtTypeValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MeshRidgeTypeValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MeshRidgeTypeValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DimensioningPresetValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DimensioningPresetValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap MEPDomainValueList
+        {
+            get {
+                object obj = ResourceManager.GetObject ("MEPDomainValueList", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

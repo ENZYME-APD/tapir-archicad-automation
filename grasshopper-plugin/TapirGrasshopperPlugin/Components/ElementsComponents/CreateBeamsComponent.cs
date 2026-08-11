@@ -29,7 +29,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("SlantAngles", "slantAngle", FieldKind.Number, "Slant angle of the beam in radians."),
             new Field("ArcAngles", "arcAngle", FieldKind.Number, "Arc angle in radians; a non-zero value makes the beam curved."),
             new Field("VerticalCurveHeights", "verticalCurveHeight", FieldKind.Number, "Height of the vertical curve of the beam."),
-            new Field("AnchorPoints", "anchorPoint", FieldKind.Text, "Anchor point: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight."),
+            new Field("AnchorPoints", "anchorPoint", FieldKind.Text, "Anchor point: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight.", valueList: () => new AnchorPointValueList ()),
             new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the beam.")
         };
 

@@ -26,7 +26,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Widths", "width", FieldKind.Number, "Width of the column core."),
             new Field("Depths", "depth", FieldKind.Number, "Depth of the column core."),
             new Field("AxisRotationAngles", "axisRotationAngle", FieldKind.Number, "Rotation angle of the column axis in radians."),
-            new Field("CoreAnchors", "coreAnchor", FieldKind.Text, "Core anchor: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight."),
+            new Field("CoreAnchors", "coreAnchor", FieldKind.Text, "Core anchor: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight.", valueList: () => new AnchorPointValueList ()),
             new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the column.")
         };
 

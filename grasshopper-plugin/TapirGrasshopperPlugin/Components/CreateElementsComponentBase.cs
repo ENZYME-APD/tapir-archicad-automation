@@ -53,7 +53,8 @@ namespace TapirGrasshopperPlugin.Components
                 FieldKind kind,
                 string description,
                 bool required = false,
-                int minPointsPerBranch = 0)
+                int minPointsPerBranch = 0,
+                Func<ValueList> valueList = null)
             {
                 InputName = inputName;
                 JsonKey = jsonKey;
@@ -61,6 +62,7 @@ namespace TapirGrasshopperPlugin.Components
                 Description = description;
                 Required = required;
                 MinPointsPerBranch = minPointsPerBranch;
+                ValueList = valueList;
             }
 
             public string InputName { get; }
@@ -69,6 +71,9 @@ namespace TapirGrasshopperPlugin.Components
             public string Description { get; }
             public bool Required { get; }
             public int MinPointsPerBranch { get; }
+            // Creates the value list offering the accepted options of a string
+            // valued input; attached to the input automatically on the canvas.
+            public Func<ValueList> ValueList { get; }
         }
 
         // The name of the command's array parameter (e.g. "wallsData").
@@ -161,6 +166,18 @@ namespace TapirGrasshopperPlugin.Components
                     "One JSON object per element with further optional settings matching the " +
                     "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
                 SetOptionality(fields.Count);
+            }
+        }
+
+        public override void AddedToDocument(
+            GH_Document document)
+        {
+            base.AddedToDocument(document);
+
+            var fields = Fields;
+            for (var i = 0; i < fields.Count; i++)
+            {
+                fields[i].ValueList?.Invoke ().AddAsSource(this, i);
             }
         }
 

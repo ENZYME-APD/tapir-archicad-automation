@@ -23,7 +23,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             new Field("ZCoordinates", "zCoordinate", FieldKind.Number, "Reference level of the slab."),
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the slab."),
-            new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic or Composite."),
+            new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic or Composite.", valueList: () => new StructureTypeValueList ()),
             new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute for Basic structure."),
             new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure.")
         };

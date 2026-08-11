@@ -26,7 +26,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the wall."),
             new Field("BottomOffsets", "bottomOffset", FieldKind.Number, "Vertical offset of the wall bottom from the home story level."),
             new Field("Offsets", "offset", FieldKind.Number, "Offset of the wall from its reference line."),
-            new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic, Composite or Profile."),
+            new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic, Composite or Profile.", valueList: () => new StructureTypeValueList ()),
             new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute for Basic structure."),
             new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure."),
             new Field("ProfileGuids", "profileId", FieldKind.AttributeGuid, "Profile attribute for Profile structure.")
