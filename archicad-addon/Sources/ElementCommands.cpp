@@ -206,6 +206,148 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
     return NoError;
 }
 
+// The elements drawn in a section/elevation/interior elevation database, together with the
+// owner element each of them was generated from. Every other listing command converts a
+// section element to its owner (GetParentElemOfSectElem above), so this is the only way to
+// obtain a raw API_SectElemID guid - which is what CreateAssociativeDimensionsOnSection
+// requires for its sectionElementId (#509).
+template <typename ListProxyType>
+static GSErrCode GetSectionElementsFromCurrentDatabase (ListProxyType& sectionElementsListProxy)
+{
+    GS::Array<API_Guid> elemList;
+    GSErrCode err = ACAPI_Element_GetElemList (API_SectElemID, &elemList);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& elemGuid : elemList) {
+        API_Element element = {};
+        element.header.guid = elemGuid;
+        if (ACAPI_Element_Get (&element) != NoError) {
+            continue;
+        }
+
+        GS::ObjectState sectionElement;
+        sectionElement.Add ("sectionElementId", CreateGuidObjectState (elemGuid));
+        sectionElement.Add ("ownerElementId", CreateGuidObjectState (element.sectElem.parentGuid));
+
+        // The owner lives in the model, not in this database, so its header is not always
+        // readable while the section database is the current one - the type is reported only
+        // when it resolves, rather than guessed.
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = element.sectElem.parentGuid;
+        if (ACAPI_Element_GetHeader (&ownerHead) == NoError) {
+            sectionElement.Add ("ownerElementType", GetElementTypeNonLocalizedName (GetElemTypeId (ownerHead)));
+        }
+
+        sectionElementsListProxy (sectionElement);
+    }
+
+    return NoError;
+}
+
+GetSectionElementsCommand::GetSectionElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSectionElementsCommand::GetName () const
+{
+    return "GetSectionElements";
+}
+
+GS::Optional<GS::UniString> GetSectionElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "databases": {
+                "$ref": "#/Databases",
+                "description": "The section, elevation or interior elevation databases to list the section elements of. If omitted, the current database is used."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetSectionElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "sectionElements": {
+                "type": "array",
+                "description": "The elements drawn in the given databases, each with the owner element it was generated from.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "sectionElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of the section element itself, accepted by CreateAssociativeDimensionsOnSection as sectionElementId."
+                        },
+                        "ownerElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of the owner element the section element was generated from - this is what every other listing command returns."
+                        },
+                        "ownerElementType": {
+                            "$ref": "#/ElementType",
+                            "description": "The type of the owner element. Only present when the owner's header is readable from the section database."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "sectionElementId",
+                        "ownerElementId"
+                    ]
+                }
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sectionElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetSectionElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    const auto& sectionElements = response.AddList<GS::ObjectState> ("sectionElements");
+
+    GS::Array<GS::ObjectState> databases;
+    if (!parameters.Get ("databases", databases) || databases.IsEmpty ()) {
+        const GSErrCode err = GetSectionElementsFromCurrentDatabase (sectionElements);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to list the section elements of the current database.");
+        }
+        return response;
+    }
+
+    const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+    const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+    auto action = [&]() -> GSErrCode {
+        return GetSectionElementsFromCurrentDatabase (sectionElements);
+    };
+    auto actionSuccess = [&]() -> void {
+        executionResultForDatabases (CreateSuccessfulExecutionResult ());
+    };
+    auto actionFailure = [&](GSErrCode err, const GS::UniString& errMsg) -> void {
+        executionResultForDatabases (CreateFailedExecutionResult (err, errMsg));
+    };
+
+    const GSErrCode err = ExecuteActionForEachDatabase (databaseIds, action, actionSuccess, actionFailure);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
+    }
+
+    return response;
+}
+
 GetElementsByTypeCommand::GetElementsByTypeCommand () :
     CommandBase (CommonSchema::Used)
 {
