@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Attributes;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Components
@@ -138,6 +139,13 @@ namespace TapirGrasshopperPlugin.Components
                 "One JSON object per element with further optional settings matching the " +
                 "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
             SetOptionality(index);
+        }
+
+        protected override void AddOutputs()
+        {
+            OutTexts(
+                "ErrorMessages",
+                "Error message of each element (empty when it was modified successfully).");
         }
 
         private bool TryApply<T>(
@@ -290,11 +298,18 @@ namespace TapirGrasshopperPlugin.Components
 
             var parameters = new JObject { [ArrayKey] = items };
 
-            TryGetCadResponse(
-                CommandName,
-                parameters,
-                ToAddOn,
-                out _);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            da.SetDataList(
+                0,
+                ExecutionResultsResponse.ErrorMessages(response));
         }
     }
 }

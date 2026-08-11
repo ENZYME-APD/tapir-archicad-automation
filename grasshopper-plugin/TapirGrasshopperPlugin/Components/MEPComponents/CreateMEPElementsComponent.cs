@@ -4,6 +4,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.MEPComponents
 {
@@ -45,6 +46,16 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "Rotation vector of each element (input only 1 to use the same rotation for all). Optional.");
 
             SetOptionality(new[] { 2, 3, 4 });
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "ElementGuids",
+                "Identifier of each created MEP element.");
+
+            OutErrorMessages(
+                "Error message of each MEP element (empty when it was created successfully).");
         }
 
         protected override void Solve(
@@ -136,11 +147,13 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
 
             var parameters = new JObject { ["elementsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithCreatedIds<ElementGuid>(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da,
+                "elements",
+                "elementId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

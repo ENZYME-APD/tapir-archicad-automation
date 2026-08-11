@@ -33,6 +33,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             SetOptionality(1);
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "NavigatorItemGuids",
+                "Identifier of each created item.");
+
+            OutErrorMessages(
+                "Error message of each item (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -79,10 +89,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithCreatedIds<NavigatorGuid>(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da,
+                "navigatorItems",
+                "navigatorItemId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

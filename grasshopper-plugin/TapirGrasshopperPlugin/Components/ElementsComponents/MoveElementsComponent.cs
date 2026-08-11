@@ -35,6 +35,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 false);
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each element (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -92,10 +98,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

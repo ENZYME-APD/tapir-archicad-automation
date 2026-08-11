@@ -48,6 +48,16 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
             SetOptionality(new[] { 1, 2, 3, 4 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "KeynoteItemGuids",
+                "Identifier of each created keynote item.");
+
+            OutErrorMessages(
+                "Error message of each item (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -133,11 +143,13 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
 
             var parameters = new JObject { ["itemsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithCreatedIds<KeynoteItemGuid>(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da,
+                "keynoteItemIdsOrErrors",
+                "keynoteItemId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

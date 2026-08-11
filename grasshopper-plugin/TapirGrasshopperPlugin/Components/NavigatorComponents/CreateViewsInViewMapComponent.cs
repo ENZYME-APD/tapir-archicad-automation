@@ -38,6 +38,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             SetOptionality(new[] { 1, 2 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "NavigatorItemGuids",
+                "Identifier of each created view.");
+
+            OutErrorMessages(
+                "Error message of each view (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -106,11 +116,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             var parameters = new JObject { ["viewsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithCreatedIds<NavigatorGuid>(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da,
+                "navigatorItems",
+                "navigatorItemId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

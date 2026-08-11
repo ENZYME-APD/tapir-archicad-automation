@@ -6,6 +6,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.GuidObjects;
 using TapirGrasshopperPlugin.Types.Navigator;
 
@@ -50,6 +51,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "Clip polygon points for each drawing (one branch per drawing, at least 3 points; empty branch = no clipping). Optional.");
 
             SetOptionality(new[] { 3, 4, 5 });
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "ElementGuids",
+                "Identifier of each created drawing.");
+
+            OutErrorMessages(
+                "Error message of each drawing (empty when it was created successfully).");
         }
 
         protected override void Solve(
@@ -192,11 +203,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             var parameters = new JObject { ["drawingsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithCreatedIds<ElementGuid>(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da,
+                "elements",
+                "elementId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

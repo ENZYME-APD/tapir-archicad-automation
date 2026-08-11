@@ -31,6 +31,16 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             SetOptionality(1);
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "PropertyGroupGuids",
+                "Identifier of each created property group.");
+
+            OutErrorMessages(
+                "Error message of each property group (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -82,10 +92,13 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithCreatedIds<PropertyGroupGuidObject>(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da,
+                "propertyGroupIds",
+                "propertyGroupId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

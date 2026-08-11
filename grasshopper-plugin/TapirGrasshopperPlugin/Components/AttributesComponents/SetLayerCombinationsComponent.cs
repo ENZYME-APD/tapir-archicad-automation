@@ -52,6 +52,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Intersection groups of the layers in the combinations.");
         }
 
+        protected override void AddOutputs()
+        {
+            AttributeCreateResult.AddOutputs(this);
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -210,10 +215,19 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
-            SetCadValues(
-                CommandName,
-                layerCombinationDataArray,
-                ToAddOn);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    Newtonsoft.Json.Linq.JObject.FromObject(
+                        layerCombinationDataArray),
+                    ToAddOn,
+                    out var response))
+            {
+                return;
+            }
+
+            AttributeCreateResult.SetOutputs(
+                da,
+                response);
         }
 
         protected override System.Drawing.Bitmap Icon =>

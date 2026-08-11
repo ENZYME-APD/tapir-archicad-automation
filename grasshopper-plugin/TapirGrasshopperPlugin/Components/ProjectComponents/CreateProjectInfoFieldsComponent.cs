@@ -31,6 +31,21 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             SetOptionality(1);
         }
 
+        protected override void AddOutputs()
+        {
+            OutTexts(
+                "Ids",
+                "Id of each project info field of the project after the creation.");
+
+            OutTexts(
+                "Names",
+                "Display name of each project info field.");
+
+            OutTexts(
+                "Values",
+                "Value of each project info field.");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -79,10 +94,34 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     });
             }
 
-            SetCadValues(
-                CommandName,
-                input,
-                ToAddOn);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    Newtonsoft.Json.Linq.JObject.FromObject(input),
+                    ToAddOn,
+                    out var response))
+            {
+                return;
+            }
+
+            // The command answers with every project info field of the project,
+            // including the ids Archicad generated for the new ones.
+            var ids = new List<string>();
+            var fieldNames = new List<string>();
+            var fieldValues = new List<string>();
+
+            if (response["fields"] is Newtonsoft.Json.Linq.JArray fields)
+            {
+                foreach (var field in fields)
+                {
+                    ids.Add(field["projectInfoId"]?.ToString() ?? "");
+                    fieldNames.Add(field["projectInfoName"]?.ToString() ?? "");
+                    fieldValues.Add(field["projectInfoValue"]?.ToString() ?? "");
+                }
+            }
+
+            da.SetDataList(0, ids);
+            da.SetDataList(1, fieldNames);
+            da.SetDataList(2, fieldValues);
         }
 
         protected override System.Drawing.Bitmap Icon =>

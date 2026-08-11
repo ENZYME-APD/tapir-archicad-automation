@@ -25,6 +25,12 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 "Names of the design option sets to create.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each design option set (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -40,10 +46,11 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 DesignOptionSets = names
             };
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

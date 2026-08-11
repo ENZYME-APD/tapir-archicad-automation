@@ -39,11 +39,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var parameters = new JObject { ["suspendGroups"] = suspend };
 
-            TryGetCadResponse(
-                CommandName,
-                parameters,
-                ToAddOn,
-                out _);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            // The command reports a failed switch in its executionResult
+            // instead of failing the call itself.
+            var result = response["executionResult"];
+            if (result != null &&
+                (bool?)result["success"] != true)
+            {
+                this.AddError(
+                    result["error"]?["message"]?.ToString() ??
+                    "Failed to change the Suspend Groups mode.");
+            }
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -96,6 +96,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutIntegers(
                 "DrawOrders",
                 "Drawing orders.");
+
+            OutCurveTree(
+                "FloorPlanPolygons",
+                "The cut-fill polygons of each element as drawn on the floor plan " +
+                "(one branch per element, empty for the elements without a cut fill).");
         }
 
         protected override void ManageResponse(
@@ -107,6 +112,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var storyIndices = new List<int>();
             var layerIndices = new List<int>();
             var drawIndices = new List<int>();
+            var floorPlanPolygonsTree = new DataTree<PolyCurve>();
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
@@ -126,6 +132,25 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 storyIndices.Add(detailsOfElement.FloorIndex);
                 layerIndices.Add(detailsOfElement.LayerIndex);
                 drawIndices.Add(detailsOfElement.DrawIndex);
+
+                var floorPlanPolygons = new List<PolyCurve>();
+                if (detailsOfElement.FloorPlanPolygons != null)
+                {
+                    foreach (var polygon in detailsOfElement.FloorPlanPolygons)
+                    {
+                        floorPlanPolygons.Add(
+                            Helps.Convert.ToPolyCurve(
+                                polygon.Coordinates,
+                                new List<Arc>(),
+                                0.0));
+                    }
+                }
+
+                // One branch per element, so the branch index matches the
+                // ElementGuids output even when an element has no cut fill.
+                floorPlanPolygonsTree.AddRange(
+                    floorPlanPolygons,
+                    new GH_Path(validElements.Count));
             }
 
             da.SetDataList(
@@ -146,6 +171,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataList(
                 5,
                 drawIndices);
+            da.SetDataTree(
+                6,
+                floorPlanPolygonsTree);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -49,6 +49,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             SetOptionality(new[] { 1, 2, 3, 4 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "DatabaseGuids",
+                "Identifier of each created layout.");
+
+            OutErrorMessages(
+                "Error message of each layout (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -144,11 +154,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             var parameters = new JObject { ["layoutsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithCreatedIds<DatabaseGuidObject>(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da,
+                "databases",
+                "databaseId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

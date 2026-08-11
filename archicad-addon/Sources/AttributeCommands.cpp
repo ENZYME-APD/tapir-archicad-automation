@@ -2656,7 +2656,7 @@ GS::Optional<GS::UniString> CreateAttributesCommandBase::GetRawResponseSchema ()
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3620,7 +3620,7 @@ GS::Optional<GS::UniString> CreateFillsCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -4478,7 +4478,7 @@ GS::Optional<GS::UniString> CreatePenTablesCommand::GetRawResponseSchema () cons
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -5000,7 +5000,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -5324,7 +5324,7 @@ GS::Optional<GS::UniString> CreateCompositesCommand::GetRawResponseSchema () con
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,

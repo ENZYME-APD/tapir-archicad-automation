@@ -43,6 +43,12 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
             SetOptionality(new[] { 1, 2, 3 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each keynote folder (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -107,11 +113,11 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
 
             var parameters = new JObject { ["foldersData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

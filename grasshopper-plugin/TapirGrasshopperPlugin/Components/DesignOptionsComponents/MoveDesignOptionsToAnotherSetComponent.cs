@@ -31,6 +31,12 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 "Names of the target design option sets (input only 1 to move all design options into the same set).");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each design option (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -80,10 +86,11 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -27,6 +27,12 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 "Identifiers of the classification items to delete.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each classification item (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -55,10 +61,11 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     new ClassificationItemGuidWrapper { ClassificationItemId = id });
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

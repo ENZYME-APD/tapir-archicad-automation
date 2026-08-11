@@ -25,6 +25,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "Ids of the custom project info fields to delete (ids starting with 'autotext-').");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each project info field (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -40,10 +46,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 ProjectInfoIds = ids
             };
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

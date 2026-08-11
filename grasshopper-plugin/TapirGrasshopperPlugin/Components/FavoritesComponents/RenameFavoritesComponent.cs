@@ -29,6 +29,12 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 "New names of the Favorites.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each favorite (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -68,10 +74,11 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

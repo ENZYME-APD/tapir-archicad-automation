@@ -29,6 +29,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Identifiers of the elements to group (one branch per group).");
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "GroupGuids",
+                "Identifier of each created group.");
+
+            OutErrorMessages(
+                "Error message of each group (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -70,10 +80,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     new ElementGroupParameters { Elements = elements });
             }
 
-            SetCadValues(
+            SetCadValuesWithCreatedIds<GroupGuid>(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da,
+                "groupGuids",
+                "groupId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

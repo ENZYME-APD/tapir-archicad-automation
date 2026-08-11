@@ -57,6 +57,12 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             SetOptionality(new[] { 1, 2, 3, 4, 5 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each routing element (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -163,11 +169,11 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
 
             var parameters = new JObject { ["routingElementsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

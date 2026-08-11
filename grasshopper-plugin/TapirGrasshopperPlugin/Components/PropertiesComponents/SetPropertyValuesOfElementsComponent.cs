@@ -35,6 +35,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "Single value or list of values to set for the corresponding elements.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each property value (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -88,10 +94,11 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 input.ElementPropertyValues.Add(elemPropertyValue);
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -100,6 +100,17 @@ namespace TapirGrasshopperPlugin.Types.Element
 
         [JsonProperty("details")]
         public JObject Details;
+
+        // The cut-fill polygons as drawn on the floor plan (wall joins resolved
+        // by Archicad). Absent for elements without a cut fill.
+        [JsonProperty("floorPlanPolygons")]
+        public List<FloorPlanPolygon> FloorPlanPolygons;
+    }
+
+    public class FloorPlanPolygon
+    {
+        [JsonProperty("coordinates")]
+        public List<Point2D> Coordinates;
     }
 
     public class DetailsOfElementsObj

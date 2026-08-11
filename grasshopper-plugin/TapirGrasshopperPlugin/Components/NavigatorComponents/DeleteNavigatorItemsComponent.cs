@@ -24,6 +24,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "Identifier of navigator items to delete.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each navigator item (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -34,10 +40,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToArchicad);
+                ToArchicad,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

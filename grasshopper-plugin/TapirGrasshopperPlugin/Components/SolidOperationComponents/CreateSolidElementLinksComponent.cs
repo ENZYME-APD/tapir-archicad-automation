@@ -36,6 +36,12 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                 "The solid operation type: Subtraction, SubtractionUpwards, SubtractionDownwards, Intersection or Addition.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each operation (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -91,10 +97,11 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

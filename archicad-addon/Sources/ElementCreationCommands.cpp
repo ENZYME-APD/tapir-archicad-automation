@@ -23,7 +23,7 @@ GS::Optional<GS::UniString> CreateElementsCommandBase::GetRawResponseSchema () c
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,

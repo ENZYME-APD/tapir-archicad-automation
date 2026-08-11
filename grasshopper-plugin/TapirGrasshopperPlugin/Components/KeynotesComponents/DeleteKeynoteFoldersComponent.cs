@@ -26,6 +26,12 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
                 "Identifiers of the keynote folders to delete.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each keynote folder (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -36,11 +42,11 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
                 return;
             }
 
-            TryGetCadResponse(
+            SetCadValuesWithErrorMessages(
                 CommandName,
-                JObject.FromObject(input),
+                input,
                 ToAddOn,
-                out _);
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>
