@@ -1465,6 +1465,24 @@ static GS::HashTable<API_Guid, API_Guid> BuildOpeningToHostMap (const GS::HashSe
     return result;
 }
 
+// JSON has no separate integer type, so clients routinely send 2.0 where an index is
+// expected. GS::ObjectState::Get with an integer target rejects such a value, which used to
+// drop the field without any error (#530). These accept a floating point value as well and
+// round it to the nearest integer.
+template <typename IntType>
+static bool GetIndexValue (const GS::ObjectState& os, const char* fieldName, IntType& target)
+{
+    if (os.Get (fieldName, target)) {
+        return true;
+    }
+    double doubleValue = 0.0;
+    if (os.Get (fieldName, doubleValue)) {
+        target = static_cast<IntType> (doubleValue < 0.0 ? doubleValue - 0.5 : doubleValue + 0.5);
+        return true;
+    }
+    return false;
+}
+
 GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementsWithDetails;
@@ -1482,7 +1500,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         const GS::ObjectState* det = ewd.Get ("details");
         if (eid == nullptr || det == nullptr) continue;
         short tgt = -1;
-        det->Get ("drawIndex", tgt);
+        GetIndexValue (*det, "drawIndex", tgt);
         if (tgt > 0 && tgt <= 7) continue;   // 1-7: no host needed
         API_Element hdr = {};
         hdr.header.guid = GetGuidFromObjectState (*eid);
@@ -1532,18 +1550,18 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool hasElementChanges = false;
-            if (details->Get ("floorIndex", elem.header.floorInd)) {
+            if (GetIndexValue (*details, "floorIndex", elem.header.floorInd)) {
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
                 hasElementChanges = true;
             }
             Int32 layerIndex;
-            if (details->Get ("layerIndex", layerIndex)) {
+            if (GetIndexValue (*details, "layerIndex", layerIndex)) {
                 elem.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
                 hasElementChanges = true;
             }
             short drwIndexTarget = -1;
-            details->Get ("drawIndex", drwIndexTarget);
+            GetIndexValue (*details, "drawIndex", drwIndexTarget);
 
             const GS::ObjectState* typeSpecificDetails = details->Get ("typeSpecificDetails");
             if (typeSpecificDetails != nullptr) {
