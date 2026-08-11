@@ -2,6 +2,7 @@ using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.Navigator;
 
@@ -67,6 +68,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     out JObject response))
             {
                 return;
+            }
+
+            // Per-database failures (e.g. a floor plan passed instead of a section) are
+            // reported here; without this the component would just return three empty
+            // lists and look like an empty section.
+            if (response["executionResultForDatabases"] is JArray databaseResults)
+            {
+                foreach (var result in databaseResults)
+                {
+                    if ((bool?)result["success"] != true)
+                    {
+                        this.AddError(
+                            result["error"]?["message"]?.ToString() ??
+                            "Failed to list the section elements of a database.");
+                    }
+                }
             }
 
             var sectionElementGuids = new List<object>();
