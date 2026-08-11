@@ -32,7 +32,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute for Basic structure."),
             new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure."),
             new Field("ProfileGuids", "profileId", FieldKind.AttributeGuid, "Profile attribute for Profile structure."),
-            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the wall.")
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the wall."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

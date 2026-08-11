@@ -25,7 +25,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Heights", "height", FieldKind.Number, "Height of the hotspot."),
             new Field("PenIndices", "penIndex", FieldKind.Integer, "Pen index of the hotspot."),
             new Field("LayerIndices", "layerIndex", FieldKind.Integer, "Layer attribute index to place the hotspot on."),
-            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the hotspot.")
+            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the hotspot."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

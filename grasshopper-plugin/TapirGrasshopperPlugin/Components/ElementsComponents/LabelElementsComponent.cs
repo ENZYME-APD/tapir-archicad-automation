@@ -26,7 +26,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("BegPoints", "begCoordinate", FieldKind.Point2D, "Beginning point of the label pointer line (only X and Y are used)."),
             new Field("MidPoints", "midCoordinate", FieldKind.Point2D, "Middle point of the label pointer line (only X and Y are used)."),
             new Field("EndPoints", "endCoordinate", FieldKind.Point2D, "End point of the label pointer line (only X and Y are used)."),
-            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the label.")
+            new Field("FloorIndices", "floorInd", FieldKind.Number, "Home story index of the label."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

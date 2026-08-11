@@ -213,5 +213,14 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
     const GS::Array<GS::ObjectState>& polygonArcs,
     const GS::Array<GS::ObjectState>& holes);
 
+// Pushes the named favorite into the tool defaults of expectedTypeId, so a subsequent
+// ACAPI_Element_GetDefaults returns the favorite's settings as the baseline for a new
+// element. Mirrors ApplyFavoritesToElementDefaultsCommand: the element state plus the
+// favorite's classifications, category values and user properties (some favorites are
+// rejected by the create call without that extra metadata). Returns APIERR_REFUSEDPAR
+// when the favorite belongs to a different element type. Defined in
+// ExtendedElementCommands.cpp, next to the Window/Door specific variant.
+GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API_ElemTypeID expectedTypeId);
+
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);

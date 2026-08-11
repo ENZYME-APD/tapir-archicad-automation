@@ -65,7 +65,66 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
         bool setAutoTextFlag = false;
         ACAPI_AutoText_ChangeAutoTextFlag (&setAutoTextFlag);
 
+        // Per-item "favoriteName" support. Favorites can only be applied through the
+        // tool defaults, which are global and outlive the command, so the defaults are
+        // snapshotted here and restored at the end - and also before any item that does
+        // NOT name a favorite, otherwise it would silently inherit the favorite of the
+        // item before it. Untouched (no allocation, no API traffic) when no item names
+        // a favorite, which keeps the common path exactly as it was.
+        const bool anyFavoriteName = [&] () {
+            for (const GS::ObjectState& data : dataArray) {
+                GS::UniString name;
+                if (data.Get ("favoriteName", name) && !name.IsEmpty ()) {
+                    return true;
+                }
+            }
+            return false;
+        } ();
+
+        API_Element defaultsSnapshot = element;
+        API_ElementMemo defaultsSnapshotMemo = {};
+        const GS::OnExit snapshotGuard ([&] () {
+            if (anyFavoriteName) {
+                ACAPI_DisposeElemMemoHdls (&defaultsSnapshotMemo);
+            }
+        });
+        if (anyFavoriteName) {
+            ACAPI_Element_GetDefaults (&defaultsSnapshot, &defaultsSnapshotMemo);
+        }
+        bool favoriteApplied = false;
+
         for (const GS::ObjectState& data : dataArray) {
+            if (anyFavoriteName) {
+                GS::UniString favoriteName;
+                const bool hasFavoriteName = data.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
+                if (hasFavoriteName) {
+                    const GSErrCode favoriteErr = ApplyFavoriteToElementDefaults (favoriteName, elemTypeID);
+                    if (favoriteErr != NoError) {
+                        elements (CreateErrorResponse (favoriteErr,
+                            "Failed to apply favoriteName '" + favoriteName + "' to the " + elemTypeName + " defaults."));
+                        continue;
+                    }
+                    favoriteApplied = true;
+                } else if (favoriteApplied) {
+                    API_Element restoreMask;
+                    ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+                    ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
+                    favoriteApplied = false;
+                }
+
+                // Re-read the (favorite-applied or restored) tool defaults so they are
+                // the baseline this item's explicit fields are written on top of.
+                ACAPI_DisposeElemMemoHdls (&memo);
+                memo = {};
+                element = {};
+#ifdef ServerMainVers_2600
+                element.header.type   = elemTypeID;
+#else
+                element.header.typeID = elemTypeID;
+#endif
+                ACAPI_Element_GetDefaults (&element, &memo);
+            }
+
             auto os = SetTypeSpecificParameters (element, memo, stories, data);
             if (os.HasValue ()) {
                 elements (*os);
@@ -84,6 +143,15 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
             elements (CreateElementIdObjectState (element.header.guid));
+        }
+
+        // Leave the tool defaults as they were found: applying a favorite is a global
+        // side effect that would otherwise change what the user's next manual placement
+        // (or a later command) starts from.
+        if (favoriteApplied) {
+            API_Element restoreMask;
+            ACAPI_ELEMENT_MASK_SETFULL (restoreMask);
+            ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
         }
 
         ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
@@ -115,6 +183,10 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                     "type": "object",
                     "description": "The parameters of the new Column.",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "coordinates": {
                             "type": "object",
                             "description" : "3D coordinate.",
@@ -278,6 +350,10 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                 "type": "object",
                 "description" : "The parameters of the new Slab.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "level": {
                         "type": "number",
                         "description" : "The Z coordinate value of the reference line of the slab."	
@@ -450,6 +526,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                 "type": "object",
                 "description" : "The parameters of the new Zone.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorIndex": {
                         "type": "number"
                     },
@@ -649,6 +729,10 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                 "type": "object",
                 "description" : "The parameters of the new Polyline.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
@@ -786,6 +870,10 @@ GS::Optional<GS::UniString> CreateLineElementsCommand::GetInputParametersSchema 
                 "type": "object",
                 "description": "The parameters of the new Line.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -855,6 +943,10 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                 "type": "object",
                 "description": "The parameters of the new Arc.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -936,6 +1028,10 @@ GS::Optional<GS::UniString> CreateCirclesCommand::GetInputParametersSchema () co
                 "type": "object",
                 "description": "The parameters of the new Circle.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -1005,6 +1101,10 @@ GS::Optional<GS::UniString> CreateHotspotsCommand::GetInputParametersSchema () c
                 "type": "object",
                 "description": "The parameters of the new Hotspot.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -1078,6 +1178,10 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                 "type": "object",
                 "description": "The parameters of the new Hatch.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -1228,6 +1332,10 @@ GS::Optional<GS::UniString> CreateSplinesCommand::GetInputParametersSchema () co
                 "type": "object",
                 "description": "The parameters of the new Spline.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -1393,6 +1501,10 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                        },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                         }
                     },
                     "additionalProperties": false,
@@ -1952,6 +2064,10 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                 "type": "object",
                 "description" : "The parameters of the new Mesh.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorIndex": {
                         "type": "integer"
                     },
@@ -2123,6 +2239,10 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                 "type": "object",
                 "description": "The parameters of the new Label.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "parentElementId": {
                         "$ref": "#/ElementId",
                         "description" : "The parent element if the label is an associative label."	
@@ -2335,6 +2455,10 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                 "type": "object",
                 "description": "The parameters of the new Text element.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "coordinate": {
                         "$ref": "#/Coordinate3D",
                         "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."

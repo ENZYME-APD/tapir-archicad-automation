@@ -24,7 +24,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Points", "coordinates", FieldKind.Point3D, "Insertion points of the lamps.", required: true),
             new Field("LibraryPartNames", "libraryPartName", FieldKind.Text, "Name of the library part to place.", required: true),
             new Field("Angles", "angle", FieldKind.Number, "Rotation angle in radians."),
-            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the lamp.")
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the lamp."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

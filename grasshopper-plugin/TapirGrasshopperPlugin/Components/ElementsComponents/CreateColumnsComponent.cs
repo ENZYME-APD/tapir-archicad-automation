@@ -27,7 +27,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("Depths", "depth", FieldKind.Number, "Depth of the column core."),
             new Field("AxisRotationAngles", "axisRotationAngle", FieldKind.Number, "Rotation angle of the column axis in radians."),
             new Field("CoreAnchors", "coreAnchor", FieldKind.Text, "Core anchor: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight.", valueList: () => new AnchorPointValueList ()),
-            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the column.")
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the column."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

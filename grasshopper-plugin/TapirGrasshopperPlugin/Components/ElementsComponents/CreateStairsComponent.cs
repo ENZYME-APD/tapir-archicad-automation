@@ -28,7 +28,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("StepNums", "stepNum", FieldKind.Integer, "Number of steps."),
             new Field("RiserHeights", "riserHeight", FieldKind.Number, "Height of the risers."),
             new Field("TreadDepths", "treadDepth", FieldKind.Number, "Depth of the treads."),
-            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the stair.")
+            new Field("FloorIndices", "floorIndex", FieldKind.Integer, "Home story index of the stair."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;

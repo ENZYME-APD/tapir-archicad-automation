@@ -24,7 +24,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Field("LayerIndices", "layerIndex", FieldKind.Integer, "Index of the layer of the polyline."),
             new Field("LinePenIndices", "linePenIndex", FieldKind.Integer, "Pen index of the polyline."),
             new Field("LineTypeIndices", "lineTypeIndex", FieldKind.Integer, "Line type index of the polyline."),
-            new Field("RoomSeparators", "roomSeparator", FieldKind.Boolean, "The polyline acts as a room separator.")
+            new Field("RoomSeparators", "roomSeparator", FieldKind.Boolean, "The polyline acts as a room separator."),
+            new Field("FavoriteNames", "favoriteName", FieldKind.Text, "Name of a favorite to base the new element on. Its settings are applied first, then the other inputs override them.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
