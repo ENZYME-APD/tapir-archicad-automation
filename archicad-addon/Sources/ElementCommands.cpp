@@ -13,6 +13,7 @@
 #endif
 
 #include <algorithm>
+#include <cmath>
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
@@ -1465,6 +1466,25 @@ static GS::HashTable<API_Guid, API_Guid> BuildOpeningToHostMap (const GS::HashSe
     return result;
 }
 
+// JSON has no separate integer type, so clients routinely send 2.0 where an index is
+// expected. GS::ObjectState::Get with an integer target rejects such a value, which used to
+// drop the field without any error (#530). This accepts a floating point value as well and
+// floors it - std::floor, not truncation, so a negative index (stories below 0) rounds the
+// same way as a positive one.
+template <typename IntType>
+static bool GetIndexValue (const GS::ObjectState& os, const char* fieldName, IntType& target)
+{
+    if (os.Get (fieldName, target)) {
+        return true;
+    }
+    double doubleValue = 0.0;
+    if (os.Get (fieldName, doubleValue)) {
+        target = static_cast<IntType> (std::floor (doubleValue));
+        return true;
+    }
+    return false;
+}
+
 GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementsWithDetails;
@@ -1482,7 +1502,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         const GS::ObjectState* det = ewd.Get ("details");
         if (eid == nullptr || det == nullptr) continue;
         short tgt = -1;
-        det->Get ("drawIndex", tgt);
+        GetIndexValue (*det, "drawIndex", tgt);
         if (tgt > 0 && tgt <= 7) continue;   // 1-7: no host needed
         API_Element hdr = {};
         hdr.header.guid = GetGuidFromObjectState (*eid);
@@ -1532,18 +1552,18 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool hasElementChanges = false;
-            if (details->Get ("floorIndex", elem.header.floorInd)) {
+            if (GetIndexValue (*details, "floorIndex", elem.header.floorInd)) {
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
                 hasElementChanges = true;
             }
             Int32 layerIndex;
-            if (details->Get ("layerIndex", layerIndex)) {
+            if (GetIndexValue (*details, "layerIndex", layerIndex)) {
                 elem.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
                 hasElementChanges = true;
             }
             short drwIndexTarget = -1;
-            details->Get ("drawIndex", drwIndexTarget);
+            GetIndexValue (*details, "drawIndex", drwIndexTarget);
 
             const GS::ObjectState* typeSpecificDetails = details->Get ("typeSpecificDetails");
             if (typeSpecificDetails != nullptr) {
