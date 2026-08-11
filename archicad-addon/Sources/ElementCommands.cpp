@@ -13,6 +13,7 @@
 #endif
 
 #include <algorithm>
+#include <cmath>
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).
@@ -1467,8 +1468,9 @@ static GS::HashTable<API_Guid, API_Guid> BuildOpeningToHostMap (const GS::HashSe
 
 // JSON has no separate integer type, so clients routinely send 2.0 where an index is
 // expected. GS::ObjectState::Get with an integer target rejects such a value, which used to
-// drop the field without any error (#530). These accept a floating point value as well and
-// round it to the nearest integer.
+// drop the field without any error (#530). This accepts a floating point value as well and
+// floors it - std::floor, not truncation, so a negative index (stories below 0) rounds the
+// same way as a positive one.
 template <typename IntType>
 static bool GetIndexValue (const GS::ObjectState& os, const char* fieldName, IntType& target)
 {
@@ -1477,7 +1479,7 @@ static bool GetIndexValue (const GS::ObjectState& os, const char* fieldName, Int
     }
     double doubleValue = 0.0;
     if (os.Get (fieldName, doubleValue)) {
-        target = static_cast<IntType> (doubleValue < 0.0 ? doubleValue - 0.5 : doubleValue + 0.5);
+        target = static_cast<IntType> (std::floor (doubleValue));
         return true;
     }
     return false;
