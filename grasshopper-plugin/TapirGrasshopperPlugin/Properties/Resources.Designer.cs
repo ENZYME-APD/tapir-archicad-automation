@@ -2415,5 +2415,13 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap GetSectionElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSectionElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }
