@@ -190,7 +190,7 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> GetMEPElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetMEPElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -303,7 +303,7 @@ GS::Optional<GS::UniString> GetMEPRoutingElementsCommand::GetInputParametersSche
     })";
 }
 
-GS::Optional<GS::UniString> GetMEPRoutingElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetMEPRoutingElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -410,7 +410,7 @@ GS::Optional<GS::UniString> GetMEPPortsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> GetMEPPortsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetMEPPortsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -500,7 +500,7 @@ GS::String GetMEPDistributionSystemsCommand::GetName () const
     return "GetMEPDistributionSystems";
 }
 
-GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -642,7 +642,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -811,7 +811,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> CreateMEPElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateMEPElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -979,7 +979,7 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1138,7 +1138,7 @@ GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetInputParametersSchema 
     })";
 }
 
-GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1245,7 +1245,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
     })";
 }
 
-GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",

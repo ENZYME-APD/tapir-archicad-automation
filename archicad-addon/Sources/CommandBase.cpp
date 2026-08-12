@@ -47,6 +47,13 @@ GS::Optional<GS::UniString> CommandBase::GetInputParametersSchema () const
     return {};
 }
 
+GS::Optional<GS::UniString> CommandBase::GetRawResponseSchema () const
+{
+    return {};
+}
+
+// Deliberately empty - see the comment on the declaration. The schema the command
+// declares is documented, not handed to Archicad's response validation.
 GS::Optional<GS::UniString> CommandBase::GetResponseSchema () const
 {
     return {};

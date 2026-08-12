@@ -99,7 +99,7 @@ GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetInputParametersSchema () c
 }
 
 
-GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetRawResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
