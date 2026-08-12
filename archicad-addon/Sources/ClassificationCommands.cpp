@@ -35,7 +35,7 @@ GS::Optional<GS::UniString> GetClassificationsOfElementsCommand::GetInputParamet
     })";
 }
 
-GS::Optional<GS::UniString> GetClassificationsOfElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetClassificationsOfElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -129,7 +129,7 @@ GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetInputParamet
     })";
 }
 
-GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -236,7 +236,7 @@ GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateClassificationSystemsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -356,7 +356,7 @@ GS::Optional<GS::UniString> CreateClassificationItemsCommand::GetInputParameters
     })";
 }
 
-GS::Optional<GS::UniString> CreateClassificationItemsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateClassificationItemsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -451,7 +451,7 @@ GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -526,7 +526,7 @@ GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetInputParameters
     })";
 }
 
-GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
