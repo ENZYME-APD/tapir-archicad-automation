@@ -29,7 +29,15 @@ public:
 #endif
     virtual GS::Optional<GS::UniString> GetSchemaDefinitions () const override final;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    // Archicad uses the response schema for exactly one thing: validating what
+    // the command returns. A failing command answers {"error": {code, message}}
+    // as the whole response, which no command's own schema accepts, so declaring
+    // one makes Archicad discard the error and report schema validation error
+    // 4009 instead - the caller never sees the message. Nothing else reads it:
+    // the documented schema comes from GetRawResponseSchema. So the API-facing
+    // one stays empty and the commands override GetRawResponseSchema.
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override final;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const;
 
 private:
     CommonSchema mCommonSchema;

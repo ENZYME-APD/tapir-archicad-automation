@@ -8,7 +8,7 @@ public:
     GetFavoritesByTypeCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -18,7 +18,7 @@ public:
     GetFavoritePreviewImageCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -28,7 +28,7 @@ public:
     ApplyFavoritesToElementDefaultsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -38,7 +38,7 @@ public:
     CreateFavoritesFromElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -48,7 +48,7 @@ public:
     ImportFavoritesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -58,7 +58,7 @@ public:
     ExportFavoritesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -68,7 +68,7 @@ public:
     ApplyFavoritesToElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -78,7 +78,7 @@ public:
     UpdateFavoritesFromElementsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -88,7 +88,7 @@ public:
     RenameFavoritesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -98,6 +98,6 @@ public:
     DeleteFavoritesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
