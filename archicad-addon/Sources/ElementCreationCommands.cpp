@@ -111,18 +111,25 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                     ACAPI_Element_ChangeDefaults (&defaultsSnapshot, &defaultsSnapshotMemo, &restoreMask);
                     favoriteApplied = false;
                 }
+            }
 
-                // Re-read the (favorite-applied or restored) tool defaults so they are
-                // the baseline this item's explicit fields are written on top of.
-                ACAPI_DisposeElemMemoHdls (&memo);
-                memo = {};
-                element = {};
+            // Every item starts from the (favorite-applied or restored) tool defaults.
+            // SetTypeSpecificParameters only writes the fields the item actually names,
+            // so without this the previous item's values survive into this one: confirmed
+            // live that CreateBeams with [{slantAngle: 0.3}, {}] slants BOTH beams, and
+            // CreateWalls with [{arcAngle: 0.5}, {}] curves both walls.
+            ACAPI_DisposeElemMemoHdls (&memo);
+            memo = {};
+            element = {};
 #ifdef ServerMainVers_2600
-                element.header.type   = elemTypeID;
+            element.header.type   = elemTypeID;
 #else
-                element.header.typeID = elemTypeID;
+            element.header.typeID = elemTypeID;
 #endif
-                ACAPI_Element_GetDefaults (&element, &memo);
+            err = ACAPI_Element_GetDefaults (&element, &memo);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to read the " + elemTypeName + " defaults."));
+                continue;
             }
 
             auto os = SetTypeSpecificParameters (element, memo, stories, data);
