@@ -5,6 +5,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.GuidObjects;
 using TapirGrasshopperPlugin.Types.Keynotes;
 
@@ -39,6 +40,16 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
                 "Applied to all labels. Optional; defaults to all fields.");
 
             SetOptionality(2);
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "ElementGuids",
+                "Identifier of each created keynote label.");
+
+            OutErrorMessages(
+                "Error message of each keynote label (empty when it was created successfully).");
         }
 
         protected override void Solve(
@@ -107,11 +118,13 @@ namespace TapirGrasshopperPlugin.Components.KeynotesComponents
 
             var parameters = new JObject { ["labelsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithCreatedIds<ElementGuid>(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da,
+                "elements",
+                "elementId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -31,6 +31,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Identifiers of the attributes to delete.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each attribute (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -71,10 +77,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

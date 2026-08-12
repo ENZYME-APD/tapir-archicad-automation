@@ -326,6 +326,44 @@
             "attributeId"
         ]
     },
+    "DatabaseIdOrError": {
+        "type": "object",
+        "description": "An Archicad database identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/DatabaseIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "DatabaseIdsOrErrors": {
+        "type": "array",
+        "description": "A list of Archicad database identifiers or errors.",
+        "items": {
+            "$ref": "#/DatabaseIdOrError"
+        }
+    },
+    "AttributeIdOrError": {
+        "type": "object",
+        "description": "An attribute identifier or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "AttributeIdsOrErrors": {
+        "type": "array",
+        "description": "A list of attribute identifiers or errors.",
+        "items": {
+            "$ref": "#/AttributeIdOrError"
+        }
+    },
     "AttributeId": {
         "type": "object",
         "description": "The identifier of an attribute.",

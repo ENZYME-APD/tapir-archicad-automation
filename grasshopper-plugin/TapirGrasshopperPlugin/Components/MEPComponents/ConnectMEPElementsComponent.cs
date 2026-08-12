@@ -35,6 +35,24 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 "(input only 1 to connect all routes to the same element).");
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "DeletedRoutingElementGuids",
+                "Identifier of the routing element deleted by merging, for each connection.");
+
+            OutGenerics(
+                "SplitRoutingElementGuids",
+                "Identifier of the routing element created by splitting, for each connection.");
+
+            OutGenerics(
+                "CreatedBranchGuids",
+                "Identifier of the branch element created by the connection, for each connection.");
+
+            OutErrorMessages(
+                "Error message of each connection (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -95,11 +113,46 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
 
             var parameters = new JObject { ["connectionsData"] = items };
 
-            TryGetCadResponse(
-                CommandName,
-                parameters,
-                ToAddOn,
-                out _);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            // Each connection answers with the ids of the elements it changed:
+            // any of the three can be missing when the connection did not need
+            // that operation, so they are kept in separate outputs.
+            var deletedIds = new List<ElementGuid>();
+            var splitIds = new List<ElementGuid>();
+            var branchIds = new List<ElementGuid>();
+            var errorMessages = new List<string>();
+
+            if (response["connectionResults"] is JArray results)
+            {
+                foreach (var result in results)
+                {
+                    var error = result?["error"];
+                    errorMessages.Add(
+                        error == null
+                            ? ""
+                            : error["message"]?.ToString() ?? "Unknown error.");
+
+                    deletedIds.Add(
+                        result?["deletedRoutingElementId"]?.ToObject<ElementGuid>());
+                    splitIds.Add(
+                        result?["splitRoutingElementId"]?.ToObject<ElementGuid>());
+                    branchIds.Add(
+                        result?["createdBranchId"]?.ToObject<ElementGuid>());
+                }
+            }
+
+            da.SetDataList(0, deletedIds);
+            da.SetDataList(1, splitIds);
+            da.SetDataList(2, branchIds);
+            da.SetDataList(3, errorMessages);
         }
 
         protected override System.Drawing.Bitmap Icon =>

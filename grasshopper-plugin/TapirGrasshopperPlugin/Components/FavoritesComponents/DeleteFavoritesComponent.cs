@@ -25,6 +25,12 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 "Names of the Favorites to delete.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each favorite (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -40,10 +46,11 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 Favorites = names
             };
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

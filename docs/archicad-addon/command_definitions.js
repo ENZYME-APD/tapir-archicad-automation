@@ -1843,7 +1843,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -1895,7 +1895,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -1951,7 +1951,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2025,7 +2025,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2101,7 +2101,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2146,7 +2146,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2189,7 +2189,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2224,7 +2224,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2330,7 +2330,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2410,7 +2410,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2462,7 +2462,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2517,7 +2517,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2551,7 +2551,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2656,7 +2656,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2734,7 +2734,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2800,7 +2800,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2876,7 +2876,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2942,7 +2942,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -2999,7 +2999,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3086,7 +3086,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3157,7 +3157,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3249,7 +3249,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3343,7 +3343,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3456,7 +3456,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3519,7 +3519,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3588,7 +3588,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -5553,7 +5553,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -5612,7 +5612,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -5749,7 +5749,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -5927,7 +5927,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6001,7 +6001,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6084,7 +6084,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6177,7 +6177,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6426,7 +6426,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6545,7 +6545,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6664,7 +6664,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6765,7 +6765,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "attributeIds": {
-                "$ref": "#/AttributeIds"
+                "$ref": "#/AttributeIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -7728,7 +7728,7 @@ var gCommands = [{
         "additionalProperties": false,
         "required": ["detailsData"]
     },
-                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]}
+                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]}
             },{
                 "name": "CreateWorksheets",
                 "version": "1.4.0",
@@ -7752,7 +7752,7 @@ var gCommands = [{
         "additionalProperties": false,
         "required": ["worksheetsData"]
     },
-                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]}
+                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]}
             },{
                 "name": "CreateLayout",
                 "version": "1.4.0",
@@ -7794,7 +7794,7 @@ var gCommands = [{
         "additionalProperties": false,
         "required": ["layoutsData"]
     },
-                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]}
+                "outputScheme": {"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]}
             },{
                 "name": "CreateLayoutSubset",
                 "version": "1.4.0",
@@ -7867,7 +7867,7 @@ var gCommands = [{
         "additionalProperties": false,
         "required": ["drawingsData"]
     },
-                "outputScheme": {"type":"object","properties":{"elements":{"$ref":"#/Elements"}},"additionalProperties":false,"required":["elements"]}
+                "outputScheme": {"type":"object","properties":{"elements":{"$ref":"#/ElementIdsOrErrors"}},"additionalProperties":false,"required":["elements"]}
             },{
                 "name": "ChangeDrawingLink",
                 "version": "1.5.7",
@@ -8427,7 +8427,7 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,

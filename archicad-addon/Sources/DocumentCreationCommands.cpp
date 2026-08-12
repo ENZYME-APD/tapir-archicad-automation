@@ -151,7 +151,7 @@ GS::Optional<GS::UniString> CreateDetailsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::UniString> CreateDetailsCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"databases":{"$ref":"#/Databases"}},"additionalProperties":false,"required":["databases"]})";
+    return R"({"type":"object","properties":{"databases":{"$ref":"#/DatabaseIdsOrErrors"}},"additionalProperties":false,"required":["databases"]})";
 }
 
 GS::ObjectState CreateDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -585,7 +585,7 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
 
 GS::Optional<GS::UniString> CreateDrawingsCommand::GetRawResponseSchema () const
 {
-    return R"({"type":"object","properties":{"elements":{"$ref":"#/Elements"}},"additionalProperties":false,"required":["elements"]})";
+    return R"({"type":"object","properties":{"elements":{"$ref":"#/ElementIdsOrErrors"}},"additionalProperties":false,"required":["elements"]})";
 }
 
 // Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, name, position,

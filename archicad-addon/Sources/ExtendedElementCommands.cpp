@@ -3723,7 +3723,7 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3865,7 +3865,7 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -3999,7 +3999,7 @@ GS::Optional<GS::UniString> CreateOpeningsCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -4189,7 +4189,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -4581,7 +4581,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetRawResponseSc
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -4746,7 +4746,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetRawR
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -4869,7 +4869,7 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetRawResponse
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,
@@ -6259,7 +6259,7 @@ GS::Optional<GS::UniString> CreateSectionsCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/ElementIdsOrErrors"
             }
         },
         "additionalProperties": false,

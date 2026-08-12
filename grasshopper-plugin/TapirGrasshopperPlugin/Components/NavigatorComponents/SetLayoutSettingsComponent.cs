@@ -28,6 +28,12 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "One JSON object per layout with the settings to change (see component description).");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each layout (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -55,11 +61,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             var parameters = new JObject { ["layoutsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

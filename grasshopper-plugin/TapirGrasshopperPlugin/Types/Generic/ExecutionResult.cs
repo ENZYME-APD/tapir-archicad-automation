@@ -43,6 +43,34 @@ namespace TapirGrasshopperPlugin.Types.Generic
 
             return response;
         }
+
+        // Maps the per-item executionResults of a response to one message per
+        // item: empty for the items that succeeded, the error message for the
+        // failed ones. The commands report the failure of a single item this
+        // way instead of failing the whole call, so a component that ignores
+        // this array swallows the failures silently.
+        public static List<string> ErrorMessages(
+            JObject response,
+            string arrayKey = "executionResults")
+        {
+            var messages = new List<string>();
+
+            if (!(response?[arrayKey] is JArray results))
+            {
+                return messages;
+            }
+
+            foreach (var result in results)
+            {
+                messages.Add(
+                    (bool?)result["success"] == true
+                        ? ""
+                        : result["error"]?["message"]?.ToString() ??
+                          "Unknown error.");
+            }
+
+            return messages;
+        }
     }
 
     public class ExecutionResultResponse

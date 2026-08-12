@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -39,6 +40,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     0,
                     1
                 });
+        }
+
+        protected override void AddOutputs()
+        {
+            OutTexts(
+                "ErrorMessagesOfAdd",
+                "Error message of each element to add to the selection (empty when it succeeded).");
+
+            OutTexts(
+                "ErrorMessagesOfRemove",
+                "Error message of each element to remove from the selection (empty when it succeeded).");
         }
 
         protected override void Solve(
@@ -107,10 +119,26 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             };
 
 
-            SetCadValues(
-                CommandName,
-                parameters,
-                ToAddOn);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    Newtonsoft.Json.Linq.JObject.FromObject(parameters),
+                    ToAddOn,
+                    out var response))
+            {
+                return;
+            }
+
+            da.SetDataList(
+                0,
+                ExecutionResultsResponse.ErrorMessages(
+                    response,
+                    "executionResultsOfAddToSelection"));
+
+            da.SetDataList(
+                1,
+                ExecutionResultsResponse.ErrorMessages(
+                    response,
+                    "executionResultsOfRemoveFromSelection"));
         }
 
         protected override System.Drawing.Bitmap Icon =>

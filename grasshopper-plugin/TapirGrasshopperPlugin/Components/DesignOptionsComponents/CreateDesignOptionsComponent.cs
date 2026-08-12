@@ -33,6 +33,16 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 "Names of the owner design option sets.");
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "DesignOptionGuids",
+                "Identifier of each created design option.");
+
+            OutErrorMessages(
+                "Error message of each design option (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -81,10 +91,13 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithCreatedIds<DesignOptionGuid>(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da,
+                "designOptionIdsOrErrors",
+                "designOptionId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -34,6 +34,12 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 "Identifiers of the target design options (input only 1 to move all elements into the same design option).");
         }
 
+        protected override void AddOutputs()
+        {
+            OutErrorMessages(
+                "Error message of each element (empty when it succeeded).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -93,10 +99,11 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithErrorMessages(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da);
         }
 
         protected override System.Drawing.Bitmap Icon =>

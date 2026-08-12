@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 {
@@ -27,6 +28,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             InTexts(
                 "ReferenceIds",
                 "Reference ids of the details to create.");
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "DatabaseGuids",
+                "Identifier of each created detail.");
+
+            OutErrorMessages(
+                "Error message of each detail (empty when it was created successfully).");
         }
 
         protected override void Solve(
@@ -66,11 +77,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             var parameters = new JObject { ["detailsData"] = items };
 
-            TryGetCadResponse(
+            SetCadValuesWithCreatedIds<DatabaseGuidObject>(
                 CommandName,
                 parameters,
                 ToAddOn,
-                out _);
+                da,
+                "databases",
+                "databaseId");
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -40,6 +40,14 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             SetOptionality(new[] { 1, 2, 3 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutText(
+                "FirstConflictName",
+                "Name of the first conflicting favorite - filled only when the " +
+                "import stopped on a name conflict with the Error conflict policy.");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -77,10 +85,18 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 input.ConflictPolicy = conflictPolicy;
             }
 
-            SetCadValues(
-                CommandName,
-                input,
-                ToAddOn);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    Newtonsoft.Json.Linq.JObject.FromObject(input),
+                    ToAddOn,
+                    out var response))
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response["firstConflictName"]?.ToString() ?? "");
         }
 
         protected override System.Drawing.Bitmap Icon =>

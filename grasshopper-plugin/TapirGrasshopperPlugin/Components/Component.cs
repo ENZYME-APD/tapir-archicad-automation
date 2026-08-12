@@ -587,6 +587,19 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
+        // The commands report the failure of a single item in their
+        // executionResults array instead of failing the whole call, so the
+        // components have to hand those messages out - otherwise the failures
+        // are swallowed silently.
+        public void OutErrorMessages(
+            string description =
+                "Error message of each item (empty when the operation succeeded on it).")
+        {
+            OutTexts(
+                "ErrorMessages",
+                description);
+        }
+
         public void OutTextTree(
             string name,
             string description = "")
@@ -769,6 +782,104 @@ namespace TapirGrasshopperPlugin.Components
                 JObject.FromObject(commandParameters),
                 sendCommand,
                 out var result);
+        }
+
+        // Same as SetCadValues, but hands the per-item results of the command
+        // out through the ErrorMessages output added by OutErrorMessages.
+        protected void SetCadValuesWithErrorMessages(
+            string commandName,
+            object commandParameters,
+            Func<string, JObject, CommandResponse> sendCommand,
+            IGH_DataAccess da,
+            int outputIndex = 0)
+        {
+            if (!TryGetCadResponse(
+                    commandName,
+                    commandParameters == null
+                        ? new JObject()
+                        : JObject.FromObject(commandParameters),
+                    sendCommand,
+                    out var response))
+            {
+                return;
+            }
+
+            da.SetDataList(
+                outputIndex,
+                ExecutionResultsResponse.ErrorMessages(response));
+        }
+
+        // The creator commands answer with one item per requested item, holding
+        // either the identifier of the created item or an error. Hands the
+        // identifiers out through one output and the error messages through
+        // another, so a failed item does not shift the identifiers of the
+        // others.
+        protected void SetCreatedIdsAndErrorMessages<T>(
+            IGH_DataAccess da,
+            JObject response,
+            string arrayKey,
+            string idKey,
+            int idsOutputIndex = 0,
+            int errorsOutputIndex = 1)
+            where T : class
+        {
+            var ids = new List<T>();
+            var errorMessages = new List<string>();
+
+            if (response?[arrayKey] is JArray items)
+            {
+                foreach (var item in items)
+                {
+                    var error = item?["error"];
+                    if (error != null)
+                    {
+                        ids.Add(null);
+                        errorMessages.Add(
+                            error["message"]?.ToString() ?? "Unknown error.");
+                        continue;
+                    }
+
+                    ids.Add(item?[idKey]?.ToObject<T>());
+                    errorMessages.Add("");
+                }
+            }
+
+            da.SetDataList(
+                idsOutputIndex,
+                ids);
+
+            da.SetDataList(
+                errorsOutputIndex,
+                errorMessages);
+        }
+
+        // Same as SetCadValues, but hands the created identifiers and the
+        // per-item error messages out through the first two outputs.
+        protected void SetCadValuesWithCreatedIds<T>(
+            string commandName,
+            object commandParameters,
+            Func<string, JObject, CommandResponse> sendCommand,
+            IGH_DataAccess da,
+            string arrayKey,
+            string idKey)
+            where T : class
+        {
+            if (!TryGetCadResponse(
+                    commandName,
+                    commandParameters == null
+                        ? new JObject()
+                        : JObject.FromObject(commandParameters),
+                    sendCommand,
+                    out var response))
+            {
+                return;
+            }
+
+            SetCreatedIdsAndErrorMessages<T>(
+                da,
+                response,
+                arrayKey,
+                idKey);
         }
 
         protected bool TryGetConvertedCadValues<T>(

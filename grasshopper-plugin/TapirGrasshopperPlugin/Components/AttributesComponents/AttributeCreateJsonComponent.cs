@@ -39,6 +39,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 false);
         }
 
+        protected override void AddOutputs()
+        {
+            AttributeCreateResult.AddOutputs(this);
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -74,11 +79,18 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 ["overwriteExisting"] = overwriteExisting
             };
 
-            TryGetCadResponse(
-                CommandName,
-                parameters,
-                ToAddOn,
-                out _);
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            AttributeCreateResult.SetOutputs(
+                da,
+                response);
         }
     }
 }

@@ -32,6 +32,16 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 "Identifiers of the active design options for each combination (one branch per combination).");
         }
 
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "DesignOptionCombinationGuids",
+                "Identifier of each created design option combination.");
+
+            OutErrorMessages(
+                "Error message of each combination (empty when it was created successfully).");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -81,10 +91,13 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                     });
             }
 
-            SetCadValues(
+            SetCadValuesWithCreatedIds<DesignOptionCombinationGuid>(
                 CommandName,
                 input,
-                ToAddOn);
+                ToAddOn,
+                da,
+                "designOptionCombinationIdsOrErrors",
+                "designOptionCombinationId");
         }
 
         protected override System.Drawing.Bitmap Icon =>
