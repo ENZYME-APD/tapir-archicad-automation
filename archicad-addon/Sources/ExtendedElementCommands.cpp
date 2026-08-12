@@ -4106,17 +4106,25 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             double height = 0.0;
             data.Get ("width", width);
             data.Get ("height", height);
-            // The base polygon's local +Y runs DOWN the host's plane, so a rectangle spanning
-            // 0..height hangs below the base point: measured live on AC29, the created
-            // opening's sill came back at exactly basePoint.z - height for every height tried
-            // (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Spanning -height..0 instead puts the base point
-            // on the opening's bottom edge, which is what basePoint means everywhere else and
-            // what the pre-AC29 branch produces (#533).
-            GS::Array<Point2D> polygonCorners { {0, -height}, {width, -height}, {width, 0}, {0, 0} };
+            GS::Array<Point2D> polygonCorners { {0, 0}, {width, 0}, {width, height}, {0, height} };
             Geometry::Polygon2D polygon = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/).PopLargest ();
 
+            // PlacePolygonal hangs the base polygon BELOW the point it is given, so the point
+            // ends up on the opening's top edge rather than its bottom one - measured on AC29,
+            // the created opening's sill came back at exactly basePoint.z - height for every
+            // height tried (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Raising the placement point by the
+            // height puts the bottom edge on the requested Z, which is what basePoint means in
+            // every other creation command and what the pre-AC29 branch now produces (#533).
+            //
+            // The correction is applied to the point rather than to the polygon because the
+            // polygon's own offset is ignored: building the corners over -height..0 instead of
+            // 0..height changed nothing at all, so PlacePolygonal evidently normalizes the
+            // polygon and keeps only its extents.
+            API_Coord3D placementPoint = basePoint;
+            placementPoint.z += height;
+
             ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*data.Get ("ownerElementId"))), ACAPI_GetToken ());
-            ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->PlacePolygonal (parentElemId, basePoint, polygon);
+            ACAPI::Result<ACAPI::UniqueID> resultId = openingDefault->PlacePolygonal (parentElemId, placementPoint, polygon);
             if (resultId.IsErr ()) {
                 elements.Push (CreateErrorResponse (resultId.UnwrapErr ().kind, GS::UniString (resultId.UnwrapErr ().text.c_str())));
                 continue;
