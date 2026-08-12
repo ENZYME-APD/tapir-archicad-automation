@@ -11,7 +11,7 @@ GS::String GetProjectInfoCommand::GetName () const
     return "GetProjectInfo";
 }
 
-GS::Optional<GS::UniString> GetProjectInfoCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetProjectInfoCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -84,7 +84,7 @@ GS::String GetProjectInfoFieldsCommand::GetName () const
     return "GetProjectInfoFields";
 }
 
-GS::Optional<GS::UniString> GetProjectInfoFieldsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetProjectInfoFieldsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -238,7 +238,7 @@ GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetInputParametersSc
     })";
 }
 
-GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateProjectInfoFieldsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -341,7 +341,7 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetInputParametersSc
     })";
 }
 
-GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -403,7 +403,7 @@ GS::String GetHotlinksCommand::GetName () const
     return "GetHotlinks";
 }
 
-GS::Optional<GS::UniString> GetHotlinksCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetHotlinksCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -483,7 +483,7 @@ GS::String GetStoriesCommand::GetName () const
     return "GetStories";
 }
 
-GS::Optional<GS::UniString> GetStoriesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetStoriesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -586,7 +586,7 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::Optional<GS::UniString> SetStoriesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetStoriesCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -775,7 +775,7 @@ GS::Optional<GS::UniString> OpenProjectCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> OpenProjectCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> OpenProjectCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -830,7 +830,7 @@ GS::String CloseProjectCommand::GetName () const
     return "CloseProject";
 }
 
-GS::Optional<GS::UniString> CloseProjectCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CloseProjectCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -856,7 +856,7 @@ GS::String SaveProjectCommand::GetName () const
     return "SaveProject";
 }
 
-GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SaveProjectCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -882,7 +882,7 @@ GS::String GetGeoLocationCommand::GetName () const
     return "GetGeoLocation";
 }
 
-GS::Optional<GS::UniString> GetGeoLocationCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetGeoLocationCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1126,7 +1126,7 @@ GS::Optional<GS::UniString> SetGeoLocationCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> SetGeoLocationCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetGeoLocationCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -1190,7 +1190,7 @@ GS::String GetCalculationUnitsCommand::GetName () const
     return "GetCalculationUnits";
 }
 
-GS::Optional<GS::UniString> GetCalculationUnitsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetCalculationUnitsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1425,7 +1425,7 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> IFCFileOperationCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> IFCFileOperationCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -1531,7 +1531,7 @@ GS::Optional<GS::UniString> PrintViewCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::Optional<GS::UniString> PrintViewCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> PrintViewCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -1597,7 +1597,7 @@ GS::Optional<GS::UniString> RebuildViewCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> RebuildViewCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> RebuildViewCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"

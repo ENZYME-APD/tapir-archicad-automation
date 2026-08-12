@@ -3717,7 +3717,7 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::UniString> CreateWindowsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateWindowsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3859,7 +3859,7 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> CreateDoorsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateDoorsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3993,7 +3993,7 @@ GS::Optional<GS::UniString> CreateOpeningsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> CreateOpeningsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateOpeningsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -4183,7 +4183,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> CreateMorphsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateMorphsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -4413,9 +4413,9 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> CreateRoofsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateRoofsCommand::GetResponseSchema () const
 {
-    return CreateMorphsCommand ().GetRawResponseSchema ();
+    return CreateMorphsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -4575,7 +4575,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -4740,7 +4740,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
     })";
 }
 
-GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -4863,7 +4863,7 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
     })";
 }
 
-GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -5048,7 +5048,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> ModifyWallsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyWallsCommand::GetResponseSchema () const
 {
     return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
 }
@@ -5163,9 +5163,9 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> ModifyBeamsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyBeamsCommand::GetResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    return ModifyWallsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -5321,9 +5321,9 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> ModifySlabsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifySlabsCommand::GetResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    return ModifyWallsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -5491,9 +5491,9 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> ModifyRoofsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyRoofsCommand::GetResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    return ModifyWallsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -5616,7 +5616,7 @@ GS::Optional<GS::UniString> GetDimensionDataCommand::GetInputParametersSchema ()
     })";
 }
 
-GS::Optional<GS::UniString> GetDimensionDataCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetDimensionDataCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -5770,9 +5770,9 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::UniString> ModifyColumnsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyColumnsCommand::GetResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    return ModifyWallsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -5866,9 +5866,9 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () co
     })";
 }
 
-GS::Optional<GS::UniString> ModifyWindowsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyWindowsCommand::GetResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    return ModifyWallsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -5946,9 +5946,9 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> ModifyDoorsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyDoorsCommand::GetResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    return ModifyWallsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -6090,9 +6090,9 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> ModifyMorphsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyMorphsCommand::GetResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    return ModifyWallsCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -6253,7 +6253,7 @@ GS::Optional<GS::UniString> CreateSectionsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> CreateSectionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateSectionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -6590,7 +6590,7 @@ GS::Optional<GS::UniString> ModifyMeshesCommand::GetInputParametersSchema () con
 })";
 }
 
-GS::Optional<GS::UniString> ModifyMeshesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyMeshesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

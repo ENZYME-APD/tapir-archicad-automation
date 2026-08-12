@@ -13,7 +13,7 @@ GS::String TeamworkSendCommand::GetName () const
     return "TeamworkSend";
 }
 
-GS::Optional<GS::UniString> TeamworkSendCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> TeamworkSendCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -39,7 +39,7 @@ GS::String TeamworkReceiveCommand::GetName () const
     return "TeamworkReceive";
 }
 
-GS::Optional<GS::UniString> TeamworkReceiveCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> TeamworkReceiveCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -81,7 +81,7 @@ GS::Optional<GS::UniString> ReserveElementsCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> ReserveElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ReserveElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -202,7 +202,7 @@ GS::Optional<GS::UniString> ReleaseElementsCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> ReleaseElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ReleaseElementsCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"

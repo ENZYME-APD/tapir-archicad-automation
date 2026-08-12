@@ -28,7 +28,7 @@ GS::String GetDesignOptionsCommand::GetName () const
     return "GetDesignOptions";
 }
 
-GS::Optional<GS::UniString> GetDesignOptionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetDesignOptionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -88,7 +88,7 @@ GS::String GetDesignOptionSetsCommand::GetName () const
     return "GetDesignOptionSets";
 }
 
-GS::Optional<GS::UniString> GetDesignOptionSetsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetDesignOptionSetsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -176,7 +176,7 @@ GS::String GetDesignOptionCombinationsCommand::GetName () const
     return "GetDesignOptionCombinations";
 }
 
-GS::Optional<GS::UniString> GetDesignOptionCombinationsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetDesignOptionCombinationsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -301,7 +301,7 @@ GS::Optional<GS::UniString> GetElementsOfDesignOptionsCommand::GetInputParameter
     })";
 }
 
-GS::Optional<GS::UniString> GetElementsOfDesignOptionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetElementsOfDesignOptionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -403,7 +403,7 @@ GS::Optional<GS::UniString> GetDesignOptionForElementsCommand::GetInputParameter
     })";
 }
 
-GS::Optional<GS::UniString> GetDesignOptionForElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetDesignOptionForElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -535,7 +535,7 @@ GS::Optional<GS::UniString> CreateDesignOptionSetsCommand::GetInputParametersSch
     })";
 }
 
-GS::Optional<GS::UniString> CreateDesignOptionSetsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateDesignOptionSetsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -631,7 +631,7 @@ GS::Optional<GS::UniString> CreateDesignOptionsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> CreateDesignOptionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateDesignOptionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -756,7 +756,7 @@ GS::Optional<GS::UniString> CreateDesignOptionCombinationsCommand::GetInputParam
     })";
 }
 
-GS::Optional<GS::UniString> CreateDesignOptionCombinationsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateDesignOptionCombinationsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -890,7 +890,7 @@ GS::Optional<GS::UniString> SetActiveDesignOptionsInCombinationsCommand::GetInpu
     })";
 }
 
-GS::Optional<GS::UniString> SetActiveDesignOptionsInCombinationsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetActiveDesignOptionsInCombinationsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1033,7 +1033,7 @@ GS::Optional<GS::UniString> MoveElementsToDesignOptionsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> MoveElementsToDesignOptionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> MoveElementsToDesignOptionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1147,7 +1147,7 @@ GS::Optional<GS::UniString> MoveDesignOptionsToAnotherSetCommand::GetInputParame
     })";
 }
 
-GS::Optional<GS::UniString> MoveDesignOptionsToAnotherSetCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> MoveDesignOptionsToAnotherSetCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

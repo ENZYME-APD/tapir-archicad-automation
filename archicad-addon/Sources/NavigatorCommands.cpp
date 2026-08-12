@@ -135,7 +135,7 @@ GS::Optional<GS::UniString> UpdateDrawingsCommand::GetInputParametersSchema() co
 })";
 }
 
-GS::Optional<GS::UniString> UpdateDrawingsCommand::GetRawResponseSchema() const
+GS::Optional<GS::UniString> UpdateDrawingsCommand::GetResponseSchema() const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -185,7 +185,7 @@ GS::Optional<GS::UniString> GetDatabaseIdFromNavigatorItemIdCommand::GetInputPar
 })";
 }
 
-GS::Optional<GS::UniString> GetDatabaseIdFromNavigatorItemIdCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetDatabaseIdFromNavigatorItemIdCommand::GetResponseSchema () const
 {
     return R"({
     "type": "object",
@@ -245,7 +245,7 @@ GS::String GetModelViewOptionsCommand::GetName () const
     return "GetModelViewOptions";
 }
 
-GS::Optional<GS::UniString> GetModelViewOptionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetModelViewOptionsCommand::GetResponseSchema () const
 {
     return R"({
     "type": "object",
@@ -338,7 +338,7 @@ GS::Optional<GS::UniString> GetViewSettingsCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> GetViewSettingsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetViewSettingsCommand::GetResponseSchema () const
 {
     return R"({
     "type": "object",
@@ -483,7 +483,7 @@ GS::Optional<GS::UniString> SetViewSettingsCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> SetViewSettingsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetViewSettingsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -621,7 +621,7 @@ GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetView2DTransformationsCommand::GetResponseSchema () const
 {
     return R"({
     "type": "object",
@@ -775,7 +775,7 @@ GS::Optional<GS::UniString> SetViewRotationCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> SetViewRotationCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetViewRotationCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -895,7 +895,7 @@ GS::Optional<GS::UniString> FitInWindowCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> FitInWindowCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> FitInWindowCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -962,7 +962,7 @@ GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetInputParamet
     })";
 }
 
-GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CloneProjectMapItemToViewMapCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1071,7 +1071,7 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1187,7 +1187,7 @@ GS::Optional<GS::UniString> CreateViewMapFolderCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> CreateViewMapFolderCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateViewMapFolderCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1257,7 +1257,7 @@ GS::Optional<GS::UniString> MoveNavigatorItemCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> MoveNavigatorItemCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> MoveNavigatorItemCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -1320,7 +1320,7 @@ GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> RenameNavigatorItemCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -1393,7 +1393,7 @@ GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeleteNavigatorItemsCommand::GetResponseSchema () const
 {
     return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResults"}},"additionalProperties":false,"required":["executionResults"]})";
 }

@@ -63,7 +63,7 @@ GS::String GetAddOnVersionCommand::GetName () const
     return "GetAddOnVersion";
 }
 
-GS::Optional<GS::UniString> GetAddOnVersionCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetAddOnVersionCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -96,7 +96,7 @@ GS::String GetArchicadLocationCommand::GetName () const
     return "GetArchicadLocation";
 }
 
-GS::Optional<GS::UniString> GetArchicadLocationCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetArchicadLocationCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -134,7 +134,7 @@ GS::String QuitArchicadCommand::GetName () const
     return "QuitArchicad";
 }
 
-GS::Optional<GS::UniString> QuitArchicadCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> QuitArchicadCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -166,7 +166,7 @@ GS::String GetCurrentWindowTypeCommand::GetName () const
     return "GetCurrentWindowType";
 }
 
-GS::Optional<GS::UniString> GetCurrentWindowTypeCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetCurrentWindowTypeCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -301,7 +301,7 @@ GS::Optional<GS::UniString> ChangeWindowCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> ChangeWindowCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ChangeWindowCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -459,7 +459,7 @@ GS::Optional<GS::UniString> ShowAlertCommand::GetInputParametersSchema () const
     })";
 }
 
-GS::Optional<GS::UniString> ShowAlertCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ShowAlertCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -529,7 +529,7 @@ GS::Optional<GS::UniString> GetSpecialFoldersCommand::GetInputParametersSchema (
     })";
 }
 
-GS::Optional<GS::UniString> GetSpecialFoldersCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetSpecialFoldersCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -649,7 +649,7 @@ GS::String GetUserGSIDCommand::GetName () const
     return "GetUserGSID";
 }
 
-GS::Optional<GS::UniString> GetUserGSIDCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetUserGSIDCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

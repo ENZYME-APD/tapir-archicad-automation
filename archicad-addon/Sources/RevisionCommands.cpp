@@ -11,7 +11,7 @@ GS::String GetRevisionIssuesCommand::GetName () const
     return "GetRevisionIssues";
 }
 
-GS::Optional<GS::UniString> GetRevisionIssuesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetRevisionIssuesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -89,7 +89,7 @@ GS::String GetRevisionChangesCommand::GetName () const
     return "GetRevisionChanges";
 }
 
-GS::Optional<GS::UniString> GetRevisionChangesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetRevisionChangesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -167,7 +167,7 @@ GS::String GetDocumentRevisionsCommand::GetName () const
     return "GetDocumentRevisions";
 }
 
-GS::Optional<GS::UniString> GetDocumentRevisionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetDocumentRevisionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -271,7 +271,7 @@ GS::Optional<GS::UniString> GetCurrentRevisionChangesOfLayoutsCommand::GetInputP
     })";
 }
 
-GS::Optional<GS::UniString> GetCurrentRevisionChangesOfLayoutsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetCurrentRevisionChangesOfLayoutsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -345,7 +345,7 @@ GS::Optional<GS::UniString> GetRevisionChangesOfElementsCommand::GetInputParamet
     })";
 }
 
-GS::Optional<GS::UniString> GetRevisionChangesOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetRevisionChangesOfElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
