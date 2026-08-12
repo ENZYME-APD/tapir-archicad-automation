@@ -1491,6 +1491,16 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     }
     itemOS.Add ("prefix", prefix);
 
+    // The ID shown next to the name on the navigator, and the two flags telling
+    // whether the item's ID and name are hand-written or inherited from the
+    // Project Map source - the View Settings "Custom" vs "By Project Map"
+    // radio buttons. Only the flags can tell the two apart: a custom ID typed
+    // identical to the source's is indistinguishable by comparing the strings.
+    itemOS.Add ("uiId",          GS::UniString (item.uiId));
+    itemOS.Add ("customUiId",    item.customUiId);
+    itemOS.Add ("customName",    item.customName);
+    itemOS.Add ("isIndependent", item.isIndependent);
+
     item.mapId = mapId;
     GS::Array<API_NavigatorItem> children;
     if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) == NoError && !children.IsEmpty ()) {

@@ -1,7 +1,7 @@
 import aclib
 
 # Pick the first section from the Project Map and resolve its database.
-navigatorTree = aclib.RunTapirCommand ('GetNavigatorItemTree', {
+navigatorTree = aclib.RunCommand ('API.GetNavigatorItemTree', {
     'navigatorTreeId': { 'type': 'ProjectMap' }
 })
 
