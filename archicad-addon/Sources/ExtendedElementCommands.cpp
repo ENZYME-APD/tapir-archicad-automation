@@ -4007,6 +4007,29 @@ GS::Optional<GS::UniString> CreateOpeningsCommand::GetRawResponseSchema () const
     })";
 }
 
+#ifndef ServerMainVers_2900
+// How far above the opening's bottom edge its anchor point sits. anchorAltitude is
+// measured to the anchor, so placing the bottom at a requested altitude means adding
+// this back - APIAnc_?T anchors sit a full height above the bottom, APIAnc_?M half of
+// it, APIAnc_?B on it. The horizontal half of the anchor is irrelevant here and is
+// deliberately left alone, so the existing horizontal placement is unchanged.
+static double GetAnchorHeightOffset (API_AnchorID anchor, double height)
+{
+    switch (anchor) {
+        case APIAnc_LT:
+        case APIAnc_MT:
+        case APIAnc_RT:
+            return height;
+        case APIAnc_LM:
+        case APIAnc_MM:
+        case APIAnc_RM:
+            return height / 2.0;
+        default:
+            return 0.0;
+    }
+}
+#endif
+
 GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> openingsData;
@@ -4014,6 +4037,10 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
     if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
+
+#ifndef ServerMainVers_2900
+    const Stories stories = GetStories ();
+#endif
 
     return ExecuteCreateWithElements ("Create Openings", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : openingsData) {
@@ -4042,8 +4069,25 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             element.opening.extrusionGeometryData.frame.axisY = {0.0, 0.0, 1.0};
             element.opening.extrusionGeometryData.frame.axisZ = {0.0, 1.0, 0.0};
 
-            data.Get ("width", element.opening.extrusionGeometryData.parameters.width);
-            data.Get ("height", element.opening.extrusionGeometryData.parameters.height);
+            API_OpeningExtrusionParameters& extrusionParameters = element.opening.extrusionGeometryData.parameters;
+            data.Get ("width", extrusionParameters.width);
+            data.Get ("height", extrusionParameters.height);
+
+            // The extrusion frame's base point does NOT position the opening vertically:
+            // with a horizontal or aligned constraint the vertical position comes from
+            // anchorAltitude, measured from the home story up to the anchor point, and the
+            // base point's Z is discarded. With the stock centre anchor that put every
+            // opening's middle at the default altitude - the reporter of #533 measured
+            // sill == storyLevel + 1.0 - height/2 on all 52 openings of a project, whatever
+            // Z was sent. Convert the requested Z into the altitude the configured anchor
+            // expects instead, so basePoint places the opening in all three axes, the way
+            // the AC29 PlacePolygonal branch already treats it.
+            if (extrusionParameters.constraint == API_OpeningForcedHorizontal ||
+                extrusionParameters.constraint == API_OpeningAligned) {
+                const double bottomAboveStory = basePoint.z - GetZPos (element.header.floorInd, 0.0, stories);
+                extrusionParameters.anchorAltitude =
+                    bottomAboveStory + GetAnchorHeightOffset (extrusionParameters.anchor, extrusionParameters.height);
+            }
 
             err = ACAPI_Element_Create (&element, nullptr);
             if (err != NoError) {
@@ -4062,7 +4106,13 @@ GS::ObjectState CreateOpeningsCommand::Execute (const GS::ObjectState& parameter
             double height = 0.0;
             data.Get ("width", width);
             data.Get ("height", height);
-            GS::Array<Point2D> polygonCorners { {0, 0}, {width, 0}, {width, height}, {0, height} };
+            // The base polygon's local +Y runs DOWN the host's plane, so a rectangle spanning
+            // 0..height hangs below the base point: measured live on AC29, the created
+            // opening's sill came back at exactly basePoint.z - height for every height tried
+            // (0.5, 0.8, 1.0, 1.5, 2.0, 2.5). Spanning -height..0 instead puts the base point
+            // on the opening's bottom edge, which is what basePoint means everywhere else and
+            // what the pre-AC29 branch produces (#533).
+            GS::Array<Point2D> polygonCorners { {0, -height}, {width, -height}, {width, 0}, {0, 0} };
             Geometry::Polygon2D polygon = Geometry::Polygon2D::Create (polygonCorners, 0 /*Geometry::PolyCreateFlags*/).PopLargest ();
 
             ACAPI::UniqueID parentElemId (APIGuid2GSGuid (GetGuidFromObjectState (*data.Get ("ownerElementId"))), ACAPI_GetToken ());
