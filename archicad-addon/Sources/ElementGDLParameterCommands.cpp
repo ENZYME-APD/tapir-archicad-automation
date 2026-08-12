@@ -380,7 +380,7 @@ GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetInputParameter
 })";
 }
 
-GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetResponseSchema () const
 {
     return R"({
     "type": "object",
@@ -674,7 +674,7 @@ GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetInputParameter
 })";
 }
 
-GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

@@ -30,7 +30,7 @@ GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetInputParametersSchema 
     })";
 }
 
-GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetFavoritesByTypeCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/FavoritesOrError"
@@ -113,7 +113,7 @@ GS::Optional<GS::UniString> GetFavoritePreviewImageCommand::GetInputParametersSc
     })";
 }
 
-GS::Optional<GS::UniString> GetFavoritePreviewImageCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetFavoritePreviewImageCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -210,7 +210,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementDefaultsCommand::GetInputPara
     })";
 }
 
-GS::Optional<GS::UniString> ApplyFavoritesToElementDefaultsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ApplyFavoritesToElementDefaultsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -328,7 +328,7 @@ GS::Optional<GS::UniString> CreateFavoritesFromElementsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> CreateFavoritesFromElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateFavoritesFromElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -499,7 +499,7 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> ImportFavoritesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ImportFavoritesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -591,7 +591,7 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> ExportFavoritesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ExportFavoritesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -696,7 +696,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -865,7 +865,7 @@ GS::Optional<GS::UniString> UpdateFavoritesFromElementsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> UpdateFavoritesFromElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> UpdateFavoritesFromElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -960,7 +960,7 @@ GS::Optional<GS::UniString> RenameFavoritesCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> RenameFavoritesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> RenameFavoritesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1025,7 +1025,7 @@ GS::Optional<GS::UniString> DeleteFavoritesCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> DeleteFavoritesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeleteFavoritesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

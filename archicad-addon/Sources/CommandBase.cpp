@@ -47,42 +47,9 @@ GS::Optional<GS::UniString> CommandBase::GetInputParametersSchema () const
     return {};
 }
 
-GS::Optional<GS::UniString> CommandBase::GetRawResponseSchema () const
-{
-    return {};
-}
-
 GS::Optional<GS::UniString> CommandBase::GetResponseSchema () const
 {
-    const GS::Optional<GS::UniString> rawSchema = GetRawResponseSchema ();
-    if (!rawSchema.HasValue ()) {
-        return rawSchema;
-    }
-
-    // Failing commands return {"error": {code, message}} as the whole response,
-    // which the raw schemas (with "additionalProperties": false) forbid - Archicad
-    // would then discard the response with schema validation error 4009 and the
-    // actual error message would never reach the caller. The error alternative is
-    // inlined (not a #/ErrorItem reference) because commands constructed with
-    // CommonSchema::NotUsed provide no schema definitions to resolve it from.
-    // anyOf (not oneOf) on purpose: some raw schemas already allow an error object
-    // themselves, and a response matching two alternatives must stay valid.
-    return GS::UniString (R"({ "anyOf": [ )") + rawSchema.Get () + R"(, {
-        "type": "object",
-        "properties": {
-            "error": {
-                "type": "object",
-                "properties": {
-                    "code": { "type": "integer" },
-                    "message": { "type": "string" }
-                },
-                "additionalProperties": false,
-                "required": [ "code", "message" ]
-            }
-        },
-        "additionalProperties": false,
-        "required": [ "error" ]
-    } ] })";
+    return {};
 }
 
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage)

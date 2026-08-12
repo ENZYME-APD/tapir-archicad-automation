@@ -130,7 +130,7 @@ GS::String GetKeynoteTreeCommand::GetName () const
     return "GetKeynoteTree";
 }
 
-GS::Optional<GS::UniString> GetKeynoteTreeCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetKeynoteTreeCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -228,7 +228,7 @@ GS::Optional<GS::UniString> GetKeynoteAutoTextsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> GetKeynoteAutoTextsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetKeynoteAutoTextsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -335,7 +335,7 @@ GS::Optional<GS::UniString> CreateKeynoteFoldersCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> CreateKeynoteFoldersCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateKeynoteFoldersCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -457,7 +457,7 @@ GS::Optional<GS::UniString> CreateKeynoteItemsCommand::GetInputParametersSchema 
     })";
 }
 
-GS::Optional<GS::UniString> CreateKeynoteItemsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateKeynoteItemsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -587,7 +587,7 @@ GS::Optional<GS::UniString> ModifyKeynoteFoldersCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> ModifyKeynoteFoldersCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyKeynoteFoldersCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -717,9 +717,9 @@ GS::Optional<GS::UniString> ModifyKeynoteItemsCommand::GetInputParametersSchema 
     })";
 }
 
-GS::Optional<GS::UniString> ModifyKeynoteItemsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ModifyKeynoteItemsCommand::GetResponseSchema () const
 {
-    return ModifyKeynoteFoldersCommand ().GetRawResponseSchema ();
+    return ModifyKeynoteFoldersCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState ModifyKeynoteItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -820,9 +820,9 @@ GS::Optional<GS::UniString> DeleteKeynoteFoldersCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> DeleteKeynoteFoldersCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeleteKeynoteFoldersCommand::GetResponseSchema () const
 {
-    return ModifyKeynoteFoldersCommand ().GetRawResponseSchema ();
+    return ModifyKeynoteFoldersCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState DeleteKeynoteFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -912,9 +912,9 @@ GS::Optional<GS::UniString> DeleteKeynoteItemsCommand::GetInputParametersSchema 
     })";
 }
 
-GS::Optional<GS::UniString> DeleteKeynoteItemsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeleteKeynoteItemsCommand::GetResponseSchema () const
 {
-    return ModifyKeynoteFoldersCommand ().GetRawResponseSchema ();
+    return ModifyKeynoteFoldersCommand ().GetResponseSchema ();
 }
 
 GS::ObjectState DeleteKeynoteItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -1014,7 +1014,7 @@ GS::Optional<GS::UniString> CreateKeynoteLabelsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> CreateKeynoteLabelsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateKeynoteLabelsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

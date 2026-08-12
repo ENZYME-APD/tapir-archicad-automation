@@ -166,7 +166,7 @@ GS::String GetAllPropertiesCommand::GetName () const
     return "GetAllProperties";
 }
 
-GS::Optional<GS::UniString> GetAllPropertiesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetAllPropertiesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -297,7 +297,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetPropertyValuesOfElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -425,7 +425,7 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetInputParamete
     })";
 }
 
-GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -574,7 +574,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetInputParame
     })";
 }
 
-GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -680,7 +680,7 @@ GS::Optional<GS::UniString> SetPropertyValuesOfAttributesCommand::GetInputParame
     })";
 }
 
-GS::Optional<GS::UniString> SetPropertyValuesOfAttributesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> SetPropertyValuesOfAttributesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -831,7 +831,7 @@ GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreatePropertyGroupsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -919,7 +919,7 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -996,7 +996,7 @@ GS::Optional<GS::UniString> CreatePropertyDefinitionsCommand::GetInputParameters
     })";
 }
 
-GS::Optional<GS::UniString> CreatePropertyDefinitionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreatePropertyDefinitionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1344,7 +1344,7 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetInputParameters
     })";
 }
 
-GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -1438,7 +1438,7 @@ GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParameters
     })";
 }
 
-GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

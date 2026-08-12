@@ -97,7 +97,7 @@ GS::Optional<GS::UniString> CreateSolidElementLinksCommand::GetInputParametersSc
     })";
 }
 
-GS::Optional<GS::UniString> CreateSolidElementLinksCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> CreateSolidElementLinksCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -201,7 +201,7 @@ GS::Optional<GS::UniString> RemoveSolidElementLinksCommand::GetInputParametersSc
     })";
 }
 
-GS::Optional<GS::UniString> RemoveSolidElementLinksCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> RemoveSolidElementLinksCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -279,7 +279,7 @@ GS::Optional<GS::UniString> GetSolidElementLinksCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> GetSolidElementLinksCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetSolidElementLinksCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

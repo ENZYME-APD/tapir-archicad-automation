@@ -31,7 +31,7 @@ GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetInputParameters
     })";
 }
 
-GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -139,7 +139,7 @@ GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState
     return response;
 }
 
-GS::Optional<GS::UniString> GetLibrariesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetLibrariesCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -276,7 +276,7 @@ GS::String ReloadLibrariesCommand::GetName () const
     return "ReloadLibraries";
 }
 
-GS::Optional<GS::UniString> ReloadLibrariesCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ReloadLibrariesCommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -317,7 +317,7 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetInputParametersS
     })";
 }
 
-GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

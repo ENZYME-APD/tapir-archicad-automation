@@ -80,7 +80,7 @@ GS::Optional<GS::UniString> ShowScriptUICommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> ShowScriptUICommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> ShowScriptUICommand::GetResponseSchema () const
 {
     return R"({
         "$ref": "#/ExecutionResult"
@@ -129,7 +129,7 @@ GS::String GetScriptUIResultCommand::GetName () const
     return "GetScriptUIResult";
 }
 
-GS::Optional<GS::UniString> GetScriptUIResultCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetScriptUIResultCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",

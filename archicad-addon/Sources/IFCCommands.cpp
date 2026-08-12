@@ -41,7 +41,7 @@ GS::Optional<GS::UniString> GetElementsByIFCIdsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> GetElementsByIFCIdsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetElementsByIFCIdsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -123,7 +123,7 @@ GS::Optional<GS::UniString> GetIFCIdsOfElementsCommand::GetInputParametersSchema
     })";
 }
 
-GS::Optional<GS::UniString> GetIFCIdsOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetIFCIdsOfElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -221,7 +221,7 @@ GS::Optional<GS::UniString> GetIFCTypeOfElementsCommand::GetInputParametersSchem
     })";
 }
 
-GS::Optional<GS::UniString> GetIFCTypeOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetIFCTypeOfElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -319,7 +319,7 @@ GS::Optional<GS::UniString> GetIFCPropertiesOfElementsCommand::GetInputParameter
     })";
 }
 
-GS::Optional<GS::UniString> GetIFCPropertiesOfElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> GetIFCPropertiesOfElementsCommand::GetResponseSchema () const
 {
     return R"({
         "type": "object",
