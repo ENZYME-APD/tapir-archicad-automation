@@ -165,8 +165,7 @@ GS::Optional<GS::UniString> SetProjectInfoFieldCommand::GetInputParametersSchema
             },
             "projectInfoValue": {
                 "type": "string",
-                "description": "The new value of the project info field.",
-                "minLength": 1
+                "description": "The new value of the project info field. An empty string clears the field."
             }
         },
         "additionalProperties": false,
@@ -185,9 +184,17 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (Error, "Invalid input parameters.");
     }
 
-    GSErrCode err = ACAPI_AutoText_SetAnAutoText (&projectInfoId, &projectInfoValue);
+    // Clearing a field is a nullptr value, not an empty string - the DevKit is explicit:
+    // "You can set the autotext value empty by passing nullptr in the autotextValue
+    // parameter." Passing an empty UniString instead does not clear it.
+    const bool clearTheField = projectInfoValue.IsEmpty ();
+
+    GSErrCode err = ACAPI_AutoText_SetAnAutoText (&projectInfoId,
+                                                  clearTheField ? nullptr : &projectInfoValue);
     if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to set project information field.");
+        return CreateErrorResponse (err, clearTheField
+            ? "Failed to clear project information field."
+            : "Failed to set project information field.");
     }
 
     return {};
