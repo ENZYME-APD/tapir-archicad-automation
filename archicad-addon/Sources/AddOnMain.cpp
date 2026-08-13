@@ -319,7 +319,7 @@ GSErrCode Initialize (void)
             "Gets the elements hosted by (connected to) the given owner elements, filtered to the given element type: for example the Windows or Doors of a Wall, the frames, panels, junctions and accessories of a Curtain Wall, the risers, treads and structures of a Stair, or the posts, rails and panels of a Railing."
         );
         err |= RegisterCommand<GetSectionElementsCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.8",
             "Gets the elements drawn in the given section, elevation or interior elevation databases, each with the owner element it was generated from. This is the only command that returns raw section element identifiers - every other listing command converts them to their owner - so it is the way to obtain the sectionElementId that CreateAssociativeDimensionsOnSection requires."
         );
         err |= RegisterCommand<GetRelationsOfElementsCommand> (
@@ -435,27 +435,27 @@ GSErrCode Initialize (void)
             "Creates Polyline elements based on the given parameters."
         );
         err |= RegisterCommand<CreateLineElementsCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Line elements based on the given parameters."
         );
         err |= RegisterCommand<CreateArcsCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Arc elements based on the given parameters."
         );
         err |= RegisterCommand<CreateCirclesCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Circle elements based on the given parameters."
         );
         err |= RegisterCommand<CreateHotspotsCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Hotspot elements based on the given parameters."
         );
         err |= RegisterCommand<CreateHatchesCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Hatch elements based on the given parameters."
         );
         err |= RegisterCommand<CreateSplinesCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Spline elements based on the given parameters."
         );
         err |= RegisterCommand<CreateObjectsCommand> (
