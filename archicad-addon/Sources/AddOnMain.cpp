@@ -958,6 +958,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.5.0",
             "Creates Section elements on the floor plan."
         );
+        err |= RegisterCommand<CreateInteriorElevationsCommand> (
+            navigatorCommands, "1.5.8",
+            "Creates Interior Elevation elements on the floor plan. Every consecutive pair of the given points becomes one segment, each with its own viewpoint - feed it the corner points of a room to get an interior elevation of that room."
+        );
         err |= RegisterCommand<MoveNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
             "Moves a navigator item to a new parent in the navigator tree."

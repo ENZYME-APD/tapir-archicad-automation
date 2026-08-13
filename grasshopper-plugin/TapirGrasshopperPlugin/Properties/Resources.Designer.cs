@@ -2423,5 +2423,13 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap CreateInteriorElevations
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateInteriorElevations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }
