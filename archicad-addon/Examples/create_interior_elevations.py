@@ -26,24 +26,14 @@ zones = aclib.RunTapirCommand ('GetElementsByType', {
     'elementType': 'Zone'
 })['elements']
 
-if zones:
-    detailsOfZones = aclib.RunTapirCommand ('GetDetailsOfElements', {
-        'elements': zones
-    })['detailsOfElements']
+detailsOfZones = aclib.RunTapirCommand ('GetDetailsOfElements', {
+    'elements': zones
+})['detailsOfElements']
 
-    interiorElevationsData = []
-    for zone in detailsOfZones:
-        details = zone.get ('details', {})
-        polygonCoordinates = details.get ('polygonCoordinates', [])
-        if len (polygonCoordinates) < 3:
-            continue
-        interiorElevationsData.append ({
-            'nodeCoordinates': polygonCoordinates,
-            'depth': 4.5,
-            'name': details.get ('name', 'Zone')
-        })
-
-    if interiorElevationsData:
-        aclib.RunTapirCommand ('CreateInteriorElevations', {
-            'interiorElevationsData': interiorElevationsData
-        })
+newInteriorElevations = aclib.RunTapirCommand ('CreateInteriorElevations', {
+    'interiorElevationsData': [{
+        'nodeCoordinates': zone['details']['polygonOutline'],
+        'depth': 4.5,
+        'name': zone['details']['name'] + ' ' + zone['details']['numberStr']
+    } for zone in detailsOfZones]
+})
