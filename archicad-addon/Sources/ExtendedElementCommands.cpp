@@ -6418,6 +6418,211 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
     });
 }
 
+CreateInteriorElevationsCommand::CreateInteriorElevationsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateInteriorElevationsCommand::GetName () const
+{
+    return "CreateInteriorElevations";
+}
+
+GS::Optional<GS::UniString> CreateInteriorElevationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "interiorElevationsData": {
+                "type": "array",
+                "description": "Array of data to create Interior Elevation elements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "nodeCoordinates": {
+                            "type": "array",
+                            "description": "The corner points of the connected segment chain. Each consecutive pair of points becomes one segment, so a room with four walls needs five points to be closed, or four to be left open.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "depth": {
+                            "type": "number",
+                            "description": "How far each segment looks. Applied to every segment. Defaults to 1.0.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the interior elevation. Each segment is named after it."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "ID string of the interior elevation."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "The story to place the interior elevation on. Defaults to the current story."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["nodeCoordinates"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["interiorElevationsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateInteriorElevationsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> interiorElevationsData;
+    auto error = GetElementArray (parameters, "interiorElevationsData", interiorElevationsData);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteCreateWithElements ("Create Interior Elevations", [&](GS::Array<GS::ObjectState>& elements) {
+        for (const auto& data : interiorElevationsData) {
+            GS::Array<GS::ObjectState> nodeCoordinates;
+            data.Get ("nodeCoordinates", nodeCoordinates);
+            if (nodeCoordinates.GetSize () < 2) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'nodeCoordinates' must contain at least 2 coordinates."));
+                continue;
+            }
+
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            API_SubElement marker = {};
+            const GS::OnExit cleanup ([&]() {
+                ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
+            });
+
+#ifdef ServerMainVers_2600
+            element.header.type = API_InteriorElevationID;
+#else
+            element.header.typeID = API_InteriorElevationID;
+#endif
+            // The marker's parameters are fetched separately below, so they are not asked
+            // for here - this mirrors the DevKit's own Do_CreateInteriorElevation.
+            marker.subType = static_cast<API_SubElementType> (APISubElement_MainMarker | APISubElement_NoParams);
+
+            GSErrCode err = ACAPI_Element_GetDefaultsExt (&element, &memo, 1UL, &marker);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to prepare interior elevation defaults."));
+                continue;
+            }
+
+            // The marker's parameters come from the marker's OWN library part, not from a
+            // separately resolved marker parent: taking them from anywhere else pairs a
+            // parameter list with a library part it does not belong to, which is what
+            // ACAPI_Element_CreateExt rejects with APIERR_REFUSEDPAR (see #413).
+            double a = 0.0;
+            double b = 0.0;
+            Int32 addParNum = 0;
+            API_AddParType** markAddPars = nullptr;
+#ifdef ServerMainVers_2700
+            err = ACAPI_LibraryPart_GetParams (marker.subElem.object.libInd, &a, &b, &addParNum, &markAddPars);
+#else
+            err = ACAPI_LibPart_GetParams (marker.subElem.object.libInd, &a, &b, &addParNum, &markAddPars);
+#endif
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to read the interior elevation marker parameters."));
+                continue;
+            }
+            marker.memo.params = markAddPars;
+            marker.subElem.object.useObjPens = true;
+
+            short floorIndex = 0;
+            if (data.Get ("floorIndex", floorIndex)) {
+                element.header.floorInd = floorIndex;
+            }
+
+            GS::UniString name;
+            if (data.Get ("name", name)) {
+                GS::ucscpy (element.interiorElevation.segment.cutPlName, name.ToUStr ().Get ());
+            }
+            GS::UniString idStr;
+            if (data.Get ("id", idStr)) {
+                GS::ucscpy (element.interiorElevation.segment.cutPlIdStr, idStr.ToUStr ().Get ());
+            }
+
+            double depth = 1.0;
+            data.Get ("depth", depth);
+            element.interiorElevation.segment.ieCreationSegmentDepth = depth;
+
+            // The nodes form ONE polyline shared by every segment: nMainCoord counts the
+            // nodes, sectionSegmentMainCoords holds them, and intElevSegments carries one
+            // entry per gap between them. nSegments, nLineCoords and poly are filled in by
+            // Archicad from these, and must not be set here.
+            const USize nodeCount = nodeCoordinates.GetSize ();
+            const USize segmentCount = nodeCount - 1;
+
+            GS::Array<API_Coord> nodes;
+            for (const GS::ObjectState& node : nodeCoordinates) {
+                nodes.Push (Get2DCoordinateFromObjectState (node));
+            }
+            for (USize i = 0; i + 1 < nodeCount; ++i) {
+                const double dx = nodes[i + 1].x - nodes[i].x;
+                const double dy = nodes[i + 1].y - nodes[i].y;
+                if (sqrt (dx * dx + dy * dy) < EPS) {
+                    err = APIERR_BADPARS;
+                    break;
+                }
+            }
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Two consecutive coordinates of 'nodeCoordinates' are too close."));
+                continue;
+            }
+
+            element.interiorElevation.segment.nMainCoord = static_cast<UInt32> (nodeCount);
+
+            if (memo.sectionSegmentMainCoords != nullptr) {
+                BMpFree (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords));
+            }
+            memo.sectionSegmentMainCoords = reinterpret_cast<API_Coord*> (
+                BMAllocatePtr (nodeCount * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+
+            if (memo.intElevSegments != nullptr) {
+                BMpFree (reinterpret_cast<GSPtr> (memo.intElevSegments));
+            }
+            memo.intElevSegments = reinterpret_cast<API_SectionSegment*> (
+                BMAllocatePtr (segmentCount * sizeof (API_SectionSegment), ALLOCATE_CLEAR, 0));
+
+            if (memo.sectionSegmentMainCoords == nullptr || memo.intElevSegments == nullptr) {
+                elements.Push (CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the interior elevation segments."));
+                continue;
+            }
+
+            for (USize i = 0; i < nodeCount; ++i) {
+                memo.sectionSegmentMainCoords[i] = nodes[i];
+            }
+
+            marker.subType = APISubElement_MainMarker;
+            err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
+            if (err != NoError) {
+                elements.Push (CreateErrorResponse (err, "Failed to create interior elevation."));
+                continue;
+            }
+            elements.Push (CreateElementIdObjectState (element.header.guid));
+        }
+    });
+}
+
 GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     API_Element&                       elem,
     API_ElementMemo&                   memo,
