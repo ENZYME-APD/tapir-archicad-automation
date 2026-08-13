@@ -253,8 +253,7 @@ var gCommands = [{
             },
             "projectInfoValue": {
                 "type": "string",
-                "description": "The new value of the project info field.",
-                "minLength": 1
+                "description": "The new value of the project info field. An empty string clears the field."
             }
         },
         "additionalProperties": false,
@@ -966,7 +965,7 @@ var gCommands = [{
     }
             },{
                 "name": "GetDetailsOfElements",
-                "version": "1.0.7",
+                "version": "1.5.7",
                 "description": "Gets the details of the given elements (geometry parameters etc).",
                 "inputScheme": {
         "type": "object",
@@ -1250,15 +1249,17 @@ var gCommands = [{
             },{
                 "name": "GetConnectedElements",
                 "version": "1.1.4",
-                "description": "Gets connected elements of the given elements.",
+                "description": "Gets the elements hosted by (connected to) the given owner elements, filtered to the given element type: for example the Windows or Doors of a Wall, the frames, panels, junctions and accessories of a Curtain Wall, the risers, treads and structures of a Stair, or the posts, rails and panels of a Railing.",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/Elements"
+                "$ref": "#/Elements",
+                "description": "The owner (host) elements whose connected elements are collected, e.g. Walls, Curtain Walls, Stairs or Railings."
             },
             "connectedElementType": {
-                "$ref": "#/ElementType"
+                "$ref": "#/ElementType",
+                "description": "The type of the connected elements to collect, e.g. Window or Door for a Wall owner, or a subelement type of a Curtain Wall, Stair or Railing owner."
             }
         },
         "additionalProperties": false,
@@ -1269,6 +1270,59 @@ var gCommands = [{
     },
                 "outputScheme": {
         "$ref": "#/ConnectedElementsOrError"
+    }
+            },{
+                "name": "GetSectionElements",
+                "version": "1.5.8",
+                "description": "Gets the elements drawn in the given section, elevation or interior elevation databases, each with the owner element it was generated from. This is the only command that returns raw section element identifiers - every other listing command converts them to their owner - so it is the way to obtain the sectionElementId that CreateAssociativeDimensionsOnSection requires.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "databases": {
+                "$ref": "#/Databases",
+                "description": "The section, elevation or interior elevation databases to list the section elements of. If omitted, the current database is used."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "sectionElements": {
+                "type": "array",
+                "description": "The elements drawn in the given databases, each with the owner element it was generated from.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "sectionElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of the section element itself, accepted by CreateAssociativeDimensionsOnSection as sectionElementId."
+                        },
+                        "ownerElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of the owner element the section element was generated from - this is what every other listing command returns."
+                        },
+                        "ownerElementType": {
+                            "$ref": "#/ElementType",
+                            "description": "The type of the owner element. Only present when the owner's header is readable from the section database."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "sectionElementId",
+                        "ownerElementId"
+                    ]
+                }
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sectionElements"
+        ]
     }
             },{
                 "name": "GetRelationsOfElements",
@@ -1685,7 +1739,7 @@ var gCommands = [{
     }
             },{
                 "name": "GetGDLParametersOfElements",
-                "version": "1.0.8",
+                "version": "1.5.7",
                 "description": "Gets all the GDL parameters (name, type, value) of the given elements.",
                 "inputScheme": {
     "type": "object",
@@ -1774,6 +1828,10 @@ var gCommands = [{
                     "type": "object",
                     "description": "The parameters of the new Column.",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "coordinates": {
                             "type": "object",
                             "description" : "3D coordinate.",
@@ -1822,6 +1880,22 @@ var gCommands = [{
                             "description": "Optional anchor point of the column core on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         },
+                        "circleBased": {
+                            "type": "boolean",
+                            "description": "True for a round column cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments."
+                        },
+                        "isWidthAndHeightLinked": {
+                            "type": "boolean",
+                            "description": "When true (the default), Archicad keeps width and depth equal and setting one changes the other - set to false to give width/depth independent values. Applied to all segments."
+                        },
+                        "buildingMaterialId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments."
+                        },
+                        "profileId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -1863,6 +1937,10 @@ var gCommands = [{
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
@@ -1915,12 +1993,27 @@ var gCommands = [{
                 "items": {
                     "type": "object",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from zCoordinate." },
                         "zCoordinate": { "type": "number" },
                         "offset": { "type": "number" },
-                        "slantAngle": { "type": "number" },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Slant angle in radians. A non-zero value also switches the beam to slanted, unless isSlanted is given explicitly."
+                        },
+                        "isSlanted": {
+                            "type": "boolean",
+                            "description": "Optional explicit slanted state. By default it is derived from slantAngle."
+                        },
+                        "profileAngle": {
+                            "type": "number",
+                            "description": "Rotation angle of the profile around the beam's center line, in radians."
+                        },
                         "arcAngle": { "type": "number" },
                         "verticalCurveHeight": { "type": "number" },
                         "width": {
@@ -1937,6 +2030,18 @@ var gCommands = [{
                             "type": "string",
                             "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
+                        },
+                        "isWidthAndHeightLinked": {
+                            "type": "boolean",
+                            "description": "When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments."
+                        },
+                        "buildingMaterialId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Cross section building material. Applied to all segments."
+                        },
+                        "profileId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Switches the cross section to this custom extruded profile. Applied to all segments."
                         }
                     },
                     "additionalProperties": false,
@@ -1973,6 +2078,10 @@ var gCommands = [{
                     "type": "object",
                     "description": "The parameters of the new Stair.",
                     "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
                         "baseLinePoints": {
                             "type": "array",
                             "description": "2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.",
@@ -2047,6 +2156,10 @@ var gCommands = [{
                 "type": "object",
                 "description" : "The parameters of the new Slab.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "level": {
                         "type": "number",
                         "description" : "The Z coordinate value of the reference line of the slab."	
@@ -2607,6 +2720,10 @@ var gCommands = [{
                 "type": "object",
                 "description" : "The parameters of the new Zone.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorIndex": {
                         "type": "number"
                     },
@@ -2678,6 +2795,10 @@ var gCommands = [{
                 "type": "object",
                 "description" : "The parameters of the new Polyline.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description" : "The identifier of the floor. Optional parameter, by default the current floor is used."	
@@ -2744,7 +2865,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateLineElements",
-                "version": "1.5.7",
+                "version": "1.5.6",
                 "description": "Creates Line elements based on the given parameters.",
                 "inputScheme": {
     "type": "object",
@@ -2756,6 +2877,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Line.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -2810,7 +2935,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateArcs",
-                "version": "1.5.7",
+                "version": "1.5.6",
                 "description": "Creates Arc elements based on the given parameters.",
                 "inputScheme": {
     "type": "object",
@@ -2822,6 +2947,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Arc.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -2886,7 +3015,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateCircles",
-                "version": "1.5.7",
+                "version": "1.5.6",
                 "description": "Creates Circle elements based on the given parameters.",
                 "inputScheme": {
     "type": "object",
@@ -2898,6 +3027,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Circle.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -2952,7 +3085,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateHotspots",
-                "version": "1.5.7",
+                "version": "1.5.6",
                 "description": "Creates Hotspot elements based on the given parameters.",
                 "inputScheme": {
     "type": "object",
@@ -2964,6 +3097,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Hotspot.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -3009,7 +3146,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateHatches",
-                "version": "1.5.7",
+                "version": "1.5.6",
                 "description": "Creates Hatch elements based on the given parameters.",
                 "inputScheme": {
     "type": "object",
@@ -3021,6 +3158,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Hatch.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -3096,7 +3237,7 @@ var gCommands = [{
     }
             },{
                 "name": "CreateSplines",
-                "version": "1.5.7",
+                "version": "1.5.6",
                 "description": "Creates Spline elements based on the given parameters.",
                 "inputScheme": {
     "type": "object",
@@ -3108,6 +3249,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Spline.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorInd": {
                         "type": "number",
                         "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
@@ -3230,6 +3375,10 @@ var gCommands = [{
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                        },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                         }
                     },
                     "additionalProperties": false,
@@ -3324,6 +3473,10 @@ var gCommands = [{
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                        },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                         }
                     },
                     "additionalProperties": false,
@@ -3365,6 +3518,10 @@ var gCommands = [{
                 "type": "object",
                 "description" : "The parameters of the new Mesh.",
                 "properties" : {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "floorIndex": {
                         "type": "integer"
                     },
@@ -3478,6 +3635,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Label.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "parentElementId": {
                         "$ref": "#/ElementId",
                         "description" : "The parent element if the label is an associative label."	
@@ -3541,6 +3702,10 @@ var gCommands = [{
                 "type": "object",
                 "description": "The parameters of the new Text element.",
                 "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
                     "coordinate": {
                         "$ref": "#/Coordinate3D",
                         "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
@@ -3609,10 +3774,11 @@ var gCommands = [{
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
+                        "geometryType": { "type": "string", "enum": ["Straight", "Trapezoid"], "description": "The wall's plan outline shape (Polygonal is not settable here, read-only via GetDetailsOfElements). This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
                         "thickness": { "type": "number", "exclusiveMinimum": 0.0 },
                         "bottomOffset": { "type": "number" },
                         "offset": { "type": "number" },
@@ -3622,7 +3788,28 @@ var gCommands = [{
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
-                        "profileId": { "$ref": "#/AttributeId" }
+                        "profileId": { "$ref": "#/AttributeId" },
+                        "referenceLineLocation": {
+                            "type": "string",
+                            "enum": ["Outside", "Center", "Inside", "CoreOutside", "CoreCenter", "CoreInside"],
+                            "description": "The Core* values only have an effect on a Composite or Profile wall (structureType) - a Basic wall has no core skin."
+                        },
+                        "profileType": { "type": "string", "enum": ["Normal", "Slanted", "Trapez"], "description": "Cross section shape of the wall, distinct from geometryType (which is the plan outline). slantAlpha/slantBeta only have an effect once this is set to Slanted." },
+                        "slantAlpha": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
+                        "slantBeta": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
+                        "topOffset": { "type": "number", "description": "Only has an effect when relativeTopStory is non-zero." },
+                        "relativeTopStory": { "type": "number", "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
+                        "zoneRel": {
+                            "type": "string",
+                            "enum": ["Boundary", "ReduceArea", "None", "SubtractFromZone"]
+                        },
+                        "visibility": { "$ref": "#/StoryVisibility" },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically." },
+                        "referenceMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "oppositeMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3652,7 +3839,37 @@ var gCommands = [{
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
                         "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" }
+                        "verticalCurveHeight": { "type": "number" },
+                        "beamShape": { "type": "string", "enum": ["Straight", "HorizontallyCurved", "VerticallyCurved"] },
+                        "isSlanted": { "type": "boolean" },
+                        "isFlipped": { "type": "boolean" },
+                        "profileAngle": { "type": "number" },
+                        "anchorPoint": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
+                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
+                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material. Applied to all segments." },
+                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile. Applied to all segments." },
+                        "holes": {
+                            "type": "array",
+                            "description": "Replaces all holes currently placed on the beam.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "type": { "type": "string", "enum": ["Rectangular", "Circular"] },
+                                    "showContour": { "type": "boolean" },
+                                    "centerX": { "type": "number" },
+                                    "centerZ": { "type": "number" },
+                                    "width": { "type": "number", "exclusiveMinimum": 0.0 },
+                                    "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Only used for the Rectangular type." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["type", "centerX", "centerZ", "width"]
+                            }
+                        },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "coverFill": { "$ref": "#/CoverFill" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3684,6 +3901,10 @@ var gCommands = [{
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
+                        "referencePlaneLocation": {
+                            "type": "string",
+                            "enum": ["Top", "CoreTop", "CoreBottom", "Bottom"]
+                        },
                         "polygonOutline": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
@@ -3693,7 +3914,16 @@ var gCommands = [{
                             "type": "array",
                             "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": { "$ref": "#/Holes2D" }
+                        "holes": {
+                            "$ref": "#/Holes2D",
+                            "description": "Can be given on its own, without polygonOutline, to add/remove/clear holes in place (an empty array clears all holes) - the slab's current outline is reused unchanged."
+                        },
+                        "topMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "bottomMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "floorFill": { "$ref": "#/FloorFill" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3719,9 +3949,26 @@ var gCommands = [{
                         "elementId": { "$ref": "#/ElementId" },
                         "origin": { "$ref": "#/Coordinate2D" },
                         "zCoordinate": { "type": "number" },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
                         "bottomOffset": { "type": "number" },
-                        "axisRotationAngle": { "type": "number" }
+                        "axisRotationAngle": { "type": "number" },
+                        "coreAnchor": { "type": "string", "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"] },
+                        "isSlanted": { "type": "boolean" },
+                        "slantAngle": { "type": "number" },
+                        "slantDirectionAngle": { "type": "number" },
+                        "isFlipped": { "type": "boolean", "description": "Has no visible effect on a circular column (circleBased cross section) - Archicad ignores it there." },
+                        "wrapping": { "type": "boolean" },
+                        "topOffset": { "type": "number" },
+                        "relativeTopStory": { "type": "number", "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column. Applied to all segments." },
+                        "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments." },
+                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and depth equal and setting one changes the other - set to false first to give width/depth independent values. Applied to all segments." },
+                        "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
+                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
+                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
+                        "cutFillPen": { "$ref": "#/OverriddenPen" },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "coverFill": { "$ref": "#/CoverFill" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -8422,6 +8669,61 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": ["sectionsData"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    }
+            },{
+                "name": "CreateInteriorElevations",
+                "version": "1.5.8",
+                "description": "Creates Interior Elevation elements on the floor plan. Every consecutive pair of the given points becomes one segment, each with its own viewpoint - feed it the corner points of a room to get an interior elevation of that room.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "interiorElevationsData": {
+                "type": "array",
+                "description": "Array of data to create Interior Elevation elements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "nodeCoordinates": {
+                            "type": "array",
+                            "description": "The corner points of the connected segment chain. Each consecutive pair of points becomes one segment, so a room with four walls needs five points to be closed, or four to be left open.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "depth": {
+                            "type": "number",
+                            "description": "How far each segment looks. Applied to every segment. Defaults to 1.0.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the interior elevation. Each segment is named after it."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "ID string of the interior elevation."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "The story to place the interior elevation on. Defaults to the current story."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["nodeCoordinates"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["interiorElevationsData"]
     },
                 "outputScheme": {
         "type": "object",
