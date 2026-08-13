@@ -435,27 +435,27 @@ GSErrCode Initialize (void)
             "Creates Polyline elements based on the given parameters."
         );
         err |= RegisterCommand<CreateLineElementsCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Line elements based on the given parameters."
         );
         err |= RegisterCommand<CreateArcsCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Arc elements based on the given parameters."
         );
         err |= RegisterCommand<CreateCirclesCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Circle elements based on the given parameters."
         );
         err |= RegisterCommand<CreateHotspotsCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Hotspot elements based on the given parameters."
         );
         err |= RegisterCommand<CreateHatchesCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Hatch elements based on the given parameters."
         );
         err |= RegisterCommand<CreateSplinesCommand> (
-            elementCommands, "1.5.7",
+            elementCommands, "1.5.6",
             "Creates Spline elements based on the given parameters."
         );
         err |= RegisterCommand<CreateObjectsCommand> (
