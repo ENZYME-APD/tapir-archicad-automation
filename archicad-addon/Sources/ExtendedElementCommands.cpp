@@ -3710,6 +3710,7 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     parameters.Get ("zCoordinate", zCoordinate);
     const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
+    element.stair.basePlane.basePoint.z = floorIndexAndOffset.second;
 
     auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
     if (totalHeight.HasValue ()) {
