@@ -3686,6 +3686,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "number",
                             "description": "Depth (going) of each tread.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "finishVisible": {
+                            "type": "boolean",
+                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
                         }
                     },
                     "additionalProperties": false,
@@ -3710,6 +3714,15 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     parameters.Get ("zCoordinate", zCoordinate);
     const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
+
+    bool finishVisible = true;
+    if (parameters.Get ("finishVisible", finishVisible)) {
+        element.stair.finishVisible = finishVisible;
+        for (int role = 0; role < API_StairPartRoleNum; ++role) {
+            element.stair.tread[role].visible = finishVisible;
+            element.stair.riser[role].visible = finishVisible;
+        }
+    }
 
     auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
     if (totalHeight.HasValue ()) {
