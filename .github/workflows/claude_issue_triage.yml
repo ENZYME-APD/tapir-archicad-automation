@@ -34,11 +34,16 @@ concurrency:
 
 jobs:
   # ---------------------------------------------------------------- triage --
-  # Runs on every new issue, including from people with no access to this
-  # repository. Read-only on the code; the only thing it can write is a comment
-  # and the issue's own state.
+  # Runs on new issues from people without write access. Read-only on the code;
+  # the only thing it can write is a comment and the issue's own state.
+  #
+  # A collaborator's issue skips this and goes straight to `fix` below, which
+  # answers it as well as fixing it - otherwise both jobs would run on the same
+  # event and the issue would collect two comments.
   triage:
-    if: github.event.action == 'opened'
+    if: >
+      github.event.action == 'opened' &&
+      !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -123,11 +128,25 @@ jobs:
             --allowedTools "Read,Grep,Glob,Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }}:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
 
   # ------------------------------------------------------------------- fix --
-  # Only a maintainer can apply a label, so this job's trigger is a human
-  # decision to act on the issue - the review step the action's security
-  # guidance asks for. It is the only job here that can change code.
+  # The only job here that can change code, so it runs only on input someone
+  # with write access stands behind - the review step the action's security
+  # guidance asks for, expressed as a permission GitHub already enforces.
+  #
+  # Two ways in. An issue opened by a collaborator is trusted input already, so
+  # it goes straight to a fix. Anyone else's issue needs the `claude-fix` label
+  # applied, and applying a label needs write access - so a maintainer has read
+  # the report and decided to act on it.
+  #
+  # author_association is set by GitHub on the event, not by the reporter, and
+  # this condition is evaluated before the job starts. OWNER is the account
+  # that owns the repository, MEMBER an organisation member, COLLABORATOR
+  # someone granted access directly. CONTRIBUTOR only means the person has had
+  # a pull request merged before, which is not write access - it is not here.
   fix:
-    if: github.event.action == 'labeled' && github.event.label.name == 'claude-fix'
+    if: >
+      (github.event.action == 'labeled' && github.event.label.name == 'claude-fix') ||
+      (github.event.action == 'opened' &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -151,11 +170,20 @@ jobs:
             REPO: ${{ github.repository }}
             ISSUE NUMBER: ${{ github.event.issue.number }}
 
-            A maintainer labelled this issue `claude-fix`, which means they
-            want the fix written. Read CLAUDE.md first for the conventions,
-            then read the issue and any earlier triage comment on it.
+            Someone with write access wants this fixed - either they opened the
+            issue themselves, or they labelled it `claude-fix`. Read CLAUDE.md
+            first for the conventions, then read the issue and any earlier
+            triage comment on it.
 
-            Open a pull request from a new branch, AS A DRAFT. Register any new
+            Fixing it is the job, but do not force it. If the issue is ALREADY
+            FIXED on main, say so in one comment naming the commit and close
+            it. If you genuinely cannot tell what is wrong without something
+            only the reporter has - the Archicad version and build, the exact
+            JSON sent, whether the project is Teamwork, which libraries are
+            loaded - ask for precisely that in one comment and stop. In either
+            case open no pull request.
+
+            Otherwise open a pull request from a new branch, AS A DRAFT. Register any new
             command in AddOnMain.cpp with the UNRELEASED version from
             tools/package_info.json, keep the C++ style of the surrounding
             code, and add a Python example under archicad-addon/Examples if you
