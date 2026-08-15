@@ -1,0 +1,83 @@
+name: Claude Issue Triage
+
+# Answers newly opened issues: reproduces what it can from the sources and the
+# Archicad DevKit headers, then either explains what it found, asks the one
+# question that would unblock it, or opens a pull request with a fix.
+#
+# Needs an ANTHROPIC_API_KEY repository secret.
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write        # to push a fix branch
+      issues: write          # to comment
+      pull-requests: write   # to open the fix as a PR
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Triage the issue
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Issues come from users without write access, so they have to be
+          # allowed to trigger this workflow.
+          allowed_non_write_users: "*"
+
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ github.event.issue.number }}
+
+            Triage this newly opened issue for the Tapir Archicad automation
+            package. Read CLAUDE.md first - it describes the layout, the
+            conventions and how the add-on is built.
+
+            Work out which of these the issue is, and act accordingly.
+
+            1. ALREADY FIXED on main. Say so, name the commit or PR that fixed
+               it and the release it will ship in, and close the issue.
+
+            2. NOT REPRODUCIBLE FROM THE SOURCES, or the report is missing
+               something you genuinely need - the Archicad version and build,
+               the exact JSON sent, whether the project is Teamwork, which
+               libraries are loaded. Ask for precisely that, in one comment,
+               and stop. Do not guess and do not list every possible cause.
+
+            3. YOU CAN SEE THE DEFECT in the sources. Explain the mechanism in
+               the issue comment, quoting the relevant code, then open a pull
+               request with the fix against a new branch. Register any new
+               command in AddOnMain.cpp with the UNRELEASED version from
+               tools/package_info.json, keep the C++ style of the surrounding
+               code, and add a Python example under archicad-addon/Examples if
+               you add a command.
+
+            Rules that matter here:
+
+            - The DevKit headers under archicad-addon/Build/DevKits/*/Support/Inc
+              are the authority on Archicad behaviour. Quote them rather than
+              asserting from memory. Several DevKits also ship reference
+              implementations under Examples/ - read those before guessing at
+              a struct or memo layout.
+            - You cannot run Archicad. Anything that needs a live seat must be
+              stated as unverified, and say what the check would be so a
+              maintainer with a seat can run it.
+            - Never push to main. Never modify .github/, archicad-addon/Tools/
+              or tools/ - those run with repository credentials, and a change
+              there is a release-pipeline change, not a bug fix.
+            - If the fix is large, ambiguous in design, or touches the crash
+              sensitive element creation paths, describe the fix in a comment
+              and let a maintainer decide instead of opening a PR.
+
+          claude_args: |
+            --max-turns 40
