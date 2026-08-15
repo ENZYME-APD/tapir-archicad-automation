@@ -139,6 +139,16 @@ jobs:
             fi
 
             echo "merging: all three gates passed ($total checks green, author $author has $permission)"
-            gh pr merge "$pr" --repo "$REPO" --merge --delete-branch
+
+            # The gates above do not know about branch protection rules, and the
+            # pull request can go stale between the mergeable check and here. A
+            # refused merge must not abort the sweep under `set -e`, or one
+            # stuck pull request leaves every other candidate unevaluated until
+            # the next run.
+            if ! gh pr merge "$pr" --repo "$REPO" --merge --delete-branch; then
+              echo "skip: the merge was refused - branch protection, merge commits disabled, or the pull request went stale"
+              echo "::endgroup::"; continue
+            fi
+            echo "merged"
             echo "::endgroup::"
           done
