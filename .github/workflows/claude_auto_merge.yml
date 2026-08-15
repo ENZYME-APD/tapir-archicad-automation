@@ -1,0 +1,144 @@
+name: Auto Merge
+
+# Merges pull requests that clear three gates:
+#
+#   1. the author has write access to this repository
+#   2. every check has passed
+#   3. the diff touches none of the release critical paths
+#
+# The gates are plain shell, not a model decision. Reviewing is a judgement
+# call and Claude does that in claude_pr_review.yml; merging is a rule, and a
+# rule that hands out repository credentials should fail closed the same way
+# every time rather than depend on how a prompt was read that morning.
+#
+# This workflow never checks out the pull request's code. It only queries the
+# API, so nothing from the branch being merged executes with the write token.
+
+on:
+  # The natural moment: a check suite for the PR has just finished. Several
+  # suites run per PR, so this fires more than once - the early runs simply
+  # find checks still pending and stop.
+  check_suite:
+    types: [completed]
+  # Catches anything the events missed.
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+# One merge pass at a time, so two runs cannot race on the same PR.
+concurrency:
+  group: auto-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+      statuses: read
+
+    steps:
+      - name: Merge everything that qualifies
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          CHECK_SUITE_PRS: ${{ toJSON(github.event.check_suite.pull_requests) }}
+        run: |
+          set -euo pipefail
+
+          # Anything under these prefixes runs with repository credentials or
+          # produces the signed binaries, so a pull request touching them is
+          # never merged automatically, whoever wrote it.
+          PROTECTED='^\.github/|^archicad-addon/Tools/|^tools/'
+
+          if [ "$EVENT_NAME" = "check_suite" ]; then
+            candidates=$(printf '%s' "$CHECK_SUITE_PRS" | jq -r '.[].number' | sort -u)
+          else
+            candidates=$(gh pr list --repo "$REPO" --state open --base main \
+              --json number --jq '.[].number')
+          fi
+
+          if [ -z "${candidates:-}" ]; then
+            echo "No open pull requests to consider."
+            exit 0
+          fi
+
+          for pr in $candidates; do
+            echo "::group::PR #$pr"
+
+            info=$(gh pr view "$pr" --repo "$REPO" \
+              --json number,state,isDraft,mergeable,baseRefName,author,title)
+
+            state=$(printf '%s' "$info" | jq -r '.state')
+            draft=$(printf '%s' "$info" | jq -r '.isDraft')
+            mergeable=$(printf '%s' "$info" | jq -r '.mergeable')
+            base=$(printf '%s' "$info" | jq -r '.baseRefName')
+            author=$(printf '%s' "$info" | jq -r '.author.login')
+            isBot=$(printf '%s' "$info" | jq -r '.author.is_bot // false')
+
+            if [ "$state" != "OPEN" ] || [ "$draft" != "false" ]; then
+              echo "skip: not an open, ready pull request (state=$state draft=$draft)"
+              echo "::endgroup::"; continue
+            fi
+
+            if [ "$base" != "main" ]; then
+              echo "skip: targets '$base', not main - stacked pull requests are merged by hand"
+              echo "::endgroup::"; continue
+            fi
+
+            # Gate 1: the author must have write access. A bot never qualifies,
+            # so this workflow cannot merge what the automation itself opened.
+            if [ "$isBot" = "true" ]; then
+              echo "skip: opened by a bot ($author)"
+              echo "::endgroup::"; continue
+            fi
+            permission=$(gh api "repos/$REPO/collaborators/$author/permission" \
+              --jq '.permission' 2>/dev/null || echo "none")
+            case "$permission" in
+              admin|write|maintain) ;;
+              *)
+                echo "skip: author $author has '$permission' access, not write"
+                echo "::endgroup::"; continue
+                ;;
+            esac
+
+            # Gate 2: every check has to have passed. Pending, failing or
+            # cancelled all stop the merge; skipped checks are fine, and a pull
+            # request with no checks at all is not merged either.
+            checks=$(gh pr checks "$pr" --repo "$REPO" --json name,bucket 2>/dev/null || echo '[]')
+            total=$(printf '%s' "$checks" | jq 'length')
+            if [ "$total" -eq 0 ]; then
+              echo "skip: no checks have reported yet"
+              echo "::endgroup::"; continue
+            fi
+            notPassing=$(printf '%s' "$checks" \
+              | jq -r '[.[] | select(.bucket != "pass" and .bucket != "skipping")] | length')
+            if [ "$notPassing" -ne 0 ]; then
+              echo "skip: $notPassing of $total checks are not green:"
+              printf '%s' "$checks" \
+                | jq -r '.[] | select(.bucket != "pass" and .bucket != "skipping") | "    \(.bucket)  \(.name)"'
+              echo "::endgroup::"; continue
+            fi
+
+            # Gate 3: the diff must not touch the release critical paths.
+            files=$(gh pr diff "$pr" --repo "$REPO" --name-only)
+            if printf '%s\n' "$files" | grep -Eq "$PROTECTED"; then
+              echo "skip: touches a release critical path:"
+              printf '%s\n' "$files" | grep -E "$PROTECTED" | sed 's/^/    /'
+              echo "::endgroup::"; continue
+            fi
+
+            # Conflicts, or a base branch that has moved on.
+            if [ "$mergeable" != "MERGEABLE" ]; then
+              echo "skip: not mergeable (mergeable=$mergeable)"
+              echo "::endgroup::"; continue
+            fi
+
+            echo "merging: all three gates passed ($total checks green, author $author has $permission)"
+            gh pr merge "$pr" --repo "$REPO" --merge --delete-branch
+            echo "::endgroup::"
+          done
