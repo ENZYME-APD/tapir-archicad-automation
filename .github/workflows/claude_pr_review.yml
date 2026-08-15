@@ -45,7 +45,11 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          track_progress: true
+
+          # track_progress is deliberately NOT set. It creates a tracking
+          # comment with progress checkboxes as soon as the run starts and
+          # edits it as the review proceeds; the review should arrive as one
+          # finished comment instead of narrating itself.
 
           prompt: |
             REPO: ${{ github.repository }}
@@ -84,10 +88,15 @@ jobs:
                its response schema has to allow that - the *OrErrors unions in
                CommonSchemaDefinitions.json exist for this.
 
-            Post inline comments on specific lines and one short summary
-            comment. Say plainly when the change looks right; do not invent
-            problems to have something to say. Where a claim of yours needs a
-            running Archicad to confirm, say so rather than asserting it.
+            Post inline comments on the specific lines, and exactly one summary
+            comment, written once when the review is finished. Do not post a
+            comment when you start, do not post progress updates, and do not
+            edit a comment you already posted - the pull request should receive
+            one finished review, not a running commentary.
+
+            Say plainly when the change looks right; do not invent problems to
+            have something to say. Where a claim of yours needs a running
+            Archicad to confirm, say so rather than asserting it.
 
           claude_args: |
             --max-turns 40

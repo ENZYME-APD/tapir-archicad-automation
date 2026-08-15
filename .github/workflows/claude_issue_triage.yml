@@ -69,6 +69,11 @@ jobs:
                code, and add a Python example under archicad-addon/Examples if
                you add a command.
 
+            Post exactly one comment, written once you have finished
+            investigating. Do not comment when you start, do not post progress
+            updates, and do not edit a comment you already posted - the issue
+            should receive one finished answer, not a running commentary.
+
             Rules that matter here:
 
             - The DevKit headers under archicad-addon/Build/DevKits/*/Support/Inc
