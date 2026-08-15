@@ -140,12 +140,20 @@ jobs:
             want the fix written. Read CLAUDE.md first for the conventions,
             then read the issue and any earlier triage comment on it.
 
-            Open a pull request from a new branch. Register any new command in
-            AddOnMain.cpp with the UNRELEASED version from
+            Open a pull request from a new branch, AS A DRAFT. Register any new
+            command in AddOnMain.cpp with the UNRELEASED version from
             tools/package_info.json, keep the C++ style of the surrounding
             code, and add a Python example under archicad-addon/Examples if you
             add a command. Then post one comment on the issue linking the pull
             request and saying what you changed.
+
+            Nothing verifies this pull request automatically. GitHub does not
+            start workflow runs from events a workflow token caused, so the
+            AC25-AC29 build checks and the review workflow will not run on it.
+            Open it as a draft for that reason, and say in the pull request
+            body, in the first paragraph, that it has not been built or
+            reviewed and that a maintainer must push a commit to it or reopen
+            it by hand to start the checks.
 
             Rules that matter here:
 

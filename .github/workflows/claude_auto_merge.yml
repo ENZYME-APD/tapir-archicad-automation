@@ -15,12 +15,16 @@ name: Auto Merge
 # API, so nothing from the branch being merged executes with the write token.
 
 on:
-  # The natural moment: a check suite for the PR has just finished. Several
-  # suites run per PR, so this fires more than once - the early runs simply
-  # find checks still pending and stop.
-  check_suite:
+  # Fires when a build check finishes. NOT check_suite: GitHub documents that
+  # it "does not trigger workflows if the check suite was created by GitHub
+  # Actions", and every check here is an Actions job - so a check_suite trigger
+  # would never fire and the cron below would silently be the only path.
+  workflow_run:
+    workflows:
+      - "Archicad Add-On Build Check"
+      - "Grasshopper Plugin Build Check"
     types: [completed]
-  # Catches anything the events missed.
+  # Catches pull requests whose checks finished while nothing was listening.
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
@@ -45,22 +49,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          EVENT_NAME: ${{ github.event_name }}
-          CHECK_SUITE_PRS: ${{ toJSON(github.event.check_suite.pull_requests) }}
         run: |
           set -euo pipefail
 
-          # Anything under these prefixes runs with repository credentials or
-          # produces the signed binaries, so a pull request touching them is
-          # never merged automatically, whoever wrote it.
-          PROTECTED='^\.github/|^archicad-addon/Tools/|^tools/'
+          # Anything matching this runs with repository credentials or produces
+          # the signed binaries, so a pull request touching it is never merged
+          # automatically, whoever wrote it. Build definitions are included
+          # because the release job executes them while signing - a CMake or
+          # MSBuild file reaches the pipeline on the next tag push just as
+          # surely as a script under Tools/. Sources are globbed in CMake, so
+          # an ordinary command addition does not touch these.
+          PROTECTED='^\.github/|^archicad-addon/Tools/|^tools/|CMakeLists\.txt$|\.cmake$|\.csproj$'
 
-          if [ "$EVENT_NAME" = "check_suite" ]; then
-            candidates=$(printf '%s' "$CHECK_SUITE_PRS" | jq -r '.[].number' | sort -u)
-          else
-            candidates=$(gh pr list --repo "$REPO" --state open --base main \
-              --json number --jq '.[].number')
-          fi
+          # Every trigger sweeps the open pull requests rather than reading the
+          # candidates off the event. The event payloads carry no pull requests
+          # for forks, and a sweep costs a handful of API calls - so this is
+          # both simpler and the only version that works for outside
+          # contributions.
+          candidates=$(gh pr list --repo "$REPO" --state open --base main \
+            --json number --jq '.[].number')
 
           if [ -z "${candidates:-}" ]; then
             echo "No open pull requests to consider."
@@ -71,7 +78,7 @@ jobs:
             echo "::group::PR #$pr"
 
             info=$(gh pr view "$pr" --repo "$REPO" \
-              --json number,state,isDraft,mergeable,baseRefName,author,title)
+              --json number,state,isDraft,mergeable,baseRefName,author,title,headRefOid,isCrossRepository)
 
             state=$(printf '%s' "$info" | jq -r '.state')
             draft=$(printf '%s' "$info" | jq -r '.isDraft')
@@ -79,6 +86,8 @@ jobs:
             base=$(printf '%s' "$info" | jq -r '.baseRefName')
             author=$(printf '%s' "$info" | jq -r '.author.login')
             isBot=$(printf '%s' "$info" | jq -r '.author.is_bot // false')
+            headOid=$(printf '%s' "$info" | jq -r '.headRefOid')
+            fromFork=$(printf '%s' "$info" | jq -r '.isCrossRepository')
 
             if [ "$state" != "OPEN" ] || [ "$draft" != "false" ]; then
               echo "skip: not an open, ready pull request (state=$state draft=$draft)"
@@ -125,7 +134,10 @@ jobs:
             fi
 
             # Gate 3: the diff must not touch the release critical paths.
-            files=$(gh pr diff "$pr" --repo "$REPO" --name-only)
+            if ! files=$(gh pr diff "$pr" --repo "$REPO" --name-only); then
+              echo "skip: could not read the diff"
+              echo "::endgroup::"; continue
+            fi
             if printf '%s\n' "$files" | grep -Eq "$PROTECTED"; then
               echo "skip: touches a release critical path:"
               printf '%s\n' "$files" | grep -E "$PROTECTED" | sed 's/^/    /'
@@ -138,17 +150,29 @@ jobs:
               echo "::endgroup::"; continue
             fi
 
+            # Deleting the head branch of a fork's pull request needs write
+            # access to the fork, which this token does not have.
+            delete=--delete-branch
+            if [ "$fromFork" = "true" ]; then
+              delete=""
+            fi
+
             echo "merging: all three gates passed ($total checks green, author $author has $permission)"
 
-            # The gates above do not know about branch protection rules, and the
-            # pull request can go stale between the mergeable check and here. A
-            # refused merge must not abort the sweep under `set -e`, or one
-            # stuck pull request leaves every other candidate unevaluated until
-            # the next run.
-            if ! gh pr merge "$pr" --repo "$REPO" --merge --delete-branch; then
-              echo "skip: the merge was refused - branch protection, merge commits disabled, or the pull request went stale"
+            # --match-head-commit pins the merge to the commit the gates were
+            # evaluated against. Without it a push landing between the checks
+            # above and this call would merge code no gate ever saw - including
+            # one adding files under .github/, which is what gate 3 exists to
+            # stop. A moved head fails here and is re-evaluated next run.
+            #
+            # The merge is also allowed to fail without aborting the sweep:
+            # branch protection, disabled merge commits or a stale pull request
+            # must not leave every later candidate unevaluated.
+            if ! gh pr merge "$pr" --repo "$REPO" --merge $delete \
+                 --match-head-commit "$headOid"; then
+              echo "skip: the merge was refused - the head moved, branch protection, or merge commits are disabled"
               echo "::endgroup::"; continue
             fi
-            echo "merged"
+            echo "merged at $headOid"
             echo "::endgroup::"
           done
