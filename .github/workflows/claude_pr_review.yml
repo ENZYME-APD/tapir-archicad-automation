@@ -4,7 +4,14 @@ name: Claude PR Review
 # see the note at the bottom of this file for why, and for what to change if
 # you decide you want that anyway.
 #
-# Needs an ANTHROPIC_API_KEY repository secret.
+# Authenticates with a Claude Code OAuth token from a Pro or Max subscription:
+# run `claude setup-token` locally and store the result as the repository
+# secret CLAUDE_CODE_OAUTH_TOKEN. Runs then draw on the subscription instead of
+# being billed per token.
+#
+# To pay per token through the API instead, replace claude_code_oauth_token
+# below with:
+#     anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
 on:
   pull_request:
@@ -36,7 +43,7 @@ jobs:
       - name: Review the pull request
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           track_progress: true
 

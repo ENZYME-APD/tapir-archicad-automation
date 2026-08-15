@@ -4,7 +4,14 @@ name: Claude Issue Triage
 # Archicad DevKit headers, then either explains what it found, asks the one
 # question that would unblock it, or opens a pull request with a fix.
 #
-# Needs an ANTHROPIC_API_KEY repository secret.
+# Authenticates with a Claude Code OAuth token from a Pro or Max subscription:
+# run `claude setup-token` locally and store the result as the repository
+# secret CLAUDE_CODE_OAUTH_TOKEN. Runs then draw on the subscription instead of
+# being billed per token.
+#
+# To pay per token through the API instead, replace claude_code_oauth_token
+# below with:
+#     anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
 on:
   issues:
@@ -28,7 +35,7 @@ jobs:
       - name: Triage the issue
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
           # Issues come from users without write access, so they have to be
