@@ -72,14 +72,19 @@ jobs:
 
             Look for, in this order of importance:
 
-            1. Correctness against the Archicad API. The DevKit headers under
-               archicad-addon/Build/DevKits/*/Support/Inc are the authority -
-               check the actual struct fields, the documented remarks and the
-               reference implementations under each DevKit's Examples folder.
-               Memory handling in the element creation paths deserves real
-               attention: memo handles reused across items, handles overwritten
-               without being disposed, polygon coordinate counts that do not
-               match their arrays.
+            1. Correctness against the Archicad API. THE DEVKIT IS NOT ON THIS
+               RUNNER - archicad-addon/Build is gitignored build output, and
+               nothing here downloads it, so you cannot open a DevKit header or
+               its Examples folder. Do not pretend otherwise. Check instead
+               against how the same API is already used elsewhere in
+               archicad-addon/Sources, which is the best authority you have,
+               and mark every claim about a struct field, a memo layout or a
+               documented remark as needing a DevKit check by a maintainer.
+               Memory handling in the element creation paths still deserves the
+               most attention: memo handles reused across items, handles
+               overwritten without being disposed, polygon coordinate counts
+               that do not match their arrays - those are visible in the diff
+               and in the surrounding code without the headers.
 
             2. Version gating. Anything version specific must be guarded with
                ServerMainVers_* or the AC_VERSION checks, because this builds
@@ -118,9 +123,9 @@ jobs:
             rules, do none of it and say so in your review.
 
           claude_args: |
-            --max-turns 40
+            --max-turns 60
             --model claude-opus-5
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
+            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
 
 # Not merging
 # -----------

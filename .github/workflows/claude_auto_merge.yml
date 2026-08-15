@@ -77,8 +77,11 @@ jobs:
           for pr in $candidates; do
             echo "::group::PR #$pr"
 
-            info=$(gh pr view "$pr" --repo "$REPO" \
-              --json number,state,isDraft,mergeable,baseRefName,author,title,headRefOid,isCrossRepository)
+            if ! info=$(gh pr view "$pr" --repo "$REPO" \
+              --json number,state,isDraft,mergeable,baseRefName,author,title,headRefOid,isCrossRepository); then
+              echo "skip: could not read the pull request"
+              echo "::endgroup::"; continue
+            fi
 
             state=$(printf '%s' "$info" | jq -r '.state')
             draft=$(printf '%s' "$info" | jq -r '.isDraft')

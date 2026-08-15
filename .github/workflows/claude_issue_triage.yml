@@ -25,6 +25,13 @@ on:
   issues:
     types: [opened, labeled]
 
+# Anyone who can open an issue can start a run, and a run spends the
+# maintainer's subscription. One at a time, so twenty issues filed in an
+# afternoon queue instead of running concurrently.
+concurrency:
+  group: claude-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   # ---------------------------------------------------------------- triage --
   # Runs on every new issue, including from people with no access to this
@@ -87,11 +94,13 @@ jobs:
 
             Rules that matter here:
 
-            - The DevKit headers under archicad-addon/Build/DevKits/*/Support/Inc
-              are the authority on Archicad behaviour. Quote them rather than
-              asserting from memory. Several DevKits also ship reference
-              implementations under Examples/ - read those before guessing at
-              a struct or memo layout.
+            - THE DEVKIT IS NOT ON THIS RUNNER. archicad-addon/Build is
+              gitignored build output and nothing here downloads it, so you
+              cannot open a DevKit header or its Examples folder. Do not
+              pretend otherwise. Use how the same API is already called in
+              archicad-addon/Sources as your evidence, and say plainly that a
+              maintainer must confirm any claim about a struct field, a memo
+              layout or a documented remark against the DevKit.
             - You cannot run Archicad. Anything that needs a live seat must be
               stated as unverified, and say what the check would be so a
               maintainer with a seat can run it.
@@ -105,7 +114,7 @@ jobs:
           claude_args: |
             --max-turns 40
             --model claude-sonnet-5
-            --allowedTools "Read,Grep,Glob,Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
+            --allowedTools "Read,Grep,Glob,Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }}:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
 
   # ------------------------------------------------------------------- fix --
   # Only a maintainer can apply a label, so this job's trigger is a human
@@ -157,11 +166,13 @@ jobs:
 
             Rules that matter here:
 
-            - The DevKit headers under archicad-addon/Build/DevKits/*/Support/Inc
-              are the authority on Archicad behaviour. Quote them rather than
-              asserting from memory. Several DevKits also ship reference
-              implementations under Examples/ - read those before guessing at
-              a struct or memo layout.
+            - THE DEVKIT IS NOT ON THIS RUNNER. archicad-addon/Build is
+              gitignored build output and nothing here downloads it, so you
+              cannot open a DevKit header or its Examples folder. Do not
+              pretend otherwise. Use how the same API is already called in
+              archicad-addon/Sources as your evidence, and say plainly that a
+              maintainer must confirm any claim about a struct field, a memo
+              layout or a documented remark against the DevKit.
             - You cannot run Archicad or build the add-on here. State plainly
               in the pull request that the change is unbuilt and untested, and
               say what a maintainer with a seat should run to verify it.
