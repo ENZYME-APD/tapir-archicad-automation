@@ -92,6 +92,12 @@ jobs:
             updates, and do not edit a comment you already posted - the issue
             should receive one finished answer, not a running commentary.
 
+            KEEP IT SHORT - aim for under fifteen lines. Lead with the answer,
+            then the evidence. Quote at most one short block of code. No
+            preamble, no restating the issue back at the reporter, no listing
+            what you ruled out, no closing summary of what you just said. Cut
+            every sentence that does not change what the reader does next.
+
             Rules that matter here:
 
             - THE DEVKIT IS NOT ON THIS RUNNER. archicad-addon/Build is

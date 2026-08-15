@@ -111,9 +111,30 @@ jobs:
             edit a comment you already posted - the pull request should receive
             one finished review, not a running commentary.
 
-            Say plainly when the change looks right; do not invent problems to
-            have something to say. Where a claim of yours needs a running
-            Archicad to confirm, say so rather than asserting it.
+            KEEP IT SHORT. A maintainer reads this between other work, and a
+            review nobody finishes reading is a review that did not happen.
+
+            - At most six inline comments, the six that matter most. If you
+              found more, the rest go in the summary as one line each.
+            - An inline comment is at most four sentences: what is wrong, what
+              it causes, what to do. No preamble, no bold headline restating
+              the title, no quoting the diff back, no explaining what the code
+              does, no listing the ways you might be wrong.
+            - The summary is at most fifteen lines total: one line saying
+              whether this is good to merge, then one line per finding as
+              `file:line - the problem`. No praise section, no list of what you
+              checked, no restating the checklist, no closing caveats.
+            - Say a thing once. If it is in an inline comment, the summary line
+              is a pointer to it, not a retelling.
+            - Cut every sentence that does not change what the maintainer does
+              next. Length is not thoroughness - investigate deeply, report
+              briefly.
+
+            Say plainly when the change looks right - "looks correct, nothing
+            blocking" is a complete review and the best possible outcome. Do
+            not invent problems to have something to say, and do not pad a
+            clean review with observations. Where a claim of yours needs a
+            running Archicad to confirm, say so in a clause, not a paragraph.
 
             The working copy is the BASE commit, not the pull request - read
             the change with `gh pr diff` and the surrounding code from disk.
