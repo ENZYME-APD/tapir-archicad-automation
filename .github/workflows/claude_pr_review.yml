@@ -22,6 +22,14 @@ name: Claude PR Review
 # The rule that makes pull_request_target safe is that the pull request's code
 # is never checked out or executed. The checkout below pins the base commit,
 # and the review reads the change through `gh pr diff` - text, not code.
+#
+# Decided and not open: this job deliberately does NOT download the Archicad
+# DevKits. They are gitignored build output, so the headers are absent here and
+# the prompt says so rather than claiming an authority it cannot consult.
+# Downloading them would make item 1 of the checklist real, at the cost of a
+# large download on every pull request and a third copy of the DevKit URLs to
+# keep in step. Revisit if reviews start getting the API wrong in ways that
+# matter.
 on:
   pull_request_target:
     types: [opened, synchronize, ready_for_review, reopened]

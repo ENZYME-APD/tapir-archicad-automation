@@ -13,6 +13,13 @@ name: Auto Merge
 #
 # This workflow never checks out the pull request's code. It only queries the
 # API, so nothing from the branch being merged executes with the write token.
+#
+# Decided and not open: there is deliberately no fourth gate on approval or on
+# an auto-merge label. The three gates test who wrote it, whether it is green
+# and what it touches - not whether anyone wanted it merged - so a pull request
+# left open to park work will merge itself at the next sweep. Mark such a pull
+# request as a draft, which is the opt-out. Note also that a green `review`
+# check means the review ran, not that it approved anything.
 
 on:
   # Fires when a build check finishes. NOT check_suite: GitHub documents that
