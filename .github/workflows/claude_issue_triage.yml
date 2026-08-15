@@ -93,3 +93,4 @@ jobs:
 
           claude_args: |
             --max-turns 40
+            --model claude-sonnet-5
