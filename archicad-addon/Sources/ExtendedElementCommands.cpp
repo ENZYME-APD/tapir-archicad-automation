@@ -276,6 +276,49 @@ GS::Optional<GS::UniString> CheckOpeningSize (const GS::ObjectState& data)
     return {};
 }
 
+// A window or a door is created together with its Main Marker sub-element, and that marker
+// lives on the floor plan: ACAPI_Element_CreateExt refuses the whole create with
+// APIERR_BADDATABASE (-2130313110) when the current database is anything else, whatever the
+// caller sent. That is what #532 turned out to be - the very same script created walls,
+// columns, slabs and openings from the 3D window without complaint and only CreateWindows /
+// CreateDoors failed, and the identical payload worked as soon as the floor plan was active.
+//
+// So switch the CURRENT DATABASE - not the visible window - to the floor plan around the
+// create, and let the caller put the previous one back. This is the same
+// ACAPI_Database_ChangeCurrentDatabase dance CreateDrawingsCommand and ChangeWindowToViewCommand
+// already do, and the note in ApplicationCommands.cpp calls the current database the one
+// "used by ACAPI element creation".
+//
+// `switched` says whether anything has to be restored: when the floor plan is already the
+// current database nothing is touched, so the path that works today stays exactly as it is.
+GSErrCode SwitchCurrentDatabaseToFloorPlan (API_DatabaseInfo& previousDatabase, bool& switched)
+{
+    switched = false;
+
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&previousDatabase);
+    if (err != NoError) {
+        return err;
+    }
+    if (previousDatabase.typeID == APIWind_FloorPlanID) {
+        return NoError;
+    }
+
+    API_DatabaseInfo floorPlanDatabase = {};
+    floorPlanDatabase.typeID = APIWind_FloorPlanID;
+    err = ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    err = ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    switched = true;
+    return NoError;
+}
+
 GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& element, API_ElementMemo& memo, API_SubElement& marker)
 {
     element = {};
@@ -3778,6 +3821,22 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
+    // The create needs the floor plan as the current database - see
+    // SwitchCurrentDatabaseToFloorPlan. The previous database is restored after the
+    // undoable command has finished, on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&]() {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr,
+            "Failed to activate the floor plan database, which is needed to create a window. Activate the floor plan in Archicad and run the command again.");
+    }
+
     return ExecuteCreateWithElements ("Create Windows", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : windowsData) {
             if (data.Get ("ownerWallId") == nullptr) {
@@ -3852,7 +3911,14 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
 
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to create window."));
+                // The switch above should have ruled this one out, but say what it means
+                // if Archicad still refuses the database - #532 was reported for a year as
+                // a parameter problem because the message named none of this.
+                GS::UniString errorMessage = "Failed to create window.";
+                if (err == APIERR_BADDATABASE) {
+                    errorMessage = "Failed to create window: Archicad refused the current database. A window can only be created while the floor plan is the current database.";
+                }
+                elements.Push (CreateErrorResponse (err, errorMessage));
                 continue;
             }
             elements.Push (CreateElementIdObjectState (element.header.guid));
@@ -3923,6 +3989,22 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
     auto error = GetElementArray (parameters, "doorsData", doorsData);
     if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    // The create needs the floor plan as the current database - see
+    // SwitchCurrentDatabaseToFloorPlan. The previous database is restored after the
+    // undoable command has finished, on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&]() {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr,
+            "Failed to activate the floor plan database, which is needed to create a door. Activate the floor plan in Archicad and run the command again.");
     }
 
     return ExecuteCreateWithElements ("Create Doors", [&](GS::Array<GS::ObjectState>& elements) {
@@ -3999,7 +4081,12 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
 
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to create door."));
+                // See the same spot in CreateWindowsCommand::Execute.
+                GS::UniString errorMessage = "Failed to create door.";
+                if (err == APIERR_BADDATABASE) {
+                    errorMessage = "Failed to create door: Archicad refused the current database. A door can only be created while the floor plan is the current database.";
+                }
+                elements.Push (CreateErrorResponse (err, errorMessage));
                 continue;
             }
             elements.Push (CreateElementIdObjectState (element.header.guid));
