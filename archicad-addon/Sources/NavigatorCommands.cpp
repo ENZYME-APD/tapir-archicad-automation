@@ -1533,6 +1533,11 @@ GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchem
                 "type": "string",
                 "enum": ["PublicViewMap", "ProjectMap", "LayoutBook", "PublisherSets"],
                 "description": "The navigator map to retrieve."
+            },
+            "publisherSetName": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The name of the publisher set to retrieve. Used only when navigatorMapId is PublisherSets. Without it the first publisher set is returned."
             }
         },
         "additionalProperties": false,
@@ -1550,16 +1555,32 @@ GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& par
     else if (navigatorMapIdStr == "LayoutBook")    mapId = API_LayoutMap;
     else if (navigatorMapIdStr == "PublisherSets") mapId = API_PublisherSets;
 
-    API_NavigatorSet navSet = {};
-    navSet.mapId = mapId;
-    Int32 idx = 0;
-    GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&navSet, &idx);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get navigator set.");
+    API_Guid rootGuid = APINULLGuid;
+    if (mapId == API_PublisherSets && parameters.Contains ("publisherSetName")) {
+        // A project can hold several publisher sets, and the index passed to
+        // ACAPI_Navigator_GetNavigatorSet selects between them. Looking the
+        // set up by name lets the caller reach any of them, not just the first.
+        GS::UniString publisherSetName;
+        parameters.Get ("publisherSetName", publisherSetName);
+
+        const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable ();
+        if (!publisherSetNameGuidTable.ContainsKey (publisherSetName)) {
+            return CreateErrorResponse (Error, "Not valid publisher set name.");
+        }
+        rootGuid = publisherSetNameGuidTable.Get (publisherSetName);
+    } else {
+        API_NavigatorSet navSet = {};
+        navSet.mapId = mapId;
+        Int32 idx = 0;
+        GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&navSet, &idx);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get navigator set.");
+        }
+        rootGuid = navSet.rootGuid;
     }
 
     API_NavigatorItem rootItem = {};
-    err = ACAPI_Navigator_GetNavigatorItem (&navSet.rootGuid, &rootItem);
+    GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&rootGuid, &rootItem);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get root navigator item.");
     }
