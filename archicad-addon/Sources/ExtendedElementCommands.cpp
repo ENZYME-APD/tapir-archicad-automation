@@ -335,6 +335,25 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
         return err;
     }
 
+    // `marker.subType` was NOT asked for with `APISubElement_NoParams`, so the call above
+    // already returned the parameters of the TOOL DEFAULT marker - the window/door stamp
+    // as the template, the user or a just-applied favorite configured it. Overwriting them
+    // with the marker parent library part's factory values silently threw those settings
+    // away (#551), and leaked the handle `GetDefaultsExt` had allocated. Keep them, and
+    // leave the marker object's pen alone: `useObjPens` / `pen` are part of the very same
+    // tool default. Compare `CreateSectionsCommand`, which passes the marker straight from
+    // `GetDefaultsExt` to `CreateExt` without touching its parameters.
+    const GSSize markerParamNum = marker.memo.params != nullptr
+        ? BMGetHandleSize ((GSHandle) marker.memo.params) / sizeof (API_AddParType)
+        : 0;
+    if (markerParamNum > 0) {
+        return NoError;
+    }
+
+    // No tool default marker parameters (a project where the Window / Door tool has never
+    // been opened): fall back to the marker parent's library part, as the DevKit's own
+    // window/door creation sample does. Without parameters `ACAPI_Element_CreateExt`
+    // refuses the marker, so an unset pen is filled in here too.
     API_LibPart libPart = {};
 #ifdef ServerMainVers_2700
     err = ACAPI_LibraryPart_GetMarkerParent (element.header.type, libPart);
@@ -363,7 +382,9 @@ GSErrCode PrepareWindowOrDoorDefaults (API_ElemTypeID elemTypeId, API_Element& e
     }
 
     marker.memo.params = markAddPars;
-    marker.subElem.object.pen = 166;
+    if (marker.subElem.object.pen <= 0) {
+        marker.subElem.object.pen = 166;
+    }
     marker.subElem.object.useObjPens = true;
     return NoError;
 }

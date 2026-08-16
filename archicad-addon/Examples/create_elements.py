@@ -22,7 +22,9 @@ walls = aclib.RunTapirCommand ('CreateWalls', {
 wallId = walls['elements'][0]['elementId']
 
 # Windows, doors and openings need the wall they sit in. centerOffset is
-# measured along the wall from its begCoordinate.
+# measured along the wall from its begCoordinate. Everything not given here -
+# the library part and the marker (window stamp) settings included - comes from
+# the Window / Door tool defaults of the open project, or from 'favoriteName'.
 aclib.RunTapirCommand ('CreateWindows', {
     'windowsData': [
         { 'ownerWallId': wallId, 'centerOffset': 2.0, 'width': 1.0, 'height': 1.5 }
