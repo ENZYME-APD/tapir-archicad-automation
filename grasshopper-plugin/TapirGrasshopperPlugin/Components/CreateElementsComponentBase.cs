@@ -1,5 +1,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
@@ -20,13 +21,17 @@ namespace TapirGrasshopperPlugin.Components
     // JSON input. The identifiers of the created elements are returned in the
     // ElementGuids output.
     //
+    // Every optional input can be hidden and shown again from the component's
+    // context menu (see ToggleableInputsComponentBase), so the inputs are
+    // addressed by name instead of by a fixed index.
+    //
     // The configuration is provided through overridable members instead of
     // constructor parameters on purpose: GH_Component's constructor calls
     // RegisterInputParams (and thus AddInputs) before the derived
     // constructor bodies run, so constructor-assigned fields would still be
     // null at that point. Overrides must not depend on instance state
     // (return constants or static data).
-    public abstract class CreateElementsComponentBase : ArchicadExecutorComponent
+    public abstract class CreateElementsComponentBase : ToggleableInputsComponentBase
     {
         protected enum FieldKind
         {
@@ -89,6 +94,12 @@ namespace TapirGrasshopperPlugin.Components
         // complete item schema.
         protected virtual bool HasAdditionalSettingsInput => true;
 
+        protected const string AdditionalSettingsInputName = "AdditionalSettings";
+
+        private const string AdditionalSettingsDescription =
+            "One JSON object per element with further optional settings matching the " +
+            "command's documented item schema. Input only 1 to use the same settings for all. Optional.";
+
         protected CreateElementsComponentBase(
             string name,
             string description,
@@ -100,73 +111,91 @@ namespace TapirGrasshopperPlugin.Components
         {
         }
 
-        protected override void AddInputs()
+        protected override IReadOnlyList<InputDescriptor> InputDescriptors
         {
-            var fields = Fields;
-            for (var index = 0; index < fields.Count; index++)
+            get
             {
-                var field = fields[index];
-                var description = field.Description;
-                if (index > 0)
+                var fields = Fields;
+                var descriptors = new List<InputDescriptor>();
+                for (var index = 0; index < fields.Count; index++)
                 {
-                    description += field.Required
-                        ? " Input only 1 to use the same value for all elements."
-                        : " Input only 1 to use the same value for all elements. Optional.";
+                    var field = fields[index];
+                    var description = field.Description;
+                    if (index > 0)
+                    {
+                        description += field.Required
+                            ? " Input only 1 to use the same value for all elements."
+                            : " Input only 1 to use the same value for all elements. Optional.";
+                    }
+
+                    descriptors.Add(
+                        new InputDescriptor(
+                            field.InputName,
+                            () => CreateFieldParam(field, description),
+                            !field.Required));
                 }
 
-                switch (field.Kind)
+                if (HasAdditionalSettingsInput)
                 {
-                    case FieldKind.Number:
-                        InNumbers(field.InputName, description);
-                        break;
-                    case FieldKind.Integer:
-                        InIntegers(field.InputName, description);
-                        break;
-                    case FieldKind.Boolean:
-                        InBooleans(field.InputName, description);
-                        break;
-                    case FieldKind.Text:
-                        InTexts(field.InputName, description);
-                        break;
-                    case FieldKind.Point2D:
-                    case FieldKind.Point3D:
-                        InPoints(field.InputName, description);
-                        break;
-                    case FieldKind.Line:
-                        inManager.AddLineParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.list);
-                        break;
-                    case FieldKind.ElementGuid:
-                    case FieldKind.AttributeGuid:
-                        InGenerics(field.InputName, description);
-                        break;
-                    case FieldKind.PointsTree2D:
-                    case FieldKind.PointsTree3D:
-                        inManager.AddPointParameter(
-                            field.InputName,
-                            field.InputName,
-                            description,
-                            GH_ParamAccess.tree);
-                        break;
+                    descriptors.Add(
+                        new InputDescriptor(
+                            AdditionalSettingsInputName,
+                            () => NewInputParam(
+                                new Param_String(),
+                                AdditionalSettingsInputName,
+                                AdditionalSettingsDescription,
+                                "textList",
+                                GH_ParamAccess.list,
+                                true),
+                            true));
                 }
 
-                if (!field.Required)
-                {
-                    SetOptionality(index);
-                }
+                return descriptors;
+            }
+        }
+
+        // Creates the parameter of a field input the same way the InX helpers
+        // of Component would. The line and the tree inputs were registered
+        // through the parameter manager directly, without a type name in front
+        // of their description, so they are created without one here too.
+        private static IGH_Param CreateFieldParam(
+            Field field,
+            string description)
+        {
+            var optional = !field.Required;
+            switch (field.Kind)
+            {
+                case FieldKind.Number:
+                    return NewInputParam(
+                        new Param_Number(), field.InputName, description, "numberList", GH_ParamAccess.list, optional);
+                case FieldKind.Integer:
+                    return NewInputParam(
+                        new Param_Integer(), field.InputName, description, "integerList", GH_ParamAccess.list, optional);
+                case FieldKind.Boolean:
+                    return NewInputParam(
+                        new Param_Boolean(), field.InputName, description, "booleanList", GH_ParamAccess.list, optional);
+                case FieldKind.Text:
+                    return NewInputParam(
+                        new Param_String(), field.InputName, description, "textList", GH_ParamAccess.list, optional);
+                case FieldKind.Point2D:
+                case FieldKind.Point3D:
+                    return NewInputParam(
+                        new Param_Point(), field.InputName, description, "pointList", GH_ParamAccess.list, optional);
+                case FieldKind.Line:
+                    return NewInputParam(
+                        new Param_Line(), field.InputName, description, null, GH_ParamAccess.list, optional);
+                case FieldKind.ElementGuid:
+                case FieldKind.AttributeGuid:
+                    return NewInputParam(
+                        new Param_GenericObject(), field.InputName, description, "genericList", GH_ParamAccess.list, optional);
+                case FieldKind.PointsTree2D:
+                case FieldKind.PointsTree3D:
+                    return NewInputParam(
+                        new Param_Point(), field.InputName, description, null, GH_ParamAccess.tree, optional);
             }
 
-            if (HasAdditionalSettingsInput)
-            {
-                InTexts(
-                    "AdditionalSettings",
-                    "One JSON object per element with further optional settings matching the " +
-                    "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
-                SetOptionality(fields.Count);
-            }
+            throw new NotSupportedException(
+                $"Unhandled field kind: {field.Kind}.");
         }
 
         public override void AddedToDocument(
@@ -174,10 +203,35 @@ namespace TapirGrasshopperPlugin.Components
         {
             base.AddedToDocument(document);
 
-            var fields = Fields;
-            for (var i = 0; i < fields.Count; i++)
+            foreach (var field in Fields)
             {
-                fields[i].ValueList?.Invoke ().AddAsSource(this, i);
+                AttachValueList(field.InputName);
+            }
+        }
+
+        protected override void OnInputShown(
+            string name,
+            int index)
+        {
+            AttachValueList(name);
+        }
+
+        private void AttachValueList(
+            string inputName)
+        {
+            var index = IndexOfInput(inputName);
+            if (index < 0)
+            {
+                return;
+            }
+
+            foreach (var field in Fields)
+            {
+                if (field.InputName == inputName)
+                {
+                    field.ValueList?.Invoke ().AddAsSource(this, index);
+                    return;
+                }
             }
         }
 
@@ -399,12 +453,14 @@ namespace TapirGrasshopperPlugin.Components
             var firstField = fields[0];
             var isTreeFirst = firstField.Kind == FieldKind.PointsTree2D ||
                               firstField.Kind == FieldKind.PointsTree3D;
+            // The first field is required, so its input is never hidden.
+            var firstInputIndex = IndexOfInput(firstField.InputName);
 
             int itemCount;
             var items = new List<JObject>();
             if (isTreeFirst)
             {
-                if (!da.TryGetTree(0, out GH_Structure<GH_Point> tree))
+                if (!da.TryGetTree(firstInputIndex, out GH_Structure<GH_Point> tree))
                 {
                     return;
                 }
@@ -434,7 +490,7 @@ namespace TapirGrasshopperPlugin.Components
             }
             else
             {
-                if (!TryReadTokens(da, 0, firstField, out List<JToken> firstTokens))
+                if (!TryReadTokens(da, firstInputIndex, firstField, out List<JToken> firstTokens))
                 {
                     return;
                 }
@@ -457,7 +513,14 @@ namespace TapirGrasshopperPlugin.Components
             for (var fieldIndex = 1; fieldIndex < fields.Count; fieldIndex++)
             {
                 var field = fields[fieldIndex];
-                if (!TryReadTokens(da, fieldIndex, field, out List<JToken> tokens))
+                var inputIndex = IndexOfInput(field.InputName);
+                if (inputIndex < 0)
+                {
+                    // The input is hidden, so it carries no value at all.
+                    continue;
+                }
+
+                if (!TryReadTokens(da, inputIndex, field, out List<JToken> tokens))
                 {
                     return;
                 }
@@ -490,9 +553,10 @@ namespace TapirGrasshopperPlugin.Components
             }
 
             var additionalSettings = new List<string>();
-            if (HasAdditionalSettingsInput)
+            var additionalSettingsIndex = IndexOfInput(AdditionalSettingsInputName);
+            if (additionalSettingsIndex >= 0)
             {
-                da.GetDataList(fields.Count, additionalSettings);
+                da.GetDataList(additionalSettingsIndex, additionalSettings);
             }
             if (additionalSettings.Count > 0)
             {
