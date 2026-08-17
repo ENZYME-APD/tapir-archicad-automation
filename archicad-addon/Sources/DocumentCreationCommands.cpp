@@ -588,11 +588,61 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetRawResponseSchema () const
     return R"({"type":"object","properties":{"elements":{"$ref":"#/ElementIdsOrErrors"}},"additionalProperties":false,"required":["elements"]})";
 }
 
+// Tells whether a navigator item can be the source of a Drawing. Only viewpoints and the views
+// saved from them can be placed - containers (folders, subsets, books, the project root), the
+// Layout Book's own items (layouts, master layouts) and the navigator item of an already placed
+// Drawing cannot. Views carry the item type of the viewpoint they were saved from, so the same
+// check covers both the Project Map and the View Map.
+static bool IsPlaceableAsDrawing (API_NavigatorItemTypeID itemType)
+{
+    switch (itemType) {
+        case API_StoryNavItem:
+        case API_SectionNavItem:
+        case API_ElevationNavItem:
+        case API_InteriorElevationNavItem:
+        case API_DetailDrawingNavItem:
+        case API_WorksheetDrawingNavItem:
+        case API_DocumentFrom3DNavItem:
+        case API_PerspectiveNavItem:
+        case API_AxonometryNavItem:
+        case API_ScheduleNavItem:
+        case API_ListNavItem:
+        case API_TextListNavItem:
+        case API_TocNavItem:
+            return true;
+        default:
+            return false;
+    }
+}
+
 // Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, name, position,
 // scale, optional clipPolygon). Shared by CreateDrawingsCommand and ChangeDrawingLinkCommand,
 // which synthesizes the same item shape from an existing Drawing's own current appearance.
 static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
 {
+    // The source has to be resolved and checked here, before anything is handed to
+    // ACAPI_Element_Create: a drawingGuid that is not a placeable viewpoint - one that resolves
+    // to nothing, or to a folder, a layout, or an already placed Drawing's own navigator item -
+    // terminates Archicad inside element creation instead of returning an error.
+    const GS::ObjectState* navigatorItemIdState = item.Get ("navigatorItemId");
+    if (navigatorItemIdState == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing required field 'navigatorItemId'.");
+    }
+
+    API_Guid sourceGuid = GetGuidFromObjectState (*navigatorItemIdState);
+    if (sourceGuid == APINULLGuid) {
+        return CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is corrupt or missing.");
+    }
+
+    API_NavigatorItem sourceItem = {};
+    const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&sourceGuid, &sourceItem);
+    if (navErr != NoError) {
+        return CreateErrorResponse (navErr, "Failed to get navigator item from navigatorItemId.");
+    }
+    if (!IsPlaceableAsDrawing (sourceItem.itemType)) {
+        return CreateErrorResponse (APIERR_BADID, "navigatorItemId is not a view or viewpoint that can be placed as a Drawing.");
+    }
+
     API_Element element = {};
 #ifdef ServerMainVers_2600
     element.header.type   = API_DrawingID;
@@ -604,7 +654,7 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
         return CreateErrorResponse (err, "Failed to get drawing defaults.");
     }
 
-    element.drawing.drawingGuid = GetGuidFromObjectState (*item.Get ("navigatorItemId"));
+    element.drawing.drawingGuid = sourceGuid;
     SetCharProperty (&item, "name", element.drawing.name);
     element.drawing.nameType = APIName_CustomName;
     element.drawing.anchorPoint = APIAnc_MM;
