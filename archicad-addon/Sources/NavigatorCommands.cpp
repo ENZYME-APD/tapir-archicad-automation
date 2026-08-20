@@ -1545,6 +1545,24 @@ GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchem
     })";
 }
 
+// NavigatorItem refers back to itself through NavigatorItemArrayItem, which is
+// what the children recursion needs. Only the documentation reads this schema -
+// see the comment on CommandBase::GetResponseSchema - and its renderer stops at
+// a reference it is already resolving, so the cycle is safe here.
+GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemTree": {
+                "$ref": "#/NavigatorItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemTree"]
+    })";
+}
+
 GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString navigatorMapIdStr;
