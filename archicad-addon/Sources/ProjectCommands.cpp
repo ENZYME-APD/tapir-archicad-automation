@@ -567,6 +567,58 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     return response;
 }
 
+// The requested stories are matched to the existing ones positionally, bottom-up. The
+// optional index of any of them pins the numbering of the whole list: the story at
+// position i is meant to become story (index - i). Without an index the numbering of
+// the existing structure is kept, so the list can only grow and shrink on the top.
+static bool GetNewFirstStoryIndex (const GS::Array<GS::ObjectState>& stories, const short currentFirstStory, short& newFirstStory)
+{
+    newFirstStory = currentFirstStory;
+
+    bool isPinned = false;
+    for (GS::UIndex i = 0; i < stories.GetSize (); ++i) {
+        short index = 0;
+        if (!stories[i].Get ("index", index)) {
+            continue;
+        }
+
+        const short firstStoryFromIndex = index - static_cast<short> (i);
+        if (!isPinned) {
+            newFirstStory = firstStoryFromIndex;
+            isPinned = true;
+        } else if (firstStoryFromIndex != newFirstStory) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static void FillNewStoryCmd (const GS::Array<GS::ObjectState>& stories, const GS::UIndex storyPos, API_StoryCmdType& storyCmd)
+{
+    if (storyPos >= stories.GetSize ()) {
+        return;
+    }
+
+    stories[storyPos].Get ("dispOnSections", storyCmd.dispOnSections);
+    stories[storyPos].Get ("level", storyCmd.elevation);
+
+    double nextLevel = 0.0;
+    if (storyPos + 1 < stories.GetSize () && stories[storyPos + 1].Get ("level", nextLevel)) {
+        storyCmd.height = nextLevel - storyCmd.elevation;
+    }
+
+    GS::UniString name;
+    stories[storyPos].Get ("name", name);
+    GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
+}
+
+static GSErrCode RefreshStoryInfo (API_StoryInfo& storyInfo)
+{
+    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    return ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+}
+
 SetStoriesCommand::SetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -606,6 +658,10 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
     GS::Array<GS::ObjectState> stories;
     parameters.Get ("stories", stories);
 
+    if (stories.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "stories is missing or empty.");
+    }
+
     API_StoryInfo storyInfo = {};
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
     if (err != NoError) {
@@ -613,52 +669,104 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
     }
 
-    GS::USize storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    short newFirstStory = storyInfo.firstStory;
+    if (!GetNewFirstStoryIndex (stories, storyInfo.firstStory, newFirstStory)) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The given story indices are not consecutive.");
+    }
 
-    if (storyCount != stories.GetSize ()) {
-        if (storyCount < stories.GetSize ()) {
-            for (GS::UIndex i = storyCount; i < stories.GetSize (); ++i) {
-                API_StoryCmdType storyCmd = {};
-                storyCmd.action = APIStory_InsAbove;
-                storyCmd.index  = storyInfo.lastStory;
+    const short newLastStory = newFirstStory + static_cast<short> (stories.GetSize ()) - 1;
 
-                stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
-                stories[i].Get ("level", storyCmd.elevation);
-                if (storyCount > 1) {
-                    storyCmd.height = (*storyInfo.data)[i - 1].level - (*storyInfo.data)[i - 2].level;
-                }
+    // Grow the structure first - downwards and upwards - and only then cut off the
+    // stories which are not needed any more, so the project never runs out of stories.
+    while (storyInfo.firstStory > newFirstStory) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_InsBelow;
+        storyCmd.index  = storyInfo.firstStory;
+        FillNewStoryCmd (stories, static_cast<GS::UIndex> (storyInfo.firstStory - 1 - newFirstStory), storyCmd);
 
-                GS::UniString name;
-                stories[i].Get ("name", name);
-                GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
-            
-                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-                if (err != NoError) {
-                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                    return CreateFailedExecutionResult (err, "Failed to create new story.");
-                }
-            }
-        } else {
-            for (GS::UIndex i = storyCount - 1; i >= stories.GetSize (); --i) {
-                API_StoryCmdType storyCmd = {};
-                storyCmd.action = APIStory_Delete;
-                storyCmd.index  = (*storyInfo.data)[i].index;
-            
-                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-                if (err != NoError) {
-                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                    return CreateFailedExecutionResult (err, "Failed to delete story.");
-                }
-            }
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to create new story below the first one.");
         }
 
-        err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+        const short prevFirstStory = storyInfo.firstStory;
+        err = RefreshStoryInfo (storyInfo);
         if (err != NoError) {
             BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
             return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
         }
-        
-        storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+
+        if (storyInfo.firstStory >= prevFirstStory) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to create new story below the first one.");
+        }
+    }
+
+    while (storyInfo.lastStory < newLastStory) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_InsAbove;
+        storyCmd.index  = storyInfo.lastStory;
+        FillNewStoryCmd (stories, static_cast<GS::UIndex> (storyInfo.lastStory + 1 - newFirstStory), storyCmd);
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to create new story.");
+        }
+
+        const short prevLastStory = storyInfo.lastStory;
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+
+        if (storyInfo.lastStory <= prevLastStory) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to create new story.");
+        }
+    }
+
+    // Deleting a story deletes its elements as well, so never delete more stories than
+    // the number the grown structure has above the requested one.
+    GS::USize storiesToDelete = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) - stories.GetSize ();
+
+    while (storiesToDelete > 0 && (storyInfo.firstStory < newFirstStory || storyInfo.lastStory > newLastStory)) {
+        const bool deleteFromBottom = storyInfo.firstStory < newFirstStory;
+
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_Delete;
+        storyCmd.index  = deleteFromBottom ? storyInfo.firstStory : storyInfo.lastStory;
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to delete story.");
+        }
+
+        const short prevFirstStory = storyInfo.firstStory;
+        const short prevLastStory  = storyInfo.lastStory;
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+
+        if (storyInfo.lastStory - storyInfo.firstStory >= prevLastStory - prevFirstStory) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to delete story.");
+        }
+
+        --storiesToDelete;
+    }
+
+    const GS::USize storyCount = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1);
+
+    if (storyCount != stories.GetSize ()) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to set up the requested story structure.");
     }
 
     GS::USize recursionCount = 0;
@@ -735,8 +843,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         }
 
         if (changed) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+            err = RefreshStoryInfo (storyInfo);
             if (err != NoError) {
                 BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
                 return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
