@@ -2,6 +2,7 @@
 #include "MigrationHelper.hpp"
 
 constexpr const char* ParameterValueFieldName = "value";
+constexpr USize MaxStrValueLength = 512;
 
 static GS::UniString ConvertAddParIDToString (API_AddParID addParID)
 {
@@ -343,10 +344,10 @@ static bool SetParamValueString (API_ChangeParamType& changeParam,
 {
     GS::UniString value;
     if (parameterDetails.Get (ParameterValueFieldName, value)) {
-        constexpr USize MaxStrValueLength = 512;
-
+        // MaxStrValueLength characters plus the terminating zero did not fit in the buffer,
+        // a value of exactly that length wrote one character past its end.
         static GS::uchar_t strValuePtr[MaxStrValueLength];
-        GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength)).Get ());
+        GS::ucscpy (strValuePtr, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength - 1)).Get ());
 
         changeParam.uStrValue = strValuePtr;
         return true;
@@ -765,8 +766,14 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                     break;
                                 }
 
+                                // An unchecked failure here left getParams.params null, and the
+                                // ACAPI_Element_Change below then committed an empty AddPars memo.
                                 ACAPI_DisposeAddParHdl (&getParams.params);
-                                ACAPI_LibraryPart_GetActParameters (&getParams);
+                                err = ACAPI_LibraryPart_GetActParameters (&getParams);
+                                if (err != NoError) {
+                                    errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
+                                    break;
+                                }
                             }
                             if (err != NoError) {
                                 break;
@@ -778,12 +785,23 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                             }
 
                             ACAPI_DisposeAddParHdl (&getParams.params);
-                            ACAPI_LibraryPart_GetActParameters (&getParams);
+                            err = ACAPI_LibraryPart_GetActParameters (&getParams);
+                            if (err != NoError) {
+                                errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T", APIGuidToString (elemGuid).ToPrintf ());
+                                break;
+                            }
                         }
                     }
 
                     if (err == NoError && !pendingArrayChanges.IsEmpty ()) {
                         err = ApplyArrayParameterChanges (getParams, pendingArrayChanges, elemGuid, errMessage);
+                    }
+
+                    if (err == NoError && getParams.params == nullptr) {
+                        // Committing an APIMemoMask_AddPars memo with no parameter block is what
+                        // leaves the element drawable but its parameters unreadable afterwards.
+                        errMessage = GS::UniString::Printf ("Failed to read back the parameters of element with guid %T, nothing was changed", APIGuidToString (elemGuid).ToPrintf ());
+                        err = APIERR_GENERAL;
                     }
 
                     if (err == NoError) {
@@ -1045,61 +1063,79 @@ bool SetGDLParametersOfElementsCommand::ParseArrayParameterValue (
     }
 }
 
+// Every item of the array is written through ACAPI_LibraryPart_ChangeAParameter, the same documented
+// entry point the single-item (index1/index2) path and every scalar parameter already use.
+//
+// This used to overwrite actParam->value.array in the fetched parameter block directly and commit the
+// whole block with one ACAPI_Element_Change, which skipped ACAPI_LibraryPart_ChangeAParameter for array
+// parameters only. Nothing then validated the value, and the object's parameter script never got to
+// reconcile the parameters that depend on the changed one, so the committed AddPars memo could end up
+// inconsistent with the library part - the element still drew, but its parameters could no longer be
+// read back at all (issue #557).
+//
+// Writing item by item cannot resize the array, and there is no documented API entry point that resizes
+// an array parameter of a placed element, so a value list of a different size is now rejected instead of
+// silently rewriting dim1/dim2 in the memo.
 GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
-    const API_GetParamsType& getParams,
+    API_GetParamsType& getParams,
     const GS::Array<ArrayParameterChange>& changes,
     const API_Guid& elemGuid,
     GS::UniString& errMessage)
 {
-    const GSSize nParams = BMGetHandleSize ((GSHandle) getParams.params) / sizeof (API_AddParType);
     for (const ArrayParameterChange& change : changes) {
-        API_AddParType* actParam = nullptr;
-        for (GSIndex ii = 0; ii < nParams; ++ii) {
-            if (CHCompareCStrings ((*getParams.params)[ii].name, change.name.ToCStr ()) == 0) {
-                actParam = &(*getParams.params)[ii];
-                break;
-            }
-        }
-
+        const API_AddParType* actParam = FindParameterByName (getParams, change.name.ToCStr ());
         if (actParam == nullptr || actParam->typeMod != API_ParArray) {
             errMessage = GS::UniString::Printf ("Invalid input: %s is not an array parameter of element %T", change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
             return APIERR_BADPARS;
         }
 
-        GSHandle newArrayHandle = nullptr;
-        if (change.typeID == APIParT_CString || change.typeID == APIParT_Title) {
-            GSSize totalLength = 0;
-            for (const GS::UniString& value : change.stringValues) {
-                totalLength += value.GetLength () + 1;
-            }
-            newArrayHandle = BMAllocateHandle (totalLength * sizeof (GS::uchar_t), ALLOCATE_CLEAR, 0);
-            if (newArrayHandle == nullptr) {
-                return APIERR_MEMFULL;
-            }
-            GS::uchar_t* strPos = reinterpret_cast<GS::uchar_t*> (*newArrayHandle);
-            for (const GS::UniString& value : change.stringValues) {
-                GS::ucscpy (strPos, value.ToUStr ().Get ());
-                strPos += value.GetLength () + 1;
-            }
-        } else {
-            newArrayHandle = BMAllocateHandle (change.numberValues.GetSize () * sizeof (double), ALLOCATE_CLEAR, 0);
-            if (newArrayHandle == nullptr) {
-                return APIERR_MEMFULL;
-            }
-            double* arrayValues = reinterpret_cast<double*> (*newArrayHandle);
-            for (UIndex ii = 0; ii < change.numberValues.GetSize (); ++ii) {
-                arrayValues[ii] = change.numberValues[ii];
-            }
+        if (actParam->dim1 != change.dim1 || actParam->dim2 != change.dim2) {
+            errMessage = GS::UniString::Printf ("Invalid input: array parameter %s of element %T has %d x %d items, but %d x %d were given - resizing an array parameter is not supported, give exactly as many values as the parameter has",
+                                                change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf (), actParam->dim1, actParam->dim2, change.dim1, change.dim2);
+            return APIERR_BADPARS;
         }
 
-        if (actParam->dim1 != change.dim1 || actParam->dim2 != change.dim2) {
-            // The stored value descriptions would no longer match the new dimensions
-            BMKillHandle (&actParam->arrayDescriptions);
+        const bool isStringArray = (change.typeID == APIParT_CString || change.typeID == APIParT_Title);
+        const USize itemCount = isStringArray ? change.stringValues.GetSize () : change.numberValues.GetSize ();
+        if (itemCount != static_cast<USize> (change.dim1) * static_cast<USize> (change.dim2)) {
+            errMessage = GS::UniString::Printf ("Invalid input: the given value of array parameter %s of element %T is not a %d x %d array", change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf (), change.dim1, change.dim2);
+            return APIERR_BADPARS;
         }
-        BMKillHandle (&actParam->value.array);
-        actParam->value.array = newArrayHandle;
-        actParam->dim1 = change.dim1;
-        actParam->dim2 = change.dim2;
+
+        UIndex itemIndex = 0;
+        for (Int32 i1 = 1; i1 <= change.dim1; ++i1) {
+            for (Int32 i2 = 1; i2 <= change.dim2; ++i2, ++itemIndex) {
+                API_ChangeParamType changeParam = {};
+                CHTruncate (change.name.ToCStr (), changeParam.name, API_NameLen);
+                changeParam.ind1 = i1;
+                changeParam.ind2 = i2;
+
+                GS::uchar_t strValue[MaxStrValueLength] = {};
+                if (isStringArray) {
+                    const GS::UniString& value = change.stringValues[itemIndex];
+                    GS::ucscpy (strValue, value.ToUStr (0, GS::Min (value.GetLength (), MaxStrValueLength - 1)).Get ());
+                    changeParam.uStrValue = strValue;
+                } else {
+                    changeParam.realValue = change.numberValues[itemIndex];
+                }
+
+                GSErrCode err = ACAPI_LibraryPart_ChangeAParameter (&changeParam);
+                if (err != NoError) {
+                    errMessage = GS::UniString::Printf ("Failed to change item %d,%d of array parameter %s of element with guid %T", i1, i2, change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+                    return err;
+                }
+
+                // The parameter script may have changed other parameters in response, exactly as
+                // after a single-value change - re-read the block so the next item and the final
+                // ACAPI_Element_Change see what the script produced.
+                ACAPI_DisposeAddParHdl (&getParams.params);
+                err = ACAPI_LibraryPart_GetActParameters (&getParams);
+                if (err != NoError) {
+                    errMessage = GS::UniString::Printf ("Failed to re-read the parameters of element with guid %T after changing %s", APIGuidToString (elemGuid).ToPrintf (), change.name.ToCStr ());
+                    return err;
+                }
+            }
+        }
     }
 
     return NoError;
