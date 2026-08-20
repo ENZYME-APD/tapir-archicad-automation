@@ -3782,18 +3782,21 @@ static void GetLocalBodyCorners (const API_BodyType& body, API_Coord3D (&corners
     corners[7] = { body.xmax, body.ymax, body.zmax };
 }
 
-static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& outBounds)
+static void InitializeEmptyBounds (API_Box3D& bounds)
 {
-    outBounds.xMin = outBounds.yMin = outBounds.zMin = 1e30;
-    outBounds.xMax = outBounds.yMax = outBounds.zMax = -1e30;
+    bounds.xMin = bounds.yMin = bounds.zMin = 1e30;
+    bounds.xMax = bounds.yMax = bounds.zMax = -1e30;
+}
 
+// Extends bounds with the solid 3D bodies of the element. foundSolidBody is only ever set to
+// true here, so the same accumulator can be run over several elements in a row.
+static GSErrCode AccumulateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& bounds, bool& foundSolidBody)
+{
     API_ElemInfo3D info3D = {};
     GSErrCode err = ACAPI_ModelAccess_Get3DInfo (elemHead, &info3D);
     if (err != NoError) {
         return err;
     }
-
-    bool foundSolidBody = false;
 
     for (Int32 iBody = info3D.fbody; iBody <= info3D.lbody; ++iBody) {
         API_Component3D bodyComp = {};
@@ -3813,8 +3816,60 @@ static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Bo
 
         for (int k = 0; k < 8; ++k) {
             const API_Coord3D globalPt = TransformPoint (corners[k], bodyComp.body.tranmat);
-            UpdateGlobalBoundsWithPoint (outBounds, globalPt);
+            UpdateGlobalBoundsWithPoint (bounds, globalPt);
         }
+    }
+
+    return NoError;
+}
+
+static GSErrCode CalculateSolidBodyBounds (const API_Elem_Head& elemHead, API_Box3D& outBounds)
+{
+    InitializeEmptyBounds (outBounds);
+
+    bool foundSolidBody = false;
+    GSErrCode err = AccumulateSolidBodyBounds (elemHead, outBounds, foundSolidBody);
+    if (err != NoError) {
+        return err;
+    }
+
+    if (!foundSolidBody) {
+        return APIERR_GENERAL;
+    }
+
+    return NoError;
+}
+
+template<typename APIElemType>
+static void AccumulateSubelementBounds (APIElemType* subelemArray, API_Box3D& bounds, bool& foundSolidBody)
+{
+    if (subelemArray == nullptr) {
+        return;
+    }
+
+    const GSSize nSubelements = BMGetPtrSize (reinterpret_cast<GSPtr>(subelemArray)) / sizeof (APIElemType);
+    for (GSIndex i = 0; i < nSubelements; ++i) {
+        AccumulateSolidBodyBounds (subelemArray[i].head, bounds, foundSolidBody);
+    }
+}
+
+// A Stair carries its 3D geometry in its subelements (risers, treads and structures), so neither
+// ACAPI_Element_CalcBounds nor the 3D model of the Stair element itself gives back the vertical
+// extent of the flight - both answer with zMin == zMax == 0 (#563). The bounds are the union of
+// the solid bodies of the Stair and of all of its subelements.
+static GSErrCode CalculateStairBounds (const API_Elem_Head& stairElemHead, API_Box3D& outBounds)
+{
+    InitializeEmptyBounds (outBounds);
+
+    bool foundSolidBody = false;
+    AccumulateSolidBodyBounds (stairElemHead, outBounds, foundSolidBody);
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (stairElemHead.guid, &memo, APIMemoMask_All) == NoError) {
+        AccumulateSubelementBounds (memo.stairRisers, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.stairTreads, outBounds, foundSolidBody);
+        AccumulateSubelementBounds (memo.stairStructures, outBounds, foundSolidBody);
     }
 
     if (!foundSolidBody) {
@@ -3893,6 +3948,13 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         API_Box3D box3D = {};
         if (typeID == API_RoofID || typeID == API_ZoneID) {
             err = CalculateSolidBodyBounds (elemHead, box3D);
+        } else if (typeID == API_StairID) {
+            err = CalculateStairBounds (elemHead, box3D);
+            if (err != NoError) {
+                // The Stair has no solid body at all - for example it is filtered out of the 3D
+                // model - so fall back to the old answer instead of failing the whole element.
+                err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+            }
         } else {
             err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
         }
