@@ -385,7 +385,7 @@ static void ResetCornerWindowVariationIfNotCornerWindow (API_Elem_Head& header, 
             continue;
         }
         if (actParam.value.real == 0.0) {
-            header.variationID = APIVarId_Generic;
+            SetElemVariationId (header, APIVarId_Generic);
         }
         return;
     }

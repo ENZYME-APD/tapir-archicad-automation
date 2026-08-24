@@ -469,6 +469,15 @@ inline API_ElemTypeID GetElemTypeId (const API_Elem_Head& elemHead)
 #endif
 }
 
+inline void SetElemVariationId (API_Elem_Head& elemHead, API_ElemVariationID variationID)
+{
+#ifdef ServerMainVers_2600
+    elemHead.type.variationID = variationID;
+#else
+    elemHead.variationID = variationID;
+#endif
+}
+
 inline GSErrCode TAPIR_Element_AddClassificationItemDefault (const API_Elem_Head& elemHead, const API_Guid& itemGuid)
 {
 #ifdef ServerMainVers_2600
