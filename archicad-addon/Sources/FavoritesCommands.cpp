@@ -760,11 +760,13 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
                 continue;
             }
 
-#ifdef ServerMainVers_2600
-            const bool typeMatches = favorite.element.header.type == targetElement.header.type;
-#else
-            const bool typeMatches = favorite.element.header.typeID == targetElement.header.typeID;
-#endif
+            // Compare the type ID only - never the whole API_ElemType. On AC26+ that struct
+            // also carries the variationID, and a Window favorite can legitimately hold a
+            // different variation than the window it is applied to (dual-use library parts
+            // report APIVarId_CornerWindow even when placed as regular windows), which made
+            // every Window favorite look like a type mismatch. The same guard elsewhere
+            // (see ExtendedElementCommands.cpp) compares the type ID for this reason.
+            const bool typeMatches = GetElemTypeId (favorite.element.header) == GetElemTypeId (targetElement.header);
             if (!typeMatches) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADID, "The Favorite's element type does not match the target element's type."));
                 ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
