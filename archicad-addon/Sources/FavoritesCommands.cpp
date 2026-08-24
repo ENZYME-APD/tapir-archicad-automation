@@ -344,6 +344,53 @@ GS::Optional<GS::UniString> CreateFavoritesFromElementsCommand::GetRawResponseSc
     })";
 }
 
+// GDL parameter names are case insensitive, but API_AddParType::name keeps the spelling the
+// library part declared, so fold to lower case before comparing. `lowerCaseName` must already
+// be lower case.
+static bool IsGDLParameterNamed (const char* paramName, const char* lowerCaseName)
+{
+    UIndex ii = 0;
+    for (; paramName[ii] != '\0' && lowerCaseName[ii] != '\0'; ++ii) {
+        const char ch = (paramName[ii] >= 'A' && paramName[ii] <= 'Z')
+            ? char (paramName[ii] - 'A' + 'a')
+            : paramName[ii];
+        if (ch != lowerCaseName[ii]) {
+            return false;
+        }
+    }
+    return paramName[ii] == '\0' && lowerCaseName[ii] == '\0';
+}
+
+// Some standard library window parts - the Hungarian "ablak" family (parentUnID A7D46BBD)
+// among them - are dual-use GDL parts that both the Window tool and the Corner Window tool
+// place. For those, ACAPI_Element_Get reports header.variationID as the corner window
+// variation even for an element that was placed as an ordinary window, and handing that header
+// to ACAPI_Favorite_Create/_Change files the new Favorite under the Corner Window section of
+// the Favorites palette instead of the Window section.
+// The part's own AC_CW_Function GDL parameter is the reliable signal: it stays 0 while the
+// element is not acting as a corner window. Only then is the variation reset, and only to
+// APIVarId_Generic - which is what a window placed with the Window tool carries anyway, so
+// this is a no-op for every window whose header was already correct, and for every part that
+// does not have the parameter at all.
+static void ResetCornerWindowVariationIfNotCornerWindow (API_Elem_Head& header, const API_ElementMemo& memo)
+{
+    if (GetElemTypeId (header) != API_WindowID || memo.params == nullptr) {
+        return;
+    }
+
+    const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& actParam = (*memo.params)[ii];
+        if (actParam.typeMod != API_ParSimple || !IsGDLParameterNamed (actParam.name, "ac_cw_function")) {
+            continue;
+        }
+        if (actParam.value.real == 0.0) {
+            SetElemVariationId (header, APIVarId_Generic);
+        }
+        return;
+    }
+}
+
 // Fills in favorite.element/classifications/properties/memo by reading them off an existing
 // element - shared by CreateFavoritesFromElements (-> ACAPI_Favorite_Create, a new entry) and
 // UpdateFavoritesFromElements (-> ACAPI_Favorite_Change, re-capturing an existing entry in place).
@@ -384,6 +431,8 @@ static GS::Optional<GS::ObjectState> BuildFavoriteFromElement (const API_Guid& e
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get details of the element");
     }
+
+    ResetCornerWindowVariationIfNotCornerWindow (favorite.element.header, favorite.memo.Get ());
 
     return {};
 }
