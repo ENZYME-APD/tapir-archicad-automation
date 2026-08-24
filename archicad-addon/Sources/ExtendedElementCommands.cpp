@@ -3726,6 +3726,7 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     parameters.Get ("zCoordinate", zCoordinate);
     const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
+    element.stair.basePlane.basePoint.z = floorIndexAndOffset.second;
 
     bool finishVisible = true;
     if (parameters.Get ("finishVisible", finishVisible)) {
