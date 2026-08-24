@@ -5070,6 +5070,17 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 continue;
             }
 
+            // Same ghost-guid failure mode as CreateAssociativeDimensions (#510), reported for
+            // interior elevation sub-views in #567: the create reports success and hands back a
+            // GUID although no dimension was created in any database. Verify before reporting
+            // the id, so the caller gets an error instead of an id that resolves to nothing.
+            API_Element createdElement = {};
+            createdElement.header.guid = element.header.guid;
+            if (ACAPI_Element_Get (&createdElement) != NoError) {
+                elements.Push (CreateErrorResponse (APIERR_GENERAL, "The section associative dimension was not created: Archicad reported success but no such element exists."));
+                continue;
+            }
+
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
