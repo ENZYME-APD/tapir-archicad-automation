@@ -3081,6 +3081,18 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.oSide);
         changed = true;
     }
+    bool reveal = false;
+    if (details.Get ("reveal", reveal)) {
+        element.window.reveal = reveal;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, reveal);
+        changed = true;
+    }
+    auto revealDepthOffset = GetOptionalDouble (details, "revealDepthOffset");
+    if (revealDepthOffset.HasValue ()) {
+        element.window.revealDepthOffset = revealDepthOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthOffset);
+        changed = true;
+    }
     return changed;
 }
 
@@ -3686,6 +3698,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "number",
                             "description": "Depth (going) of each tread.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "finishVisible": {
+                            "type": "boolean",
+                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
                         }
                     },
                     "additionalProperties": false,
@@ -3710,6 +3726,16 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     parameters.Get ("zCoordinate", zCoordinate);
     const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
+    element.stair.basePlane.basePoint.z = floorIndexAndOffset.second;
+
+    bool finishVisible = true;
+    if (parameters.Get ("finishVisible", finishVisible)) {
+        element.stair.finishVisible = finishVisible;
+        for (int role = 0; role < API_StairPartRoleNum; ++role) {
+            element.stair.tread[role].visible = finishVisible;
+            element.stair.riser[role].visible = finishVisible;
+        }
+    }
 
     auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
     if (totalHeight.HasValue ()) {
@@ -6074,7 +6100,9 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () co
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -6154,7 +6182,9 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () cons
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]

@@ -6457,6 +6457,10 @@ var gSchemaDefinitions = {
         "type": "object",
         "description": "Contains the configurable settings for creating or modifying a story. Used as input in API requests.",
         "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The story index. Optional. The stories are matched to the existing ones positionally, from the bottom up. Giving the index of any of them pins the numbering of the whole list, so stories below the existing structure - basements with negative indices - can be requested as well. When given for more than one story, the indices must be consecutive."
+            },
             "dispOnSections": {
                 "type": "boolean",
                 "description": "Story level lines should appear on sections and elevations."
