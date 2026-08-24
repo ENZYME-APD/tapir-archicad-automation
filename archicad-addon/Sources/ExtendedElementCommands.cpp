@@ -3081,6 +3081,18 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.oSide);
         changed = true;
     }
+    bool reveal = false;
+    if (details.Get ("reveal", reveal)) {
+        element.window.reveal = reveal;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, reveal);
+        changed = true;
+    }
+    auto revealDepthOffset = GetOptionalDouble (details, "revealDepthOffset");
+    if (revealDepthOffset.HasValue ()) {
+        element.window.revealDepthOffset = revealDepthOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthOffset);
+        changed = true;
+    }
     return changed;
 }
 
@@ -6087,7 +6099,9 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () co
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -6167,7 +6181,9 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () cons
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
