@@ -5450,13 +5450,13 @@ var gCommands = [{
             },{
                 "name": "UpdatePropertyDefinitions",
                 "version": "1.5.4",
-                "description": "Updates the expression(s) of existing expression-based Custom Property Definitions.",
+                "description": "Updates the expression(s) of existing expression-based Custom Property Definitions, and adds new values to the enumeration of existing enum Custom Property Definitions.",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "propertyDefinitions": {
                 "type": "array",
-                "description": "The list of expression-based property definitions to update.",
+                "description": "The list of property definitions to update. At least one of expressions and possibleEnumValues must be given for each item.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -5465,17 +5465,19 @@ var gCommands = [{
                         },
                         "expressions": {
                             "type": "array",
-                            "description": "The new expression strings for the property.",
+                            "description": "The new expression strings for the property. Only for expression-based properties.",
                             "items": {
                                 "type": "string"
                             },
                             "minItems": 1
+                        },
+                        "possibleEnumValues": {
+                            "$ref": "#/PossibleEnumValues"
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "propertyId",
-                        "expressions"
+                        "propertyId"
                     ]
                 }
             }

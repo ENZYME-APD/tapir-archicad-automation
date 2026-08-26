@@ -2573,6 +2573,9 @@ var gSchemaDefinitions = {
                 "items": {
                     "type": "string"
                 }
+            },
+            "possibleEnumValues": {
+                "$ref": "#/PossibleEnumValues"
             }
         },
         "additionalProperties": false,
@@ -2822,6 +2825,40 @@ var gSchemaDefinitions = {
         "description": "A list of enumeration identifiers.",
         "items": {
             "$ref": "#/EnumValueIdArrayItem"
+        }
+    },
+    "PossibleEnumValues": {
+        "type": "array",
+        "description": "The possible enum values of the property when the property type is enumeration.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "enumValue": {
+                    "type": "object",
+                    "description": "The description of an enumeration value.",
+                    "properties": {
+                        "enumValueId": {
+                            "$ref": "#/EnumValueId"
+                        },
+                        "displayValue": {
+                            "type": "string",
+                            "description": "Displayed value of the enumeration."
+                        },
+                        "nonLocalizedValue": {
+                            "type": "string",
+                            "description": "Nonlocalized value of the enumeration if there is one."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "displayValue"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "enumValue"
+            ]
         }
     },
     "NormalOrUserUndefinedPropertyValue": {
@@ -6908,38 +6945,7 @@ var gSchemaDefinitions = {
                 "$ref": "#/PropertyDefaultValue"
             },
             "possibleEnumValues": {
-                "type": "array",
-                "description": "The possible enum values of the property when the property type is enumeration.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "enumValue": {
-                            "type": "object",
-                            "description": "The description of an enumeration value.",
-                            "properties": {
-                                "enumValueId": {
-                                    "$ref": "#/EnumValueId"
-                                },
-                                "displayValue": {
-                                    "type": "string",
-                                    "description": "Displayed value of the enumeration."
-                                },
-                                "nonLocalizedValue": {
-                                    "type": "string",
-                                    "description": "Nonlocalized value of the enumeration if there is one."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "displayValue"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "enumValue"
-                    ]
-                }
+                "$ref": "#/PossibleEnumValues"
             },
             "availability": {
                 "type": "array",

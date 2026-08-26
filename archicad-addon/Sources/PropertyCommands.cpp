@@ -117,6 +117,42 @@ static API_Guid FindEnumValueGuid (const GS::Array<API_SingleEnumerationVariant>
     return APINULLGuid;
 }
 
+static API_SingleEnumerationVariant* FindEnumValue (GS::Array<API_SingleEnumerationVariant>& possibleEnumValues,
+                                                    const GS::UniString& displayValue,
+                                                    const GS::Optional<GS::UniString>& nonLocalizedValue)
+{
+    for (API_SingleEnumerationVariant& v : possibleEnumValues) {
+        if (nonLocalizedValue.HasValue () && v.nonLocalizedValue.HasValue ()) {
+            if (*v.nonLocalizedValue == *nonLocalizedValue) {
+                return &v;
+            }
+            continue;
+        }
+        if (v.displayVariant.uniStringValue == displayValue) {
+            return &v;
+        }
+    }
+
+    return nullptr;
+}
+
+static GS::ObjectState CreateEnumValueObjectState (const API_SingleEnumerationVariant& variant)
+{
+    GS::ObjectState enumValue;
+    enumValue.Add ("displayValue", variant.displayVariant.uniStringValue);
+    if (variant.nonLocalizedValue.HasValue ()) {
+        enumValue.Add ("nonLocalizedValue", *variant.nonLocalizedValue);
+    }
+
+    return GS::ObjectState ("enumValue", enumValue);
+}
+
+static bool IsEnumerationProperty (const API_PropertyDefinition& definition)
+{
+    return definition.collectionType == API_PropertySingleChoiceEnumerationCollectionType ||
+           definition.collectionType == API_PropertyMultipleChoiceEnumerationCollectionType;
+}
+
 class PropertyConversionUtils : public API_PropertyConversionUtilsInterface
 {
 private:
@@ -215,6 +251,12 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
                 const auto& expressionList = details.AddList<GS::UniString> ("expressions");
                 for (const GS::UniString& expr : definition.defaultValue.propertyExpressions) {
                     expressionList (expr);
+                }
+            }
+            if (IsEnumerationProperty (definition)) {
+                const auto& possibleEnumValues = details.AddList<GS::ObjectState> ("possibleEnumValues");
+                for (const API_SingleEnumerationVariant& v : definition.possibleEnumValues) {
+                    possibleEnumValues (CreateEnumValueObjectState (v));
                 }
             }
 
@@ -1407,7 +1449,7 @@ GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParameters
         "properties": {
             "propertyDefinitions": {
                 "type": "array",
-                "description": "The list of expression-based property definitions to update.",
+                "description": "The list of property definitions to update. At least one of expressions and possibleEnumValues must be given for each item.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -1416,17 +1458,19 @@ GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParameters
                         },
                         "expressions": {
                             "type": "array",
-                            "description": "The new expression strings for the property.",
+                            "description": "The new expression strings for the property. Only for expression-based properties.",
                             "items": {
                                 "type": "string"
                             },
                             "minItems": 1
+                        },
+                        "possibleEnumValues": {
+                            "$ref": "#/PossibleEnumValues"
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "propertyId",
-                        "expressions"
+                        "propertyId"
                     ]
                 }
             }
@@ -1470,6 +1514,17 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
                 continue;
             }
 
+            GS::Array<GS::UniString> expressions;
+            const bool hasExpressions = item.Get ("expressions", expressions) && !expressions.IsEmpty ();
+
+            GS::Array<GS::ObjectState> possibleEnumValues;
+            const bool hasPossibleEnumValues = item.Get ("possibleEnumValues", possibleEnumValues);
+
+            if (!hasExpressions && !hasPossibleEnumValues) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "both expressions and possibleEnumValues are missing or empty"));
+                continue;
+            }
+
             API_PropertyDefinition definition;
             definition.guid = GetGuidFromObjectState (*propertyId);
             if (ACAPI_Property_GetPropertyDefinition (definition) != NoError) {
@@ -1477,14 +1532,59 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
                 continue;
             }
 
-            if (!definition.defaultValue.hasExpression) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property is not expression-based"));
-                continue;
+            if (hasExpressions) {
+                if (!definition.defaultValue.hasExpression) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property is not expression-based"));
+                    continue;
+                }
+                definition.defaultValue.propertyExpressions = expressions;
             }
 
-            GS::Array<GS::UniString> expressions;
-            item.Get ("expressions", expressions);
-            definition.defaultValue.propertyExpressions = expressions;
+            if (hasPossibleEnumValues) {
+                if (!IsEnumerationProperty (definition)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property is not an enumeration property"));
+                    continue;
+                }
+
+                for (const GS::ObjectState& e : possibleEnumValues) {
+                    const GS::ObjectState* enumValue = e.Get ("enumValue");
+                    if (enumValue == nullptr) {
+                        continue;
+                    }
+
+                    GS::UniString displayValue;
+                    if (!enumValue->Get ("displayValue", displayValue)) {
+                        continue;
+                    }
+
+                    GS::Optional<GS::UniString> nonLocalizedValue;
+                    GS::UniString nonLocalizedValueStr;
+                    if (enumValue->Get ("nonLocalizedValue", nonLocalizedValueStr)) {
+                        nonLocalizedValue = nonLocalizedValueStr;
+                    }
+
+                    // Keep the key guid of the already existing values, otherwise the values
+                    // stored on the elements would lose their reference to the enumeration.
+                    API_SingleEnumerationVariant* existingValue = FindEnumValue (definition.possibleEnumValues, displayValue, nonLocalizedValue);
+                    if (existingValue != nullptr) {
+                        existingValue->displayVariant.uniStringValue = displayValue;
+                        if (nonLocalizedValue.HasValue ()) {
+                            existingValue->nonLocalizedValue = *nonLocalizedValue;
+                        }
+                        continue;
+                    }
+
+                    API_SingleEnumerationVariant v;
+                    v.displayVariant.type = definition.valueType;
+                    v.displayVariant.uniStringValue = displayValue;
+                    v.keyVariant.type = API_PropertyGuidValueType;
+                    v.keyVariant.guidValue = GetRandomGuid ();
+                    if (nonLocalizedValue.HasValue ()) {
+                        v.nonLocalizedValue = *nonLocalizedValue;
+                    }
+                    definition.possibleEnumValues.Push (v);
+                }
+            }
 
             GSErrCode err = ACAPI_Property_ChangePropertyDefinition (definition);
             if (err != NoError) {
