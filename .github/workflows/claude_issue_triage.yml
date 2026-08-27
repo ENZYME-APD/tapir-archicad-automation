@@ -124,7 +124,7 @@ jobs:
 
           claude_args: |
             --max-turns 40
-            --model claude-sonnet-5
+            --model claude-opus-5
             --allowedTools "Read,Grep,Glob,Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }}:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
 
   # ------------------------------------------------------------------- fix --
