@@ -875,40 +875,14 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         targetLevels.Push (level);
     }
 
-    // Levels are set in two steps, because Archicad anchors the story ladder on one story and
-    // moves the rest around it: setting the elevation of an arbitrary story does not move it,
-    // and setting a height moves whichever side of the boundary is not anchored. Both steps
-    // work with that rather than against it.
+    // Levels are set in two steps, because Archicad anchors the story ladder on the active
+    // story: that one never moves, and every other story is positioned relative to it.
+    // Measured on a live AC29: APIStory_SetElevation moves only the story it names, and
+    // APIStory_SetHeight moves whichever side of the boundary is further from the anchor.
     //
-    // Step one sets the distances. A height is the gap between two neighbouring stories, so it
-    // does not depend on where the ladder as a whole sits, nor on the order the gaps are set
-    // in. After this the structure has the requested shape at some unknown offset.
-    for (GS::UIndex i = 0; i + 1 < storyCount; ++i) {
-        API_StoryCmdType storyCmd = {};
-        storyCmd.action = APIStory_SetHeight;
-        storyCmd.index  = currentStories[i].index;
-        storyCmd.height = targetLevels[i + 1] - targetLevels[i];
-
-        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-        if (err != NoError) {
-            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-            return CreateFailedExecutionResult (err, "Failed to change story height.");
-        }
-    }
-
-    err = RefreshStoryInfo (storyInfo);
-    if (err != NoError) {
-        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-    }
-    if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
-        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-        return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
-    }
-    TakeStorySnapshot (storyInfo, currentStories);
-
-    // Step two pins the ladder, which now only takes one elevation. It is set on the active
-    // story, the one Archicad holds in place while the others move around it.
+    // Step one puts the anchor on its requested level. It has to come first - moving the
+    // anchor afterwards would change the gap to its neighbour and undo a distance already
+    // set. The anchor is the active story, the only one SetElevation is known to move.
     const GS::UIndex anchor =
         (storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory)
             ? static_cast<GS::UIndex> (storyInfo.actStory - storyInfo.firstStory)
@@ -937,6 +911,46 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         }
         TakeStorySnapshot (storyInfo, currentStories);
     }
+
+    // Step two sets the distances, working outwards from the anchor in both directions so
+    // that every height is set against a story which is already on its requested level and
+    // positions exactly one story that is not.
+    for (GS::UIndex i = anchor; i + 1 < storyCount; ++i) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_SetHeight;
+        storyCmd.index  = currentStories[i].index;
+        storyCmd.height = targetLevels[i + 1] - targetLevels[i];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story height.");
+        }
+    }
+
+    for (GS::UIndex i = anchor; i > 0; --i) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_SetHeight;
+        storyCmd.index  = currentStories[i - 1].index;
+        storyCmd.height = targetLevels[i] - targetLevels[i - 1];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story height.");
+        }
+    }
+
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+    }
+    if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+    TakeStorySnapshot (storyInfo, currentStories);
 
     // A structure which silently ended up somewhere else than requested is worse than an
     // error, so report the first level which could not be set, naming both levels so the
