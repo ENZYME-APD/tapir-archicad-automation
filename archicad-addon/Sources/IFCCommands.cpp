@@ -3,7 +3,6 @@
 #include "StringConversion.hpp"
 
 #ifdef ServerMainVers_2800
-#include "ACAPI/IFCAssignments.hpp"
 #include "ACAPI/IFCAttribute.hpp"
 #include "ACAPI/IFCObjectAccessor.hpp"
 #include "ACAPI/IFCObjectID.hpp"
