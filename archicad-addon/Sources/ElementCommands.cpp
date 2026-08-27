@@ -3751,15 +3751,6 @@ GS::ObjectState HighlightElementsCommand::Execute (const GS::ObjectState& /*para
 #endif
 
 
-static API_Coord3D TransformPoint (const API_Coord3D& pt, const API_Tranmat& tm)
-{
-    API_Coord3D res;
-    res.x = (pt.x * tm.tmx[0]) + (pt.y * tm.tmx[1]) + (pt.z * tm.tmx[2]) + tm.tmx[3];
-    res.y = (pt.x * tm.tmx[4]) + (pt.y * tm.tmx[5]) + (pt.z * tm.tmx[6]) + tm.tmx[7];
-    res.z = (pt.x * tm.tmx[8]) + (pt.y * tm.tmx[9]) + (pt.z * tm.tmx[10]) + tm.tmx[11];
-    return res;
-}
-
 static void UpdateGlobalBoundsWithPoint (API_Box3D& globalBounds, const API_Coord3D& pt)
 {
     if (pt.x < globalBounds.xMin) globalBounds.xMin = pt.x;
@@ -3768,18 +3759,6 @@ static void UpdateGlobalBoundsWithPoint (API_Box3D& globalBounds, const API_Coor
     if (pt.y > globalBounds.yMax) globalBounds.yMax = pt.y;
     if (pt.z < globalBounds.zMin) globalBounds.zMin = pt.z;
     if (pt.z > globalBounds.zMax) globalBounds.zMax = pt.z;
-}
-
-static void GetLocalBodyCorners (const API_BodyType& body, API_Coord3D (&corners)[8])
-{
-    corners[0] = { body.xmin, body.ymin, body.zmin };
-    corners[1] = { body.xmax, body.ymin, body.zmin };
-    corners[2] = { body.xmin, body.ymax, body.zmin };
-    corners[3] = { body.xmax, body.ymax, body.zmin };
-    corners[4] = { body.xmin, body.ymin, body.zmax };
-    corners[5] = { body.xmax, body.ymin, body.zmax };
-    corners[6] = { body.xmin, body.ymax, body.zmax };
-    corners[7] = { body.xmax, body.ymax, body.zmax };
 }
 
 static void InitializeEmptyBounds (API_Box3D& bounds)
@@ -3811,13 +3790,13 @@ static GSErrCode AccumulateSolidBodyBounds (const API_Elem_Head& elemHead, API_B
 
         foundSolidBody = true;
 
-        API_Coord3D corners[8];
-        GetLocalBodyCorners (bodyComp.body, corners);
-
-        for (int k = 0; k < 8; ++k) {
-            const API_Coord3D globalPt = TransformPoint (corners[k], bodyComp.body.tranmat);
-            UpdateGlobalBoundsWithPoint (bounds, globalPt);
-        }
+        // body.xmin..zmax is the body's bounding box in world coordinates: measured on a
+        // live model it equals the min/max of the body's vertices *after* they are
+        // transformed by body.tranmat. Applying tranmat to it again adds the placement a
+        // second time, which is what made a stair report twice its height (#563). It went
+        // unnoticed for Roofs and Zones only because their tranmat is the identity.
+        UpdateGlobalBoundsWithPoint (bounds, API_Coord3D { bodyComp.body.xmin, bodyComp.body.ymin, bodyComp.body.zmin });
+        UpdateGlobalBoundsWithPoint (bounds, API_Coord3D { bodyComp.body.xmax, bodyComp.body.ymax, bodyComp.body.zmax });
     }
 
     return NoError;
