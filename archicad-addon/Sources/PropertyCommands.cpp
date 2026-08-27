@@ -98,6 +98,24 @@ static API_Guid GetRandomGuid ()
     return GSGuid2APIGuid (guid);
 }
 
+// The enumValue shape shared by CreatePropertyDefinitions, UpdatePropertyDefinitions and
+// GetAllProperties - see PossibleEnumValues in CommonSchemaDefinitions.json.
+static GS::ObjectState CreateEnumValueObjectState (const API_SingleEnumerationVariant& variant)
+{
+    GS::ObjectState enumValue;
+    enumValue.Add ("displayValue", variant.displayVariant.uniStringValue);
+    if (variant.nonLocalizedValue.HasValue ()) {
+        enumValue.Add ("nonLocalizedValue", *variant.nonLocalizedValue);
+    }
+
+    GS::ObjectState enumValueId;
+    enumValueId.Add ("type", GS::UniString ("guid"));
+    enumValueId.Add ("guid", APIGuidToString (variant.keyVariant.guidValue));
+    enumValue.Add ("enumValueId", enumValueId);
+
+    return GS::ObjectState ("enumValue", enumValue);
+}
+
 static API_Guid FindEnumValueGuid (const GS::Array<API_SingleEnumerationVariant>& possibleEnumValues,
                                    const GS::UniString& enumValueIdTypeStr,
                                    const GS::UniString& valueStr)
@@ -211,6 +229,13 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
             details.Add ("propertyMeasureType", GetPropertyTypeString (definition.measureType));
             details.Add ("propertyIsEditable", definition.canValueBeEditable);
             details.Add ("isExpressionBased", definition.defaultValue.hasExpression);
+
+            if (!definition.possibleEnumValues.IsEmpty ()) {
+                const auto& enumValueList = details.AddList<GS::ObjectState> ("possibleEnumValues");
+                for (const API_SingleEnumerationVariant& variant : definition.possibleEnumValues) {
+                    enumValueList (CreateEnumValueObjectState (variant));
+                }
+            }
             if (definition.defaultValue.hasExpression) {
                 const auto& expressionList = details.AddList<GS::UniString> ("expressions");
                 for (const GS::UniString& expr : definition.defaultValue.propertyExpressions) {
@@ -1407,7 +1432,7 @@ GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParameters
         "properties": {
             "propertyDefinitions": {
                 "type": "array",
-                "description": "The list of expression-based property definitions to update.",
+                "description": "The property definitions to update.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -1416,17 +1441,20 @@ GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParameters
                         },
                         "expressions": {
                             "type": "array",
-                            "description": "The new expression strings for the property.",
+                            "description": "The new expression strings for the property. Only for expression-based properties.",
                             "items": {
                                 "type": "string"
                             },
                             "minItems": 1
+                        },
+                        "possibleEnumValues": {
+                            "$ref": "#/PossibleEnumValues",
+                            "description": "The enum values to add to an enumeration property. Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "propertyId",
-                        "expressions"
+                        "propertyId"
                     ]
                 }
             }
@@ -1477,14 +1505,77 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
                 continue;
             }
 
-            if (!definition.defaultValue.hasExpression) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property is not expression-based"));
+            GS::Array<GS::ObjectState> possibleEnumValues;
+            const bool hasEnumValues = item.Get ("possibleEnumValues", possibleEnumValues);
+            GS::Array<GS::UniString> expressions;
+            const bool hasExpressions = item.Get ("expressions", expressions);
+
+            if (!hasEnumValues && !hasExpressions) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "expressions or possibleEnumValues is missing"));
                 continue;
             }
 
-            GS::Array<GS::UniString> expressions;
-            item.Get ("expressions", expressions);
-            definition.defaultValue.propertyExpressions = expressions;
+            if (hasExpressions) {
+                if (!definition.defaultValue.hasExpression) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property is not expression-based"));
+                    continue;
+                }
+
+                definition.defaultValue.propertyExpressions = expressions;
+            }
+
+            if (hasEnumValues) {
+                if (definition.collectionType != API_PropertySingleChoiceEnumerationCollectionType &&
+                    definition.collectionType != API_PropertyMultipleChoiceEnumerationCollectionType) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "property is not an enumeration"));
+                    continue;
+                }
+
+                // Existing values are left exactly as they are - element values reference an
+                // enum value by its keyVariant guid, so regenerating those would detach every
+                // stored value. Only values which are not on the property yet are appended.
+                bool badValue = false;
+                for (const GS::ObjectState& e : possibleEnumValues) {
+                    const GS::ObjectState* enumValue = e.Get ("enumValue");
+                    if (enumValue == nullptr) {
+                        badValue = true;
+                        break;
+                    }
+
+                    API_SingleEnumerationVariant variant;
+                    variant.displayVariant.type = definition.valueType;
+                    variant.keyVariant.type = API_PropertyGuidValueType;
+
+                    if (!enumValue->Get ("displayValue", variant.displayVariant.uniStringValue)) {
+                        badValue = true;
+                        break;
+                    }
+
+                    GS::UniString nonLocalizedValueStr;
+                    if (enumValue->Get ("nonLocalizedValue", nonLocalizedValueStr)) {
+                        variant.nonLocalizedValue = nonLocalizedValueStr;
+                    }
+
+                    const GS::UniString& matchOn = variant.nonLocalizedValue.HasValue ()
+                        ? *variant.nonLocalizedValue
+                        : variant.displayVariant.uniStringValue;
+                    const GS::UniString matchType = variant.nonLocalizedValue.HasValue ()
+                        ? "nonLocalizedValue"
+                        : "displayValue";
+
+                    if (FindEnumValueGuid (definition.possibleEnumValues, matchType, matchOn) != APINULLGuid) {
+                        continue;
+                    }
+
+                    variant.keyVariant.guidValue = GetRandomGuid ();
+                    definition.possibleEnumValues.Push (variant);
+                }
+
+                if (badValue) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "an enumValue is missing or has no displayValue"));
+                    continue;
+                }
+            }
 
             GSErrCode err = ACAPI_Property_ChangePropertyDefinition (definition);
             if (err != NoError) {

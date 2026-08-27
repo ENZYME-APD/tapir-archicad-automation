@@ -2511,6 +2511,9 @@
         "type": "object",
         "description": "The details of the property.",
         "properties": {
+            "possibleEnumValues": {
+                "$ref": "#/PossibleEnumValues"
+            },
             "propertyId": {
                 "$ref": "#/PropertyId"
             },
@@ -6889,25 +6892,7 @@
             "propertyGroup"
         ]
     },
-    "PropertyDefinition": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string"
-            },
-            "description": {
-                "type": "string"
-            },
-            "type": {
-                "$ref": "#/PropertyDataType"
-            },
-            "isEditable": {
-                "type": "boolean"
-            },
-            "defaultValue": {
-                "$ref": "#/PropertyDefaultValue"
-            },
-            "possibleEnumValues": {
+    "PossibleEnumValues": {
                 "type": "array",
                 "description": "The possible enum values of the property when the property type is enumeration.",
                 "items": {
@@ -6940,6 +6925,27 @@
                         "enumValue"
                     ]
                 }
+            },
+    "PropertyDefinition": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "type": {
+                "$ref": "#/PropertyDataType"
+            },
+            "isEditable": {
+                "type": "boolean"
+            },
+            "defaultValue": {
+                "$ref": "#/PropertyDefaultValue"
+            },
+            "possibleEnumValues": {
+                "$ref": "#/PossibleEnumValues"
             },
             "availability": {
                 "type": "array",
