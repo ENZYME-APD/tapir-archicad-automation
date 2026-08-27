@@ -63,6 +63,7 @@ void Config::GetDefaults ()
     });
     askUpdatingAddOnBeforeEachExecution = false;
     uvLocationStr = GS::EmptyUniString;
+    pythonLocationStr = GS::EmptyUniString;
 }
 
 void Config::LoadFromFile (IO::File& file)
@@ -90,6 +91,7 @@ void Config::LoadFromFile (IO::File& file)
 
     os.Get ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
     os.Get ("uvLocation", uvLocationStr);
+    os.Get ("pythonLocation", pythonLocationStr);
 }
 
 void Config::SaveToFile (IO::File& file) const
@@ -102,6 +104,7 @@ void Config::SaveToFile (IO::File& file) const
 
     os.Add ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
     os.Add ("uvLocation", uvLocationStr);
+    os.Add ("pythonLocation", pythonLocationStr);
 
     constexpr bool prettyPrint = true;
     file.Open (IO::File::OpenMode::WriteEmptyMode);
