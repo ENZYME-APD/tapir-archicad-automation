@@ -310,9 +310,11 @@ class GitHubClient:
         # returns, and which may quote an issue body) out of the dedupe.
         query = 'repo:{} is:issue in:body "{} {}"'.format(
             self.repository, ISSUE_MARKER_PREFIX, message_id)
+        # advanced_search is the announced successor of the legacy issue
+        # search mode; passing it is harmless while both are accepted.
         response = self.session.get(
             GITHUB_API + "/search/issues",
-            params={"q": query, "per_page": 10}, timeout=30)
+            params={"q": query, "per_page": 10, "advanced_search": "true"}, timeout=30)
         if not response.ok:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
