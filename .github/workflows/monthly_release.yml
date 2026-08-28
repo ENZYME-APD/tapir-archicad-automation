@@ -40,8 +40,12 @@ concurrency:
 
 jobs:
   release:
-    # Scheduled runs should not fire on forks.
-    if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
+    # Scheduled runs should not fire on forks, and a release may only ever
+    # be cut from main - a dispatch on another ref would tag that ref and
+    # push its commits to main in the version bump step.
+    if: >
+      (github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch') &&
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     permissions:
@@ -127,28 +131,32 @@ jobs:
           git tag "$VERSION"
           git push origin "refs/tags/$VERSION"
 
-      - name: Start the release pipelines
+      - name: Build the release artifacts
         if: steps.plan.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           VERSION='${{ steps.plan.outputs.version }}'
-          # Remembered so the wait step only accepts runs started by this
-          # dispatch, not a completed run left over from a failed earlier
-          # attempt on the same tag (60s of slack for clock skew).
-          echo "DISPATCH_CUTOFF=$(date -u -d '-60 seconds' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
-          gh workflow run archicad_addon.yml --ref "$VERSION"
-          gh workflow run grasshopper_plugin.yml --ref "$VERSION"
-
-      - name: Wait for all artifacts to be built
-        if: steps.plan.outputs.release == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -eu
-          VERSION='${{ steps.plan.outputs.version }}'
+          # Only accept runs started by this dispatch, not a completed run
+          # left over from a failed earlier attempt on the same tag (60s of
+          # slack for clock skew).
+          DISPATCH_CUTOFF=$(date -u -d '-60 seconds' +%Y-%m-%dT%H:%M:%SZ)
+          WAIT_FOR=''
           for WORKFLOW in archicad_addon.yml grasshopper_plugin.yml; do
+            # On a resumed release a pipeline that already succeeded on this
+            # tag must not run again - the Grasshopper pipeline would push
+            # the same version to the package server a second time.
+            PRIOR=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+              --limit 1 --json conclusion --jq '.[0].conclusion // empty')
+            if [ "$PRIOR" = "success" ]; then
+              echo "$WORKFLOW already succeeded on tag $VERSION - not running it again."
+              continue
+            fi
+            gh workflow run "$WORKFLOW" --ref "$VERSION"
+            WAIT_FOR="$WAIT_FOR $WORKFLOW"
+          done
+          for WORKFLOW in $WAIT_FOR; do
             # The dispatched run can take a moment to appear.
             RUN_ID=''
             for _ in $(seq 1 30); do
@@ -209,6 +217,14 @@ jobs:
           # make_latest is a string enum in the REST API, draft a real boolean.
           gh api --method PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
             -f name="$VERSION" -f body="$NOTES" -F draft=false -f make_latest=true > /dev/null
+          # If the parallel release jobs raced and created duplicate drafts
+          # for this tag, delete the leftovers now that one is published.
+          gh api "repos/${{ github.repository }}/releases" \
+            --jq ".[] | select(.tag_name == \"$VERSION\" and .draft) | .id" |
+          while read -r DUP_ID; do
+            echo "Deleting duplicate draft release $DUP_ID."
+            gh api --method DELETE "repos/${{ github.repository }}/releases/$DUP_ID"
+          done
           echo "Published release **$VERSION** with $ASSETS artifact(s)." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Increment the version for the next cycle
