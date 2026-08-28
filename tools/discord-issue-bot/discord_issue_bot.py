@@ -479,8 +479,12 @@ class GitHubClient:
         url = GITHUB_API + "/repos/{}/issues".format(self.repository)
         for page in range(1, 6):
             try:
+                # Recently-updated first: the bot's own comments bump the
+                # rolling issue's updated_at, keeping it near the front even
+                # in a repo with hundreds of open issues.
                 response = self.session.get(
-                    url, params={"state": "open", "per_page": 100, "page": page},
+                    url, params={"state": "open", "per_page": 100, "page": page,
+                                 "sort": "updated"},
                     timeout=30)
             except requests.RequestException as error:
                 log("WARNING: issue listing request failed: {}".format(error))
