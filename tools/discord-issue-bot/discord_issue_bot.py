@@ -378,7 +378,9 @@ class ClassifierBase:
             matched = 0
             for entry in self._parse_entries(text):
                 entry_id = str(entry.get("id") or "")
-                if entry_id in chunk_ids:
+                # First entry per id wins: a prompt-injected message cannot
+                # override a genuine classification with a trailing duplicate.
+                if entry_id in chunk_ids and entry_id not in results:
                     results[entry_id] = entry
                     matched += 1
             # An answer with no usable entries for a non-empty chunk (prose
