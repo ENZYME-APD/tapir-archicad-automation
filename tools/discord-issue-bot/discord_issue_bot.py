@@ -31,9 +31,11 @@ Configuration (environment variables):
                         inside GitHub Actions. Required.
   ANTHROPIC_API_KEY     Claude API key for classification. Required.
   CLAUDE_MODEL          Model used for classification. Default: claude-opus-5.
-  LOOKBACK_MINUTES      How far back to scan. Default: 90. Keep this larger
-                        than the schedule interval; the reaction/search
-                        dedupe makes the overlap harmless.
+  LOOKBACK_MINUTES      How far back to scan. Default: 180. Keep this much
+                        larger than the schedule interval - scheduled runs
+                        are routinely delayed or skipped under load - and
+                        the reaction/search dedupe makes the overlap
+                        harmless.
   MAX_ISSUES_PER_RUN    Safety cap on created issues. Default: 5.
   MIN_CONFIDENCE        Classifier confidence needed to file. Default: 0.7.
   MIN_MESSAGE_LENGTH    Skip shorter messages. Default: 25.
@@ -126,7 +128,7 @@ class Config:
             github_token=os.environ["GITHUB_TOKEN"],
             repository=os.environ["GITHUB_REPOSITORY"],
             model=os.environ.get("CLAUDE_MODEL", "claude-opus-5"),
-            lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES", "90")),
+            lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES", "180")),
             max_issues_per_run=int(os.environ.get("MAX_ISSUES_PER_RUN", "5")),
             min_confidence=float(os.environ.get("MIN_CONFIDENCE", "0.7")),
             min_message_length=int(os.environ.get("MIN_MESSAGE_LENGTH", "25")),
@@ -237,17 +239,29 @@ class GitHubClient:
         })
 
     def find_issue_for_message(self, message_id):
-        """Return an existing issue that was created from this Discord message."""
+        """Return an existing issue that was created from this Discord message.
+
+        A search hit alone is not proof: a quoted Discord message could
+        itself contain the marker text and would otherwise let a crafted
+        message suppress someone else's report. Only an issue carrying the
+        genuine marker - the HTML comment at the start of a line, which a
+        "> " quote prefix can never produce - counts.
+        """
         query = 'repo:{} in:body "{} {}"'.format(self.repository, ISSUE_MARKER_PREFIX, message_id)
         response = self.session.get(
             GITHUB_API + "/search/issues",
-            params={"q": query, "per_page": 1}, timeout=30)
+            params={"q": query, "per_page": 10}, timeout=30)
         if not response.ok:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
             return None
-        items = response.json().get("items", [])
-        return items[0] if items else None
+        marker = re.compile(
+            r"^<!-- {} {} -->$".format(re.escape(ISSUE_MARKER_PREFIX), re.escape(str(message_id))),
+            re.MULTILINE)
+        for item in response.json().get("items", []):
+            if marker.search(item.get("body") or ""):
+                return item
+        return None
 
     def create_issue(self, title, body, labels):
         url = GITHUB_API + "/repos/{}/issues".format(self.repository)
@@ -316,7 +330,10 @@ class Classifier:
         except (TypeError, ValueError):
             result["confidence"] = 0.0
         result["title"] = str(result.get("title") or "").strip()
-        result["summary"] = str(result.get("summary") or "").strip()
+        # HTML comments are stripped so a prompt-injected summary can never
+        # reproduce the dedupe marker on an unquoted line of the issue body.
+        result["summary"] = re.sub(
+            r"<!--.*?(-->|$)", "", str(result.get("summary") or ""), flags=re.DOTALL).strip()
         if result.get("type") not in ("bug", "feature"):
             result["type"] = None
         return result

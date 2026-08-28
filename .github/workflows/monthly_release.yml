@@ -142,7 +142,11 @@ jobs:
           # left over from a failed earlier attempt on the same tag (60s of
           # slack for clock skew).
           DISPATCH_CUTOFF=$(date -u -d '-60 seconds' +%Y-%m-%dT%H:%M:%SZ)
-          WAIT_FOR=''
+          # Strictly in this order: the Grasshopper pipeline publishes to the
+          # Rhino package manager as part of its run, so it may only start
+          # once the Add-On pipeline has succeeded - otherwise a failed
+          # Add-On build could leave a yak version live with no matching
+          # GitHub release.
           for WORKFLOW in archicad_addon.yml grasshopper_plugin.yml; do
             # On a resumed release a pipeline that already succeeded on this
             # tag must not run again - the Grasshopper pipeline would push
@@ -154,9 +158,6 @@ jobs:
               continue
             fi
             gh workflow run "$WORKFLOW" --ref "$VERSION"
-            WAIT_FOR="$WAIT_FOR $WORKFLOW"
-          done
-          for WORKFLOW in $WAIT_FOR; do
             # The dispatched run can take a moment to appear.
             RUN_ID=''
             for _ in $(seq 1 30); do
