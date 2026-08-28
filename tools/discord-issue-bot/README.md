@@ -96,6 +96,12 @@ was classified, without creating issues or posting to Discord. When the
 result looks right, run it again without dry run, or just wait for the
 schedule.
 
+After the first real issue appears, verify the duplicate backstop once:
+search the repository's issues for `discord-message-id:` and confirm the
+new issue is found. The ✅ reaction is the primary duplicate guard; the
+search is the fallback for a lost reaction, and it relies on GitHub
+indexing the marker line in the issue body.
+
 ## Tuning
 
 All knobs are environment variables of the script
