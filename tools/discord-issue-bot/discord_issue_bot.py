@@ -42,6 +42,9 @@ Configuration (environment variables):
                         classified messages carry a reaction and are
                         skipped without another model call.
   MAX_ISSUES_PER_RUN    Safety cap on created issues. Default: 5.
+  MAX_ISSUES_PER_DAY    Backstop across runs: create nothing once this many
+                        discord-labelled issues exist from the last 24
+                        hours. Default: 20; 0 disables.
   MIN_CONFIDENCE        Classifier confidence needed to file. Default: 0.7.
   MIN_MESSAGE_LENGTH    Skip shorter messages. Default: 25.
   DRY_RUN               "true" to classify and log only, with no issue,
