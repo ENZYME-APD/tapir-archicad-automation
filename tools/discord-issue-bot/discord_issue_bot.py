@@ -57,7 +57,8 @@ import requests
 
 DISCORD_API = "https://discord.com/api/v10"
 GITHUB_API = "https://api.github.com"
-PROCESSED_MARK = "\N{WHITE HEAVY CHECK MARK}"
+PROCESSED_MARK = "\N{WHITE HEAVY CHECK MARK}"   # an issue was filed for this message
+SEEN_MARK = "\N{EYES}"                          # classified as not actionable
 ISSUE_MARKER_PREFIX = "discord-message-id:"
 
 CLASSIFIER_SYSTEM_PROMPT = """\
@@ -201,16 +202,17 @@ class DiscordClient:
         messages.reverse()
         return messages
 
-    def has_processed_mark(self, message):
+    def has_mark(self, message, *emojis):
+        """Whether the bot's own reaction with any of the emojis is present."""
         for reaction in message.get("reactions", []):
-            if reaction.get("emoji", {}).get("name") == PROCESSED_MARK and reaction.get("me"):
+            if reaction.get("emoji", {}).get("name") in emojis and reaction.get("me"):
                 return True
         return False
 
-    def add_processed_mark(self, channel_id, message_id):
-        emoji = urllib.parse.quote(PROCESSED_MARK)
+    def add_mark(self, channel_id, message_id, emoji):
         response = self._request(
-            "PUT", "/channels/{}/messages/{}/reactions/{}/@me".format(channel_id, message_id, emoji))
+            "PUT", "/channels/{}/messages/{}/reactions/{}/@me".format(
+                channel_id, message_id, urllib.parse.quote(emoji)))
         if not response.ok:
             log("WARNING: could not add reaction to message {}: {} {}".format(
                 message_id, response.status_code, response.text[:200]))
@@ -339,6 +341,12 @@ class Classifier:
         return result
 
 
+def neutralize_mentions(text):
+    """Break @mentions with a zero-width space so untrusted Discord text
+    quoted into an issue body cannot ping GitHub users or teams."""
+    return text.replace("@", "@​")
+
+
 def message_jump_url(message, channel):
     guild_id = channel.get("guild_id", "@me") if channel else "@me"
     return "https://discord.com/channels/{}/{}/{}".format(
@@ -359,10 +367,11 @@ def is_candidate(message, config):
 
 def build_issue_body(message, channel, classification):
     author = message.get("author", {})
-    author_name = author.get("global_name") or author.get("username", "unknown")
+    author_name = neutralize_mentions(author.get("global_name") or author.get("username", "unknown"))
     channel_name = channel.get("name", message["channel_id"]) if channel else message["channel_id"]
     jump_url = message_jump_url(message, channel)
-    quoted = "\n".join("> " + line for line in message.get("content", "").splitlines()) or "> (no text)"
+    content = neutralize_mentions(message.get("content", ""))
+    quoted = "\n".join("> " + line for line in content.splitlines()) or "> (no text)"
     return (
         "{summary}\n\n"
         "**Original report** by `{author}` in Discord channel `#{channel}` "
@@ -374,7 +383,7 @@ def build_issue_body(message, channel, classification):
         "content._\n"
         "<!-- {marker} {message_id} -->\n"
     ).format(
-        summary=classification.get("summary", "").strip(),
+        summary=neutralize_mentions(classification.get("summary", "").strip()),
         author=author_name,
         channel=channel_name,
         url=jump_url,
@@ -400,7 +409,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             return
         if not is_candidate(message, config):
             continue
-        if discord.has_processed_mark(message):
+        if discord.has_mark(message, PROCESSED_MARK, SEEN_MARK):
             continue
 
         author = message.get("author", {})
@@ -412,6 +421,11 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         confidence = float(classification.get("confidence", 0.0))
         if not classification.get("actionable") or confidence < config.min_confidence:
             log("  message {}: not actionable (confidence {:.2f})".format(message["id"], confidence))
+            # Marked so later runs inside the lookback window neither pay to
+            # re-classify it nor give a borderline message repeated chances
+            # to cross the confidence threshold.
+            if not config.dry_run:
+                discord.add_mark(channel_id, message["id"], SEEN_MARK)
             continue
 
         issue_type = classification.get("type") or "bug"
@@ -427,7 +441,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         if existing is not None:
             log("  message {}: issue #{} already exists, marking as processed".format(
                 message["id"], existing["number"]))
-            discord.add_processed_mark(channel_id, message["id"])
+            discord.add_mark(channel_id, message["id"], PROCESSED_MARK)
             continue
 
         label = "enhancement" if issue_type == "feature" else "bug"
@@ -438,7 +452,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         state["created"] += 1
         log("  created issue #{}: {}".format(issue["number"], issue["html_url"]))
 
-        discord.add_processed_mark(channel_id, message["id"])
+        discord.add_mark(channel_id, message["id"], PROCESSED_MARK)
         discord.reply(
             channel_id, message["id"],
             "Thanks for the report! I filed it as GitHub issue **#{}**: {}".format(

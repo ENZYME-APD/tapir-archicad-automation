@@ -150,23 +150,34 @@ jobs:
           for WORKFLOW in archicad_addon.yml grasshopper_plugin.yml; do
             # On a resumed release a pipeline that already succeeded on this
             # tag must not run again - the Grasshopper pipeline would push
-            # the same version to the package server a second time.
-            PRIOR=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
-              --limit 1 --json conclusion --jq '.[0].conclusion // empty')
-            if [ "$PRIOR" = "success" ]; then
-              echo "$WORKFLOW already succeeded on tag $VERSION - not running it again."
-              continue
-            fi
-            gh workflow run "$WORKFLOW" --ref "$VERSION"
-            # The dispatched run can take a moment to appear.
+            # the same version to the package server a second time. A prior
+            # run that is still going is adopted instead of dispatching a
+            # second one next to it.
             RUN_ID=''
-            for _ in $(seq 1 30); do
-              RUN_ID=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
-                --created ">=$DISPATCH_CUTOFF" \
-                --limit 1 --json databaseId --jq '.[0].databaseId // empty')
-              [ -n "$RUN_ID" ] && break
-              sleep 10
-            done
+            PRIOR=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+              --limit 1 --json databaseId,status,conclusion --jq '.[0] // empty')
+            if [ -n "$PRIOR" ]; then
+              PRIOR_STATUS=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+              PRIOR_ID=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['databaseId'])")
+              if [ "$PRIOR_STATUS" != "completed" ]; then
+                echo "$WORKFLOW is already running on tag $VERSION (run $PRIOR_ID) - waiting for it instead of starting another."
+                RUN_ID="$PRIOR_ID"
+              elif [ "$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['conclusion'] or '')")" = "success" ]; then
+                echo "$WORKFLOW already succeeded on tag $VERSION - not running it again."
+                continue
+              fi
+            fi
+            if [ -z "$RUN_ID" ]; then
+              gh workflow run "$WORKFLOW" --ref "$VERSION"
+              # The dispatched run can take a moment to appear.
+              for _ in $(seq 1 30); do
+                RUN_ID=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+                  --created ">=$DISPATCH_CUTOFF" \
+                  --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+                [ -n "$RUN_ID" ] && break
+                sleep 10
+              done
+            fi
             if [ -z "$RUN_ID" ]; then
               echo "::error::The dispatched run of $WORKFLOW on tag $VERSION never appeared."
               exit 1

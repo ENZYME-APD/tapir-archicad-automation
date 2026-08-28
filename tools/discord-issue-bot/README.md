@@ -17,10 +17,13 @@ so no server hosting is needed. Every run:
    containing a summary, the quoted original message and a link back to it.
 4. Adds a ✅ reaction to the Discord message (this is how the bot remembers it
    has already handled a message) and replies to it with the issue number.
+   Messages classified as *not* actionable get a 👀 reaction instead, so
+   later runs skip them rather than paying to classify them again.
 
-Duplicates are prevented twice over: a message carrying the bot's own ✅
-reaction is skipped, and before creating an issue the bot searches existing
-issues for the Discord message ID (which is embedded in every issue body).
+Duplicates are prevented twice over: a message carrying the bot's own ✅ or
+👀 reaction is skipped, and before creating an issue the bot searches
+existing issues for the Discord message ID (which is embedded in every
+issue body).
 
 ## One-time setup
 
