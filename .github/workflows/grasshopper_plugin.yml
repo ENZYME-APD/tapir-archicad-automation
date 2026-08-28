@@ -54,6 +54,13 @@ jobs:
           # extend the pattern or check, do not remove the guard.
           if ("$output" -match 'already exist|conflict|\b409\b') {
             $version = @(Select-String -Path manifest.yml -Pattern '^\s*version:\s*(\S+)')[0].Matches[0].Groups[1].Value
+            if (-not $version) {
+              # Without a version to confirm, the liveness check below
+              # would degenerate into matching any tapir line and green a
+              # real failure - fail instead.
+              Write-Output 'Could not read the version from manifest.yml - not treating the failed push as a duplicate.'
+              exit $pushExit
+            }
             $live = yak search tapir 2>&1
             Write-Output $live
             # Out-String keeps the line breaks (string interpolation would
