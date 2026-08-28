@@ -179,6 +179,23 @@ jobs:
               fi
             fi
             if [ -z "$RUN_ID" ]; then
+              if [ "$WORKFLOW" = "grasshopper_plugin.yml" ]; then
+                # Only the Add-On pipeline fills the draft release, and it
+                # has succeeded by this point - verify the draft is complete
+                # BEFORE the Grasshopper pipeline gets to publish to yak, so
+                # a split or partial draft cannot leave a yak version live
+                # with no publishable GitHub release.
+                ASSETS=$(gh api "repos/${{ github.repository }}/releases" \
+                  --jq "[.[] | select(.tag_name == \"$VERSION\" and .draft) | .assets | length] | max // 0")
+                if [ "$ASSETS" -lt 10 ]; then
+                  echo "::error::The Add-On pipeline succeeded but the draft release for $VERSION" \
+                       "has only $ASSETS of the expected 10 artifacts - not starting the Grasshopper" \
+                       "pipeline. Delete the draft(s) for $VERSION on the releases page, re-run the" \
+                       "'Archicad Add-On Build and Release' workflow on tag $VERSION, then re-run this workflow."
+                  exit 1
+                fi
+                echo "Draft release for $VERSION carries $ASSETS artifact(s) - safe to publish to yak."
+              fi
               gh workflow run "$WORKFLOW" --ref "$VERSION"
               # The dispatched run can take a moment to appear.
               for _ in $(seq 1 30); do
