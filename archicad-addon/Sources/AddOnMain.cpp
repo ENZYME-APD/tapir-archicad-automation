@@ -328,7 +328,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetZoneBoundariesCommand> (
             elementCommands, "1.2.3",
-            "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.)."
+            "Gets the boundaries of the given Zones (connected elements, neighbour zones, etc.). Accepts either a single zoneElementId or a list of zones. Prefer the list: the expensive boundary recalculation runs once per call, so querying many Zones in one call is much faster than calling the command once per Zone."
         );
         err |= RegisterCommand<UpdateZonesCommand> (
             elementCommands, "1.5.4",

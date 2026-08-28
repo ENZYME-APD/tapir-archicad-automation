@@ -1363,21 +1363,33 @@ var gCommands = [{
             },{
                 "name": "GetZoneBoundaries",
                 "version": "1.2.3",
-                "description": "Gets the boundaries of the given Zone (connected elements, neighbour zones, etc.).",
+                "description": "Gets the boundaries of the given Zones (connected elements, neighbour zones, etc.). Accepts either a single zoneElementId or a list of zones. Prefer the list: the expensive boundary recalculation runs once per call, so querying many Zones in one call is much faster than calling the command once per Zone.",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "zoneElementId": {
-                "$ref": "#/ElementId"
+                "$ref": "#/ElementId",
+                "description": "The identifier of a single Zone. Prefer the zones array: querying many Zones in one call is much faster than one call per Zone."
+            },
+            "zones": {
+                "$ref": "#/Elements",
+                "description": "A list of Zones. Only one of zoneElementId and zones can be given."
             }
         },
         "additionalProperties": false,
         "required": [
-            "zoneElementId"
         ]
     },
                 "outputScheme": {
-        "$ref": "#/ZoneBoundariesOrError"
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/ZoneBoundariesOrError"
+            },
+            {
+                "$ref": "#/ZoneBoundariesOfZonesWrapper"
+            }
+        ]
     }
             },{
                 "name": "UpdateZones",
