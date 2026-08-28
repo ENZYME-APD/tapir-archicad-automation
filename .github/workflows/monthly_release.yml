@@ -158,15 +158,19 @@ jobs:
           # once the Add-On pipeline has succeeded - otherwise a failed
           # Add-On build could leave a yak version live with no matching
           # GitHub release.
+          HEAD_SHA=$(git rev-parse HEAD)
           for WORKFLOW in archicad_addon.yml grasshopper_plugin.yml; do
             # On a resumed release a pipeline that already succeeded on this
             # tag must not run again - the Grasshopper pipeline would push
             # the same version to the package server a second time. A prior
             # run that is still going is adopted instead of dispatching a
-            # second one next to it.
+            # second one next to it. Only runs of the CURRENT commit count:
+            # after the delete-the-stale-tag recovery, a run for the old
+            # commit under the same tag name must not suppress the rebuild.
             RUN_ID=''
             PRIOR=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
-              --limit 1 --json databaseId,status,conclusion --jq '.[0] // empty')
+              --limit 10 --json databaseId,status,conclusion,headSha \
+              --jq "[.[] | select(.headSha == \"$HEAD_SHA\")] | .[0] // empty")
             if [ -n "$PRIOR" ]; then
               PRIOR_STATUS=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
               PRIOR_ID=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['databaseId'])")
