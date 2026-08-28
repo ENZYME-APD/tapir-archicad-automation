@@ -38,6 +38,11 @@ concurrency:
   group: monthly-release
   cancel-in-progress: false
 
+env:
+  # 5 Archicad versions x 2 platforms - update together with the build
+  # matrix in archicad_addon.yml.
+  EXPECTED_ASSETS: 10
+
 jobs:
   release:
     # Scheduled runs should not fire on forks, and a release may only ever
@@ -202,9 +207,9 @@ jobs:
                 # with no publishable GitHub release.
                 ASSETS=$(gh api "repos/${{ github.repository }}/releases" \
                   --jq "[.[] | select(.tag_name == \"$VERSION\" and .draft) | .assets | length] | max // 0")
-                if [ "$ASSETS" -lt 10 ]; then
+                if [ "$ASSETS" -lt "$EXPECTED_ASSETS" ]; then
                   echo "::error::The Add-On pipeline succeeded but the draft release for $VERSION" \
-                       "has only $ASSETS of the expected 10 artifacts - not starting the Grasshopper" \
+                       "has only $ASSETS of the expected $EXPECTED_ASSETS artifacts - not starting the Grasshopper" \
                        "pipeline. Delete the draft(s) for $VERSION on the releases page, re-run the" \
                        "'Archicad Add-On Build and Release' workflow on tag $VERSION, then re-run this workflow."
                   exit 1
@@ -275,11 +280,9 @@ jobs:
           fi
           ASSETS=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID" --jq '.assets | length')
           echo "Draft release $RELEASE_ID has $ASSETS asset(s)."
-          # 5 Archicad versions x 2 platforms; update when the build matrix
-          # in archicad_addon.yml changes.
-          if [ "$ASSETS" -lt 10 ]; then
-            echo "::error::Draft release for $VERSION has only $ASSETS of the expected 10 artifacts" \
-                 "(5 Windows .apx + 5 Mac .zip) - not publishing an incomplete release." \
+          if [ "$ASSETS" -lt "$EXPECTED_ASSETS" ]; then
+            echo "::error::Draft release for $VERSION has only $ASSETS of the expected $EXPECTED_ASSETS artifacts" \
+                 "- not publishing an incomplete release." \
                  "If parallel release jobs split the artifacts across duplicate drafts, recover by" \
                  "deleting every draft for $VERSION on the releases page, re-running the" \
                  "'Archicad Add-On Build and Release' workflow on tag $VERSION from the Actions tab," \

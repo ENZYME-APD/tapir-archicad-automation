@@ -306,7 +306,10 @@ class GitHubClient:
         quote prefix can never produce, and one the model summary cannot
         reach because the marker prefix is neutralized there.
         """
-        query = 'repo:{} in:body "{} {}"'.format(self.repository, ISSUE_MARKER_PREFIX, message_id)
+        # is:issue keeps pull requests (which the search endpoint also
+        # returns, and which may quote an issue body) out of the dedupe.
+        query = 'repo:{} is:issue in:body "{} {}"'.format(
+            self.repository, ISSUE_MARKER_PREFIX, message_id)
         response = self.session.get(
             GITHUB_API + "/search/issues",
             params={"q": query, "per_page": 10}, timeout=30)
