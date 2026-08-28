@@ -1,0 +1,56 @@
+name: Discord Issue Bot
+
+# Scans the project's Discord channels for messages that read like a bug
+# report or a feature request, files each as a GitHub issue, and replies on
+# Discord with the created issue number. Duplicate protection lives in the
+# script itself (a ✅ reaction on handled messages plus an issue search for
+# the message ID), so overlapping or re-run jobs are harmless.
+#
+# Setup and tuning: tools/discord-issue-bot/README.md. Until the secrets
+# and the DISCORD_CHANNEL_IDS variable are configured, runs exit quietly
+# without doing anything.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Classify and log only, without creating issues or posting to Discord
+        type: boolean
+        default: false
+
+concurrency:
+  group: discord-issue-bot
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    # Scheduled runs should not fire on forks.
+    if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r tools/discord-issue-bot/requirements.txt
+
+      - name: Scan Discord channels
+        run: python tools/discord-issue-bot/discord_issue_bot.py
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_IDS: ${{ vars.DISCORD_CHANNEL_IDS }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
