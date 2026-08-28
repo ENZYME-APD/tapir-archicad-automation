@@ -24,9 +24,11 @@ so no server hosting is needed. Every run:
    Messages classified as *not* actionable get a 👀 reaction instead, so
    later runs skip them rather than paying to classify them again.
    Actionable-looking messages that fall just short of the confidence
-   threshold also get the 👀 reaction, but are listed in the workflow
-   run's summary so a maintainer can file them by hand if the classifier
-   was too cautious.
+   threshold also get the 👀 reaction, but are recorded on a rolling
+   **Borderline Discord reports** issue (and in the workflow run's
+   summary) so a maintainer can file them by hand if the classifier was
+   too cautious. Closing that issue archives it; the bot opens a fresh
+   one when needed.
 
 Duplicates are prevented twice over: a message carrying the bot's own ✅ or
 👀 reaction is skipped, and before creating an issue the bot searches

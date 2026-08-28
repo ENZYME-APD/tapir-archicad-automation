@@ -114,8 +114,27 @@ CLASSIFIER_BATCH_SIZE = 20
 # An actionable classification below MIN_CONFIDENCE gets the permanent
 # "seen" mark like plain chat, so it is the one place a real report can be
 # lost with nothing but a log line. Cases at or above this floor are listed
-# in the workflow run's summary so a maintainer can file them by hand.
+# in the workflow run's summary and appended to a rolling GitHub issue so
+# a maintainer can file them by hand.
 BORDERLINE_CONFIDENCE = 0.5
+
+# The rolling issue collecting borderline reports is recognized by this
+# marker in its body (line-anchored, like the per-message dedupe marker),
+# not by its title, so renaming the issue is safe.
+BORDERLINE_ISSUE_MARKER = "tapir-discord-borderline-reports"
+BORDERLINE_ISSUE_TITLE = "Borderline Discord reports"
+BORDERLINE_ISSUE_BODY = """\
+The Tapir Discord issue bot appends a comment here whenever it sees
+messages that Claude judged actionable but with confidence below the
+threshold for filing an issue. They received the seen mark and will not
+be classified again, so this is their only trace: review them and file
+real issues by hand where the classifier was too cautious.
+
+Closing this issue archives it - the bot opens a fresh one when needed.
+
+`{0}`
+<!-- {0} -->
+""".format(BORDERLINE_ISSUE_MARKER)
 
 # Without the Message Content Intent Discord returns every message with
 # empty text, which would leave the schedule silently green while the bot
@@ -395,6 +414,56 @@ class GitHubClient:
             return None
         return response.json()
 
+    def find_borderline_issue(self):
+        """The open rolling issue carrying the borderline marker, None when
+        there is none, or SEARCH_FAILED when the lookup errored.
+
+        Uses the plain issue listing rather than the search API: listings
+        are real-time, so an issue created by the previous run is found
+        even before the search index has caught up, which would otherwise
+        spawn a duplicate rolling issue per run.
+        """
+        marker = re.compile(
+            r"^(?:`{0}`|<!-- {0} -->)\r?$".format(
+                re.escape(BORDERLINE_ISSUE_MARKER)),
+            re.MULTILINE)
+        url = GITHUB_API + "/repos/{}/issues".format(self.repository)
+        for page in range(1, 6):
+            try:
+                response = self.session.get(
+                    url, params={"state": "open", "per_page": 100, "page": page},
+                    timeout=30)
+            except requests.RequestException as error:
+                log("WARNING: issue listing request failed: {}".format(error))
+                return SEARCH_FAILED
+            if not response.ok:
+                log("WARNING: issue listing failed: {} {}".format(
+                    response.status_code, response.text[:200]))
+                return SEARCH_FAILED
+            items = response.json()
+            for item in items:
+                if "pull_request" in item:
+                    continue
+                if marker.search(item.get("body") or ""):
+                    return item
+            if len(items) < 100:
+                return None
+        return None
+
+    def add_issue_comment(self, issue_number, body):
+        url = GITHUB_API + "/repos/{}/issues/{}/comments".format(
+            self.repository, issue_number)
+        try:
+            response = self.session.post(url, json={"body": body}, timeout=30)
+        except requests.RequestException as error:
+            log("WARNING: issue comment request failed: {}".format(error))
+            return False
+        if not response.ok:
+            log("WARNING: could not comment on issue #{}: {} {}".format(
+                issue_number, response.status_code, response.text[:200]))
+            return False
+        return True
+
 
 class ClassifierBase:
     """Shared batch handling; subclasses provide _complete(chunk) -> text."""
@@ -555,23 +624,29 @@ def message_jump_url(message, channel):
         guild_id, message["channel_id"], message["id"])
 
 
-def note_borderline(message, channel, classification, confidence):
-    """List an actionable-but-under-threshold message in the workflow run's
-    step summary: it is about to be marked as seen and never revisited, so
-    this is the maintainer's only chance to notice a too-cautious call."""
+def borderline_line(message, channel, classification, confidence):
+    """One markdown bullet describing an actionable-but-under-threshold
+    message. The model-written title is backtick-quoted (with backticks
+    stripped) and mention-neutralized so untrusted Discord content echoed
+    into it cannot smuggle markdown or pings into the rendered output."""
+    title = (classification.get("title") or "").strip() or "(no title)"
+    title = neutralize_mentions(title.replace("`", "'"))
+    return "- Skipped as borderline (confidence {:.2f}): `{}` — [jump to message]({})".format(
+        confidence, title, message_jump_url(message, channel))
+
+
+def note_borderline(line, state):
+    """Record an actionable-but-under-threshold message: it is about to be
+    marked as seen and never revisited, so this is the maintainer's only
+    trace of a possibly too-cautious call. Listed in the workflow run's
+    step summary and collected for the rolling borderline-reports issue."""
+    state["borderline"].append(line)
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not summary_path:
         return
-    # Backtick-quote the model-written title so untrusted Discord content
-    # echoed into it cannot smuggle markdown (links, images) into the
-    # rendered summary.
-    title = (classification.get("title") or "").strip() or "(no title)"
-    title = neutralize_mentions(title.replace("`", "'"))
-    line = "- Skipped as borderline (confidence {:.2f}): `{}` — [jump to message]({})\n".format(
-        confidence, title, message_jump_url(message, channel))
     try:
         with open(summary_path, "a", encoding="utf-8") as stream:
-            stream.write(line)
+            stream.write(line + "\n")
     except OSError as error:
         log("  could not write the step summary: {}".format(error))
 
@@ -699,7 +774,9 @@ def process_channel(channel_id, config, discord, github, classifier, state):
                 log("  message {}: actionable but below the confidence threshold "
                     "({:.2f} < {}), listed in the run summary".format(
                         message["id"], confidence, config.min_confidence))
-                note_borderline(message, channel, classification, confidence)
+                note_borderline(
+                    borderline_line(message, channel, classification, confidence),
+                    state)
             else:
                 log("  message {}: not actionable (confidence {:.2f})".format(
                     message["id"], confidence))
@@ -757,6 +834,39 @@ def process_channel(channel_id, config, discord, github, classifier, state):
                 issue["number"], issue["html_url"]))
 
 
+def report_borderline(github, state):
+    """Append this run's borderline reports as one comment on the rolling
+    borderline-reports issue, creating the issue when there is none.
+
+    Scheduled runs' step summaries are rarely opened, so the rolling issue
+    is what actually puts these in front of a maintainer. The messages are
+    already marked as seen, so a failure here only costs this trace - it
+    is logged and counted, never fatal on its own."""
+    entries = state["borderline"]
+    issue = github.find_borderline_issue()
+    if issue is SEARCH_FAILED:
+        log("WARNING: could not look for the borderline-reports issue - {} "
+            "borderline report(s) appear only in the run summary".format(len(entries)))
+        state["github_failures"] += 1
+        return
+    if issue is None:
+        issue = github.create_issue(
+            BORDERLINE_ISSUE_TITLE, BORDERLINE_ISSUE_BODY, ["discord"])
+        if issue is None:
+            state["github_failures"] += 1
+            return
+        log("Created the rolling borderline-reports issue #{}".format(issue["number"]))
+    shown = entries[:100]
+    body = "\n".join(shown)
+    if len(entries) > len(shown):
+        body += "\n- … and {} more (see the run log)".format(len(entries) - len(shown))
+    if github.add_issue_comment(issue["number"], body):
+        log("Recorded {} borderline report(s) on issue #{}".format(
+            len(entries), issue["number"]))
+    else:
+        state["github_failures"] += 1
+
+
 def main():
     config, missing = Config.from_env()
     if config is None:
@@ -778,10 +888,13 @@ def main():
     github = GitHubClient(config.github_token, config.repository)
     classifier = ClaudeCodeClassifier(config.model)
     state = {"created": 0, "unreadable_channels": 0, "github_failures": 0,
-             "human_messages": 0, "messages_with_text": 0}
+             "human_messages": 0, "messages_with_text": 0, "borderline": []}
 
     for channel_id in config.channel_ids:
         process_channel(channel_id, config, discord, github, classifier, state)
+
+    if state["borderline"] and not config.dry_run:
+        report_borderline(github, state)
 
     if config.channel_ids and state["unreadable_channels"] == len(config.channel_ids):
         # A revoked token or missing permission must not leave the scheduled
