@@ -1,0 +1,206 @@
+name: Monthly Release
+
+# Automates the release process described in the wiki
+# (https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Release-process)
+# on a monthly schedule:
+#
+#   1. Skip when nothing changed since the last release tag.
+#   2. Check that the generated docs were updated since the last release when
+#      Add-On sources changed (docs are regenerated with the
+#      GenerateDocumentation command in a running Archicad, which CI cannot
+#      do - a stale docs folder fails the run with instructions).
+#   3. Tag HEAD with the current version from tools/package_info.json - the
+#      sources already carry this version, per the project's convention.
+#   4. Start the two existing release pipelines (Add-On build + release,
+#      Grasshopper build + yak deploy) on that tag and wait for them.
+#      They must be dispatched explicitly because a tag pushed with the
+#      workflow's own GITHUB_TOKEN does not trigger on-push workflows.
+#   5. When all artifacts are built, publish the draft release with
+#      auto-generated notes.
+#   6. Increment the patch version (tools/update_version.py) and commit, so
+#      development of the next version starts - the wiki's final step.
+#
+# A build failure stops the run before publishing and before the version
+# bump; the tag is left in place so a maintainer can investigate and re-run
+# the pipelines (or this workflow) after fixing the problem.
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'   # 06:00 UTC on the 1st of every month
+  workflow_dispatch:
+    inputs:
+      skip_docs_check:
+        description: Release even if the generated docs look stale
+        type: boolean
+        default: false
+
+concurrency:
+  group: monthly-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # Scheduled runs should not fire on forks.
+    if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    permissions:
+      contents: write   # push the tag and the version bump commit
+      actions: write    # dispatch the two release pipelines
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to release
+        id: plan
+        run: |
+          set -eu
+          VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
+          LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*' HEAD)
+          echo "Current version: $VERSION, last release tag: $LAST_TAG"
+
+          if git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null; then
+            echo "::error::Tag $VERSION already exists but package_info.json still says $VERSION." \
+                 "Bump the version (tools/update_version.py) before releasing."
+            exit 1
+          fi
+
+          COMMITS=$(git rev-list --count "$LAST_TAG"..HEAD)
+          if [ "$COMMITS" -eq 0 ]; then
+            echo "No commits since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$COMMITS commit(s) since $LAST_TAG - releasing $VERSION."
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Check that the generated docs are up to date
+        if: steps.plan.outputs.release == 'true' && inputs.skip_docs_check != true
+        run: |
+          set -eu
+          LAST_TAG='${{ steps.plan.outputs.last_tag }}'
+          # The docs are generated from the registered command schemas, so
+          # they only need regenerating when the Add-On sources changed
+          # (AddOnVersion.hpp changes on every release and does not count).
+          SOURCE_CHANGES=$(git rev-list --count "$LAST_TAG"..HEAD -- \
+            'archicad-addon/Sources' ':(exclude)archicad-addon/Sources/AddOnVersion.hpp')
+          DOCS_CHANGES=$(git rev-list --count "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
+          if [ "$SOURCE_CHANGES" -gt 0 ] && [ "$DOCS_CHANGES" -eq 0 ]; then
+            echo "::error::The Add-On sources changed since $LAST_TAG but docs/archicad-addon did not." \
+                 "Run the GenerateDocumentation command in Archicad, commit the regenerated docs," \
+                 "then re-run this workflow (or check 'skip_docs_check' to release anyway)."
+            exit 1
+          fi
+          echo "Docs check passed (source changes: $SOURCE_CHANGES, docs changes: $DOCS_CHANGES)."
+
+      - name: Create and push the release tag
+        if: steps.plan.outputs.release == 'true'
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag "$VERSION"
+          git push origin "refs/tags/$VERSION"
+
+      - name: Start the release pipelines
+        if: steps.plan.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          gh workflow run archicad_addon.yml --ref "$VERSION"
+          gh workflow run grasshopper_plugin.yml --ref "$VERSION"
+
+      - name: Wait for all artifacts to be built
+        if: steps.plan.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          for WORKFLOW in archicad_addon.yml grasshopper_plugin.yml; do
+            # The dispatched run can take a moment to appear.
+            RUN_ID=''
+            for _ in $(seq 1 30); do
+              RUN_ID=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+                --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+              [ -n "$RUN_ID" ] && break
+              sleep 10
+            done
+            if [ -z "$RUN_ID" ]; then
+              echo "::error::The dispatched run of $WORKFLOW on tag $VERSION never appeared."
+              exit 1
+            fi
+            echo "Waiting for $WORKFLOW (run $RUN_ID)..."
+            while true; do
+              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status')
+              [ "$STATUS" = "completed" ] && break
+              sleep 60
+            done
+            CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion')
+            if [ "$CONCLUSION" != "success" ]; then
+              echo "::error::$WORKFLOW finished with conclusion '$CONCLUSION'." \
+                   "The release is NOT published and the version is NOT bumped." \
+                   "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
+              exit 1
+            fi
+            echo "$WORKFLOW succeeded."
+          done
+
+      - name: Publish the release
+        if: steps.plan.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          LAST_TAG='${{ steps.plan.outputs.last_tag }}'
+          # The Add-On pipeline collects every artifact on one draft release;
+          # pick the draft for this tag (the one with the most assets, in the
+          # unlikely case parallel jobs raced and created more than one).
+          RELEASE_ID=$(gh api "repos/${{ github.repository }}/releases" \
+            --jq "[.[] | select(.tag_name == \"$VERSION\" and .draft)] | sort_by(.assets | length) | last | .id // empty")
+          if [ -z "$RELEASE_ID" ]; then
+            echo "::error::No draft release found for tag $VERSION."
+            exit 1
+          fi
+          ASSETS=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID" --jq '.assets | length')
+          echo "Draft release $RELEASE_ID has $ASSETS asset(s)."
+          NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
+            -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body')
+          gh api --method PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
+            -f name="$VERSION" -f body="$NOTES" -F draft=false -F make_latest=true > /dev/null
+          echo "Published release **$VERSION** with $ASSETS artifact(s)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Increment the version for the next cycle
+        if: steps.plan.outputs.release == 'true'
+        run: |
+          set -eu
+          python3 - <<'EOF'
+          import json
+          path = 'tools/package_info.json'
+          version = json.load(open(path))['version']
+          major, minor, patch = version.split('.')
+          next_version = '{}.{}.{}'.format(major, minor, int(patch) + 1)
+          with open(path, 'w') as f:
+              f.write('{\n    "version" : "%s"\n}\n' % next_version)
+          print('Version bumped to', next_version)
+          EOF
+          python3 tools/update_version.py
+          NEXT_VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
+          git add tools/package_info.json \
+                  archicad-addon/Sources/AddOnVersion.hpp \
+                  grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj \
+                  grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs \
+                  grasshopper-plugin/YakPackage/manifest.yml
+          git commit -m "Update version after release"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "Started development of version **$NEXT_VERSION**." >> "$GITHUB_STEP_SUMMARY"

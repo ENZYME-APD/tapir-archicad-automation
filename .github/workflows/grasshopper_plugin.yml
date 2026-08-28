@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - '*'
+  # The Monthly Release workflow pushes its tag with the workflow's own
+  # GITHUB_TOKEN, which does not trigger on-push workflows - so it starts
+  # this pipeline explicitly, dispatched on the tag ref.
+  workflow_dispatch:
 
 jobs:
   build:
@@ -31,6 +35,8 @@ jobs:
       run: yak build
       working-directory: grasshopper-plugin/YakPackage
     - name: Deploy yak package
+      # Only a tagged build may be published to the Rhino package manager.
+      if: startsWith(github.ref, 'refs/tags/')
       run: |
         $yakFile = Get-ChildItem *.yak
         yak push $yakFile.FullName

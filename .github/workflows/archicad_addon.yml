@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - '*'
+  # The Monthly Release workflow pushes its tag with the workflow's own
+  # GITHUB_TOKEN, which does not trigger on-push workflows - so it starts
+  # this pipeline explicitly, dispatched on the tag ref.
+  workflow_dispatch:
 
 jobs:
   build_win:
