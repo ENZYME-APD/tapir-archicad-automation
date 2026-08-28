@@ -390,6 +390,11 @@ class ClassifierBase:
             return None
         # The model does not always honor the schema; a malformed field must
         # not abort the whole run, so coerce everything to the expected type.
+        # actionable gates issue creation, and a string "false" is truthy.
+        actionable = result.get("actionable")
+        if isinstance(actionable, str):
+            actionable = actionable.strip().lower() == "true"
+        result["actionable"] = actionable is True
         try:
             result["confidence"] = float(result.get("confidence") or 0.0)
         except (TypeError, ValueError):
