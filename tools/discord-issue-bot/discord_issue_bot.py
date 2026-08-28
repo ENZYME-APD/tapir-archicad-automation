@@ -957,13 +957,15 @@ def report_borderline(github, state):
     Scheduled runs' step summaries are rarely opened, so the rolling issue
     is what actually puts these in front of a maintainer. The messages are
     already marked as seen, so a failure here only costs this trace - it
-    is logged and counted, never fatal on its own."""
+    is logged, never fatal: bookkeeping deliberately stays out of
+    github_failures, where a lone failed borderline write in a run that
+    created nothing would trip the all-operations-failed check with a
+    misleading permission error."""
     entries = state["borderline"]
     issue = github.find_borderline_issue()
     if issue is SEARCH_FAILED:
         log("WARNING: could not look for the borderline-reports issue - {} "
             "borderline report(s) appear only in the run summary".format(len(entries)))
-        state["github_failures"] += 1
         return
     if issue is None:
         # Deliberately without the 'discord' label: the label drives the
@@ -971,7 +973,8 @@ def report_borderline(github, state):
         issue = github.create_issue(
             BORDERLINE_ISSUE_TITLE, BORDERLINE_ISSUE_BODY, [])
         if issue is None:
-            state["github_failures"] += 1
+            log("WARNING: could not create the borderline-reports issue - {} "
+                "borderline report(s) appear only in the run summary".format(len(entries)))
             return
         log("Created the rolling borderline-reports issue #{}".format(issue["number"]))
     shown = entries[:100]
@@ -982,7 +985,8 @@ def report_borderline(github, state):
         log("Recorded {} borderline report(s) on issue #{}".format(
             len(entries), issue["number"]))
     else:
-        state["github_failures"] += 1
+        log("WARNING: could not record {} borderline report(s) on issue #{} - "
+            "they appear only in the run summary".format(len(entries), issue["number"]))
 
 
 def main():
