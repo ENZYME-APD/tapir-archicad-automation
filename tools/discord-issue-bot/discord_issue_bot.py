@@ -408,7 +408,9 @@ class ClassifierBase:
             result["confidence"] = float(result.get("confidence") or 0.0)
         except (TypeError, ValueError):
             result["confidence"] = 0.0
-        result["title"] = str(result.get("title") or "").strip()
+        # GitHub rejects titles over 256 characters; nothing forces the
+        # model (or an injected message) to honor the asked-for 80.
+        result["title"] = str(result.get("title") or "").strip()[:250]
         # HTML comments are stripped and the marker prefix is broken with a
         # zero-width space, so a prompt-injected summary can never reproduce
         # the dedupe marker on an unquoted line of the issue body.
@@ -563,7 +565,13 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         return
 
     channel = discord.get_channel(channel_id)
-    channel_name = channel.get("name", channel_id) if channel else channel_id
+    if channel is None:
+        # Without the channel metadata the issue's jump link and channel
+        # name would come out wrong; treat it like an unreadable channel
+        # and let the next run retry with correct data.
+        state["unreadable_channels"] += 1
+        return
+    channel_name = channel.get("name", channel_id)
     since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
         minutes=config.lookback_minutes)
     messages = discord.recent_messages(channel_id, since)
