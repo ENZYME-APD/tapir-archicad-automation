@@ -204,6 +204,22 @@ jobs:
         run: |
           set -eu
           VERSION='${{ steps.plan.outputs.version }}'
+          # One transient gh failure must not abort a multi-hour release
+          # run under set -e (the poll loop below already tolerates them);
+          # retry a lookup a few times, and only then fail for real. A
+          # blanket '|| true' would be wrong for the PRIOR lookup, where an
+          # empty answer means "dispatch a fresh run".
+          gh_retry () {
+            local ATTEMPT OUT
+            for ATTEMPT in 1 2 3; do
+              if OUT=$("$@"); then
+                echo "$OUT"
+                return 0
+              fi
+              [ "$ATTEMPT" -lt 3 ] && sleep 15
+            done
+            return 1
+          }
           # Only accept runs started by this dispatch, not a completed run
           # left over from a failed earlier attempt on the same tag (60s of
           # slack for clock skew).
@@ -226,7 +242,7 @@ jobs:
             # Among this commit's runs, a success anywhere wins over the
             # newest run: a later failed re-run must not mask a completed
             # yak publish and trigger a second one.
-            PRIOR=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+            PRIOR=$(gh_retry gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
               --limit 10 --json databaseId,status,conclusion,headSha \
               --jq "[.[] | select(.headSha == \"$HEAD_SHA\")] | (map(select(.conclusion == \"success\")) + .) | .[0] // empty")
             if [ -n "$PRIOR" ]; then
@@ -247,7 +263,7 @@ jobs:
                 # BEFORE the Grasshopper pipeline gets to publish to yak, so
                 # a split or partial draft cannot leave a yak version live
                 # with no publishable GitHub release.
-                ASSETS=$(gh api "repos/${{ github.repository }}/releases" \
+                ASSETS=$(gh_retry gh api "repos/${{ github.repository }}/releases" \
                   --jq "[.[] | select(.tag_name == \"$VERSION\" and .draft) | .assets | length] | max // 0")
                 if [ "$ASSETS" -lt "$EXPECTED_ASSETS" ]; then
                   echo "::error::The Add-On pipeline succeeded but the draft release for $VERSION" \
@@ -259,11 +275,14 @@ jobs:
                 echo "Draft release for $VERSION carries $ASSETS artifact(s) - safe to publish to yak."
               fi
               gh workflow run "$WORKFLOW" --ref "$VERSION"
-              # The dispatched run can take a moment to appear.
+              # The dispatched run can take a moment to appear. '|| true' is
+              # safe here, unlike for PRIOR: an empty answer just means the
+              # loop polls again, and the never-appeared error below fires
+              # only after all 30 attempts.
               for _ in $(seq 1 30); do
                 RUN_ID=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
                   --created ">=$DISPATCH_CUTOFF" \
-                  --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+                  --limit 1 --json databaseId --jq '.[0].databaseId // empty' || true)
                 [ -n "$RUN_ID" ] && break
                 sleep 10
               done
