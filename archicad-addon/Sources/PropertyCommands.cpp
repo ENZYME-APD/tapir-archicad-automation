@@ -108,10 +108,9 @@ static GS::ObjectState CreateEnumValueObjectState (const API_SingleEnumerationVa
         enumValue.Add ("nonLocalizedValue", *variant.nonLocalizedValue);
     }
 
-    GS::ObjectState enumValueId;
-    enumValueId.Add ("type", GS::UniString ("guid"));
-    enumValueId.Add ("guid", APIGuidToString (variant.keyVariant.guidValue));
-    enumValue.Add ("enumValueId", enumValueId);
+    // Not enumValueId: that is a oneOf over displayValue / nonLocalizedValue, so a guid
+    // does not validate as one and a value read here could not be sent back.
+    enumValue.Add ("guid", APIGuidToString (variant.keyVariant.guidValue));
 
     return GS::ObjectState ("enumValue", enumValue);
 }
@@ -1448,7 +1447,7 @@ GS::Optional<GS::UniString> UpdatePropertyDefinitionsCommand::GetInputParameters
                             "minItems": 1
                         },
                         "possibleEnumValues": {
-                            "$ref": "#/PossibleEnumValues",
+                            "$ref": "#/EnumValuesToAdd",
                             "description": "The enum values to add to an enumeration property. Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
                         }
                     },
@@ -1556,14 +1555,17 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
                         variant.nonLocalizedValue = nonLocalizedValueStr;
                     }
 
-                    const GS::UniString& matchOn = variant.nonLocalizedValue.HasValue ()
-                        ? *variant.nonLocalizedValue
-                        : variant.displayVariant.uniStringValue;
-                    const GS::UniString matchType = variant.nonLocalizedValue.HasValue ()
-                        ? "nonLocalizedValue"
-                        : "displayValue";
+                    // Matched on both keys, not just the one the incoming value happens to
+                    // carry: a value already on the property as {displayValue: "Door"} which
+                    // is sent again with a nonLocalizedValue added has to match the existing
+                    // entry, or it is appended a second time and the property ends up with
+                    // two options reading "Door".
+                    const bool alreadyThere =
+                        (variant.nonLocalizedValue.HasValue () &&
+                         FindEnumValueGuid (definition.possibleEnumValues, "nonLocalizedValue", *variant.nonLocalizedValue) != APINULLGuid) ||
+                        FindEnumValueGuid (definition.possibleEnumValues, "displayValue", variant.displayVariant.uniStringValue) != APINULLGuid;
 
-                    if (FindEnumValueGuid (definition.possibleEnumValues, matchType, matchOn) != APINULLGuid) {
+                    if (alreadyThere) {
                         continue;
                     }
 

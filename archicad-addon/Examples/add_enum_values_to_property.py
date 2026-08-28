@@ -24,8 +24,12 @@ def PrintEnumValues (label, property):
 
 property = FindProperty ()
 if property is None:
-    print ('Create a "{}/{}" singleEnum property first - this example only extends an existing one.'.format (
+    # test_examples.py runs every example against TestProject.pla and pins whatever it
+    # prints, so say plainly that nothing was tested rather than printing a hint that
+    # reads like a passing run.
+    print ('SKIPPED: no "{}/{}" singleEnum property in this project, so nothing was extended.'.format (
         GROUP_NAME, PROPERTY_NAME))
+    print ('Create one in Property Manager to exercise this example.')
     raise SystemExit (0)
 
 before = PrintEnumValues ('Before', property)
