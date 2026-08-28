@@ -191,12 +191,20 @@ jobs:
               exit 1
             fi
             echo "Waiting for $WORKFLOW (run $RUN_ID)..."
+            # A transient gh failure during this multi-hour wait must not
+            # kill the release run under set -e; an unknown status just
+            # means poll again (the job timeout bounds the loop).
             while true; do
-              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status')
+              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
               [ "$STATUS" = "completed" ] && break
               sleep 60
             done
-            CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion')
+            CONCLUSION=''
+            for _ in 1 2 3; do
+              CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion' || echo '')
+              [ -n "$CONCLUSION" ] && break
+              sleep 20
+            done
             if [ "$CONCLUSION" != "success" ]; then
               echo "::error::$WORKFLOW finished with conclusion '$CONCLUSION'." \
                    "The release is NOT published and the version is NOT bumped." \

@@ -29,6 +29,9 @@ Duplicates are prevented twice over: a message carrying the bot's own ✅ or
 existing issues for the Discord message ID (which is embedded in every
 issue body).
 
+Only regular channel messages are scanned — threads and forum posts are
+not read, so reports posted there will not become issues.
+
 ## One-time setup
 
 ### 1. Create the Discord bot

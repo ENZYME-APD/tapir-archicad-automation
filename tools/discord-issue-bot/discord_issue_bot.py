@@ -162,6 +162,15 @@ def log(message):
     print(message, flush=True)
 
 
+class _FailedRequest:
+    """Stands in for a response when the HTTP request itself failed."""
+    ok = False
+    status_code = 0
+
+    def __init__(self, error):
+        self.text = str(error)
+
+
 class DiscordClient:
     def __init__(self, token):
         self.session = requests.Session()
@@ -172,11 +181,28 @@ class DiscordClient:
 
     def _request(self, method, path, **kwargs):
         url = DISCORD_API + path
+        response = _FailedRequest("request not attempted")
         for attempt in range(3):
-            response = self.session.request(method, url, timeout=30, **kwargs)
+            try:
+                response = self.session.request(method, url, timeout=30, **kwargs)
+            except requests.RequestException as error:
+                log("WARNING: Discord request failed: {}".format(error))
+                response = _FailedRequest(error)
+                time.sleep(2)
+                continue
             if response.status_code == 429:
-                retry_after = float(response.json().get("retry_after", 2.0))
-                time.sleep(retry_after + 0.5)
+                # The Discord API sends a JSON body, but a rate limit from
+                # Cloudflare in front of it sends HTML - fall back to the
+                # Retry-After header, then to a default.
+                retry_after = 5.0
+                try:
+                    retry_after = float(response.json().get("retry_after", retry_after))
+                except (ValueError, AttributeError):
+                    try:
+                        retry_after = float(response.headers.get("Retry-After") or retry_after)
+                    except ValueError:
+                        pass
+                time.sleep(min(retry_after, 60.0) + 0.5)
                 continue
             return response
         return response
@@ -190,7 +216,8 @@ class DiscordClient:
         return None
 
     def recent_messages(self, channel_id, since):
-        """Messages in the channel newer than `since`, oldest first.
+        """Messages in the channel newer than `since`, oldest first, or
+        None when the channel could not be read at all.
 
         Paginates past the API's 100-message page size so a busy channel
         does not silently lose the oldest part of a burst; capped at ten
@@ -198,7 +225,7 @@ class DiscordClient:
         """
         messages = []
         before = None
-        for _ in range(10):
+        for page_index in range(10):
             params = {"limit": 100}
             if before is not None:
                 params["before"] = before
@@ -207,6 +234,8 @@ class DiscordClient:
             if not response.ok:
                 log("WARNING: could not read messages of channel {}: {} {}".format(
                     channel_id, response.status_code, response.text[:200]))
+                if page_index == 0:
+                    return None
                 break
             page = response.json()
             if not page:
@@ -265,9 +294,11 @@ class GitHubClient:
 
         A search hit alone is not proof: a quoted Discord message could
         itself contain the marker text and would otherwise let a crafted
-        message suppress someone else's report. Only an issue carrying the
-        genuine marker - the HTML comment at the start of a line, which a
-        "> " quote prefix can never produce - counts.
+        message suppress someone else's report. Only an issue carrying a
+        genuine marker counts: the backticked footer line or the HTML
+        comment, either one at the start of a line - a position the "> "
+        quote prefix can never produce, and one the model summary cannot
+        reach because the marker prefix is neutralized there.
         """
         query = 'repo:{} in:body "{} {}"'.format(self.repository, ISSUE_MARKER_PREFIX, message_id)
         response = self.session.get(
@@ -277,11 +308,12 @@ class GitHubClient:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
             return SEARCH_FAILED
-        # Both marker forms count: the visible backticked footer line (HTML
-        # comments are not reliably indexed by the issue search) and the
-        # HTML comment kept for issues filed by older versions of the bot.
+        # Both footer marker forms count: the visible backticked line is the
+        # primary one (the issue search does not reliably index HTML-comment
+        # content), the HTML comment a machine-readable extra. \r? keeps the
+        # match alive after a web-UI edit converts the body to CRLF.
         marker = re.compile(
-            r"^(?:`{0} {1}`|<!-- {0} {1} -->)$".format(
+            r"^(?:`{0} {1}`|<!-- {0} {1} -->)\r?$".format(
                 re.escape(ISSUE_MARKER_PREFIX), re.escape(str(message_id))),
             re.MULTILINE)
         for item in response.json().get("items", []):
@@ -501,6 +533,9 @@ def process_channel(channel_id, config, discord, github, classifier, state):
     since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
         minutes=config.lookback_minutes)
     messages = discord.recent_messages(channel_id, since)
+    if messages is None:
+        state["unreadable_channels"] += 1
+        return
     log("Channel #{}: {} message(s) in the last {} minutes".format(
         channel_name, len(messages), config.lookback_minutes))
 
@@ -593,10 +628,17 @@ def main():
     classifier = make_classifier(config)
     log("Classifying via {}".format(
         "Claude Code (subscription)" if config.use_claude_code else "the Claude API"))
-    state = {"created": 0}
+    state = {"created": 0, "unreadable_channels": 0}
 
     for channel_id in config.channel_ids:
         process_channel(channel_id, config, discord, github, classifier, state)
+
+    if config.channel_ids and state["unreadable_channels"] == len(config.channel_ids):
+        # A revoked token or missing permission must not leave the scheduled
+        # workflow silently green while the bot does nothing.
+        log("ERROR: none of the configured channels could be read - check the "
+            "bot token and its permissions.")
+        return 1
 
     log("Done. Created {} issue(s).".format(state["created"]))
     return 0
