@@ -167,18 +167,35 @@ class DiscordClient:
         return None
 
     def recent_messages(self, channel_id, since):
-        """Messages in the channel newer than `since`, oldest first."""
-        response = self._request(
-            "GET", "/channels/{}/messages".format(channel_id), params={"limit": 100})
-        if not response.ok:
-            log("WARNING: could not read messages of channel {}: {} {}".format(
-                channel_id, response.status_code, response.text[:200]))
-            return []
+        """Messages in the channel newer than `since`, oldest first.
+
+        Paginates past the API's 100-message page size so a busy channel
+        does not silently lose the oldest part of a burst; capped at ten
+        pages as a safety limit.
+        """
         messages = []
-        for message in response.json():
-            timestamp = datetime.datetime.fromisoformat(message["timestamp"])
-            if timestamp >= since:
-                messages.append(message)
+        before = None
+        for _ in range(10):
+            params = {"limit": 100}
+            if before is not None:
+                params["before"] = before
+            response = self._request(
+                "GET", "/channels/{}/messages".format(channel_id), params=params)
+            if not response.ok:
+                log("WARNING: could not read messages of channel {}: {} {}".format(
+                    channel_id, response.status_code, response.text[:200]))
+                break
+            page = response.json()
+            if not page:
+                break
+            for message in page:
+                timestamp = datetime.datetime.fromisoformat(message["timestamp"])
+                if timestamp >= since:
+                    messages.append(message)
+            oldest = page[-1]
+            if datetime.datetime.fromisoformat(oldest["timestamp"]) < since:
+                break
+            before = oldest["id"]
         messages.reverse()
         return messages
 
