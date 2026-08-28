@@ -401,7 +401,8 @@ class ClassifierBase:
         summary = re.sub(
             r"<!--.*?(-->|$)", "", str(result.get("summary") or ""), flags=re.DOTALL)
         result["summary"] = summary.replace(
-            ISSUE_MARKER_PREFIX, ISSUE_MARKER_PREFIX[:7] + "​" + ISSUE_MARKER_PREFIX[7:]).strip()
+            ISSUE_MARKER_PREFIX,
+            ISSUE_MARKER_PREFIX[:7] + "\u200b" + ISSUE_MARKER_PREFIX[7:]).strip()
         if result.get("type") not in ("bug", "feature"):
             result["type"] = None
         return result
@@ -489,7 +490,7 @@ def make_classifier(config):
 def neutralize_mentions(text):
     """Break @mentions with a zero-width space so untrusted Discord text
     quoted into an issue body cannot ping GitHub users or teams."""
-    return text.replace("@", "@​")
+    return text.replace("@", "@\u200b")
 
 
 def message_jump_url(message, channel):
