@@ -211,6 +211,15 @@ class DiscordClient:
                 time.sleep(min(retry_after, 60.0) + 0.5)
                 continue
             if response.status_code >= 500:
+                if not idempotent:
+                    # A 502/504 from the gateway can arrive after Discord
+                    # already processed the request; like the transport
+                    # failure above, re-sending could double-post. (The 429
+                    # retry stays safe: a rate-limited request was rejected
+                    # before processing.)
+                    log("WARNING: Discord server error {} on a non-idempotent "
+                        "request, not retrying".format(response.status_code))
+                    return response
                 log("WARNING: Discord server error {}, retrying".format(response.status_code))
                 time.sleep(2 * (attempt + 1))
                 continue
