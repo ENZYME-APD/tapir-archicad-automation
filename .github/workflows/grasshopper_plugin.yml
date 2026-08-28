@@ -56,7 +56,12 @@ jobs:
             $version = @(Select-String -Path manifest.yml -Pattern '^\s*version:\s*(\S+)')[0].Matches[0].Groups[1].Value
             $live = yak search tapir 2>&1
             Write-Output $live
-            if ("$live" -match [regex]::Escape($version)) {
+            # Out-String keeps the line breaks (string interpolation would
+            # join with spaces), and the match is anchored to the tapir
+            # line: the search is a substring search over all package
+            # names, and another package at the same version must not
+            # confirm a push that never landed.
+            if (($live | Out-String) -match ('(?m)^tapir\b.*' + [regex]::Escape($version))) {
               Write-Output "Version $version is already live on the package server - treating the rejected push as success."
               cmd /c exit 0
             } else {
