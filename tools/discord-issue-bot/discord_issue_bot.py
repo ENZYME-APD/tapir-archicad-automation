@@ -381,6 +381,28 @@ class GitHubClient:
             "X-GitHub-Api-Version": "2022-11-28",
         })
 
+    def _get(self, url, params):
+        """GET with a small retry for transient failures, mirroring the
+        Discord client: these lookups are idempotent, and a single blip in
+        a run that creates nothing would otherwise end the schedule red
+        blaming the issues permission. Returns the last response (or a
+        _FailedRequest), never raises."""
+        response = _FailedRequest("request not attempted")
+        for attempt in range(3):
+            try:
+                response = self.session.get(url, params=params, timeout=30)
+            except requests.RequestException as error:
+                log("WARNING: GitHub request failed: {}".format(error))
+                response = _FailedRequest(error)
+                time.sleep(2 * (attempt + 1))
+                continue
+            if response.status_code >= 500 or response.status_code == 429:
+                log("WARNING: GitHub answered {}, retrying".format(response.status_code))
+                time.sleep(2 * (attempt + 1))
+                continue
+            return response
+        return response
+
     def find_issue_for_message(self, message_id):
         """Return an existing issue that was created from this Discord message.
 
@@ -398,13 +420,9 @@ class GitHubClient:
             self.repository, ISSUE_MARKER_PREFIX, message_id)
         # advanced_search is the announced successor of the legacy issue
         # search mode; passing it is harmless while both are accepted.
-        try:
-            response = self.session.get(
-                GITHUB_API + "/search/issues",
-                params={"q": query, "per_page": 10, "advanced_search": "true"}, timeout=30)
-        except requests.RequestException as error:
-            log("WARNING: issue search request failed: {}".format(error))
-            return SEARCH_FAILED
+        response = self._get(
+            GITHUB_API + "/search/issues",
+            {"q": query, "per_page": 10, "advanced_search": "true"})
         if not response.ok:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
@@ -468,14 +486,9 @@ class GitHubClient:
                  - datetime.timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
         query = 'repo:{} is:issue label:discord created:>={}'.format(
             self.repository, since)
-        try:
-            response = self.session.get(
-                GITHUB_API + "/search/issues",
-                params={"q": query, "per_page": 1, "advanced_search": "true"},
-                timeout=30)
-        except requests.RequestException as error:
-            log("WARNING: issue search request failed: {}".format(error))
-            return None
+        response = self._get(
+            GITHUB_API + "/search/issues",
+            {"q": query, "per_page": 1, "advanced_search": "true"})
         if not response.ok:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
@@ -497,17 +510,12 @@ class GitHubClient:
             re.MULTILINE)
         url = GITHUB_API + "/repos/{}/issues".format(self.repository)
         for page in range(1, 6):
-            try:
-                # Recently-updated first: the bot's own comments bump the
-                # rolling issue's updated_at, keeping it near the front even
-                # in a repo with hundreds of open issues.
-                response = self.session.get(
-                    url, params={"state": "open", "per_page": 100, "page": page,
-                                 "sort": "updated"},
-                    timeout=30)
-            except requests.RequestException as error:
-                log("WARNING: issue listing request failed: {}".format(error))
-                return SEARCH_FAILED
+            # Recently-updated first: the bot's own comments bump the
+            # rolling issue's updated_at, keeping it near the front even
+            # in a repo with hundreds of open issues.
+            response = self._get(
+                url, {"state": "open", "per_page": 100, "page": page,
+                      "sort": "updated"})
             if not response.ok:
                 log("WARNING: issue listing failed: {} {}".format(
                     response.status_code, response.text[:200]))
