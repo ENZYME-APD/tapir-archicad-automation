@@ -55,7 +55,9 @@ have a fix attempted, exactly as for hand-written issues.
 1. In the [Discord developer portal](https://discord.com/developers/applications),
    create an application and add a **Bot** to it.
 2. Under *Bot*, enable the **Message Content Intent** (without it the API
-   returns messages with empty text).
+   returns messages with empty text; the bot fails the run when every
+   recent human message comes back empty, so the mistake cannot stay
+   silent).
 3. Copy the **bot token**.
 4. Invite the bot to the server via *OAuth2 → URL Generator*: scope `bot`,
    permissions **View Channels**, **Read Message History**, **Send Messages**

@@ -117,6 +117,13 @@ CLASSIFIER_BATCH_SIZE = 20
 # in the workflow run's summary so a maintainer can file them by hand.
 BORDERLINE_CONFIDENCE = 0.5
 
+# Without the Message Content Intent Discord returns every message with
+# empty text, which would leave the schedule silently green while the bot
+# can never see a report. Attachment-only messages legitimately have empty
+# text too, so a handful is not proof; this many human messages without a
+# single one carrying text fails the run as a misconfiguration.
+EMPTY_CONTENT_FAILURE_COUNT = 5
+
 
 @dataclasses.dataclass
 class Config:
@@ -622,6 +629,23 @@ def process_channel(channel_id, config, discord, github, classifier, state):
     log("Channel #{}: {} message(s) in the last {} minutes".format(
         channel_name, len(messages), config.lookback_minutes))
 
+    human_messages = 0
+    messages_with_text = 0
+    for message in messages:
+        author = message.get("author", {})
+        if author.get("bot") or author.get("system"):
+            continue
+        human_messages += 1
+        if message.get("content", "").strip():
+            messages_with_text += 1
+    state["human_messages"] += human_messages
+    state["messages_with_text"] += messages_with_text
+    if human_messages and not messages_with_text:
+        log("WARNING: all {} human message(s) in #{} came back with empty "
+            "text - if this persists, the bot's Message Content Intent is "
+            "probably disabled in the Discord developer portal.".format(
+                human_messages, channel_name))
+
     candidates = []
     messages_by_id = {}
     for message in messages:
@@ -740,7 +764,8 @@ def main():
     discord = DiscordClient(config.discord_token)
     github = GitHubClient(config.github_token, config.repository)
     classifier = ClaudeCodeClassifier(config.model)
-    state = {"created": 0, "unreadable_channels": 0, "github_failures": 0}
+    state = {"created": 0, "unreadable_channels": 0, "github_failures": 0,
+             "human_messages": 0, "messages_with_text": 0}
 
     for channel_id in config.channel_ids:
         process_channel(channel_id, config, discord, github, classifier, state)
@@ -750,6 +775,16 @@ def main():
         # workflow silently green while the bot does nothing.
         log("ERROR: none of the configured channels could be read - check the "
             "bot token and its permissions.")
+        return 1
+    if (state["human_messages"] >= EMPTY_CONTENT_FAILURE_COUNT
+            and state["messages_with_text"] == 0):
+        # Discord answers without message text when the Message Content
+        # Intent is disabled - the one misconfiguration that would otherwise
+        # keep the schedule green while the bot can never see a report.
+        log("ERROR: all {} human message(s) across the channels came back "
+            "with empty text - the bot's Message Content Intent is almost "
+            "certainly disabled. Enable it in the Discord developer portal "
+            "(see the README).".format(state["human_messages"]))
         return 1
     if state["github_failures"] and state["created"] == 0:
         # Same principle for the GitHub side: if every issue operation
