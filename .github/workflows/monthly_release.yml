@@ -143,16 +143,18 @@ jobs:
           # The docs are generated from the registered command schemas, so
           # they only need regenerating when the Add-On sources changed
           # (AddOnVersion.hpp changes on every release and does not count).
-          SOURCE_CHANGES=$(git rev-list --count "$LAST_TAG"..HEAD -- \
+          LAST_SOURCE=$(git log -1 --format=%ct "$LAST_TAG"..HEAD -- \
             'archicad-addon/Sources' ':(exclude)archicad-addon/Sources/AddOnVersion.hpp')
-          DOCS_CHANGES=$(git rev-list --count "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
-          if [ "$SOURCE_CHANGES" -gt 0 ] && [ "$DOCS_CHANGES" -eq 0 ]; then
-            echo "::error::The Add-On sources changed since $LAST_TAG but docs/archicad-addon did not." \
-                 "Run the GenerateDocumentation command in Archicad, commit the regenerated docs," \
-                 "then re-run this workflow (or check 'skip_docs_check' to release anyway)."
+          LAST_DOCS=$(git log -1 --format=%ct "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
+          # Order matters, not just counts: docs regenerated early in the
+          # cycle must not mask source changes made after them.
+          if [ -n "$LAST_SOURCE" ] && { [ -z "$LAST_DOCS" ] || [ "$LAST_SOURCE" -gt "$LAST_DOCS" ]; }; then
+            echo "::error::The Add-On sources changed since $LAST_TAG after the last update of" \
+                 "docs/archicad-addon. Run the GenerateDocumentation command in Archicad, commit the" \
+                 "regenerated docs, then re-run this workflow (or check 'skip_docs_check' to release anyway)."
             exit 1
           fi
-          echo "Docs check passed (source changes: $SOURCE_CHANGES, docs changes: $DOCS_CHANGES)."
+          echo "Docs check passed."
 
       - name: Report the dry run
         if: steps.plan.outputs.release == 'true' && inputs.dry_run == true
