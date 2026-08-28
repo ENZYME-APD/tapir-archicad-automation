@@ -257,8 +257,12 @@ class GitHubClient:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
             return None
+        # Both marker forms count: the visible backticked footer line (HTML
+        # comments are not reliably indexed by the issue search) and the
+        # HTML comment kept for issues filed by older versions of the bot.
         marker = re.compile(
-            r"^<!-- {} {} -->$".format(re.escape(ISSUE_MARKER_PREFIX), re.escape(str(message_id))),
+            r"^(?:`{0} {1}`|<!-- {0} {1} -->)$".format(
+                re.escape(ISSUE_MARKER_PREFIX), re.escape(str(message_id))),
             re.MULTILINE)
         for item in response.json().get("items", []):
             if marker.search(item.get("body") or ""):
@@ -332,10 +336,13 @@ class Classifier:
         except (TypeError, ValueError):
             result["confidence"] = 0.0
         result["title"] = str(result.get("title") or "").strip()
-        # HTML comments are stripped so a prompt-injected summary can never
-        # reproduce the dedupe marker on an unquoted line of the issue body.
-        result["summary"] = re.sub(
-            r"<!--.*?(-->|$)", "", str(result.get("summary") or ""), flags=re.DOTALL).strip()
+        # HTML comments are stripped and the marker prefix is broken with a
+        # zero-width space, so a prompt-injected summary can never reproduce
+        # the dedupe marker on an unquoted line of the issue body.
+        summary = re.sub(
+            r"<!--.*?(-->|$)", "", str(result.get("summary") or ""), flags=re.DOTALL)
+        result["summary"] = summary.replace(
+            ISSUE_MARKER_PREFIX, ISSUE_MARKER_PREFIX[:7] + "​" + ISSUE_MARKER_PREFIX[7:]).strip()
         if result.get("type") not in ("bug", "feature"):
             result["type"] = None
         return result
@@ -381,6 +388,7 @@ def build_issue_body(message, channel, classification):
         "_This issue was created automatically from a Discord message by the "
         "Tapir Discord issue bot. The quoted text above is unreviewed user "
         "content._\n"
+        "`{marker} {message_id}`\n"
         "<!-- {marker} {message_id} -->\n"
     ).format(
         summary=neutralize_mentions(classification.get("summary", "").strip()),
