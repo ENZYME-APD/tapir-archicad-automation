@@ -8793,12 +8793,26 @@ var gCommands = [{
                 "type": "string",
                 "enum": ["PublicViewMap", "ProjectMap", "LayoutBook", "PublisherSets"],
                 "description": "The navigator map to retrieve."
+            },
+            "publisherSetName": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The name of the publisher set to retrieve. Used only when navigatorMapId is PublisherSets. Without it the first publisher set is returned."
             }
         },
         "additionalProperties": false,
         "required": ["navigatorMapId"]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "navigatorItemTree": {
+                "$ref": "#/NavigatorItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemTree"]
+    }
             }]
         },{
             "name": "Issue Management Commands",

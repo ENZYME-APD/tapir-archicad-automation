@@ -3972,6 +3972,102 @@ var gSchemaDefinitions = {
             "guid"
         ]
     },
+    "NavigatorItem": {
+        "type": "object",
+        "description": "A navigator item and the subtree below it.",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId"
+            },
+            "type": {
+                "type": "string",
+                "description": "The type of the navigator item.",
+                "enum": [
+                    "UndefinedItem",
+                    "ProjectItem",
+                    "StoryItem",
+                    "SectionItem",
+                    "DetailDrawingItem",
+                    "PerspectiveItem",
+                    "AxonometryItem",
+                    "ListItem",
+                    "ScheduleItem",
+                    "TocItem",
+                    "CameraItem",
+                    "CameraSetItem",
+                    "InfoItem",
+                    "HelpItem",
+                    "LayoutItem",
+                    "MasterLayoutItem",
+                    "BookItem",
+                    "MasterFolderItem",
+                    "SubSetItem",
+                    "TextListItem",
+                    "ElevationItem",
+                    "InteriorElevationItem",
+                    "WorksheetDrawingItem",
+                    "DocumentFrom3DItem",
+                    "FolderItem",
+                    "DrawingItem",
+                    "UnknownItem"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the navigator item."
+            },
+            "prefix": {
+                "type": "string",
+                "description": "The floor number for story items, an empty string for every other item type."
+            },
+            "uiId": {
+                "type": "string",
+                "description": "The identifier shown next to the name on the navigator."
+            },
+            "customUiId": {
+                "type": "boolean",
+                "description": "True when the identifier was typed by hand instead of being inherited from the Project Map source - the View Settings ID \"Custom\" radio button."
+            },
+            "customName": {
+                "type": "boolean",
+                "description": "True when the name was typed by hand instead of being inherited from the Project Map source - the View Settings name \"Custom\" radio button."
+            },
+            "isIndependent": {
+                "type": "boolean",
+                "description": "True when the item is independent, that is when its link to the Project Map is broken."
+            },
+            "children": {
+                "type": "array",
+                "description": "The children of the navigator item. Missing when the item has no children.",
+                "items": {
+                    "$ref": "#/NavigatorItemArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemId",
+            "type",
+            "name",
+            "prefix",
+            "uiId",
+            "customUiId",
+            "customName",
+            "isIndependent"
+        ]
+    },
+    "NavigatorItemArrayItem": {
+        "type": "object",
+        "properties": {
+            "navigatorItem": {
+                "$ref": "#/NavigatorItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItem"
+        ]
+    },
     "Databases": {
         "type": "array",
         "description": "A list of Archicad databases.",
