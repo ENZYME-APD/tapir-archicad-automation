@@ -477,7 +477,7 @@ class ClaudeCodeClassifier(ClassifierBase):
         try:
             completed = subprocess.run(
                 command, input=prompt, capture_output=True, text=True,
-                timeout=600, env=environment, cwd=self.workdir)
+                timeout=300, env=environment, cwd=self.workdir)
         except FileNotFoundError:
             log("ERROR: the 'claude' CLI is not on PATH; install it with "
                 "'npm install -g @anthropic-ai/claude-code' or set ANTHROPIC_API_KEY instead")
