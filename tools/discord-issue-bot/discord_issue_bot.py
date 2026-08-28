@@ -60,6 +60,7 @@ GITHUB_API = "https://api.github.com"
 PROCESSED_MARK = "\N{WHITE HEAVY CHECK MARK}"   # an issue was filed for this message
 SEEN_MARK = "\N{EYES}"                          # classified as not actionable
 ISSUE_MARKER_PREFIX = "discord-message-id:"
+SEARCH_FAILED = object()  # the duplicate search errored; "unknown", not "no issue"
 
 CLASSIFIER_SYSTEM_PROMPT = """\
 You triage messages from the community Discord server of Tapir, an
@@ -256,7 +257,7 @@ class GitHubClient:
         if not response.ok:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
-            return None
+            return SEARCH_FAILED
         # Both marker forms count: the visible backticked footer line (HTML
         # comments are not reliably indexed by the issue search) and the
         # HTML comment kept for issues filed by older versions of the bot.
@@ -446,6 +447,11 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             continue
 
         existing = github.find_issue_for_message(message["id"])
+        if existing is SEARCH_FAILED:
+            # Unknown whether an issue exists - creating one now could file a
+            # duplicate. Leave the message unmarked; the next run retries.
+            log("  message {}: duplicate check unavailable, retrying next run".format(message["id"]))
+            continue
         if existing is not None:
             log("  message {}: issue #{} already exists, marking as processed".format(
                 message["id"], existing["number"]))

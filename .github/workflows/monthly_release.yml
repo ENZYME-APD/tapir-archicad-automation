@@ -228,7 +228,11 @@ jobs:
           # in archicad_addon.yml changes.
           if [ "$ASSETS" -lt 10 ]; then
             echo "::error::Draft release for $VERSION has only $ASSETS of the expected 10 artifacts" \
-                 "(5 Windows .apx + 5 Mac .zip) - not publishing an incomplete release."
+                 "(5 Windows .apx + 5 Mac .zip) - not publishing an incomplete release." \
+                 "If parallel release jobs split the artifacts across duplicate drafts, recover by" \
+                 "deleting every draft for $VERSION on the releases page, re-running the" \
+                 "'Archicad Add-On Build and Release' workflow on tag $VERSION from the Actions tab," \
+                 "and then re-running this workflow."
             exit 1
           fi
           NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
