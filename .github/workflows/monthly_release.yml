@@ -329,12 +329,18 @@ jobs:
           VERSION='${{ steps.plan.outputs.version }}'
           python3 - <<'EOF'
           import json
+          import re
+          # Substitute the version in place instead of rewriting the file
+          # from a template, so any key ever added to it survives releases.
           path = 'tools/package_info.json'
-          version = json.load(open(path))['version']
+          content = open(path).read()
+          version = json.loads(content)['version']
           major, minor, patch = version.split('.')
           next_version = '{}.{}.{}'.format(major, minor, int(patch) + 1)
-          with open(path, 'w') as f:
-              f.write('{\n    "version" : "%s"\n}\n' % next_version)
+          content, count = re.subn(re.escape(version), next_version, content)
+          if count != 1:
+              raise SystemExit('expected the version once in {}, found it {} times'.format(path, count))
+          open(path, 'w').write(content)
           print('Version bumped to', next_version)
           EOF
           python3 tools/update_version.py
