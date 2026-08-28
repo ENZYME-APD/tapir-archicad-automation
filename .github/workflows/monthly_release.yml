@@ -157,15 +157,20 @@ jobs:
           # Ancestry, not timestamps, decides staleness: commit dates
           # misorder long-lived branches merged after a docs regeneration.
           # Sources commits not reachable from the newest docs commit are
-          # exactly the changes the regenerated docs cannot have seen.
+          # exactly the changes the regenerated docs cannot have seen. Git
+          # cannot tell a real regeneration from a hand edit to a docs file,
+          # so any docs/archicad-addon commit resets the anchor - the fix for
+          # a failure here is always a full GenerateDocumentation run, never
+          # touching a single docs file to appease the check.
           DOCS_COMMIT=$(git log -1 --format=%H "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
           SINCE="${DOCS_COMMIT:-$LAST_TAG}"
           STALE=$(git log -1 --format=%H "$SINCE"..HEAD -- \
             'archicad-addon/Sources' ':(exclude)archicad-addon/Sources/AddOnVersion.hpp')
           if [ -n "$STALE" ]; then
             echo "::error::The Add-On sources changed since $LAST_TAG after the last update of" \
-                 "docs/archicad-addon. Run the GenerateDocumentation command in Archicad, commit the" \
-                 "regenerated docs, then re-run this workflow (or check 'skip_docs_check' to release anyway)."
+                 "docs/archicad-addon. Run the full GenerateDocumentation command in Archicad and" \
+                 "commit the regenerated docs (hand-editing a docs file only hides the staleness" \
+                 "from this check), then re-run this workflow (or check 'skip_docs_check' to release anyway)."
             exit 1
           fi
           echo "Docs check passed."
