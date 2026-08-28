@@ -922,8 +922,10 @@ def report_borderline(github, state):
         state["github_failures"] += 1
         return
     if issue is None:
+        # Deliberately without the 'discord' label: the label drives the
+        # daily creation cap, which must count only real reports.
         issue = github.create_issue(
-            BORDERLINE_ISSUE_TITLE, BORDERLINE_ISSUE_BODY, ["discord"])
+            BORDERLINE_ISSUE_TITLE, BORDERLINE_ISSUE_BODY, [])
         if issue is None:
             state["github_failures"] += 1
             return

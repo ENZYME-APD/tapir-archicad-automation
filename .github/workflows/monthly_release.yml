@@ -336,7 +336,9 @@ jobs:
           # If the parallel release jobs raced and created duplicate drafts
           # for this tag, delete the leftovers now that one is published.
           # The published release's own id is excluded so a stale listing
-          # can never delete it.
+          # can never delete it. pipefail so a failed listing fails the
+          # step instead of silently skipping the cleanup.
+          set -o pipefail
           gh api "repos/${{ github.repository }}/releases" \
             --jq ".[] | select(.tag_name == \"$VERSION\" and .draft and .id != $RELEASE_ID) | .id" |
           while read -r DUP_ID; do
