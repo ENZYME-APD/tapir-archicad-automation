@@ -63,6 +63,14 @@ jobs:
         run: |
           set -eu
           VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
+          # Checked before anything irreversible happens: the bump step's
+          # major.minor.patch split would otherwise only fail after the
+          # release is already tagged and published.
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '$VERSION' in tools/package_info.json is not MAJOR.MINOR.PATCH;" \
+                 "fix it before releasing."
+            exit 1
+          fi
 
           if git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null; then
             # The tag can already exist when a previous run failed after
