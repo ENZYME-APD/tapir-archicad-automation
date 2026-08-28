@@ -39,5 +39,19 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         $yakFile = Get-ChildItem *.yak
-        yak push $yakFile.FullName
+        $output = yak push $yakFile.FullName 2>&1
+        $pushExit = $LASTEXITCODE
+        Write-Output $output
+        if ($pushExit -ne 0) {
+          # A resumed release (the Monthly Release workflow re-dispatches
+          # this pipeline when an earlier run failed after the push went
+          # through) must not wedge on the version already being on the
+          # package server - that is the state the push wanted.
+          if ("$output" -match 'already exist') {
+            Write-Output 'This version is already on the package server - treating as success.'
+            cmd /c exit 0
+          } else {
+            exit $pushExit
+          }
+        }
       working-directory: grasshopper-plugin/YakPackage

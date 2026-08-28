@@ -168,9 +168,15 @@ class Config:
             "GITHUB_REPOSITORY",
             "CLAUDE_CODE_OAUTH_TOKEN",
         ) if not os.environ.get(name)]
+        channel_ids = [c.strip() for c in
+                       os.environ.get("DISCORD_CHANNEL_IDS", "").split(",") if c.strip()]
+        if os.environ.get("DISCORD_CHANNEL_IDS") and not channel_ids:
+            # A separator-only value ("," or whitespace) would scan nothing
+            # forever while every run stays green - the silent state this
+            # script otherwise fails loudly on.
+            missing.append("DISCORD_CHANNEL_IDS (set, but contains no channel IDs)")
         if missing:
             return None, missing
-        channel_ids = [c.strip() for c in os.environ["DISCORD_CHANNEL_IDS"].split(",") if c.strip()]
         config = Config(
             discord_token=os.environ["DISCORD_BOT_TOKEN"],
             channel_ids=channel_ids,
