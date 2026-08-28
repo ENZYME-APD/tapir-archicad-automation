@@ -83,6 +83,17 @@ jobs:
             exit 1
           fi
 
+          # The tag trusts that all five version files agree with
+          # package_info.json; verify instead of trusting, or a hand-edited
+          # file ships binaries labeled differently than the tag.
+          python3 tools/update_version.py
+          if ! git diff --quiet; then
+            git diff --stat
+            echo "::error::The version files disagree with tools/package_info.json." \
+                 "Run tools/update_version.py and commit the result before releasing."
+            exit 1
+          fi
+
           if git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null; then
             # The tag can already exist when a previous run failed after
             # tagging (a build broke, so neither publish nor version bump

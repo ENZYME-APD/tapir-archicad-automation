@@ -173,7 +173,7 @@ class DiscordClient:
             "User-Agent": "TapirDiscordIssueBot (https://github.com/ENZYME-APD/tapir-archicad-automation)",
         })
 
-    def _request(self, method, path, **kwargs):
+    def _request(self, method, path, idempotent=True, **kwargs):
         url = DISCORD_API + path
         response = _FailedRequest("request not attempted")
         for attempt in range(3):
@@ -182,6 +182,10 @@ class DiscordClient:
             except requests.RequestException as error:
                 log("WARNING: Discord request failed: {}".format(error))
                 response = _FailedRequest(error)
+                if not idempotent:
+                    # A read timeout may mean Discord already processed the
+                    # request; re-sending could double-post.
+                    return response
                 time.sleep(2)
                 continue
             if response.status_code == 429:
@@ -267,6 +271,7 @@ class DiscordClient:
     def reply(self, channel_id, message_id, content):
         response = self._request(
             "POST", "/channels/{}/messages".format(channel_id),
+            idempotent=False,
             json={
                 "content": content,
                 "message_reference": {"message_id": message_id},
