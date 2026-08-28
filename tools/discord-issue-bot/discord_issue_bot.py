@@ -40,11 +40,11 @@ Configuration (environment variables):
   CLAUDE_MODEL          Model used for classification. Default: claude-opus-5
                         with an API key; the Claude Code CLI's own default
                         with an OAuth token.
-  LOOKBACK_MINUTES      How far back to scan. Default: 180. Keep this much
-                        larger than the schedule interval - scheduled runs
-                        are routinely delayed or skipped under load - and
-                        the reaction/search dedupe makes the overlap
-                        harmless.
+  LOOKBACK_MINUTES      How far back to scan. Default: 1440 (a day), so
+                        even a multi-hour scheduler outage cannot lose
+                        messages. The wide overlap is nearly free: already
+                        classified messages carry a reaction and are
+                        skipped without another model call.
   MAX_ISSUES_PER_RUN    Safety cap on created issues. Default: 5.
   MIN_CONFIDENCE        Classifier confidence needed to file. Default: 0.7.
   MIN_MESSAGE_LENGTH    Skip shorter messages. Default: 25.
@@ -151,7 +151,7 @@ class Config:
             repository=os.environ["GITHUB_REPOSITORY"],
             use_claude_code=bool(os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")),
             model=os.environ.get("CLAUDE_MODEL", ""),
-            lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES", "180")),
+            lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES", "1440")),
             max_issues_per_run=int(os.environ.get("MAX_ISSUES_PER_RUN", "5")),
             min_confidence=float(os.environ.get("MIN_CONFIDENCE", "0.7")),
             min_message_length=int(os.environ.get("MIN_MESSAGE_LENGTH", "25")),
@@ -226,12 +226,12 @@ class DiscordClient:
         None when the channel could not be read at all.
 
         Paginates past the API's 100-message page size so a busy channel
-        does not silently lose the oldest part of a burst; capped at ten
-        pages as a safety limit.
+        does not silently lose the oldest part of a burst; capped at twenty
+        pages (2000 messages) as a safety limit.
         """
         messages = []
         before = None
-        for page_index in range(10):
+        for page_index in range(20):
             params = {"limit": 100}
             if before is not None:
                 params["before"] = before

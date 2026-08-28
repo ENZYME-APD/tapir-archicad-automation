@@ -9,7 +9,7 @@ It runs as a scheduled GitHub Actions workflow
 ([`.github/workflows/discord_issue_bot.yml`](../../.github/workflows/discord_issue_bot.yml)),
 so no server hosting is needed. Every run:
 
-1. Fetches the recent messages (default: last 3 hours) of each configured
+1. Fetches the recent messages (default: last 24 hours) of each configured
    channel over the Discord REST API.
 2. Asks Claude whether each message is an actionable Tapir bug report or
    feature request. Casual chat, questions and help requests are ignored.
@@ -90,7 +90,7 @@ important ones and the rest fall back to defaults:
 | Variable             | Default         | Meaning                                          |
 | -------------------- | --------------- | ------------------------------------------------ |
 | `CLAUDE_MODEL`       | (backend default) | model used to classify messages; defaults to `claude-opus-5` with an API key, the Claude Code CLI default with an OAuth token |
-| `LOOKBACK_MINUTES`   | `180`           | how far back each run scans (keep it much larger than the schedule interval; scheduled runs can be delayed) |
+| `LOOKBACK_MINUTES`   | `1440`          | how far back each run scans; the wide overlap is nearly free because marked messages are skipped without a model call |
 | `MAX_ISSUES_PER_RUN` | `5`             | safety cap on issues created per run             |
 | `MIN_CONFIDENCE`     | `0.7`           | classifier confidence required to file an issue  |
 | `MIN_MESSAGE_LENGTH` | `25`            | messages shorter than this are never considered  |

@@ -40,6 +40,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          # The job feeds untrusted Discord content to an LLM; the script
+          # only reads its own source, so no git credential needs to stay
+          # in .git/config.
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
