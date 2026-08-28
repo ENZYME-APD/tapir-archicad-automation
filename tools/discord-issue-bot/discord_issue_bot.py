@@ -365,12 +365,22 @@ class ClassifierBase:
             if text is None:
                 self.failed_batches += 1
                 continue
-            self.completed_batches += 1
             chunk_ids = {c["id"] for c in chunk}
+            matched = 0
             for entry in self._parse_entries(text):
                 entry_id = str(entry.get("id") or "")
                 if entry_id in chunk_ids:
                     results[entry_id] = entry
+                    matched += 1
+            # An answer with no usable entries for a non-empty chunk (prose
+            # instead of JSON, truncated output) is a failure too, or a
+            # systematic format break would stay green forever.
+            if matched:
+                self.completed_batches += 1
+            else:
+                log("WARNING: classifier answer contained no usable entries "
+                    "for a batch of {} message(s)".format(len(chunk)))
+                self.failed_batches += 1
         return results
 
     @staticmethod
