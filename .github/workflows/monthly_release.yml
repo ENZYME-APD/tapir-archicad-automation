@@ -100,7 +100,7 @@ jobs:
             # happened). When it still points at HEAD, resume that release
             # instead of failing; anything else is a real inconsistency.
             if [ "$(git rev-parse "refs/tags/$VERSION^{commit}")" = "$(git rev-parse HEAD)" ]; then
-              LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*' "$VERSION"^)
+              LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' "$VERSION"^)
               echo "Tag $VERSION already points at HEAD - resuming the failed release (previous tag: $LAST_TAG)."
               echo "release=true" >> "$GITHUB_OUTPUT"
               echo "tag_exists=true" >> "$GITHUB_OUTPUT"
@@ -122,7 +122,7 @@ jobs:
               exit 1
             fi
           else
-            LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*' HEAD)
+            LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' HEAD)
             echo "Current version: $VERSION, last release tag: $LAST_TAG"
             # Every release ends with the "Update version after release"
             # commit on main, so a plain commit count since the last tag is
