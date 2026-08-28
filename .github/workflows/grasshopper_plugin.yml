@@ -48,12 +48,21 @@ jobs:
           # through) must not wedge on the version already being on the
           # package server - that is the state the push wanted. The pattern
           # covers the likely duplicate-version wordings (including a plain
-          # HTTP 409); if the server phrases it differently the step still
-          # fails safe (no double publish) - then extend this pattern with
-          # the actual wording, do not remove the guard.
+          # HTTP 409), but wording alone must not green a real failure:
+          # the version has to actually be live on the server. Any other
+          # failure, or an unconfirmed match, still fails the step - then
+          # extend the pattern or check, do not remove the guard.
           if ("$output" -match 'already exist|conflict|\b409\b') {
-            Write-Output 'This version is already on the package server - treating as success.'
-            cmd /c exit 0
+            $version = @(Select-String -Path manifest.yml -Pattern '^\s*version:\s*(\S+)')[0].Matches[0].Groups[1].Value
+            $live = yak search tapir 2>&1
+            Write-Output $live
+            if ("$live" -match [regex]::Escape($version)) {
+              Write-Output "Version $version is already live on the package server - treating the rejected push as success."
+              cmd /c exit 0
+            } else {
+              Write-Output "The push failed and version $version is not live on the package server - a real failure."
+              exit $pushExit
+            }
           } else {
             exit $pushExit
           }
