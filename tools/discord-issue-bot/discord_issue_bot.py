@@ -497,7 +497,12 @@ class GitHubClient:
                     return item
             if len(items) < 100:
                 return None
-        return None
+        # Five full pages without a verdict is "unknown", not "absent":
+        # treating it as absent would create a duplicate rolling issue on
+        # every run once 500+ open issues sit newer than the rolling one.
+        log("WARNING: gave up looking for the borderline-reports issue "
+            "after 500 open issues")
+        return SEARCH_FAILED
 
     def add_issue_comment(self, issue_number, body):
         url = GITHUB_API + "/repos/{}/issues/{}/comments".format(
