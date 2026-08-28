@@ -11,8 +11,12 @@ so no server hosting is needed. Every run:
 
 1. Fetches the recent messages (default: last 3 hours) of each configured
    channel over the Discord REST API.
-2. Asks the Claude API whether a message is an actionable Tapir bug report or
+2. Asks Claude whether each message is an actionable Tapir bug report or
    feature request. Casual chat, questions and help requests are ignored.
+   Classification runs through the Claude Code CLI on a Pro/Max
+   subscription (`CLAUDE_CODE_OAUTH_TOKEN`, the same credential the
+   repository's other Claude workflows use), or through the Claude API when
+   only an `ANTHROPIC_API_KEY` is configured.
 3. Creates a GitHub issue labelled `bug` or `enhancement` plus `discord`,
    containing a summary, the quoted original message and a link back to it.
 4. Adds a ✅ reaction to the Discord message (this is how the bot remembers it
@@ -44,16 +48,21 @@ issue body).
 
 Under *Settings → Secrets and variables → Actions* add:
 
-| Kind     | Name                  | Value                                        |
-| -------- | --------------------- | -------------------------------------------- |
-| Secret   | `DISCORD_BOT_TOKEN`   | the bot token from step 1                    |
-| Secret   | `ANTHROPIC_API_KEY`   | a Claude API key (used to classify messages) |
-| Variable | `DISCORD_CHANNEL_IDS` | comma-separated channel IDs to watch         |
+| Kind     | Name                      | Value                                    |
+| -------- | ------------------------- | ---------------------------------------- |
+| Secret   | `DISCORD_BOT_TOKEN`       | the bot token from step 1                |
+| Secret   | `CLAUDE_CODE_OAUTH_TOKEN` | Claude Code OAuth token (run `claude setup-token` locally) — classification then draws on the Pro/Max subscription, like the repo's other Claude workflows |
+| Variable | `DISCORD_CHANNEL_IDS`     | comma-separated channel IDs to watch     |
+
+Instead of the OAuth token you can set the secret `ANTHROPIC_API_KEY` (a
+Claude API key from console.anthropic.com); the bot then calls the Claude
+API directly and bills per token. When both are present the OAuth token
+wins.
 
 The workflow uses the built-in `GITHUB_TOKEN` to create issues; no extra
-GitHub credential is needed. If any of the three values above is missing the
-scheduled run exits without doing anything, so enabling the workflow before
-finishing the setup is harmless.
+GitHub credential is needed. While the Discord values or both Claude
+credentials are missing, the scheduled run exits without doing anything, so
+enabling the workflow before finishing the setup is harmless.
 
 ### 3. Try it
 
@@ -71,7 +80,7 @@ important ones and the rest fall back to defaults:
 
 | Variable             | Default         | Meaning                                          |
 | -------------------- | --------------- | ------------------------------------------------ |
-| `CLAUDE_MODEL`       | `claude-opus-5` | model used to classify messages                  |
+| `CLAUDE_MODEL`       | (backend default) | model used to classify messages; defaults to `claude-opus-5` with an API key, the Claude Code CLI default with an OAuth token |
 | `LOOKBACK_MINUTES`   | `180`           | how far back each run scans (keep it much larger than the schedule interval; scheduled runs can be delayed) |
 | `MAX_ISSUES_PER_RUN` | `5`             | safety cap on issues created per run             |
 | `MIN_CONFIDENCE`     | `0.7`           | classifier confidence required to file an issue  |
@@ -84,6 +93,6 @@ Running it locally works too:
 pip install -r tools/discord-issue-bot/requirements.txt
 export DISCORD_BOT_TOKEN=... DISCORD_CHANNEL_IDS=... \
        GITHUB_TOKEN=... GITHUB_REPOSITORY=ENZYME-APD/tapir-archicad-automation \
-       ANTHROPIC_API_KEY=... DRY_RUN=true
+       CLAUDE_CODE_OAUTH_TOKEN=... DRY_RUN=true   # or ANTHROPIC_API_KEY=...
 python tools/discord-issue-bot/discord_issue_bot.py
 ```

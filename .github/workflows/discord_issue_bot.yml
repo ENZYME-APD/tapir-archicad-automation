@@ -44,13 +44,22 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install -r tools/discord-issue-bot/requirements.txt
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          pip install -r tools/discord-issue-bot/requirements.txt
+          # With an OAuth token the classification runs through the Claude
+          # Code CLI on the Pro/Max subscription instead of an API key.
+          if [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            npm install -g @anthropic-ai/claude-code
+          fi
 
       - name: Scan Discord channels
         run: python tools/discord-issue-bot/discord_issue_bot.py
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_IDS: ${{ vars.DISCORD_CHANNEL_IDS }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
