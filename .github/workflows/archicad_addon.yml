@@ -10,6 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
+  # When adding or removing an Archicad version in the matrices below, also
+  # update EXPECTED_ASSETS in monthly_release.yml - it is the number of
+  # release assets (Win + Mac per version) the monthly release waits for
+  # before publishing.
   build_win:
     strategy:
       matrix:
