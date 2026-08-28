@@ -33,6 +33,10 @@ on:
         description: Release even if the generated docs look stale
         type: boolean
         default: false
+      dry_run:
+        description: Only report what would be released - no tag, builds, publish or version bump
+        type: boolean
+        default: false
 
 concurrency:
   group: monthly-release
@@ -150,8 +154,15 @@ jobs:
           fi
           echo "Docs check passed (source changes: $SOURCE_CHANGES, docs changes: $DOCS_CHANGES)."
 
+      - name: Report the dry run
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run == true
+        run: |
+          echo "DRY RUN: would release **${{ steps.plan.outputs.version }}**" \
+               "(previous tag ${{ steps.plan.outputs.last_tag }}); no tag, build," \
+               "publish or version bump was performed." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Create and push the release tag
-        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.tag_exists != 'true'
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true && steps.plan.outputs.tag_exists != 'true'
         run: |
           set -eu
           VERSION='${{ steps.plan.outputs.version }}'
@@ -159,7 +170,7 @@ jobs:
           git push origin "refs/tags/$VERSION"
 
       - name: Build the release artifacts
-        if: steps.plan.outputs.release == 'true'
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -255,7 +266,7 @@ jobs:
           done
 
       - name: Publish the release
-        if: steps.plan.outputs.release == 'true'
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -307,7 +318,7 @@ jobs:
           echo "Published release **$VERSION** with $ASSETS artifact(s)." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Increment the version for the next cycle
-        if: steps.plan.outputs.release == 'true'
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
         run: |
           set -eu
           python3 - <<'EOF'
