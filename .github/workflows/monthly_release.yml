@@ -330,6 +330,22 @@ jobs:
                   grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs \
                   grasshopper-plugin/YakPackage/manifest.yml
           git commit -m "Update version after release"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          # main may have moved during the multi-hour build; retry the
+          # rebase-and-push a few times before giving up.
+          PUSHED=false
+          for _ in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              PUSHED=true
+              break
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          if [ "$PUSHED" != "true" ]; then
+            echo "::error::Release $VERSION is published; only the version bump is missing." \
+                 "Push it manually: set the next version in tools/package_info.json, run" \
+                 "tools/update_version.py, commit to main. Until then the next scheduled run" \
+                 "stops with the 'already published' error rather than re-releasing."
+            exit 1
+          fi
           echo "Started development of version **$NEXT_VERSION**." >> "$GITHUB_STEP_SUMMARY"
