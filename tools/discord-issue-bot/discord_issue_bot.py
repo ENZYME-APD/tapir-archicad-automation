@@ -646,12 +646,10 @@ def borderline_line(message, channel, classification, confidence):
         confidence, title, message_jump_url(message, channel))
 
 
-def note_borderline(line, state):
-    """Record an actionable-but-under-threshold message: it is about to be
-    marked as seen and never revisited, so this is the maintainer's only
-    trace of a possibly too-cautious call. Listed in the workflow run's
-    step summary and collected for the rolling borderline-reports issue."""
-    state["borderline"].append(line)
+def append_summary(line):
+    """Append one markdown line to the workflow run's step summary, where
+    it is visible from the runs list without opening the logs. A no-op
+    outside GitHub Actions; a write failure is logged, never fatal."""
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not summary_path:
         return
@@ -660,6 +658,15 @@ def note_borderline(line, state):
             stream.write(line + "\n")
     except OSError as error:
         log("  could not write the step summary: {}".format(error))
+
+
+def note_borderline(line, state):
+    """Record an actionable-but-under-threshold message: it is about to be
+    marked as seen and never revisited, so this is the maintainer's only
+    trace of a possibly too-cautious call. Listed in the workflow run's
+    step summary and collected for the rolling borderline-reports issue."""
+    state["borderline"].append(line)
+    append_summary(line)
 
 
 def is_candidate(message, config):
@@ -725,6 +732,10 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         # name would come out wrong; treat it like an unreadable channel
         # and let the next run retry with correct data.
         state["unreadable_channels"] += 1
+        # In the summary too: the run only fails when every channel is
+        # unreadable, so a single broken ID must not hide in green logs.
+        append_summary("- \N{WARNING SIGN} Channel {} could not be read - "
+                       "check the ID and the bot's access.".format(channel_id))
         return
     channel_name = channel.get("name", channel_id)
     since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
@@ -732,6 +743,9 @@ def process_channel(channel_id, config, discord, github, classifier, state):
     messages = discord.recent_messages(channel_id, since)
     if messages is None:
         state["unreadable_channels"] += 1
+        append_summary("- \N{WARNING SIGN} Channel #{} ({}) is not readable - "
+                       "check the bot's Read Message History permission.".format(
+                           str(channel_name).replace("`", "'"), channel_id))
         return
     log("Channel #{}: {} message(s) in the last {} minutes".format(
         channel_name, len(messages), config.lookback_minutes))
