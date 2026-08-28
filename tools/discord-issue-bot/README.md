@@ -134,3 +134,10 @@ export DISCORD_BOT_TOKEN=... DISCORD_CHANNEL_IDS=... \
        CLAUDE_CODE_OAUTH_TOKEN=... DRY_RUN=true
 python tools/discord-issue-bot/discord_issue_bot.py
 ```
+
+The offline unit tests (no Discord, GitHub or Claude access needed) run
+with:
+
+```bash
+cd tools/discord-issue-bot && python -m unittest test_discord_issue_bot
+```
