@@ -195,9 +195,12 @@ jobs:
             # after the delete-the-stale-tag recovery, a run for the old
             # commit under the same tag name must not suppress the rebuild.
             RUN_ID=''
+            # Among this commit's runs, a success anywhere wins over the
+            # newest run: a later failed re-run must not mask a completed
+            # yak publish and trigger a second one.
             PRIOR=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
               --limit 10 --json databaseId,status,conclusion,headSha \
-              --jq "[.[] | select(.headSha == \"$HEAD_SHA\")] | .[0] // empty")
+              --jq "[.[] | select(.headSha == \"$HEAD_SHA\")] | (map(select(.conclusion == \"success\")) + .) | .[0] // empty")
             if [ -n "$PRIOR" ]; then
               PRIOR_STATUS=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
               PRIOR_ID=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['databaseId'])")
