@@ -194,6 +194,13 @@ jobs:
           set -eu
           VERSION='${{ steps.plan.outputs.version }}'
           LAST_TAG='${{ steps.plan.outputs.last_tag }}'
+          # A resumed run may have failed after publishing (e.g. the version
+          # bump push was rejected); the endpoint below only returns
+          # published releases, so a hit means publishing is already done.
+          if gh api "repos/${{ github.repository }}/releases/tags/$VERSION" --jq '.id' > /dev/null 2>&1; then
+            echo "Release $VERSION is already published - continuing to the version bump." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           # The Add-On pipeline collects every artifact on one draft release;
           # pick the draft for this tag (the one with the most assets, in the
           # unlikely case parallel jobs raced and created more than one).
