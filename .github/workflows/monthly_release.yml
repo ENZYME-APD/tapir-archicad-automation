@@ -321,6 +321,7 @@ jobs:
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
         run: |
           set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
           python3 - <<'EOF'
           import json
           path = 'tools/package_info.json'
