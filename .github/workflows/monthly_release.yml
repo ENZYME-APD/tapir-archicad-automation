@@ -143,12 +143,15 @@ jobs:
           # The docs are generated from the registered command schemas, so
           # they only need regenerating when the Add-On sources changed
           # (AddOnVersion.hpp changes on every release and does not count).
-          LAST_SOURCE=$(git log -1 --format=%ct "$LAST_TAG"..HEAD -- \
+          # Ancestry, not timestamps, decides staleness: commit dates
+          # misorder long-lived branches merged after a docs regeneration.
+          # Sources commits not reachable from the newest docs commit are
+          # exactly the changes the regenerated docs cannot have seen.
+          DOCS_COMMIT=$(git log -1 --format=%H "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
+          SINCE="${DOCS_COMMIT:-$LAST_TAG}"
+          STALE=$(git log -1 --format=%H "$SINCE"..HEAD -- \
             'archicad-addon/Sources' ':(exclude)archicad-addon/Sources/AddOnVersion.hpp')
-          LAST_DOCS=$(git log -1 --format=%ct "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
-          # Order matters, not just counts: docs regenerated early in the
-          # cycle must not mask source changes made after them.
-          if [ -n "$LAST_SOURCE" ] && { [ -z "$LAST_DOCS" ] || [ "$LAST_SOURCE" -gt "$LAST_DOCS" ]; }; then
+          if [ -n "$STALE" ]; then
             echo "::error::The Add-On sources changed since $LAST_TAG after the last update of" \
                  "docs/archicad-addon. Run the GenerateDocumentation command in Archicad, commit the" \
                  "regenerated docs, then re-run this workflow (or check 'skip_docs_check' to release anyway)."

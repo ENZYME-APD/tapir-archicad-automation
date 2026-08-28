@@ -592,9 +592,17 @@ def process_channel(channel_id, config, discord, github, classifier, state):
     if not candidates:
         return
 
-    classifications = classifier.classify_batch(candidates)
+    # Classify and act chunk by chunk: a run killed mid-way (the job
+    # timeout on a large backlog) keeps the marks and issues of every
+    # chunk already processed, bounding the rework to one batch.
+    classifications = {}
+    classified_until = 0
 
-    for candidate in candidates:
+    for index, candidate in enumerate(candidates):
+        if index >= classified_until:
+            chunk = candidates[index:index + CLASSIFIER_BATCH_SIZE]
+            classifications.update(classifier.classify_batch(chunk))
+            classified_until = index + len(chunk)
         message = messages_by_id[candidate["id"]]
         classification = classifications.get(candidate["id"])
         if classification is None:
