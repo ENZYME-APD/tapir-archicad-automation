@@ -60,6 +60,8 @@ jobs:
 
       - name: Decide whether to release
         id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
@@ -82,12 +84,21 @@ jobs:
               echo "Tag $VERSION already points at HEAD - resuming the failed release (previous tag: $LAST_TAG)."
               echo "release=true" >> "$GITHUB_OUTPUT"
               echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            elif gh api "repos/${{ github.repository }}/releases/tags/$VERSION" --jq '.id' > /dev/null 2>&1; then
+              # A published release exists, so the version has shipped - the
+              # version-bump push after it must have failed. Deleting the tag
+              # would be wrong here (it would rebuild newer commits under a
+              # shipped version number).
+              echo "::error::Tag $VERSION is already published but package_info.json still says" \
+                   "$VERSION - the post-release version bump likely failed to push. Bump the" \
+                   "version (tools/update_version.py), commit it to main, and the next run" \
+                   "releases the new version."
+              exit 1
             else
-              echo "::error::Tag $VERSION already exists on another commit but package_info.json" \
-                   "still says $VERSION. If a failed release was followed by new commits on main," \
-                   "delete the tag (git push origin :refs/tags/$VERSION) so the next run re-tags" \
-                   "the current HEAD under the same version; only bump the version" \
-                   "(tools/update_version.py) if $VERSION really has shipped."
+              echo "::error::Tag $VERSION exists on another commit but was never published -" \
+                   "probably a failed release followed by new commits. Delete the tag" \
+                   "(git push origin :refs/tags/$VERSION) so the next run re-tags the current" \
+                   "HEAD under the same version."
               exit 1
             fi
           else
@@ -282,8 +293,10 @@ jobs:
             -f name="$VERSION" -f body="$NOTES" -F draft=false -f make_latest=true > /dev/null
           # If the parallel release jobs raced and created duplicate drafts
           # for this tag, delete the leftovers now that one is published.
+          # The published release's own id is excluded so a stale listing
+          # can never delete it.
           gh api "repos/${{ github.repository }}/releases" \
-            --jq ".[] | select(.tag_name == \"$VERSION\" and .draft) | .id" |
+            --jq ".[] | select(.tag_name == \"$VERSION\" and .draft and .id != $RELEASE_ID) | .id" |
           while read -r DUP_ID; do
             echo "Deleting duplicate draft release $DUP_ID."
             gh api --method DELETE "repos/${{ github.repository }}/releases/$DUP_ID"
