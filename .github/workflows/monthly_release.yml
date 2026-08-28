@@ -49,12 +49,12 @@ env:
 
 jobs:
   release:
-    # Scheduled runs should not fire on forks, and a release may only ever
-    # be cut from main - a dispatch on another ref would tag that ref and
-    # push its commits to main in the version bump step.
-    if: >
-      (github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch') &&
-      github.ref == 'refs/heads/main'
+    # Scheduled runs should not fire on forks. The main-only rule lives in
+    # the first step below, not here: an if-skipped job shows as "skipped"
+    # with nothing saying why, and picking a tag in the dispatch dialog is
+    # an easy mistake (the pipeline workflows are legitimately dispatched
+    # on tags).
+    if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     permissions:
@@ -62,6 +62,18 @@ jobs:
       actions: write    # dispatch the two release pipelines
 
     steps:
+      - name: Require main
+        # A release may only ever be cut from main - a dispatch on another
+        # ref would tag that ref and push its commits to main in the
+        # version bump step.
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::The Monthly Release runs only on main (dispatched on" \
+               "'${{ github.ref }}'). To resume a failed release, dispatch the" \
+               "two pipeline workflows on the tag instead - this workflow" \
+               "always runs from main."
+          exit 1
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
