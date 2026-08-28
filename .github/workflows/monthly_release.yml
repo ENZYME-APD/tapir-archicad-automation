@@ -68,7 +68,16 @@ jobs:
             exit 1
           fi
 
-          COMMITS=$(git rev-list --count "$LAST_TAG"..HEAD)
+          # Every release ends with the "Update version after release" commit
+          # on main, so a plain commit count since the last tag is always at
+          # least 1. Only commits touching something other than the five
+          # version files count as releasable changes.
+          COMMITS=$(git rev-list --count "$LAST_TAG"..HEAD -- . \
+            ':(exclude)tools/package_info.json' \
+            ':(exclude)archicad-addon/Sources/AddOnVersion.hpp' \
+            ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj' \
+            ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs' \
+            ':(exclude)grasshopper-plugin/YakPackage/manifest.yml')
           if [ "$COMMITS" -eq 0 ]; then
             echo "No commits since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
             echo "release=false" >> "$GITHUB_OUTPUT"
