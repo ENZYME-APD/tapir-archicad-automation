@@ -131,9 +131,14 @@ jobs:
               exit 1
             else
               echo "::error::Tag $VERSION exists on another commit but was never published -" \
-                   "probably a failed release followed by new commits. Delete the tag" \
-                   "(git push origin :refs/tags/$VERSION) so the next run re-tags the current" \
-                   "HEAD under the same version."
+                   "probably a failed release followed by new commits. First check with" \
+                   "'yak search tapir' whether $VERSION already reached the Rhino package" \
+                   "manager (a run can fail after the Grasshopper pipeline pushed): if it did," \
+                   "bump the version (tools/update_version.py), commit to main and let the next" \
+                   "run release the new version - re-tagging would pair the old build on the" \
+                   "package server with new binaries on GitHub. Only when $VERSION is not on" \
+                   "the package server, delete the tag (git push origin :refs/tags/$VERSION)" \
+                   "so the next run re-tags the current HEAD under the same version."
               exit 1
             fi
           else
