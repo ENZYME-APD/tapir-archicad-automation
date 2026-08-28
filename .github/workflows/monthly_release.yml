@@ -430,8 +430,9 @@ jobs:
           if [ "$PUSHED" != "true" ]; then
             echo "::error::Release $VERSION is published; only the version bump is missing." \
                  "Push it manually: set the next version in tools/package_info.json, run" \
-                 "tools/update_version.py, commit to main. Until then the next scheduled run" \
-                 "stops with the 'already published' error rather than re-releasing."
+                 "tools/update_version.py, commit to main. (While main has not moved, a re-run" \
+                 "of this workflow resumes and retries the bump itself; once new commits land," \
+                 "the next run stops with the 'already published' error instead of re-releasing.)"
             exit 1
           fi
           echo "Started development of version **$NEXT_VERSION**." >> "$GITHUB_STEP_SUMMARY"
