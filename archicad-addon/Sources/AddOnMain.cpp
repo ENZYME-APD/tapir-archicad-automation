@@ -654,7 +654,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
             propertyCommands, "1.5.4",
-            "Updates the expression(s) of existing expression-based Custom Property Definitions."
+            "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property."
         );
         AddCommandGroup (propertyCommands);
     }
