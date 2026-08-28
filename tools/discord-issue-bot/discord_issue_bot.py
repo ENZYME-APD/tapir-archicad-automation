@@ -176,12 +176,10 @@ class Config:
             github_token=os.environ["GITHUB_TOKEN"],
             repository=os.environ["GITHUB_REPOSITORY"],
             model=os.environ.get("CLAUDE_MODEL", ""),
-            # `or` treats a present-but-empty variable (an unfilled workflow
-            # input) the same as an absent one.
-            lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES") or "1440"),
-            max_issues_per_run=int(os.environ.get("MAX_ISSUES_PER_RUN") or "5"),
-            min_confidence=float(os.environ.get("MIN_CONFIDENCE") or "0.7"),
-            min_message_length=int(os.environ.get("MIN_MESSAGE_LENGTH") or "25"),
+            lookback_minutes=_numeric_env("LOOKBACK_MINUTES", "1440", int),
+            max_issues_per_run=_numeric_env("MAX_ISSUES_PER_RUN", "5", int),
+            min_confidence=_numeric_env("MIN_CONFIDENCE", "0.7", float),
+            min_message_length=_numeric_env("MIN_MESSAGE_LENGTH", "25", int),
             dry_run=os.environ.get("DRY_RUN", "").strip().lower() in ("1", "true", "yes"),
         )
         return config, []
@@ -189,6 +187,18 @@ class Config:
 
 def log(message):
     print(message, flush=True)
+
+
+def _numeric_env(name, default, parse):
+    """A numeric setting from the environment, with a clean error instead
+    of a traceback for a mistyped value. `or` treats a present-but-empty
+    variable (an unfilled workflow input) the same as an absent one."""
+    value = os.environ.get(name) or default
+    try:
+        return parse(value)
+    except ValueError:
+        log("ERROR: {} must be a number, got {!r}".format(name, value))
+        raise SystemExit(1)
 
 
 class _FailedRequest:

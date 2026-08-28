@@ -28,7 +28,9 @@ so no server hosting is needed. Every run:
    **Borderline Discord reports** issue (and in the workflow run's
    summary) so a maintainer can file them by hand if the classifier was
    too cautious. Closing that issue archives it; the bot opens a fresh
-   one when needed.
+   one when needed. Only calls with confidence 0.5 or higher are
+   recorded there — an actionable call below 0.5 leaves just a log line
+   before the 👀 mark.
 
 Duplicates are prevented twice over: a message carrying the bot's own ✅ or
 👀 reaction is skipped, and before creating an issue the bot searches
