@@ -32,6 +32,12 @@ issue body).
 Only regular channel messages are scanned — threads and forum posts are
 not read, so reports posted there will not become issues.
 
+Because the issues are created with the workflow's own `GITHUB_TOKEN`,
+they do not trigger other workflows: the automatic Claude issue triage
+never runs on them (the reporter is on Discord and would not see its
+answer anyway). A maintainer can still apply the `claude-fix` label to
+have a fix attempted, exactly as for hand-written issues.
+
 ## One-time setup
 
 ### 1. Create the Discord bot
