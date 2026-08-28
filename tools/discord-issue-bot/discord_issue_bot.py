@@ -70,6 +70,10 @@ GITHUB_API = "https://api.github.com"
 PROCESSED_MARK = "\N{WHITE HEAVY CHECK MARK}"   # an issue was filed for this message
 SEEN_MARK = "\N{EYES}"                          # classified as not actionable
 ISSUE_MARKER_PREFIX = "discord-message-id:"
+# The only author the bot ever files issues as (issues created with the
+# workflow's GITHUB_TOKEN); dedupe hits from any other author are hostile
+# or at least not the bot's and must not suppress a report.
+BOT_ISSUE_AUTHOR = "github-actions[bot]"
 SEARCH_FAILED = object()  # the duplicate search errored; "unknown", not "no issue"
 
 CLASSIFIER_INSTRUCTIONS = """\
@@ -414,6 +418,14 @@ class GitHubClient:
                 re.escape(ISSUE_MARKER_PREFIX), re.escape(str(message_id))),
             re.MULTILINE)
         for item in response.json().get("items", []):
+            # Only issues the bot itself authored count: anyone can create
+            # an issue and paste a marker on an unquoted line, which would
+            # otherwise suppress that report forever. In GitHub Actions the
+            # bot's issues are authored by github-actions[bot]; issues filed
+            # from a local run under a personal token are not recognized
+            # (the reaction mark still prevents duplicates there).
+            if item.get("user", {}).get("login") != BOT_ISSUE_AUTHOR:
+                continue
             if marker.search(item.get("body") or ""):
                 return item
         return None
