@@ -596,8 +596,11 @@ class ClassifierBase:
         # non-finite confidence must not slip past the gate.
         result["confidence"] = confidence if math.isfinite(confidence) else 0.0
         # GitHub rejects titles over 256 characters; nothing forces the
-        # model (or an injected message) to honor the asked-for 80.
-        result["title"] = str(result.get("title") or "").strip()[:250]
+        # model (or an injected message) to honor the asked-for 80. Split
+        # and rejoin also collapses newlines and control whitespace, which
+        # would otherwise hand injected text a fresh line start in logs and
+        # summaries - the position every other sanitizer here denies.
+        result["title"] = " ".join(str(result.get("title") or "").split())[:250]
         # HTML comments are stripped and the marker prefix is broken with a
         # zero-width space, so a prompt-injected summary can never reproduce
         # the dedupe marker on an unquoted line of the issue body.
