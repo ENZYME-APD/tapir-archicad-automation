@@ -26,8 +26,11 @@ folders (`AC25`–`AC28`) for older versions.
 The Add-On code is based on Tibor Lorantfy's original
 [archicad-additional-json-commands](https://github.com/tlorantfy/archicad-additional-json-commands).
 
-Current version: **1.5.4** (see [archicad-addon/Sources/AddOnVersion.hpp](archicad-addon/Sources/AddOnVersion.hpp)
-and [tools/package_info.json](tools/package_info.json) — keep these in sync).
+The current version is defined in
+[archicad-addon/Sources/AddOnVersion.hpp](archicad-addon/Sources/AddOnVersion.hpp)
+and [tools/package_info.json](tools/package_info.json) — keep these in sync.
+It is bumped automatically after each release by the monthly release
+workflow, so it is not repeated here.
 
 ## Repository layout
 
