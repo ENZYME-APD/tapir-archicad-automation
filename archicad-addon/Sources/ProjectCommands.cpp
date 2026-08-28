@@ -594,6 +594,9 @@ static bool GetNewFirstStoryIndex (const GS::Array<GS::ObjectState>& stories, co
     return true;
 }
 
+// Two story levels closer to each other than this are considered to be the same.
+constexpr double StoryLevelTolerance = 0.0001;
+
 static void FillNewStoryCmd (const GS::Array<GS::ObjectState>& stories, const GS::UIndex storyPos, API_StoryCmdType& storyCmd)
 {
     if (storyPos >= stories.GetSize ()) {
@@ -603,14 +606,43 @@ static void FillNewStoryCmd (const GS::Array<GS::ObjectState>& stories, const GS
     stories[storyPos].Get ("dispOnSections", storyCmd.dispOnSections);
     stories[storyPos].Get ("level", storyCmd.elevation);
 
-    double nextLevel = 0.0;
-    if (storyPos + 1 < stories.GetSize () && stories[storyPos + 1].Get ("level", nextLevel)) {
-        storyCmd.height = nextLevel - storyCmd.elevation;
+    // The story at the top of the requested list has no next one to take the height
+    // from, so fall back to the height of the story below it. The levels are set
+    // exactly later on anyway, this is only to avoid creating zero height stories.
+    double neighbourLevel = 0.0;
+    if (storyPos + 1 < stories.GetSize () && stories[storyPos + 1].Get ("level", neighbourLevel)) {
+        storyCmd.height = neighbourLevel - storyCmd.elevation;
+    } else if (storyPos > 0 && stories[storyPos - 1].Get ("level", neighbourLevel)) {
+        storyCmd.height = storyCmd.elevation - neighbourLevel;
     }
 
     GS::UniString name;
     stories[storyPos].Get ("name", name);
     GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
+}
+
+// A copy of what a story looks like right now. API_StoryInfo::data is a handle which every
+// refresh disposes and reallocates, so anything read out of it has to be copied before the
+// next ChangeStorySettings call rather than referenced.
+struct StorySnapshot {
+    short           index;
+    double          level;
+    bool            dispOnSections;
+    GS::UniString   name;
+};
+
+static void TakeStorySnapshot (const API_StoryInfo& storyInfo, GS::Array<StorySnapshot>& snapshot)
+{
+    snapshot.Clear ();
+
+    if (storyInfo.data == nullptr) {
+        return;
+    }
+
+    for (short index = storyInfo.firstStory; index <= storyInfo.lastStory; ++index) {
+        const API_StoryType& story = (*storyInfo.data)[index - storyInfo.firstStory];
+        snapshot.Push (StorySnapshot { story.index, story.level, story.dispOnSections, GS::UniString (story.uName) });
+    }
 }
 
 static GSErrCode RefreshStoryInfo (API_StoryInfo& storyInfo)
@@ -769,91 +801,167 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to set up the requested story structure.");
     }
 
-    GS::USize recursionCount = 0;
-    constexpr GS::USize maxRecursion = 3;
-    for (GS::UIndex i = 0; i < storyCount;) {
-        const API_StoryType& story = (*storyInfo.data)[i];
+    // Everything below works off snapshots rather than off storyInfo.data: that handle is
+    // disposed and reallocated by every refresh, so a reference into it does not survive a
+    // single ChangeStorySettings call - which is where the garbage story indices in the
+    // error messages came from.
+    GS::Array<StorySnapshot> currentStories;
+    TakeStorySnapshot (storyInfo, currentStories);
+    if (currentStories.GetSize () != storyCount) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read the story structure.");
+    }
 
+    // Neither renaming a story nor changing its display setting moves any of them, so
+    // these can be set in one pass on the state read above.
+    bool storySettingsChanged = false;
+
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
         API_StoryCmdType storyCmd = {};
-        storyCmd.index  = story.index;
+        storyCmd.index = currentStories[i].index;
 
         stories[i].Get ("dispOnSections", storyCmd.dispOnSections);
 
-        bool changed = false;
-
-        if (story.dispOnSections != storyCmd.dispOnSections) {
+        if (currentStories[i].dispOnSections != storyCmd.dispOnSections) {
             storyCmd.action = APIStory_SetDispOnSections;
-        
+
             err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
             if (err != NoError) {
                 BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
                 return CreateFailedExecutionResult (err, "Failed to modify dispOnSections settings.");
             }
 
-            changed = true;
+            storySettingsChanged = true;
         }
 
         GS::UniString name;
         stories[i].Get ("name", name);
 
-        if (story.uName != name) {
+        if (currentStories[i].name != name) {
             GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
             storyCmd.action = APIStory_Rename;
-        
+
             err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
             if (err != NoError) {
                 BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
                 return CreateFailedExecutionResult (err, "Failed to rename story.");
             }
 
-            changed = true;
+            storySettingsChanged = true;
+        }
+    }
+
+    if (storySettingsChanged) {
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
         }
 
-        stories[i].Get ("level", storyCmd.elevation);
-
-        if (std::abs (story.level - storyCmd.elevation) >= 0.0001) {
-            storyCmd.action = APIStory_SetElevation;
-        
-            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-            if (err != NoError) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (err, "Failed to change story level.");
-            }
-
-            changed = true;
-        } else {
-            const API_StoryType*   actNextStory = i + 1 < storyCount ? &(*storyInfo.data)[i + 1] : nullptr;
-            const GS::ObjectState* newNextStory = i + 1 < stories.GetSize () ? &stories[i + 1] : nullptr;
-
-            double newNextLevel = 0;
-            if (actNextStory != nullptr && newNextStory != nullptr &&
-                newNextStory->Get ("level", newNextLevel) &&
-                std::abs ((newNextLevel - storyCmd.elevation) - (actNextStory->level - story.level)) >= 0.0001) {
-                storyCmd.height = newNextLevel - storyCmd.elevation;
-                storyCmd.action = APIStory_SetHeight;
-            
-                err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
-                if (err != NoError) {
-                    BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                    return CreateFailedExecutionResult (err, "Failed to change story height.");
-                }
-
-                changed = true;
-            }
+        if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
         }
 
-        if (changed) {
-            err = RefreshStoryInfo (storyInfo);
-            if (err != NoError) {
-                BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-                return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
-            }
+        TakeStorySnapshot (storyInfo, currentStories);
+    }
+
+    // The requested levels, defaulting to where the story already sits when the caller did
+    // not ask for one.
+    GS::Array<double> targetLevels;
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
+        double level = currentStories[i].level;
+        stories[i].Get ("level", level);
+        targetLevels.Push (level);
+    }
+
+    // Levels are set in two steps, because Archicad anchors the story ladder on the active
+    // story: that one never moves, and every other story is positioned relative to it.
+    // Measured on a live AC29: APIStory_SetElevation moves only the story it names, and
+    // APIStory_SetHeight moves whichever side of the boundary is further from the anchor.
+    //
+    // Step one puts the anchor on its requested level. It has to come first - moving the
+    // anchor afterwards would change the gap to its neighbour and undo a distance already
+    // set. The anchor is the active story, the only one SetElevation is known to move.
+    const GS::UIndex anchor =
+        (storyInfo.actStory >= storyInfo.firstStory && storyInfo.actStory <= storyInfo.lastStory)
+            ? static_cast<GS::UIndex> (storyInfo.actStory - storyInfo.firstStory)
+            : 0;
+
+    if (std::abs (currentStories[anchor].level - targetLevels[anchor]) >= StoryLevelTolerance) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action    = APIStory_SetElevation;
+        storyCmd.index     = currentStories[anchor].index;
+        storyCmd.elevation = targetLevels[anchor];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story elevation.");
         }
 
-        if (!changed || ++recursionCount >= maxRecursion) {
-            recursionCount = 0;
-            ++i;
-            continue;
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        }
+        if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
+        }
+        TakeStorySnapshot (storyInfo, currentStories);
+    }
+
+    // Step two sets the distances, working outwards from the anchor in both directions so
+    // that every height is set against a story which is already on its requested level and
+    // positions exactly one story that is not.
+    for (GS::UIndex i = anchor; i + 1 < storyCount; ++i) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_SetHeight;
+        storyCmd.index  = currentStories[i].index;
+        storyCmd.height = targetLevels[i + 1] - targetLevels[i];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story height.");
+        }
+    }
+
+    for (GS::UIndex i = anchor; i > 0; --i) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_SetHeight;
+        storyCmd.index  = currentStories[i - 1].index;
+        storyCmd.height = targetLevels[i] - targetLevels[i - 1];
+
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (err, "Failed to change story height.");
+        }
+    }
+
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+    }
+    if (static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+    TakeStorySnapshot (storyInfo, currentStories);
+
+    // A structure which silently ended up somewhere else than requested is worse than an
+    // error, so report the first level which could not be set, naming both levels so the
+    // message says what actually happened.
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
+        if (std::abs (currentStories[i].level - targetLevels[i]) >= StoryLevelTolerance) {
+            const GS::UniString message = GS::UniString::Printf (
+                "Failed to set the level of story %d: requested %.4f, got %.4f.",
+                static_cast<int> (currentStories[i].index), targetLevels[i], currentStories[i].level);
+            BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+            return CreateFailedExecutionResult (APIERR_GENERAL, message);
         }
     }
 
