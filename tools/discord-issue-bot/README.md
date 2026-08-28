@@ -73,6 +73,11 @@ Under *Settings → Secrets and variables → Actions* add:
 | Secret   | `CLAUDE_CODE_OAUTH_TOKEN` | Claude Code OAuth token (run `claude setup-token` locally) — classification then draws on the Pro/Max subscription, like the repo's other Claude workflows |
 | Variable | `DISCORD_CHANNEL_IDS`     | comma-separated channel IDs to watch     |
 
+Also create a **`discord` label** in the repository (*Issues → Labels*):
+the bot tags every issue it files with it, next to `bug` or `enhancement`.
+A missing label is dropped from the issue rather than failing the run,
+so this step is recommended, not required.
+
 The workflow uses the built-in `GITHUB_TOKEN` to create issues; no extra
 GitHub credential is needed. While none of the values above are configured,
 the scheduled run exits without doing anything, so enabling the workflow

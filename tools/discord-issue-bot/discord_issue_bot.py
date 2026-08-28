@@ -344,14 +344,19 @@ class GitHubClient:
     def create_issue(self, title, body, labels):
         url = GITHUB_API + "/repos/{}/issues".format(self.repository)
         try:
+            remaining = list(labels)
             response = self.session.post(
-                url, json={"title": title, "body": body, "labels": labels}, timeout=30)
-            if response.status_code == 422 and labels:
+                url, json={"title": title, "body": body, "labels": remaining}, timeout=30)
+            while response.status_code == 422 and remaining:
                 # A label that does not exist in the repository makes the
-                # whole request fail; retry without labels rather than lose
-                # the issue.
-                log("WARNING: issue creation with labels {} failed, retrying without labels".format(labels))
-                response = self.session.post(url, json={"title": title, "body": body}, timeout=30)
+                # whole request fail. Callers order labels most important
+                # first, so drop from the back - losing only the custom
+                # 'discord' label, not the default bug/enhancement one with
+                # it - rather than lose the issue.
+                dropped = remaining.pop()
+                log("WARNING: issue creation with label '{}' failed, retrying without it".format(dropped))
+                response = self.session.post(
+                    url, json={"title": title, "body": body, "labels": remaining}, timeout=30)
         except requests.RequestException as error:
             log("ERROR: issue creation request failed: {}".format(error))
             return None
