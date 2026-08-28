@@ -292,6 +292,16 @@ class Classifier:
             return None
         if not isinstance(result, dict) or "actionable" not in result:
             return None
+        # The model does not always honor the schema; a malformed field must
+        # not abort the whole run, so coerce everything to the expected type.
+        try:
+            result["confidence"] = float(result.get("confidence") or 0.0)
+        except (TypeError, ValueError):
+            result["confidence"] = 0.0
+        result["title"] = str(result.get("title") or "").strip()
+        result["summary"] = str(result.get("summary") or "").strip()
+        if result.get("type") not in ("bug", "feature"):
+            result["type"] = None
         return result
 
 

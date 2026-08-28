@@ -59,31 +59,43 @@ jobs:
         run: |
           set -eu
           VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
-          LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*' HEAD)
-          echo "Current version: $VERSION, last release tag: $LAST_TAG"
 
           if git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null; then
-            echo "::error::Tag $VERSION already exists but package_info.json still says $VERSION." \
-                 "Bump the version (tools/update_version.py) before releasing."
-            exit 1
-          fi
-
-          # Every release ends with the "Update version after release" commit
-          # on main, so a plain commit count since the last tag is always at
-          # least 1. Only commits touching something other than the five
-          # version files count as releasable changes.
-          COMMITS=$(git rev-list --count "$LAST_TAG"..HEAD -- . \
-            ':(exclude)tools/package_info.json' \
-            ':(exclude)archicad-addon/Sources/AddOnVersion.hpp' \
-            ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj' \
-            ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs' \
-            ':(exclude)grasshopper-plugin/YakPackage/manifest.yml')
-          if [ "$COMMITS" -eq 0 ]; then
-            echo "No commits since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
-            echo "release=false" >> "$GITHUB_OUTPUT"
+            # The tag can already exist when a previous run failed after
+            # tagging (a build broke, so neither publish nor version bump
+            # happened). When it still points at HEAD, resume that release
+            # instead of failing; anything else is a real inconsistency.
+            if [ "$(git rev-parse "refs/tags/$VERSION^{commit}")" = "$(git rev-parse HEAD)" ]; then
+              LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*' "$VERSION"^)
+              echo "Tag $VERSION already points at HEAD - resuming the failed release (previous tag: $LAST_TAG)."
+              echo "release=true" >> "$GITHUB_OUTPUT"
+              echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "::error::Tag $VERSION already exists on another commit but package_info.json" \
+                   "still says $VERSION. Bump the version (tools/update_version.py) before releasing."
+              exit 1
+            fi
           else
-            echo "$COMMITS commit(s) since $LAST_TAG - releasing $VERSION."
-            echo "release=true" >> "$GITHUB_OUTPUT"
+            LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*' HEAD)
+            echo "Current version: $VERSION, last release tag: $LAST_TAG"
+            # Every release ends with the "Update version after release"
+            # commit on main, so a plain commit count since the last tag is
+            # always at least 1. Only commits touching something other than
+            # the five version files count as releasable changes.
+            COMMITS=$(git rev-list --count "$LAST_TAG"..HEAD -- . \
+              ':(exclude)tools/package_info.json' \
+              ':(exclude)archicad-addon/Sources/AddOnVersion.hpp' \
+              ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj' \
+              ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs' \
+              ':(exclude)grasshopper-plugin/YakPackage/manifest.yml')
+            if [ "$COMMITS" -eq 0 ]; then
+              echo "No changes since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
+              echo "release=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "$COMMITS commit(s) with changes since $LAST_TAG - releasing $VERSION."
+              echo "release=true" >> "$GITHUB_OUTPUT"
+            fi
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
@@ -108,7 +120,7 @@ jobs:
           echo "Docs check passed (source changes: $SOURCE_CHANGES, docs changes: $DOCS_CHANGES)."
 
       - name: Create and push the release tag
-        if: steps.plan.outputs.release == 'true'
+        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.tag_exists != 'true'
         run: |
           set -eu
           VERSION='${{ steps.plan.outputs.version }}'
@@ -124,6 +136,10 @@ jobs:
         run: |
           set -eu
           VERSION='${{ steps.plan.outputs.version }}'
+          # Remembered so the wait step only accepts runs started by this
+          # dispatch, not a completed run left over from a failed earlier
+          # attempt on the same tag (60s of slack for clock skew).
+          echo "DISPATCH_CUTOFF=$(date -u -d '-60 seconds' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
           gh workflow run archicad_addon.yml --ref "$VERSION"
           gh workflow run grasshopper_plugin.yml --ref "$VERSION"
 
@@ -139,6 +155,7 @@ jobs:
             RUN_ID=''
             for _ in $(seq 1 30); do
               RUN_ID=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+                --created ">=$DISPATCH_CUTOFF" \
                 --limit 1 --json databaseId --jq '.[0].databaseId // empty')
               [ -n "$RUN_ID" ] && break
               sleep 10
@@ -182,10 +199,18 @@ jobs:
           fi
           ASSETS=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID" --jq '.assets | length')
           echo "Draft release $RELEASE_ID has $ASSETS asset(s)."
+          # 5 Archicad versions x 2 platforms; update when the build matrix
+          # in archicad_addon.yml changes.
+          if [ "$ASSETS" -lt 10 ]; then
+            echo "::error::Draft release for $VERSION has only $ASSETS of the expected 10 artifacts" \
+                 "(5 Windows .apx + 5 Mac .zip) - not publishing an incomplete release."
+            exit 1
+          fi
           NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
             -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body')
+          # make_latest is a string enum in the REST API, draft a real boolean.
           gh api --method PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
-            -f name="$VERSION" -f body="$NOTES" -F draft=false -F make_latest=true > /dev/null
+            -f name="$VERSION" -f body="$NOTES" -F draft=false -f make_latest=true > /dev/null
           echo "Published release **$VERSION** with $ASSETS artifact(s)." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Increment the version for the next cycle
