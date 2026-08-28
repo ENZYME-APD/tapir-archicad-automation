@@ -524,6 +524,11 @@ class GitHubClient:
             for item in items:
                 if "pull_request" in item:
                     continue
+                # Same rule as the dedupe search: only the bot's own issue
+                # counts, or anyone could open a marker-carrying issue and
+                # capture (then hide) all future borderline reports.
+                if item.get("user", {}).get("login") != BOT_ISSUE_AUTHOR:
+                    continue
                 if marker.search(item.get("body") or ""):
                     return item
             if len(items) < 100:
