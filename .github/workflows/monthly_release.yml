@@ -366,12 +366,11 @@ jobs:
           NEXT_VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add tools/package_info.json \
-                  archicad-addon/Sources/AddOnVersion.hpp \
-                  grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj \
-                  grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs \
-                  grasshopper-plugin/YakPackage/manifest.yml
-          git commit -m "Update version after release"
+          # -a stages every tracked file the bump touched, so a version file
+          # added to update_version.py later cannot be silently left behind
+          # as a dirty tree that breaks the rebase below. The checkout is
+          # otherwise pristine at this point - nothing else is modified.
+          git commit -am "Update version after release"
           # main may have moved during the multi-hour build; retry the
           # rebase-and-push a few times before giving up.
           PUSHED=false
