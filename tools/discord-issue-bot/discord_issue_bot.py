@@ -312,9 +312,13 @@ class GitHubClient:
             self.repository, ISSUE_MARKER_PREFIX, message_id)
         # advanced_search is the announced successor of the legacy issue
         # search mode; passing it is harmless while both are accepted.
-        response = self.session.get(
-            GITHUB_API + "/search/issues",
-            params={"q": query, "per_page": 10, "advanced_search": "true"}, timeout=30)
+        try:
+            response = self.session.get(
+                GITHUB_API + "/search/issues",
+                params={"q": query, "per_page": 10, "advanced_search": "true"}, timeout=30)
+        except requests.RequestException as error:
+            log("WARNING: issue search request failed: {}".format(error))
+            return SEARCH_FAILED
         if not response.ok:
             log("WARNING: issue search failed: {} {}".format(
                 response.status_code, response.text[:200]))
@@ -334,13 +338,18 @@ class GitHubClient:
 
     def create_issue(self, title, body, labels):
         url = GITHUB_API + "/repos/{}/issues".format(self.repository)
-        response = self.session.post(
-            url, json={"title": title, "body": body, "labels": labels}, timeout=30)
-        if response.status_code == 422 and labels:
-            # A label that does not exist in the repository makes the whole
-            # request fail; retry without labels rather than lose the issue.
-            log("WARNING: issue creation with labels {} failed, retrying without labels".format(labels))
-            response = self.session.post(url, json={"title": title, "body": body}, timeout=30)
+        try:
+            response = self.session.post(
+                url, json={"title": title, "body": body, "labels": labels}, timeout=30)
+            if response.status_code == 422 and labels:
+                # A label that does not exist in the repository makes the
+                # whole request fail; retry without labels rather than lose
+                # the issue.
+                log("WARNING: issue creation with labels {} failed, retrying without labels".format(labels))
+                response = self.session.post(url, json={"title": title, "body": body}, timeout=30)
+        except requests.RequestException as error:
+            log("ERROR: issue creation request failed: {}".format(error))
+            return None
         if not response.ok:
             log("ERROR: could not create issue: {} {}".format(
                 response.status_code, response.text[:300]))
