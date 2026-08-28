@@ -46,8 +46,12 @@ jobs:
           # A resumed release (the Monthly Release workflow re-dispatches
           # this pipeline when an earlier run failed after the push went
           # through) must not wedge on the version already being on the
-          # package server - that is the state the push wanted.
-          if ("$output" -match 'already exist') {
+          # package server - that is the state the push wanted. The pattern
+          # covers the likely duplicate-version wordings (including a plain
+          # HTTP 409); if the server phrases it differently the step still
+          # fails safe (no double publish) - then extend this pattern with
+          # the actual wording, do not remove the guard.
+          if ("$output" -match 'already exist|conflict|\b409\b') {
             Write-Output 'This version is already on the package server - treating as success.'
             cmd /c exit 0
           } else {
