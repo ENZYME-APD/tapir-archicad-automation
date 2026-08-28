@@ -86,7 +86,8 @@ Under *Settings → Secrets and variables → Actions* add:
 Also create a **`discord` label** in the repository (*Issues → Labels*):
 the bot tags every issue it files with it, next to `bug` or `enhancement`.
 A missing label is dropped from the issue rather than failing the run,
-so this step is recommended, not required.
+so this step is recommended, not required — but the label also drives
+the daily issue cap (see Tuning), which only counts labelled issues.
 
 The workflow uses the built-in `GITHUB_TOKEN` to create issues; no extra
 GitHub credential is needed. While none of the values above are configured,
@@ -119,6 +120,7 @@ important ones and the rest fall back to defaults:
 | `CLAUDE_MODEL`       | (CLI default)   | model used to classify messages; defaults to the Claude Code CLI's own default model |
 | `LOOKBACK_MINUTES`   | `1440`          | how far back each run scans; the wide overlap is nearly free because marked messages are skipped without a model call |
 | `MAX_ISSUES_PER_RUN` | `5`             | safety cap on issues created per run             |
+| `MAX_ISSUES_PER_DAY` | `20`            | backstop across runs: when this many `discord`-labelled issues were created in the last 24 h, a run creates none (`0` disables) |
 | `MIN_CONFIDENCE`     | `0.7`           | classifier confidence required to file an issue  |
 | `MIN_MESSAGE_LENGTH` | `25`            | messages shorter than this are never considered  |
 | `DRY_RUN`            | `false`         | classify and log only, no issues/replies         |

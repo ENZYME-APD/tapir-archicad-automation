@@ -154,6 +154,7 @@ class Config:
     model: str
     lookback_minutes: int
     max_issues_per_run: int
+    max_issues_per_day: int
     min_confidence: float
     min_message_length: int
     dry_run: bool
@@ -178,6 +179,7 @@ class Config:
             model=os.environ.get("CLAUDE_MODEL", ""),
             lookback_minutes=_numeric_env("LOOKBACK_MINUTES", "1440", int),
             max_issues_per_run=_numeric_env("MAX_ISSUES_PER_RUN", "5", int),
+            max_issues_per_day=_numeric_env("MAX_ISSUES_PER_DAY", "20", int),
             min_confidence=_numeric_env("MIN_CONFIDENCE", "0.7", float),
             min_message_length=_numeric_env("MIN_MESSAGE_LENGTH", "25", int),
             dry_run=os.environ.get("DRY_RUN", "").strip().lower() in ("1", "true", "yes"),
@@ -424,6 +426,33 @@ class GitHubClient:
                 response.status_code, response.text[:300]))
             return None
         return response.json()
+
+    def count_recent_discord_issues(self):
+        """Number of issues labelled 'discord' created in the last 24 hours,
+        or None when the search failed.
+
+        Powers the daily creation cap - a blast-radius backstop against a
+        flood of convincing bug-shaped Discord messages, on top of the
+        per-run cap. Approximate by design: the search index lags a little,
+        and issues whose 'discord' label was dropped by the 422 fallback
+        are not counted."""
+        since = (datetime.datetime.now(datetime.timezone.utc)
+                 - datetime.timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        query = 'repo:{} is:issue label:discord created:>={}'.format(
+            self.repository, since)
+        try:
+            response = self.session.get(
+                GITHUB_API + "/search/issues",
+                params={"q": query, "per_page": 1, "advanced_search": "true"},
+                timeout=30)
+        except requests.RequestException as error:
+            log("WARNING: issue search request failed: {}".format(error))
+            return None
+        if not response.ok:
+            log("WARNING: issue search failed: {} {}".format(
+                response.status_code, response.text[:200]))
+            return None
+        return response.json().get("total_count", 0)
 
     def find_borderline_issue(self):
         """The open rolling issue carrying the borderline marker, None when
@@ -923,6 +952,22 @@ def main():
     classifier = ClaudeCodeClassifier(config.model)
     state = {"created": 0, "unreadable_channels": 0, "github_failures": 0,
              "human_messages": 0, "messages_with_signal": 0, "borderline": []}
+
+    if not config.dry_run and config.max_issues_per_day > 0:
+        recent = github.count_recent_discord_issues()
+        if recent is None:
+            # The per-message duplicate check fails closed on search errors
+            # anyway, so the daily cap can afford to fail open.
+            log("WARNING: could not count recently created Discord issues - "
+                "the daily cap is not enforced this run")
+        elif recent >= config.max_issues_per_day:
+            log("Daily cap: {} Discord issue(s) created in the last 24h "
+                "(cap {}) - creating no more this run".format(
+                    recent, config.max_issues_per_day))
+            append_summary("- \N{WARNING SIGN} Daily cap reached: {} Discord "
+                           "issue(s) in the last 24h - this run created "
+                           "none.".format(recent))
+            config.max_issues_per_run = 0
 
     for channel_id in config.channel_ids:
         process_channel(channel_id, config, discord, github, classifier, state)
