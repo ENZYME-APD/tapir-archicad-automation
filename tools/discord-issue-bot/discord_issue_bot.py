@@ -31,15 +31,11 @@ Configuration (environment variables):
                         inside GitHub Actions. Required.
   CLAUDE_CODE_OAUTH_TOKEN
                         Claude Code OAuth token (from `claude setup-token`).
-                        When set, classification runs through the Claude
-                        Code CLI and draws on the Pro/Max subscription -
-                        the `claude` CLI must be on PATH. One of this or
-                        ANTHROPIC_API_KEY is required.
-  ANTHROPIC_API_KEY     Claude API key (pay per token); used when no OAuth
-                        token is set.
-  CLAUDE_MODEL          Model used for classification. Default: claude-opus-5
-                        with an API key; the Claude Code CLI's own default
-                        with an OAuth token.
+                        Classification runs through the Claude Code CLI and
+                        draws on the Pro/Max subscription - the `claude` CLI
+                        must be on PATH. Required.
+  CLAUDE_MODEL          Model used for classification. Default: the Claude
+                        Code CLI's own default model.
   LOOKBACK_MINUTES      How far back to scan. Default: 1440 (a day), so
                         even a multi-hour scheduler outage cannot lose
                         messages. The wide overlap is nearly free: already
@@ -64,7 +60,6 @@ import tempfile
 import time
 import urllib.parse
 
-import anthropic
 import requests
 
 DISCORD_API = "https://discord.com/api/v10"
@@ -123,7 +118,6 @@ class Config:
     channel_ids: list
     github_token: str
     repository: str
-    use_claude_code: bool
     model: str
     lookback_minutes: int
     max_issues_per_run: int
@@ -138,9 +132,8 @@ class Config:
             "DISCORD_CHANNEL_IDS",
             "GITHUB_TOKEN",
             "GITHUB_REPOSITORY",
+            "CLAUDE_CODE_OAUTH_TOKEN",
         ) if not os.environ.get(name)]
-        if not os.environ.get("CLAUDE_CODE_OAUTH_TOKEN") and not os.environ.get("ANTHROPIC_API_KEY"):
-            missing.append("CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY")
         if missing:
             return None, missing
         channel_ids = [c.strip() for c in os.environ["DISCORD_CHANNEL_IDS"].split(",") if c.strip()]
@@ -149,7 +142,6 @@ class Config:
             channel_ids=channel_ids,
             github_token=os.environ["GITHUB_TOKEN"],
             repository=os.environ["GITHUB_REPOSITORY"],
-            use_claude_code=bool(os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")),
             model=os.environ.get("CLAUDE_MODEL", ""),
             lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES", "1440")),
             max_issues_per_run=int(os.environ.get("MAX_ISSUES_PER_RUN", "5")),
@@ -457,35 +449,6 @@ class ClassifierBase:
         return result
 
 
-class ApiClassifier(ClassifierBase):
-    """Classifies through the Claude API with an API key (pay per token)."""
-
-    def __init__(self, model):
-        self.client = anthropic.Anthropic()
-        self.model = model or "claude-opus-5"
-
-    def _complete(self, chunk):
-        try:
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=4096,
-                system=CLASSIFIER_INSTRUCTIONS,
-                messages=[{"role": "user", "content": self._payload(chunk)}],
-            )
-        except anthropic.RateLimitError:
-            log("WARNING: Claude API rate limited, skipping batch")
-            return None
-        except anthropic.APIStatusError as error:
-            log("WARNING: Claude API error {}: {}".format(error.status_code, error.message))
-            return None
-        except anthropic.APIConnectionError:
-            log("WARNING: could not reach the Claude API, skipping batch")
-            return None
-        if response.stop_reason == "refusal":
-            return None
-        return "".join(block.text for block in response.content if block.type == "text")
-
-
 class ClaudeCodeClassifier(ClassifierBase):
     """Classifies through the Claude Code CLI in headless mode, authorized
     by CLAUDE_CODE_OAUTH_TOKEN - runs draw on the Pro/Max subscription the
@@ -516,7 +479,7 @@ class ClaudeCodeClassifier(ClassifierBase):
                 timeout=300, env=environment, cwd=self.workdir)
         except FileNotFoundError:
             log("ERROR: the 'claude' CLI is not on PATH; install it with "
-                "'npm install -g @anthropic-ai/claude-code' or set ANTHROPIC_API_KEY instead")
+                "'npm install -g @anthropic-ai/claude-code'")
             return None
         except subprocess.TimeoutExpired:
             log("WARNING: Claude Code classification timed out, skipping batch")
@@ -531,10 +494,6 @@ class ClaudeCodeClassifier(ClassifierBase):
             return completed.stdout
 
 
-def make_classifier(config):
-    if config.use_claude_code:
-        return ClaudeCodeClassifier(config.model)
-    return ApiClassifier(config.model)
 
 
 def neutralize_mentions(text):
@@ -705,7 +664,7 @@ def main():
         # quiet; a PARTIAL configuration means something that used to be set
         # was renamed or deleted, and must not leave the schedule green.
         user_values = ("DISCORD_BOT_TOKEN", "DISCORD_CHANNEL_IDS",
-                       "CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY")
+                       "CLAUDE_CODE_OAUTH_TOKEN")
         if any(os.environ.get(name) for name in user_values):
             log("ERROR: configuration is incomplete - missing: {}. A previously "
                 "configured secret or variable may have been renamed or "
@@ -717,9 +676,7 @@ def main():
 
     discord = DiscordClient(config.discord_token)
     github = GitHubClient(config.github_token, config.repository)
-    classifier = make_classifier(config)
-    log("Classifying via {}".format(
-        "Claude Code (subscription)" if config.use_claude_code else "the Claude API"))
+    classifier = ClaudeCodeClassifier(config.model)
     state = {"created": 0, "unreadable_channels": 0, "github_failures": 0}
 
     for channel_id in config.channel_ids:

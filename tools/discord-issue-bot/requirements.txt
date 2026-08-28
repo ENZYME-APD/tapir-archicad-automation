@@ -1,3 +1,1 @@
-# Tested with anthropic 1.2.0; the bot uses the stable 1.x messages API.
-anthropic>=1.2,<2
 requests>=2.31,<3

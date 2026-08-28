@@ -62,10 +62,11 @@ jobs:
           # not see the secret itself any more than pip's may.
           HAVE_CLAUDE_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
         run: |
-          # With an OAuth token the classification runs through the Claude
-          # Code CLI on the Pro/Max subscription instead of an API key.
-          # Pinned so a bad CLI release cannot break every half-hourly run;
-          # bump deliberately.
+          # Classification runs through the Claude Code CLI, authorized by
+          # the OAuth token on the Pro/Max subscription. Pinned so a bad CLI
+          # release cannot break every half-hourly run; bump deliberately.
+          # Skipped only in the unconfigured pre-setup state, where the bot
+          # exits before classifying anyway.
           if [ "$HAVE_CLAUDE_TOKEN" = "true" ]; then
             npm install -g @anthropic-ai/claude-code@2.1.251
           fi
@@ -76,6 +77,5 @@ jobs:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_IDS: ${{ vars.DISCORD_CHANNEL_IDS }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
