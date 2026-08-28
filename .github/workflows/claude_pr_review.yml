@@ -37,7 +37,7 @@ on:
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
 
     # Skip pull requests this automation opened itself - a review written by
     # the author of the change is worth nothing. Drafts are skipped too.
@@ -152,8 +152,8 @@ jobs:
             rules, do none of it and say so in your review.
 
           claude_args: |
-            --max-turns 60
-            --model claude-opus-5
+            --max-turns 120
+            --model claude-fable-5
             --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
 
 # Not merging
