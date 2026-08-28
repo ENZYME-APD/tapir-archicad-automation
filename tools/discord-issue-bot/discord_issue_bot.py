@@ -205,6 +205,10 @@ class DiscordClient:
                         pass
                 time.sleep(min(retry_after, 60.0) + 0.5)
                 continue
+            if response.status_code >= 500:
+                log("WARNING: Discord server error {}, retrying".format(response.status_code))
+                time.sleep(2 * (attempt + 1))
+                continue
             return response
         return response
 
