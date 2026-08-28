@@ -341,6 +341,9 @@ class GitHubClient:
 class ClassifierBase:
     """Shared batch handling; subclasses provide _complete(chunk) -> text."""
 
+    completed_batches = 0
+    failed_batches = 0
+
     def classify_batch(self, candidates):
         """candidates: dicts with id, channel, author, content.
         Returns {message id: normalized classification} for every message
@@ -350,7 +353,9 @@ class ClassifierBase:
             chunk = candidates[start:start + CLASSIFIER_BATCH_SIZE]
             text = self._complete(chunk)
             if text is None:
+                self.failed_batches += 1
                 continue
+            self.completed_batches += 1
             chunk_ids = {c["id"] for c in chunk}
             for entry in self._parse_entries(text):
                 entry_id = str(entry.get("id") or "")
@@ -675,6 +680,12 @@ def main():
         # failed, surface it instead of ending green.
         log("ERROR: all {} GitHub issue operation(s) failed - check the "
             "workflow's issues permission.".format(state["github_failures"]))
+        return 1
+    if classifier.failed_batches and classifier.completed_batches == 0:
+        # And for the classifier: an expired credential or missing CLI must
+        # not keep the schedule silently green.
+        log("ERROR: all {} classification batch(es) failed - check the "
+            "Claude credentials.".format(classifier.failed_batches))
         return 1
 
     log("Done. Created {} issue(s).".format(state["created"]))
