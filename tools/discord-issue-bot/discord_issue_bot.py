@@ -541,6 +541,13 @@ def build_issue_body(message, channel, classification):
 
 
 def process_channel(channel_id, config, discord, github, classifier, state):
+    if state["created"] >= config.max_issues_per_run:
+        # Classifying candidates whose results could only be discarded
+        # wastes money; unmarked messages are picked up by the next run.
+        log("Skipping channel {}: the issue limit for this run is already "
+            "reached".format(channel_id))
+        return
+
     channel = discord.get_channel(channel_id)
     channel_name = channel.get("name", channel_id) if channel else channel_id
     since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(

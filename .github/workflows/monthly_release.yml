@@ -84,7 +84,10 @@ jobs:
               echo "tag_exists=true" >> "$GITHUB_OUTPUT"
             else
               echo "::error::Tag $VERSION already exists on another commit but package_info.json" \
-                   "still says $VERSION. Bump the version (tools/update_version.py) before releasing."
+                   "still says $VERSION. If a failed release was followed by new commits on main," \
+                   "delete the tag (git push origin :refs/tags/$VERSION) so the next run re-tags" \
+                   "the current HEAD under the same version; only bump the version" \
+                   "(tools/update_version.py) if $VERSION really has shipped."
               exit 1
             fi
           else
