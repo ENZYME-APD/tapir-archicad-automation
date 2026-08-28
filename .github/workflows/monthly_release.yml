@@ -274,7 +274,7 @@ jobs:
                 fi
                 echo "Draft release for $VERSION carries $ASSETS artifact(s) - safe to publish to yak."
               fi
-              gh workflow run "$WORKFLOW" --ref "$VERSION"
+              gh_retry gh workflow run "$WORKFLOW" --ref "$VERSION"
               # The dispatched run can take a moment to appear. '|| true' is
               # safe here, unlike for PRIOR: an empty answer just means the
               # loop polls again, and the never-appeared error below fires

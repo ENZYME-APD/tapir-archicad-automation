@@ -33,10 +33,12 @@ jobs:
     # Scheduled runs should not fire on forks.
     if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    # Generous headroom over the per-batch classification timeout so a busy
-    # day with several batches cannot kill the run mid-way; the concurrency
-    # group queues the next scheduled run instead of overlapping.
-    timeout-minutes: 30
+    # Each message is classified in its own CLI call (prompt-injection
+    # isolation), so a raised-lookback catch-up run can take a while; the
+    # marks persist, so even a timed-out run keeps its progress and the
+    # next one continues where it stopped. The concurrency group queues
+    # the next scheduled run instead of overlapping.
+    timeout-minutes: 60
     permissions:
       contents: read
       issues: write
