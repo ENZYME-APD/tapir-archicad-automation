@@ -111,6 +111,12 @@ not actionable.\
 
 CLASSIFIER_BATCH_SIZE = 20
 
+# An actionable classification below MIN_CONFIDENCE gets the permanent
+# "seen" mark like plain chat, so it is the one place a real report can be
+# lost with nothing but a log line. Cases at or above this floor are listed
+# in the workflow run's summary so a maintainer can file them by hand.
+BORDERLINE_CONFIDENCE = 0.5
+
 
 @dataclasses.dataclass
 class Config:
@@ -515,6 +521,27 @@ def message_jump_url(message, channel):
         guild_id, message["channel_id"], message["id"])
 
 
+def note_borderline(message, channel, classification, confidence):
+    """List an actionable-but-under-threshold message in the workflow run's
+    step summary: it is about to be marked as seen and never revisited, so
+    this is the maintainer's only chance to notice a too-cautious call."""
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+    # Backtick-quote the model-written title so untrusted Discord content
+    # echoed into it cannot smuggle markdown (links, images) into the
+    # rendered summary.
+    title = (classification.get("title") or "").strip() or "(no title)"
+    title = neutralize_mentions(title.replace("`", "'"))
+    line = "- Skipped as borderline (confidence {:.2f}): `{}` — [jump to message]({})\n".format(
+        confidence, title, message_jump_url(message, channel))
+    try:
+        with open(summary_path, "a", encoding="utf-8") as stream:
+            stream.write(line)
+    except OSError as error:
+        log("  could not write the step summary: {}".format(error))
+
+
 def is_candidate(message, config):
     author = message.get("author", {})
     if author.get("bot") or author.get("system"):
@@ -617,7 +644,14 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             continue
         confidence = float(classification.get("confidence", 0.0))
         if not classification.get("actionable") or confidence < config.min_confidence:
-            log("  message {}: not actionable (confidence {:.2f})".format(message["id"], confidence))
+            if classification.get("actionable") and confidence >= BORDERLINE_CONFIDENCE:
+                log("  message {}: actionable but below the confidence threshold "
+                    "({:.2f} < {}), listed in the run summary".format(
+                        message["id"], confidence, config.min_confidence))
+                note_borderline(message, channel, classification, confidence)
+            else:
+                log("  message {}: not actionable (confidence {:.2f})".format(
+                    message["id"], confidence))
             # Marked so later runs inside the lookback window neither pay to
             # re-classify it nor give a borderline message repeated chances
             # to cross the confidence threshold.

@@ -23,6 +23,10 @@ so no server hosting is needed. Every run:
    has already handled a message) and replies to it with the issue number.
    Messages classified as *not* actionable get a 👀 reaction instead, so
    later runs skip them rather than paying to classify them again.
+   Actionable-looking messages that fall just short of the confidence
+   threshold also get the 👀 reaction, but are listed in the workflow
+   run's summary so a maintainer can file them by hand if the classifier
+   was too cautious.
 
 Duplicates are prevented twice over: a message carrying the bot's own ✅ or
 👀 reaction is skipped, and before creating an issue the bot searches
