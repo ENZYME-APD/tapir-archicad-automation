@@ -36,7 +36,11 @@ existing issues for the Discord message ID (which is embedded in every
 issue body).
 
 Only regular channel messages are scanned — threads and forum posts are
-not read, so reports posted there will not become issues.
+not read, so reports posted there will not become issues. Screenshots
+are not analyzed either: a message with an attachment is classified by
+its caption alone (a short caption is fine — an attachment exempts it
+from the minimum message length), and a caption-less image is skipped
+entirely.
 
 Messages older than the lookback window are never revisited. Note that
 GitHub disables scheduled workflows after 60 days without repository

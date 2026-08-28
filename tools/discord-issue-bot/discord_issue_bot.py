@@ -660,14 +660,22 @@ def is_candidate(message, config):
         return False
     content = message.get("content", "")
     if len(content.strip()) < config.min_message_length:
-        return False
+        # A screenshot with a short caption is a common way to report a
+        # bug, so an attachment exempts the caption from the length gate.
+        # A truly caption-less image still has nothing to classify.
+        if not (message.get("attachments") and content.strip()):
+            return False
     return True
 
 
 def build_issue_body(message, channel, classification):
     author = message.get("author", {})
-    author_name = neutralize_mentions(author.get("global_name") or author.get("username", "unknown"))
+    # Backticks are stripped so a crafted display or channel name cannot
+    # break out of the code spans below and inject markdown.
+    author_name = neutralize_mentions(
+        (author.get("global_name") or author.get("username", "unknown")).replace("`", "'"))
     channel_name = channel.get("name", message["channel_id"]) if channel else message["channel_id"]
+    channel_name = str(channel_name).replace("`", "'")
     jump_url = message_jump_url(message, channel)
     content = neutralize_mentions(message.get("content", ""))
     quoted = "\n".join("> " + line for line in content.splitlines()) or "> (no text)"
