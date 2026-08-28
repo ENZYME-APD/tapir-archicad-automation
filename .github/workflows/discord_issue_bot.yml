@@ -53,8 +53,10 @@ jobs:
           pip install -r tools/discord-issue-bot/requirements.txt
           # With an OAuth token the classification runs through the Claude
           # Code CLI on the Pro/Max subscription instead of an API key.
+          # Pinned so a bad CLI release cannot break every half-hourly run;
+          # bump deliberately.
           if [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
-            npm install -g @anthropic-ai/claude-code
+            npm install -g @anthropic-ai/claude-code@2.1.251
           fi
 
       - name: Scan Discord channels
