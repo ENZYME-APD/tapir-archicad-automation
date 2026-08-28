@@ -55,6 +55,7 @@ Configuration (environment variables):
 import dataclasses
 import datetime
 import json
+import math
 import os
 import re
 import subprocess
@@ -408,9 +409,12 @@ class ClassifierBase:
             actionable = actionable.strip().lower() in ("true", "yes")
         result["actionable"] = actionable in (True, 1)
         try:
-            result["confidence"] = float(result.get("confidence") or 0.0)
+            confidence = float(result.get("confidence") or 0.0)
         except (TypeError, ValueError):
-            result["confidence"] = 0.0
+            confidence = 0.0
+        # json.loads accepts bare NaN, and NaN < threshold is False - a
+        # non-finite confidence must not slip past the gate.
+        result["confidence"] = confidence if math.isfinite(confidence) else 0.0
         # GitHub rejects titles over 256 characters; nothing forces the
         # model (or an injected message) to honor the asked-for 80.
         result["title"] = str(result.get("title") or "").strip()[:250]
@@ -472,7 +476,8 @@ class ClaudeCodeClassifier(ClassifierBase):
         # checkout, gets a single turn, and classification needs no tools.
         command = [
             "claude", "-p", "--output-format", "json", "--max-turns", "1",
-            "--disallowedTools", "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch",
+            "--disallowedTools",
+            "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch,Task,TodoWrite,NotebookEdit",
         ]
         if self.model:
             command += ["--model", self.model]
