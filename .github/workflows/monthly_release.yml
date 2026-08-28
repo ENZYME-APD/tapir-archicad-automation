@@ -174,7 +174,10 @@ jobs:
             echo "::error::The Add-On sources changed since $LAST_TAG after the last update of" \
                  "docs/archicad-addon. Run the full GenerateDocumentation command in Archicad and" \
                  "commit the regenerated docs (hand-editing a docs file only hides the staleness" \
-                 "from this check), then re-run this workflow (or check 'skip_docs_check' to release anyway)."
+                 "from this check), then re-run this workflow. If the regeneration produces no" \
+                 "changes, the sources changes did not affect the docs - release by dispatching" \
+                 "this workflow manually with 'skip_docs_check' (an empty commit does not reset" \
+                 "this check; only a commit touching docs/archicad-addon does)."
             exit 1
           fi
           echo "Docs check passed."
