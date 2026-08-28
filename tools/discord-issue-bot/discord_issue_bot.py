@@ -400,10 +400,13 @@ class ClassifierBase:
         # The model does not always honor the schema; a malformed field must
         # not abort the whole run, so coerce everything to the expected type.
         # actionable gates issue creation, and a string "false" is truthy.
+        # Suppressing a real report (the permanent seen mark) is worse than
+        # letting one through to the confidence gate, so the common truthy
+        # spellings all count.
         actionable = result.get("actionable")
         if isinstance(actionable, str):
-            actionable = actionable.strip().lower() == "true"
-        result["actionable"] = actionable is True
+            actionable = actionable.strip().lower() in ("true", "yes")
+        result["actionable"] = actionable in (True, 1)
         try:
             result["confidence"] = float(result.get("confidence") or 0.0)
         except (TypeError, ValueError):
