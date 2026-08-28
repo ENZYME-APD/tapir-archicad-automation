@@ -701,6 +701,16 @@ def process_channel(channel_id, config, discord, github, classifier, state):
 def main():
     config, missing = Config.from_env()
     if config is None:
+        # Nothing configured yet is the deliberate pre-setup state and stays
+        # quiet; a PARTIAL configuration means something that used to be set
+        # was renamed or deleted, and must not leave the schedule green.
+        user_values = ("DISCORD_BOT_TOKEN", "DISCORD_CHANNEL_IDS",
+                       "CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY")
+        if any(os.environ.get(name) for name in user_values):
+            log("ERROR: configuration is incomplete - missing: {}. A previously "
+                "configured secret or variable may have been renamed or "
+                "deleted.".format(", ".join(missing)))
+            return 1
         log("Not configured, skipping run. Missing environment variables: {}".format(
             ", ".join(missing)))
         return 0
