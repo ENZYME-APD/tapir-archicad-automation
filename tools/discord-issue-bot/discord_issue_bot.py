@@ -247,7 +247,8 @@ class DiscordClient:
 
         Paginates past the API's 100-message page size so a busy channel
         does not silently lose the oldest part of a burst; capped at twenty
-        pages (2000 messages) as a safety limit.
+        pages (2000 messages) as a safety limit, with a warning when the
+        cap cuts the window short.
         """
         messages = []
         before = None
@@ -274,6 +275,18 @@ class DiscordClient:
             if datetime.datetime.fromisoformat(oldest["timestamp"]) < since:
                 break
             before = oldest["id"]
+        else:
+            # Every page was still inside the window, so the cap - not the
+            # window - ended the scan (a short final page means the channel
+            # history simply ended and nothing was missed). Pagination
+            # always starts from the newest message, so the dropped oldest
+            # part cannot be reached by re-running; without this warning it
+            # would be lost silently.
+            if len(page) == 100:
+                log("WARNING: channel {} has more messages inside the "
+                    "lookback window than the 20-page scan limit - the "
+                    "oldest part of the window was skipped and reports "
+                    "there will not become issues.".format(channel_id))
         messages.reverse()
         return messages
 
