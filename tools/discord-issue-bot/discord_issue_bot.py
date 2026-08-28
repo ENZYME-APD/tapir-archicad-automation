@@ -581,11 +581,6 @@ def process_channel(channel_id, config, discord, github, classifier, state):
 
     for candidate in candidates:
         message = messages_by_id[candidate["id"]]
-        if state["created"] >= config.max_issues_per_run:
-            log("  reached the limit of {} issues per run, leaving the rest "
-                "for the next run".format(config.max_issues_per_run))
-            return
-
         classification = classifications.get(candidate["id"])
         if classification is None:
             log("  message {}: classifier gave no usable answer, skipping".format(message["id"]))
@@ -607,6 +602,15 @@ def process_channel(channel_id, config, discord, github, classifier, state):
 
         if config.dry_run:
             log("  DRY RUN: would create a '{}' issue and reply on Discord".format(issue_type))
+            continue
+
+        # Past the cap, only issue creation stops: the message stays
+        # unmarked so the next run files it, while the not-actionable
+        # results above still receive their mark - their classification is
+        # already paid for.
+        if state["created"] >= config.max_issues_per_run:
+            log("  message {}: issue limit of {} for this run reached - left "
+                "for the next run".format(message["id"], config.max_issues_per_run))
             continue
 
         existing = github.find_issue_for_message(message["id"])
