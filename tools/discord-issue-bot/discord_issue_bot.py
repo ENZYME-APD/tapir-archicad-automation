@@ -19,8 +19,8 @@ safe to run repeatedly and safe to overlap runs:
   produce a duplicate issue.
 
 Whether a message is an actionable bug report or feature request is decided
-by the Claude API; plain conversation, questions and help requests are left
-alone.
+by Claude through the Claude Code CLI; plain conversation, questions and
+help requests are left alone.
 
 Configuration (environment variables):
 
