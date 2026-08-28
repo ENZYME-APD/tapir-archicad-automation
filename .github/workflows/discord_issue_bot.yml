@@ -19,6 +19,10 @@ on:
         description: Classify and log only, without creating issues or posting to Discord
         type: boolean
         default: false
+      lookback_minutes:
+        description: Override how far back this run scans (e.g. after a schedule pause); empty uses the default
+        type: string
+        default: ''
 
 concurrency:
   group: discord-issue-bot
@@ -79,3 +83,4 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          LOOKBACK_MINUTES: ${{ inputs.lookback_minutes }}

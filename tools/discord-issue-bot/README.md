@@ -35,8 +35,8 @@ not read, so reports posted there will not become issues.
 Messages older than the lookback window are never revisited. Note that
 GitHub disables scheduled workflows after 60 days without repository
 activity; if the schedule was ever paused for longer than a day,
-re-enable it and run the workflow once manually with `LOOKBACK_MINUTES`
-raised to cover the gap.
+re-enable it and run the workflow once manually with the *lookback
+minutes* input raised to cover the gap.
 
 Because the issues are created with the workflow's own `GITHUB_TOKEN`,
 they do not trigger other workflows: the automatic Claude issue triage

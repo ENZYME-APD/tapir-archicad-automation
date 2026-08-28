@@ -143,10 +143,12 @@ class Config:
             github_token=os.environ["GITHUB_TOKEN"],
             repository=os.environ["GITHUB_REPOSITORY"],
             model=os.environ.get("CLAUDE_MODEL", ""),
-            lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES", "1440")),
-            max_issues_per_run=int(os.environ.get("MAX_ISSUES_PER_RUN", "5")),
-            min_confidence=float(os.environ.get("MIN_CONFIDENCE", "0.7")),
-            min_message_length=int(os.environ.get("MIN_MESSAGE_LENGTH", "25")),
+            # `or` treats a present-but-empty variable (an unfilled workflow
+            # input) the same as an absent one.
+            lookback_minutes=int(os.environ.get("LOOKBACK_MINUTES") or "1440"),
+            max_issues_per_run=int(os.environ.get("MAX_ISSUES_PER_RUN") or "5"),
+            min_confidence=float(os.environ.get("MIN_CONFIDENCE") or "0.7"),
+            min_message_length=int(os.environ.get("MIN_MESSAGE_LENGTH") or "25"),
             dry_run=os.environ.get("DRY_RUN", "").strip().lower() in ("1", "true", "yes"),
         )
         return config, []
