@@ -11,7 +11,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateSlabs",
                 "Create Slab elements based on the given parameters. " +
-                "Holes and arcs can be given through the AdditionalSettings input (polygonArcs, holes).",
+                "The outline of each slab is a closed curve; its arc segments are kept as arcs.",
                 GroupNames.ElementCreation)
         {
         }
@@ -20,7 +20,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
-            new Field("Vertices", "polygonCoordinates", FieldKind.PointsTree2D, "Outline points of each slab (one branch per slab, at least 3 points; only X and Y are used).", required: true, minPointsPerBranch: 3),
+            new Field("Outlines", "polygonCoordinates", FieldKind.OutlineCurve, "The closed outline curve of each slab, one curve per slab. Line and arc segments are kept as they are; anything else is approximated with a polyline. Only X and Y are used.", required: true),
+            new Field("Holes", "holes", FieldKind.HoleCurvesTree, "The closed curves of the voids in each slab, one branch per slab. A slab with no voids gets an empty branch."),
             new Field("Levels", "level", FieldKind.Number, "The Z coordinate of the reference plane of the slab.", required: true),
             new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the slab."),
             new Field("ReferencePlaneLocations", "referencePlaneLocation", FieldKind.Text, "Reference plane location: Top, CoreTop, CoreBottom or Bottom.", valueList: () => new ReferencePlaneLocationValueList ()),
