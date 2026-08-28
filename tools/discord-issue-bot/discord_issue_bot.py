@@ -614,6 +614,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             # Unknown whether an issue exists - creating one now could file a
             # duplicate. Leave the message unmarked; the next run retries.
             log("  message {}: duplicate check unavailable, retrying next run".format(message["id"]))
+            state["github_failures"] += 1
             continue
         if existing is not None:
             log("  message {}: issue #{} already exists, marking as processed".format(
@@ -625,6 +626,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         body = build_issue_body(message, channel, classification)
         issue = github.create_issue(title, body, [label, "discord"])
         if issue is None:
+            state["github_failures"] += 1
             continue
         state["created"] += 1
         log("  created issue #{}: {}".format(issue["number"], issue["html_url"]))
@@ -648,7 +650,7 @@ def main():
     classifier = make_classifier(config)
     log("Classifying via {}".format(
         "Claude Code (subscription)" if config.use_claude_code else "the Claude API"))
-    state = {"created": 0, "unreadable_channels": 0}
+    state = {"created": 0, "unreadable_channels": 0, "github_failures": 0}
 
     for channel_id in config.channel_ids:
         process_channel(channel_id, config, discord, github, classifier, state)
@@ -658,6 +660,12 @@ def main():
         # workflow silently green while the bot does nothing.
         log("ERROR: none of the configured channels could be read - check the "
             "bot token and its permissions.")
+        return 1
+    if state["github_failures"] and state["created"] == 0:
+        # Same principle for the GitHub side: if every issue operation
+        # failed, surface it instead of ending green.
+        log("ERROR: all {} GitHub issue operation(s) failed - check the "
+            "workflow's issues permission.".format(state["github_failures"]))
         return 1
 
     log("Done. Created {} issue(s).".format(state["created"]))
