@@ -56,6 +56,10 @@ jobs:
         artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
         draft: true
         allowUpdates: true
+        # The release flow only ever updates drafts; a stray dispatch on an
+        # already-shipped tag must fail instead of flipping the published
+        # release back to draft and overwriting its assets.
+        updateOnlyUnreleased: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
   build_mac:
@@ -110,4 +114,6 @@ jobs:
         artifacts: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Mac.zip
         draft: true
         allowUpdates: true
+        # Same guard as the Windows job: only drafts may be updated.
+        updateOnlyUnreleased: true
         token: ${{ secrets.GITHUB_TOKEN }}
