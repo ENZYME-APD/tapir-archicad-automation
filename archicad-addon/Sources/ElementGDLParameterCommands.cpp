@@ -1089,7 +1089,19 @@ GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
             return APIERR_BADPARS;
         }
 
-        if (actParam->dim1 != change.dim1 || actParam->dim2 != change.dim2) {
+        // A flat list is taken as the whole array in the order GetGDLParametersOfElements
+        // reports it - first index outer, second inner - so the values that command hands
+        // out can be written straight back. Without this a 3 x 3 parameter read as nine
+        // values would be rejected as "9 x 1", which is the shape of every round trip.
+        Int32 dim1 = change.dim1;
+        Int32 dim2 = change.dim2;
+        if (dim2 == 1 && actParam->dim2 > 1 &&
+            static_cast<USize> (dim1) == static_cast<USize> (actParam->dim1) * static_cast<USize> (actParam->dim2)) {
+            dim1 = actParam->dim1;
+            dim2 = actParam->dim2;
+        }
+
+        if (actParam->dim1 != dim1 || actParam->dim2 != dim2) {
             errMessage = GS::UniString::Printf ("Invalid input: array parameter %s of element %T has %d x %d items, but %d x %d were given - resizing an array parameter is not supported, give exactly as many values as the parameter has",
                                                 change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf (), actParam->dim1, actParam->dim2, change.dim1, change.dim2);
             return APIERR_BADPARS;
@@ -1097,14 +1109,14 @@ GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
 
         const bool isStringArray = (change.typeID == APIParT_CString || change.typeID == APIParT_Title);
         const USize itemCount = isStringArray ? change.stringValues.GetSize () : change.numberValues.GetSize ();
-        if (itemCount != static_cast<USize> (change.dim1) * static_cast<USize> (change.dim2)) {
-            errMessage = GS::UniString::Printf ("Invalid input: the given value of array parameter %s of element %T is not a %d x %d array", change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf (), change.dim1, change.dim2);
+        if (itemCount != static_cast<USize> (dim1) * static_cast<USize> (dim2)) {
+            errMessage = GS::UniString::Printf ("Invalid input: the given value of array parameter %s of element %T is not a %d x %d array", change.name.ToCStr (), APIGuidToString (elemGuid).ToPrintf (), dim1, dim2);
             return APIERR_BADPARS;
         }
 
         UIndex itemIndex = 0;
-        for (Int32 i1 = 1; i1 <= change.dim1; ++i1) {
-            for (Int32 i2 = 1; i2 <= change.dim2; ++i2, ++itemIndex) {
+        for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+            for (Int32 i2 = 1; i2 <= dim2; ++i2, ++itemIndex) {
                 API_ChangeParamType changeParam = {};
                 CHTruncate (change.name.ToCStr (), changeParam.name, API_NameLen);
                 changeParam.ind1 = i1;
