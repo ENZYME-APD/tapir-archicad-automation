@@ -59,6 +59,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.parse
 
@@ -442,15 +443,26 @@ class ClaudeCodeClassifier(ClassifierBase):
 
     def __init__(self, model):
         self.model = model
+        self.workdir = tempfile.mkdtemp(prefix="tapir-discord-bot-")
 
     def _complete(self, chunk):
-        command = ["claude", "-p", "--output-format", "json"]
+        # Defense in depth against prompt injection in the message texts:
+        # the CLI sees only the variables it needs (no Discord or GitHub
+        # tokens), runs in an empty directory instead of the repository
+        # checkout, gets a single turn, and classification needs no tools.
+        command = [
+            "claude", "-p", "--output-format", "json", "--max-turns", "1",
+            "--disallowedTools", "Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch",
+        ]
         if self.model:
             command += ["--model", self.model]
         prompt = CLASSIFIER_INSTRUCTIONS + "\n\n" + self._payload(chunk)
+        environment = {name: os.environ[name] for name in
+                       ("PATH", "HOME", "CLAUDE_CODE_OAUTH_TOKEN") if name in os.environ}
         try:
             completed = subprocess.run(
-                command, input=prompt, capture_output=True, text=True, timeout=600)
+                command, input=prompt, capture_output=True, text=True,
+                timeout=600, env=environment, cwd=self.workdir)
         except FileNotFoundError:
             log("ERROR: the 'claude' CLI is not on PATH; install it with "
                 "'npm install -g @anthropic-ai/claude-code' or set ANTHROPIC_API_KEY instead")
