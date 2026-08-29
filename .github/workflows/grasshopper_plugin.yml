@@ -67,8 +67,9 @@ jobs:
             # join with spaces), and the match is anchored to the tapir
             # line: the search is a substring search over all package
             # names, and another package at the same version must not
-            # confirm a push that never landed.
-            if (($live | Out-String) -match ('(?m)^tapir\b.*' + [regex]::Escape($version))) {
+            # confirm a push that never landed. \s (not \b) after the name,
+            # so a package named tapir-something cannot match either.
+            if (($live | Out-String) -match ('(?m)^tapir\s.*' + [regex]::Escape($version))) {
               Write-Output "Version $version is already live on the package server - treating the rejected push as success."
               cmd /c exit 0
             } else {
