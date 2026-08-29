@@ -62,6 +62,12 @@ jobs:
         # run transitive install hooks that must not see it.
         run: pip install -r tools/discord-issue-bot/requirements.txt
 
+      - name: Run the bot's unit tests
+        # Offline, stub-based and fast - a regression gate on every run,
+        # cheaper than debugging a silently broken scan afterwards.
+        run: python -m unittest test_discord_issue_bot
+        working-directory: tools/discord-issue-bot
+
       - name: Install the Claude Code CLI
         env:
           # Only the fact that the token exists - npm install scripts must
