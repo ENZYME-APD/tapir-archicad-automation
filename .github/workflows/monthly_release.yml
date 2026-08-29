@@ -237,6 +237,27 @@ jobs:
             done
             return 1
           }
+          # The dispatch is a non-idempotent POST: a client-side failure can
+          # arrive after the server accepted the run, and a blind retry
+          # would start a second parallel pipeline on the tag - racing the
+          # draft release into the manual-recovery split state and
+          # double-pushing to yak. Retry only when no run has appeared
+          # since the cutoff; one that appeared despite the reported
+          # failure is adopted by the discovery loop below.
+          dispatch_workflow () {
+            local WF="$1" ATTEMPT
+            for ATTEMPT in 1 2 3; do
+              gh workflow run "$WF" --ref "$VERSION" && return 0
+              sleep 15
+              if [ -n "$(gh run list --workflow "$WF" --branch "$VERSION" \
+                    --created ">=$DISPATCH_CUTOFF" \
+                    --limit 1 --json databaseId --jq '.[0].databaseId // empty' || true)" ]; then
+                echo "Dispatch of $WF reported failure but a run appeared - adopting it."
+                return 0
+              fi
+            done
+            return 1
+          }
           # Only accept runs started by this dispatch, not a completed run
           # left over from a failed earlier attempt on the same tag (60s of
           # slack for clock skew).
@@ -291,7 +312,7 @@ jobs:
                 fi
                 echo "Draft release for $VERSION carries $ASSETS artifact(s) - safe to publish to yak."
               fi
-              gh_retry gh workflow run "$WORKFLOW" --ref "$VERSION"
+              dispatch_workflow "$WORKFLOW"
               # The dispatched run can take a moment to appear. '|| true' is
               # safe here, unlike for PRIOR: an empty answer just means the
               # loop polls again, and the never-appeared error below fires
