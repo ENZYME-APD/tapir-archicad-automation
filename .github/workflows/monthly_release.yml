@@ -1,0 +1,459 @@
+name: Monthly Release
+
+# Automates the release process described in the wiki
+# (https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Release-process)
+# on a monthly schedule:
+#
+#   1. Skip when nothing changed since the last release tag.
+#   2. Check that the generated docs were updated since the last release when
+#      Add-On sources changed (docs are regenerated with the
+#      GenerateDocumentation command in a running Archicad, which CI cannot
+#      do - a stale docs folder fails the run with instructions).
+#   3. Tag HEAD with the current version from tools/package_info.json - the
+#      sources already carry this version, per the project's convention.
+#   4. Start the two existing release pipelines (Add-On build + release,
+#      Grasshopper build + yak deploy) on that tag and wait for them.
+#      They must be dispatched explicitly because a tag pushed with the
+#      workflow's own GITHUB_TOKEN does not trigger on-push workflows.
+#   5. When all artifacts are built, publish the draft release with
+#      auto-generated notes.
+#   6. Increment the patch version (tools/update_version.py) and commit, so
+#      development of the next version starts - the wiki's final step.
+#
+# A build failure stops the run before publishing and before the version
+# bump; the tag is left in place so a maintainer can investigate and re-run
+# the pipelines (or this workflow) after fixing the problem.
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'   # 06:00 UTC on the 1st of every month
+  workflow_dispatch:
+    inputs:
+      skip_docs_check:
+        description: Release even if the generated docs look stale
+        type: boolean
+        default: false
+      dry_run:
+        description: Only report what would be released - no tag, builds, publish or version bump
+        type: boolean
+        default: false
+
+concurrency:
+  group: monthly-release
+  cancel-in-progress: false
+
+env:
+  # 5 Archicad versions x 2 platforms - update together with the build
+  # matrix in archicad_addon.yml.
+  EXPECTED_ASSETS: 10
+
+jobs:
+  release:
+    # Scheduled runs should not fire on forks. The main-only rule lives in
+    # the first step below, not here: an if-skipped job shows as "skipped"
+    # with nothing saying why, and picking a tag in the dispatch dialog is
+    # an easy mistake (the pipeline workflows are legitimately dispatched
+    # on tags).
+    if: github.repository == 'ENZYME-APD/tapir-archicad-automation' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    permissions:
+      contents: write   # push the tag and the version bump commit
+      actions: write    # dispatch the two release pipelines
+
+    steps:
+      - name: Require main
+        # A release may only ever be cut from main - a dispatch on another
+        # ref would tag that ref and push its commits to main in the
+        # version bump step.
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::The Monthly Release runs only on main (dispatched on" \
+               "'${{ github.ref }}'). To resume a failed release, dispatch the" \
+               "two pipeline workflows on the tag instead - this workflow" \
+               "always runs from main."
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to release
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
+          # Checked before anything irreversible happens: the bump step's
+          # major.minor.patch split would otherwise only fail after the
+          # release is already tagged and published.
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '$VERSION' in tools/package_info.json is not MAJOR.MINOR.PATCH;" \
+                 "fix it before releasing."
+            exit 1
+          fi
+
+          # The tag trusts that all five version files agree with
+          # package_info.json; verify instead of trusting, or a hand-edited
+          # file ships binaries labeled differently than the tag.
+          python3 tools/update_version.py
+          if ! git diff --quiet; then
+            git diff --stat
+            echo "::error::The version files disagree with tools/package_info.json." \
+                 "Run tools/update_version.py and commit the result before releasing."
+            exit 1
+          fi
+
+          if git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null; then
+            # The tag can already exist when a previous run failed after
+            # tagging (a build broke, so neither publish nor version bump
+            # happened). When it still points at HEAD, resume that release
+            # instead of failing; anything else is a real inconsistency.
+            if [ "$(git rev-parse "refs/tags/$VERSION^{commit}")" = "$(git rev-parse HEAD)" ]; then
+              # The match glob is looser than it looks ([0-9]* is one digit
+              # plus anything); --exclude keeps pre-release-style tags like
+              # 1.6.0-rc1 from ever becoming LAST_TAG.
+              LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' "$VERSION"^)
+              echo "Tag $VERSION already points at HEAD - resuming the failed release (previous tag: $LAST_TAG)."
+              echo "release=true" >> "$GITHUB_OUTPUT"
+              echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            elif gh api "repos/${{ github.repository }}/releases/tags/$VERSION" --jq '.id' > /dev/null 2>&1; then
+              # A published release exists, so the version has shipped - the
+              # version-bump push after it must have failed. Deleting the tag
+              # would be wrong here (it would rebuild newer commits under a
+              # shipped version number).
+              echo "::error::Tag $VERSION is already published but package_info.json still says" \
+                   "$VERSION - the post-release version bump likely failed to push. Bump the" \
+                   "version (tools/update_version.py), commit it to main, and the next run" \
+                   "releases the new version."
+              exit 1
+            else
+              echo "::error::Tag $VERSION exists on another commit but was never published -" \
+                   "probably a failed release followed by new commits. First check with" \
+                   "'yak search tapir' whether $VERSION already reached the Rhino package" \
+                   "manager (a run can fail after the Grasshopper pipeline pushed): if it did," \
+                   "bump the version (tools/update_version.py), commit to main and let the next" \
+                   "run release the new version - re-tagging would pair the old build on the" \
+                   "package server with new binaries on GitHub. Only when $VERSION is not on" \
+                   "the package server, delete the tag (git push origin :refs/tags/$VERSION)" \
+                   "so the next run re-tags the current HEAD under the same version."
+              exit 1
+            fi
+          else
+            # --exclude for the same reason as in the resume branch above.
+            LAST_TAG=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' HEAD)
+            echo "Current version: $VERSION, last release tag: $LAST_TAG"
+            # Every release ends with the "Update version after release"
+            # commit on main, so a plain commit count since the last tag is
+            # always at least 1. Only commits touching something other than
+            # the five version files count as releasable changes.
+            COMMITS=$(git rev-list --count "$LAST_TAG"..HEAD -- . \
+              ':(exclude)tools/package_info.json' \
+              ':(exclude)archicad-addon/Sources/AddOnVersion.hpp' \
+              ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj' \
+              ':(exclude)grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs' \
+              ':(exclude)grasshopper-plugin/YakPackage/manifest.yml')
+            if [ "$COMMITS" -eq 0 ]; then
+              echo "No changes since $LAST_TAG - nothing to release this month." >> "$GITHUB_STEP_SUMMARY"
+              echo "release=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "$COMMITS commit(s) with changes since $LAST_TAG - releasing $VERSION."
+              echo "release=true" >> "$GITHUB_OUTPUT"
+            fi
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Check that the generated docs are up to date
+        if: steps.plan.outputs.release == 'true' && inputs.skip_docs_check != true
+        run: |
+          set -eu
+          LAST_TAG='${{ steps.plan.outputs.last_tag }}'
+          # The docs are generated from the registered command schemas, so
+          # they only need regenerating when the Add-On sources changed
+          # (AddOnVersion.hpp changes on every release and does not count).
+          # Ancestry, not timestamps, decides staleness: commit dates
+          # misorder long-lived branches merged after a docs regeneration.
+          # Sources commits not reachable from the newest docs commit are
+          # exactly the changes the regenerated docs cannot have seen. Git
+          # cannot tell a real regeneration from a hand edit to a docs file,
+          # so any docs/archicad-addon commit resets the anchor - the fix for
+          # a failure here is always a full GenerateDocumentation run, never
+          # touching a single docs file to appease the check.
+          DOCS_COMMIT=$(git log -1 --format=%H "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
+          SINCE="${DOCS_COMMIT:-$LAST_TAG}"
+          STALE=$(git log -1 --format=%H "$SINCE"..HEAD -- \
+            'archicad-addon/Sources' ':(exclude)archicad-addon/Sources/AddOnVersion.hpp')
+          if [ -n "$STALE" ]; then
+            echo "::error::The Add-On sources changed since $LAST_TAG after the last update of" \
+                 "docs/archicad-addon. Run the full GenerateDocumentation command in Archicad and" \
+                 "commit the regenerated docs (hand-editing a docs file only hides the staleness" \
+                 "from this check), then re-run this workflow. If the regeneration produces no" \
+                 "changes, the sources changes did not affect the docs - release by dispatching" \
+                 "this workflow manually with 'skip_docs_check' (an empty commit does not reset" \
+                 "this check; only a commit touching docs/archicad-addon does)."
+            exit 1
+          fi
+          echo "Docs check passed."
+
+      - name: Report the dry run
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run == true
+        run: |
+          echo "DRY RUN: would release **${{ steps.plan.outputs.version }}**" \
+               "(previous tag ${{ steps.plan.outputs.last_tag }}); no tag, build," \
+               "publish or version bump was performed." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create and push the release tag
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true && steps.plan.outputs.tag_exists != 'true'
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          git tag "$VERSION"
+          git push origin "refs/tags/$VERSION"
+
+      - name: Build the release artifacts
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          # One transient gh failure must not abort a multi-hour release
+          # run under set -e (the poll loop below already tolerates them);
+          # retry a lookup a few times, and only then fail for real. A
+          # blanket '|| true' would be wrong for the PRIOR lookup, where an
+          # empty answer means "dispatch a fresh run".
+          gh_retry () {
+            local ATTEMPT OUT
+            for ATTEMPT in 1 2 3; do
+              if OUT=$("$@"); then
+                echo "$OUT"
+                return 0
+              fi
+              [ "$ATTEMPT" -lt 3 ] && sleep 15
+            done
+            return 1
+          }
+          # The dispatch is a non-idempotent POST: a client-side failure can
+          # arrive after the server accepted the run, and a blind retry
+          # would start a second parallel pipeline on the tag - racing the
+          # draft release into the manual-recovery split state and
+          # double-pushing to yak. Retry only when no run has appeared
+          # since the cutoff; one that appeared despite the reported
+          # failure is adopted by the discovery loop below.
+          dispatch_workflow () {
+            local WF="$1" ATTEMPT
+            for ATTEMPT in 1 2 3; do
+              gh workflow run "$WF" --ref "$VERSION" && return 0
+              sleep 15
+              if [ -n "$(gh run list --workflow "$WF" --branch "$VERSION" \
+                    --created ">=$DISPATCH_CUTOFF" \
+                    --limit 1 --json databaseId --jq '.[0].databaseId // empty' || true)" ]; then
+                echo "Dispatch of $WF reported failure but a run appeared - adopting it."
+                return 0
+              fi
+            done
+            return 1
+          }
+          # Only accept runs started by this dispatch, not a completed run
+          # left over from a failed earlier attempt on the same tag (60s of
+          # slack for clock skew).
+          DISPATCH_CUTOFF=$(date -u -d '-60 seconds' +%Y-%m-%dT%H:%M:%SZ)
+          # Strictly in this order: the Grasshopper pipeline publishes to the
+          # Rhino package manager as part of its run, so it may only start
+          # once the Add-On pipeline has succeeded - otherwise a failed
+          # Add-On build could leave a yak version live with no matching
+          # GitHub release.
+          HEAD_SHA=$(git rev-parse HEAD)
+          for WORKFLOW in archicad_addon.yml grasshopper_plugin.yml; do
+            # On a resumed release a pipeline that already succeeded on this
+            # tag must not run again - the Grasshopper pipeline would push
+            # the same version to the package server a second time. A prior
+            # run that is still going is adopted instead of dispatching a
+            # second one next to it. Only runs of the CURRENT commit count:
+            # after the delete-the-stale-tag recovery, a run for the old
+            # commit under the same tag name must not suppress the rebuild.
+            RUN_ID=''
+            # Among this commit's runs, a success anywhere wins over the
+            # newest run: a later failed re-run must not mask a completed
+            # yak publish and trigger a second one.
+            PRIOR=$(gh_retry gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+              --limit 10 --json databaseId,status,conclusion,headSha \
+              --jq "[.[] | select(.headSha == \"$HEAD_SHA\")] | (map(select(.conclusion == \"success\")) + .) | .[0] // empty")
+            if [ -n "$PRIOR" ]; then
+              PRIOR_STATUS=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+              PRIOR_ID=$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['databaseId'])")
+              if [ "$PRIOR_STATUS" != "completed" ]; then
+                echo "$WORKFLOW is already running on tag $VERSION (run $PRIOR_ID) - waiting for it instead of starting another."
+                RUN_ID="$PRIOR_ID"
+              elif [ "$(echo "$PRIOR" | python3 -c "import json,sys; print(json.load(sys.stdin)['conclusion'] or '')")" = "success" ]; then
+                echo "$WORKFLOW already succeeded on tag $VERSION - not running it again."
+                continue
+              fi
+            fi
+            if [ -z "$RUN_ID" ]; then
+              if [ "$WORKFLOW" = "grasshopper_plugin.yml" ]; then
+                # Only the Add-On pipeline fills the draft release, and it
+                # has succeeded by this point - verify the draft is complete
+                # BEFORE the Grasshopper pipeline gets to publish to yak, so
+                # a split or partial draft cannot leave a yak version live
+                # with no publishable GitHub release.
+                ASSETS=$(gh_retry gh api "repos/${{ github.repository }}/releases" \
+                  --jq "[.[] | select(.tag_name == \"$VERSION\" and .draft) | .assets | length] | max // 0")
+                if [ "$ASSETS" -lt "$EXPECTED_ASSETS" ]; then
+                  echo "::error::The Add-On pipeline succeeded but the draft release for $VERSION" \
+                       "has only $ASSETS of the expected $EXPECTED_ASSETS artifacts - not starting the Grasshopper" \
+                       "pipeline. Delete the draft(s) for $VERSION on the releases page, re-run the" \
+                       "'Archicad Add-On Build and Release' workflow on tag $VERSION, then re-run this workflow."
+                  exit 1
+                fi
+                echo "Draft release for $VERSION carries $ASSETS artifact(s) - safe to publish to yak."
+              fi
+              dispatch_workflow "$WORKFLOW"
+              # The dispatched run can take a moment to appear. '|| true' is
+              # safe here, unlike for PRIOR: an empty answer just means the
+              # loop polls again, and the never-appeared error below fires
+              # only after all 30 attempts.
+              for _ in $(seq 1 30); do
+                RUN_ID=$(gh run list --workflow "$WORKFLOW" --branch "$VERSION" \
+                  --created ">=$DISPATCH_CUTOFF" \
+                  --limit 1 --json databaseId --jq '.[0].databaseId // empty' || true)
+                [ -n "$RUN_ID" ] && break
+                sleep 10
+              done
+            fi
+            if [ -z "$RUN_ID" ]; then
+              echo "::error::The dispatched run of $WORKFLOW on tag $VERSION never appeared."
+              exit 1
+            fi
+            echo "Waiting for $WORKFLOW (run $RUN_ID)..."
+            # A transient gh failure during this multi-hour wait must not
+            # kill the release run under set -e; an unknown status just
+            # means poll again (the job timeout bounds the loop).
+            while true; do
+              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
+              [ "$STATUS" = "completed" ] && break
+              sleep 60
+            done
+            CONCLUSION=''
+            for _ in 1 2 3; do
+              CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion' || echo '')
+              [ -n "$CONCLUSION" ] && break
+              sleep 20
+            done
+            if [ "$CONCLUSION" != "success" ]; then
+              echo "::error::$WORKFLOW finished with conclusion '$CONCLUSION'." \
+                   "The release is NOT published and the version is NOT bumped." \
+                   "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
+              exit 1
+            fi
+            echo "$WORKFLOW succeeded."
+          done
+
+      - name: Publish the release
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          LAST_TAG='${{ steps.plan.outputs.last_tag }}'
+          # A resumed run may have failed after publishing (e.g. the version
+          # bump push was rejected); the endpoint below only returns
+          # published releases, so a hit means publishing is already done.
+          if gh api "repos/${{ github.repository }}/releases/tags/$VERSION" --jq '.id' > /dev/null 2>&1; then
+            echo "Release $VERSION is already published - continuing to the version bump." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # The Add-On pipeline collects every artifact on one draft release;
+          # pick the draft for this tag (the one with the most assets, in the
+          # unlikely case parallel jobs raced and created more than one).
+          RELEASE_ID=$(gh api "repos/${{ github.repository }}/releases" \
+            --jq "[.[] | select(.tag_name == \"$VERSION\" and .draft)] | sort_by(.assets | length) | last | .id // empty")
+          if [ -z "$RELEASE_ID" ]; then
+            echo "::error::No draft release found for tag $VERSION."
+            exit 1
+          fi
+          ASSETS=$(gh api "repos/${{ github.repository }}/releases/$RELEASE_ID" --jq '.assets | length')
+          echo "Draft release $RELEASE_ID has $ASSETS asset(s)."
+          if [ "$ASSETS" -lt "$EXPECTED_ASSETS" ]; then
+            echo "::error::Draft release for $VERSION has only $ASSETS of the expected $EXPECTED_ASSETS artifacts" \
+                 "- not publishing an incomplete release." \
+                 "If parallel release jobs split the artifacts across duplicate drafts, recover by" \
+                 "deleting every draft for $VERSION on the releases page, re-running the" \
+                 "'Archicad Add-On Build and Release' workflow on tag $VERSION from the Actions tab," \
+                 "and then re-running this workflow."
+            exit 1
+          fi
+          NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
+            -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body')
+          # make_latest is a string enum in the REST API, draft a real boolean.
+          gh api --method PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
+            -f name="$VERSION" -f body="$NOTES" -F draft=false -f make_latest=true > /dev/null
+          # If the parallel release jobs raced and created duplicate drafts
+          # for this tag, delete the leftovers now that one is published.
+          # The published release's own id is excluded so a stale listing
+          # can never delete it. pipefail so a failed listing fails the
+          # step instead of silently skipping the cleanup.
+          set -o pipefail
+          gh api "repos/${{ github.repository }}/releases" \
+            --jq ".[] | select(.tag_name == \"$VERSION\" and .draft and .id != $RELEASE_ID) | .id" |
+          while read -r DUP_ID; do
+            echo "Deleting duplicate draft release $DUP_ID."
+            gh api --method DELETE "repos/${{ github.repository }}/releases/$DUP_ID"
+          done
+          echo "Published release **$VERSION** with $ASSETS artifact(s)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Increment the version for the next cycle
+        if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
+        run: |
+          set -eu
+          VERSION='${{ steps.plan.outputs.version }}'
+          python3 - <<'EOF'
+          import json
+          import re
+          # Substitute the version in place instead of rewriting the file
+          # from a template, so any key ever added to it survives releases.
+          path = 'tools/package_info.json'
+          content = open(path).read()
+          version = json.loads(content)['version']
+          major, minor, patch = version.split('.')
+          next_version = '{}.{}.{}'.format(major, minor, int(patch) + 1)
+          content, count = re.subn(re.escape(version), next_version, content)
+          if count != 1:
+              raise SystemExit('expected the version once in {}, found it {} times'.format(path, count))
+          open(path, 'w').write(content)
+          print('Version bumped to', next_version)
+          EOF
+          python3 tools/update_version.py
+          NEXT_VERSION=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # -a stages every tracked file the bump touched, so a version file
+          # added to update_version.py later cannot be silently left behind
+          # as a dirty tree that breaks the rebase below. The checkout is
+          # otherwise pristine at this point - nothing else is modified.
+          git commit -am "Update version after release"
+          # main may have moved during the multi-hour build; retry the
+          # rebase-and-push a few times before giving up.
+          PUSHED=false
+          for _ in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              PUSHED=true
+              break
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          if [ "$PUSHED" != "true" ]; then
+            echo "::error::Release $VERSION is published; only the version bump is missing." \
+                 "Push it manually: set the next version in tools/package_info.json, run" \
+                 "tools/update_version.py, commit to main. (While main has not moved, a re-run" \
+                 "of this workflow resumes and retries the bump itself; once new commits land," \
+                 "the next run stops with the 'already published' error instead of re-releasing.)"
+            exit 1
+          fi
+          echo "Started development of version **$NEXT_VERSION**." >> "$GITHUB_STEP_SUMMARY"
