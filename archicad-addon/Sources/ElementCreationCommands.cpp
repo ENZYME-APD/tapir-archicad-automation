@@ -639,6 +639,10 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
         if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
             polygonCoordinates.Pop ();
         }
+        auto holesError = ValidateHoles (holes);
+        if (holesError.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, holesError.Get ());
+        }
         element.zone.poly.nCoords	= polygonCoordinates.GetSize() + 1;
         element.zone.poly.nSubPolys	= 1;
         element.zone.poly.nArcs		= polygonArcs.GetSize ();

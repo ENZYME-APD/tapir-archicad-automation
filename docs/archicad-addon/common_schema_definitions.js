@@ -4257,11 +4257,19 @@ var gSchemaDefinitions = {
     },
     "Hole2D": {
         "type": "object",
-        "description": "A 2D hole in an element defined by closed polylines",
+        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
         "properties": {
             "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "Legacy alias of polygonOutline.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 },
@@ -4276,8 +4284,17 @@ var gSchemaDefinitions = {
             }
         },
         "additionalProperties": false,
-        "required": [
-            "polygonCoordinates"
+        "oneOf": [
+            {
+                "required": [
+                    "polygonOutline"
+                ]
+            },
+            {
+                "required": [
+                    "polygonCoordinates"
+                ]
+            }
         ]
     },
     "Holes2D": {
