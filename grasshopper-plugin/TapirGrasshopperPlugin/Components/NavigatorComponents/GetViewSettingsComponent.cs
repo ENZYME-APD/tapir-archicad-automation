@@ -1,5 +1,6 @@
 ﻿using Grasshopper.Kernel;
 using Newtonsoft.Json;
+using Rhino.Geometry;
 using System;
 using System.Linq;
 using TapirGrasshopperPlugin.Helps;
@@ -23,7 +24,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         {
             InGenerics(
                 "NavigatorItemIds",
-                "Identifiers of the navigator items to delete.");
+                "Identifiers of the navigator items to query.");
         }
 
         protected override void AddOutputs()
@@ -37,6 +38,50 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             OutTexts(nameof(ViewSettings.DimensionStyle) + "s");
             OutTexts(nameof(ViewSettings.PenSetName) + "s");
             OutTexts(nameof(ViewSettings.GraphicOverrideCombination) + "s");
+
+            OutIntegers(
+                nameof(ViewSettings.DrawingScale) + "s",
+                "The drawing scale stored on each view, if enabled.");
+
+            OutBooleans(
+                nameof(ViewSettings.SaveZoom) + "s",
+                "Whether the zoom box is stored in each view.");
+
+            OutBooleans(
+                nameof(ViewSettings.IgnoreSavedZoom) + "s",
+                "Whether changing to each view should ignore its stored zoom.");
+
+            OutPoints(
+                "ZoomMins",
+                "Minimum corner of the stored zoom box of each view (only when SaveZoom is true).");
+
+            OutPoints(
+                "ZoomMaxs",
+                "Maximum corner of the stored zoom box of each view (only when SaveZoom is true).");
+
+            OutNumberList(
+                nameof(ViewSettings.Rotation) + "s",
+                "View rotation angle of each view in radians.");
+
+            OutTexts(
+                nameof(ViewSettings.StructureDisplay) + "s",
+                "Structure display mode of each view. One of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.");
+
+            OutTexts(
+                nameof(ViewSettings.RenovationFilterGuid) + "s",
+                "GUID of the renovation filter applied to each view.");
+
+            OutTexts(
+                nameof(ViewSettings.D3StyleName) + "s",
+                "Name of the 3D style of each view. Empty if not set.");
+
+            OutTexts(
+                nameof(ViewSettings.RenderingSceneName) + "s",
+                "Name of the rendering scene of each view. Empty if not set.");
+
+            OutBooleans(
+                nameof(ViewSettings.UsePhotoRendering) + "s",
+                "Whether photo rendering is used for each view.");
         }
 
         protected override void Solve(
@@ -65,30 +110,85 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     response,
                     Formatting.Indented));
 
+            // Items that are not views come back as ErrorItems - the "as"
+            // cast turns them into null outputs instead of throwing.
+            var settings = response.ViewSettings
+                .Select(x => x as ViewSettings)
+                .ToList();
+
             da.SetDataList(
                 1,
-                response.ViewSettings.Select(x =>
-                    ((ViewSettings)x).ModelViewOptions));
+                settings.Select(x => x?.ModelViewOptions));
 
             da.SetDataList(
                 2,
-                response.ViewSettings.Select(x =>
-                    ((ViewSettings)x).LayerCombination));
+                settings.Select(x => x?.LayerCombination));
 
             da.SetDataList(
                 3,
-                response.ViewSettings.Select(x =>
-                    ((ViewSettings)x).DimensionStyle));
+                settings.Select(x => x?.DimensionStyle));
 
             da.SetDataList(
                 4,
-                response.ViewSettings.Select(x =>
-                    ((ViewSettings)x).PenSetName));
+                settings.Select(x => x?.PenSetName));
 
             da.SetDataList(
                 5,
-                response.ViewSettings.Select(x =>
-                    ((ViewSettings)x).GraphicOverrideCombination));
+                settings.Select(x => x?.GraphicOverrideCombination));
+
+            da.SetDataList(
+                6,
+                settings.Select(x => x?.DrawingScale));
+
+            da.SetDataList(
+                7,
+                settings.Select(x => x?.SaveZoom));
+
+            da.SetDataList(
+                8,
+                settings.Select(x => x?.IgnoreSavedZoom));
+
+            da.SetDataList(
+                9,
+                settings.Select(x => x?.Zoom == null
+                    ? (Point3d?)null
+                    : new Point3d(
+                        x.Zoom.XMin,
+                        x.Zoom.YMin,
+                        0.0)));
+
+            da.SetDataList(
+                10,
+                settings.Select(x => x?.Zoom == null
+                    ? (Point3d?)null
+                    : new Point3d(
+                        x.Zoom.XMax,
+                        x.Zoom.YMax,
+                        0.0)));
+
+            da.SetDataList(
+                11,
+                settings.Select(x => x?.Rotation));
+
+            da.SetDataList(
+                12,
+                settings.Select(x => x?.StructureDisplay));
+
+            da.SetDataList(
+                13,
+                settings.Select(x => x?.RenovationFilterGuid?.Guid));
+
+            da.SetDataList(
+                14,
+                settings.Select(x => x?.D3StyleName));
+
+            da.SetDataList(
+                15,
+                settings.Select(x => x?.RenderingSceneName));
+
+            da.SetDataList(
+                16,
+                settings.Select(x => x?.UsePhotoRendering));
         }
 
         protected override System.Drawing.Bitmap Icon =>
