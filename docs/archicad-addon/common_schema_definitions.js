@@ -7151,6 +7151,22 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "ZoneBoundariesOfZonesWrapper": {
+        "type": "object",
+        "properties": {
+            "zoneBoundariesOfZones": {
+                "type": "array",
+                "description": "The boundaries of each requested Zone, in the same order as the zones array of the input.",
+                "items": {
+                    "$ref": "#/ZoneBoundariesOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "zoneBoundariesOfZones"
+        ]
+    },
     "BuildingMaterialPhysicalPropertiesList": {
         "type": "array",
         "description": "A list of building material physical properties",

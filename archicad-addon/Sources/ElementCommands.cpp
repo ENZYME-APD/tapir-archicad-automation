@@ -2932,12 +2932,16 @@ GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetInputParametersSchema (
         "type": "object",
         "properties": {
             "zoneElementId": {
-                "$ref": "#/ElementId"
+                "$ref": "#/ElementId",
+                "description": "The identifier of a single Zone. Prefer the zones array: querying many Zones in one call is much faster than one call per Zone."
+            },
+            "zones": {
+                "$ref": "#/Elements",
+                "description": "A list of Zones. Only one of zoneElementId and zones can be given."
             }
         },
         "additionalProperties": false,
         "required": [
-            "zoneElementId"
         ]
     })";
 }
@@ -2945,46 +2949,30 @@ GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetInputParametersSchema (
 GS::Optional<GS::UniString> GetZoneBoundariesCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ZoneBoundariesOrError"
+        "type": "object",
+        "oneOf": [
+            {
+                "$ref": "#/ZoneBoundariesOrError"
+            },
+            {
+                "$ref": "#/ZoneBoundariesOfZonesWrapper"
+            }
+        ]
     })";
 }
 
-GS::ObjectState GetZoneBoundariesCommand::Execute (
-    const GS::ObjectState& parameters,
 #ifdef ServerMainVers_2800
-    GS::ProcessControl& processControl) const
-#else
-    GS::ProcessControl& /*processControl*/) const
-#endif
+
+static GS::ObjectState GetBoundariesOfZone (ACAPI::ZoneBoundaryQuery& query, const API_Guid& zoneGuid)
 {
-    const GS::ObjectState* zoneElementId = parameters.Get ("zoneElementId");
-    if (zoneElementId == nullptr) {
-        return CreateErrorResponse (APIERR_BADPARS, "zoneElementId is missing");
-    }
-
-#ifdef ServerMainVers_2800
-    ACAPI::ZoneBoundaryQuery query = ACAPI::CreateZoneBoundaryQuery ();
-
-    ACAPI::Result updateResult = query.Modify (
-        [&] (ACAPI::ZoneBoundaryQuery::Modifier& modifier) -> GSErrCode {
-            ACAPI::Result<void> result = modifier.Update (processControl);
-            return result.IsOk () ? NoError : result.UnwrapErr ().kind;
-        }
-    );
-
-    if (updateResult.IsErr ()) {
-        return CreateErrorResponse (updateResult.UnwrapErr ().kind, "Failed to execute zone boundary query");
-    }
-
-    GS::ObjectState response;
-    const auto& zoneBoundaries = response.AddList<GS::ObjectState> ("zoneBoundaries");
-
-    const API_Guid zoneGuid = GetGuidFromObjectState (*zoneElementId);
     const ACAPI::Result<std::vector<ACAPI::ZoneBoundary>> boundaries = query.GetZoneBoundaries (zoneGuid);
 
     if (boundaries.IsErr ()) {
         return CreateErrorResponse (boundaries.UnwrapErr ().kind, "Failed to get zone boundary");
     }
+
+    GS::ObjectState zoneBoundariesOS;
+    const auto& zoneBoundaries = zoneBoundariesOS.AddList<GS::ObjectState> ("zoneBoundaries");
 
     for (const ACAPI::ZoneBoundary& boundary : boundaries.Unwrap ()) {
         GS::ObjectState boundaryOS;
@@ -3022,6 +3010,62 @@ GS::ObjectState GetZoneBoundariesCommand::Execute (
         }
 
         zoneBoundaries (boundaryOS);
+    }
+
+    return zoneBoundariesOS;
+}
+
+#endif
+
+GS::ObjectState GetZoneBoundariesCommand::Execute (
+    const GS::ObjectState& parameters,
+#ifdef ServerMainVers_2800
+    GS::ProcessControl& processControl) const
+#else
+    GS::ProcessControl& /*processControl*/) const
+#endif
+{
+    const GS::ObjectState* zoneElementId = parameters.Get ("zoneElementId");
+    GS::Array<GS::ObjectState> zones;
+    const bool zonesGiven = parameters.Get ("zones", zones);
+
+    if (zoneElementId == nullptr && !zonesGiven) {
+        return CreateErrorResponse (APIERR_BADPARS, "One of zoneElementId and zones is required");
+    }
+
+    if (zoneElementId != nullptr && zonesGiven) {
+        return CreateErrorResponse (APIERR_BADPARS, "Only one of zoneElementId and zones can be given");
+    }
+
+#ifdef ServerMainVers_2800
+    ACAPI::ZoneBoundaryQuery query = ACAPI::CreateZoneBoundaryQuery ();
+
+    ACAPI::Result updateResult = query.Modify (
+        [&] (ACAPI::ZoneBoundaryQuery::Modifier& modifier) -> GSErrCode {
+            ACAPI::Result<void> result = modifier.Update (processControl);
+            return result.IsOk () ? NoError : result.UnwrapErr ().kind;
+        }
+    );
+
+    if (updateResult.IsErr ()) {
+        return CreateErrorResponse (updateResult.UnwrapErr ().kind, "Failed to execute zone boundary query");
+    }
+
+    if (zoneElementId != nullptr) {
+        return GetBoundariesOfZone (query, GetGuidFromObjectState (*zoneElementId));
+    }
+
+    GS::ObjectState response;
+    const auto& zoneBoundariesOfZones = response.AddList<GS::ObjectState> ("zoneBoundariesOfZones");
+
+    for (const GS::ObjectState& zone : zones) {
+        const GS::ObjectState* elementId = zone.Get ("elementId");
+        if (elementId == nullptr) {
+            zoneBoundariesOfZones (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        zoneBoundariesOfZones (GetBoundariesOfZone (query, GetGuidFromObjectState (*elementId)));
     }
 
     return response;
