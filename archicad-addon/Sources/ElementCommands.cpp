@@ -516,7 +516,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                         },
                         "floorPlanPolygons": {
                             "type": "array",
-                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Available for elements with a cut-fill representation (walls, columns, beams). Absent when the element has no cut fill or when the floor plan database is not accessible.",
+                            "description": "Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -581,10 +581,19 @@ static GSErrCode CollectCutFillPolygons (const API_PrimElement* primElem,
                 break;
             const auto* coords = static_cast<const API_Coord*> (par1);
             const auto* pends  = static_cast<const Int32*> (par2);
+            // par1 is only guaranteed to carry the coordinate array for the primitives this
+            // callback is meant to see - never dereference it unchecked, a poly primitive that
+            // arrives without one would otherwise take the whole application down with us.
+            if (coords == nullptr)
+                break;
             Int32 start = 1;
             const Int32 nSubPolys = primElem->poly.nSubPolys;
             for (Int32 sub = 1; sub <= nSubPolys; ++sub) {
-                const Int32 end = (pends != nullptr) ? pends[sub] : nCoords;
+                // pends is 1 based and its last entry is nCoords; clamp anyway so a subpoly
+                // count that disagrees with the coordinate count cannot read past the array.
+                Int32 end = (pends != nullptr) ? pends[sub] : nCoords;
+                if (end > nCoords)
+                    end = nCoords;
                 GS::Array<API_Coord> ring;
                 for (Int32 i = start; i <= end; ++i)
                     ring.Push (coords[i]);
@@ -598,6 +607,47 @@ static GSErrCode CollectCutFillPolygons (const API_PrimElement* primElem,
             break;
     }
     return NoError;
+}
+
+// Which element types are handed to the shape primitive decomposition below.
+//
+// GetDetailsOfElements used to call it for every element it was asked about, whatever the
+// type - including types it has no branch for at all and types Tapir cannot even name
+// (GetElementTypeNonLocalizedName returns "Unknown" for them, and GetElementsByType cannot
+// ask for them). Only elements the floor plan actually cuts through have a cut fill to
+// collect, so restricting the call to those loses nothing and keeps element types the
+// decomposition was never exercised against out of it.
+//
+// This is the list of construction element types whose floor plan symbol comes from a real
+// cut through the element. Deliberately not in it: types drawn by a GDL 2D script (Object,
+// Lamp, Window, Door, Skylight) and every 2D, annotation, viewpoint and marker type - a GDL
+// script can emit a cut fill, so an object shaped like a column may stop reporting polygons
+// here; that is the intended trade against feeding arbitrary elements to the decomposition.
+static bool CanHaveFloorPlanCutFill (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_ColumnSegmentID:
+        case API_BeamID:
+        case API_BeamSegmentID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_ShellID:
+        case API_MeshID:
+        case API_MorphID:
+        case API_CurtainWallID:
+        case API_CurtainWallSegmentID:
+        case API_CurtainWallPanelID:
+        case API_CurtainWallFrameID:
+        case API_StairID:
+        case API_StairStructureID:
+        case API_RiserID:
+        case API_TreadID:
+            return true;
+        default:
+            return false;
+    }
 }
 
 static void AddFloorPlanPolygonsIfAvailable (const API_Guid& guid, GS::ObjectState& os)
@@ -1355,7 +1405,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         detailsOfElement.Add ("details", typeSpecificDetails);
-        AddFloorPlanPolygonsIfAvailable (elem.header.guid, detailsOfElement);
+        if (CanHaveFloorPlanCutFill (typeID)) {
+            AddFloorPlanPolygonsIfAvailable (elem.header.guid, detailsOfElement);
+        }
 
         detailsOfElements (detailsOfElement);
     }
