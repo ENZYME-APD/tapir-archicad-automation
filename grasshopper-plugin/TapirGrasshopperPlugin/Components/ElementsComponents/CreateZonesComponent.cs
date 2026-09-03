@@ -53,6 +53,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Name of a favorite to base the new zone on. Its settings are applied first, " +
                 "then the other inputs override them. Input only 1 to use the same favorite for all. Optional.");
 
+            InBoolean(
+                ElementMetadata.EmbedMetadataInputName,
+                ElementMetadata.EmbedMetadataDescription,
+                true);
+
+            InBoolean(
+                ElementMetadata.ReplaceExistingInputName,
+                ElementMetadata.ReplaceExistingDescription,
+                false);
+
             SetOptionality(new[] { 2, 3, 4, 5 });
         }
 
@@ -237,6 +247,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var parameters = new JObject { ["zonesData"] = items };
 
+            var embedMetadata = da.GetOptional(6, true);
+            var replaceExisting = da.GetOptional(7, false);
+            var metadata = new ElementMetadata(this, ToAddOn, ToArchicad);
+            // The previous elements are collected before the creation (so the
+            // new elements are never in the set), but only deleted after it
+            // succeeded, so a failed run does not lose them.
+            JArray previousElements = null;
+            if (replaceExisting)
+            {
+                previousElements = metadata.FindPreviouslyCreatedElements();
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
                     parameters,
@@ -244,6 +266,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     out JObject response))
             {
                 return;
+            }
+
+            if (embedMetadata)
+            {
+                metadata.StampCreatedElements(response);
+            }
+            if (replaceExisting)
+            {
+                metadata.DeletePreviouslyCreatedElements(previousElements);
             }
 
             CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);
