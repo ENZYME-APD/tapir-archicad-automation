@@ -661,6 +661,21 @@ bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>&
     return true;
 }
 
+GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& holes)
+{
+    for (UIndex holeIndex = 0; holeIndex < holes.GetSize (); ++holeIndex) {
+        GS::Array<GS::ObjectState> holeCoords;
+        GS::Array<GS::ObjectState> holeArcs;
+        if (!GetHoleGeometry (holes[holeIndex], holeCoords, holeArcs)) {
+            return GS::UniString::Printf ("Invalid hole at index %d: each hole must be an object with a 'polygonOutline' (or legacy 'polygonCoordinates') coordinate array.", (int) holeIndex);
+        }
+        if (holeCoords.GetSize () < 3) {
+            return GS::UniString::Printf ("Invalid hole at index %d: the hole outline must contain at least 3 coordinates.", (int) holeIndex);
+        }
+    }
+    return {};
+}
+
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
 {
     return GS::ObjectState (idFieldName, CreateGuidObjectState (guid));

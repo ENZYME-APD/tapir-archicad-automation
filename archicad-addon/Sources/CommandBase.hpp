@@ -82,6 +82,7 @@ std::vector<PolygonData> GetPolygonsFromMemoCoords (const API_Guid& elemGuid, bo
 void AddPolygonFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName = {});
 void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
+GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& holes);
 void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName);
 void AddColumnSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
 void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);

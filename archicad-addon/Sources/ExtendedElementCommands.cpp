@@ -944,6 +944,11 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
         polygonOutline.Pop ();
     }
 
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
+    }
+
     const API_Polygon oldPoly = element.slab.poly;
     element.slab.poly.nCoords = polygonOutline.GetSize () + 1;
     element.slab.poly.nSubPolys = 1;
@@ -1130,6 +1135,12 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     }
     if (memo.coords == nullptr || memo.pends == nullptr) {
         return "Slab has no polygon data to modify.";
+    }
+    // Validate before Step 1 below deletes the existing holes - a mis-shaped hole entry must fail
+    // the item instead of being skipped after the original holes are already gone.
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
     }
 
     // A from-scratch memo rebuild (matching CreateSlabs, and BuildMeshPolyMemoFromGeometry's own
@@ -1330,6 +1341,11 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         polygonOutline.Pop ();
     }
 
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
+    }
+
     element.roof.u.polyRoof.pivotPolygon.nCoords = polygonOutline.GetSize () + 1;
     element.roof.u.polyRoof.pivotPolygon.nSubPolys = 1;
     element.roof.u.polyRoof.pivotPolygon.nArcs = polygonArcs.GetSize ();
@@ -1401,6 +1417,11 @@ GS::Optional<GS::UniString> BuildPlaneRoofMemoFromGeometry (
 
     if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
         polygonOutline.Pop ();
+    }
+
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
     }
 
     element.roof.u.planeRoof.poly.nCoords = polygonOutline.GetSize () + 1;
@@ -5540,7 +5561,8 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                         "polygonOutline": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 3
+                            "minItems": 3,
+                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed."
                         },
                         "polygonArcs": {
                             "type": "array",
@@ -6827,6 +6849,11 @@ GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     }
     if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
         polygonCoordinates.Pop ();
+    }
+
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
     }
 
     elem.mesh.poly.nCoords   = polygonCoordinates.GetSize () + 1;

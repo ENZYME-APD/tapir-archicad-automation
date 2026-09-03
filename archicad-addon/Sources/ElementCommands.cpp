@@ -2029,6 +2029,11 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails->Get ("arcs", arcs);
                     GS::Array<GS::ObjectState> holes;
                     typeSpecificDetails->Get ("holes", holes);
+                    auto holesError = ValidateHoles (holes);
+                    if (holesError.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (APIERR_BADPARS, holesError.Get ()));
+                        continue;
+                    }
 
                     // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
                     Int32 totalUnique = (Int32) coordinates.GetSize ();
