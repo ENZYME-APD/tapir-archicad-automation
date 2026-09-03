@@ -476,6 +476,23 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "fields": {
+                "type": "array",
+                "description": "Optional filter for the fields to return for each element. When omitted, every field is returned. Fields not listed are not computed at all, so listing only what you need skips in particular the floorPlanPolygons extraction, which regenerates each element's 2D drawing primitives and can dominate the execution time of batch reads.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "type",
+                        "id",
+                        "floorIndex",
+                        "layerIndex",
+                        "drawIndex",
+                        "details",
+                        "floorPlanPolygons"
+                    ]
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false,
@@ -494,7 +511,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "description": "Details of an element.",
+                    "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
                     "properties": {
                         "type": {
                             "$ref": "#/ElementType"
@@ -809,6 +826,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
+    GS::Array<GS::UniString> fields;
+    const bool filterFields = parameters.Get ("fields", fields) && !fields.IsEmpty ();
+    const auto isFieldRequested = [&] (const char* fieldName) {
+        return !filterFields || fields.Contains (GS::UniString (fieldName));
+    };
+
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
 
@@ -833,17 +856,33 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         GS::ObjectState detailsOfElement;
         const API_ElemTypeID typeID = GetElemTypeId (elem.header);
 
-        detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
-        detailsOfElement.Add ("floorIndex", elem.header.floorInd);
-        detailsOfElement.Add ("layerIndex", GetAttributeIndex (elem.header.layer));
-        detailsOfElement.Add ("drawIndex", static_cast<short> (elem.header.drwIndex));
+        if (isFieldRequested ("type")) {
+            detailsOfElement.Add ("type", GetElementTypeNonLocalizedName (typeID));
+        }
+        if (isFieldRequested ("floorIndex")) {
+            detailsOfElement.Add ("floorIndex", elem.header.floorInd);
+        }
+        if (isFieldRequested ("layerIndex")) {
+            detailsOfElement.Add ("layerIndex", GetAttributeIndex (elem.header.layer));
+        }
+        if (isFieldRequested ("drawIndex")) {
+            detailsOfElement.Add ("drawIndex", static_cast<short> (elem.header.drwIndex));
+        }
 
-        {
+        if (isFieldRequested ("id")) {
             API_ElementMemo memo = {};
             const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
             ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
 
             detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+        }
+
+        if (!isFieldRequested ("details")) {
+            if (isFieldRequested ("floorPlanPolygons")) {
+                AddFloorPlanPolygonsIfAvailable (elem.header.guid, detailsOfElement);
+            }
+            detailsOfElements (detailsOfElement);
+            continue;
         }
 
         GS::ObjectState typeSpecificDetails;
@@ -1355,7 +1394,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         detailsOfElement.Add ("details", typeSpecificDetails);
-        AddFloorPlanPolygonsIfAvailable (elem.header.guid, detailsOfElement);
+        if (isFieldRequested ("floorPlanPolygons")) {
+            AddFloorPlanPolygonsIfAvailable (elem.header.guid, detailsOfElement);
+        }
 
         detailsOfElements (detailsOfElement);
     }
