@@ -66,6 +66,16 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+          # The action gates on the triggering actor having write access to
+          # the repository, which every fork contributor by definition lacks -
+          # without this the review fails on exactly the pull requests this
+          # workflow exists for (see the pull_request_target note above). "*"
+          # is safe under the same rule that makes pull_request_target safe:
+          # the head is never checked out or executed, the diff is read as
+          # text, the token has only pull-request write, and the prompt treats
+          # the contributor's text as data, not instructions.
+          allowed_non_write_users: "*"
+
           # track_progress is deliberately NOT set. It creates a tracking
           # comment with progress checkboxes as soon as the run starts and
           # edits it as the review proceeds; the review should arrive as one
