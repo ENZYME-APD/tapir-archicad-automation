@@ -1906,7 +1906,7 @@ GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetInputParametersSchema 
         "properties": {
             "hotlinkNodes": {
                 "type": "array",
-                "description": "The hotlink module nodes to create. A node that already points at the same source file is returned instead of creating a duplicate.",
+                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -1916,16 +1916,16 @@ GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetInputParametersSchema 
                         },
                         "name": {
                             "type": "string",
-                            "description": "Optional display name of the node. Defaults to the file name."
+                            "description": "Optional display name of the node. Defaults to the file name. Ignored when a node for the same file already exists."
                         },
                         "storyRangeType": {
                             "type": "string",
-                            "description": "Optional. Which stories of the source are placed: all of them, or the single reference story.",
+                            "description": "Optional. Which stories of the source are placed: all of them, or the single reference story. Ignored when a node for the same file already exists.",
                             "enum": ["AllStories", "SingleStory"]
                         },
                         "refFloorIndex": {
                             "type": "integer",
-                            "description": "Optional index of the reference story in the source file. Defaults to 0."
+                            "description": "Optional index of the reference story in the source file. Defaults to 0. Ignored when a node for the same file already exists."
                         }
                     },
                     "additionalProperties": false,
@@ -2022,9 +2022,11 @@ GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& param
                 name = lastLocalName.ToString ();
             }
             GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
-            // The example add-on allocates the location and never frees it; the
-            // node keeps a reference to it, so this add-on does the same when the
-            // node is created, and frees it when creation fails.
+            // API_HotlinkNode's destructor frees sourceLocation itself ("make sure
+            // those point to memory on heap" - APIdefs_Database.h, AC25 to AC28),
+            // which is also why the node reads elsewhere in this file do not leak.
+            // On failure the location is freed here and nulled so the destructor
+            // does not free it twice.
             IO::Location* ownedLocation = new IO::Location (sourceLocation);
             hotlinkNode.sourceLocation = ownedLocation;
 
@@ -2283,6 +2285,19 @@ GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetInputParametersSch
                         },
                         "suspendFixAngle": {
                             "type": "boolean"
+                        },
+                        "ignoreTopFloorLinks": {
+                            "type": "boolean"
+                        },
+                        "relinkWallOpenings": {
+                            "type": "boolean"
+                        },
+                        "adjustLevelDiffs": {
+                            "type": "boolean"
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Move the instance to this layer."
                         }
                     },
                     "additionalProperties": false,
@@ -2391,6 +2406,20 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             }
             if (instanceData.Get ("suspendFixAngle", element.hotlink.suspendFixAngle)) {
                 ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, suspendFixAngle);
+            }
+            if (instanceData.Get ("ignoreTopFloorLinks", element.hotlink.ignoreTopFloorLinks)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, ignoreTopFloorLinks);
+            }
+            if (instanceData.Get ("relinkWallOpenings", element.hotlink.relinkWallOpenings)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, relinkWallOpenings);
+            }
+            if (instanceData.Get ("adjustLevelDiffs", element.hotlink.adjustLevelDiffs)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, adjustLevelDiffs);
+            }
+            Int32 layerIndex;
+            if (instanceData.Get ("layerIndex", layerIndex)) {
+                element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
