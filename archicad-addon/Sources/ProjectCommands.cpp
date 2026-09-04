@@ -2023,9 +2023,9 @@ GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& param
         // node keeps a reference to it, so this add-on does the same.
         hotlinkNode.sourceLocation = new IO::Location (sourceLocation);
 
-#ifdef ServerMainVers_2700
+#ifdef ServerMainVers_2800
         // Fills the story info from the source so the node is created with
-        // the right story settings. Not available before 27; creation works
+        // the right story settings. Not available before 28; creation works
         // without it.
         ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
 #endif
