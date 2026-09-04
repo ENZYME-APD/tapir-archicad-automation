@@ -1880,7 +1880,8 @@ static GS::Optional<API_Guid> FindHotlinkNodeBySource (const IO::Location& sourc
         API_HotlinkNode node = {};
         node.guid = nodeGuid;
         if (ACAPI_Hotlink_GetHotlinkNode (&node) == NoError && node.sourceLocation != nullptr) {
-            if (node.sourceLocation->ToDisplayText () == sourceLocation.ToDisplayText ()) {
+            // Case-insensitive: on Windows a differently cased path is the same file.
+            if (node.sourceLocation->ToDisplayText ().Compare (sourceLocation.ToDisplayText (), CaseInsensitive) == GS::UniString::Equal) {
                 return nodeGuid;
             }
         }
@@ -1982,82 +1983,75 @@ GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& param
     GS::ObjectState response;
     const auto& results = response.AddList<GS::ObjectState> ("hotlinkNodes");
 
-    for (const GS::ObjectState& nodeData : hotlinkNodes) {
-        GS::UniString sourcePath;
-        if (!nodeData.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
-            results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is missing"));
-            continue;
-        }
-        IO::Location sourceLocation (sourcePath);
-        IO::Name lastLocalName;
-        if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
-            results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is not a valid path"));
-            continue;
-        }
+    // One undo step for the whole call, as the repo's other creating commands do.
+    ACAPI_CallUndoableCommand ("Create Hotlink Nodes", [&] () -> GSErrCode {
+        for (const GS::ObjectState& nodeData : hotlinkNodes) {
+            GS::UniString sourcePath;
+            if (!nodeData.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
+                results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is missing"));
+                continue;
+            }
+            IO::Location sourceLocation (sourcePath);
+            IO::Name lastLocalName;
+            if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
+                results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is not a valid path"));
+                continue;
+            }
 
-        const GS::Optional<API_Guid> existing = FindHotlinkNodeBySource (sourceLocation);
-        if (existing.HasValue ()) {
+            const GS::Optional<API_Guid> existing = FindHotlinkNodeBySource (sourceLocation);
+            if (existing.HasValue ()) {
+                GS::ObjectState item;
+                item.Add ("hotlinkNodeId", CreateGuidObjectState (existing.Get ()));
+                item.Add ("existing", true);
+                results (item);
+                continue;
+            }
+
+            API_HotlinkNode hotlinkNode = {};
+            hotlinkNode.type = APIHotlink_Module;
+            hotlinkNode.storyRangeType = APIHotlink_AllStories;
+            GS::UniString storyRangeType;
+            if (nodeData.Get ("storyRangeType", storyRangeType) && storyRangeType == "SingleStory") {
+                hotlinkNode.storyRangeType = APIHotlink_SingleStory;
+            }
+            Int32 refFloorIndex = 0;
+            nodeData.Get ("refFloorIndex", refFloorIndex);
+            hotlinkNode.refFloorInd = static_cast<short> (refFloorIndex);
+            GS::UniString name;
+            if (!nodeData.Get ("name", name) || name.IsEmpty ()) {
+                name = lastLocalName.ToString ();
+            }
+            GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
+            // The example add-on allocates the location and never frees it; the
+            // node keeps a reference to it, so this add-on does the same when the
+            // node is created, and frees it when creation fails.
+            IO::Location* ownedLocation = new IO::Location (sourceLocation);
+            hotlinkNode.sourceLocation = ownedLocation;
+
+    #ifdef ServerMainVers_2800
+            // Fills the story info from the source so the node is created with
+            // the right story settings. Not available before 28; creation works
+            // without it.
+            ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
+    #endif
+
+            const GSErrCode err = ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
+            if (err != NoError) {
+                delete ownedLocation;
+                hotlinkNode.sourceLocation = nullptr;
+                results (CreateErrorResponse (err, "Failed to create the hotlink node from " + sourcePath));
+                continue;
+            }
+
             GS::ObjectState item;
-            item.Add ("hotlinkNodeId", CreateGuidObjectState (existing.Get ()));
-            item.Add ("existing", true);
+            item.Add ("hotlinkNodeId", CreateGuidObjectState (hotlinkNode.guid));
+            item.Add ("existing", false);
             results (item);
-            continue;
         }
-
-        API_HotlinkNode hotlinkNode = {};
-        hotlinkNode.type = APIHotlink_Module;
-        hotlinkNode.storyRangeType = APIHotlink_AllStories;
-        GS::UniString storyRangeType;
-        if (nodeData.Get ("storyRangeType", storyRangeType) && storyRangeType == "SingleStory") {
-            hotlinkNode.storyRangeType = APIHotlink_SingleStory;
-        }
-        Int32 refFloorIndex = 0;
-        nodeData.Get ("refFloorIndex", refFloorIndex);
-        hotlinkNode.refFloorInd = static_cast<short> (refFloorIndex);
-        GS::UniString name;
-        if (!nodeData.Get ("name", name) || name.IsEmpty ()) {
-            name = lastLocalName.ToString ();
-        }
-        GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
-        // The example add-on allocates the location and never frees it; the
-        // node keeps a reference to it, so this add-on does the same when the
-        // node is created, and frees it when creation fails.
-        IO::Location* ownedLocation = new IO::Location (sourceLocation);
-        hotlinkNode.sourceLocation = ownedLocation;
-
-#ifdef ServerMainVers_2800
-        // Fills the story info from the source so the node is created with
-        // the right story settings. Not available before 28; creation works
-        // without it.
-        ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
-#endif
-
-        const GSErrCode err = ACAPI_CallUndoableCommand ("Create Hotlink Node", [&] () -> GSErrCode {
-            return ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
-        });
-        if (err != NoError) {
-            delete ownedLocation;
-            hotlinkNode.sourceLocation = nullptr;
-            results (CreateErrorResponse (err, "Failed to create the hotlink node from " + sourcePath));
-            continue;
-        }
-
-        GS::ObjectState item;
-        item.Add ("hotlinkNodeId", CreateGuidObjectState (hotlinkNode.guid));
-        item.Add ("existing", false);
-        results (item);
-    }
+        return NoError;
+    });
 
     return response;
-}
-
-static API_Coord3D GetOriginFromObjectState (const GS::ObjectState& os)
-{
-    API_Coord3D origin = { 0.0, 0.0, 0.0 };
-    os.Get ("x", origin.x);
-    os.Get ("y", origin.y);
-    os.Get ("z", origin.z);
-    return origin;
 }
 
 CreateHotlinkInstancesCommand::CreateHotlinkInstancesCommand () :
@@ -2101,7 +2095,7 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                         },
                         "floorDifference": {
                             "type": "integer",
-                            "description": "Optional story offset applied to the module's stories. Defaults to 0."
+                            "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
                         },
                         "layerIndex": {
                             "type": "integer",
@@ -2109,23 +2103,23 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                         },
                         "skipNested": {
                             "type": "boolean",
-                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to false."
+                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
                         },
                         "suspendFixAngle": {
                             "type": "boolean",
-                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to false."
+                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
                         },
                         "ignoreTopFloorLinks": {
                             "type": "boolean",
-                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to true."
+                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
                         },
                         "relinkWallOpenings": {
                             "type": "boolean",
-                            "description": "Optional. Defaults to false."
+                            "description": "Optional. Defaults to the hotlink tool's current default."
                         },
                         "adjustLevelDiffs": {
                             "type": "boolean",
-                            "description": "Optional. Defaults to false."
+                            "description": "Optional. Defaults to the hotlink tool's current default."
                         }
                     },
                     "additionalProperties": false,
@@ -2204,14 +2198,23 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
                 element.header.floorInd = storyInfo.actStory;
             }
 
-            element.hotlink.type = APIHotlink_Module;
-            element.hotlink.hotlinkNodeGuid = GetGuidFromObjectState (*hotlinkNodeId);
+            // The instance takes the node's own type: GetHotlinks hands out XRef
+            // node ids as well as module ones, and a module instance of an XRef
+            // node is a mismatch.
+            API_HotlinkNode node = {};
+            node.guid = GetGuidFromObjectState (*hotlinkNodeId);
+            if (ACAPI_Hotlink_GetHotlinkNode (&node) != NoError) {
+                elements (CreateErrorResponse (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
+                continue;
+            }
+            element.hotlink.type = node.type;
+            element.hotlink.hotlinkNodeGuid = node.guid;
 
             double rotationAngle = 0.0;
             instanceData.Get ("rotationAngle", rotationAngle);
             bool mirrored = false;
             instanceData.Get ("mirrored", mirrored);
-            element.hotlink.transformation = CreateHotlinkTransformation (GetOriginFromObjectState (*origin), rotationAngle, mirrored);
+            element.hotlink.transformation = CreateHotlinkTransformation (Get3DCoordinateFromObjectState (*origin), rotationAngle, mirrored);
 
             // The placement options keep the tool defaults unless the caller sets them.
             Int32 floorDifference;
@@ -2349,7 +2352,7 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             if (newOrigin != nullptr && !hasRotation && !hasMirrored) {
                 // A move keeps the matrix as it is - scale, skew and all - and
                 // replaces only the translation.
-                const API_Coord3D given = GetOriginFromObjectState (*newOrigin);
+                const API_Coord3D given = Get3DCoordinateFromObjectState (*newOrigin);
                 element.hotlink.transformation.tmx[3] = given.x;
                 element.hotlink.transformation.tmx[7] = given.y;
                 if (newOrigin->Contains ("z")) {
@@ -2365,7 +2368,7 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
                 bool mirrored;
                 DecomposeHotlinkTransformation (element.hotlink.transformation, origin, rotationAngle, mirrored);
                 if (newOrigin != nullptr) {
-                    const API_Coord3D given = GetOriginFromObjectState (*newOrigin);
+                    const API_Coord3D given = Get3DCoordinateFromObjectState (*newOrigin);
                     origin.x = given.x;
                     origin.y = given.y;
                     if (newOrigin->Contains ("z")) {

@@ -6395,7 +6395,8 @@
             "layerIndex",
             "drawIndex",
             "details",
-            "floorPlanPolygons"
+            "floorPlanPolygons",
+            "hotlinkId"
         ]
     },
     "RevisionIssueId": {

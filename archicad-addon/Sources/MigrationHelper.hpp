@@ -212,11 +212,6 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkNodes (const API_HotlinkTypeID* type, G
     return ACAPI_Database (APIDb_GetHotlinkNodesID, (void*) type, (void*) nodeRefList);
 }
 
-inline GSErrCode ACAPI_Hotlink_GetHotlinkInstances (const API_Guid* hotlinkNodeGuid, GS::Array<API_Guid>* elementRefList)
-{
-    return ACAPI_Database (APIDb_GetHotlinkInstancesID, (void*) hotlinkNodeGuid, (void*) elementRefList);
-}
-
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorSetNumID, setNum);
