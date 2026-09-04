@@ -2,6 +2,12 @@
 
 #include "CommandBase.hpp"
 
+// Shared with SetDetailsOfElementsCommand (ElementCommands.cpp): fills the memo's
+// textContent/paragraphs handles and updates the API_TextType fields (nLine, useEolPos,
+// nonBreaking, width, height) for the given content.
+void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text);
+API_JustID ParseJustificationString (const GS::UniString& justification);
+
 class CreateElementsCommandBase : public CommandBase
 {
 public:

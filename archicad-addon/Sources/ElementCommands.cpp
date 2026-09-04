@@ -1,4 +1,5 @@
 #include "ElementCommands.hpp"
+#include "ElementCreationCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "GSUnID.hpp"
 #include "Plane.hpp"
@@ -647,6 +648,33 @@ static GS::ObjectState CreateColorObjectState (const API_RGBColor& color)
     return GS::ObjectState ("red", color.f_red, "green", color.f_green, "blue", color.f_blue);
 }
 
+static const char* TextJustificationToString (API_JustID just)
+{
+    switch (just) {
+        case APIJust_Center: return "Center";
+        case APIJust_Right:  return "Right";
+        case APIJust_Full:   return "Full";
+        default:             return "Left";
+    }
+}
+
+// Reads the content of a Text element or a text-type Label. The memo stores it as a
+// GS::UniString from AC28, as a handle of unicode characters before (the inverse of how
+// SetTextContentAndParagraphs writes it).
+static GS::UniString GetTextContentFromMemo (const API_Guid& guid)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_TextContent) != NoError || memo.textContent == nullptr) {
+        return GS::EmptyUniString;
+    }
+#ifdef ServerMainVers_2800
+    return *memo.textContent;
+#else
+    return GS::UniString (reinterpret_cast<const GS::uchar_t*> (*memo.textContent));
+#endif
+}
+
 static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
 {
     API_LibPart	lp = {};
@@ -1076,6 +1104,19 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("midCoordinate", Create2DCoordinateObjectState (elem.label.midC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.label.endC));
                 typeSpecificDetails.Add ("hasLeaderLine", elem.label.hasLeaderLine);
+                if (elem.label.labelClass == APILblClass_Text) {
+                    typeSpecificDetails.Add ("text", GetTextContentFromMemo (elem.header.guid));
+                }
+                break;
+
+            case API_TextID:
+                typeSpecificDetails.Add ("text", GetTextContentFromMemo (elem.header.guid));
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (elem.text.loc));
+                typeSpecificDetails.Add ("angle", elem.text.angle);
+                typeSpecificDetails.Add ("height", elem.text.size);
+                typeSpecificDetails.Add ("pen", (Int32) elem.text.pen);
+                typeSpecificDetails.Add ("justification", TextJustificationToString (static_cast<API_JustID> (elem.text.just)));
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
                 break;
 
             case API_ObjectID:
@@ -1922,6 +1963,24 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
                         }
                     } break;
+                    case API_TextID: {
+                        const GS::ObjectState* position = typeSpecificDetails->Get ("position");
+                        if (position != nullptr) {
+                            elem.text.loc = Get2DCoordinateFromObjectState (*position);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, loc);
+                        }
+                        if (typeSpecificDetails->Get ("angle", elem.text.angle)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, angle);
+                        }
+                        if (typeSpecificDetails->Get ("height", elem.text.size)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, size);
+                        }
+                        GS::UniString justification;
+                        if (typeSpecificDetails->Get ("justification", justification)) {
+                            elem.text.just = ParseJustificationString (justification);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, just);
+                        }
+                    } break;
                     default:
                     break;
                 }
@@ -2134,6 +2193,35 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 if (typeSpecificDetails->Get ("showArea", elem.hatch.showArea)) {
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, showArea);
+                    hasElementChanges = true;
+                }
+            } else if (typeSpecificDetails != nullptr &&
+                       (GetElemTypeId (elem.header) == API_TextID ||
+                        (GetElemTypeId (elem.header) == API_LabelID && elem.label.labelClass == APILblClass_Text))) {
+                GS::UniString text;
+                if (typeSpecificDetails->Get ("text", text)) {
+                    // Same content handling as CreateTexts/CreateLabels: the whole textContent is
+                    // replaced and the paragraphs memo is rebuilt as a single paragraph/run, so any
+                    // per-run formatting of the old content is dropped and the element becomes
+                    // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
+                    const bool isTextElem = GetElemTypeId (elem.header) == API_TextID;
+                    API_TextType& textData = isTextElem ? elem.text : elem.label.u.text;
+                    SetTextContentAndParagraphs (clipMemo, textData, text);
+                    if (isTextElem) {
+                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
+                    } else {
+                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nLine);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.useEolPos);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nonBreaking);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.width);
+                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
+                    }
+                    memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                    hasMemoChanges = true;
                     hasElementChanges = true;
                 }
             }

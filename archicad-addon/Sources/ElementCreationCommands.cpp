@@ -2351,7 +2351,7 @@ static GSErrCode SetEOL (API_ParagraphType** paragraph, UInt32 parNum, UInt32 eo
 	return NoError;
 }
 
-static API_JustID ParseJustificationString (const GS::UniString& justification)
+API_JustID ParseJustificationString (const GS::UniString& justification)
 {
     if (justification == "Center") {
         return APIJust_Center;
@@ -2363,7 +2363,7 @@ static API_JustID ParseJustificationString (const GS::UniString& justification)
     return APIJust_Left;
 }
 
-static void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text)
+void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text)
 {
 #ifdef ServerMainVers_2800
     delete memo.textContent;
