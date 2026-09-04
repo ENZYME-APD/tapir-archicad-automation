@@ -6159,6 +6159,10 @@
           },
           "hasLeaderLine": {
             "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "description": "The text content of the label. Present only for text-type labels (symbol labels have no text content)."
           }
         },
         "additionalProperties": false,
@@ -6168,7 +6172,49 @@
               "endCoordinate",
               "hasLeaderLine"
           ]
-    },    
+    },
+    "TextDetails": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines separate the lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen attribute index."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"]
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "text",
+            "position",
+            "angle",
+            "height",
+            "pen",
+            "justification",
+            "zCoordinate"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -6238,6 +6284,9 @@
             },
             {
                 "$ref": "#/LabelDetails"
+            },
+            {
+                "$ref": "#/TextDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
@@ -6956,6 +7005,35 @@
         },
         "additionalProperties": false
     },
+    "TextSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Text element or a text-type Label. For Labels only the text field is applied. Setting text replaces the whole content (any per-run formatting of the old content is dropped) and switches the element to automatic width, matching the behavior of CreateTexts/CreateLabels.",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The new text content. Newlines create multiple lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text. Only applied to Text elements."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians. Only applied to Text elements."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Only applied to Text elements."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"],
+                "description": "The text justification. Only applied to Text elements."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
@@ -6986,6 +7064,9 @@
             },
             {
                 "$ref": "#/DrawingSettings"
+            },
+            {
+                "$ref": "#/TextSettings"
             }
         ]
     },

@@ -839,4 +839,182 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public override Guid ComponentGuid =>
             new Guid("65b5952f-fc7d-4d9e-9742-9be32ac3c5d1");
     }
+
+    public class GetDetailsOfTextsComponent : AbsGetDetailsComponent
+    {
+        protected override string InputFieldName => "TextGuids";
+
+        public GetDetailsOfTextsComponent()
+            : base("TextDetails")
+        {
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "TextGuids",
+                "Elements Guids of the found texts.");
+
+            OutTexts(
+                "Texts",
+                "Content of the text elements.");
+
+            OutPoints(
+                "Positions",
+                "Position of each text element.");
+
+            OutNumbers(
+                "Angles",
+                "Rotation angles in radians.");
+
+            OutNumbers(
+                "Heights",
+                "Text heights in millimeters.");
+
+            OutTexts(
+                "Justifications",
+                "Justification: Left, Center, Right or Full.");
+
+            OutIntegers(
+                "Pens",
+                "Pen indices of the texts.");
+        }
+
+        protected override void ManageResponse(
+            IGH_DataAccess da)
+        {
+            var texts = new List<ElementGuidWrapper>();
+            var contents = new List<string>();
+            var positions = new List<Point3d>();
+            var angles = new List<double>();
+            var heights = new List<double>();
+            var justifications = new List<string>();
+            var pens = new List<int>();
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
+            {
+                var detailsOfElement = response.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Text")
+                {
+                    continue;
+                }
+
+                var textDetails =
+                    detailsOfElement.Details.ToObject<TextDetails>();
+                if (textDetails == null)
+                {
+                    continue;
+                }
+
+                texts.Add(
+                    new ElementGuidWrapper()
+                    {
+                        ElementId = inputs.Elements[i].ElementId
+                    });
+                contents.Add(textDetails.Text);
+                positions.Add(
+                    new Point3d(
+                        textDetails.Position.X,
+                        textDetails.Position.Y,
+                        textDetails.ZCoordinate));
+                angles.Add(textDetails.Angle);
+                heights.Add(textDetails.Height);
+                justifications.Add(textDetails.Justification);
+                pens.Add(textDetails.Pen);
+            }
+
+            da.SetDataList(
+                0,
+                texts);
+            da.SetDataList(
+                1,
+                contents);
+            da.SetDataList(
+                2,
+                positions);
+            da.SetDataList(
+                3,
+                angles);
+            da.SetDataList(
+                4,
+                heights);
+            da.SetDataList(
+                5,
+                justifications);
+            da.SetDataList(
+                6,
+                pens);
+        }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.TextDetails;
+
+        public override Guid ComponentGuid =>
+            new Guid("22b1ba93-b2b7-426c-bded-deafd1adeb26");
+    }
+
+    public class GetDetailsOfLabelsComponent : AbsGetDetailsComponent
+    {
+        protected override string InputFieldName => "LabelGuids";
+
+        public GetDetailsOfLabelsComponent()
+            : base("LabelDetails")
+        {
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "LabelGuids",
+                "Elements Guids of the found text-type labels " +
+                "(symbol labels have no text content and are skipped).");
+
+            OutTexts(
+                "Texts",
+                "Content of the text-type labels.");
+        }
+
+        protected override void ManageResponse(
+            IGH_DataAccess da)
+        {
+            var labels = new List<ElementGuidWrapper>();
+            var contents = new List<string>();
+
+            for (var i = 0; i < response.DetailsOfElements.Count; i++)
+            {
+                var detailsOfElement = response.DetailsOfElements[i];
+                if (detailsOfElement.Type != "Label")
+                {
+                    continue;
+                }
+
+                var labelDetails =
+                    detailsOfElement.Details.ToObject<LabelDetails>();
+                if (labelDetails == null || labelDetails.Text == null)
+                {
+                    continue;
+                }
+
+                labels.Add(
+                    new ElementGuidWrapper()
+                    {
+                        ElementId = inputs.Elements[i].ElementId
+                    });
+                contents.Add(labelDetails.Text);
+            }
+
+            da.SetDataList(
+                0,
+                labels);
+            da.SetDataList(
+                1,
+                contents);
+        }
+
+        protected override System.Drawing.Bitmap Icon =>
+            Properties.Resources.LabelDetails;
+
+        public override Guid ComponentGuid =>
+            new Guid("abfc4414-8a8a-46cb-bed0-911bf952c6ba");
+    }
 }

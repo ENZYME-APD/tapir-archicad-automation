@@ -183,6 +183,38 @@ namespace TapirGrasshopperPlugin.Types.Element
         public double ZCoordinate;
     }
 
+    public class LabelDetails
+    {
+        [JsonProperty(
+            "text",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Text;
+    }
+
+    public class TextDetails
+    {
+        [JsonProperty("text")]
+        public string Text;
+
+        [JsonProperty("position")]
+        public Point2D Position;
+
+        [JsonProperty("angle")]
+        public double Angle;
+
+        [JsonProperty("height")]
+        public double Height;
+
+        [JsonProperty("pen")]
+        public int Pen;
+
+        [JsonProperty("justification")]
+        public string Justification;
+
+        [JsonProperty("zCoordinate")]
+        public double ZCoordinate;
+    }
+
     public class ZoneDetails
     {
         [JsonProperty("name")]
