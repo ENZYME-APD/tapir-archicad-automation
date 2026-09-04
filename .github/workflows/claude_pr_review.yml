@@ -170,5 +170,5 @@ jobs:
 # -----------
 # This workflow only reviews. Merging is claude_auto_merge.yml, which requires
 # a collaborator author, every check green, and a diff touching none of the
-# release critical paths - see that file's header for why these gates are shell
+# release critical paths - see that file's header for why those gates are shell
 # rather than a model decision.
