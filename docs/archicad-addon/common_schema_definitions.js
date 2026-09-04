@@ -6241,6 +6241,19 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "ElementDetailsField": {
+        "type": "string",
+        "description": "A field of the details of an element.",
+        "enum": [
+            "type",
+            "id",
+            "floorIndex",
+            "layerIndex",
+            "drawIndex",
+            "details",
+            "floorPlanPolygons"
+        ]
+    },
     "RevisionIssueId": {
         "type": "object",
         "description": "The identifier of a revision issue.",

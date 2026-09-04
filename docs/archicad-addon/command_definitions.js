@@ -972,6 +972,14 @@ var gCommands = [{
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "fields": {
+                "type": "array",
+                "description": "Optional filter for the fields to return for each element. When omitted, every field is returned. Fields not listed are not computed at all, so listing only what you need skips in particular the floorPlanPolygons extraction, which regenerates each element's 2D drawing primitives and can dominate the execution time of batch reads.",
+                "items": {
+                    "$ref": "#/ElementDetailsField"
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false,
@@ -986,7 +994,7 @@ var gCommands = [{
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "description": "Details of an element.",
+                    "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
                     "properties": {
                         "type": {
                             "$ref": "#/ElementType"
