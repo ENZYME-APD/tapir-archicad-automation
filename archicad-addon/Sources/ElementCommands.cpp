@@ -1780,6 +1780,10 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             short drwIndexTarget = -1;
             GetIndexValue (*details, "drawIndex", drwIndexTarget);
 
+            API_ElementMemo clipMemo = {};
+            UInt64 memoMask = 0;
+            bool hasMemoChanges = false;
+
             const GS::ObjectState* typeSpecificDetails = details->Get ("typeSpecificDetails");
             if (typeSpecificDetails != nullptr) {
                 switch (GetElemTypeId (elem.header)) {
@@ -1980,16 +1984,41 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.text.just = ParseJustificationString (justification);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, just);
                         }
+                        GS::UniString text;
+                        if (typeSpecificDetails->Get ("text", text)) {
+                            // Same content handling as CreateTexts: the whole textContent is replaced
+                            // and the paragraphs memo is rebuilt as a single paragraph/run, so any
+                            // per-run formatting of the old content is dropped and the element becomes
+                            // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
+                            SetTextContentAndParagraphs (clipMemo, elem.text, text);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
+                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            hasMemoChanges = true;
+                        }
+                    } break;
+                    case API_LabelID: {
+                        GS::UniString text;
+                        if (elem.label.labelClass == APILblClass_Text && typeSpecificDetails->Get ("text", text)) {
+                            // Same content handling as CreateLabels (see the API_TextID case above).
+                            SetTextContentAndParagraphs (clipMemo, elem.label.u.text, text);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nLine);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.useEolPos);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nonBreaking);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.width);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
+                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            hasMemoChanges = true;
+                        }
                     } break;
                     default:
                     break;
                 }
                 hasElementChanges = true;
             }
-
-            API_ElementMemo clipMemo = {};
-            UInt64 memoMask = 0;
-            bool hasMemoChanges = false;
 
             if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_DrawingID) {
                 GS::Array<GS::ObjectState> clipCoords;
@@ -2193,35 +2222,6 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 if (typeSpecificDetails->Get ("showArea", elem.hatch.showArea)) {
                     ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, showArea);
-                    hasElementChanges = true;
-                }
-            } else if (typeSpecificDetails != nullptr &&
-                       (GetElemTypeId (elem.header) == API_TextID ||
-                        (GetElemTypeId (elem.header) == API_LabelID && elem.label.labelClass == APILblClass_Text))) {
-                GS::UniString text;
-                if (typeSpecificDetails->Get ("text", text)) {
-                    // Same content handling as CreateTexts/CreateLabels: the whole textContent is
-                    // replaced and the paragraphs memo is rebuilt as a single paragraph/run, so any
-                    // per-run formatting of the old content is dropped and the element becomes
-                    // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
-                    const bool isTextElem = GetElemTypeId (elem.header) == API_TextID;
-                    API_TextType& textData = isTextElem ? elem.text : elem.label.u.text;
-                    SetTextContentAndParagraphs (clipMemo, textData, text);
-                    if (isTextElem) {
-                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
-                    } else {
-                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nLine);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.useEolPos);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nonBreaking);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.width);
-                        ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
-                    }
-                    memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
-                    hasMemoChanges = true;
                     hasElementChanges = true;
                 }
             }
