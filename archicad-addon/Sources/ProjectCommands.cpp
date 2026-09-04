@@ -1,6 +1,8 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cmath>
+
 GetProjectInfoCommand::GetProjectInfoCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -447,6 +449,16 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
     const auto& location = GetLocationOfHotlink (hotlinkGuid);
     if (location.HasValue ()) {
         hotlinkNodeOS.Add ("location", location.Get ());
+    }
+
+    // The node guid is what CreateHotlinkInstances needs; the name and type
+    // are what a caller shows. All three are additions to the original shape.
+    hotlinkNodeOS.Add ("hotlinkNodeId", CreateGuidObjectState (hotlinkGuid));
+    API_HotlinkNode hotlinkNode = {};
+    hotlinkNode.guid = hotlinkGuid;
+    if (ACAPI_Hotlink_GetHotlinkNode (&hotlinkNode) == NoError) {
+        hotlinkNodeOS.Add ("name", GS::UniString (hotlinkNode.name));
+        hotlinkNodeOS.Add ("type", hotlinkNode.type == APIHotlink_XRef ? "XRef" : "Module");
     }
 
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);
@@ -1838,4 +1850,532 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
     }
 
     return CreateSuccessfulExecutionResult ();
+}
+
+
+// ---------------------------------------------------------------------------
+// Hotlink nodes and instances.
+//
+// A hotlink module is two things in Archicad: a NODE (the reference to the
+// source file, with its cache) and any number of INSTANCES (elements of type
+// API_HotlinkID, each placed by a transformation). GetHotlinks lists the
+// nodes; these three commands create nodes, place instances and move them.
+// Instances are ordinary elements otherwise: DeleteElements removes one,
+// GetDetailsOfElements reads its placement, and the elements inside a
+// placed instance report it as their hotlinkId.
+//
+// MoveElements and RotateElements do NOT work on an instance - the drag edit
+// returns NoError and moves nothing - which is why ChangeHotlinkInstances
+// exists: an instance moves by changing its transformation.
+// ---------------------------------------------------------------------------
+
+static GS::Optional<API_Guid> FindHotlinkNodeBySource (const IO::Location& sourceLocation)
+{
+    API_HotlinkTypeID type = APIHotlink_Module;
+    GS::Array<API_Guid> nodes;
+    if (ACAPI_Hotlink_GetHotlinkNodes (&type, &nodes) != NoError) {
+        return GS::NoValue;
+    }
+    for (const API_Guid& nodeGuid : nodes) {
+        API_HotlinkNode node = {};
+        node.guid = nodeGuid;
+        if (ACAPI_Hotlink_GetHotlinkNode (&node) == NoError && node.sourceLocation != nullptr) {
+            if (node.sourceLocation->ToDisplayText () == sourceLocation.ToDisplayText ()) {
+                return nodeGuid;
+            }
+        }
+    }
+    return GS::NoValue;
+}
+
+CreateHotlinkNodesCommand::CreateHotlinkNodesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateHotlinkNodesCommand::GetName () const
+{
+    return "CreateHotlinkNodes";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink module nodes to create. A node that already points at the same source file is returned instead of creating a duplicate.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "sourceLocation": {
+                            "type": "string",
+                            "description": "Absolute path of the module source file (.mod or .pln)."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Optional display name of the node. Defaults to the file name."
+                        },
+                        "storyRangeType": {
+                            "type": "string",
+                            "description": "Optional. Which stories of the source are placed: all of them, or the single reference story.",
+                            "enum": ["AllStories", "SingleStory"]
+                        },
+                        "refFloorIndex": {
+                            "type": "integer",
+                            "description": "Optional index of the reference story in the source file. Defaults to 0."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "sourceLocation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "One item per requested node, in order: the node guid, or an error.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        },
+                        "existing": {
+                            "type": "boolean",
+                            "description": "True when a node for the same source file already existed and was returned instead of created."
+                        },
+                        "error": {
+                            "$ref": "#/Error"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
+}
+
+GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkNodes;
+    parameters.Get ("hotlinkNodes", hotlinkNodes);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("hotlinkNodes");
+
+    for (const GS::ObjectState& nodeData : hotlinkNodes) {
+        GS::UniString sourcePath;
+        if (!nodeData.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
+            results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is missing"));
+            continue;
+        }
+        IO::Location sourceLocation (sourcePath);
+        IO::Name lastLocalName;
+        if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
+            results (CreateErrorResponse (APIERR_BADPARS, "sourceLocation is not a valid path"));
+            continue;
+        }
+
+        const GS::Optional<API_Guid> existing = FindHotlinkNodeBySource (sourceLocation);
+        if (existing.HasValue ()) {
+            GS::ObjectState item;
+            item.Add ("hotlinkNodeId", CreateGuidObjectState (existing.Get ()));
+            item.Add ("existing", true);
+            results (item);
+            continue;
+        }
+
+        API_HotlinkNode hotlinkNode = {};
+        hotlinkNode.type = APIHotlink_Module;
+        hotlinkNode.storyRangeType = APIHotlink_AllStories;
+        GS::UniString storyRangeType;
+        if (nodeData.Get ("storyRangeType", storyRangeType) && storyRangeType == "SingleStory") {
+            hotlinkNode.storyRangeType = APIHotlink_SingleStory;
+        }
+        Int32 refFloorIndex = 0;
+        nodeData.Get ("refFloorIndex", refFloorIndex);
+        hotlinkNode.refFloorInd = static_cast<short> (refFloorIndex);
+        GS::UniString name;
+        if (!nodeData.Get ("name", name) || name.IsEmpty ()) {
+            name = lastLocalName.ToString ();
+        }
+        GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
+        // The example add-on allocates the location and never frees it; the
+        // node keeps a reference to it, so this add-on does the same.
+        hotlinkNode.sourceLocation = new IO::Location (sourceLocation);
+
+#ifdef ServerMainVers_2700
+        // Fills the story info from the source so the node is created with
+        // the right story settings. Not available before 27; creation works
+        // without it.
+        ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
+#endif
+
+        const GSErrCode err = ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, "Failed to create the hotlink node from " + sourcePath));
+            continue;
+        }
+
+        GS::ObjectState item;
+        item.Add ("hotlinkNodeId", CreateGuidObjectState (hotlinkNode.guid));
+        item.Add ("existing", false);
+        results (item);
+    }
+
+    return response;
+}
+
+static API_Coord3D GetOriginFromObjectState (const GS::ObjectState& os)
+{
+    API_Coord3D origin = { 0.0, 0.0, 0.0 };
+    os.Get ("x", origin.x);
+    os.Get ("y", origin.y);
+    os.Get ("z", origin.z);
+    return origin;
+}
+
+CreateHotlinkInstancesCommand::CreateHotlinkInstancesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CreateHotlinkInstancesCommand::GetName () const
+{
+    return "CreateHotlinkInstances";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The hotlink instances to place.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId"
+                        },
+                        "origin": {
+                            "$ref": "#/HotlinkOrigin"
+                        },
+                        "rotationAngle": {
+                            "type": "number",
+                            "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional story the instance is placed on. Defaults to the current story."
+                        },
+                        "floorDifference": {
+                            "type": "integer",
+                            "description": "Optional story offset applied to the module's stories. Defaults to 0."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Optional layer of the instance. Defaults to the Archicad layer."
+                        },
+                        "skipNested": {
+                            "type": "boolean",
+                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to false."
+                        },
+                        "suspendFixAngle": {
+                            "type": "boolean",
+                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to false."
+                        },
+                        "ignoreTopFloorLinks": {
+                            "type": "boolean",
+                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to true."
+                        },
+                        "relinkWallOpenings": {
+                            "type": "boolean",
+                            "description": "Optional. Defaults to false."
+                        },
+                        "adjustLevelDiffs": {
+                            "type": "boolean",
+                            "description": "Optional. Defaults to false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId",
+                        "origin"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    parameters.Get ("hotlinkInstances", hotlinkInstances);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    API_StoryInfo storyInfo = {};
+    const bool haveStoryInfo = ACAPI_ProjectSetting_GetStorySettings (&storyInfo) == NoError;
+    if (haveStoryInfo) {
+        BMKillHandle ((GSHandle*) &storyInfo.data);
+    }
+
+    ACAPI_CallUndoableCommand ("Create Hotlink Instances", [&] () -> GSErrCode {
+        for (const GS::ObjectState& instanceData : hotlinkInstances) {
+            const GS::ObjectState* hotlinkNodeId = instanceData.Get ("hotlinkNodeId");
+            const GS::ObjectState* origin = instanceData.Get ("origin");
+            if (hotlinkNodeId == nullptr || origin == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "hotlinkNodeId or origin is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+#ifdef ServerMainVers_2600
+            element.header.type   = API_HotlinkID;
+#else
+            element.header.typeID = API_HotlinkID;
+#endif
+            element.header.layer = ACAPI_CreateAttributeIndex (1);   // the Archicad Layer, which every project has
+            Int32 layerIndex;
+            if (instanceData.Get ("layerIndex", layerIndex)) {
+                element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
+            }
+            Int32 floorIndex;
+            if (instanceData.Get ("floorIndex", floorIndex)) {
+                element.header.floorInd = static_cast<short> (floorIndex);
+            } else if (haveStoryInfo) {
+                element.header.floorInd = storyInfo.actStory;
+            }
+
+            element.hotlink.type = APIHotlink_Module;
+            element.hotlink.hotlinkNodeGuid = GetGuidFromObjectState (*hotlinkNodeId);
+
+            double rotationAngle = 0.0;
+            instanceData.Get ("rotationAngle", rotationAngle);
+            bool mirrored = false;
+            instanceData.Get ("mirrored", mirrored);
+            element.hotlink.transformation = CreateHotlinkTransformation (GetOriginFromObjectState (*origin), rotationAngle, mirrored);
+
+            Int32 floorDifference = 0;
+            instanceData.Get ("floorDifference", floorDifference);
+            element.hotlink.floorDifference = static_cast<short> (floorDifference);
+            element.hotlink.skipNested = false;
+            instanceData.Get ("skipNested", element.hotlink.skipNested);
+            element.hotlink.suspendFixAngle = false;
+            instanceData.Get ("suspendFixAngle", element.hotlink.suspendFixAngle);
+            element.hotlink.ignoreTopFloorLinks = true;
+            instanceData.Get ("ignoreTopFloorLinks", element.hotlink.ignoreTopFloorLinks);
+            element.hotlink.relinkWallOpenings = false;
+            instanceData.Get ("relinkWallOpenings", element.hotlink.relinkWallOpenings);
+            element.hotlink.adjustLevelDiffs = false;
+            instanceData.Get ("adjustLevelDiffs", element.hotlink.adjustLevelDiffs);
+
+            const GSErrCode err = ACAPI_Element_Create (&element, nullptr);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to place the hotlink instance"));
+                continue;
+            }
+            elements (CreateElementIdObjectState (element.header.guid));
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+ChangeHotlinkInstancesCommand::ChangeHotlinkInstancesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeHotlinkInstancesCommand::GetName () const
+{
+    return "ChangeHotlinkInstances";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances to change. Every field but elementId is optional; a field that is omitted keeps its current value.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "origin": {
+                            "$ref": "#/HotlinkOrigin"
+                        },
+                        "rotationAngle": {
+                            "type": "number",
+                            "description": "Rotation about the origin, counter-clockwise, in radians."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Reflect the module's local X axis before the rotation."
+                        },
+                        "floorDifference": {
+                            "type": "integer"
+                        },
+                        "skipNested": {
+                            "type": "boolean"
+                        },
+                        "suspendFixAngle": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeHotlinkInstancesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> hotlinkInstances;
+    parameters.Get ("hotlinkInstances", hotlinkInstances);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Change Hotlink Instances", [&] () -> GSErrCode {
+        for (const GS::ObjectState& instanceData : hotlinkInstances) {
+            const GS::ObjectState* elementId = instanceData.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to get the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_HotlinkID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADELEMENTTYPE, "The element is not a hotlink instance"));
+                continue;
+            }
+
+            API_Coord3D origin;
+            double rotationAngle;
+            bool mirrored;
+            DecomposeHotlinkTransformation (element.hotlink.transformation, origin, rotationAngle, mirrored);
+
+            const GS::ObjectState* newOrigin = instanceData.Get ("origin");
+            if (newOrigin != nullptr) {
+                const API_Coord3D given = GetOriginFromObjectState (*newOrigin);
+                origin.x = given.x;
+                origin.y = given.y;
+                if (newOrigin->Contains ("z")) {
+                    origin.z = given.z;
+                }
+            }
+            instanceData.Get ("rotationAngle", rotationAngle);
+            instanceData.Get ("mirrored", mirrored);
+
+            API_Element mask;
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            element.hotlink.transformation = CreateHotlinkTransformation (origin, rotationAngle, mirrored);
+            ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, transformation);
+
+            Int32 floorDifference;
+            if (instanceData.Get ("floorDifference", floorDifference)) {
+                element.hotlink.floorDifference = static_cast<short> (floorDifference);
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, floorDifference);
+            }
+            if (instanceData.Get ("skipNested", element.hotlink.skipNested)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, skipNested);
+            }
+            if (instanceData.Get ("suspendFixAngle", element.hotlink.suspendFixAngle)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, suspendFixAngle);
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to change the hotlink instance"));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }

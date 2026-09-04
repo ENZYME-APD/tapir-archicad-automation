@@ -3,6 +3,8 @@
 #include "SchemaDefinitions.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cmath>
+
 constexpr double EPS = 0.001;
 constexpr const char* CommandNamespace = "TapirCommand";
 
@@ -1058,4 +1060,41 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
         return false;
     }
     return GetElemTypeId (header) == expectedTypeId;
+}
+
+
+API_Tranmat CreateHotlinkTransformation (const API_Coord3D& origin, double rotationAngle, bool mirrored)
+{
+    API_Tranmat transformation = {};
+    const double co = std::cos (rotationAngle);
+    const double si = std::sin (rotationAngle);
+    const double mx = mirrored ? -1.0 : 1.0;
+
+    transformation.tmx[0]  = co * mx;
+    transformation.tmx[1]  = -si;
+    transformation.tmx[2]  = 0.0;
+    transformation.tmx[3]  = origin.x;
+
+    transformation.tmx[4]  = si * mx;
+    transformation.tmx[5]  = co;
+    transformation.tmx[6]  = 0.0;
+    transformation.tmx[7]  = origin.y;
+
+    transformation.tmx[8]  = 0.0;
+    transformation.tmx[9]  = 0.0;
+    transformation.tmx[10] = 1.0;
+    transformation.tmx[11] = origin.z;
+
+    return transformation;
+}
+
+void DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coord3D& origin, double& rotationAngle, bool& mirrored)
+{
+    origin = { transformation.tmx[3], transformation.tmx[7], transformation.tmx[11] };
+    // The image of the local Y axis is the second column, (-sin, cos), and a
+    // mirror of the local X axis leaves it alone - so the angle reads off it
+    // regardless of mirroring, and the mirror reads off the determinant.
+    rotationAngle = std::atan2 (-transformation.tmx[1], transformation.tmx[5]);
+    const double det = transformation.tmx[0] * transformation.tmx[5] - transformation.tmx[1] * transformation.tmx[4];
+    mirrored = det < 0.0;
 }

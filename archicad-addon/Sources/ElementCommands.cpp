@@ -520,6 +520,10 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                         "drawIndex": {
                             "type": "number"
                         },
+                        "hotlinkId": {
+                            "$ref": "#/ElementId",
+                            "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
+                        },
                         "details": {
                             "$ref": "#/TypeSpecificDetails"
                         },
@@ -886,6 +890,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
         if (isFieldRequested ("drawIndex")) {
             detailsOfElement.Add ("drawIndex", static_cast<short> (elem.header.drwIndex));
+        }
+        if (isFieldRequested ("hotlinkId") && elem.header.hotlinkGuid != APINULLGuid) {
+            detailsOfElement.Add ("hotlinkId", CreateElementIdObjectState (elem.header.hotlinkGuid));
         }
 
         if (isFieldRequested ("id")) {
@@ -1419,6 +1426,23 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_MorphID:
                 AddMorphBodyFromMemo (elem, typeSpecificDetails);
                 break;
+
+            case API_HotlinkID: {
+                API_Coord3D origin;
+                double rotationAngle;
+                bool mirrored;
+                DecomposeHotlinkTransformation (elem.hotlink.transformation, origin, rotationAngle, mirrored);
+                typeSpecificDetails.Add ("hotlinkType", elem.hotlink.type == APIHotlink_XRef ? "XRef" : "Module");
+                typeSpecificDetails.Add ("hotlinkNodeId", CreateGuidObjectState (elem.hotlink.hotlinkNodeGuid));
+                typeSpecificDetails.Add ("origin", Create3DCoordinateObjectState (origin));
+                typeSpecificDetails.Add ("rotationAngle", rotationAngle);
+                typeSpecificDetails.Add ("mirrored", mirrored);
+                typeSpecificDetails.Add ("floorDifference", elem.hotlink.floorDifference);
+                typeSpecificDetails.Add ("skipNested", elem.hotlink.skipNested);
+                typeSpecificDetails.Add ("suspendFixAngle", elem.hotlink.suspendFixAngle);
+                typeSpecificDetails.Add ("ignoreTopFloorLinks", elem.hotlink.ignoreTopFloorLinks);
+                break;
+            }
 
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");

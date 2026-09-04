@@ -73,6 +73,15 @@ inline GS::ObjectState CreateAttributeIdObjectState (const API_Guid& guid) { ret
 inline GS::ObjectState CreateIssueIdObjectState (const API_Guid& guid)     { return CreateIdObjectState ("issueId", guid); }
 inline GS::ObjectState CreateDatabaseIdObjectState (const API_Guid& guid)  { return CreateIdObjectState ("databaseId", guid); }
 
+// A hotlink instance is placed by an API_Tranmat. Every caller of this add-on
+// thinks in an origin, a rotation and a mirror flag, so the two directions of
+// that conversion live here, shared by the hotlink commands and by
+// GetDetailsOfElements. Mirroring reflects the module's local X axis before
+// the rotation is applied; a reflection is an orthogonal matrix, which is what
+// Archicad expects.
+API_Tranmat CreateHotlinkTransformation (const API_Coord3D& origin, double rotationAngle, bool mirrored);
+void        DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coord3D& origin, double& rotationAngle, bool& mirrored);
+
 struct PolygonData {
     std::vector<API_Coord>   coords;
     std::vector<API_PolyArc> arcs;

@@ -202,6 +202,21 @@ inline GSErrCode ACAPI_Hotlink_GetHotlinkNodeTree (const API_Guid* hotlinkNodeGu
     return ACAPI_Database (APIDb_GetHotlinkNodeTreeID, (void*) hotlinkNodeGuid, (void*) hotlinkNodeTree);
 }
 
+inline GSErrCode ACAPI_Hotlink_CreateHotlinkNode (API_HotlinkNode* hotlinkNode)
+{
+    return ACAPI_Database (APIDb_CreateHotlinkNodeID, hotlinkNode);
+}
+
+inline GSErrCode ACAPI_Hotlink_GetHotlinkNodes (const API_HotlinkTypeID* type, GS::Array<API_Guid>* nodeRefList, bool* /*enableUnplaced*/ = nullptr)
+{
+    return ACAPI_Database (APIDb_GetHotlinkNodesID, (void*) type, (void*) nodeRefList);
+}
+
+inline GSErrCode ACAPI_Hotlink_GetHotlinkInstances (const API_Guid* hotlinkNodeGuid, GS::Array<API_Guid>* elementRefList)
+{
+    return ACAPI_Database (APIDb_GetHotlinkInstancesID, (void*) hotlinkNodeGuid, (void*) elementRefList);
+}
+
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)
 {
     return ACAPI_Navigator (APINavigator_GetNavigatorSetNumID, setNum);

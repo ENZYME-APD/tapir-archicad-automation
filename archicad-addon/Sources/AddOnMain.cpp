@@ -241,6 +241,18 @@ GSErrCode Initialize (void)
             projectCommands, "0.1.0",
             "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project."
         );
+        err |= RegisterCommand<CreateHotlinkNodesCommand> (
+            projectCommands, "1.5.9",
+            "Creates hotlink module nodes from source files. A node that already points at the same file is returned instead of duplicated."
+        );
+        err |= RegisterCommand<CreateHotlinkInstancesCommand> (
+            projectCommands, "1.5.9",
+            "Places instances of hotlink module nodes at an origin, rotation and mirroring."
+        );
+        err |= RegisterCommand<ChangeHotlinkInstancesCommand> (
+            projectCommands, "1.5.9",
+            "Moves, rotates or mirrors placed hotlink instances by changing their transformation. MoveElements and RotateElements do not work on hotlink instances."
+        );
         err |= RegisterCommand<OpenProjectCommand> (
             projectCommands, "1.0.7",
             "Opens the given project."
