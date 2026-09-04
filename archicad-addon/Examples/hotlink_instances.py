@@ -1,5 +1,6 @@
 import os
 import math
+import sys
 import aclib
 
 # Hotlink nodes and instances.
@@ -35,6 +36,9 @@ else:
     })['elements']
 
     instances = [e for e in created if 'elementId' in e]
+    if not instances:
+        print ('Placement failed: {}'.format (created))
+        sys.exit (1)
 
     aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': instances})
 

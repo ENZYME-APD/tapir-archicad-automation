@@ -2020,8 +2020,10 @@ GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& param
         }
         GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
         // The example add-on allocates the location and never frees it; the
-        // node keeps a reference to it, so this add-on does the same.
-        hotlinkNode.sourceLocation = new IO::Location (sourceLocation);
+        // node keeps a reference to it, so this add-on does the same when the
+        // node is created, and frees it when creation fails.
+        IO::Location* ownedLocation = new IO::Location (sourceLocation);
+        hotlinkNode.sourceLocation = ownedLocation;
 
 #ifdef ServerMainVers_2800
         // Fills the story info from the source so the node is created with
@@ -2030,8 +2032,12 @@ GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& param
         ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
 #endif
 
-        const GSErrCode err = ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
+        const GSErrCode err = ACAPI_CallUndoableCommand ("Create Hotlink Node", [&] () -> GSErrCode {
+            return ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
+        });
         if (err != NoError) {
+            delete ownedLocation;
+            hotlinkNode.sourceLocation = nullptr;
             results (CreateErrorResponse (err, "Failed to create the hotlink node from " + sourcePath));
             continue;
         }
@@ -2099,7 +2105,7 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                         },
                         "layerIndex": {
                             "type": "integer",
-                            "description": "Optional layer of the instance. Defaults to the Archicad layer."
+                            "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
                         },
                         "skipNested": {
                             "type": "boolean",
@@ -2182,7 +2188,11 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
 #else
             element.header.typeID = API_HotlinkID;
 #endif
-            element.header.layer = ACAPI_CreateAttributeIndex (1);   // the Archicad Layer, which every project has
+            const GSErrCode defaultsErr = ACAPI_Element_GetDefaults (&element, nullptr);
+            if (defaultsErr != NoError) {
+                elements (CreateErrorResponse (defaultsErr, "Failed to get the hotlink instance defaults"));
+                continue;
+            }
             Int32 layerIndex;
             if (instanceData.Get ("layerIndex", layerIndex)) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
@@ -2203,18 +2213,15 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             instanceData.Get ("mirrored", mirrored);
             element.hotlink.transformation = CreateHotlinkTransformation (GetOriginFromObjectState (*origin), rotationAngle, mirrored);
 
-            Int32 floorDifference = 0;
-            instanceData.Get ("floorDifference", floorDifference);
-            element.hotlink.floorDifference = static_cast<short> (floorDifference);
-            element.hotlink.skipNested = false;
+            // The placement options keep the tool defaults unless the caller sets them.
+            Int32 floorDifference;
+            if (instanceData.Get ("floorDifference", floorDifference)) {
+                element.hotlink.floorDifference = static_cast<short> (floorDifference);
+            }
             instanceData.Get ("skipNested", element.hotlink.skipNested);
-            element.hotlink.suspendFixAngle = false;
             instanceData.Get ("suspendFixAngle", element.hotlink.suspendFixAngle);
-            element.hotlink.ignoreTopFloorLinks = true;
             instanceData.Get ("ignoreTopFloorLinks", element.hotlink.ignoreTopFloorLinks);
-            element.hotlink.relinkWallOpenings = false;
             instanceData.Get ("relinkWallOpenings", element.hotlink.relinkWallOpenings);
-            element.hotlink.adjustLevelDiffs = false;
             instanceData.Get ("adjustLevelDiffs", element.hotlink.adjustLevelDiffs);
 
             const GSErrCode err = ACAPI_Element_Create (&element, nullptr);
@@ -2333,27 +2340,43 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
                 continue;
             }
 
-            API_Coord3D origin;
-            double rotationAngle;
-            bool mirrored;
-            DecomposeHotlinkTransformation (element.hotlink.transformation, origin, rotationAngle, mirrored);
-
-            const GS::ObjectState* newOrigin = instanceData.Get ("origin");
-            if (newOrigin != nullptr) {
-                const API_Coord3D given = GetOriginFromObjectState (*newOrigin);
-                origin.x = given.x;
-                origin.y = given.y;
-                if (newOrigin->Contains ("z")) {
-                    origin.z = given.z;
-                }
-            }
-            instanceData.Get ("rotationAngle", rotationAngle);
-            instanceData.Get ("mirrored", mirrored);
-
             API_Element mask;
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            element.hotlink.transformation = CreateHotlinkTransformation (origin, rotationAngle, mirrored);
-            ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, transformation);
+
+            const GS::ObjectState* newOrigin = instanceData.Get ("origin");
+            const bool hasRotation = instanceData.Contains ("rotationAngle");
+            const bool hasMirrored = instanceData.Contains ("mirrored");
+            if (newOrigin != nullptr && !hasRotation && !hasMirrored) {
+                // A move keeps the matrix as it is - scale, skew and all - and
+                // replaces only the translation.
+                const API_Coord3D given = GetOriginFromObjectState (*newOrigin);
+                element.hotlink.transformation.tmx[3] = given.x;
+                element.hotlink.transformation.tmx[7] = given.y;
+                if (newOrigin->Contains ("z")) {
+                    element.hotlink.transformation.tmx[11] = given.z;
+                }
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, transformation);
+            } else if (newOrigin != nullptr || hasRotation || hasMirrored) {
+                // A rotation or a mirror rebuilds the planar matrix from its
+                // decomposition; a scaled or non-planar placement loses that
+                // part, which is what asking for a new angle means.
+                API_Coord3D origin;
+                double rotationAngle;
+                bool mirrored;
+                DecomposeHotlinkTransformation (element.hotlink.transformation, origin, rotationAngle, mirrored);
+                if (newOrigin != nullptr) {
+                    const API_Coord3D given = GetOriginFromObjectState (*newOrigin);
+                    origin.x = given.x;
+                    origin.y = given.y;
+                    if (newOrigin->Contains ("z")) {
+                        origin.z = given.z;
+                    }
+                }
+                instanceData.Get ("rotationAngle", rotationAngle);
+                instanceData.Get ("mirrored", mirrored);
+                element.hotlink.transformation = CreateHotlinkTransformation (origin, rotationAngle, mirrored);
+                ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, transformation);
+            }
 
             Int32 floorDifference;
             if (instanceData.Get ("floorDifference", floorDifference)) {
