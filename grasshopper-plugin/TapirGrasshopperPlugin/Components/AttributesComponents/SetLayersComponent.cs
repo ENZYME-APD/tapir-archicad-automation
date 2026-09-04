@@ -6,6 +6,9 @@ using TapirGrasshopperPlugin.Types.Attributes;
 
 namespace TapirGrasshopperPlugin.Components.AttributesComponents
 {
+    // Kept only so that saved definitions using SetLayers keep working;
+    // replaced by CreateLayersComponent, which also exposes OverwriteExisting.
+    [Obsolete("Use the CreateLayers component instead.")]
     public class SetLayersComponent : ArchicadExecutorComponent
     {
         public override string CommandName => "CreateLayers";
@@ -13,10 +16,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public SetLayersComponent()
             : base(
                 "SetLayers",
-                "Set the details of layers.",
+                "Obsolete, use CreateLayers instead. Set the details of layers.",
                 GroupNames.Attributes)
         {
         }
+
+        public override GH_Exposure Exposure => GH_Exposure.hidden;
 
         protected override void AddInputs()
         {
