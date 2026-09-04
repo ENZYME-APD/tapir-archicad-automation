@@ -481,16 +481,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "Optional filter for the fields to return for each element. When omitted, every field is returned. Fields not listed are not computed at all, so listing only what you need skips in particular the floorPlanPolygons extraction, which regenerates each element's 2D drawing primitives and can dominate the execution time of batch reads.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "type",
-                        "id",
-                        "floorIndex",
-                        "layerIndex",
-                        "drawIndex",
-                        "details",
-                        "floorPlanPolygons"
-                    ]
+                    "$ref": "#/ElementDetailsField"
                 },
                 "minItems": 1
             }
