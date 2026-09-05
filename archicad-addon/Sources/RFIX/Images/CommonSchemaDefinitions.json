@@ -1731,7 +1731,7 @@
     },
     "HotlinkOrigin": {
         "type": "object",
-        "description": "Where a hotlink instance's origin lands, in the project's coordinates. z is optional and defaults to 0.",
+        "description": "Where a hotlink instance's origin lands, in the project's coordinates. z is optional: CreateHotlinkInstances places at 0 when it is omitted, ChangeHotlinkInstances keeps the instance's current z.",
         "properties": {
             "x": {
                 "type": "number"
@@ -1782,6 +1782,12 @@
             },
             "ignoreTopFloorLinks": {
                 "type": "boolean"
+            },
+            "relinkWallOpenings": {
+                "type": "boolean"
+            },
+            "adjustLevelDiffs": {
+                "type": "boolean"
             }
         },
         "additionalProperties": false,
@@ -1791,6 +1797,32 @@
             "origin",
             "rotationAngle",
             "mirrored"
+        ]
+    },
+    "HotlinkNodeCreated": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "existing": {
+                "type": "boolean",
+                "description": "True when a node for the same source file already existed and was returned instead of created."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "hotlinkNodeId", "existing" ]
+    },
+    "HotlinkNodeCreatedOrError": {
+        "type": "object",
+        "description": "The created (or already existing) node's guid, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/HotlinkNodeCreated"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
         ]
     },
     "SetGDLParameterArray": {

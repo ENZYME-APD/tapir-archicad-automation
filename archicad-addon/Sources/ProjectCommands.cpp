@@ -1912,7 +1912,7 @@ GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetInputParametersSchema 
         "properties": {
             "hotlinkNodes": {
                 "type": "array",
-                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored.",
+                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored. On Archicad 25 and 26 a node that has not been placed yet cannot be found, so a repeated request there creates a second node.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -1955,22 +1955,9 @@ GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetRawResponseSchema () c
         "properties": {
             "hotlinkNodes": {
                 "type": "array",
-                "description": "One item per requested node, in order: the node guid, or an error.",
+                "description": "One item per requested node, in order: the node guid with its existing flag, or an error.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        },
-                        "existing": {
-                            "type": "boolean",
-                            "description": "True when a node for the same source file already existed and was returned instead of created."
-                        },
-                        "error": {
-                            "$ref": "#/Error"
-                        }
-                    },
-                    "additionalProperties": false
+                    "$ref": "#/HotlinkNodeCreatedOrError"
                 }
             }
         },
@@ -2084,7 +2071,8 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                     "type": "object",
                     "properties": {
                         "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
+                            "$ref": "#/HotlinkNodeId",
+                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 and 26 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 27 on."
                         },
                         "origin": {
                             "$ref": "#/HotlinkOrigin"

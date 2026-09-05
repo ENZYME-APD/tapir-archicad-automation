@@ -1441,6 +1441,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("skipNested", elem.hotlink.skipNested);
                 typeSpecificDetails.Add ("suspendFixAngle", elem.hotlink.suspendFixAngle);
                 typeSpecificDetails.Add ("ignoreTopFloorLinks", elem.hotlink.ignoreTopFloorLinks);
+                typeSpecificDetails.Add ("relinkWallOpenings", elem.hotlink.relinkWallOpenings);
+                typeSpecificDetails.Add ("adjustLevelDiffs", elem.hotlink.adjustLevelDiffs);
                 break;
             }
 

@@ -243,7 +243,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateHotlinkNodesCommand> (
             projectCommands, "1.5.9",
-            "Creates hotlink module nodes from source files. A node that already points at the same file is returned instead of duplicated."
+            "Creates hotlink module nodes from source files. A node that already points at the same file is returned instead of duplicated (Archicad 27 and later; 25 and 26 cannot see an unplaced node)."
         );
         err |= RegisterCommand<CreateHotlinkInstancesCommand> (
             projectCommands, "1.5.9",

@@ -187,9 +187,12 @@ inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
     return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
 }
 
-inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
+// AC25/26: APIDb_GetHotlinkNodeID takes no second parameter and APIDb_GetHotlinkNodesID's
+// second is the node list (APIdefs_Database.h), so there is no way to ask for unplaced
+// nodes on these versions; the flag is accepted for the callers' sake and dropped.
+inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* /*enableUnplaced*/ = nullptr)
 {
-    return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);
+    return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode);
 }
 
 inline GSErrCode ACAPI_Hotlink_GetHotlinkRootNodeGuid (const API_HotlinkTypeID* type, API_Guid* rootNodeGuid)
