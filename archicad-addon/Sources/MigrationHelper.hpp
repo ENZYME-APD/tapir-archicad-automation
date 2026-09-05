@@ -187,12 +187,18 @@ inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
     return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
 }
 
-// AC25/26: APIDb_GetHotlinkNodeID takes no second parameter and APIDb_GetHotlinkNodesID's
-// second is the node list (APIdefs_Database.h), so there is no way to ask for unplaced
-// nodes on these versions; the flag is accepted for the callers' sake and dropped.
-inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* /*enableUnplaced*/ = nullptr)
+// The unplaced-node flag (APIdefs_Database.h): AC26 takes it as par2 of
+// APIDb_GetHotlinkNodeID and par3 of APIDb_GetHotlinkNodesID; AC25 has neither
+// (par2 is "---" and the node list respectively), so on 25 the flag is accepted
+// for the callers' sake and dropped, and an unplaced node cannot be read.
+inline GSErrCode ACAPI_Hotlink_GetHotlinkNode (API_HotlinkNode* hotlinkNode, bool* enableUnplaced = nullptr)
 {
+#ifdef ServerMainVers_2600
+    return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode, enableUnplaced);
+#else
+    (void) enableUnplaced;
     return ACAPI_Database (APIDb_GetHotlinkNodeID, hotlinkNode);
+#endif
 }
 
 inline GSErrCode ACAPI_Hotlink_GetHotlinkRootNodeGuid (const API_HotlinkTypeID* type, API_Guid* rootNodeGuid)
@@ -210,9 +216,14 @@ inline GSErrCode ACAPI_Hotlink_CreateHotlinkNode (API_HotlinkNode* hotlinkNode)
     return ACAPI_Database (APIDb_CreateHotlinkNodeID, hotlinkNode);
 }
 
-inline GSErrCode ACAPI_Hotlink_GetHotlinkNodes (const API_HotlinkTypeID* type, GS::Array<API_Guid>* nodeRefList, bool* /*enableUnplaced*/ = nullptr)
+inline GSErrCode ACAPI_Hotlink_GetHotlinkNodes (const API_HotlinkTypeID* type, GS::Array<API_Guid>* nodeRefList, bool* enableUnplaced = nullptr)
 {
+#ifdef ServerMainVers_2600
+    return ACAPI_Database (APIDb_GetHotlinkNodesID, (void*) type, (void*) nodeRefList, (void*) enableUnplaced);
+#else
+    (void) enableUnplaced;
     return ACAPI_Database (APIDb_GetHotlinkNodesID, (void*) type, (void*) nodeRefList);
+#endif
 }
 
 inline GSErrCode ACAPI_Navigator_GetNavigatorSetNum (Int32* setNum)

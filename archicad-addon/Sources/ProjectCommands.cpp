@@ -1872,9 +1872,9 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
 static GS::Optional<API_Guid> FindHotlinkNodeBySource (const IO::Location& sourceLocation)
 {
     // A node that has been created and not placed yet is "unplaced": the node
-    // reads skip it unless asked (AC27+; the AC25/26 database calls have no such
-    // flag). Without this a second CreateHotlinkNodes for the same file could not
-    // see the first, and CreateHotlinkInstances could not read the node it was
+    // reads skip it unless asked (AC26 and later; AC25's database calls have no
+    // such flag). Without this a second CreateHotlinkNodes for the same file could
+    // not see the first, and CreateHotlinkInstances could not read the node it was
     // given (measured on AC28).
     bool enableUnplaced = true;
     API_HotlinkTypeID type = APIHotlink_Module;
@@ -1912,7 +1912,7 @@ GS::Optional<GS::UniString> CreateHotlinkNodesCommand::GetInputParametersSchema 
         "properties": {
             "hotlinkNodes": {
                 "type": "array",
-                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored. On Archicad 25 and 26 a node that has not been placed yet cannot be found, so a repeated request there creates a second node.",
+                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored. On Archicad 25 a node that has not been placed yet cannot be found, so a repeated request there creates a second node.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -2016,7 +2016,7 @@ GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& param
             }
             GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
             // API_HotlinkNode's destructor frees sourceLocation itself ("make sure
-            // those point to memory on heap" - APIdefs_Database.h, AC25 to AC28),
+            // those point to memory on heap" - APIdefs_Database.h, AC25 to AC29),
             // which is also why the node reads elsewhere in this file do not leak.
             // On failure the location is freed here and nulled so the destructor
             // does not free it twice.
@@ -2072,7 +2072,7 @@ GS::Optional<GS::UniString> CreateHotlinkInstancesCommand::GetInputParametersSch
                     "properties": {
                         "hotlinkNodeId": {
                             "$ref": "#/HotlinkNodeId",
-                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 and 26 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 27 on."
+                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
                         },
                         "origin": {
                             "$ref": "#/HotlinkOrigin"
