@@ -1,4 +1,25 @@
 #include "ElementCommands.hpp"
+
+// The pivot polygon of a multi-plane roof lives in the memo's additional polygon
+// (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline.
+static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AdditionalPolygon) != NoError || memo.additionalPolyCoords == nullptr) {
+        ACAPI_DisposeElemMemoHdls (&memo);
+        return;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
+    GSIndex last = nCoords - 1;
+    if (memo.additionalPolyPends != nullptr && BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32) > 1) {
+        last = (*memo.additionalPolyPends)[1];
+    }
+    const auto& coords = os.AddList<GS::ObjectState> ("pivotPolygonOutline");
+    for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
+        coords (Create2DCoordinateObjectState ((*memo.additionalPolyCoords)[i]));
+    }
+    ACAPI_DisposeElemMemoHdls (&memo);
+}
 #include "ElementCreationCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "GSUnID.hpp"
@@ -1419,6 +1440,40 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_MorphID:
                 AddMorphBodyFromMemo (elem, typeSpecificDetails);
                 break;
+
+            case API_RoofID: {
+                const API_ShellBaseType& base = elem.roof.shellBase;
+                typeSpecificDetails.Add ("roofClass", elem.roof.roofClass == API_PolyRoofID ? "MultiPlane" : "SinglePlane");
+                typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
+                typeSpecificDetails.Add ("thickness", base.thickness);
+                typeSpecificDetails.Add ("level", base.level);
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, base.level, stories));
+                if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
+                    typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
+                } else {
+                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
+                }
+                if (elem.roof.roofClass == API_PlaneRoofID) {
+                    typeSpecificDetails.Add ("angle", elem.roof.u.planeRoof.angle);
+                    GS::ObjectState pivotLine;
+                    pivotLine.Add ("begin", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c1));
+                    pivotLine.Add ("end", Create2DCoordinateObjectState (elem.roof.u.planeRoof.baseLine.c2));
+                    typeSpecificDetails.Add ("pivotLine", pivotLine);
+                } else {
+                    typeSpecificDetails.Add ("eavesOverhang", elem.roof.u.polyRoof.eavesOverHang);
+                    const auto& levels = typeSpecificDetails.AddList<GS::ObjectState> ("levels");
+                    for (short i = 0; i < elem.roof.u.polyRoof.levelNum && i < 16; ++i) {
+                        GS::ObjectState level;
+                        level.Add ("height", elem.roof.u.polyRoof.levelData[i].levelHeight);
+                        level.Add ("angle", elem.roof.u.polyRoof.levelData[i].levelAngle);
+                        levels (level);
+                    }
+                    AddPivotPolygonFromMemo (elem.header.guid, typeSpecificDetails);
+                }
+                // the roof's own polygon: the plane roof's outline, the multi-plane roof's contour
+                AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+                break;
+            }
 
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
