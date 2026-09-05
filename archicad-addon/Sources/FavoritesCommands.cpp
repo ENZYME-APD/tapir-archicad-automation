@@ -680,11 +680,37 @@ GS::ObjectState ExportFavoritesCommand::Execute (const GS::ObjectState& paramete
 // ApplyFavoritesToElements — the real-element counterpart of
 // ApplyFavoritesToElementDefaults (see above): same four calls, each swapped for
 // its real-element equivalent (ACAPI_Element_ChangeParameters instead of
-// ChangeDefaults - settings-only, never touches geometry or the element's guid,
+// ChangeDefaults - settings-only, keeps the target's own geometry (see
+// MemoCarriesGeometry below) and its guid,
 // ACAPI_Element_AddClassificationItem instead of the TAPIR_..._Default helper,
 // TAPIR_Element_SetCategoryValue instead of TAPIR_Element_SetCategoryValueDefault,
 // ACAPI_Element_SetProperties instead of TAPIR_Element_SetPropertiesOfDefaultElem).
 // ============================================================================
+
+// A Favorite's memo is captured from a real, placed element - see
+// BuildFavoriteFromElement above, which fills it with ACAPI_Element_GetMemo, and the
+// same holds for the Favorites that ship in Archicad's own templates. For the
+// hierarchical element types that memo therefore also carries the source element's
+// geometry: API_ElementMemo::stairBaseLine for a Stair - the very handle
+// CreateStairsCommand::SetTypeSpecificParameters fills in to place one - and the
+// sub-element arrays for a Railing or a Curtain Wall. Handing that memo to
+// ACAPI_Element_ChangeParameters re-places the target element on the Favorite's own
+// baseline instead of leaving it where it was, which is what made applying a stair
+// Favorite scatter the placed stairs across the project (#576).
+// For these types the memo is withheld, so only the settings that live in the
+// API_Element struct are applied. The settings that live in the memo's sub-elements (a
+// Stair's structure, treads and risers, a Railing's posts) are left untouched too -
+// that is the price of the fix, and it is the safe half of the trade-off: an element
+// that keeps some of its own settings is recoverable, one that has moved is not.
+static bool MemoCarriesGeometry (const API_Elem_Head& header)
+{
+    switch (GetElemTypeId (header)) {
+        case API_StairID:
+        case API_RailingID:
+        case API_CurtainWallID: return true;
+        default:                return false;
+    }
+}
 
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
@@ -723,7 +749,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -823,9 +849,10 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
             }
 
             // ACAPI_Element_ChangeParameters (unlike ACAPI_Element_Change) only ever touches
-            // settings-type parameters, never geometry, and always keeps the target's own
-            // guid - exactly the "apply favorite settings" semantics we want here, with no
-            // risk of moving the element or losing its identity.
+            // settings-type parameters of the API_Element itself, never its geometry, and
+            // always keeps the target's own guid - exactly the "apply favorite settings"
+            // semantics we want here. The memo is the one part that can carry geometry, so
+            // it is withheld for the types where it does (see MemoCarriesGeometry above).
             if (applySettings) {
                 API_Element mask = {};
                 ACAPI_ELEMENT_MASK_SETFULL (mask);
@@ -833,7 +860,11 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
                 GS::Array<API_Guid> targetGuids;
                 targetGuids.Push (targetGuid);
 
-                err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, favorite.memo.GetPtr (), &mask);
+                const API_ElementMemo* memoToApply = MemoCarriesGeometry (targetElement.header)
+                    ? nullptr
+                    : favorite.memo.GetPtr ();
+
+                err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
             }
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
             if (err != NoError) {

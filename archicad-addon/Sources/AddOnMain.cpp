@@ -608,7 +608,9 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.5.4",
             "Apply the given favorites to existing elements. Only settings-type parameters are changed - "
             "geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying "
-            "a Favorite never moves or resizes the target element. By default settings, classifications, "
+            "a Favorite never moves or resizes the target element. For the hierarchical types (Stair, "
+            "Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are "
+            "inseparable from the Favorite's own geometry. By default settings, classifications, "
             "categories and properties are all applied; each can be opted out of individually."
         );
         err |= RegisterCommand<UpdateFavoritesFromElementsCommand> (
