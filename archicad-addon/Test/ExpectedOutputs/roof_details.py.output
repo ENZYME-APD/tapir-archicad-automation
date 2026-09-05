@@ -1,10 +1,141 @@
-Command: GetElementsByType
+Command: GetDetailsOfElements
 Parameters:
 {
-    "elementType": "Roof"
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
 }
 Response:
 {
-    "elements": []
+    "detailsOfElements": [
+        {
+            "type": "Roof",
+            "floorIndex": 0,
+            "layerIndex": 4,
+            "drawIndex": 7,
+            "id": "RT - 002",
+            "details": {
+                "roofClass": "MultiPlane",
+                "structureType": "Composite",
+                "thickness": 0.3,
+                "level": 2.7,
+                "zCoordinate": 2.7,
+                "compositeId": {
+                    "guid": "<GUID>"
+                },
+                "eavesOverhang": 0.45,
+                "levels": [
+                    {
+                        "height": 10,
+                        "angle": 0.436332313
+                    }
+                ],
+                "pivotPolygonOutline": [
+                    {
+                        "x": 100,
+                        "y": 100
+                    },
+                    {
+                        "x": 106,
+                        "y": 100
+                    },
+                    {
+                        "x": 106,
+                        "y": 105
+                    },
+                    {
+                        "x": 100,
+                        "y": 105
+                    },
+                    {
+                        "x": 100,
+                        "y": 100
+                    }
+                ],
+                "polygonOutline": [
+                    {
+                        "x": 99.549999999,
+                        "y": 99.549999999
+                    },
+                    {
+                        "x": 106.45,
+                        "y": 99.549999999
+                    },
+                    {
+                        "x": 106.45,
+                        "y": 105.450000004
+                    },
+                    {
+                        "x": 99.549999999,
+                        "y": 105.450000004
+                    },
+                    {
+                        "x": 99.549999999,
+                        "y": 99.549999999
+                    }
+                ],
+                "holes": []
+            }
+        },
+        {
+            "type": "Roof",
+            "floorIndex": 0,
+            "layerIndex": 4,
+            "drawIndex": 7,
+            "id": "RT - 003",
+            "details": {
+                "roofClass": "SinglePlane",
+                "structureType": "Composite",
+                "thickness": 0.3,
+                "level": 2.7,
+                "zCoordinate": 2.7,
+                "compositeId": {
+                    "guid": "<GUID>"
+                },
+                "angle": 0.34906585,
+                "pivotLine": {
+                    "begin": {
+                        "x": 120,
+                        "y": 100
+                    },
+                    "end": {
+                        "x": 126,
+                        "y": 100
+                    }
+                },
+                "polygonOutline": [
+                    {
+                        "x": 120,
+                        "y": 100
+                    },
+                    {
+                        "x": 126,
+                        "y": 100
+                    },
+                    {
+                        "x": 126,
+                        "y": 104
+                    },
+                    {
+                        "x": 120,
+                        "y": 104
+                    },
+                    {
+                        "x": 120,
+                        "y": 100
+                    }
+                ],
+                "holes": []
+            }
+        }
+    ]
 }
-No roofs in this project.

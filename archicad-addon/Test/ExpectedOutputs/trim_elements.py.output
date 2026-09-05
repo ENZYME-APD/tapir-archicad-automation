@@ -1,36 +1,7 @@
-Command: GetElementsByType
+Command: TrimElements
 Parameters:
 {
-    "elementType": "Wall"
-}
-Response:
-{
     "elements": [
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
         {
             "elementId": {
                 "guid": "<GUID>"
@@ -48,13 +19,83 @@ Response:
         }
     ]
 }
-Command: GetElementsByType
+Response:
+{
+    "success": true
+}
+Command: GetElementTrims
 Parameters:
 {
-    "elementType": "Roof"
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
 }
 Response:
 {
-    "elements": []
+    "elementTrims": [
+        {
+            "trimmedBy": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    },
+                    "trimType": "KeepInside"
+                }
+            ],
+            "trims": []
+        },
+        {
+            "trimmedBy": [
+                {
+                    "elementId": {
+                        "guid": "<GUID>"
+                    },
+                    "trimType": "KeepInside"
+                }
+            ],
+            "trims": []
+        }
+    ]
 }
-The project needs at least one wall and one roof for this example.
+Command: RemoveElementTrims
+Parameters:
+{
+    "elementPairs": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "trimmingElementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "trimmingElementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
