@@ -183,6 +183,10 @@ GSErrCode Initialize (void)
             applicationCommands, "0.1.0",
             "Performs a quit operation on the currently running Archicad instance."
         );
+        err |= RegisterCommand<GetPointFromUserCommand> (
+            applicationCommands, "1.5.9",
+            "Asks the designer to click a point in the current window and returns it; the call waits for the click and fails when the input is cancelled."
+        );
         err |= RegisterCommand<GetCurrentWindowTypeCommand> (
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window."
