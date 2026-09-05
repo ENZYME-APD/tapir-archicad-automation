@@ -1208,6 +1208,18 @@ GSErrCode Initialize (void)
             solidElementOperationCommands, "1.5.4",
             "Returns solid element operation links for each queried element, grouped by role (target or operator)."
         );
+        err |= RegisterCommand<TrimElementsCommand> (
+            solidElementOperationCommands, "1.5.9",
+            "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type."
+        );
+        err |= RegisterCommand<RemoveElementTrimsCommand> (
+            solidElementOperationCommands, "1.5.9",
+            "Removes the trim between an element and the roof or shell trimming it."
+        );
+        err |= RegisterCommand<GetElementTrimsCommand> (
+            solidElementOperationCommands, "1.5.9",
+            "Which roofs and shells trim each queried element, with the trim type, and which elements it trims."
+        );
         AddCommandGroup (solidElementOperationCommands);
     }
 
