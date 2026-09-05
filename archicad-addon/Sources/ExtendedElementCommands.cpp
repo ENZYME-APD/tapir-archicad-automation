@@ -706,34 +706,20 @@ void AddSectionAssociativePoint (
     points.Push (point);
 }
 
-GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
+GS::Optional<GS::UniString> AppendSectionAssociativeDimensionPoints (
     const GS::ObjectState& data,
+    SectionAssociativeDimensionPreset preset,
+    const API_Guid& sectionElementGuid,
     GS::Array<AssociativeDimensionPoint>& points,
     API_Vector& defaultDirection)
 {
-    const GS::ObjectState* sectionElementId = data.Get ("sectionElementId");
-    if (sectionElementId == nullptr) {
-        return "Missing required field 'sectionElementId'.";
-    }
-
     API_Element sectionElement = {};
     API_Element parentElement = {};
     {
-        auto error = LoadSectionElementAndParent (GetGuidFromObjectState (*sectionElementId), sectionElement, parentElement);
+        auto error = LoadSectionElementAndParent (sectionElementGuid, sectionElement, parentElement);
         if (error.HasValue ()) {
             return error;
         }
-    }
-
-    GS::UniString presetName;
-    if (!data.Get ("preset", presetName)) {
-        return "Missing required field 'preset'.";
-    }
-
-    SectionAssociativeDimensionPreset preset;
-    auto error = ParseSectionAssociativeDimensionPreset (presetName, preset);
-    if (error.HasValue ()) {
-        return error;
     }
 
     auto requireParentType = [&] (std::initializer_list<API_ElemTypeID> allowedTypes, const char* message) -> GS::Optional<GS::UniString> {
@@ -867,6 +853,52 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 11111);
             AddSectionAssociativePoint (points, sectionElement.header.guid, false, 0, 0, 11113);
             break;
+        }
+    }
+
+    return {};
+}
+
+GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
+    const GS::ObjectState& data,
+    GS::Array<AssociativeDimensionPoint>& points,
+    API_Vector& defaultDirection)
+{
+    GS::Array<API_Guid> sectionElementGuids;
+    const GS::ObjectState* sectionElementId = data.Get ("sectionElementId");
+    GS::Array<GS::ObjectState> sectionElementIds;
+    const bool hasSectionElementIds = data.Get ("sectionElementIds", sectionElementIds);
+    if (sectionElementId != nullptr && hasSectionElementIds) {
+        return "Only one of 'sectionElementId' and 'sectionElementIds' can be given.";
+    }
+    if (sectionElementId != nullptr) {
+        sectionElementGuids.Push (GetGuidFromObjectState (*sectionElementId));
+    } else {
+        for (const GS::ObjectState& sectionElementIdItem : sectionElementIds) {
+            sectionElementGuids.Push (GetGuidFromObjectState (sectionElementIdItem));
+        }
+    }
+    if (sectionElementGuids.IsEmpty ()) {
+        return "Missing required field 'sectionElementId' or 'sectionElementIds'.";
+    }
+
+    GS::UniString presetName;
+    if (!data.Get ("preset", presetName)) {
+        return "Missing required field 'preset'.";
+    }
+
+    SectionAssociativeDimensionPreset preset;
+    {
+        auto error = ParseSectionAssociativeDimensionPreset (presetName, preset);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    for (const API_Guid& sectionElementGuid : sectionElementGuids) {
+        auto error = AppendSectionAssociativeDimensionPoints (data, preset, sectionElementGuid, points, defaultDirection);
+        if (error.HasValue ()) {
+            return error;
         }
     }
 
@@ -4972,7 +5004,16 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                 "items": {
                     "type": "object",
                     "properties": {
-                        "sectionElementId": { "$ref": "#/ElementId" },
+                        "sectionElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of a single section element. Only one of sectionElementId and sectionElementIds can be given."
+                        },
+                        "sectionElementIds": {
+                            "type": "array",
+                            "items": { "$ref": "#/ElementId" },
+                            "minItems": 1,
+                            "description": "A list of section elements whose preset points are merged into one continuous dimension chain. Only one of sectionElementId and sectionElementIds can be given."
+                        },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "preset": {
                             "type": "string",
@@ -4998,7 +5039,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                         "placeOnTop": { "type": "boolean" }
                     },
                     "additionalProperties": false,
-                    "required": ["sectionElementId", "referencePoint", "preset"]
+                    "required": ["referencePoint", "preset"]
                 }
             }
         },
