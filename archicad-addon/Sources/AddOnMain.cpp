@@ -259,7 +259,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SaveAsModuleFileCommand> (
             projectCommands, "1.5.9",
-            "Saves the project, or the given elements of it, as a hotlink module (.mod) file."
+            "Saves the given elements, or the current selection, as a hotlink module (.mod) file."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",

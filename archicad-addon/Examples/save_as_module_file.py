@@ -1,18 +1,16 @@
 import os
-import sys
 import tempfile
 import aclib
 
-# Writes the open project as a hotlink module file, then the selected elements only.
-# The module file is the source a hotlink node points at (see hotlink_instances.py).
+# Writes every element of the open project as a hotlink module file. Without an element
+# list the command saves the current selection, as Save Selection as Module does.
 
-modulePath = os.path.join (tempfile.gettempdir (), 'tapir_example.mod')
+elements = aclib.RunTapirCommand ('GetAllElements', {})['elements']
 
-aclib.RunTapirCommand ('SaveAsModuleFile', {'moduleFilePath': modulePath})
-
-selected = aclib.RunTapirCommand ('GetSelectedElements', {})['elements']
-if len (selected) > 0:
+if len (elements) == 0:
+    print ('Nothing to save - the project has no elements.')
+else:
     aclib.RunTapirCommand ('SaveAsModuleFile', {
-        'moduleFilePath': os.path.join (tempfile.gettempdir (), 'tapir_example_selection.mod'),
-        'elements': selected
+        'moduleFilePath': os.path.join (tempfile.gettempdir (), 'tapir_example.mod'),
+        'elements': elements
     })

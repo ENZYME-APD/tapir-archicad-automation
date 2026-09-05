@@ -260,7 +260,7 @@ inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_Libra
 inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* location, GS::Array<API_Elem_Head>* elemHead = nullptr)
 {
     // AC25/26 take the element list as a handle (APIDo_SaveAsModuleFileID par2:
-    // API_Elem_Head**); the whole-project form is what this shim supports.
+    // API_Elem_Head**); the selection form is what this shim supports.
     if (elemHead != nullptr && !elemHead->IsEmpty ()) {
         return APIERR_BADPARS;
     }

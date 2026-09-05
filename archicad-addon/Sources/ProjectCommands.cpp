@@ -1111,11 +1111,11 @@ GS::Optional<GS::UniString> SaveAsModuleFileCommand::GetInputParametersSchema ()
         "properties": {
             "moduleFilePath": {
                 "type": "string",
-                "description": "Absolute path of the .mod file to write. An existing file is overwritten."
+                "description": "Absolute path of the .mod file to write. An existing file is overwritten. The current window must be a floor plan, section, elevation or detail."
             },
             "elements": {
                 "$ref": "#/Elements",
-                "description": "Optional. Only these elements go into the module; omitted, the whole project does. Archicad 25 and 26 support the whole-project form only."
+                "description": "Optional. The elements that go into the module; omitted, the current selection does, as Save Selection as Module would. Pass GetAllElements for the whole project. Archicad 25 and 26 support the selection form only."
             }
         },
         "additionalProperties": false,
@@ -1155,7 +1155,7 @@ GS::ObjectState SaveAsModuleFileCommand::Execute (const GS::ObjectState& paramet
 
     const GSErrCode err = ACAPI_ProjectOperation_SaveAsModuleFile (&location, heads.IsEmpty () ? nullptr : &heads);
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to save the module file.");
+        return CreateFailedExecutionResult (err, "Failed to save the module file: no elements to save (nothing selected?), the current window is not a model window, or the file cannot be written.");
     }
     return CreateSuccessfulExecutionResult ();
 }
