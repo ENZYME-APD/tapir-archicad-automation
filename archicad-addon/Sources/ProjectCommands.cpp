@@ -1094,6 +1094,72 @@ GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters
     return CreateSuccessfulExecutionResult ();
 }
 
+SaveAsModuleFileCommand::SaveAsModuleFileCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveAsModuleFileCommand::GetName () const
+{
+    return "SaveAsModuleFile";
+}
+
+GS::Optional<GS::UniString> SaveAsModuleFileCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "moduleFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .mod file to write. An existing file is overwritten."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional. Only these elements go into the module; omitted, the whole project does. Archicad 25 and 26 support the whole-project form only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "moduleFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SaveAsModuleFileCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SaveAsModuleFileCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString moduleFilePath;
+    if (!parameters.Get ("moduleFilePath", moduleFilePath) || moduleFilePath.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "moduleFilePath is missing.");
+    }
+    IO::Location location (moduleFilePath);
+
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    GS::Array<API_Elem_Head> heads;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            continue;
+        }
+        API_Elem_Head head = {};
+        head.guid = GetGuidFromObjectState (*elementId);
+        heads.Push (head);
+    }
+
+    const GSErrCode err = ACAPI_ProjectOperation_SaveAsModuleFile (&location, heads.IsEmpty () ? nullptr : &heads);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the module file.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetGeoLocationCommand::GetGeoLocationCommand () :
     CommandBase (CommonSchema::Used)
 {

@@ -252,6 +252,26 @@ inline GSErrCode ACAPI_LibraryManagement_GetLibraries (GS::Array<API_LibraryInfo
     return ACAPI_Environment (APIEnv_GetLibrariesID, activeLibs, embeddedLibraryIndex);
 }
 
+inline GSErrCode ACAPI_LibraryManagement_SetLibraries (const GS::Array<API_LibraryInfo>* activeLibs)
+{
+    return ACAPI_Environment (APIEnv_SetLibrariesID, (void*) activeLibs);
+}
+
+inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* location, GS::Array<API_Elem_Head>* elemHead = nullptr)
+{
+    // AC25/26 take the element list as a handle (APIDo_SaveAsModuleFileID par2:
+    // API_Elem_Head**); the whole-project form is what this shim supports.
+    if (elemHead != nullptr && !elemHead->IsEmpty ()) {
+        return APIERR_BADPARS;
+    }
+    return ACAPI_Automate (APIDo_SaveAsModuleFileID, (void*) location);
+}
+
+inline GSErrCode ACAPI_UserInput_GetPoint (API_GetPointType* pointInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr, Get3DComponentProc* get3DComponentProc = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetPointID, pointInfo, (void*) rubberLineInfoProc, (void*) get3DComponentProc);
+}
+
 inline GSErrCode ACAPI_ProjectSetting_GetStorySettings (API_StoryInfo* storyInfo)
 {
     return ACAPI_Environment (APIEnv_GetStorySettingsID, storyInfo, nullptr);
