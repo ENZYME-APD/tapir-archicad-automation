@@ -1,0 +1,8 @@
+Command: GetHotlinks
+Parameters:
+{}
+Response:
+{
+    "hotlinks": []
+}
+No hotlink nodes in this project - set TAPIR_HOTLINK_SOURCE to create one.
