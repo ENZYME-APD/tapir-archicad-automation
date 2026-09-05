@@ -2015,6 +2015,7 @@ GS::ObjectState CreateHotlinkNodesCommand::Execute (const GS::ObjectState& param
                 name = lastLocalName.ToString ();
             }
             GS::ucsncpy (hotlinkNode.name, name.ToUStr (), API_UniLongNameLen - 1);
+            hotlinkNode.name[API_UniLongNameLen - 1] = 0;
             // API_HotlinkNode's destructor frees sourceLocation itself ("make sure
             // those point to memory on heap" - APIdefs_Database.h, AC25 to AC29),
             // which is also why the node reads elsewhere in this file do not leak.
