@@ -2184,8 +2184,8 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
                 elements (CreateErrorResponse (defaultsErr, "Failed to get the hotlink instance defaults"));
                 continue;
             }
-            Int32 layerIndex;
-            if (instanceData.Get ("layerIndex", layerIndex)) {
+            Int32 layerIndex = 0;
+            if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
             }
             Int32 floorIndex;
@@ -2412,8 +2412,8 @@ GS::ObjectState ChangeHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             if (instanceData.Get ("adjustLevelDiffs", element.hotlink.adjustLevelDiffs)) {
                 ACAPI_ELEMENT_MASK_SET (mask, API_HotlinkType, adjustLevelDiffs);
             }
-            Int32 layerIndex;
-            if (instanceData.Get ("layerIndex", layerIndex)) {
+            Int32 layerIndex = 0;
+            if (instanceData.Get ("layerIndex", layerIndex) && layerIndex > 0) {
                 element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
             }
