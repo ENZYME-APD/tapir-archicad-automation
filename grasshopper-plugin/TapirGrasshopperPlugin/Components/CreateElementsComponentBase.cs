@@ -96,6 +96,11 @@ namespace TapirGrasshopperPlugin.Components
         // complete item schema.
         protected virtual bool HasAdditionalSettingsInput => true;
 
+        // Override with false when the command does not create new elements
+        // the Tapir GH metadata could be embedded into (e.g. it modifies
+        // existing ones).
+        protected virtual bool SupportsElementMetadata => true;
+
         protected CreateElementsComponentBase(
             string name,
             string description,
@@ -187,6 +192,18 @@ namespace TapirGrasshopperPlugin.Components
                     "One JSON object per element with further optional settings matching the " +
                     "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
                 SetOptionality(fields.Count);
+            }
+
+            if (SupportsElementMetadata)
+            {
+                InBoolean(
+                    ElementMetadata.EmbedMetadataInputName,
+                    ElementMetadata.EmbedMetadataDescription,
+                    true);
+                InBoolean(
+                    ElementMetadata.ReplaceExistingInputName,
+                    ElementMetadata.ReplaceExistingDescription,
+                    false);
             }
         }
 
@@ -765,6 +782,26 @@ namespace TapirGrasshopperPlugin.Components
             }
             var parameters = new JObject { [ArrayKey] = itemsArray };
 
+            var embedMetadata = false;
+            var replaceExisting = false;
+            if (SupportsElementMetadata)
+            {
+                var metadataInputIndex =
+                    fields.Count + (HasAdditionalSettingsInput ? 1 : 0);
+                embedMetadata = da.GetOptional(metadataInputIndex, true);
+                replaceExisting = da.GetOptional(metadataInputIndex + 1, false);
+            }
+
+            var metadata = new ElementMetadata(this, ToAddOn, ToArchicad);
+            // The previous elements are collected before the creation (so the
+            // new elements are never in the set), but only deleted after it
+            // succeeded, so a failed run does not lose them.
+            JArray previousElements = null;
+            if (replaceExisting)
+            {
+                previousElements = metadata.FindPreviouslyCreatedElements();
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
                     parameters,
@@ -772,6 +809,15 @@ namespace TapirGrasshopperPlugin.Components
                     out JObject response))
             {
                 return;
+            }
+
+            if (embedMetadata)
+            {
+                metadata.StampCreatedElements(response);
+            }
+            if (replaceExisting)
+            {
+                metadata.DeletePreviouslyCreatedElements(previousElements);
             }
 
             SetCreatedElementsOutputs(da, response, 0, 1);

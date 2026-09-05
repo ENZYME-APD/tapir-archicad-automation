@@ -21,6 +21,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
         protected override bool HasAdditionalSettingsInput => false;
 
+        // Relinking replaces existing Drawings instead of creating new
+        // elements, so the Tapir GH metadata inputs make no sense here.
+        protected override bool SupportsElementMetadata => false;
+
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
             new Field("DrawingGuids", "elementId", FieldKind.ElementGuid, "Identifiers of the Drawing elements to relink.", required: true),
