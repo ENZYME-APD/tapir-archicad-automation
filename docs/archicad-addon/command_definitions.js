@@ -416,6 +416,225 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "CreateHotlinkNodes",
+                "version": "1.5.9",
+                "description": "Creates hotlink module nodes from source files. A node that already points at the same file is returned instead of duplicated (Archicad 26 and later; 25 cannot see an unplaced node).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored. On Archicad 25 a node that has not been placed yet cannot be found, so a repeated request there creates a second node.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "sourceLocation": {
+                            "type": "string",
+                            "description": "Absolute path of the module source file (.mod or .pln)."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Optional display name of the node. Defaults to the file name. Ignored when a node for the same file already exists."
+                        },
+                        "storyRangeType": {
+                            "type": "string",
+                            "description": "Optional. Which stories of the source are placed: all of them, or the single reference story. Ignored when a node for the same file already exists.",
+                            "enum": ["AllStories", "SingleStory"]
+                        },
+                        "refFloorIndex": {
+                            "type": "integer",
+                            "description": "Optional index of the reference story in the source file. Defaults to 0. Ignored when a node for the same file already exists."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "sourceLocation"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "One item per requested node, in order: the node guid with its existing flag, or an error.",
+                "items": {
+                    "$ref": "#/HotlinkNodeCreatedOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    }
+            },{
+                "name": "CreateHotlinkInstances",
+                "version": "1.5.9",
+                "description": "Places instances of hotlink module nodes at an origin, rotation and mirroring.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The hotlink instances to place.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hotlinkNodeId": {
+                            "$ref": "#/HotlinkNodeId",
+                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
+                        },
+                        "origin": {
+                            "$ref": "#/HotlinkOrigin"
+                        },
+                        "rotationAngle": {
+                            "type": "number",
+                            "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Optional. Reflects the module's local X axis before the rotation. Defaults to false."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional story the instance is placed on. Defaults to the current story."
+                        },
+                        "floorDifference": {
+                            "type": "integer",
+                            "description": "Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Optional layer of the instance. Defaults to the hotlink tool's current default layer."
+                        },
+                        "skipNested": {
+                            "type": "boolean",
+                            "description": "Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default."
+                        },
+                        "suspendFixAngle": {
+                            "type": "boolean",
+                            "description": "Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default."
+                        },
+                        "ignoreTopFloorLinks": {
+                            "type": "boolean",
+                            "description": "Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default."
+                        },
+                        "relinkWallOpenings": {
+                            "type": "boolean",
+                            "description": "Optional. Defaults to the hotlink tool's current default."
+                        },
+                        "adjustLevelDiffs": {
+                            "type": "boolean",
+                            "description": "Optional. Defaults to the hotlink tool's current default."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "hotlinkNodeId",
+                        "origin"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "ChangeHotlinkInstances",
+                "version": "1.5.9",
+                "description": "Moves, rotates or mirrors placed hotlink instances by changing their transformation. MoveElements and RotateElements do not work on hotlink instances.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "hotlinkInstances": {
+                "type": "array",
+                "description": "The placed hotlink instances to change. Every field but elementId is optional; a field that is omitted keeps its current value.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "origin": {
+                            "$ref": "#/HotlinkOrigin"
+                        },
+                        "rotationAngle": {
+                            "type": "number",
+                            "description": "Rotation about the origin, counter-clockwise, in radians."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Reflect the module's local X axis before the rotation."
+                        },
+                        "floorDifference": {
+                            "type": "integer"
+                        },
+                        "skipNested": {
+                            "type": "boolean"
+                        },
+                        "suspendFixAngle": {
+                            "type": "boolean"
+                        },
+                        "ignoreTopFloorLinks": {
+                            "type": "boolean"
+                        },
+                        "relinkWallOpenings": {
+                            "type": "boolean"
+                        },
+                        "adjustLevelDiffs": {
+                            "type": "boolean"
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Move the instance to this layer."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkInstances"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
                 "name": "OpenProject",
                 "version": "1.0.7",
                 "description": "Opens the given project.",
@@ -966,7 +1185,7 @@ var gCommands = [{
             },{
                 "name": "GetDetailsOfElements",
                 "version": "1.5.7",
-                "description": "Gets the details of the given elements (geometry parameters etc).",
+                "description": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons).",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -1010,6 +1229,10 @@ var gCommands = [{
                         },
                         "drawIndex": {
                             "type": "number"
+                        },
+                        "hotlinkId": {
+                            "$ref": "#/ElementId",
+                            "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only."
                         },
                         "details": {
                             "$ref": "#/TypeSpecificDetails"
@@ -2140,6 +2363,10 @@ var gCommands = [{
                             "type": "number",
                             "description": "Depth (going) of each tread.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "finishVisible": {
+                            "type": "boolean",
+                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
                         }
                     },
                     "additionalProperties": false,
@@ -3928,7 +4155,8 @@ var gCommands = [{
                         "polygonOutline": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 3
+                            "minItems": 3,
+                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed."
                         },
                         "polygonArcs": {
                             "type": "array",
@@ -4018,7 +4246,9 @@ var gCommands = [{
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -4048,7 +4278,9 @@ var gCommands = [{
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -5470,13 +5702,13 @@ var gCommands = [{
             },{
                 "name": "UpdatePropertyDefinitions",
                 "version": "1.5.4",
-                "description": "Updates the expression(s) of existing expression-based Custom Property Definitions.",
+                "description": "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property.",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "propertyDefinitions": {
                 "type": "array",
-                "description": "The list of expression-based property definitions to update.",
+                "description": "The property definitions to update.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -5485,17 +5717,20 @@ var gCommands = [{
                         },
                         "expressions": {
                             "type": "array",
-                            "description": "The new expression strings for the property.",
+                            "description": "The new expression strings for the property. Only for expression-based properties.",
                             "items": {
                                 "type": "string"
                             },
                             "minItems": 1
+                        },
+                        "possibleEnumValues": {
+                            "$ref": "#/EnumValuesToAdd",
+                            "description": "The enum values to add to an enumeration property. Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "propertyId",
-                        "expressions"
+                        "propertyId"
                     ]
                 }
             }

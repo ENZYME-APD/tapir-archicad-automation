@@ -1694,6 +1694,18 @@ var gSchemaDefinitions = {
                 "type": "string",
                 "description": "The path of the hotlink file."
             },
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The display name of the hotlink node."
+            },
+            "type": {
+                "type": "string",
+                "description": "Module or XRef.",
+                "enum": ["Module", "XRef"]
+            },
             "children": {
                 "$ref": "#/Hotlinks",
                 "description": "The children of the hotlink node if it has any."
@@ -1702,6 +1714,115 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "location"
+        ]
+    },
+    "HotlinkNodeId": {
+        "type": "object",
+        "description": "The identifier of a hotlink node - the reference to a module source file, which instances are placed from.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "HotlinkOrigin": {
+        "type": "object",
+        "description": "Where a hotlink instance's origin lands, in the project's coordinates. z is optional: CreateHotlinkInstances places at 0 when it is omitted, ChangeHotlinkInstances keeps the instance's current z.",
+        "properties": {
+            "x": {
+                "type": "number"
+            },
+            "y": {
+                "type": "number"
+            },
+            "z": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "x",
+            "y"
+        ]
+    },
+    "HotlinkDetails": {
+        "type": "object",
+        "description": "Details of a placed hotlink instance: which node it comes from and where it sits.",
+        "properties": {
+            "hotlinkType": {
+                "type": "string",
+                "enum": ["Module", "XRef"]
+            },
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "origin": {
+                "$ref": "#/Coordinate3D"
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Counter-clockwise rotation about the origin, in radians."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "True when the module's local X axis is reflected."
+            },
+            "floorDifference": {
+                "type": "integer"
+            },
+            "skipNested": {
+                "type": "boolean"
+            },
+            "suspendFixAngle": {
+                "type": "boolean"
+            },
+            "ignoreTopFloorLinks": {
+                "type": "boolean"
+            },
+            "relinkWallOpenings": {
+                "type": "boolean"
+            },
+            "adjustLevelDiffs": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkType",
+            "hotlinkNodeId",
+            "origin",
+            "rotationAngle",
+            "mirrored"
+        ]
+    },
+    "HotlinkNodeCreated": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "existing": {
+                "type": "boolean",
+                "description": "True when a node for the same source file already existed and was returned instead of created."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "hotlinkNodeId", "existing" ]
+    },
+    "HotlinkNodeCreatedOrError": {
+        "type": "object",
+        "description": "The created (or already existing) node's guid, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/HotlinkNodeCreated"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
         ]
     },
     "SetGDLParameterArray": {
@@ -2511,6 +2632,9 @@ var gSchemaDefinitions = {
         "type": "object",
         "description": "The details of the property.",
         "properties": {
+            "possibleEnumValues": {
+                "$ref": "#/PossibleEnumValues"
+            },
             "propertyId": {
                 "$ref": "#/PropertyId"
             },
@@ -6156,6 +6280,10 @@ var gSchemaDefinitions = {
           },
           "hasLeaderLine": {
             "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "description": "The text content of the label. Present only for text-type labels (symbol labels have no text content)."
           }
         },
         "additionalProperties": false,
@@ -6165,7 +6293,49 @@ var gSchemaDefinitions = {
               "endCoordinate",
               "hasLeaderLine"
           ]
-    },    
+    },
+    "TextDetails": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines separate the lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen attribute index."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"]
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "text",
+            "position",
+            "angle",
+            "height",
+            "pen",
+            "justification",
+            "zCoordinate"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -6182,6 +6352,9 @@ var gSchemaDefinitions = {
         "description": "Represents the complete type-specific details of an element. Used as output from GET requests",
         "type": "object",
         "oneOf": [
+            {
+                "$ref": "#/HotlinkDetails"
+            },
             {
                 "$ref": "#/WallDetails"
             },
@@ -6237,6 +6410,9 @@ var gSchemaDefinitions = {
                 "$ref": "#/LabelDetails"
             },
             {
+                "$ref": "#/TextDetails"
+            },
+            {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
             }
         ]
@@ -6251,7 +6427,8 @@ var gSchemaDefinitions = {
             "layerIndex",
             "drawIndex",
             "details",
-            "floorPlanPolygons"
+            "floorPlanPolygons",
+            "hotlinkId"
         ]
     },
     "RevisionIssueId": {
@@ -6953,6 +7130,35 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false
     },
+    "TextSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Text element or a text-type Label. For Labels only the text field is applied. Setting text replaces the whole content (any per-run formatting of the old content is dropped) and switches the element to automatic width, matching the behavior of CreateTexts/CreateLabels.",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The new text content. Newlines create multiple lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text. Only applied to Text elements."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians. Only applied to Text elements."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Only applied to Text elements."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"],
+                "description": "The text justification. Only applied to Text elements."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
@@ -6983,6 +7189,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/DrawingSettings"
+            },
+            {
+                "$ref": "#/TextSettings"
             }
         ]
     },
@@ -7015,78 +7224,85 @@ var gSchemaDefinitions = {
             "propertyGroup"
         ]
     },
-    "PropertyDefinition": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string"
-            },
-            "description": {
-                "type": "string"
-            },
-            "type": {
-                "$ref": "#/PropertyDataType"
-            },
-            "isEditable": {
-                "type": "boolean"
-            },
-            "defaultValue": {
-                "$ref": "#/PropertyDefaultValue"
-            },
-            "possibleEnumValues": {
-                "type": "array",
-                "description": "The possible enum values of the property when the property type is enumeration.",
-                "items": {
+    "PossibleEnumValues": {
+        "type": "array",
+        "description": "The possible enum values of the property when the property type is enumeration.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "enumValue": {
                     "type": "object",
+                    "description": "The description of an enumeration value.",
                     "properties": {
-                        "enumValue": {
-                            "type": "object",
-                            "description": "The description of an enumeration value.",
-                            "properties": {
-                                "enumValueId": {
-                                    "$ref": "#/EnumValueId"
-                                },
-                                "displayValue": {
-                                    "type": "string",
-                                    "description": "Displayed value of the enumeration."
-                                },
-                                "nonLocalizedValue": {
-                                    "type": "string",
-                                    "description": "Nonlocalized value of the enumeration if there is one."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "displayValue"
-                            ]
+                        "enumValueId": {
+                            "$ref": "#/EnumValueId"
+                        },
+                "guid": {
+                    "$ref": "#/Guid",
+                    "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
+                },
+                        "displayValue": {
+                            "type": "string",
+                            "description": "Displayed value of the enumeration."
+                        },
+                        "nonLocalizedValue": {
+                            "type": "string",
+                            "description": "Nonlocalized value of the enumeration if there is one."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "enumValue"
+                        "displayValue"
                     ]
                 }
             },
+            "additionalProperties": false,
+            "required": [
+                "enumValue"
+            ]
+        }
+            },
+    "PropertyDefinition": {
+        "type": "object",
+        "properties": {
+            "name": {
+        "type": "string"
+            },
+            "description": {
+        "type": "string"
+            },
+            "type": {
+        "$ref": "#/PropertyDataType"
+            },
+            "isEditable": {
+        "type": "boolean"
+            },
+            "defaultValue": {
+        "$ref": "#/PropertyDefaultValue"
+            },
+            "possibleEnumValues": {
+        "$ref": "#/PossibleEnumValues"
+            },
             "availability": {
-                "type": "array",
-                "description": "The identifiers of classification items the new property is available for.",
-                "items": {
-                    "$ref": "#/ClassificationItemIdArrayItem"
-                }
+        "type": "array",
+        "description": "The identifiers of classification items the new property is available for.",
+        "items": {
+            "$ref": "#/ClassificationItemIdArrayItem"
+        }
             },
             "group": {
-                "type": "object",
-                "description": "The property group defined by name or id. If both fields exists the id will be used.",
-                "properties": {
-                    "propertyGroupId": {
-                        "$ref": "#/PropertyGroupId"
-                    },
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": []
+        "type": "object",
+        "description": "The property group defined by name or id. If both fields exists the id will be used.",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
             }
         },
         "additionalProperties": false,
@@ -7099,6 +7315,37 @@ var gSchemaDefinitions = {
             "group"
         ]
 
+    },
+    "EnumValuesToAdd": {
+        "type": "array",
+        "description": "Enumeration values to add to a property.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "enumValue": {
+                    "type": "object",
+                    "description": "The description of an enumeration value.",
+                    "properties": {
+                        "displayValue": {
+                            "type": "string",
+                            "description": "Displayed value of the enumeration."
+                        },
+                        "nonLocalizedValue": {
+                            "type": "string",
+                            "description": "Nonlocalized value of the enumeration if there is one."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "displayValue"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "enumValue"
+            ]
+        }
     },
     "PropertyDefinitionArrayItem": {
         "description": "A wrapper containing a property definition",
