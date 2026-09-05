@@ -1871,15 +1871,21 @@ GS::ObjectState RebuildViewCommand::Execute (const GS::ObjectState& parameters, 
 
 static GS::Optional<API_Guid> FindHotlinkNodeBySource (const IO::Location& sourceLocation)
 {
+    // A node that has been created and not placed yet is "unplaced": the node
+    // reads skip it unless asked (AC27+; the AC25/26 database calls have no such
+    // flag). Without this a second CreateHotlinkNodes for the same file could not
+    // see the first, and CreateHotlinkInstances could not read the node it was
+    // given (measured on AC28).
+    bool enableUnplaced = true;
     API_HotlinkTypeID type = APIHotlink_Module;
     GS::Array<API_Guid> nodes;
-    if (ACAPI_Hotlink_GetHotlinkNodes (&type, &nodes) != NoError) {
+    if (ACAPI_Hotlink_GetHotlinkNodes (&type, &nodes, &enableUnplaced) != NoError) {
         return GS::NoValue;
     }
     for (const API_Guid& nodeGuid : nodes) {
         API_HotlinkNode node = {};
         node.guid = nodeGuid;
-        if (ACAPI_Hotlink_GetHotlinkNode (&node) == NoError && node.sourceLocation != nullptr) {
+        if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) == NoError && node.sourceLocation != nullptr) {
             // Case-insensitive: on Windows a differently cased path is the same file.
             if (node.sourceLocation->ToDisplayText ().Compare (sourceLocation.ToDisplayText (), CaseInsensitive) == GS::UniString::Equal) {
                 return nodeGuid;
@@ -2205,7 +2211,8 @@ GS::ObjectState CreateHotlinkInstancesCommand::Execute (const GS::ObjectState& p
             // node is a mismatch.
             API_HotlinkNode node = {};
             node.guid = GetGuidFromObjectState (*hotlinkNodeId);
-            if (ACAPI_Hotlink_GetHotlinkNode (&node) != NoError) {
+            bool enableUnplaced = true;     // the node may have been created and not placed yet
+            if (ACAPI_Hotlink_GetHotlinkNode (&node, &enableUnplaced) != NoError) {
                 elements (CreateErrorResponse (APIERR_BADID, "hotlinkNodeId is not a hotlink node"));
                 continue;
             }

@@ -14,18 +14,25 @@ import aclib
 # example create a node first; without it the example works with whatever
 # nodes the open project already has, and does nothing if there are none.
 
+# GetHotlinks walks the tree of PLACED nodes, so a node that has just been
+# created and not placed yet is not in it; the id CreateHotlinkNodes returns is
+# what the first placement needs.
+nodeId = None
 sourcePath = os.environ.get ('TAPIR_HOTLINK_SOURCE')
 if sourcePath:
-    aclib.RunTapirCommand ('CreateHotlinkNodes', {
+    nodes = aclib.RunTapirCommand ('CreateHotlinkNodes', {
         'hotlinkNodes': [{'sourceLocation': sourcePath}]
-    })
+    })['hotlinkNodes']
+    nodeId = next ((n['hotlinkNodeId'] for n in nodes if 'hotlinkNodeId' in n), None)
 
-hotlinks = aclib.RunTapirCommand ('GetHotlinks')['hotlinks']
+if nodeId is None:
+    hotlinks = aclib.RunTapirCommand ('GetHotlinks')['hotlinks']
+    if len (hotlinks) > 0:
+        nodeId = hotlinks[0]['hotlinkNodeId']
 
-if len (hotlinks) == 0:
+if nodeId is None:
     print ('No hotlink nodes in this project - set TAPIR_HOTLINK_SOURCE to create one.')
 else:
-    nodeId = hotlinks[0]['hotlinkNodeId']
 
     created = aclib.RunTapirCommand ('CreateHotlinkInstances', {
         'hotlinkInstances': [{
