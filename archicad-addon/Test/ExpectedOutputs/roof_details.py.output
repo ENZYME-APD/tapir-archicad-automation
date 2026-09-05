@@ -1,0 +1,10 @@
+Command: GetElementsByType
+Parameters:
+{
+    "elementType": "Roof"
+}
+Response:
+{
+    "elements": []
+}
+No roofs in this project.

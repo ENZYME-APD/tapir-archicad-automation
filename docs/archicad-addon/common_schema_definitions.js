@@ -2511,6 +2511,9 @@ var gSchemaDefinitions = {
         "type": "object",
         "description": "The details of the property.",
         "properties": {
+            "possibleEnumValues": {
+                "$ref": "#/PossibleEnumValues"
+            },
             "propertyId": {
                 "$ref": "#/PropertyId"
             },
@@ -4641,6 +4644,106 @@ var gSchemaDefinitions = {
             "verticalCurveHeight"
         ]
     },
+    "RoofDetails": {
+        "type": "object",
+        "properties": {
+            "roofClass": {
+                "type": "string",
+                "enum": [ "SinglePlane", "MultiPlane" ]
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Composite" ]
+            },
+            "thickness": {
+                "type": "number"
+            },
+            "level": {
+                "type": "number",
+                "description": "Height of the pivot line (single-plane) or the pivot polygon (multi-plane) above the floor level."
+            },
+            "zCoordinate": {
+                "type": "number"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "angle": {
+                "type": "number",
+                "description": "Single-plane: the slope in radians."
+            },
+            "pivotLine": {
+                "type": "object",
+                "description": "Single-plane: the pivot line the plane rotates about.",
+                "properties": {
+                    "begin": {
+                        "$ref": "#/Coordinate2D"
+                    },
+                    "end": {
+                        "$ref": "#/Coordinate2D"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "begin", "end" ]
+            },
+            "eavesOverhang": {
+                "type": "number",
+                "description": "Multi-plane: the eaves overhang beyond the pivot polygon."
+            },
+            "levels": {
+                "type": "array",
+                "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "height": {
+                            "type": "number"
+                        },
+                        "angle": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "height", "angle" ]
+                }
+            },
+            "pivotPolygonOutline": {
+                "type": "array",
+                "description": "Multi-plane: the pivot polygon the planes rise from.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonOutline": {
+                "type": "array",
+                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roofClass",
+            "structureType",
+            "thickness",
+            "level",
+            "zCoordinate",
+            "polygonOutline"
+        ]
+    },
     "SlabDetails": {
         "type": "object",
         "properties": {
@@ -6156,6 +6259,10 @@ var gSchemaDefinitions = {
           },
           "hasLeaderLine": {
             "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "description": "The text content of the label. Present only for text-type labels (symbol labels have no text content)."
           }
         },
         "additionalProperties": false,
@@ -6165,7 +6272,49 @@ var gSchemaDefinitions = {
               "endCoordinate",
               "hasLeaderLine"
           ]
-    },    
+    },
+    "TextDetails": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines separate the lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen attribute index."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"]
+            },
+            "zCoordinate": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "text",
+            "position",
+            "angle",
+            "height",
+            "pen",
+            "justification",
+            "zCoordinate"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -6190,6 +6339,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/SlabDetails"
+            },
+            {
+                "$ref": "#/RoofDetails"
             },
             {
                 "$ref": "#/ColumnDetails"
@@ -6235,6 +6387,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/LabelDetails"
+            },
+            {
+                "$ref": "#/TextDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
@@ -6953,6 +7108,35 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false
     },
+    "TextSettings": {
+        "type": "object",
+        "description": "Settings for modifying a Text element or a text-type Label. For Labels only the text field is applied. Setting text replaces the whole content (any per-run formatting of the old content is dropped) and switches the element to automatic width, matching the behavior of CreateTexts/CreateLabels.",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The new text content. Newlines create multiple lines."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The placement position of the text. Only applied to Text elements."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians. Only applied to Text elements."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Only applied to Text elements."
+            },
+            "justification": {
+                "type": "string",
+                "enum": ["Left", "Center", "Right", "Full"],
+                "description": "The text justification. Only applied to Text elements."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
@@ -6983,6 +7167,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/DrawingSettings"
+            },
+            {
+                "$ref": "#/TextSettings"
             }
         ]
     },
@@ -7015,78 +7202,85 @@ var gSchemaDefinitions = {
             "propertyGroup"
         ]
     },
-    "PropertyDefinition": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string"
-            },
-            "description": {
-                "type": "string"
-            },
-            "type": {
-                "$ref": "#/PropertyDataType"
-            },
-            "isEditable": {
-                "type": "boolean"
-            },
-            "defaultValue": {
-                "$ref": "#/PropertyDefaultValue"
-            },
-            "possibleEnumValues": {
-                "type": "array",
-                "description": "The possible enum values of the property when the property type is enumeration.",
-                "items": {
+    "PossibleEnumValues": {
+        "type": "array",
+        "description": "The possible enum values of the property when the property type is enumeration.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "enumValue": {
                     "type": "object",
+                    "description": "The description of an enumeration value.",
                     "properties": {
-                        "enumValue": {
-                            "type": "object",
-                            "description": "The description of an enumeration value.",
-                            "properties": {
-                                "enumValueId": {
-                                    "$ref": "#/EnumValueId"
-                                },
-                                "displayValue": {
-                                    "type": "string",
-                                    "description": "Displayed value of the enumeration."
-                                },
-                                "nonLocalizedValue": {
-                                    "type": "string",
-                                    "description": "Nonlocalized value of the enumeration if there is one."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "displayValue"
-                            ]
+                        "enumValueId": {
+                            "$ref": "#/EnumValueId"
+                        },
+                "guid": {
+                    "$ref": "#/Guid",
+                    "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
+                },
+                        "displayValue": {
+                            "type": "string",
+                            "description": "Displayed value of the enumeration."
+                        },
+                        "nonLocalizedValue": {
+                            "type": "string",
+                            "description": "Nonlocalized value of the enumeration if there is one."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "enumValue"
+                        "displayValue"
                     ]
                 }
             },
+            "additionalProperties": false,
+            "required": [
+                "enumValue"
+            ]
+        }
+            },
+    "PropertyDefinition": {
+        "type": "object",
+        "properties": {
+            "name": {
+        "type": "string"
+            },
+            "description": {
+        "type": "string"
+            },
+            "type": {
+        "$ref": "#/PropertyDataType"
+            },
+            "isEditable": {
+        "type": "boolean"
+            },
+            "defaultValue": {
+        "$ref": "#/PropertyDefaultValue"
+            },
+            "possibleEnumValues": {
+        "$ref": "#/PossibleEnumValues"
+            },
             "availability": {
-                "type": "array",
-                "description": "The identifiers of classification items the new property is available for.",
-                "items": {
-                    "$ref": "#/ClassificationItemIdArrayItem"
-                }
+        "type": "array",
+        "description": "The identifiers of classification items the new property is available for.",
+        "items": {
+            "$ref": "#/ClassificationItemIdArrayItem"
+        }
             },
             "group": {
-                "type": "object",
-                "description": "The property group defined by name or id. If both fields exists the id will be used.",
-                "properties": {
-                    "propertyGroupId": {
-                        "$ref": "#/PropertyGroupId"
-                    },
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": []
+        "type": "object",
+        "description": "The property group defined by name or id. If both fields exists the id will be used.",
+        "properties": {
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "name": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
             }
         },
         "additionalProperties": false,
@@ -7099,6 +7293,37 @@ var gSchemaDefinitions = {
             "group"
         ]
 
+    },
+    "EnumValuesToAdd": {
+        "type": "array",
+        "description": "Enumeration values to add to a property.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "enumValue": {
+                    "type": "object",
+                    "description": "The description of an enumeration value.",
+                    "properties": {
+                        "displayValue": {
+                            "type": "string",
+                            "description": "Displayed value of the enumeration."
+                        },
+                        "nonLocalizedValue": {
+                            "type": "string",
+                            "description": "Nonlocalized value of the enumeration if there is one."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "displayValue"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "enumValue"
+            ]
+        }
     },
     "PropertyDefinitionArrayItem": {
         "description": "A wrapper containing a property definition",
