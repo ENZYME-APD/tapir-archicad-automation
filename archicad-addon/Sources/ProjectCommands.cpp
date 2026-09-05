@@ -1153,6 +1153,11 @@ GS::ObjectState SaveAsModuleFileCommand::Execute (const GS::ObjectState& paramet
         heads.Push (head);
     }
 
+#ifndef ServerMainVers_2700
+    if (!heads.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "An element list needs Archicad 27 or later; on 25 and 26 select the elements and omit the list.");
+    }
+#endif
     const GSErrCode err = ACAPI_ProjectOperation_SaveAsModuleFile (&location, heads.IsEmpty () ? nullptr : &heads);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to save the module file: no elements to save (nothing selected?), the current window is not a model window, or the file cannot be written.");

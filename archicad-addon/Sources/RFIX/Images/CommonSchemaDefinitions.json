@@ -4712,7 +4712,7 @@
             },
             "pivotPolygonOutline": {
                 "type": "array",
-                "description": "Multi-plane: the pivot polygon the planes rise from.",
+                "description": "Multi-plane: the pivot polygon the planes rise from. Arcs are not carried; a curved pivot edge comes back as its end points.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }

@@ -1,7 +1,25 @@
 #include "ElementCommands.hpp"
 
+#include "ElementCreationCommands.hpp"
+#include "MigrationHelper.hpp"
+#include "GSUnID.hpp"
+#include "Plane.hpp"
+#include "CoordTypedef.hpp"
+#include "ModelEdge.hpp"
+#include "ModelMeshBody.hpp"
+#include "NativeImage.hpp"
+#include "MemoryOChannel32.hpp"
+#include "Base64Converter.hpp"
+#ifdef ServerMainVers_2800
+#include "ACAPI/ZoneBoundaryQuery.hpp"
+#endif
+
+#include <algorithm>
+#include <cmath>
+
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
-// (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline.
+// (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
+// not carried: a curved pivot edge comes back as its end points (schema says so).
 static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -20,22 +38,7 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     }
     ACAPI_DisposeElemMemoHdls (&memo);
 }
-#include "ElementCreationCommands.hpp"
-#include "MigrationHelper.hpp"
-#include "GSUnID.hpp"
-#include "Plane.hpp"
-#include "CoordTypedef.hpp"
-#include "ModelEdge.hpp"
-#include "ModelMeshBody.hpp"
-#include "NativeImage.hpp"
-#include "MemoryOChannel32.hpp"
-#include "Base64Converter.hpp"
-#ifdef ServerMainVers_2800
-#include "ACAPI/ZoneBoundaryQuery.hpp"
-#endif
 
-#include <algorithm>
-#include <cmath>
 
 // Shared "line-family settings" fields present on Line/PolyLine/Arc/Circle/Spline
 // (API_LineType/API_PolyLineType/API_ArcType/API_SplineType all share this exact shape).

@@ -1,21 +1,30 @@
+import math
 import aclib
 
-# Trims the walls under the roofs: every wall and roof in the project goes into one
-# TrimElements call, the roofs do the trimming, then the trims are read back and removed.
+# Two walls under a multi-plane roof, built here so the example runs on any project: the
+# walls and the roof go into one TrimElements call and the roof does the trimming; the trims
+# are read back, then removed, then the elements are deleted again.
 
-walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']
-roofs = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Roof'})['elements']
+walls = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [
+    {'begCoordinate': {'x': 100.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 100.0}, 'height': 2.7, 'thickness': 0.2, 'floorIndex': 0},
+    {'begCoordinate': {'x': 106.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 105.0}, 'height': 2.7, 'thickness': 0.2, 'floorIndex': 0}
+]}, debug = False)['elements']
 
-if len (walls) == 0 or len (roofs) == 0:
-    print ('The project needs at least one wall and one roof for this example.')
-else:
-    aclib.RunTapirCommand ('TrimElements', {'elements': walls + roofs})
+roofs = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [{
+    'level': 2.7, 'floorIndex': 0, 'eavesOverhang': 0.45,
+    'levels': [{'levelHeight': 10.0, 'levelAngle': math.radians (25.0)}],
+    'polygonCoordinates': [{'x': 100.0, 'y': 100.0}, {'x': 106.0, 'y': 100.0}, {'x': 106.0, 'y': 105.0}, {'x': 100.0, 'y': 105.0}]
+}]}, debug = False)['elements']
 
-    trims = aclib.RunTapirCommand ('GetElementTrims', {'elements': walls})['elementTrims']
+aclib.RunTapirCommand ('TrimElements', {'elements': walls + roofs})
 
-    pairs = []
-    for wall, item in zip (walls, trims):
-        for t in item['trimmedBy']:
-            pairs.append ({'elementId': wall['elementId'], 'trimmingElementId': t['elementId']})
-    if len (pairs) > 0:
-        aclib.RunTapirCommand ('RemoveElementTrims', {'elementPairs': pairs})
+trims = aclib.RunTapirCommand ('GetElementTrims', {'elements': walls})['elementTrims']
+
+pairs = []
+for wall, item in zip (walls, trims):
+    for t in item['trimmedBy']:
+        pairs.append ({'elementId': wall['elementId'], 'trimmingElementId': t['elementId']})
+if len (pairs) > 0:
+    aclib.RunTapirCommand ('RemoveElementTrims', {'elementPairs': pairs})
+
+aclib.RunTapirCommand ('DeleteElements', {'elements': walls + roofs}, debug = False)
