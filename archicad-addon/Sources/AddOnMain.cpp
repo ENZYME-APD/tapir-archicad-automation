@@ -837,6 +837,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.2.2",
             "Adds the given files into the embedded library."
         );
+        err |= RegisterCommand<SetLibrariesCommand> (
+            libraryCommands, "1.5.9",
+            "Makes the given folders the project's local libraries; built-in, embedded, server and web libraries are kept. Set the libraries before opening a file that needs them and the missing-library dialog does not appear."
+        );
+        err |= RegisterCommand<AddLibrariesCommand> (
+            libraryCommands, "1.5.9",
+            "Adds the given folders to the project's local libraries, skipping any already loaded."
+        );
         err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
