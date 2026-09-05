@@ -383,3 +383,295 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
 
     return response;
 }
+
+// ---------------------------------------------------------------------------
+// Trims: roofs and shells cutting construction elements
+// ---------------------------------------------------------------------------
+
+static API_TrimTypeID TrimTypeFromString (const GS::UniString& str)
+{
+    if (str == "KeepOutside") return APITrim_KeepOutside;
+    if (str == "KeepAll")     return APITrim_KeepAll;
+    if (str == "No")          return APITrim_No;
+    return APITrim_KeepInside;
+}
+
+static GS::UniString TrimTypeToString (API_TrimTypeID trimType)
+{
+    switch (trimType) {
+        case APITrim_KeepOutside: return "KeepOutside";
+        case APITrim_KeepAll:     return "KeepAll";
+        case APITrim_No:          return "No";
+        default:                  return "KeepInside";
+    }
+}
+
+static GS::Array<API_Guid> GuidsFromElements (const GS::ObjectState& parameters)
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    GS::Array<API_Guid> guids;
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId != nullptr) {
+            guids.Push (GetGuidFromObjectState (*elementId));
+        }
+    }
+    return guids;
+}
+
+TrimElementsCommand::TrimElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String TrimElementsCommand::GetName () const
+{
+    return "TrimElements";
+}
+
+GS::Optional<GS::UniString> TrimElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming."
+            },
+            "trimmingElement": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The roof or shell that trims every element in the list."
+            },
+            "trimType": {
+                "type": "string",
+                "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ],
+                "description": "Which side of the trimming element the elements keep. Used with trimmingElement; defaults to KeepInside."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> TrimElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState TrimElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::Array<API_Guid> guids = GuidsFromElements (parameters);
+    if (guids.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elements is empty.");
+    }
+    GS::ObjectState trimmingOs;
+    const bool withElement = parameters.Get ("trimmingElement", trimmingOs);
+    GS::UniString trimTypeStr = "KeepInside";
+    parameters.Get ("trimType", trimTypeStr);
+    const API_TrimTypeID trimType = TrimTypeFromString (trimTypeStr);
+
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("TrimElements", [&] () -> GSErrCode {
+        err = withElement
+            ? ACAPI_Element_Trim_ElementsWith (guids, GetGuidFromObjectState (trimmingOs), trimType)
+            : ACAPI_Element_Trim_Elements (guids);
+        return err;
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to trim the elements: every element must be a construction element and at least one roof or shell must take part.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+RemoveElementTrimsCommand::RemoveElementTrimsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveElementTrimsCommand::GetName () const
+{
+    return "RemoveElementTrims";
+}
+
+GS::Optional<GS::UniString> RemoveElementTrimsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementPairs": {
+                "type": "array",
+                "description": "The trimmed element and the roof or shell trimming it, per pair.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "trimmingElementId": {
+                            "$ref": "#/ElementId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "trimmingElementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPairs"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemoveElementTrimsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RemoveElementTrimsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> pairs;
+    parameters.Get ("elementPairs", pairs);
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    ACAPI_CallUndoableCommand ("RemoveElementTrims", [&] () -> GSErrCode {
+        for (const GS::ObjectState& pair : pairs) {
+            GS::ObjectState elementOs, trimmingOs;
+            if (!pair.Get ("elementId", elementOs) || !pair.Get ("trimmingElementId", trimmingOs)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId or trimmingElementId is missing."));
+                continue;
+            }
+            const GSErrCode err = ACAPI_Element_Trim_Remove (GetGuidFromObjectState (elementOs), GetGuidFromObjectState (trimmingOs));
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to remove the trim."));
+            } else {
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+        return NoError;
+    });
+    return response;
+}
+
+GetElementTrimsCommand::GetElementTrimsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetElementTrimsCommand::GetName () const
+{
+    return "GetElementTrims";
+}
+
+GS::Optional<GS::UniString> GetElementTrimsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementTrimsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTrims": {
+                "type": "array",
+                "description": "One item per queried element, in order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "trimmedBy": {
+                            "type": "array",
+                            "description": "The roofs and shells trimming this element, with the trim type.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "elementId": {
+                                        "$ref": "#/ElementId"
+                                    },
+                                    "trimType": {
+                                        "type": "string",
+                                        "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [ "elementId", "trimType" ]
+                            }
+                        },
+                        "trims": {
+                            "$ref": "#/Elements",
+                            "description": "The elements this roof or shell trims."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "trimmedBy", "trims" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTrims"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementTrimsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::Array<API_Guid> guids = GuidsFromElements (parameters);
+    GS::ObjectState response;
+    const auto& items = response.AddList<GS::ObjectState> ("elementTrims");
+    for (const API_Guid& guid : guids) {
+        GS::ObjectState item;
+        const auto& trimmedBy = item.AddList<GS::ObjectState> ("trimmedBy");
+        GS::Array<API_Guid> trimming;
+        if (ACAPI_Element_Trim_GetTrimmingElements (guid, &trimming) == NoError) {
+            for (const API_Guid& t : trimming) {
+                API_TrimTypeID trimType = APITrim_No;
+                ACAPI_Element_Trim_GetTrimType (guid, t, &trimType);
+                GS::ObjectState entry;
+                entry.Add ("elementId", CreateGuidObjectState (t));
+                entry.Add ("trimType", TrimTypeToString (trimType));
+                trimmedBy (entry);
+            }
+        }
+        const auto& trims = item.AddList<GS::ObjectState> ("trims");
+        GS::Array<API_Guid> trimmed;
+        if (ACAPI_Element_Trim_GetTrimmedElements (guid, &trimmed) == NoError) {
+            for (const API_Guid& t : trimmed) {
+                trims (CreateElementIdObjectState (t));
+            }
+        }
+        items (item);
+    }
+    return response;
+}
+

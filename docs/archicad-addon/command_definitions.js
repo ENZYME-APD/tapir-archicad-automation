@@ -47,6 +47,34 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "GetPointFromUser",
+                "version": "1.5.9",
+                "description": "Asks the designer to click a point in the current window and returns it; the call waits for the click and fails when the input is cancelled.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Shown in the control box while Archicad waits for the click."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate3D",
+                "description": "The clicked point in the project's coordinates."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position"
+        ]
+    }
+            },{
                 "name": "GetCurrentWindowType",
                 "version": "1.0.7",
                 "description": "Returns the type of the current (active) window.",
@@ -448,6 +476,30 @@ var gCommands = [{
                 "version": "1.3.1",
                 "description": "Saves the currently opened project.",
                 "inputScheme": null,
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "SaveAsModuleFile",
+                "version": "1.5.9",
+                "description": "Saves the given elements, or the current selection, as a hotlink module (.mod) file.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "moduleFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .mod file to write. An existing file is overwritten. The current window must be a floor plan, section, elevation or detail."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional. The elements that go into the module; omitted, the current selection does, as Save Selection as Module would. Pass GetAllElements for the whole project. Archicad 25 and 26 support the selection form only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "moduleFilePath"
+        ]
+    },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
     }
@@ -966,7 +1018,7 @@ var gCommands = [{
             },{
                 "name": "GetDetailsOfElements",
                 "version": "1.5.7",
-                "description": "Gets the details of the given elements (geometry parameters etc).",
+                "description": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons).",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2140,6 +2192,10 @@ var gCommands = [{
                             "type": "number",
                             "description": "Depth (going) of each tread.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "finishVisible": {
+                            "type": "boolean",
+                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
                         }
                     },
                     "additionalProperties": false,
@@ -3928,7 +3984,8 @@ var gCommands = [{
                         "polygonOutline": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 3
+                            "minItems": 3,
+                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed."
                         },
                         "polygonArcs": {
                             "type": "array",
@@ -4018,7 +4075,9 @@ var gCommands = [{
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -4048,7 +4107,9 @@ var gCommands = [{
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -5470,13 +5531,13 @@ var gCommands = [{
             },{
                 "name": "UpdatePropertyDefinitions",
                 "version": "1.5.4",
-                "description": "Updates the expression(s) of existing expression-based Custom Property Definitions.",
+                "description": "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property.",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "propertyDefinitions": {
                 "type": "array",
-                "description": "The list of expression-based property definitions to update.",
+                "description": "The property definitions to update.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -5485,17 +5546,20 @@ var gCommands = [{
                         },
                         "expressions": {
                             "type": "array",
-                            "description": "The new expression strings for the property.",
+                            "description": "The new expression strings for the property. Only for expression-based properties.",
                             "items": {
                                 "type": "string"
                             },
                             "minItems": 1
+                        },
+                        "possibleEnumValues": {
+                            "$ref": "#/EnumValuesToAdd",
+                            "description": "The enum values to add to an enumeration property. Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
-                        "propertyId",
-                        "expressions"
+                        "propertyId"
                     ]
                 }
             }
@@ -7746,6 +7810,70 @@ var gCommands = [{
         "required": [
             "executionResults"
         ]
+    }
+            },{
+                "name": "SetLibraries",
+                "version": "1.5.9",
+                "description": "Makes the given folders the project's local libraries; built-in, embedded, server and web libraries are kept. Set the libraries before opening a file that needs them and the missing-library dialog does not appear.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "libraries": {
+                "type": "array",
+                "description": "Local library folders or container files, by absolute path.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraries"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "AddLibraries",
+                "version": "1.5.9",
+                "description": "Adds the given folders to the project's local libraries, skipping any already loaded.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "libraries": {
+                "type": "array",
+                "description": "Local library folders or container files, by absolute path.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraries"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
     }
             },{
                 "name": "GetAvailableLibraryParts",
@@ -10783,6 +10911,138 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [ "solidLinks" ]
+    }
+            },{
+                "name": "TrimElements",
+                "version": "1.5.9",
+                "description": "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming."
+            },
+            "trimmingElement": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The roof or shell that trims every element in the list."
+            },
+            "trimType": {
+                "type": "string",
+                "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ],
+                "description": "Which side of the trimming element the elements keep. Used with trimmingElement; defaults to KeepInside."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "RemoveElementTrims",
+                "version": "1.5.9",
+                "description": "Removes the trim between an element and the roof or shell trimming it.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementPairs": {
+                "type": "array",
+                "description": "The trimmed element and the roof or shell trimming it, per pair.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "trimmingElementId": {
+                            "$ref": "#/ElementId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "trimmingElementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPairs"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "GetElementTrims",
+                "version": "1.5.9",
+                "description": "Which roofs and shells trim each queried element, with the trim type, and which elements it trims.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementTrims": {
+                "type": "array",
+                "description": "One item per queried element, in order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "trimmedBy": {
+                            "type": "array",
+                            "description": "The roofs and shells trimming this element, with the trim type.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "elementId": {
+                                        "$ref": "#/ElementId"
+                                    },
+                                    "trimType": {
+                                        "type": "string",
+                                        "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [ "elementId", "trimType" ]
+                            }
+                        },
+                        "trims": {
+                            "$ref": "#/Elements",
+                            "description": "The elements this roof or shell trims."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "trimmedBy", "trims" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTrims"
+        ]
     }
             }]
         },{

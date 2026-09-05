@@ -183,6 +183,10 @@ GSErrCode Initialize (void)
             applicationCommands, "0.1.0",
             "Performs a quit operation on the currently running Archicad instance."
         );
+        err |= RegisterCommand<GetPointFromUserCommand> (
+            applicationCommands, "1.5.9",
+            "Asks the designer to click a point in the current window and returns it; the call waits for the click and fails when the input is cancelled."
+        );
         err |= RegisterCommand<GetCurrentWindowTypeCommand> (
             applicationCommands, "1.0.7",
             "Returns the type of the current (active) window."
@@ -252,6 +256,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SaveProjectCommand> (
             projectCommands, "1.3.1",
             "Saves the currently opened project."
+        );
+        err |= RegisterCommand<SaveAsModuleFileCommand> (
+            projectCommands, "1.5.9",
+            "Saves the given elements, or the current selection, as a hotlink module (.mod) file."
         );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
@@ -833,6 +841,14 @@ GSErrCode Initialize (void)
             libraryCommands, "1.2.2",
             "Adds the given files into the embedded library."
         );
+        err |= RegisterCommand<SetLibrariesCommand> (
+            libraryCommands, "1.5.9",
+            "Makes the given folders the project's local libraries; built-in, embedded, server and web libraries are kept. Set the libraries before opening a file that needs them and the missing-library dialog does not appear."
+        );
+        err |= RegisterCommand<AddLibrariesCommand> (
+            libraryCommands, "1.5.9",
+            "Adds the given folders to the project's local libraries, skipping any already loaded."
+        );
         err |= RegisterCommand<GetAvailableLibraryPartsCommand> (
             libraryCommands, "1.5.0",
             "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp')."
@@ -1195,6 +1211,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
             "Returns solid element operation links for each queried element, grouped by role (target or operator)."
+        );
+        err |= RegisterCommand<TrimElementsCommand> (
+            solidElementOperationCommands, "1.5.9",
+            "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type."
+        );
+        err |= RegisterCommand<RemoveElementTrimsCommand> (
+            solidElementOperationCommands, "1.5.9",
+            "Removes the trim between an element and the roof or shell trimming it."
+        );
+        err |= RegisterCommand<GetElementTrimsCommand> (
+            solidElementOperationCommands, "1.5.9",
+            "Which roofs and shells trim each queried element, with the trim type, and which elements it trims."
         );
         AddCommandGroup (solidElementOperationCommands);
     }
