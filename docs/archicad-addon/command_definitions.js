@@ -418,13 +418,13 @@ var gCommands = [{
             },{
                 "name": "CreateHotlinkNodes",
                 "version": "1.5.9",
-                "description": "Creates hotlink module nodes from source files. A node that already points at the same file is returned instead of duplicated (Archicad 27 and later; 25 and 26 cannot see an unplaced node).",
+                "description": "Creates hotlink module nodes from source files. A node that already points at the same file is returned instead of duplicated (Archicad 26 and later; 25 cannot see an unplaced node).",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "hotlinkNodes": {
                 "type": "array",
-                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored. On Archicad 25 and 26 a node that has not been placed yet cannot be found, so a repeated request there creates a second node.",
+                "description": "The hotlink module nodes to create. A node that already points at the same source file (compared case-insensitively) is returned as it is, with existing: true, and the name and story settings asked for are ignored. On Archicad 25 a node that has not been placed yet cannot be found, so a repeated request there creates a second node.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -489,7 +489,7 @@ var gCommands = [{
                     "properties": {
                         "hotlinkNodeId": {
                             "$ref": "#/HotlinkNodeId",
-                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 and 26 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 27 on."
+                            "description": "The node to place, from GetHotlinks or CreateHotlinkNodes. On Archicad 25 a node that has never been placed cannot be read, so a node created through the API can only be placed from Archicad 26 on."
                         },
                         "origin": {
                             "$ref": "#/HotlinkOrigin"
