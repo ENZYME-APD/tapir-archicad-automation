@@ -529,18 +529,18 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 #endif
 
             GS::Array<API_Property> propertyValues;
-            GSErrCode err = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, properties, propertyValues);
+            const GSErrCode getErr = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, properties, propertyValues);
 
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (elemGuid, propertyValue.definition.guid);
                 auto& result = results[resultIndices[guidPair]];
 
-                if (err != NoError) {
-                    result = CreateFailedExecutionResult (err, "Failed to get property values for element");
+                if (getErr != NoError) {
+                    result = CreateFailedExecutionResult (getErr, "Failed to get property values for element");
                     continue;
                 }
 
-                err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
+                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
 
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for element");
@@ -786,18 +786,18 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
             GS::Array<API_Property> propertyValues;
 
             API_Attr_Head attrHead = GetAttributeHeadFromGuid (attGuid);
-            GSErrCode err = ACAPI_Attribute_GetPropertyValuesByGuid (attrHead, properties, propertyValues);
+            const GSErrCode getErr = ACAPI_Attribute_GetPropertyValuesByGuid (attrHead, properties, propertyValues);
 
             for (API_Property& propertyValue : propertyValues) {
                 const auto guidPair = GS::NewPair (attGuid, propertyValue.definition.guid);
                 auto& result = results[resultIndices[guidPair]];
 
-                if (err != NoError) {
-                    result = CreateFailedExecutionResult (err, "Failed to get property values for attribute");
+                if (getErr != NoError) {
+                    result = CreateFailedExecutionResult (getErr, "Failed to get property values for attribute");
                     continue;
                 }
 
-                err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
+                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
 
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
