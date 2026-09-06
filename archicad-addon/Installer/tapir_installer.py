@@ -311,7 +311,9 @@ def InstallAddOnWin (downloadedFilePath, tapirFolderPath, strayPaths):
         os.makedirs (tapirFolderPath)
         shutil.copyfile (downloadedFilePath, os.path.join (tapirFolderPath, os.path.basename (downloadedFilePath)))
     except PermissionError:
-        raise InstallerError ('Permission denied. Please run the installer as administrator.')
+        # A running Archicad locks the loaded add-on file, which also surfaces
+        # as PermissionError.
+        raise InstallerError ('Permission denied. Close Archicad if it is running, or run the installer as administrator.')
     except OSError as e:
         raise InstallerError ('Failed to install (close Archicad and retry): {0}'.format (e))
 
@@ -337,7 +339,7 @@ def UninstallAddOn (addOnsFolderPath):
         if IsUsingMacOS ():
             RunShellCommandWithAdminPrivilegesMac ('rm -rf {0}'.format (shlex.quote (tapirFolderPath)))
         else:
-            raise InstallerError ('Permission denied. Please run the installer as administrator.')
+            raise InstallerError ('Permission denied. Close Archicad if it is running, or run the installer as administrator.')
     return True
 
 
@@ -600,7 +602,7 @@ def Main ():
     parser.add_argument ('--mockRoot', dest = 'mockRootPath', type = str, default = None, help = 'detect installations under this folder instead of the real system locations (for testing)')
     args = parser.parse_args ()
 
-    if args.console or args.dryRun or args.addOnsFolderPath is not None:
+    if args.console or args.dryRun or args.uninstall or args.versions is not None or args.addOnsFolderPath is not None:
         TryAttachWindowsConsole ()
         return RunConsoleInstaller (args)
     return RunGuiInstaller (args)
