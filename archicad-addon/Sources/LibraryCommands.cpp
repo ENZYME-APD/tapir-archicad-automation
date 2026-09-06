@@ -196,6 +196,166 @@ GS::Optional<GS::UniString> GetLibrariesCommand::GetRawResponseSchema () const
     })";
 }
 
+// ---------------------------------------------------------------------------
+// SetLibraries / AddLibraries
+// ---------------------------------------------------------------------------
+
+static const char* LibraryPathsSchema = R"({
+        "type": "object",
+        "properties": {
+            "libraries": {
+                "type": "array",
+                "description": "Local library folders or container files, by absolute path.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraries"
+        ]
+    })";
+
+static GS::Array<API_LibraryInfo> LocalLibrariesFromParameters (const GS::ObjectState& parameters)
+{
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("libraries", items);
+    GS::Array<API_LibraryInfo> out;
+    for (const GS::ObjectState& item : items) {
+        GS::UniString path;
+        if (!item.Get ("path", path) || path.IsEmpty ()) {
+            continue;
+        }
+        API_LibraryInfo info = {};
+        info.location = IO::Location (path);
+        info.libraryType = API_LibraryTypeID::API_LocalLibrary;
+        IO::Name name;
+        if (info.location.GetLastLocalName (&name) == NoError) {
+            info.name = name.ToString ();
+        }
+        out.Push (info);
+    }
+    return out;
+}
+
+static bool SameLocation (const IO::Location& a, const IO::Location& b)
+{
+    // IO::Location's own equality (InputOutput/Location.hpp, present in every
+    // kit): it knows the platform's rules for separators and case, where a
+    // display-text comparison guessed.
+    return a == b;
+}
+
+static GS::ObjectState ApplyLibraries (const GS::Array<API_LibraryInfo>& libs)
+{
+    const GSErrCode err = ACAPI_LibraryManagement_SetLibraries (&libs);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set the libraries.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+SetLibrariesCommand::SetLibrariesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLibrariesCommand::GetName () const
+{
+    return "SetLibraries";
+}
+
+GS::Optional<GS::UniString> SetLibrariesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (LibraryPathsSchema);
+}
+
+GS::Optional<GS::UniString> SetLibrariesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetLibrariesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // The local libraries become exactly the given ones; built-in, embedded, server
+    // and web libraries stay as they are.
+    GS::Array<API_LibraryInfo> current;
+    if (ACAPI_LibraryManagement_GetLibraries (&current) != NoError) {
+        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to read the libraries.");
+    }
+    GS::Array<API_LibraryInfo> libs;
+    for (const API_LibraryInfo& lib : current) {
+        if (lib.libraryType != API_LibraryTypeID::API_LocalLibrary) {
+            libs.Push (lib);
+        }
+    }
+    for (const API_LibraryInfo& lib : LocalLibrariesFromParameters (parameters)) {
+        libs.Push (lib);
+    }
+    return ApplyLibraries (libs);
+}
+
+AddLibrariesCommand::AddLibrariesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String AddLibrariesCommand::GetName () const
+{
+    return "AddLibraries";
+}
+
+GS::Optional<GS::UniString> AddLibrariesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (LibraryPathsSchema);
+}
+
+GS::Optional<GS::UniString> AddLibrariesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState AddLibrariesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_LibraryInfo> libs;
+    if (ACAPI_LibraryManagement_GetLibraries (&libs) != NoError) {
+        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to read the libraries.");
+    }
+    USize added = 0;
+    for (const API_LibraryInfo& lib : LocalLibrariesFromParameters (parameters)) {
+        bool present = false;
+        for (const API_LibraryInfo& existing : libs) {
+            if (SameLocation (existing.location, lib.location)) {
+                present = true;
+                break;
+            }
+        }
+        if (!present) {
+            libs.Push (lib);
+            ++added;
+        }
+    }
+    if (added == 0) {
+        // Every folder is already loaded: SetLibraries would only force a reload.
+        return CreateSuccessfulExecutionResult ();
+    }
+    return ApplyLibraries (libs);
+}
+
 GetLibrariesCommand::GetLibrariesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {

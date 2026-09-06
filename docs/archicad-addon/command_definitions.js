@@ -47,6 +47,34 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "GetPointFromUser",
+                "version": "1.5.9",
+                "description": "Asks the designer to click a point in the current window and returns it. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; the call fails when the input is cancelled.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "position": {
+                "$ref": "#/Coordinate3D",
+                "description": "The clicked point in the project's coordinates."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position"
+        ]
+    }
+            },{
                 "name": "GetCurrentWindowType",
                 "version": "1.0.7",
                 "description": "Returns the type of the current (active) window.",
@@ -667,6 +695,30 @@ var gCommands = [{
                 "version": "1.3.1",
                 "description": "Saves the currently opened project.",
                 "inputScheme": null,
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "SaveAsModuleFile",
+                "version": "1.5.9",
+                "description": "Saves the given elements, or the current selection, as a hotlink module (.mod) file.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "moduleFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .mod file to write. An existing file is overwritten. The current window must be a floor plan, section, elevation or detail."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Optional. The elements that go into the module; omitted, the current selection does, as Save Selection as Module would. Pass GetAllElements for the whole project. Archicad 25 and 26 support the selection form only."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "moduleFilePath"
+        ]
+    },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
     }
@@ -7983,6 +8035,70 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "SetLibraries",
+                "version": "1.5.9",
+                "description": "Makes the given folders the project's local libraries; built-in, embedded, server and web libraries are kept. Set the libraries before opening a file that needs them and the missing-library dialog does not appear.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "libraries": {
+                "type": "array",
+                "description": "Local library folders or container files, by absolute path.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraries"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "AddLibraries",
+                "version": "1.5.9",
+                "description": "Adds the given folders to the project's local libraries, skipping any already loaded.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "libraries": {
+                "type": "array",
+                "description": "Local library folders or container files, by absolute path.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraries"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "GetAvailableLibraryParts",
                 "version": "1.5.0",
                 "description": "Lists library parts currently available to the project. Filter by typeId (e.g. 'Door', 'Window', 'Object', 'Lamp').",
@@ -11018,6 +11134,112 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": [ "solidLinks" ]
+    }
+            },{
+                "name": "TrimElements",
+                "version": "1.5.9",
+                "description": "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming."
+            },
+            "trimmingElement": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The roof or shell that trims every element in the list."
+            },
+            "trimType": {
+                "type": "string",
+                "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ],
+                "description": "Which side of the trimming element the elements keep. Used with trimmingElement; defaults to KeepInside."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "RemoveElementTrims",
+                "version": "1.5.9",
+                "description": "Removes the trim between an element and the roof or shell trimming it.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementPairs": {
+                "type": "array",
+                "description": "The trimmed element and the roof or shell trimming it, per pair.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "trimmingElementId": {
+                            "$ref": "#/ElementId"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "trimmingElementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPairs"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "GetElementTrims",
+                "version": "1.5.9",
+                "description": "Which roofs and shells trim each queried element, with the trim type, and which elements it trims.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementTrims": {
+                "type": "array",
+                "description": "One item per queried element, in order. An unknown or deleted element is an error item, so it cannot be mistaken for an element that is simply not trimmed.",
+                "items": {
+                    "$ref": "#/ElementTrimsOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTrims"
+        ]
     }
             }]
         },{

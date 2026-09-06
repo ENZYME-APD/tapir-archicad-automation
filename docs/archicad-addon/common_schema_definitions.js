@@ -37,6 +37,48 @@ var gSchemaDefinitions = {
             "$ref": "#/ElementIdOrError"
         }
     },
+    "ElementTrims": {
+        "type": "object",
+        "description": "The trims of one element: the roofs and shells trimming it, and the elements it trims.",
+        "properties": {
+            "trimmedBy": {
+                "type": "array",
+                "description": "The roofs and shells trimming this element, with the trim type.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "trimType": {
+                            "type": "string",
+                            "enum": [ "KeepInside", "KeepOutside", "KeepAll", "No" ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "elementId", "trimType" ]
+                }
+            },
+            "trims": {
+                "$ref": "#/Elements",
+                "description": "The elements this roof or shell trims."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "trimmedBy", "trims" ]
+    },
+    "ElementTrimsOrError": {
+        "type": "object",
+        "description": "The trims of one element, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/ElementTrims"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
     "MEPRoutingSegmentDetails": {
         "type": "object",
         "description": "The details of an MEP routing segment.",
@@ -4765,6 +4807,106 @@ var gSchemaDefinitions = {
             "verticalCurveHeight"
         ]
     },
+    "RoofDetails": {
+        "type": "object",
+        "properties": {
+            "roofClass": {
+                "type": "string",
+                "enum": [ "SinglePlane", "MultiPlane" ]
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Composite" ]
+            },
+            "thickness": {
+                "type": "number"
+            },
+            "level": {
+                "type": "number",
+                "description": "Height of the pivot line (single-plane) or the pivot polygon (multi-plane) above the floor level."
+            },
+            "zCoordinate": {
+                "type": "number"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId"
+            },
+            "compositeId": {
+                "$ref": "#/AttributeId"
+            },
+            "angle": {
+                "type": "number",
+                "description": "Single-plane: the slope in radians."
+            },
+            "pivotLine": {
+                "type": "object",
+                "description": "Single-plane: the pivot line the plane rotates about.",
+                "properties": {
+                    "begin": {
+                        "$ref": "#/Coordinate2D"
+                    },
+                    "end": {
+                        "$ref": "#/Coordinate2D"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "begin", "end" ]
+            },
+            "eavesOverhang": {
+                "type": "number",
+                "description": "Multi-plane: the eaves overhang beyond the pivot polygon."
+            },
+            "levels": {
+                "type": "array",
+                "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "height": {
+                            "type": "number"
+                        },
+                        "angle": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "height", "angle" ]
+                }
+            },
+            "pivotPolygonOutline": {
+                "type": "array",
+                "description": "Multi-plane: the pivot polygon the planes rise from. Arcs are not carried; a curved pivot edge comes back as its end points.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonOutline": {
+                "type": "array",
+                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "roofClass",
+            "structureType",
+            "thickness",
+            "level",
+            "zCoordinate",
+            "polygonOutline"
+        ]
+    },
     "SlabDetails": {
         "type": "object",
         "properties": {
@@ -6363,6 +6505,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/SlabDetails"
+            },
+            {
+                "$ref": "#/RoofDetails"
             },
             {
                 "$ref": "#/ColumnDetails"
