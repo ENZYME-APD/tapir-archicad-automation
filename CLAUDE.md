@@ -41,6 +41,7 @@ archicad-addon/          C++ Archicad Add-On
   Tools/                 Build/packaging scripts (CMake helpers, resource compiler, signing)
   Examples/              Python usage examples (one .py per feature) + aclib/ helper
   Test/                  test_examples.py runs Examples against TestProject.pla
+  Installer/             Cross-platform end-user installer (tapir_installer.py, PyInstaller-packaged in CI)
   README.md
 grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged via Yak
   TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/
@@ -164,13 +165,21 @@ in, as the second argument to `RegisterCommand<>` in `AddOnMain.cpp`.
 ## CI
 
 GitHub Actions in [.github/workflows/](.github/workflows/):
-- `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml` — PR build
-  checks for each component.
+- `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml`,
+  `installer_build_check.yml` — PR build checks for each component.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
+  `archicad_addon.yml` also builds the Tapir Installer executables
+  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); the release asset count
+  is mirrored in `EXPECTED_ASSETS` in `monthly_release.yml`.
 
 ## Installation (end users)
 
-- **Add-On:** download the matching `TapirAddOn_AC<version>_<Win|Mac>` file from
+- **Add-On (recommended):** download and run the Tapir Installer
+  (`TapirInstaller_Win.exe` / `TapirInstaller_Mac.zip`) from
+  [Releases](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest);
+  it detects the installed Archicad versions and installs the matching Add-On
+  into their `Add-Ons` folders (source: [archicad-addon/Installer/](archicad-addon/Installer/)).
+- **Add-On (manual):** download the matching `TapirAddOn_AC<version>_<Win|Mac>` file from
   [Releases](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest),
   then in Archicad: *Options > Add-On Manager > Edit List of Available Add-Ons > Add*,
   browse to the file, OK.
