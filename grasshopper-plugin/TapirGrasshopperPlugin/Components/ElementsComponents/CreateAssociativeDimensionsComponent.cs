@@ -47,6 +47,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "One JSON object per dimension with further optional settings matching the " +
                 "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
 
+            InBoolean(
+                ElementMetadata.EmbedMetadataInputName,
+                ElementMetadata.EmbedMetadataDescription,
+                true);
+
+            InBoolean(
+                ElementMetadata.ReplaceExistingInputName,
+                ElementMetadata.ReplaceExistingDescription,
+                false);
+
             SetOptionality(3);
         }
 
@@ -189,6 +199,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             var parameters = new JObject { ["dimensionsData"] = items };
 
+            var embedMetadata = da.GetOptional(4, true);
+            var replaceExisting = da.GetOptional(5, false);
+            var metadata = new ElementMetadata(this, ToAddOn, ToArchicad);
+            // The previous elements are collected before the creation (so the
+            // new elements are never in the set), but only deleted after it
+            // succeeded, so a failed run does not lose them.
+            JArray previousElements = null;
+            if (replaceExisting)
+            {
+                previousElements = metadata.FindPreviouslyCreatedElements();
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
                     parameters,
@@ -196,6 +218,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     out JObject response))
             {
                 return;
+            }
+
+            if (embedMetadata)
+            {
+                metadata.StampCreatedElements(response);
+            }
+            if (replaceExisting)
+            {
+                metadata.DeletePreviouslyCreatedElements(previousElements);
             }
 
             CreateElementsComponentBase.SetCreatedElementsOutputs(da, response, 0, 1);
