@@ -2464,5 +2464,85 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
-    }
+    
+        internal static System.Drawing.Bitmap GetPointFromUser
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPointFromUser", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateHotlinkNodes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateHotlinkNodes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateHotlinkInstances
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateHotlinkInstances", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ChangeHotlinkInstances
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ChangeHotlinkInstances", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SaveAsModuleFile
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SaveAsModuleFile", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLibraries
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap AddLibraries
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AddLibraries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap TrimElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("TrimElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemoveElementTrims
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemoveElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementTrims
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+}
 }
