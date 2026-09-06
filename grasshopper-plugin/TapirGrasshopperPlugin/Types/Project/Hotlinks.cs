@@ -3,9 +3,17 @@ using Grasshopper.Kernel.Data;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Types.Project
 {
+    // The identifier of a hotlink node - the module source file that
+    // instances are placed from. CreateHotlinkNodes hands these out and
+    // CreateHotlinkInstances takes them.
+    public class HotlinkNodeGuid : GuidObject<HotlinkNodeGuid>
+    {
+    }
+
     public class HotlinksResponse
     {
         [JsonProperty("hotlinks")]
