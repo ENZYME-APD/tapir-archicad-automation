@@ -66,6 +66,31 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "WitnessBaseElementGuids",
                 "Base element of each witness point (one branch per dimension).");
 
+            OutBooleanTree(
+                "WitnessLines",
+                "True when the witness point lies on an edge of its base element rather than at a node (one branch per dimension). " +
+                "Together with the next outputs these are the values the AdditionalSettings input of CreateAssociativeDimensions takes.");
+
+            OutIntegerTree(
+                "WitnessInIndices",
+                "Subindex of the base element's node at each witness point (one branch per dimension).");
+
+            OutIntegerTree(
+                "WitnessSpecials",
+                "Special reference marker at each witness point, e.g. a wall plane or a window hole (one branch per dimension).");
+
+            OutIntegerTree(
+                "WitnessNodeTypes",
+                "Node type at each witness point, reserved by Archicad for section dimensions (one branch per dimension).");
+
+            OutIntegerTree(
+                "WitnessNodeStatuses",
+                "Node status at each witness point, reserved by Archicad for section dimensions (one branch per dimension).");
+
+            OutIntegerTree(
+                "WitnessNodeIds",
+                "Polygon vertex id of the base element at each witness point (one branch per dimension).");
+
             OutTexts(
                 "ErrorMessages",
                 "Error message for each queried element (empty when successful).");
@@ -85,6 +110,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var witnessForms = new DataTree<object>();
             var witnessVals = new DataTree<object>();
             var witnessBaseElementGuids = new DataTree<object>();
+            var witnessLines = new DataTree<object>();
+            var witnessInIndices = new DataTree<object>();
+            var witnessSpecials = new DataTree<object>();
+            var witnessNodeTypes = new DataTree<object>();
+            var witnessNodeStatuses = new DataTree<object>();
+            var witnessNodeIds = new DataTree<object>();
             var errors = new List<string>();
 
             for (var i = 0; i < items.Count; i++)
@@ -98,6 +129,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 witnessForms.EnsurePath(path);
                 witnessVals.EnsurePath(path);
                 witnessBaseElementGuids.EnsurePath(path);
+                witnessLines.EnsurePath(path);
+                witnessInIndices.EnsurePath(path);
+                witnessSpecials.EnsurePath(path);
+                witnessNodeTypes.EnsurePath(path);
+                witnessNodeStatuses.EnsurePath(path);
+                witnessNodeIds.EnsurePath(path);
 
                 if (JsonOutputHelp.IsError(item))
                 {
@@ -153,6 +190,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                         witnessBaseElementGuids.Add(
                             ElementIdOf(point, "baseElementId"),
                             path);
+                        witnessLines.Add(
+                            JsonOutputHelp.Scalar(point, "line"),
+                            path);
+                        witnessInIndices.Add(
+                            JsonOutputHelp.Scalar(point, "inIndex"),
+                            path);
+                        witnessSpecials.Add(
+                            JsonOutputHelp.Scalar(point, "special"),
+                            path);
+                        witnessNodeTypes.Add(
+                            JsonOutputHelp.Scalar(point, "nodeType"),
+                            path);
+                        witnessNodeStatuses.Add(
+                            JsonOutputHelp.Scalar(point, "nodeStatus"),
+                            path);
+                        witnessNodeIds.Add(
+                            JsonOutputHelp.Scalar(point, "nodeId"),
+                            path);
                     }
                 }
             }
@@ -167,7 +222,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataTree(7, witnessForms);
             da.SetDataTree(8, witnessVals);
             da.SetDataTree(9, witnessBaseElementGuids);
-            da.SetDataList(10, errors);
+            da.SetDataTree(10, witnessLines);
+            da.SetDataTree(11, witnessInIndices);
+            da.SetDataTree(12, witnessSpecials);
+            da.SetDataTree(13, witnessNodeTypes);
+            da.SetDataTree(14, witnessNodeStatuses);
+            da.SetDataTree(15, witnessNodeIds);
+            da.SetDataList(16, errors);
         }
 
         protected override System.Drawing.Bitmap Icon =>

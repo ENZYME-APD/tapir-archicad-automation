@@ -8087,6 +8087,7 @@ var gSchemaDefinitions = {
             },
             "witnessPoints": {
                 "type": "array",
+                "description": "The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -8114,20 +8115,23 @@ var gSchemaDefinitions = {
                         },
                         "line": {
                             "type": "boolean",
-                            "description": "The witness parameters as CreateAssociativeDimensions takes them (API_Base): read a dimension placed by hand to learn the values an element type needs."
+                            "description": "True when the witness point lies on an edge of the base element rather than at a node (API_Base line)."
                         },
                         "inIndex": {
                             "type": "integer",
                             "description": "Subindex of the base element's node (API_Neig inIndex)."
                         },
                         "special": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "Non-zero for special references such as a wall plane, a beam, window or door hole, or a mesh ridge (API_Base special)."
                         },
                         "nodeType": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "Reserved by Archicad for section dimensions (API_Base node_typ)."
                         },
                         "nodeStatus": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "Reserved by Archicad for section dimensions (API_Base node_status)."
                         },
                         "nodeId": {
                             "type": "number",
