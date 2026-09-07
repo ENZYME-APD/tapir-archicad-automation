@@ -2182,12 +2182,12 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 GS::ObjectState contentParams = item;
                 if (!explicitContent) {
                     // Style-only change on an existing multistyle element: re-fetch the current
-                    // flat text and rebuild the run(s) with it, so the new style actually applies.
-                    GS::ObjectState existing;
-                    TextLabelDetails::AddTextContent (existing, element.header.guid);
-                    GS::UniString existingText;
-                    existing.Get ("text", existingText);
-                    contentParams = GS::ObjectState ("text", existingText);
+                    // content and rebuild the run(s) from it, so the new style actually applies.
+                    // Reusing the whole fetched object (not just its flat "text") is required -
+                    // AddTextContent also includes "runs" when there is more than one styled run,
+                    // and dropping that here would silently collapse existing multi-run content
+                    // down to a single run on every style-only edit.
+                    TextLabelDetails::AddTextContent (contentParams, element.header.guid);
                 }
                 auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.text, contentParams);
                 if (applyErr.HasValue ()) {
@@ -2326,11 +2326,10 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                     // via GetMemo first with the *Uni masks.
                     GS::ObjectState contentParams = item;
                     if (!explicitContent) {
-                        GS::ObjectState existing;
-                        TextLabelDetails::AddTextContent (existing, element.header.guid);
-                        GS::UniString existingText;
-                        existing.Get ("text", existingText);
-                        contentParams = GS::ObjectState ("text", existingText);
+                        // See ModifyTexts for why the whole fetched object is reused instead of
+                        // just its flat "text" - dropping "runs" here would silently collapse
+                        // existing multi-run content on every style-only edit.
+                        TextLabelDetails::AddTextContent (contentParams, element.header.guid);
                     }
                     auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, contentParams);
                     if (applyErr.HasValue ()) {
@@ -2832,8 +2831,12 @@ static API_DirID StringToLabelTextWay (const GS::UniString& s)
     return APIDir_Parallel;
 }
 
-// API_ArrowID has 31 sequential values starting at APIArr_EmptyCirc; index-parallel to
-// #/LabelArrowType's enum order in CommonSchemaDefinitions.json.
+// API_ArrowID has 31 sequential values starting at APIArr_EmptyCirc; this array's order is
+// index-parallel to it (verified directly against the API_ArrowID enum in APIdefs_Elements.h -
+// APIArr_SlashLine75 is the LAST value, not adjacent to APIArr_SlashLine90, despite the two
+// looking like they should pair up by name). #/LabelArrowType's enum in
+// CommonSchemaDefinitions.json is documentation only (JSON Schema enum membership doesn't care
+// about order) but is kept in this same order for consistency.
 static const char* const kArrowTypeNames[] = {
     "EmptyCircle", "CrossCircle", "FullCircle",
     "SlashLine15", "OpenArrow15", "ClosedArrow15", "FullArrow15",

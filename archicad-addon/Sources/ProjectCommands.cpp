@@ -297,7 +297,7 @@ GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& paramete
 }
 
 GetAutoTextNameCommand::GetAutoTextNameCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -334,17 +334,7 @@ GS::Optional<GS::UniString> GetAutoTextNameCommand::GetRawResponseSchema () cons
         "type": "object",
         "properties": {
             "autoTextNames": {
-                "type": "array",
-                "description": "One result per input key, in the same order.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The autotext's display name, as shown in the Insert Autotext dialog of Archicad."
-                        }
-                    }
-                }
+                "$ref": "#/AutoTextNamesOrErrors"
             }
         },
         "additionalProperties": false,

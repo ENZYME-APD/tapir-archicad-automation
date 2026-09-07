@@ -564,6 +564,36 @@
             "$ref": "#/KeynoteAutoTextTokensOrError"
         }
     },
+    "AutoTextName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The autotext's display name, as shown in the Insert Autotext dialog of Archicad."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "name" ]
+    },
+    "AutoTextNameOrError": {
+        "type": "object",
+        "description": "The display name of one autotext key, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/AutoTextName"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "AutoTextNamesOrErrors": {
+        "type": "array",
+        "description": "One result per input key, in the same order.",
+        "items": {
+            "$ref": "#/AutoTextNameOrError"
+        }
+    },
     "KeynoteItemDetails": {
         "type": "object",
         "description": "The details of a keynote item.",
@@ -8732,10 +8762,11 @@
             "SlashLine30", "OpenArrow30", "ClosedArrow30", "FullArrow30",
             "SlashLine45", "OpenArrow45", "ClosedArrow45", "FullArrow45",
             "SlashLine60", "OpenArrow60", "ClosedArrow60", "FullArrow60",
-            "SlashLine75", "SlashLine90",
+            "SlashLine90",
             "PepitaCircle", "BandArrow",
             "HalfArrowCcw15", "HalfArrowCw15", "HalfArrowCcw30", "HalfArrowCw30",
-            "HalfArrowCcw45", "HalfArrowCw45", "HalfArrowCcw60", "HalfArrowCw60"
+            "HalfArrowCcw45", "HalfArrowCw45", "HalfArrowCcw60", "HalfArrowCw60",
+            "SlashLine75"
         ]
     },
     "LabelSymbolStyleSettableDetails": {

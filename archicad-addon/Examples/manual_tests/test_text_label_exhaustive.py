@@ -7,9 +7,18 @@ Exhaustive round-trip test for the new Text/Label Create/Get/Modify support:
 - CreateLabels with explicit labelClass='Text' + 'style' + 'leaderLine' + 'runs'
 - GetDetailsOfElements (case API_LabelID, extended) reading back labelClass/style/leaderLine/content
 - ModifyLabels changing style/leaderLine/content
+Not part of the auto-discovered Examples/ (see test_examples.py + ExpectedOutputs/): its
+typeSpecificDetails dumps include Archicad-computed geometry (boxWidth/boxHeight) that vary
+by OS/font metrics across the Windows+macOS CI matrix, and it exits non-zero on a real
+failure, which would abort that harness's whole run rather than just failing this one script.
+Run manually: python manual_tests/test_text_label_exhaustive.py (from the Examples/ folder).
 """
+import os
 import sys
-sys.path.insert(0, r'D:\ONEDRIVE\Documents\CODE PLUGINS\tapir-text-label-fix\archicad-addon\Examples')
+
+# aclib lives in the parent Examples/ folder - this script is one level below it precisely
+# so it stays out of Examples/'s own flat, non-recursive test auto-discovery.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import aclib
 
 def run(cmd, params=None):
@@ -273,16 +282,25 @@ if multiRunGuid:
         check('modified run 1 penIndex', 3, runsBack[1].get('penIndex'))
 
     print('TEST -- ModifyTexts style-only change preserves existing multi-run content')
+    # Once paragraphs/runs exist, Archicad honours only the per-run pen/faceBits/font/size, not
+    # the top-level style fields (documented in ApplyTextStyleSettableDetails above) - so a
+    # style-only edit's own values (angle here, which has no per-run equivalent) apply, but each
+    # run's own pen is expected to survive unchanged, not to be overridden by the top-level style.
     setResp2 = run('ModifyTexts', {'textsWithDetails': [{
         'elementId': {'guid': multiRunGuid},
-        'style': {'penIndex': 42},
+        'style': {'angle': 0.2},
     }]})
     print('  modify (style-only) response:', setResp2)
     check('ModifyTexts style-only succeeds', True, setResp2['executionResults'][0].get('success'))
     d2 = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': multiRunGuid}}]})
     detail2 = d2['detailsOfElements'][0]['details']
     check('content unchanged after style-only modify', 'BoldNormal', detail2.get('text'))
-    check('style-only modify actually applied the new pen', 42, detail2['style'].get('penIndex'))
+    check('style-only modify actually applied the new angle', 0.2, detail2['style'].get('angle'))
+    runsAfterStyleOnly = detail2.get('runs', [])
+    check('2 runs still present after style-only modify', 2, len(runsAfterStyleOnly))
+    if len(runsAfterStyleOnly) == 2:
+        check('run 0 penIndex survives a style-only modify unchanged', 1, runsAfterStyleOnly[0].get('penIndex'))
+        check('run 1 penIndex survives a style-only modify unchanged', 3, runsAfterStyleOnly[1].get('penIndex'))
     print()
 
 print('=' * 70)
@@ -349,7 +367,11 @@ names = run('GetAutoTextName', {'keys': [
 namesList = names.get('autoTextNames', [])
 check('GetAutoTextName returns one result per input key', 3, len(namesList))
 if len(namesList) == 3:
-    check('GetAutoTextName resolves PROJECTNAME', 'Nom du projet', namesList[0].get('name'))
+    # Expected name fetched dynamically (not hardcoded) so this test doesn't depend on the
+    # Archicad UI locale - "PROJECTNAME" displays as e.g. "Project Name" in English, "Nom du
+    # projet" in French, etc.
+    projectNameField = next(f for f in run('GetProjectInfoFields')['fields'] if f['projectInfoId'] == 'PROJECTNAME')
+    check('GetAutoTextName resolves PROJECTNAME', projectNameField['projectInfoName'], namesList[0].get('name'))
     if propertyKeyEntry:
         check('GetAutoTextName resolves the PROPERTY- key to its own name',
             propertyKeyEntry['name'], namesList[1].get('name'))
