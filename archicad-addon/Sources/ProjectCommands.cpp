@@ -226,7 +226,7 @@ GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -323,7 +323,7 @@ GS::Optional<GS::UniString> GetAutoTextNameCommand::GetInputParametersSchema () 
     })";
 }
 
-GS::Optional<GS::UniString> GetAutoTextNameCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetAutoTextNameCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",

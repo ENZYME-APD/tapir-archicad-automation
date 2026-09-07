@@ -2100,7 +2100,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::UniString> ModifyTextsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ModifyTextsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2255,7 +2255,7 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
     })";
 }
 
-GS::Optional<GS::UniString> ModifyLabelsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> ModifyLabelsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",

@@ -676,16 +676,6 @@ static GS::ObjectState CreateColorObjectState (const API_RGBColor& color)
     return GS::ObjectState ("red", color.f_red, "green", color.f_green, "blue", color.f_blue);
 }
 
-static const char* TextJustificationToString (API_JustID just)
-{
-    switch (just) {
-        case APIJust_Center: return "Center";
-        case APIJust_Right:  return "Right";
-        case APIJust_Full:   return "Full";
-        default:             return "Left";
-    }
-}
-
 static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
 {
     API_LibPart	lp = {};
