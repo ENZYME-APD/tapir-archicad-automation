@@ -7930,13 +7930,18 @@
                 "name": {
                     "type": "string",
                     "description": "Name of the attribute."
+                },
+                "modificationTime": {
+                    "type": "integer",
+                    "description": "The last modification time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same stamp the Attribute Manager writes as ModiTime into its XML export."
                 }
             },
             "additionalProperties": false,
             "required": [
                 "attributeId",
                 "index",
-                "name"
+                "name",
+                "modificationTime"
             ]
 
         }
@@ -8082,6 +8087,7 @@
             },
             "witnessPoints": {
                 "type": "array",
+                "description": "The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -8106,6 +8112,30 @@
                         },
                         "baseElementId": {
                             "$ref": "#/ElementId"
+                        },
+                        "line": {
+                            "type": "boolean",
+                            "description": "True when the witness point lies on an edge of the base element rather than at a node (API_Base line)."
+                        },
+                        "inIndex": {
+                            "type": "integer",
+                            "description": "Subindex of the base element's node (API_Neig inIndex)."
+                        },
+                        "special": {
+                            "type": "integer",
+                            "description": "Non-zero for special references such as a wall plane, a beam, window or door hole, or a mesh ridge (API_Base special)."
+                        },
+                        "nodeType": {
+                            "type": "integer",
+                            "description": "Reserved by Archicad for section dimensions (API_Base node_typ)."
+                        },
+                        "nodeStatus": {
+                            "type": "integer",
+                            "description": "Reserved by Archicad for section dimensions (API_Base node_status)."
+                        },
+                        "nodeId": {
+                            "type": "number",
+                            "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
                         }
                     }
                 }

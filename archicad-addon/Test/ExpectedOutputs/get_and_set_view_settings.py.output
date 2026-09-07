@@ -171,70 +171,80 @@ Response:
                 "guid": "<GUID>"
             },
             "index": 1,
-            "name": "02 Drafting"
+            "name": "02 Drafting",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 3,
-            "name": "06 Plans - Mechanical"
+            "name": "06 Plans - Mechanical",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 4,
-            "name": "07 Plans - Structural"
+            "name": "07 Plans - Structural",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 5,
-            "name": "09 Layouting"
+            "name": "09 Layouting",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 7,
-            "name": "01 Site"
+            "name": "01 Site",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 8,
-            "name": "04 Plans - Approval"
+            "name": "04 Plans - Approval",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 10,
-            "name": "08 Rendering"
+            "name": "08 Rendering",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 11,
-            "name": "05 Plans - Detailed"
+            "name": "05 Plans - Detailed",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 14,
-            "name": "03 Plans - Preliminary"
+            "name": "03 Plans - Preliminary",
+            "modificationTime": <TIME>
         },
         {
             "attributeId": {
                 "guid": "<GUID>"
             },
             "index": 16,
-            "name": "10 Show 3D Zones as Solid"
+            "name": "10 Show 3D Zones as Solid",
+            "modificationTime": <TIME>
         }
     ]
 }

@@ -2576,5 +2576,13 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap RoofDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RoofDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

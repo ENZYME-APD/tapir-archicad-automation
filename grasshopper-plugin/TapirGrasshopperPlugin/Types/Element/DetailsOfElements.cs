@@ -169,6 +169,80 @@ namespace TapirGrasshopperPlugin.Types.Element
         public List<HoleDetails> Holes;
     }
 
+    public class RoofPivotLine
+    {
+        [JsonProperty("begin")]
+        public Point2D Begin;
+
+        [JsonProperty("end")]
+        public Point2D End;
+    }
+
+    public class RoofLevel
+    {
+        [JsonProperty("height")]
+        public double Height;
+
+        [JsonProperty("angle")]
+        public double Angle;
+    }
+
+    public class RoofDetails
+    {
+        [JsonProperty("roofClass")]
+        public string RoofClass;
+
+        [JsonProperty("structureType")]
+        public string StructureType;
+
+        [JsonProperty("thickness")]
+        public double Thickness;
+
+        [JsonProperty("level")]
+        public double Level;
+
+        [JsonProperty("zCoordinate")]
+        public double ZCoordinate;
+
+        [JsonProperty(
+            "angle",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? Angle;
+
+        [JsonProperty(
+            "pivotLine",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public RoofPivotLine PivotLine;
+
+        [JsonProperty(
+            "eavesOverhang",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? EavesOverhang;
+
+        [JsonProperty(
+            "levels",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<RoofLevel> Levels;
+
+        [JsonProperty(
+            "pivotPolygonOutline",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<Point2D> PivotPolygonOutline;
+
+        [JsonProperty("polygonOutline")]
+        public List<Point2D> PolygonCoordinates;
+
+        [JsonProperty(
+            "polygonArcs",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<Arc> PolygonArcs;
+
+        [JsonProperty(
+            "holes",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<HoleDetails> Holes;
+    }
+
     public class PolylineDetails
     {
         [JsonProperty("coordinates")]
