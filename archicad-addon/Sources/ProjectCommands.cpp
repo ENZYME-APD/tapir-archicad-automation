@@ -262,6 +262,10 @@ GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetRawResponseSchema () cons
 
 GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+#ifndef ServerMainVers_2700
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#else
     // guid can legitimately be APINULLGuid here (no elementId given) - per the DevKit doc this
     // still returns the autotext keys common to all element types (e.g. "Element ID", "Area"),
     // just not the ones specific to a single element's own type (e.g. "Thickness of the wall").
@@ -289,6 +293,7 @@ GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& paramete
     }
 
     return response;
+#endif
 }
 
 GetAutoTextNameCommand::GetAutoTextNameCommand () :
