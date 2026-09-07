@@ -3149,7 +3149,7 @@ void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
     os.Add ("leaderShape", LeaderShapeToString (label.leaderShape));
     os.Add ("squareRootAngle", label.squareRootAngle);
     os.Add ("arrowType", ArrowTypeToString (label.arrowData.arrowType));
-#ifdef ServerMainVers_2800
+#ifdef ServerMainVers_2900
     os.Add ("arrowVisible", label.arrowData.arrowVisibility);
 #else
     os.Add ("arrowVisible", label.arrowData.endArrow);
@@ -3211,7 +3211,7 @@ void ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_La
         label.arrowData.arrowType = StringToArrowType (strVal);
         arrowDataTouched = true;
     }
-#ifdef ServerMainVers_2800
+#ifdef ServerMainVers_2900
     if (details.Get ("arrowVisible", label.arrowData.arrowVisibility)) {
         arrowDataTouched = true;
     }
@@ -3233,7 +3233,7 @@ void ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_La
         ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowType);
         ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowPen);
         ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowSize);
-#ifdef ServerMainVers_2800
+#ifdef ServerMainVers_2900
         ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowVisibility);
 #else
         ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.begArrow);
