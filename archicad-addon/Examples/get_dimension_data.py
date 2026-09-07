@@ -41,7 +41,9 @@ def PrintDimensionData (dimensionId):
     data = aclib.RunTapirCommand ('GetDimensionData', {'elements': [dimensionId]}, debug = False)['dimensionsData'][0]
     print ('direction=({}, {}) witness points={}'.format (data['direction']['x'], data['direction']['y'], len (data['witnessPoints'])))
     for p in data['witnessPoints']:
-        baseElement = next ((i for i, wallId in enumerate (wallIds) if wallId['guid'] == p['baseElementId']['guid']), None)
+        # baseElementId is missing when the witness point is not attached to any element.
+        baseElementId = p.get ('baseElementId')
+        baseElement = next ((i for i, wallId in enumerate (wallIds) if baseElementId is not None and wallId['guid'] == baseElementId['guid']), None)
         print ('  wall {} at ({}, {}) value={} line={} inIndex={} special={} nodeType={} nodeStatus={} nodeId={}'.format (
             baseElement, p['coordinate']['x'], p['coordinate']['y'], p['dimensionValue'],
             p['line'], p['inIndex'], p['special'], p['nodeType'], p['nodeStatus'], p['nodeId']))
@@ -50,28 +52,32 @@ def PrintDimensionData (dimensionId):
 data = PrintDimensionData (dimensions[0])
 
 # The witness parameters read back are enough to rebuild the same dimension.
-rebuilt = aclib.RunTapirCommand ('CreateAssociativeDimensions', {
-    'dimensionsData': [
-        {
-            'referencePoint': {'x': 0.0, 'y': -57.0},
-            'direction': data['direction'],
-            'witnessPoints': [
-                {
-                    'elementId': p['baseElementId'],
-                    'line': p['line'],
-                    'inIndex': p['inIndex'],
-                    'special': p['special'],
-                    'nodeType': p['nodeType'],
-                    'nodeStatus': p['nodeStatus'],
-                    'nodeId': p['nodeId']
-                }
-                for p in data['witnessPoints']
-            ]
-        }
-    ]
-}, debug = False)['elements']
-rebuiltData = PrintDimensionData (rebuilt[0])
-print ('rebuilt dimension measures the same: {}'.format (
-    [p['coordinate'] for p in rebuiltData['witnessPoints']] == [p['coordinate'] for p in data['witnessPoints']]))
+rebuilt = []
+if all ('baseElementId' in p for p in data['witnessPoints']):
+    rebuilt = aclib.RunTapirCommand ('CreateAssociativeDimensions', {
+        'dimensionsData': [
+            {
+                'referencePoint': {'x': 0.0, 'y': -57.0},
+                'direction': data['direction'],
+                'witnessPoints': [
+                    {
+                        'elementId': p['baseElementId'],
+                        'line': p['line'],
+                        'inIndex': p['inIndex'],
+                        'special': p['special'],
+                        'nodeType': p['nodeType'],
+                        'nodeStatus': p['nodeStatus'],
+                        'nodeId': p['nodeId']
+                    }
+                    for p in data['witnessPoints']
+                ]
+            }
+        ]
+    }, debug = False)['elements']
+    rebuiltData = PrintDimensionData (rebuilt[0])
+    print ('rebuilt dimension measures the same: {}'.format (
+        [p['coordinate'] for p in rebuiltData['witnessPoints']] == [p['coordinate'] for p in data['witnessPoints']]))
+else:
+    print ('not every witness point is attached to a wall, nothing to rebuild')
 
 aclib.RunTapirCommand ('DeleteElements', {'elements': dimensions + rebuilt + walls}, debug = False)
