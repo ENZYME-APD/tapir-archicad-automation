@@ -8704,7 +8704,11 @@ var gSchemaDefinitions = {
             "bold": { "type": "boolean" },
             "italic": { "type": "boolean" },
             "underline": { "type": "boolean" },
-            "heightOverride": { "type": "number", "description": "Character height in mm for this run only. Optional; defaults to the style's height." }
+            "heightOverride": { "type": "number", "description": "Character height in mm for this run only. Optional; defaults to the style's height." },
+            "effectStrikeout": { "type": "boolean", "description": "Optional; defaults to the style's effectStrikeout." },
+            "effectSuperscript": { "type": "boolean", "description": "Optional; defaults to the style's effectSuperscript." },
+            "effectSubscript": { "type": "boolean", "description": "Optional; defaults to the style's effectSubscript." },
+            "effectProtected": { "type": "boolean", "description": "Optional; defaults to the style's effectProtected." }
         },
         "additionalProperties": false,
         "required": ["text"]

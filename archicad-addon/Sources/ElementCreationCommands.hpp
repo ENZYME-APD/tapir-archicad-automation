@@ -191,9 +191,14 @@ namespace TextLabelDetails {
 void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly);
 void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
 
-// Reads memo.textContent/paragraphs[0]'s runs back into "text" (flat concatenation) and,
-// if there is more than one run, also into "runs" (array of TextRunDetails).
-void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
+// Reads memo.textContent and every paragraph's runs back into "text" (flat concatenation),
+// "paragraphCount" and, if there is more than one run, "runs" (array of TextRunDetails).
+// Returns the error of the memo read; nothing is added then.
+GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
+// The content to rebuild for a style-only modify: the element's own content read back, with the
+// explicitly given per-run style fields (pen, font, faces, height, effects) applied to every run,
+// as a multistyle element takes those from its runs rather than from the element-level fields.
+GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams);
 // Builds memo.textContent/paragraphs from either a "runs" array or a plain "text" string.
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters);
 

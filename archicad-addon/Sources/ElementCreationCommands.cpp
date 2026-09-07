@@ -2076,7 +2076,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of text, runs or style rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does; on a multi-run text a style change is applied to every run.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -2195,12 +2195,14 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 GS::ObjectState contentParams = item;
                 if (!explicitContent) {
                     // Style-only change on an existing multistyle element: re-fetch the current
-                    // content and rebuild the run(s) from it, so the new style actually applies.
-                    // Reusing the whole fetched object (not just its flat "text") is required -
-                    // AddTextContent also includes "runs" when there is more than one styled run,
-                    // and dropping that here would silently collapse existing multi-run content
-                    // down to a single run on every style-only edit.
-                    TextLabelDetails::AddTextContent (contentParams, element.header.guid);
+                    // content (every run of it, so multi-run content is not collapsed) with the
+                    // given style merged into the runs, and rebuild from that so the new style
+                    // actually applies. A failed read must not turn into an empty rebuild.
+                    const GSErrCode readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                    if (readErr != NoError) {
+                        executionResults (CreateFailedExecutionResult (readErr, "Failed to read the content of the Text."));
+                        continue;
+                    }
                 }
                 auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.text, contentParams);
                 if (applyErr.HasValue ()) {
@@ -2243,7 +2245,7 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
         "properties": {
             "labelsWithDetails": {
                 "type": "array",
-                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation.",
+                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of text, runs or style rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does; on a multi-run label a style change is applied to every run.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -2343,10 +2345,12 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                     // via GetMemo first with the *Uni masks.
                     GS::ObjectState contentParams = item;
                     if (!explicitContent) {
-                        // See ModifyTexts for why the whole fetched object is reused instead of
-                        // just its flat "text" - dropping "runs" here would silently collapse
-                        // existing multi-run content on every style-only edit.
-                        TextLabelDetails::AddTextContent (contentParams, element.header.guid);
+                        // See ModifyTexts: the content read back with the style merged into its runs.
+                        const GSErrCode readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                        if (readErr != NoError) {
+                            executionResults (CreateFailedExecutionResult (readErr, "Failed to read the content of the Label."));
+                            continue;
+                        }
                     }
                     auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, contentParams);
                     if (applyErr.HasValue ()) {
@@ -3019,6 +3023,7 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     GS::Array<short> runPens;
     GS::Array<short> runFonts;
     GS::Array<unsigned short> runFaceBits;
+    GS::Array<Int32> runEffects;
     GS::Array<double> runSizes;
 
     if (hasRuns) {
@@ -3039,11 +3044,20 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
             runOS.Get ("underline", underline);
             double size = textData.size;
             runOS.Get ("heightOverride", size);
+            bool strikeout = (textData.effectsBits & APIEffect_StrikeOut) != 0;
+            bool superscript = (textData.effectsBits & APIEffect_SuperScript) != 0;
+            bool subscript = (textData.effectsBits & APIEffect_SubScript) != 0;
+            bool protectedFlag = (textData.effectsBits & APIEffect_Protected) != 0;
+            runOS.Get ("effectStrikeout", strikeout);
+            runOS.Get ("effectSuperscript", superscript);
+            runOS.Get ("effectSubscript", subscript);
+            runOS.Get ("effectProtected", protectedFlag);
 
             runTexts.Push (runText);
             runPens.Push (pen);
             runFonts.Push (font);
             runFaceBits.Push (static_cast<unsigned short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0)));
+            runEffects.Push ((strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0));
             runSizes.Push (size);
             text += runText;
         }
@@ -3092,12 +3106,12 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     (*memo.paragraphs)[0].just = textData.just;
 
     if (hasRuns) {
-        // Runs override pen/face/font/size only; the style-level effects (strikeout, super/subscript,
-        // protected) apply to every run, as they do for a single-run content.
+        // Each run carries its own pen/face/font/size/effects; a field a run does not give
+        // defaults to the element-level style, as for a single-run content.
         Int32 runFrom = 0;
         for (Int32 i = 0; i < numOfRuns; ++i) {
             const Int32 runRange = runTexts[i].GetLength ();
-            SetRun (memo.paragraphs, 0, static_cast<UInt32> (i), runFrom, runRange, runPens[i], runFaceBits[i], runFonts[i], textData.effectsBits, runSizes[i]);
+            SetRun (memo.paragraphs, 0, static_cast<UInt32> (i), runFrom, runRange, runPens[i], runFaceBits[i], runFonts[i], runEffects[i], runSizes[i]);
             runFrom += runRange;
         }
     } else {
@@ -3120,11 +3134,14 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     return {};
 }
 
-void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
+GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContent | APIMemoMask_Paragraph);
+    const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContent | APIMemoMask_Paragraph);
+    if (err != NoError) {
+        return err;
+    }
 
 #ifdef ServerMainVers_2800
     const GS::UniString content = (memo.textContent != nullptr) ? *memo.textContent : GS::EmptyUniString;
@@ -3150,7 +3167,7 @@ void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
     const UInt32 nParagraphs = (memo.paragraphs != nullptr) ? static_cast<UInt32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.paragraphs)) / sizeof (API_ParagraphType)) : 0;
     os.Add ("paragraphCount", static_cast<int> (nParagraphs));
     if (nParagraphs == 0) {
-        return;
+        return NoError;
     }
 
     // Every paragraph is read, not only the first: a text placed from the UI may carry one paragraph
@@ -3169,7 +3186,7 @@ void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
         }
     }
     if (spans.GetSize () <= 1) {
-        return;
+        return NoError;
     }
 
     const USize contentLength = content.GetLength ();
@@ -3186,8 +3203,64 @@ void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
         runOS.Add ("italic", (run.faceBits & APIFace_Italic) != 0);
         runOS.Add ("underline", (run.faceBits & APIFace_Underline) != 0);
         runOS.Add ("heightOverride", run.size);
+        runOS.Add ("effectStrikeout", (run.effectBits & APIEffect_StrikeOut) != 0);
+        runOS.Add ("effectSuperscript", (run.effectBits & APIEffect_SuperScript) != 0);
+        runOS.Add ("effectSubscript", (run.effectBits & APIEffect_SubScript) != 0);
+        runOS.Add ("effectProtected", (run.effectBits & APIEffect_Protected) != 0);
         runList (runOS);
     }
+
+    return NoError;
+}
+
+GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams)
+{
+    GS::ObjectState readBack;
+    const GSErrCode err = AddTextContent (readBack, elemGuid);
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::UniString text;
+    readBack.Get ("text", text);
+    contentParams.Add ("text", text);
+
+    GS::Array<GS::ObjectState> runs;
+    if (!readBack.Get ("runs", runs) || runs.IsEmpty ()) {
+        // A single run is rebuilt from the element-level fields, which already carry the style.
+        return NoError;
+    }
+
+    // Every run keeps its own values except the ones the style names: those are set on all runs,
+    // otherwise a style-only "bold": true would be overridden by the runs' read-back faces.
+    static const char* const shortFields[] = { "penIndex", "fontIndex" };
+    static const char* const boolFields[] = { "bold", "italic", "underline",
+                                              "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
+    const auto& runList = contentParams.AddList<GS::ObjectState> ("runs");
+    for (const GS::ObjectState& run : runs) {
+        GS::ObjectState mergedRun;
+        GS::UniString runText;
+        run.Get ("text", runText);
+        mergedRun.Add ("text", runText);
+        for (const char* field : shortFields) {
+            short value = 0;
+            if (style.Get (field, value) || run.Get (field, value)) {
+                mergedRun.Add (field, value);
+            }
+        }
+        for (const char* field : boolFields) {
+            bool value = false;
+            if (style.Get (field, value) || run.Get (field, value)) {
+                mergedRun.Add (field, value);
+            }
+        }
+        double height = 0.0;
+        if (style.Get ("height", height) || run.Get ("heightOverride", height)) {
+            mergedRun.Add ("heightOverride", height);
+        }
+        runList (mergedRun);
+    }
+    return NoError;
 }
 
 void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
