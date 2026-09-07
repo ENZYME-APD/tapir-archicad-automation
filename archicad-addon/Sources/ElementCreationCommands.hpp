@@ -192,7 +192,7 @@ void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool in
 void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
 
 // Reads memo.textContent and every paragraph's runs back into "text" (flat concatenation),
-// "paragraphCount" and, if there is more than one run, "runs" (array of TextRunDetails).
+// "paragraphCount" and, when the content has paragraphs, "runs" (array of TextRunDetails).
 // Returns the error of the memo read; nothing is added then.
 GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
 // The content to rebuild for a style-only modify: the element's own content read back, with the

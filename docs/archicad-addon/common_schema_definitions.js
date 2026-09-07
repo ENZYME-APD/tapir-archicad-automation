@@ -6478,7 +6478,7 @@ var gSchemaDefinitions = {
           },
           "runs": {
             "type": "array",
-            "description": "Present only when labelClass is 'Text' and the content has more than one styled run.",
+            "description": "Present only when labelClass is 'Text' and the content has paragraphs (always for content Tapir created): one entry per styled run, a single run too.",
             "items": { "$ref": "#/TextRunDetails" }
           }
         },
@@ -6534,7 +6534,7 @@ var gSchemaDefinitions = {
             },
             "runs": {
                 "type": "array",
-                "description": "Present only when the content has more than one styled run. Concatenating the runs' text in order gives the full content.",
+                "description": "The styled runs of the content, present whenever the content has paragraphs (always for content Tapir created); one entry per run, a single run too, as a run may carry a pen, font, face or size of its own. Concatenating the runs' text in order gives the full content.",
                 "items": { "$ref": "#/TextRunDetails" }
             }
         },

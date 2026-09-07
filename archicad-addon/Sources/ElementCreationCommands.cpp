@@ -3204,7 +3204,10 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
             spans.Push (RunSpan { static_cast<UIndex> (paragraph.from + paragraph.run[i].from), &paragraph.run[i] });
         }
     }
-    if (spans.GetSize () <= 1) {
+    // Every run is reported, a single one too: a run created with its own pen/font/face/size keeps
+    // that only in the run, so leaving it out would hide the override and a style-only modify,
+    // which rebuilds from this read-back, would revert it to the element-level fields.
+    if (spans.IsEmpty ()) {
         return NoError;
     }
 
