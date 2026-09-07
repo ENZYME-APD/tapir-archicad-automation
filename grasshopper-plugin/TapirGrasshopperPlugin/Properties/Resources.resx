@@ -967,4 +967,16 @@
   <data name="GetElementTrims" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetElementTrims.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ModifyTexts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyTexts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyLabels" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyLabels.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAutoTextKeys" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAutoTextKeys.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAutoTextName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAutoTextName.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

@@ -3293,7 +3293,9 @@ void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
 #ifdef ServerMainVers_2900
     os.Add ("arrowVisible", label.arrowData.arrowVisibility);
 #else
-    os.Add ("arrowVisible", label.arrowData.endArrow);
+    // A label's arrow head sits at the leader line's beginning: the DevKit's own label example
+    // (Element_Test, Do_CreateLabel_FixedFrame) sets begArrow and leaves endArrow alone.
+    os.Add ("arrowVisible", label.arrowData.begArrow);
 #endif
     os.Add ("arrowPenIndex", label.arrowData.arrowPen);
     os.Add ("arrowSize", label.arrowData.arrowSize);
@@ -3359,10 +3361,8 @@ GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::Obj
         arrowDataTouched = true;
     }
 #else
-    bool arrowVisible = label.arrowData.endArrow;
-    if (details.Get ("arrowVisible", arrowVisible)) {
-        label.arrowData.begArrow = arrowVisible;
-        label.arrowData.endArrow = arrowVisible;
+    // begArrow is the label's arrow head (see AddLabelLeaderLineDetails); endArrow is left as it is.
+    if (details.Get ("arrowVisible", label.arrowData.begArrow)) {
         arrowDataTouched = true;
     }
 #endif

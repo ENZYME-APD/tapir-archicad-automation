@@ -37,6 +37,10 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             OutGenericTree(
                 "TrimsGuids",
                 "The elements the queried element trims, when it is a roof or a shell.");
+
+            OutErrorMessages(
+                "Error message of each queried element (empty when it could be read); " +
+                "its branches above stay empty.");
         }
 
         private static ElementGuidWrapper ElementIdFromGuidObject(
@@ -60,6 +64,7 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             var trimmedByGuids = new DataTree<object>();
             var trimTypes = new DataTree<object>();
             var trimsGuids = new DataTree<object>();
+            var errorMessages = new List<string>();
 
             for (var i = 0; i < items.Count; i++)
             {
@@ -68,6 +73,13 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                 trimmedByGuids.EnsurePath(path);
                 trimTypes.EnsurePath(path);
                 trimsGuids.EnsurePath(path);
+
+                if (JsonOutputHelp.IsError(item))
+                {
+                    errorMessages.Add(JsonOutputHelp.ErrorMessage(item));
+                    continue;
+                }
+                errorMessages.Add("");
 
                 if (item["trimmedBy"] is JArray trimmedBy)
                 {
@@ -96,6 +108,7 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             da.SetDataTree(0, trimmedByGuids);
             da.SetDataTree(1, trimTypes);
             da.SetDataTree(2, trimsGuids);
+            da.SetDataList(3, errorMessages);
         }
 
         protected override System.Drawing.Bitmap Icon =>

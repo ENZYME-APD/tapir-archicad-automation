@@ -29,6 +29,15 @@ namespace TapirGrasshopperPlugin.Types.Project
         [JsonProperty("location")]
         public string Location { get; set; }
 
+        [JsonProperty("hotlinkNodeId")]
+        public HotlinkNodeGuid HotlinkNodeId { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
         [JsonProperty("children")]
         public Hotlinks Children { get; set; }
 
@@ -41,6 +50,25 @@ namespace TapirGrasshopperPlugin.Types.Project
 
     public static class HotlinkExtensions
     {
+        // Every node of the tree, parents before their children, in the order
+        // of GetLocations.
+        public static IEnumerable<Hotlink> Flatten(
+            this Hotlinks hotlinks)
+        {
+            foreach (var link in hotlinks)
+            {
+                yield return link;
+
+                if (link.Children != null && link.Children.Any())
+                {
+                    foreach (var child in link.Children.Flatten())
+                    {
+                        yield return child;
+                    }
+                }
+            }
+        }
+
         public static IEnumerable<string> GetLocations(
             this Hotlinks hotlinks)
         {

@@ -31,7 +31,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             InPoints(
                 "Origins",
-                "Where each instance's origin lands, in the project's coordinates. Optional.");
+                "Where each instance's origin lands, in the project's coordinates " +
+                "(input only 1 to use the same value for all). Optional.");
 
             InNumbers(
                 "RotationAngles",
