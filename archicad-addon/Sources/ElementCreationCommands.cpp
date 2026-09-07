@@ -3017,13 +3017,16 @@ void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType
     if (details.Get ("flipEnabled", text.flipEnabled)) { TEXT_MASK_SET (flipEnabled) }
 
 #ifdef ServerMainVers_2800
-    bool frameChanged = false;
-    frameChanged = details.Get ("textFrameShape", strVal) || frameChanged;
-    if (frameChanged) { text.textFrame.shapeType = StringToTextFrameShape (strVal); }
-    frameChanged = details.Get ("textFrameSizeFixed", text.textFrame.isSizeFixed) || frameChanged;
-    frameChanged = details.Get ("textFrameFixedWidth", text.textFrame.fixedWidth) || frameChanged;
-    frameChanged = details.Get ("textFrameFixedHeight", text.textFrame.fixedHeight) || frameChanged;
-    if (frameChanged) { TEXT_MASK_SET (textFrame) }
+    // ACAPI_ELEMENT_MASK_SET flags one byte at the field's own address, so masking the whole
+    // textFrame struct would flag its first member only (see arrowData below); every touched
+    // sub-field is masked on its own.
+    if (details.Get ("textFrameShape", strVal)) {
+        text.textFrame.shapeType = StringToTextFrameShape (strVal);
+        TEXT_MASK_SET (textFrame.shapeType)
+    }
+    if (details.Get ("textFrameSizeFixed", text.textFrame.isSizeFixed)) { TEXT_MASK_SET (textFrame.isSizeFixed) }
+    if (details.Get ("textFrameFixedWidth", text.textFrame.fixedWidth)) { TEXT_MASK_SET (textFrame.fixedWidth) }
+    if (details.Get ("textFrameFixedHeight", text.textFrame.fixedHeight)) { TEXT_MASK_SET (textFrame.fixedHeight) }
 #endif
 
 #undef TEXT_MASK_SET

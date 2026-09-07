@@ -8741,10 +8741,10 @@ var gSchemaDefinitions = {
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
-            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle." },
-            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box." },
-            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000." },
-            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000." }
+            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
+            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
+            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." }
         },
         "additionalProperties": false
     },
@@ -8776,10 +8776,10 @@ var gSchemaDefinitions = {
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
-            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle." },
-            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box." },
-            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000." },
-            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000." },
+            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
+            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
+            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "lineCount": { "type": "integer", "description": "Read-only: number of text lines (API_TextType::nLine)." },
             "boxWidth": { "type": "number", "description": "Read-only: horizontal size of the text box in mm, auto-computed by Archicad." },
             "boxHeight": { "type": "number", "description": "Read-only: vertical size of the text box in mm, auto-computed by Archicad." }
