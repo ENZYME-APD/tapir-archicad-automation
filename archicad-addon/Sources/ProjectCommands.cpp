@@ -265,7 +265,12 @@ GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& paramete
     // guid can legitimately be APINULLGuid here (no elementId given) - per the DevKit doc this
     // still returns the autotext keys common to all element types (e.g. "Element ID", "Area"),
     // just not the ones specific to a single element's own type (e.g. "Thickness of the wall").
-    API_Guid guid = GetGuidFromArrayItem ("elementId", parameters);
+    const GS::ObjectState* elementIdOS = parameters.Get ("elementId");
+    API_Guid guid = (elementIdOS != nullptr) ? GetGuidFromObjectState (*elementIdOS) : APINULLGuid;
+    if (elementIdOS != nullptr && guid == APINULLGuid) {
+        // A given but unparseable guid must not fall back to the generic list.
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid elementId.");
+    }
 
     // Before AC27 the call is the APIAny_GetPropertyAutoTextKeyTableID goodie, wrapped in
     // MigrationHelper.hpp like the other ACAPI_AutoText_* functions.

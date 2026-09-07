@@ -2310,6 +2310,22 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            // The fields of the other label class are refused, not silently ignored.
+            {
+                GS::UniString classCheckText;
+                GS::Array<GS::ObjectState> classCheckRuns;
+                const bool hasTextFields = item.Get ("text", classCheckText) || item.Get ("runs", classCheckRuns) || item.Get ("style") != nullptr;
+                const bool hasSymbolFields = item.Get ("symbolStyle") != nullptr;
+                if (element.label.labelClass == APILblClass_Text && hasSymbolFields) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "symbolStyle applies to a Symbol label only; this is a Text label."));
+                    continue;
+                }
+                if (element.label.labelClass != APILblClass_Text && hasTextFields) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "text, runs and style apply to a Text label only; this is a Symbol label."));
+                    continue;
+                }
+            }
+
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
 

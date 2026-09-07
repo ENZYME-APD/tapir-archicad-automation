@@ -9,7 +9,9 @@ Parameters:
                 "z": 0.0
             },
             "text": "100",
-            "height": 2.5
+            "height": 2.5,
+            "angle": 0.0,
+            "justification": "Left"
         },
         {
             "coordinate": {
@@ -19,6 +21,7 @@ Parameters:
             },
             "text": "102",
             "height": 2.5,
+            "angle": 0.0,
             "justification": "Center"
         },
         {
@@ -29,7 +32,8 @@ Parameters:
             },
             "text": "multi\nline",
             "height": 2.5,
-            "angle": 0.0
+            "angle": 0.0,
+            "justification": "Left"
         }
     ]
 }
