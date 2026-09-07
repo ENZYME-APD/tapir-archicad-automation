@@ -1973,7 +1973,7 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
 
             auto applyErr = ApplyObjectLampDetails (element, memo, &mask, GetStories (), item);
             if (applyErr.HasValue ()) {
-                executionResults (*applyErr);
+                executionResults (CreateFailedExecutionResult (*applyErr));
                 continue;
             }
 
@@ -2204,7 +2204,7 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.text, contentParams);
                 if (applyErr.HasValue ()) {
-                    executionResults (*applyErr);
+                    executionResults (CreateFailedExecutionResult (*applyErr));
                     continue;
                 }
                 contentChanged = true;
@@ -2313,7 +2313,11 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
 
             const GS::ObjectState* leaderLineOS = item.Get ("leaderLine");
             if (leaderLineOS != nullptr) {
-                TextLabelDetails::ApplyLabelLeaderLineSettableDetails (*leaderLineOS, element.label, &mask);
+                auto leaderLineErr = TextLabelDetails::ApplyLabelLeaderLineSettableDetails (*leaderLineOS, element.label, &mask);
+                if (leaderLineErr.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (*leaderLineErr));
+                    continue;
+                }
             }
 
             API_ElementMemo memo = {};
@@ -2346,7 +2350,7 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                     }
                     auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, contentParams);
                     if (applyErr.HasValue ()) {
-                        executionResults (*applyErr);
+                        executionResults (CreateFailedExecutionResult (*applyErr));
                         continue;
                     }
                     contentChanged = true;
@@ -3127,13 +3131,18 @@ void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 #else
     GS::UniString content;
     if (memo.textContent != nullptr) {
-        // Reconstruct by exact handle byte size (divided by sizeof(uchar_t), minus the trailing
-        // null terminator uchar_t) rather than relying on NUL-termination scanning, which was
-        // unreliable here.
+        // The handle holds the characters and a terminator (the inverse of ApplyTextContent's
+        // write). Its size bounds the read, so an unterminated handle cannot be over-read, and the
+        // first terminator inside it ends the content, so any slack Archicad may allocate past the
+        // terminator is not taken as text.
         const GSSize byteSize = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.textContent));
         const USize charCount = static_cast<USize> (byteSize / sizeof (GS::uchar_t));
-        const USize contentCharCount = (charCount > 0) ? (charCount - 1) : 0;
-        content = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (*memo.textContent), contentCharCount);
+        const GS::uchar_t* chars = reinterpret_cast<const GS::uchar_t*> (*memo.textContent);
+        USize contentCharCount = 0;
+        while (contentCharCount < charCount && chars[contentCharCount] != 0) {
+            ++contentCharCount;
+        }
+        content = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (chars), contentCharCount);
     }
 #endif
     os.Add ("text", content);
@@ -3205,7 +3214,7 @@ void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
     os.Add ("endCoordinate", Create2DCoordinateObjectState (label.endC));
 }
 
-void ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
+GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
 {
     if (details.Get ("penIndex", label.pen)) {
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, pen);
@@ -3213,7 +3222,9 @@ void ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_La
     {
         const GS::ObjectState* attrId = details.Get ("lineTypeId");
         if (attrId != nullptr) {
-            ResolveAttributeIndex (*attrId, API_LinetypeID, label.ltypeInd);
+            if (!ResolveAttributeIndex (*attrId, API_LinetypeID, label.ltypeInd)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Invalid 'lineTypeId' line type reference.");
+            }
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, ltypeInd);
         }
     }
@@ -3286,6 +3297,8 @@ void ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_La
     if (details.Get ("hideWithBaseElem", label.hideWithBaseElem)) {
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, hideWithBaseElem);
     }
+
+    return {};
 }
 
 void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label)
@@ -3411,7 +3424,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
 
     const GS::ObjectState* leaderLineOS = parameters.Get ("leaderLine");
     if (leaderLineOS != nullptr) {
-        TextLabelDetails::ApplyLabelLeaderLineSettableDetails (*leaderLineOS, element.label, nullptr);
+        auto leaderLineErr = TextLabelDetails::ApplyLabelLeaderLineSettableDetails (*leaderLineOS, element.label, nullptr);
+        if (leaderLineErr.HasValue ()) {
+            return leaderLineErr;
+        }
     }
 
     if (element.label.labelClass == APILblClass_Text) {

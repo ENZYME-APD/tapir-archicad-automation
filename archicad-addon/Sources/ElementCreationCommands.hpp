@@ -198,7 +198,8 @@ void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters);
 
 void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label);
-void ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+// Returns an error response for an attribute reference that cannot be resolved.
+GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
 
 void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label);
 void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
