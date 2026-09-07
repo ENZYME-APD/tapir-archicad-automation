@@ -4158,6 +4158,10 @@ var gCommands = [{
                 "additionalProperties": false,
                 "required": [
                     "coordinate"
+                ],
+                "anyOf": [
+                    { "required": ["text"] },
+                    { "required": ["runs"] }
                 ]
             }
         }

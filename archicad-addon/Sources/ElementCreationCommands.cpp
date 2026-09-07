@@ -3636,6 +3636,10 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                 "additionalProperties": false,
                 "required": [
                     "coordinate"
+                ],
+                "anyOf": [
+                    { "required": ["text"] },
+                    { "required": ["runs"] }
                 ]
             }
         }
