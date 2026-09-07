@@ -66,6 +66,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "WitnessBaseElementGuids",
                 "Base element of each witness point (one branch per dimension).");
 
+            OutTexts(
+                "ErrorMessages",
+                "Error message for each queried element (empty when successful).");
+
             OutBooleanTree(
                 "WitnessLines",
                 "True when the witness point lies on an edge of its base element rather than at a node (one branch per dimension). " +
@@ -90,10 +94,6 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutIntegerTree(
                 "WitnessNodeIds",
                 "Polygon vertex id of the base element at each witness point (one branch per dimension).");
-
-            OutTexts(
-                "ErrorMessages",
-                "Error message for each queried element (empty when successful).");
         }
 
         protected override void SetOutputs(
@@ -222,13 +222,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataTree(7, witnessForms);
             da.SetDataTree(8, witnessVals);
             da.SetDataTree(9, witnessBaseElementGuids);
-            da.SetDataTree(10, witnessLines);
-            da.SetDataTree(11, witnessInIndices);
-            da.SetDataTree(12, witnessSpecials);
-            da.SetDataTree(13, witnessNodeTypes);
-            da.SetDataTree(14, witnessNodeStatuses);
-            da.SetDataTree(15, witnessNodeIds);
-            da.SetDataList(16, errors);
+            da.SetDataList(10, errors);
+            da.SetDataTree(11, witnessLines);
+            da.SetDataTree(12, witnessInIndices);
+            da.SetDataTree(13, witnessSpecials);
+            da.SetDataTree(14, witnessNodeTypes);
+            da.SetDataTree(15, witnessNodeStatuses);
+            da.SetDataTree(16, witnessNodeIds);
         }
 
         protected override System.Drawing.Bitmap Icon =>

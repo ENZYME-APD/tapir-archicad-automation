@@ -34,6 +34,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             OutGenerics(
                 "Names",
                 "List of attribute names.");
+            outManager.AddTimeParameter(
+                "ModificationTimes",
+                "ModificationTimes",
+                "Last modification time of each attribute, in local time.",
+                GH_ParamAccess.list);
         }
 
         public override void AddedToDocument(
@@ -75,6 +80,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(
                 2,
                 response.Attributes.Select(x => x.Name));
+
+            da.SetDataList(
+                3,
+                response.Attributes.Select(
+                    x => DateTimeOffset.FromUnixTimeSeconds(x.ModificationTime).LocalDateTime));
         }
 
         protected override System.Drawing.Bitmap Icon =>
