@@ -1129,7 +1129,15 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             }
 
             case API_TextID: {
-                typeSpecificDetails.Add ("coordinate", Create2DCoordinateObjectState (elem.text.loc));
+                // The flat fields are the ones SetDetailsOfElements takes back (position, angle, height,
+                // justification) and the Grasshopper TextDetails type reads; "style" carries the full
+                // style state and AddTextContent adds "text", "paragraphCount" and the styled "runs".
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (elem.text.loc));
+                typeSpecificDetails.Add ("angle", elem.text.angle);
+                typeSpecificDetails.Add ("height", elem.text.size);
+                typeSpecificDetails.Add ("pen", (Int32) elem.text.pen);
+                typeSpecificDetails.Add ("justification", JustificationToString (static_cast<API_JustID> (elem.text.just)));
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
                 GS::ObjectState styleOS;
                 TextLabelDetails::AddTextStyleDetails (styleOS, elem.text, true);
                 typeSpecificDetails.Add ("style", styleOS);

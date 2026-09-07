@@ -53,60 +53,6 @@ Response:
         }
     ]
 }
-Command: GetDetailsOfElements
-Parameters:
-{
-    "elements": [
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        },
-        {
-            "elementId": {
-                "guid": "<GUID>"
-            }
-        }
-    ]
-}
-Response:
-{
-    "detailsOfElements": [
-        {
-            "type": "Text",
-            "floorIndex": 0,
-            "layerIndex": 42,
-            "drawIndex": 10,
-            "id": "",
-            "details": {
-                "error": "Not yet supported element type"
-            }
-        },
-        {
-            "type": "Text",
-            "floorIndex": 0,
-            "layerIndex": 42,
-            "drawIndex": 10,
-            "id": "",
-            "details": {
-                "error": "Not yet supported element type"
-            }
-        },
-        {
-            "type": "Text",
-            "floorIndex": 0,
-            "layerIndex": 42,
-            "drawIndex": 10,
-            "id": "",
-            "details": {
-                "error": "Not yet supported element type"
-            }
-        }
-    ]
-}
-{'detailsOfElements': [{'type': 'Text', 'floorIndex': 0, 'layerIndex': 42, 'drawIndex': 10, 'id': '', 'details': {'error': 'Not yet supported element type'}}, {'type': 'Text', 'floorIndex': 0, 'layerIndex': 42, 'drawIndex': 10, 'id': '', 'details': {'error': 'Not yet supported element type'}}, {'type': 'Text', 'floorIndex': 0, 'layerIndex': 42, 'drawIndex': 10, 'id': '', 'details': {'error': 'Not yet supported element type'}}]}
+Text '100' at (0, 0, 0) height=2.5 angle=0 justification=Left lines=1 paragraphs=1
+Text '102' at (5, 2, 0) height=2.5 angle=0 justification=Center lines=1 paragraphs=1
+Text 'multi\nline' at (10, 4, 0) height=2.5 angle=0 justification=Left lines=2 paragraphs=1

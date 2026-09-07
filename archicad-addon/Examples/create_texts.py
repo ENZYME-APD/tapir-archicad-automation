@@ -24,7 +24,13 @@ result = aclib.RunTapirCommand (
         ]
     })
 
-# Round-trip check: the created elements should be retrievable.
+# Round-trip check: the created elements should be retrievable. Only the fields set above are
+# printed - the response also carries Archicad-computed geometry (style.boxWidth/boxHeight), which
+# depends on the font metrics of the machine running the test.
 elements = result['elements']
-details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': elements})
-print(details)
+details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': elements}, debug = False)
+for detailsOfElement in details['detailsOfElements']:
+    d = detailsOfElement['details']
+    print ('{} {!r} at ({}, {}, {}) height={} angle={} justification={} lines={} paragraphs={}'.format (
+        detailsOfElement['type'], d['text'], d['position']['x'], d['position']['y'], d['zCoordinate'],
+        d['height'], d['angle'], d['justification'], d['style']['lineCount'], d['paragraphCount']))

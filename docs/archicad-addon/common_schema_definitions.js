@@ -564,6 +564,36 @@ var gSchemaDefinitions = {
             "$ref": "#/KeynoteAutoTextTokensOrError"
         }
     },
+    "AutoTextName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The autotext's display name, as shown in the Insert Autotext dialog of Archicad."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "name" ]
+    },
+    "AutoTextNameOrError": {
+        "type": "object",
+        "description": "The display name of one autotext key, or an error.",
+        "oneOf": [
+            {
+                "$ref": "#/AutoTextName"
+            },
+            {
+                "$ref": "#/ErrorItem"
+            }
+        ]
+    },
+    "AutoTextNamesOrErrors": {
+        "type": "array",
+        "description": "One result per input key, in the same order.",
+        "items": {
+            "$ref": "#/AutoTextNameOrError"
+        }
+    },
     "KeynoteItemDetails": {
         "type": "object",
         "description": "The details of a keynote item.",
@@ -6423,9 +6453,33 @@ var gSchemaDefinitions = {
           "hasLeaderLine": {
             "type": "boolean"
           },
+          "labelClass": {
+            "type": "string",
+            "enum": ["Text", "Symbol"]
+          },
+          "leaderLine": {
+            "$ref": "#/LabelLeaderLineDetails"
+          },
+          "style": {
+            "$ref": "#/TextStyleDetails",
+            "description": "Present only when labelClass is 'Text'."
+          },
+          "symbolStyle": {
+            "$ref": "#/LabelSymbolStyleSettableDetails",
+            "description": "Present only when labelClass is 'Symbol'."
+          },
           "text": {
             "type": "string",
-            "description": "The text content of the label. Present only for text-type labels (symbol labels have no text content)."
+            "description": "Present only when labelClass is 'Text'."
+          },
+          "paragraphCount": {
+            "type": "integer",
+            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+          },
+          "runs": {
+            "type": "array",
+            "description": "Present only when labelClass is 'Text' and the content has more than one styled run.",
+            "items": { "$ref": "#/TextRunDetails" }
           }
         },
         "additionalProperties": false,
@@ -6433,7 +6487,9 @@ var gSchemaDefinitions = {
               "begCoordinate",
               "midCoordinate",
               "endCoordinate",
-              "hasLeaderLine"
+              "hasLeaderLine",
+              "labelClass",
+              "leaderLine"
           ]
     },
     "TextDetails": {
@@ -6449,22 +6505,37 @@ var gSchemaDefinitions = {
             },
             "angle": {
                 "type": "number",
-                "description": "The rotation angle in radians."
+                "description": "The rotation angle in radians (same as style.angle)."
             },
             "height": {
                 "type": "number",
-                "description": "The character height in millimeters."
+                "description": "The character height in millimeters (same as style.height)."
             },
             "pen": {
                 "type": "integer",
-                "description": "The pen attribute index."
+                "description": "The pen attribute index (same as style.penIndex)."
             },
             "justification": {
                 "type": "string",
-                "enum": ["Left", "Center", "Right", "Full"]
+                "enum": ["Left", "Center", "Right", "Full"],
+                "description": "Same as style.justification."
             },
             "zCoordinate": {
-                "type": "number"
+                "type": "number",
+                "description": "The level of the text's floor."
+            },
+            "style": {
+                "$ref": "#/TextStyleDetails",
+                "description": "The full style state; the flat fields above are the subset SetDetailsOfElements takes back."
+            },
+            "paragraphCount": {
+                "type": "integer",
+                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+            },
+            "runs": {
+                "type": "array",
+                "description": "Present only when the content has more than one styled run. Concatenating the runs' text in order gives the full content.",
+                "items": { "$ref": "#/TextRunDetails" }
             }
         },
         "additionalProperties": false,
@@ -6475,7 +6546,9 @@ var gSchemaDefinitions = {
             "height",
             "pen",
             "justification",
-            "zCoordinate"
+            "zCoordinate",
+            "style",
+            "paragraphCount"
         ]
     },
     "NotYetSupportedElementTypeDetails": {
@@ -8620,6 +8693,174 @@ var gSchemaDefinitions = {
         "required": [
             "overridden"
         ]
+    },
+    "TextRunDetails": {
+        "type": "object",
+        "description": "One monostyle run of text (API_RunType). Concatenating 'text' across all runs in order gives the full content; a newline character starts a new line.",
+        "properties": {
+            "text": { "type": "string", "description": "The run's text content." },
+            "penIndex": { "type": "integer", "description": "Pen attribute index. Optional; defaults to the style's penIndex." },
+            "fontIndex": { "type": "integer", "description": "Font attribute index. Optional; defaults to the style's fontIndex." },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "heightOverride": { "type": "number", "description": "Character height in mm for this run only. Optional; defaults to the style's height." }
+        },
+        "additionalProperties": false,
+        "required": ["text"]
+    },
+    "TextStyleSettableDetails": {
+        "type": "object",
+        "description": "Every user-configurable style setting of a Text or a text-class Label (API_TextType). Shared by CreateTexts/CreateLabels ('style'), ModifyTexts/ModifyLabels ('style'), and the Get response.",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index." },
+            "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "height": { "type": "number", "description": "Character height in mm." },
+            "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
+            "angle": { "type": "number", "description": "Rotation angle in radians." },
+            "effectStrikeout": { "type": "boolean" },
+            "effectSuperscript": { "type": "boolean" },
+            "effectSubscript": { "type": "boolean" },
+            "effectProtected": { "type": "boolean", "description": "Protected text (autotext reference)." },
+            "widthFactor": { "type": "number", "description": "Width scale of the text, between 0.75 and 10.0." },
+            "charSpaceFactor": { "type": "number", "description": "Character spacing scale, between 0.75 and 10.0." },
+            "fixedSize": { "type": "boolean", "description": "Size does not depend on output scale." },
+            "usedContour": { "type": "boolean", "description": "Draw the frame of the text block." },
+            "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
+            "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
+            "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
+            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
+            "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
+            "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
+            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle." },
+            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box." },
+            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000." },
+            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000." }
+        },
+        "additionalProperties": false
+    },
+    "TextStyleDetails": {
+        "type": "object",
+        "description": "Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight).",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index." },
+            "fontIndex": { "type": "integer", "description": "Font attribute index." },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "justification": { "type": "string", "enum": ["Left", "Center", "Right", "Full"] },
+            "height": { "type": "number", "description": "Character height in mm." },
+            "spacing": { "type": "number", "description": "Line spacing factor, between -10.0 and -1.0." },
+            "angle": { "type": "number", "description": "Rotation angle in radians." },
+            "effectStrikeout": { "type": "boolean" },
+            "effectSuperscript": { "type": "boolean" },
+            "effectSubscript": { "type": "boolean" },
+            "effectProtected": { "type": "boolean", "description": "Protected text (autotext reference)." },
+            "widthFactor": { "type": "number", "description": "Width scale of the text, between 0.75 and 10.0." },
+            "charSpaceFactor": { "type": "number", "description": "Character spacing scale, between 0.75 and 10.0." },
+            "fixedSize": { "type": "boolean", "description": "Size does not depend on output scale." },
+            "usedContour": { "type": "boolean", "description": "Draw the frame of the text block." },
+            "usedFill": { "type": "boolean", "description": "Draw a solid fill behind the text block." },
+            "contourPenIndex": { "type": "integer", "description": "Pen index of the text block's frame." },
+            "fillPenIndex": { "type": "integer", "description": "Pen index of the text block's background fill." },
+            "anchor": { "type": "string", "enum": ["LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "RightMiddle", "LeftBottom", "MiddleBottom", "RightBottom"], "description": "Anchor point of the text box." },
+            "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
+            "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
+            "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
+            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle." },
+            "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box." },
+            "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000." },
+            "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000." },
+            "lineCount": { "type": "integer", "description": "Read-only: number of text lines (API_TextType::nLine)." },
+            "boxWidth": { "type": "number", "description": "Read-only: horizontal size of the text box in mm, auto-computed by Archicad." },
+            "boxHeight": { "type": "number", "description": "Read-only: vertical size of the text box in mm, auto-computed by Archicad." }
+        },
+        "additionalProperties": false
+    },
+    "LabelLeaderLineSettableDetails": {
+        "type": "object",
+        "description": "Every user-configurable leader-line/frame setting of a Label (top-level API_LabelType fields, shared by both Text and Symbol label classes). Shared by CreateLabels ('leaderLine'), ModifyLabels ('leaderLine'), and the Get response.",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
+            "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
+            "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
+            "framed": { "type": "boolean", "description": "Put a frame around the content." },
+            "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
+            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
+            "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
+            "arrowType": { "$ref": "#/LabelArrowType" },
+            "arrowVisible": { "type": "boolean" },
+            "arrowPenIndex": { "type": "integer" },
+            "arrowSize": { "type": "number", "description": "Arrow size in mm." },
+            "hideWithBaseElem": { "type": "boolean", "description": "Hide the label together with its parent element." }
+        },
+        "additionalProperties": false
+    },
+    "LabelLeaderLineDetails": {
+        "type": "object",
+        "description": "Full readable leader-line/frame state of a Label: every field of LabelLeaderLineSettableDetails plus the leader line's coordinates.",
+        "properties": {
+            "penIndex": { "type": "integer", "description": "Pen attribute index of the leader line." },
+            "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type attribute of the leader line." },
+            "contourOffset": { "type": "number", "description": "Padding between the Label's frame and its content, in mm." },
+            "framed": { "type": "boolean", "description": "Put a frame around the content." },
+            "hasLeaderLine": { "type": "boolean", "description": "Whether the Label has a leader line (pointer line)." },
+            "anchorPoint": { "type": "string", "enum": ["Middle", "Top", "Bottom", "Underlined"], "description": "How the leader line connects to the label text (text-class labels only)." },
+            "leaderShape": { "type": "string", "enum": ["Segmented", "Splinear", "SquareRoot"], "description": "Shape of the leader line." },
+            "squareRootAngle": { "type": "number", "description": "Angle in radians, used only when leaderShape is 'SquareRoot'. Valid range 1-179 degrees." },
+            "arrowType": { "$ref": "#/LabelArrowType" },
+            "arrowVisible": { "type": "boolean" },
+            "arrowPenIndex": { "type": "integer" },
+            "arrowSize": { "type": "number", "description": "Arrow size in mm." },
+            "hideWithBaseElem": { "type": "boolean", "description": "Hide the label together with its parent element." },
+            "begCoordinate": { "$ref": "#/Coordinate2D" },
+            "midCoordinate": { "$ref": "#/Coordinate2D" },
+            "endCoordinate": { "$ref": "#/Coordinate2D" }
+        },
+        "additionalProperties": false
+    },
+    "LabelArrowType": {
+        "type": "string",
+        "description": "Arrow head shape for a Label's leader line.",
+        "enum": [
+            "EmptyCircle", "CrossCircle", "FullCircle",
+            "SlashLine15", "OpenArrow15", "ClosedArrow15", "FullArrow15",
+            "SlashLine30", "OpenArrow30", "ClosedArrow30", "FullArrow30",
+            "SlashLine45", "OpenArrow45", "ClosedArrow45", "FullArrow45",
+            "SlashLine60", "OpenArrow60", "ClosedArrow60", "FullArrow60",
+            "SlashLine90",
+            "PepitaCircle", "BandArrow",
+            "HalfArrowCcw15", "HalfArrowCw15", "HalfArrowCcw30", "HalfArrowCw30",
+            "HalfArrowCcw45", "HalfArrowCw45", "HalfArrowCcw60", "HalfArrowCw60",
+            "SlashLine75"
+        ]
+    },
+    "LabelSymbolStyleSettableDetails": {
+        "type": "object",
+        "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
+        "properties": {
+            "textWay": { "type": "string", "enum": ["Parallel", "Horizontal", "Vertical", "General"], "description": "Direction of the symbol label's text." },
+            "fontIndex": { "type": "integer" },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "underline": { "type": "boolean" },
+            "flipEnabled": { "type": "boolean", "description": "'Always Readable' toggle." },
+            "nonBreaking": { "type": "boolean", "description": "'Wrap Text' turned off when true." },
+            "textSize": { "type": "number", "description": "Character height in mm." },
+            "useBackgroundFill": { "type": "boolean" },
+            "backgroundFillPenIndex": { "type": "integer", "description": "Effective only if useBackgroundFill is true." },
+            "effectStrikeout": { "type": "boolean" },
+            "effectSuperscript": { "type": "boolean" },
+            "effectSubscript": { "type": "boolean" },
+            "effectProtected": { "type": "boolean" }
+        },
+        "additionalProperties": false
     }
 }
 ;

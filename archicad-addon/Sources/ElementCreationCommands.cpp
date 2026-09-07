@@ -2081,7 +2081,14 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "coordinate": { "$ref": "#/Coordinate3D" },
+                        "coordinate": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new placement position. As in CreateTexts, the z value selects the floor when floorIndex is omitted."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
+                        },
                         "text": { "type": "string" },
                         "runs": {
                             "type": "array",
@@ -2119,6 +2126,7 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("ModifyTexts", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : itemsWithDetails) {
@@ -2149,6 +2157,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 element.text.loc.x = apiCoordinate.x;
                 element.text.loc.y = apiCoordinate.y;
                 ACAPI_ELEMENT_MASK_SET (mask, API_TextType, loc);
+                // Same floor resolution as CreateTexts: an explicit floorIndex wins, otherwise z picks the floor.
+                element.header.floorInd = ResolveFloorIndexAndOffset (item, "floorIndex", apiCoordinate.z, stories).first;
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            } else if (item.Get ("floorIndex", element.header.floorInd)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
             }
 
             const GS::ObjectState* styleOS = item.Get ("style");
@@ -2721,7 +2734,7 @@ void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData,
     textData.useEolPos = true;
 }
 
-static const char* JustificationToString (API_JustID just)
+const char* JustificationToString (API_JustID just)
 {
     switch (just) {
         case APIJust_Center: return "Center";
@@ -2831,12 +2844,12 @@ static API_DirID StringToLabelTextWay (const GS::UniString& s)
     return APIDir_Parallel;
 }
 
-// API_ArrowID has 31 sequential values starting at APIArr_EmptyCirc; this array's order is
-// index-parallel to it (verified directly against the API_ArrowID enum in APIdefs_Elements.h -
-// APIArr_SlashLine75 is the LAST value, not adjacent to APIArr_SlashLine90, despite the two
-// looking like they should pair up by name). #/LabelArrowType's enum in
-// CommonSchemaDefinitions.json is documentation only (JSON Schema enum membership doesn't care
-// about order) but is kept in this same order for consistency.
+// API_ArrowID has 31 sequential values starting at APIArr_EmptyCirc (= 0, no explicit
+// initialisers); this array is index-parallel to it. Checked against APIdefs_Elements.h of every
+// supported DevKit (AC25 to AC29): the order is the same in all of them, and APIArr_SlashLine75
+// is the LAST value, not adjacent to APIArr_SlashLine90, despite the two looking like they should
+// pair up by name. #/LabelArrowType's enum in CommonSchemaDefinitions.json is documentation only
+// (JSON Schema enum membership doesn't care about order) but is kept in this same order.
 static const char* const kArrowTypeNames[] = {
     "EmptyCircle", "CrossCircle", "FullCircle",
     "SlashLine15", "OpenArrow15", "ClosedArrow15", "FullArrow15",
@@ -3034,10 +3047,15 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' (or 'runs') parameter");
     }
 
+    // 'memo' may already carry content: the Create path gets its memo from ACAPI_Element_GetDefaults,
+    // and a modify may pass one fetched via ACAPI_Element_GetMemo. Replace, never leak.
 #ifdef ServerMainVers_2800
     delete memo.textContent;
     memo.textContent = new GS::UniString { text };
 #else
+    if (memo.textContent != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.textContent));
+    }
     memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
     GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
 #endif
@@ -3047,16 +3065,17 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     const Int32 numOfParagraphs = 1;
     const Int32 numOfRuns = hasRuns ? static_cast<Int32> (runTexts.GetSize ()) : 1;
 
-    // When modifying an existing element, 'memo' may already carry handles fetched via
-    // ACAPI_Element_GetMemo (paragraphs sized for the OLD content, and textLineStarts - a
-    // separate short** array of line-start indices into textContent, distinct from each
-    // paragraph's own eolPos). Leaving textLineStarts stale (still sized/pointing at the old
-    // content) while textContent/paragraphs get replaced below produces an inconsistent memo
-    // that ACAPI_Element_Change silently refuses to persist - confirmed live: this was the
-    // reason content edits never stuck. Free both stale handles so Archicad rebuilds
-    // textLineStarts fresh from the new paragraphs, the same as it does on a brand new element.
+    // Existing paragraphs (sized for the old content) and textLineStarts - a separate short** array
+    // of line-start indices into textContent, distinct from each paragraph's own eolPos - must go
+    // before the new content is set: leaving textLineStarts stale while textContent/paragraphs get
+    // replaced produces an inconsistent memo that ACAPI_Element_Change silently refuses to persist
+    // (confirmed live). Archicad rebuilds textLineStarts from the new paragraphs, as it does on a
+    // brand new element. The paragraphs handle owns each paragraph's separately allocated run/tab/
+    // eolPos arrays, so it is disposed with ACAPI_DisposeParagraphsHdl (the DevKit's own way, see
+    // the Element_Test example), not with a plain BMKillHandle that would leak those inner arrays.
     if (memo.paragraphs != nullptr) {
-        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.paragraphs));
+        ACAPI_DisposeParagraphsHdl (&memo.paragraphs);
+        memo.paragraphs = nullptr;
     }
     if (memo.textLineStarts != nullptr) {
         BMKillHandle (reinterpret_cast<GSHandle*> (&memo.textLineStarts));
@@ -3064,12 +3083,17 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
 
     memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
     SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, numOfRuns, textData.nLine);
+    // A paragraph carries its own justification (API_ParagraphType::just, see the DevKit's
+    // Element_Test example); keep it in step with the element-level setting.
+    (*memo.paragraphs)[0].just = textData.just;
 
     if (hasRuns) {
+        // Runs override pen/face/font/size only; the style-level effects (strikeout, super/subscript,
+        // protected) apply to every run, as they do for a single-run content.
         Int32 runFrom = 0;
         for (Int32 i = 0; i < numOfRuns; ++i) {
             const Int32 runRange = runTexts[i].GetLength ();
-            SetRun (memo.paragraphs, 0, static_cast<UInt32> (i), runFrom, runRange, runPens[i], runFaceBits[i], runFonts[i], 0, runSizes[i]);
+            SetRun (memo.paragraphs, 0, static_cast<UInt32> (i), runFrom, runRange, runPens[i], runFaceBits[i], runFonts[i], textData.effectsBits, runSizes[i]);
             runFrom += runRange;
         }
     } else {
@@ -3120,17 +3144,33 @@ void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
         return;
     }
 
-    const API_ParagraphType& paragraph = (*memo.paragraphs)[0];
-    const UInt32 nRuns = (paragraph.run != nullptr) ? static_cast<UInt32> (BMGetPtrSize (reinterpret_cast<GSPtr> (paragraph.run)) / sizeof (API_RunType)) : 0;
-    if (nRuns <= 1) {
+    // Every paragraph is read, not only the first: a text placed from the UI may carry one paragraph
+    // per line, and a style-only ModifyTexts/ModifyLabels rebuilds the content from what is returned
+    // here, so anything skipped would be lost. A run's `from` is relative to its paragraph (DevKit
+    // Element_Test example: paragraph 1 starts at 16, its runs at 0 and 9), and neither the runs nor
+    // the paragraph ranges cover the line-end characters between them, so each run's text extends
+    // to the start of the next run - concatenating the runs gives back the whole content.
+    struct RunSpan { UIndex start; const API_RunType* run; };
+    GS::Array<RunSpan> spans;
+    for (UInt32 p = 0; p < nParagraphs; ++p) {
+        const API_ParagraphType& paragraph = (*memo.paragraphs)[p];
+        const UInt32 nRuns = (paragraph.run != nullptr) ? static_cast<UInt32> (BMGetPtrSize (reinterpret_cast<GSPtr> (paragraph.run)) / sizeof (API_RunType)) : 0;
+        for (UInt32 i = 0; i < nRuns; ++i) {
+            spans.Push (RunSpan { static_cast<UIndex> (paragraph.from + paragraph.run[i].from), &paragraph.run[i] });
+        }
+    }
+    if (spans.GetSize () <= 1) {
         return;
     }
 
+    const USize contentLength = content.GetLength ();
     const auto& runList = os.AddList<GS::ObjectState> ("runs");
-    for (UInt32 i = 0; i < nRuns; ++i) {
-        const API_RunType& run = paragraph.run[i];
+    for (UIndex i = 0; i < spans.GetSize (); ++i) {
+        const UIndex start = (i == 0) ? 0 : GS::Min (spans[i].start, contentLength);
+        const UIndex end = (i + 1 < spans.GetSize ()) ? GS::Min (spans[i + 1].start, contentLength) : contentLength;
+        const API_RunType& run = *spans[i].run;
         GS::ObjectState runOS;
-        runOS.Add ("text", GS::UniString (content.GetSubstring (static_cast<UIndex> (run.from), static_cast<USize> (run.range))));
+        runOS.Add ("text", GS::UniString (content.GetSubstring (start, end > start ? end - start : 0)));
         runOS.Add ("penIndex", run.pen);
         runOS.Add ("fontIndex", run.font);
         runOS.Add ("bold", (run.faceBits & APIFace_Bold) != 0);
