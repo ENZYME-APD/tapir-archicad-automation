@@ -345,7 +345,7 @@ GS::Optional<GS::UniString> GetAutoTextNameCommand::GetRawResponseSchema () cons
 
 // Resolves a single key against an already-fetched generic autotext list (avoids
 // re-enumerating the project info fields once per key when called from a batch).
-static GS::ObjectState ResolveAutoTextName (const GS::UniString& key, const GS::Array<GS::ArrayFB<GS::UniString, 3>>& genericAutoTexts)
+static GS::ObjectState ResolveAutoTextName (const GS::UniString& key, GSErrCode genericAutoTextsErr, const GS::Array<GS::ArrayFB<GS::UniString, 3>>& genericAutoTexts)
 {
     if (key.IsEmpty ()) {
         return CreateErrorResponse (APIERR_BADPARS, "Empty autotext key.");
@@ -370,7 +370,11 @@ static GS::ObjectState ResolveAutoTextName (const GS::UniString& key, const GS::
     // Generic (project-level) autotext key: the SDK has no single-key metadata lookup for
     // these (ACAPI_AutoText_InterpretAutoText resolves the *value*, not the name), so the
     // small, fixed list of project info fields is matched against the list fetched once
-    // upfront by the caller, instead of being re-fetched for every key in the batch.
+    // upfront by the caller, instead of being re-fetched for every key in the batch. A failed
+    // fetch is reported as such, not as an unknown key.
+    if (genericAutoTextsErr != NoError) {
+        return CreateErrorResponse (genericAutoTextsErr, "Failed to retrieve the autotexts.");
+    }
     for (const auto& autoText : genericAutoTexts) {
         if (autoText[1] == key) {
             return GS::ObjectState ("name", autoText[0]);
@@ -388,12 +392,12 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
     }
 
     GS::Array<GS::ArrayFB<GS::UniString, 3>> genericAutoTexts;
-    ACAPI_AutoText_GetAutoTexts (&genericAutoTexts, APIAutoText_All);
+    const GSErrCode genericAutoTextsErr = ACAPI_AutoText_GetAutoTexts (&genericAutoTexts, APIAutoText_All);
 
     GS::ObjectState response;
     const auto& listAdder = response.AddList<GS::ObjectState> ("autoTextNames");
     for (const GS::UniString& key : keys) {
-        listAdder (ResolveAutoTextName (key, genericAutoTexts));
+        listAdder (ResolveAutoTextName (key, genericAutoTextsErr, genericAutoTexts));
     }
 
     return response;
