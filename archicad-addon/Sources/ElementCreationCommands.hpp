@@ -199,6 +199,11 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
 // explicitly given per-run style fields (pen, font, faces, height, effects) applied to every run,
 // as a multistyle element takes those from its runs rather than from the element-level fields.
 GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams);
+// Whether a style change has to be written into the runs: only the fields a run carries (pen,
+// font, faces, height, effects) need the content rebuilt; the element-level ones (angle, anchor,
+// justification, frame, ...) apply through their own masks, leaving the content - and any
+// autotext reference in it - untouched.
+bool StyleNeedsContentRebuild (const GS::ObjectState& style);
 // Builds memo.textContent/paragraphs from either a "runs" array or a plain "text" string.
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters);
 

@@ -11,8 +11,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ModifyTexts",
                 "Modify standalone Text elements. Only the connected optional inputs are changed on the " +
-                "elements. A change of the text or of a style input rebuilds the content as one paragraph, " +
-                "which makes the element auto-width. Multi-run content (runs), effects, the text frame and " +
+                "elements. A change of the text, or of the pen, font, face or height, rebuilds the content as " +
+                "one paragraph, which makes the element auto-width; the other inputs leave the content as it is. Multi-run content (runs), effects, the text frame and " +
                 "the anchor can be changed through the AdditionalSettings input (runs, style.effectStrikeout, " +
                 "style.textFrameShape, style.anchor, etc.).",
                 GroupNames.ElementModification)

@@ -4907,7 +4907,7 @@ var gCommands = [{
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of text, runs or style rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does; on a multi-run text a style change is applied to every run.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run text applies that style to every run; the other style fields leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -4953,7 +4953,7 @@ var gCommands = [{
         "properties": {
             "labelsWithDetails": {
                 "type": "array",
-                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of text, runs or style rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does; on a multi-run label a style change is applied to every run.",
+                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {

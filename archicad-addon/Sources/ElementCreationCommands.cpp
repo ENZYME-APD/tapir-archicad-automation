@@ -2076,7 +2076,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of text, runs or style rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does; on a multi-run text a style change is applied to every run.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run text applies that style to every run; the other style fields leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -2165,15 +2165,16 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             const GS::ObjectState* styleOS = item.Get ("style");
-            const bool styleChanged = (styleOS != nullptr);
-            if (styleChanged) {
+            if (styleOS != nullptr) {
                 // Apply BEFORE touching content: for a multistyle element (paragraphs/runs -
-                // which every Tapir-created/modified Text has), Archicad ignores these top-level
-                // fields entirely and only honours the per-run pen/faceBits/font/size stored in
-                // the memo. Setting them here first means the content rebuild below (which is
-                // ALWAYS needed when style changes, even with no new text) picks up the new style.
+                // which every Tapir-created/modified Text has), Archicad honours the per-run
+                // pen/faceBits/font/size stored in the memo over these top-level fields, so a
+                // change of those is written into the runs by the content rebuild below. The
+                // element-level fields apply through their own masks without a rebuild, which
+                // keeps the content, and any autotext reference in it, as it is.
                 TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
             }
+            const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
 
             API_ElementMemo memo = {};
             const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -2245,7 +2246,7 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
         "properties": {
             "labelsWithDetails": {
                 "type": "array",
-                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of text, runs or style rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does; on a multi-run label a style change is applied to every run.",
+                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -2344,13 +2345,12 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
 
             if (element.label.labelClass == APILblClass_Text) {
                 const GS::ObjectState* styleOS = item.Get ("style");
-                const bool styleChanged = (styleOS != nullptr);
-                if (styleChanged) {
-                    // Same ordering requirement as ModifyTexts: must run before the content
-                    // rebuild below, since Archicad ignores these top-level fields on an
-                    // existing multistyle element and only honours the per-run values.
+                if (styleOS != nullptr) {
+                    // Same as ModifyTexts: applied before the content rebuild, which only the
+                    // run-level fields need.
                     TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
                 }
+                const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
                 // See ModifyTexts for why the value-returning overloads are required here (the
                 // pointer-returning Get never detects a plain scalar/array field).
                 GS::UniString explicitContentTextCheck;
@@ -3235,6 +3235,18 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
     return NoError;
 }
 
+bool StyleNeedsContentRebuild (const GS::ObjectState& style)
+{
+    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "bold", "italic", "underline", "height",
+                                                  "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
+    for (const char* field : runLevelFields) {
+        if (style.Contains (GS::String (field))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams)
 {
     GS::ObjectState readBack;
@@ -3249,7 +3261,9 @@ GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::Obj
 
     GS::Array<GS::ObjectState> runs;
     if (!readBack.Get ("runs", runs) || runs.IsEmpty ()) {
-        // A single run is rebuilt from the element-level fields, which already carry the style.
+        // No run information at all (a memo without paragraphs): the content is rebuilt as one
+        // run from the element-level fields, which already carry the style. A single styled run
+        // is reported by AddTextContent and merged below like any other.
         return NoError;
     }
 

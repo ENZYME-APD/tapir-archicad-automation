@@ -11,8 +11,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "ModifyLabels",
                 "Modify Label elements. Only the connected optional inputs are changed on the elements. " +
-                "The text inputs apply to text labels only; a change of the text or of a text style input " +
-                "rebuilds the content as one paragraph, which makes the label auto-width. The leader line " +
+                "The text inputs apply to text labels only; a change of the text, or of the pen, font, face or " +
+                "height, rebuilds the content as one paragraph, which makes the label auto-width. The leader line " +
                 "inputs apply to both label classes. Multi-run content, effects, the arrow pen, the anchor " +
                 "point and the symbol label settings can be changed through the AdditionalSettings input " +
                 "(runs, style.effectStrikeout, leaderLine.arrowPenIndex, leaderLine.anchorPoint, symbolStyle, etc.).",
