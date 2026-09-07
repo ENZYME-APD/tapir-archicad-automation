@@ -91,9 +91,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "WitnessNodeStatuses",
                 "Node status at each witness point, reserved by Archicad for section dimensions (one branch per dimension).");
 
-            OutIntegerTree(
+            OutNumbers(
                 "WitnessNodeIds",
-                "Polygon vertex id of the base element at each witness point (one branch per dimension).");
+                "Polygon vertex id of the base element at each witness point (one branch per dimension). " +
+                "A number rather than an integer, as the id is unsigned on the Archicad side.");
         }
 
         protected override void SetOutputs(
