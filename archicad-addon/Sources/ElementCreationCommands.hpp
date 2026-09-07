@@ -198,7 +198,9 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
 // The content to rebuild for a style-only modify: the element's own content read back, with the
 // explicitly given per-run style fields (pen, font, faces, height, effects) applied to every run,
 // as a multistyle element takes those from its runs rather than from the element-level fields.
-GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams);
+// Returns an error response when the content cannot be read, or when it holds an autotext run
+// (a protected run), which a rebuild from the read-back could replace with its resolved value.
+GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams);
 // Whether a style change has to be written into the runs: only the fields a run carries (pen,
 // font, faces, height, effects) need the content rebuilt; the element-level ones (angle, anchor,
 // justification, frame, ...) apply through their own masks, leaving the content - and any

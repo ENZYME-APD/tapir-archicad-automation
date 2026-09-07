@@ -2199,9 +2199,9 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                     // content (every run of it, so multi-run content is not collapsed) with the
                     // given style merged into the runs, and rebuild from that so the new style
                     // actually applies. A failed read must not turn into an empty rebuild.
-                    const GSErrCode readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
-                    if (readErr != NoError) {
-                        executionResults (CreateFailedExecutionResult (readErr, "Failed to read the content of the Text."));
+                    auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                    if (readErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*readErr));
                         continue;
                     }
                 }
@@ -2362,9 +2362,9 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                     GS::ObjectState contentParams = item;
                     if (!explicitContent) {
                         // See ModifyTexts: the content read back with the style merged into its runs.
-                        const GSErrCode readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
-                        if (readErr != NoError) {
-                            executionResults (CreateFailedExecutionResult (readErr, "Failed to read the content of the Label."));
+                        auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                        if (readErr.HasValue ()) {
+                            executionResults (CreateFailedExecutionResult (*readErr));
                             continue;
                         }
                     }
@@ -3247,12 +3247,12 @@ bool StyleNeedsContentRebuild (const GS::ObjectState& style)
     return false;
 }
 
-GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams)
+GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams)
 {
     GS::ObjectState readBack;
     const GSErrCode err = AddTextContent (readBack, elemGuid);
     if (err != NoError) {
-        return err;
+        return CreateErrorResponse (err, "Failed to read the content of the element.");
     }
 
     GS::UniString text;
@@ -3264,7 +3264,17 @@ GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::Obj
         // No run information at all (a memo without paragraphs): the content is rebuilt as one
         // run from the element-level fields, which already carry the style. A single styled run
         // is reported by AddTextContent and merged below like any other.
-        return NoError;
+        return {};
+    }
+
+    // A protected run is an autotext reference. Whether the memo reads such a run back as its
+    // key or as its resolved value is not established, so the rebuild is refused rather than
+    // risk turning the reference into static text.
+    for (const GS::ObjectState& run : runs) {
+        bool protectedRun = false;
+        if (run.Get ("effectProtected", protectedRun) && protectedRun) {
+            return CreateErrorResponse (APIERR_REFUSEDCMD, "The content has an autotext run; a change of pen, font, faces, height or effects would rebuild it from its read-back. Give the content explicitly (text or runs), or change only the element-level style fields.");
+        }
     }
 
     // Every run keeps its own values except the ones the style names: those are set on all runs,
@@ -3296,7 +3306,7 @@ GSErrCode ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::Obj
         }
         runList (mergedRun);
     }
-    return NoError;
+    return {};
 }
 
 void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
