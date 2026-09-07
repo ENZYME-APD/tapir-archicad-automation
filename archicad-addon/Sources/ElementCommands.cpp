@@ -1119,7 +1119,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     GS::ObjectState styleOS;
                     TextLabelDetails::AddTextStyleDetails (styleOS, elem.label.u.text, true);
                     typeSpecificDetails.Add ("style", styleOS);
-                    TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid);
+                    if (TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid) != NoError) {
+                        // The fields are required by the schema; an unreadable memo reads as empty content.
+                        typeSpecificDetails.Add ("text", GS::EmptyUniString);
+                        typeSpecificDetails.Add ("paragraphCount", 0);
+                    }
                 } else {
                     GS::ObjectState symbolStyleOS;
                     TextLabelDetails::AddLabelSymbolStyleDetails (symbolStyleOS, elem.label);
@@ -1141,7 +1145,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 GS::ObjectState styleOS;
                 TextLabelDetails::AddTextStyleDetails (styleOS, elem.text, true);
                 typeSpecificDetails.Add ("style", styleOS);
-                TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid);
+                if (TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid) != NoError) {
+                    // The fields are required by the schema; an unreadable memo reads as empty content.
+                    typeSpecificDetails.Add ("text", GS::EmptyUniString);
+                    typeSpecificDetails.Add ("paragraphCount", 0);
+                }
                 break;
             }
 
