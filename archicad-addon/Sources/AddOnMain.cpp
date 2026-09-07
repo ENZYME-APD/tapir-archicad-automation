@@ -241,6 +241,14 @@ GSErrCode Initialize (void)
             projectCommands, "1.1.5",
             "Sets the story sructure of the currently loaded project."
         );
+        err |= RegisterCommand<GetAutoTextKeysCommand> (
+            projectCommands, "1.5.9",
+            "Retrieves the available autotext keys (name and embeddable key), optionally for a specific element. Embed a key in a Text or Label content by surrounding it with '<' and '>'."
+        );
+        err |= RegisterCommand<GetAutoTextNameCommand> (
+            projectCommands, "1.5.9",
+            "Retrieves the display names of one or more autotext keys (as returned inside a '<...>' embedded key), with a direct guid lookup for property-based keys instead of enumerating every property definition."
+        );
         err |= RegisterCommand<GetHotlinksCommand> (
             projectCommands, "0.1.0",
             "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project."
@@ -541,6 +549,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ModifyLampsCommand> (
             elementCommands, "1.5.7",
             "Modifies Lamp elements based on the given parameters."
+        );
+        err |= RegisterCommand<ModifyTextsCommand> (
+            elementCommands, "1.5.9",
+            "Modifies standalone Text elements based on the given parameters."
+        );
+        err |= RegisterCommand<ModifyLabelsCommand> (
+            elementCommands, "1.5.9",
+            "Modifies Label elements based on the given parameters."
         );
         err |= RegisterCommand<GetElementPreviewImageCommand> (
             elementCommands, "1.2.7",

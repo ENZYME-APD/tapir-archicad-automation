@@ -2464,7 +2464,7 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
-    
+
         internal static System.Drawing.Bitmap GetPointFromUser
         {
             get {
@@ -2544,5 +2544,37 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
-}
+
+        internal static System.Drawing.Bitmap ModifyTexts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyTexts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyLabels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyLabels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAutoTextKeys
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAutoTextKeys", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAutoTextName
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAutoTextName", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+    }
 }

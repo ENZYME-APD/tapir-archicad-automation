@@ -427,6 +427,84 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "GetAutoTextKeys",
+                "version": "1.5.9",
+                "description": "Retrieves the available autotext keys (name and embeddable key), optionally for a specific element. Embed a key in a Text or Label content by surrounding it with '<' and '>'.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The element to retrieve context dependent autotext keys for (its own properties, plus the ones common to all element types, e.g. 'Element ID', 'Area'). When omitted, only the autotext keys common to all element types are returned."
+            }
+        },
+        "additionalProperties": false
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "autoTextKeys": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The autotext's name, as shown in the Insert Autotext dialog of Archicad."
+                        },
+                        "key": {
+                            "type": "string",
+                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>', e.g. '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "key"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextKeys"
+        ]
+    }
+            },{
+                "name": "GetAutoTextName",
+                "version": "1.5.9",
+                "description": "Retrieves the display names of one or more autotext keys (as returned inside a '<...>' embedded key), with a direct guid lookup for property-based keys instead of enumerating every property definition.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "keys": {
+                "type": "array",
+                "description": "Autotext keys as returned by GetAutoTextKeys or GetProjectInfoFields (without the surrounding '<' and '>'), e.g. 'PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548' or 'PROJECTNAME'.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keys"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "autoTextNames": {
+                "$ref": "#/AutoTextNamesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextNames"
+        ]
+    }
+            },{
                 "name": "GetHotlinks",
                 "version": "0.1.0",
                 "description": "Gets the file system locations (path) of the hotlink modules. The hotlinks can have tree hierarchy in the project.",
@@ -2883,7 +2961,7 @@ var gCommands = [{
             },{
                 "name": "CreateAssociativeDimensionsOnSection",
                 "version": "1.4.0",
-                "description": "Creates associative linear dimensions on section elements using common wall, slab, beam, column and opening presets.",
+                "description": "Creates associative linear dimensions on section elements using common wall, slab, beam, column and opening presets. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2892,7 +2970,16 @@ var gCommands = [{
                 "items": {
                     "type": "object",
                     "properties": {
-                        "sectionElementId": { "$ref": "#/ElementId" },
+                        "sectionElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of a single section element. Only one of sectionElementId and sectionElementIds can be given."
+                        },
+                        "sectionElementIds": {
+                            "type": "array",
+                            "items": { "$ref": "#/ElementId" },
+                            "minItems": 1,
+                            "description": "A list of section elements whose preset points are merged into one continuous dimension chain. Only one of sectionElementId and sectionElementIds can be given."
+                        },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "preset": {
                             "type": "string",
@@ -2918,7 +3005,7 @@ var gCommands = [{
                         "placeOnTop": { "type": "boolean" }
                     },
                     "additionalProperties": false,
-                    "required": ["sectionElementId", "referencePoint", "preset"]
+                    "required": ["referencePoint", "preset"]
                 }
             }
         },
@@ -3940,11 +4027,34 @@ var gCommands = [{
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
-                        "description" : "The parent element if the label is an associative label."	
+                        "description" : "The parent element if the label is an associative label."
                     },
-                    "text": { 
+                    "labelClass": {
                         "type": "string",
-                        "description": "The text content if the label is a text label."
+                        "enum": ["Text", "Symbol"],
+                        "description": "Whether this is a textual or a symbol label. Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The text content if the label is a text label. Ignored if 'runs' is also given."
+                    },
+                    "runs": {
+                        "type": "array",
+                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                        "items": { "$ref": "#/TextRunDetails" },
+                        "minItems": 1
+                    },
+                    "style": {
+                        "$ref": "#/TextStyleSettableDetails",
+                        "description": "Style settings for a text label (font, pen, size, frame, etc). Ignored for symbol labels."
+                    },
+                    "symbolStyle": {
+                        "$ref": "#/LabelSymbolStyleSettableDetails",
+                        "description": "Style settings specific to a symbol label. Ignored for text labels."
+                    },
+                    "leaderLine": {
+                        "$ref": "#/LabelLeaderLineSettableDetails",
+                        "description": "Leader line, frame and arrow settings, shared by both label classes."
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
@@ -4011,24 +4121,34 @@ var gCommands = [{
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content. Newlines create multiple lines."
+                        "description": "The text content. Newlines create multiple lines. Ignored if 'runs' is also given."
+                    },
+                    "runs": {
+                        "type": "array",
+                        "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                        "items": { "$ref": "#/TextRunDetails" },
+                        "minItems": 1
                     },
                     "height": {
                         "type": "number",
-                        "description": "The character height in millimeters. Optional; defaults to the Text tool default."
+                        "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
                     },
                     "pen": {
                         "type": "integer",
-                        "description": "Optional pen attribute index."
+                        "description": "Optional pen attribute index. Equivalent to style.penIndex."
                     },
                     "angle": {
                         "type": "number",
-                        "description": "Optional rotation angle in radians."
+                        "description": "Optional rotation angle in radians. Equivalent to style.angle."
                     },
                     "justification": {
                         "type": "string",
-                        "description": "Optional text justification.",
+                        "description": "Optional text justification. Equivalent to style.justification.",
                         "enum": ["Left", "Center", "Right", "Full"]
+                    },
+                    "style": {
+                        "$ref": "#/TextStyleSettableDetails",
+                        "description": "Full style settings (font, effects, frame, anchor, etc). height/pen/angle/justification above take precedence over the same fields here if both are given."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -4037,8 +4157,11 @@ var gCommands = [{
                 },
                 "additionalProperties": false,
                 "required": [
-                    "coordinate",
-                    "text"
+                    "coordinate"
+                ],
+                "anyOf": [
+                    { "required": ["text"] },
+                    { "required": ["runs"] }
                 ]
             }
         }
@@ -4780,6 +4903,92 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "ModifyTexts",
+                "version": "1.5.9",
+                "description": "Modifies standalone Text elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "textsWithDetails": {
+                "type": "array",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run text applies that style to every run; the other style fields leave the content as it is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "coordinate": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new placement position. As in CreateTexts, the z value selects the floor when floorIndex is omitted."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
+                        },
+                        "text": { "type": "string" },
+                        "runs": {
+                            "type": "array",
+                            "items": { "$ref": "#/TextRunDetails" },
+                            "minItems": 1
+                        },
+                        "style": { "$ref": "#/TextStyleSettableDetails" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["textsWithDetails"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    }
+            },{
+                "name": "ModifyLabels",
+                "version": "1.5.9",
+                "description": "Modifies Label elements based on the given parameters.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "labelsWithDetails": {
+                "type": "array",
+                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "text": { "type": "string" },
+                        "runs": {
+                            "type": "array",
+                            "items": { "$ref": "#/TextRunDetails" },
+                            "minItems": 1
+                        },
+                        "style": { "$ref": "#/TextStyleSettableDetails" },
+                        "symbolStyle": { "$ref": "#/LabelSymbolStyleSettableDetails" },
+                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["labelsWithDetails"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    }
+            },{
                 "name": "GetElementPreviewImage",
                 "version": "1.2.7",
                 "description": "Returns the preview image of the given element.",
@@ -5309,7 +5518,7 @@ var gCommands = [{
             },{
                 "name": "ApplyFavoritesToElements",
                 "version": "1.5.4",
-                "description": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves or resizes the target element. By default settings, classifications, categories and properties are all applied; each can be opted out of individually.",
+                "description": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves or resizes the target element. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -5335,7 +5544,7 @@ var gCommands = [{
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc. - never geometry). For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",

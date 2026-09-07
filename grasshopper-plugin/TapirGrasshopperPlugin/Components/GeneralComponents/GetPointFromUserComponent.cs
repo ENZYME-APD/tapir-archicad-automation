@@ -34,7 +34,25 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         {
             OutPoints(
                 "Point",
-                "The point the user clicked. Empty when the user pressed Escape.");
+                "The point the user clicked. When the user presses Escape the command fails " +
+                "and the component reports the error instead.");
+        }
+
+        // The point input is modal in Archicad and blocks every other command,
+        // so it is only asked for on the Refresh button, never on placement or
+        // on an upstream change.
+        protected override void SolveInstance(
+            IGH_DataAccess da)
+        {
+            if (!ManualRefreshRequested)
+            {
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Remark,
+                    "Press Refresh to ask for a point in Archicad");
+                return;
+            }
+
+            Solve(da);
         }
 
         protected override void Solve(

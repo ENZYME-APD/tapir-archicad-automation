@@ -76,6 +76,13 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
     return error;
 }
 
+GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse)
+{
+    GS::ObjectState result = errorResponse;
+    result.Add ("success", false);
+    return result;
+}
+
 GS::ObjectState CreateSuccessfulExecutionResult ()
 {
     return GS::ObjectState (

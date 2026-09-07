@@ -45,6 +45,8 @@ private:
 
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
 GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniString& errorMessage);
+// The FailedExecutionResult shape for an error already built with CreateErrorResponse.
+GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);

@@ -1973,7 +1973,7 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
 
             auto applyErr = ApplyObjectLampDetails (element, memo, &mask, GetStories (), item);
             if (applyErr.HasValue ()) {
-                executionResults (*applyErr);
+                executionResults (CreateFailedExecutionResult (*applyErr));
                 continue;
             }
 
@@ -2057,6 +2057,344 @@ GS::Optional<GS::UniString> ModifyLampsCommand::GetRawResponseSchema () const
 GS::ObjectState ModifyLampsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     return ExecuteModifyObjectOrLamp (parameters, "lampsWithDetails", API_LampID, "ModifyLamps");
+}
+
+ModifyTextsCommand::ModifyTextsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyTextsCommand::GetName () const
+{
+    return "ModifyTexts";
+}
+
+GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "textsWithDetails": {
+                "type": "array",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run text applies that style to every run; the other style fields leave the content as it is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "coordinate": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new placement position. As in CreateTexts, the z value selects the floor when floorIndex is omitted."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
+                        },
+                        "text": { "type": "string" },
+                        "runs": {
+                            "type": "array",
+                            "items": { "$ref": "#/TextRunDetails" },
+                            "minItems": 1
+                        },
+                        "style": { "$ref": "#/TextStyleSettableDetails" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["textsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyTextsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("textsWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const Stories stories = GetStories ();
+
+    ACAPI_CallUndoableCommand ("ModifyTexts", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_TextID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Text."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            const GS::ObjectState* coordinateOS = item.Get ("coordinate");
+            if (coordinateOS != nullptr) {
+                const API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (*coordinateOS);
+                element.text.loc.x = apiCoordinate.x;
+                element.text.loc.y = apiCoordinate.y;
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, loc);
+                // Same floor resolution as CreateTexts: an explicit floorIndex wins, otherwise z picks the floor.
+                element.header.floorInd = ResolveFloorIndexAndOffset (item, "floorIndex", apiCoordinate.z, stories).first;
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            } else if (item.Get ("floorIndex", element.header.floorInd)) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+
+            const GS::ObjectState* styleOS = item.Get ("style");
+            if (styleOS != nullptr) {
+                // Apply BEFORE touching content: for a multistyle element (paragraphs/runs -
+                // which every Tapir-created/modified Text has), Archicad honours the per-run
+                // pen/faceBits/font/size stored in the memo over these top-level fields, so a
+                // change of those is written into the runs by the content rebuild below. The
+                // element-level fields apply through their own masks without a rebuild, which
+                // keeps the content, and any autotext reference in it, as it is.
+                TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, &mask, false);
+            }
+            const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
+
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            bool contentChanged = false;
+            // item.Get ("text") != nullptr (the pointer-returning overload) never detects a plain
+            // scalar/string field - only nested objects - so it always evaluated to nullptr here and
+            // silently skipped every content edit. Use the value-returning overloads instead, exactly
+            // like the check they gate against below.
+            GS::UniString explicitContentTextCheck;
+            GS::Array<GS::ObjectState> explicitContentRunsCheck;
+            const bool explicitContent = item.Get ("text", explicitContentTextCheck) || item.Get ("runs", explicitContentRunsCheck);
+            if (explicitContent || styleChanged) {
+                // Start from a BLANK memo, not one fetched via ACAPI_Element_GetMemo first: confirmed
+                // live (by cross-checking against Archicad's own official fix, commit a2a111b/54cbd36
+                // upstream) that ACAPI_Element_Change only persists memo-based text content when fed a
+                // from-scratch API_ElementMemo{} together with the NON-Uni memomask below - fetching
+                // the existing memo first (as this used to do, with the *Uni masks) silently failed to
+                // persist despite ApplyTextContent replacing textContent/paragraphs correctly.
+                GS::ObjectState contentParams = item;
+                if (!explicitContent) {
+                    // Style-only change on an existing multistyle element: re-fetch the current
+                    // content (every run of it, so multi-run content is not collapsed) with the
+                    // given style merged into the runs, and rebuild from that so the new style
+                    // actually applies. A failed read must not turn into an empty rebuild.
+                    auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                    if (readErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*readErr));
+                        continue;
+                    }
+                }
+                auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.text, contentParams);
+                if (applyErr.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (*applyErr));
+                    continue;
+                }
+                contentChanged = true;
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+            }
+
+            // withdel=false was tried and made things WORSE (even the style fields stopped
+            // applying) - confirmed live. withdel=true is required here.
+            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? (APIMemoMask_TextContent | APIMemoMask_Paragraph) : 0, true);
+            executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Text."));
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+ModifyLabelsCommand::ModifyLabelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyLabelsCommand::GetName () const
+{
+    return "ModifyLabels";
+}
+
+GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "labelsWithDetails": {
+                "type": "array",
+                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "text": { "type": "string" },
+                        "runs": {
+                            "type": "array",
+                            "items": { "$ref": "#/TextRunDetails" },
+                            "minItems": 1
+                        },
+                        "style": { "$ref": "#/TextStyleSettableDetails" },
+                        "symbolStyle": { "$ref": "#/LabelSymbolStyleSettableDetails" },
+                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["labelsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyLabelsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("labelsWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("ModifyLabels", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_LabelID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Label."));
+                continue;
+            }
+
+            // The fields of the other label class are refused, not silently ignored.
+            {
+                GS::UniString classCheckText;
+                GS::Array<GS::ObjectState> classCheckRuns;
+                const bool hasTextFields = item.Get ("text", classCheckText) || item.Get ("runs", classCheckRuns) || item.Get ("style") != nullptr;
+                const bool hasSymbolFields = item.Get ("symbolStyle") != nullptr;
+                if (element.label.labelClass == APILblClass_Text && hasSymbolFields) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "symbolStyle applies to a Symbol label only; this is a Text label."));
+                    continue;
+                }
+                if (element.label.labelClass != APILblClass_Text && hasTextFields) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "text, runs and style apply to a Text label only; this is a Symbol label."));
+                    continue;
+                }
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            const GS::ObjectState* leaderLineOS = item.Get ("leaderLine");
+            if (leaderLineOS != nullptr) {
+                auto leaderLineErr = TextLabelDetails::ApplyLabelLeaderLineSettableDetails (*leaderLineOS, element.label, &mask);
+                if (leaderLineErr.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (*leaderLineErr));
+                    continue;
+                }
+            }
+
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            bool contentChanged = false;
+
+            if (element.label.labelClass == APILblClass_Text) {
+                const GS::ObjectState* styleOS = item.Get ("style");
+                if (styleOS != nullptr) {
+                    // Same as ModifyTexts: applied before the content rebuild, which only the
+                    // run-level fields need.
+                    TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, &mask, true);
+                }
+                const bool styleChanged = (styleOS != nullptr) && TextLabelDetails::StyleNeedsContentRebuild (*styleOS);
+                // See ModifyTexts for why the value-returning overloads are required here (the
+                // pointer-returning Get never detects a plain scalar/array field).
+                GS::UniString explicitContentTextCheck;
+                GS::Array<GS::ObjectState> explicitContentRunsCheck;
+                const bool explicitContent = item.Get ("text", explicitContentTextCheck) || item.Get ("runs", explicitContentRunsCheck);
+                if (explicitContent || styleChanged) {
+                    // See ModifyTexts for why: blank memo + non-Uni memomask, not a memo fetched
+                    // via GetMemo first with the *Uni masks.
+                    GS::ObjectState contentParams = item;
+                    if (!explicitContent) {
+                        // See ModifyTexts: the content read back with the style merged into its runs.
+                        auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                        if (readErr.HasValue ()) {
+                            executionResults (CreateFailedExecutionResult (*readErr));
+                            continue;
+                        }
+                    }
+                    auto applyErr = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, contentParams);
+                    if (applyErr.HasValue ()) {
+                        executionResults (CreateFailedExecutionResult (*applyErr));
+                        continue;
+                    }
+                    contentChanged = true;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nLine);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.width);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.nonBreaking);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.useEolPos);
+                }
+            } else {
+                const GS::ObjectState* symbolStyleOS = item.Get ("symbolStyle");
+                if (symbolStyleOS != nullptr) {
+                    TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, &mask);
+                }
+            }
+
+            // withdel=true required - see ModifyTexts.
+            err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? (APIMemoMask_TextContent | APIMemoMask_Paragraph) : 0, true);
+            executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Label."));
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 CreateMeshesCommand::CreateMeshesCommand () :
@@ -2256,11 +2594,34 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
-                        "description" : "The parent element if the label is an associative label."	
+                        "description" : "The parent element if the label is an associative label."
                     },
-                    "text": { 
+                    "labelClass": {
                         "type": "string",
-                        "description": "The text content if the label is a text label."
+                        "enum": ["Text", "Symbol"],
+                        "description": "Whether this is a textual or a symbol label. Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity)."
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The text content if the label is a text label. Ignored if 'runs' is also given."
+                    },
+                    "runs": {
+                        "type": "array",
+                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                        "items": { "$ref": "#/TextRunDetails" },
+                        "minItems": 1
+                    },
+                    "style": {
+                        "$ref": "#/TextStyleSettableDetails",
+                        "description": "Style settings for a text label (font, pen, size, frame, etc). Ignored for symbol labels."
+                    },
+                    "symbolStyle": {
+                        "$ref": "#/LabelSymbolStyleSettableDetails",
+                        "description": "Style settings specific to a symbol label. Ignored for text labels."
+                    },
+                    "leaderLine": {
+                        "$ref": "#/LabelLeaderLineSettableDetails",
+                        "description": "Leader line, frame and arrow settings, shared by both label classes."
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
@@ -2363,6 +2724,10 @@ API_JustID ParseJustificationString (const GS::UniString& justification)
     return APIJust_Left;
 }
 
+// Used by SetDetailsOfElementsCommand's generic Text/Label write case (upstream official fix);
+// TextLabelDetails::ApplyTextContent below is Tapir's own, richer equivalent used by
+// CreateTexts/CreateLabels/ModifyTexts/ModifyLabels - both build memo.textContent/paragraphs but
+// only ApplyTextContent supports multi-run content.
 void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text)
 {
 #ifdef ServerMainVers_2800
@@ -2392,6 +2757,739 @@ void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData,
     textData.nonBreaking = true;
     textData.useEolPos = true;
 }
+
+const char* JustificationToString (API_JustID just)
+{
+    switch (just) {
+        case APIJust_Center: return "Center";
+        case APIJust_Right:  return "Right";
+        case APIJust_Full:   return "Full";
+        default:             return "Left";
+    }
+}
+
+static const char* AnchorToString (API_AnchorID anchor)
+{
+    switch (anchor) {
+        case APIAnc_MT: return "MiddleTop";
+        case APIAnc_RT: return "RightTop";
+        case APIAnc_LM: return "LeftMiddle";
+        case APIAnc_MM: return "MiddleMiddle";
+        case APIAnc_RM: return "RightMiddle";
+        case APIAnc_LB: return "LeftBottom";
+        case APIAnc_MB: return "MiddleBottom";
+        case APIAnc_RB: return "RightBottom";
+        default:        return "LeftTop";
+    }
+}
+
+static API_AnchorID StringToAnchor (const GS::UniString& s)
+{
+    if (s == "MiddleTop")    return APIAnc_MT;
+    if (s == "RightTop")     return APIAnc_RT;
+    if (s == "LeftMiddle")   return APIAnc_LM;
+    if (s == "MiddleMiddle") return APIAnc_MM;
+    if (s == "RightMiddle")  return APIAnc_RM;
+    if (s == "LeftBottom")   return APIAnc_LB;
+    if (s == "MiddleBottom") return APIAnc_MB;
+    if (s == "RightBottom")  return APIAnc_RB;
+    return APIAnc_LT;
+}
+
+#ifdef ServerMainVers_2800
+static const char* TextFrameShapeToString (API_TextFrameShapeTypeID shape)
+{
+    switch (shape) {
+        case API_TextFrameShapeType_Circle:          return "Circle";
+        case API_TextFrameShapeType_RoundedRectangle: return "RoundedRectangle";
+        case API_TextFrameShapeType_Pill:             return "Pill";
+        default:                                      return "Rectangle";
+    }
+}
+
+static API_TextFrameShapeTypeID StringToTextFrameShape (const GS::UniString& s)
+{
+    if (s == "Circle")           return API_TextFrameShapeType_Circle;
+    if (s == "RoundedRectangle") return API_TextFrameShapeType_RoundedRectangle;
+    if (s == "Pill")             return API_TextFrameShapeType_Pill;
+    return API_TextFrameShapeType_Rectangle;
+}
+#endif
+
+static const char* LabelAnchorPointToString (API_LblAnchorID a)
+{
+    switch (a) {
+        case APILbl_TopAnchor:    return "Top";
+        case APILbl_BottomAnchor: return "Bottom";
+        case APILbl_Underlined:   return "Underlined";
+        default:                  return "Middle";
+    }
+}
+
+static API_LblAnchorID StringToLabelAnchorPoint (const GS::UniString& s)
+{
+    if (s == "Top")        return APILbl_TopAnchor;
+    if (s == "Bottom")     return APILbl_BottomAnchor;
+    if (s == "Underlined") return APILbl_Underlined;
+    return APILbl_MiddleAnchor;
+}
+
+static const char* LeaderShapeToString (API_LeaderLineShapeID s)
+{
+    switch (s) {
+        case API_Splinear:   return "Splinear";
+        case API_SquareRoot: return "SquareRoot";
+        default:             return "Segmented";
+    }
+}
+
+static API_LeaderLineShapeID StringToLeaderShape (const GS::UniString& s)
+{
+    if (s == "Splinear")   return API_Splinear;
+    if (s == "SquareRoot") return API_SquareRoot;
+    return API_Segmented;
+}
+
+static const char* LabelTextWayToString (API_DirID d)
+{
+    switch (d) {
+        case APIDir_Horizontal: return "Horizontal";
+        case APIDir_Vertical:   return "Vertical";
+        case APIDir_General:    return "General";
+        default:                return "Parallel";
+    }
+}
+
+static API_DirID StringToLabelTextWay (const GS::UniString& s)
+{
+    if (s == "Horizontal") return APIDir_Horizontal;
+    if (s == "Vertical")   return APIDir_Vertical;
+    if (s == "General")    return APIDir_General;
+    return APIDir_Parallel;
+}
+
+// API_ArrowID has 31 sequential values starting at APIArr_EmptyCirc (= 0, no explicit
+// initialisers); this array is index-parallel to it. Checked against APIdefs_Elements.h of every
+// supported DevKit (AC25 to AC29): the order is the same in all of them, and APIArr_SlashLine75
+// is the LAST value, not adjacent to APIArr_SlashLine90, despite the two looking like they should
+// pair up by name. #/LabelArrowType's enum in CommonSchemaDefinitions.json is documentation only
+// (JSON Schema enum membership doesn't care about order) but is kept in this same order.
+static const char* const kArrowTypeNames[] = {
+    "EmptyCircle", "CrossCircle", "FullCircle",
+    "SlashLine15", "OpenArrow15", "ClosedArrow15", "FullArrow15",
+    "SlashLine30", "OpenArrow30", "ClosedArrow30", "FullArrow30",
+    "SlashLine45", "OpenArrow45", "ClosedArrow45", "FullArrow45",
+    "SlashLine60", "OpenArrow60", "ClosedArrow60", "FullArrow60",
+    "SlashLine90",
+    "PepitaCircle", "BandArrow",
+    "HalfArrowCcw15", "HalfArrowCw15", "HalfArrowCcw30", "HalfArrowCw30",
+    "HalfArrowCcw45", "HalfArrowCw45", "HalfArrowCcw60", "HalfArrowCw60",
+    "SlashLine75"
+};
+constexpr int kArrowTypeCount = sizeof (kArrowTypeNames) / sizeof (kArrowTypeNames[0]);
+
+static const char* ArrowTypeToString (API_ArrowID arrowType)
+{
+    const int idx = static_cast<int> (arrowType);
+    return (idx >= 0 && idx < kArrowTypeCount) ? kArrowTypeNames[idx] : kArrowTypeNames[0];
+}
+
+static API_ArrowID StringToArrowType (const GS::UniString& s)
+{
+    for (int i = 0; i < kArrowTypeCount; ++i) {
+        if (s == kArrowTypeNames[i]) {
+            return static_cast<API_ArrowID> (i);
+        }
+    }
+    return APIArr_EmptyCirc;
+}
+
+namespace TextLabelDetails {
+
+void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly)
+{
+    os.Add ("penIndex", text.pen);
+    os.Add ("fontIndex", text.font);
+    os.Add ("bold", (text.faceBits & APIFace_Bold) != 0);
+    os.Add ("italic", (text.faceBits & APIFace_Italic) != 0);
+    os.Add ("underline", (text.faceBits & APIFace_Underline) != 0);
+    os.Add ("justification", JustificationToString (text.just));
+    os.Add ("height", text.size);
+    os.Add ("spacing", text.spacing);
+    os.Add ("angle", text.angle);
+    os.Add ("effectStrikeout", (text.effectsBits & APIEffect_StrikeOut) != 0);
+    os.Add ("effectSuperscript", (text.effectsBits & APIEffect_SuperScript) != 0);
+    os.Add ("effectSubscript", (text.effectsBits & APIEffect_SubScript) != 0);
+    os.Add ("effectProtected", (text.effectsBits & APIEffect_Protected) != 0);
+    os.Add ("widthFactor", text.widthFactor);
+    os.Add ("charSpaceFactor", text.charSpaceFactor);
+    os.Add ("fixedSize", text.fixedSize);
+    os.Add ("usedContour", text.usedContour);
+    os.Add ("usedFill", text.usedFill);
+    os.Add ("contourPenIndex", text.contourPen);
+    os.Add ("fillPenIndex", text.fillPen);
+    os.Add ("anchor", AnchorToString (text.anchor));
+    os.Add ("fixedAngle", text.fixedAngle);
+    os.Add ("contourOffset", text.contourOffset);
+    os.Add ("flipEnabled", text.flipEnabled);
+#ifdef ServerMainVers_2800
+    os.Add ("textFrameShape", TextFrameShapeToString (text.textFrame.shapeType));
+    os.Add ("textFrameSizeFixed", text.textFrame.isSizeFixed);
+    os.Add ("textFrameFixedWidth", text.textFrame.fixedWidth);
+    os.Add ("textFrameFixedHeight", text.textFrame.fixedHeight);
+#else
+    os.Add ("textFrameShape", "Rectangle");
+    os.Add ("textFrameSizeFixed", false);
+    os.Add ("textFrameFixedWidth", 0.0);
+    os.Add ("textFrameFixedHeight", 0.0);
+#endif
+
+    if (includeReadOnly) {
+        os.Add ("lineCount", text.nLine);
+        os.Add ("boxWidth", text.width);
+        os.Add ("boxHeight", text.height);
+    }
+}
+
+void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion)
+{
+    // Mask bits must target the real top-level union member (API_TextType for a standalone
+    // Text element, API_LabelType::u.text for a text-class Label) - both share byte layout for
+    // 'text' vs 'u.text' (the union starts at offset 0 of API_LabelType), but the macro needs
+    // the exact type name, hence the isLabelUnion branch on every mask line.
+#define TEXT_MASK_SET(fieldPath) \
+    if (mask != nullptr) { \
+        if (isLabelUnion) { ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, u.text.fieldPath); } \
+        else { ACAPI_ELEMENT_MASK_SET (*mask, API_TextType, fieldPath); } \
+    }
+
+    if (details.Get ("penIndex", text.pen)) { TEXT_MASK_SET (pen) }
+    if (details.Get ("fontIndex", text.font)) { TEXT_MASK_SET (font) }
+
+    bool bold = (text.faceBits & APIFace_Bold) != 0;
+    bool italic = (text.faceBits & APIFace_Italic) != 0;
+    bool underline = (text.faceBits & APIFace_Underline) != 0;
+    bool faceChanged = false;
+    faceChanged |= details.Get ("bold", bold);
+    faceChanged |= details.Get ("italic", italic);
+    faceChanged |= details.Get ("underline", underline);
+    if (faceChanged) {
+        text.faceBits = static_cast<unsigned short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0));
+        TEXT_MASK_SET (faceBits)
+    }
+
+    GS::UniString strVal;
+    if (details.Get ("justification", strVal)) {
+        text.just = ParseJustificationString (strVal);
+        TEXT_MASK_SET (just)
+    }
+    if (details.Get ("height", text.size)) { TEXT_MASK_SET (size) }
+    if (details.Get ("spacing", text.spacing)) { TEXT_MASK_SET (spacing) }
+    if (details.Get ("angle", text.angle)) { TEXT_MASK_SET (angle) }
+
+    bool strikeout = (text.effectsBits & APIEffect_StrikeOut) != 0;
+    bool superscript = (text.effectsBits & APIEffect_SuperScript) != 0;
+    bool subscript = (text.effectsBits & APIEffect_SubScript) != 0;
+    bool protectedFlag = (text.effectsBits & APIEffect_Protected) != 0;
+    bool effectsChanged = false;
+    effectsChanged |= details.Get ("effectStrikeout", strikeout);
+    effectsChanged |= details.Get ("effectSuperscript", superscript);
+    effectsChanged |= details.Get ("effectSubscript", subscript);
+    effectsChanged |= details.Get ("effectProtected", protectedFlag);
+    if (effectsChanged) {
+        text.effectsBits = (strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0);
+        TEXT_MASK_SET (effectsBits)
+    }
+
+    if (details.Get ("widthFactor", text.widthFactor)) { TEXT_MASK_SET (widthFactor) }
+    if (details.Get ("charSpaceFactor", text.charSpaceFactor)) { TEXT_MASK_SET (charSpaceFactor) }
+    if (details.Get ("fixedSize", text.fixedSize)) { TEXT_MASK_SET (fixedSize) }
+    if (details.Get ("usedContour", text.usedContour)) { TEXT_MASK_SET (usedContour) }
+    if (details.Get ("usedFill", text.usedFill)) { TEXT_MASK_SET (usedFill) }
+    if (details.Get ("contourPenIndex", text.contourPen)) { TEXT_MASK_SET (contourPen) }
+    if (details.Get ("fillPenIndex", text.fillPen)) { TEXT_MASK_SET (fillPen) }
+    if (details.Get ("anchor", strVal)) {
+        text.anchor = StringToAnchor (strVal);
+        TEXT_MASK_SET (anchor)
+    }
+    if (details.Get ("fixedAngle", text.fixedAngle)) { TEXT_MASK_SET (fixedAngle) }
+    if (details.Get ("contourOffset", text.contourOffset)) { TEXT_MASK_SET (contourOffset) }
+    if (details.Get ("flipEnabled", text.flipEnabled)) { TEXT_MASK_SET (flipEnabled) }
+
+#ifdef ServerMainVers_2800
+    // ACAPI_ELEMENT_MASK_SET flags one byte at the field's own address, so masking the whole
+    // textFrame struct would flag its first member only (see arrowData below); every touched
+    // sub-field is masked on its own.
+    if (details.Get ("textFrameShape", strVal)) {
+        text.textFrame.shapeType = StringToTextFrameShape (strVal);
+        TEXT_MASK_SET (textFrame.shapeType)
+    }
+    if (details.Get ("textFrameSizeFixed", text.textFrame.isSizeFixed)) { TEXT_MASK_SET (textFrame.isSizeFixed) }
+    if (details.Get ("textFrameFixedWidth", text.textFrame.fixedWidth)) { TEXT_MASK_SET (textFrame.fixedWidth) }
+    if (details.Get ("textFrameFixedHeight", text.textFrame.fixedHeight)) { TEXT_MASK_SET (textFrame.fixedHeight) }
+#endif
+
+#undef TEXT_MASK_SET
+}
+
+GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters)
+{
+    GS::Array<GS::ObjectState> runsData;
+    const bool hasRuns = parameters.Get ("runs", runsData) && !runsData.IsEmpty ();
+
+    GS::UniString text;
+    GS::Array<GS::UniString> runTexts;
+    GS::Array<short> runPens;
+    GS::Array<short> runFonts;
+    GS::Array<unsigned short> runFaceBits;
+    GS::Array<Int32> runEffects;
+    GS::Array<double> runSizes;
+
+    if (hasRuns) {
+        for (const GS::ObjectState& runOS : runsData) {
+            GS::UniString runText;
+            if (!runOS.Get ("text", runText)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Each entry in 'runs' requires a 'text' field.");
+            }
+            short pen = textData.pen;
+            runOS.Get ("penIndex", pen);
+            short font = textData.font;
+            runOS.Get ("fontIndex", font);
+            bool bold = (textData.faceBits & APIFace_Bold) != 0;
+            bool italic = (textData.faceBits & APIFace_Italic) != 0;
+            bool underline = (textData.faceBits & APIFace_Underline) != 0;
+            runOS.Get ("bold", bold);
+            runOS.Get ("italic", italic);
+            runOS.Get ("underline", underline);
+            double size = textData.size;
+            runOS.Get ("heightOverride", size);
+            bool strikeout = (textData.effectsBits & APIEffect_StrikeOut) != 0;
+            bool superscript = (textData.effectsBits & APIEffect_SuperScript) != 0;
+            bool subscript = (textData.effectsBits & APIEffect_SubScript) != 0;
+            bool protectedFlag = (textData.effectsBits & APIEffect_Protected) != 0;
+            runOS.Get ("effectStrikeout", strikeout);
+            runOS.Get ("effectSuperscript", superscript);
+            runOS.Get ("effectSubscript", subscript);
+            runOS.Get ("effectProtected", protectedFlag);
+
+            runTexts.Push (runText);
+            runPens.Push (pen);
+            runFonts.Push (font);
+            runFaceBits.Push (static_cast<unsigned short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0)));
+            runEffects.Push ((strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0));
+            runSizes.Push (size);
+            text += runText;
+        }
+    } else if (!parameters.Get ("text", text)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' (or 'runs') parameter");
+    }
+
+    // 'memo' may already carry content: the Create path gets its memo from ACAPI_Element_GetDefaults,
+    // and a modify may pass one fetched via ACAPI_Element_GetMemo. Replace, never leak.
+#ifdef ServerMainVers_2800
+    delete memo.textContent;
+    memo.textContent = new GS::UniString { text };
+#else
+    if (memo.textContent != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.textContent));
+    }
+    memo.textContent = BMhAllClear ((text.GetLength () + 1) * sizeof (GS::uchar_t));
+    GS::ucscpy (reinterpret_cast<GS::uchar_t*> (*memo.textContent), text.ToUStr ());
+#endif
+
+    const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
+    textData.nLine = text.Count (newlineChar) + 1;
+    const Int32 numOfParagraphs = 1;
+    const Int32 numOfRuns = hasRuns ? static_cast<Int32> (runTexts.GetSize ()) : 1;
+
+    // Existing paragraphs (sized for the old content) and textLineStarts - a separate short** array
+    // of line-start indices into textContent, distinct from each paragraph's own eolPos - must go
+    // before the new content is set: leaving textLineStarts stale while textContent/paragraphs get
+    // replaced produces an inconsistent memo that ACAPI_Element_Change silently refuses to persist
+    // (confirmed live). Archicad rebuilds textLineStarts from the new paragraphs, as it does on a
+    // brand new element. The paragraphs handle owns each paragraph's separately allocated run/tab/
+    // eolPos arrays, so it is disposed with ACAPI_DisposeParagraphsHdl (the DevKit's own way, see
+    // the Element_Test example), not with a plain BMKillHandle that would leak those inner arrays.
+    if (memo.paragraphs != nullptr) {
+        ACAPI_DisposeParagraphsHdl (&memo.paragraphs);
+        memo.paragraphs = nullptr;
+    }
+    if (memo.textLineStarts != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.textLineStarts));
+    }
+
+    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
+    SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, numOfRuns, textData.nLine);
+    // A paragraph carries its own justification (API_ParagraphType::just, see the DevKit's
+    // Element_Test example); keep it in step with the element-level setting.
+    (*memo.paragraphs)[0].just = textData.just;
+
+    if (hasRuns) {
+        // Each run carries its own pen/face/font/size/effects; a field a run does not give
+        // defaults to the element-level style, as for a single-run content.
+        Int32 runFrom = 0;
+        for (Int32 i = 0; i < numOfRuns; ++i) {
+            const Int32 runRange = runTexts[i].GetLength ();
+            SetRun (memo.paragraphs, 0, static_cast<UInt32> (i), runFrom, runRange, runPens[i], runFaceBits[i], runFonts[i], runEffects[i], runSizes[i]);
+            runFrom += runRange;
+        }
+    } else {
+        SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size);
+    }
+
+    Int32 lastEolPos = 0;
+    for (Int32 eolIndex = 0; eolIndex < textData.nLine; ++eolIndex) {
+        Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
+        Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
+        lastEolPos = eolPos;
+        SetEOL (memo.paragraphs, 0, eolIndex, offset);
+    }
+
+    textData.width = 0;
+    textData.height = 0;
+    textData.nonBreaking = true;
+    textData.useEolPos = true;
+
+    return {};
+}
+
+GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_TextContent | APIMemoMask_Paragraph);
+    if (err != NoError) {
+        return err;
+    }
+
+#ifdef ServerMainVers_2800
+    const GS::UniString content = (memo.textContent != nullptr) ? *memo.textContent : GS::EmptyUniString;
+#else
+    GS::UniString content;
+    if (memo.textContent != nullptr) {
+        // The handle holds the characters and a terminator (the inverse of ApplyTextContent's
+        // write). Its size bounds the read, so an unterminated handle cannot be over-read, and the
+        // first terminator inside it ends the content, so any slack Archicad may allocate past the
+        // terminator is not taken as text.
+        const GSSize byteSize = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.textContent));
+        const USize charCount = static_cast<USize> (byteSize / sizeof (GS::uchar_t));
+        const GS::uchar_t* chars = reinterpret_cast<const GS::uchar_t*> (*memo.textContent);
+        USize contentCharCount = 0;
+        while (contentCharCount < charCount && chars[contentCharCount] != 0) {
+            ++contentCharCount;
+        }
+        content = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (chars), contentCharCount);
+    }
+#endif
+    os.Add ("text", content);
+
+    const UInt32 nParagraphs = (memo.paragraphs != nullptr) ? static_cast<UInt32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.paragraphs)) / sizeof (API_ParagraphType)) : 0;
+    os.Add ("paragraphCount", static_cast<int> (nParagraphs));
+    if (nParagraphs == 0) {
+        return NoError;
+    }
+
+    // Every paragraph is read, not only the first: a text placed from the UI may carry one paragraph
+    // per line, and a style-only ModifyTexts/ModifyLabels rebuilds the content from what is returned
+    // here, so anything skipped would be lost. A run's `from` is relative to its paragraph (DevKit
+    // Element_Test example: paragraph 1 starts at 16, its runs at 0 and 9), and neither the runs nor
+    // the paragraph ranges cover the line-end characters between them, so each run's text extends
+    // to the start of the next run - concatenating the runs gives back the whole content.
+    struct RunSpan { UIndex start; const API_RunType* run; };
+    GS::Array<RunSpan> spans;
+    for (UInt32 p = 0; p < nParagraphs; ++p) {
+        const API_ParagraphType& paragraph = (*memo.paragraphs)[p];
+        const UInt32 nRuns = (paragraph.run != nullptr) ? static_cast<UInt32> (BMGetPtrSize (reinterpret_cast<GSPtr> (paragraph.run)) / sizeof (API_RunType)) : 0;
+        for (UInt32 i = 0; i < nRuns; ++i) {
+            spans.Push (RunSpan { static_cast<UIndex> (paragraph.from + paragraph.run[i].from), &paragraph.run[i] });
+        }
+    }
+    // Every run is reported, a single one too: a run created with its own pen/font/face/size keeps
+    // that only in the run, so leaving it out would hide the override and a style-only modify,
+    // which rebuilds from this read-back, would revert it to the element-level fields.
+    if (spans.IsEmpty ()) {
+        return NoError;
+    }
+
+    const USize contentLength = content.GetLength ();
+    const auto& runList = os.AddList<GS::ObjectState> ("runs");
+    for (UIndex i = 0; i < spans.GetSize (); ++i) {
+        const UIndex start = (i == 0) ? 0 : GS::Min (spans[i].start, contentLength);
+        const UIndex end = (i + 1 < spans.GetSize ()) ? GS::Min (spans[i + 1].start, contentLength) : contentLength;
+        const API_RunType& run = *spans[i].run;
+        GS::ObjectState runOS;
+        runOS.Add ("text", GS::UniString (content.GetSubstring (start, end > start ? end - start : 0)));
+        runOS.Add ("penIndex", run.pen);
+        runOS.Add ("fontIndex", run.font);
+        runOS.Add ("bold", (run.faceBits & APIFace_Bold) != 0);
+        runOS.Add ("italic", (run.faceBits & APIFace_Italic) != 0);
+        runOS.Add ("underline", (run.faceBits & APIFace_Underline) != 0);
+        runOS.Add ("heightOverride", run.size);
+        runOS.Add ("effectStrikeout", (run.effectBits & APIEffect_StrikeOut) != 0);
+        runOS.Add ("effectSuperscript", (run.effectBits & APIEffect_SuperScript) != 0);
+        runOS.Add ("effectSubscript", (run.effectBits & APIEffect_SubScript) != 0);
+        runOS.Add ("effectProtected", (run.effectBits & APIEffect_Protected) != 0);
+        runList (runOS);
+    }
+
+    return NoError;
+}
+
+bool StyleNeedsContentRebuild (const GS::ObjectState& style)
+{
+    static const char* const runLevelFields[] = { "penIndex", "fontIndex", "bold", "italic", "underline", "height",
+                                                  "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
+    for (const char* field : runLevelFields) {
+        if (style.Contains (GS::String (field))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams)
+{
+    GS::ObjectState readBack;
+    const GSErrCode err = AddTextContent (readBack, elemGuid);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the content of the element.");
+    }
+
+    GS::UniString text;
+    readBack.Get ("text", text);
+    contentParams.Add ("text", text);
+
+    GS::Array<GS::ObjectState> runs;
+    if (!readBack.Get ("runs", runs) || runs.IsEmpty ()) {
+        // No run information at all (a memo without paragraphs): the content is rebuilt as one
+        // run from the element-level fields, which already carry the style. A single styled run
+        // is reported by AddTextContent and merged below like any other.
+        return {};
+    }
+
+    // A protected run is an autotext reference. Whether the memo reads such a run back as its
+    // key or as its resolved value is not established, so the rebuild is refused rather than
+    // risk turning the reference into static text.
+    for (const GS::ObjectState& run : runs) {
+        bool protectedRun = false;
+        if (run.Get ("effectProtected", protectedRun) && protectedRun) {
+            return CreateErrorResponse (APIERR_REFUSEDCMD, "The content has an autotext run; a change of pen, font, faces, height or effects would rebuild it from its read-back. Give the content explicitly (text or runs), or change only the element-level style fields.");
+        }
+    }
+
+    // Every run keeps its own values except the ones the style names: those are set on all runs,
+    // otherwise a style-only "bold": true would be overridden by the runs' read-back faces.
+    static const char* const shortFields[] = { "penIndex", "fontIndex" };
+    static const char* const boolFields[] = { "bold", "italic", "underline",
+                                              "effectStrikeout", "effectSuperscript", "effectSubscript", "effectProtected" };
+    const auto& runList = contentParams.AddList<GS::ObjectState> ("runs");
+    for (const GS::ObjectState& run : runs) {
+        GS::ObjectState mergedRun;
+        GS::UniString runText;
+        run.Get ("text", runText);
+        mergedRun.Add ("text", runText);
+        for (const char* field : shortFields) {
+            short value = 0;
+            if (style.Get (field, value) || run.Get (field, value)) {
+                mergedRun.Add (field, value);
+            }
+        }
+        for (const char* field : boolFields) {
+            bool value = false;
+            if (style.Get (field, value) || run.Get (field, value)) {
+                mergedRun.Add (field, value);
+            }
+        }
+        double height = 0.0;
+        if (style.Get ("height", height) || run.Get ("heightOverride", height)) {
+            mergedRun.Add ("heightOverride", height);
+        }
+        runList (mergedRun);
+    }
+    return {};
+}
+
+void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label)
+{
+    os.Add ("penIndex", label.pen);
+    os.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, label.ltypeInd)));
+    os.Add ("contourOffset", label.contourOffset);
+    os.Add ("framed", label.framed);
+    os.Add ("hasLeaderLine", label.hasLeaderLine);
+    os.Add ("anchorPoint", LabelAnchorPointToString (label.anchorPoint));
+    os.Add ("leaderShape", LeaderShapeToString (label.leaderShape));
+    os.Add ("squareRootAngle", label.squareRootAngle);
+    os.Add ("arrowType", ArrowTypeToString (label.arrowData.arrowType));
+#ifdef ServerMainVers_2900
+    os.Add ("arrowVisible", label.arrowData.arrowVisibility);
+#else
+    // A label's arrow head sits at the leader line's beginning: the DevKit's own label example
+    // (Element_Test, Do_CreateLabel_FixedFrame) sets begArrow and leaves endArrow alone.
+    os.Add ("arrowVisible", label.arrowData.begArrow);
+#endif
+    os.Add ("arrowPenIndex", label.arrowData.arrowPen);
+    os.Add ("arrowSize", label.arrowData.arrowSize);
+    os.Add ("hideWithBaseElem", label.hideWithBaseElem);
+    os.Add ("begCoordinate", Create2DCoordinateObjectState (label.begC));
+    os.Add ("midCoordinate", Create2DCoordinateObjectState (label.midC));
+    os.Add ("endCoordinate", Create2DCoordinateObjectState (label.endC));
+}
+
+GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
+{
+    if (details.Get ("penIndex", label.pen)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, pen);
+    }
+    {
+        const GS::ObjectState* attrId = details.Get ("lineTypeId");
+        if (attrId != nullptr) {
+            if (!ResolveAttributeIndex (*attrId, API_LinetypeID, label.ltypeInd)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Invalid 'lineTypeId' line type reference.");
+            }
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, ltypeInd);
+        }
+    }
+    if (details.Get ("contourOffset", label.contourOffset)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, contourOffset);
+    }
+    if (details.Get ("framed", label.framed)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, framed);
+    }
+    if (details.Get ("hasLeaderLine", label.hasLeaderLine)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, hasLeaderLine);
+    }
+    GS::UniString strVal;
+    if (details.Get ("anchorPoint", strVal)) {
+        label.anchorPoint = StringToLabelAnchorPoint (strVal);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, anchorPoint);
+    }
+    if (details.Get ("leaderShape", strVal)) {
+        label.leaderShape = StringToLeaderShape (strVal);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, leaderShape);
+    }
+    if (details.Get ("squareRootAngle", label.squareRootAngle)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, squareRootAngle);
+    }
+    // NOTE: mask each arrowData sub-field individually - ACAPI_ELEMENT_MASK_SET only marks a
+    // single byte at the given field's own address, so masking the whole 'arrowData' struct only
+    // ever flags its first member (arrowType) as changed; arrowVisibility/arrowPen/arrowSize
+    // further into the struct were silently ignored by ACAPI_Element_Change without their own
+    // mask entries. That alone was NOT enough either though: confirmed live that even with its own
+    // individual mask entry, arrowVisibility changes were still dropped on ModifyLabels unless
+    // EVERY other arrowData sub-field is ALSO masked (and reasserted with its current value) in the
+    // same call - Archicad's internal validation for this nested struct seems to require the whole
+    // unit asserted together, not just the one field actually changing. So: once any arrowData
+    // sub-field is touched, mask all of them, re-populating the untouched ones from the element as
+    // already fetched via ACAPI_Element_Get (so their value doesn't actually change).
+    bool arrowDataTouched = false;
+    if (details.Get ("arrowType", strVal)) {
+        label.arrowData.arrowType = StringToArrowType (strVal);
+        arrowDataTouched = true;
+    }
+#ifdef ServerMainVers_2900
+    if (details.Get ("arrowVisible", label.arrowData.arrowVisibility)) {
+        arrowDataTouched = true;
+    }
+#else
+    // begArrow is the label's arrow head (see AddLabelLeaderLineDetails); endArrow is left as it is.
+    if (details.Get ("arrowVisible", label.arrowData.begArrow)) {
+        arrowDataTouched = true;
+    }
+#endif
+    if (details.Get ("arrowPenIndex", label.arrowData.arrowPen)) {
+        arrowDataTouched = true;
+    }
+    if (details.Get ("arrowSize", label.arrowData.arrowSize)) {
+        arrowDataTouched = true;
+    }
+    if (arrowDataTouched && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowType);
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowPen);
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowSize);
+#ifdef ServerMainVers_2900
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.arrowVisibility);
+#else
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.begArrow);
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, arrowData.endArrow);
+#endif
+    }
+    if (details.Get ("hideWithBaseElem", label.hideWithBaseElem)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, hideWithBaseElem);
+    }
+
+    return {};
+}
+
+void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label)
+{
+    os.Add ("textWay", LabelTextWayToString (label.textWay));
+    os.Add ("fontIndex", label.font);
+    os.Add ("bold", (label.faceBits & APIFace_Bold) != 0);
+    os.Add ("italic", (label.faceBits & APIFace_Italic) != 0);
+    os.Add ("underline", (label.faceBits & APIFace_Underline) != 0);
+    os.Add ("flipEnabled", label.flipEnabled);
+    os.Add ("nonBreaking", label.nonBreaking);
+    os.Add ("textSize", label.textSize);
+    os.Add ("useBackgroundFill", label.useBgFill);
+    os.Add ("backgroundFillPenIndex", label.fillBgPen);
+    os.Add ("effectStrikeout", (label.effectsBits & APIEffect_StrikeOut) != 0);
+    os.Add ("effectSuperscript", (label.effectsBits & APIEffect_SuperScript) != 0);
+    os.Add ("effectSubscript", (label.effectsBits & APIEffect_SubScript) != 0);
+    os.Add ("effectProtected", (label.effectsBits & APIEffect_Protected) != 0);
+}
+
+void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask)
+{
+    GS::UniString strVal;
+    if (details.Get ("textWay", strVal)) {
+        label.textWay = StringToLabelTextWay (strVal);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, textWay);
+    }
+    if (details.Get ("fontIndex", label.font)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, font);
+    }
+    bool bold = (label.faceBits & APIFace_Bold) != 0;
+    bool italic = (label.faceBits & APIFace_Italic) != 0;
+    bool underline = (label.faceBits & APIFace_Underline) != 0;
+    bool faceChanged = false;
+    faceChanged |= details.Get ("bold", bold);
+    faceChanged |= details.Get ("italic", italic);
+    faceChanged |= details.Get ("underline", underline);
+    if (faceChanged) {
+        label.faceBits = static_cast<unsigned short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0));
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, faceBits);
+    }
+    if (details.Get ("flipEnabled", label.flipEnabled)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, flipEnabled);
+    }
+    if (details.Get ("nonBreaking", label.nonBreaking)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, nonBreaking);
+    }
+    if (details.Get ("textSize", label.textSize)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, textSize);
+    }
+    if (details.Get ("useBackgroundFill", label.useBgFill)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, useBgFill);
+    }
+    if (details.Get ("backgroundFillPenIndex", label.fillBgPen)) {
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, fillBgPen);
+    }
+    bool strikeout = (label.effectsBits & APIEffect_StrikeOut) != 0;
+    bool superscript = (label.effectsBits & APIEffect_SuperScript) != 0;
+    bool subscript = (label.effectsBits & APIEffect_SubScript) != 0;
+    bool protectedFlag = (label.effectsBits & APIEffect_Protected) != 0;
+    bool effectsChanged = false;
+    effectsChanged |= details.Get ("effectStrikeout", strikeout);
+    effectsChanged |= details.Get ("effectSuperscript", superscript);
+    effectsChanged |= details.Get ("effectSubscript", subscript);
+    effectsChanged |= details.Get ("effectProtected", protectedFlag);
+    if (effectsChanged) {
+        label.effectsBits = (strikeout ? APIEffect_StrikeOut : 0) | (superscript ? APIEffect_SuperScript : 0) | (subscript ? APIEffect_SubScript : 0) | (protectedFlag ? APIEffect_Protected : 0);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, effectsBits);
+    }
+}
+
+} // namespace TextLabelDetails
 
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
@@ -2438,12 +3536,37 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         element.label.createAtDefaultPosition = true;
     }
 
-    if (element.label.labelClass == APILblClass_Text) {
-        GS::UniString text;
-        if (!parameters.Get ("text", text)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' parameter for text label");
+    GS::UniString labelClassStr;
+    if (parameters.Get ("labelClass", labelClassStr)) {
+        element.label.labelClass = (labelClassStr == "Symbol") ? APILblClass_Symbol : APILblClass_Text;
+    }
+
+    const GS::ObjectState* leaderLineOS = parameters.Get ("leaderLine");
+    if (leaderLineOS != nullptr) {
+        auto leaderLineErr = TextLabelDetails::ApplyLabelLeaderLineSettableDetails (*leaderLineOS, element.label, nullptr);
+        if (leaderLineErr.HasValue ()) {
+            return leaderLineErr;
         }
-        SetTextContentAndParagraphs (memo, element.label.u.text, text);
+    }
+
+    if (element.label.labelClass == APILblClass_Text) {
+        // Style MUST be applied before content: CreateExt builds paragraphs/runs from
+        // element.label.u.text.pen/faceBits/font/size at the time ApplyTextContent runs, and
+        // Archicad ignores those top-level fields afterwards for a multistyle (paragraph-based)
+        // element - only the run's own copies matter once paragraphs exist.
+        const GS::ObjectState* styleOS = parameters.Get ("style");
+        if (styleOS != nullptr) {
+            TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
+        }
+        auto err = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, parameters);
+        if (err.HasValue ()) {
+            return err;
+        }
+    } else {
+        const GS::ObjectState* symbolStyleOS = parameters.Get ("symbolStyle");
+        if (symbolStyleOS != nullptr) {
+            TextLabelDetails::ApplyLabelSymbolStyleSettableDetails (*symbolStyleOS, element.label, nullptr);
+        }
     }
 
     return {};
@@ -2476,24 +3599,34 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content. Newlines create multiple lines."
+                        "description": "The text content. Newlines create multiple lines. Ignored if 'runs' is also given."
+                    },
+                    "runs": {
+                        "type": "array",
+                        "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                        "items": { "$ref": "#/TextRunDetails" },
+                        "minItems": 1
                     },
                     "height": {
                         "type": "number",
-                        "description": "The character height in millimeters. Optional; defaults to the Text tool default."
+                        "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
                     },
                     "pen": {
                         "type": "integer",
-                        "description": "Optional pen attribute index."
+                        "description": "Optional pen attribute index. Equivalent to style.penIndex."
                     },
                     "angle": {
                         "type": "number",
-                        "description": "Optional rotation angle in radians."
+                        "description": "Optional rotation angle in radians. Equivalent to style.angle."
                     },
                     "justification": {
                         "type": "string",
-                        "description": "Optional text justification.",
+                        "description": "Optional text justification. Equivalent to style.justification.",
                         "enum": ["Left", "Center", "Right", "Full"]
+                    },
+                    "style": {
+                        "$ref": "#/TextStyleSettableDetails",
+                        "description": "Full style settings (font, effects, frame, anchor, etc). height/pen/angle/justification above take precedence over the same fields here if both are given."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -2502,8 +3635,11 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                 },
                 "additionalProperties": false,
                 "required": [
-                    "coordinate",
-                    "text"
+                    "coordinate"
+                ],
+                "anyOf": [
+                    { "required": ["text"] },
+                    { "required": ["runs"] }
                 ]
             }
         }
@@ -2534,21 +3670,25 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
     element.text.loc.x = apiCoordinate.x;
     element.text.loc.y = apiCoordinate.y;
 
+    const GS::ObjectState* styleOS = parameters.Get ("style");
+    if (styleOS != nullptr) {
+        TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.text, nullptr, false);
+    }
+
+    // Top-level height/pen/angle/justification take precedence over 'style' for backward
+    // compatibility with the original CreateTexts shape.
     parameters.Get ("height", element.text.size);
     parameters.Get ("pen", element.text.pen);
     parameters.Get ("angle", element.text.angle);
-
     GS::UniString justification;
     if (parameters.Get ("justification", justification)) {
         element.text.just = ParseJustificationString (justification);
     }
 
-    GS::UniString text;
-    if (!parameters.Get ("text", text)) {
-        return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' parameter");
+    auto err = TextLabelDetails::ApplyTextContent (memo, element.text, parameters);
+    if (err.HasValue ()) {
+        return err;
     }
-
-    SetTextContentAndParagraphs (memo, element.text, text);
 
     return {};
 }

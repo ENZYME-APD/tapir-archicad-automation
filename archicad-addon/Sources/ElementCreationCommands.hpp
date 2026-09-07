@@ -6,6 +6,7 @@
 // textContent/paragraphs handles and updates the API_TextType fields (nLine, useEolPos,
 // nonBreaking, width, height) for the given content.
 void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text);
+const char* JustificationToString (API_JustID just);
 API_JustID ParseJustificationString (const GS::UniString& justification);
 
 class CreateElementsCommandBase : public CommandBase
@@ -162,3 +163,57 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class ModifyTextsCommand : public CommandBase
+{
+public:
+    ModifyTextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyLabelsCommand : public CommandBase
+{
+public:
+    ModifyLabelsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Shared helpers for Text/Label style, content and leader-line fields - declared here so
+// GetDetailsOfElementsCommand (ElementCommands.cpp) can read them back via AddXDetails.
+namespace TextLabelDetails {
+
+void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly);
+void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
+
+// Reads memo.textContent and every paragraph's runs back into "text" (flat concatenation),
+// "paragraphCount" and, when the content has paragraphs, "runs" (array of TextRunDetails).
+// Returns the error of the memo read; nothing is added then.
+GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
+// The content to rebuild for a style-only modify: the element's own content read back, with the
+// explicitly given per-run style fields (pen, font, faces, height, effects) applied to every run,
+// as a multistyle element takes those from its runs rather than from the element-level fields.
+// Returns an error response when the content cannot be read, or when it holds an autotext run
+// (a protected run), which a rebuild from the read-back could replace with its resolved value.
+GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& elemGuid, const GS::ObjectState& style, GS::ObjectState& contentParams);
+// Whether a style change has to be written into the runs: only the fields a run carries (pen,
+// font, faces, height, effects) need the content rebuilt; the element-level ones (angle, anchor,
+// justification, frame, ...) apply through their own masks, leaving the content - and any
+// autotext reference in it - untouched.
+bool StyleNeedsContentRebuild (const GS::ObjectState& style);
+// Builds memo.textContent/paragraphs from either a "runs" array or a plain "text" string.
+GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters);
+
+void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label);
+// Returns an error response for an attribute reference that cannot be resolved.
+GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+
+void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label);
+void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+
+}

@@ -676,33 +676,6 @@ static GS::ObjectState CreateColorObjectState (const API_RGBColor& color)
     return GS::ObjectState ("red", color.f_red, "green", color.f_green, "blue", color.f_blue);
 }
 
-static const char* TextJustificationToString (API_JustID just)
-{
-    switch (just) {
-        case APIJust_Center: return "Center";
-        case APIJust_Right:  return "Right";
-        case APIJust_Full:   return "Full";
-        default:             return "Left";
-    }
-}
-
-// Reads the content of a Text element or a text-type Label. The memo stores it as a
-// GS::UniString from AC28, as a handle of unicode characters before (the inverse of how
-// SetTextContentAndParagraphs writes it).
-static GS::UniString GetTextContentFromMemo (const API_Guid& guid)
-{
-    API_ElementMemo memo = {};
-    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_TextContent) != NoError || memo.textContent == nullptr) {
-        return GS::EmptyUniString;
-    }
-#ifdef ServerMainVers_2800
-    return *memo.textContent;
-#else
-    return GS::UniString (reinterpret_cast<const GS::uchar_t*> (*memo.textContent));
-#endif
-}
-
 static void AddLibPartBasedElementDetails (GS::ObjectState& os, const Int32 libInd, const API_Guid& owner, API_ElemTypeID ownerType = API_ZombieElemID)
 {
     API_LibPart	lp = {};
@@ -1129,26 +1102,56 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("oSide", elem.window.openingBase.oSide);
                 break;
 
-            case API_LabelID:
+            case API_LabelID: {
                 AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.label.begC));
                 typeSpecificDetails.Add ("midCoordinate", Create2DCoordinateObjectState (elem.label.midC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.label.endC));
                 typeSpecificDetails.Add ("hasLeaderLine", elem.label.hasLeaderLine);
+
+                typeSpecificDetails.Add ("labelClass", elem.label.labelClass == APILblClass_Symbol ? "Symbol" : "Text");
+
+                GS::ObjectState leaderLineOS;
+                TextLabelDetails::AddLabelLeaderLineDetails (leaderLineOS, elem.label);
+                typeSpecificDetails.Add ("leaderLine", leaderLineOS);
+
                 if (elem.label.labelClass == APILblClass_Text) {
-                    typeSpecificDetails.Add ("text", GetTextContentFromMemo (elem.header.guid));
+                    GS::ObjectState styleOS;
+                    TextLabelDetails::AddTextStyleDetails (styleOS, elem.label.u.text, true);
+                    typeSpecificDetails.Add ("style", styleOS);
+                    if (TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid) != NoError) {
+                        // The fields are required by the schema; an unreadable memo reads as empty content.
+                        typeSpecificDetails.Add ("text", GS::EmptyUniString);
+                        typeSpecificDetails.Add ("paragraphCount", 0);
+                    }
+                } else {
+                    GS::ObjectState symbolStyleOS;
+                    TextLabelDetails::AddLabelSymbolStyleDetails (symbolStyleOS, elem.label);
+                    typeSpecificDetails.Add ("symbolStyle", symbolStyleOS);
                 }
                 break;
+            }
 
-            case API_TextID:
-                typeSpecificDetails.Add ("text", GetTextContentFromMemo (elem.header.guid));
+            case API_TextID: {
+                // The flat fields are the ones SetDetailsOfElements takes back (position, angle, height,
+                // justification) and the Grasshopper TextDetails type reads; "style" carries the full
+                // style state and AddTextContent adds "text", "paragraphCount" and the styled "runs".
                 typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (elem.text.loc));
                 typeSpecificDetails.Add ("angle", elem.text.angle);
                 typeSpecificDetails.Add ("height", elem.text.size);
                 typeSpecificDetails.Add ("pen", (Int32) elem.text.pen);
-                typeSpecificDetails.Add ("justification", TextJustificationToString (static_cast<API_JustID> (elem.text.just)));
+                typeSpecificDetails.Add ("justification", JustificationToString (static_cast<API_JustID> (elem.text.just)));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+                GS::ObjectState styleOS;
+                TextLabelDetails::AddTextStyleDetails (styleOS, elem.text, true);
+                typeSpecificDetails.Add ("style", styleOS);
+                if (TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid) != NoError) {
+                    // The fields are required by the schema; an unreadable memo reads as empty content.
+                    typeSpecificDetails.Add ("text", GS::EmptyUniString);
+                    typeSpecificDetails.Add ("paragraphCount", 0);
+                }
                 break;
+            }
 
             case API_ObjectID:
             case API_LampID:

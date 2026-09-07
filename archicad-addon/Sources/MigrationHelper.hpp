@@ -187,6 +187,13 @@ inline GSErrCode ACAPI_AutoText_DeleteAnAutoText (const char* dbKey)
     return ACAPI_Goodies (APIAny_DeleteAnAutoTextID, (void*) dbKey);
 }
 
+// APIAny_GetPropertyAutoTextKeyTableID exists in APIdefs_Goodies.h from AC25 on: par1 is the
+// element guid (APINULLGuid for the keys common to every element), par2 the name -> key table.
+inline GSErrCode ACAPI_AutoText_GetPropertyAutoTextKeyTable (API_Guid* guid, GS::HashTable<GS::UniString, GS::UniString>* keyGuidTable)
+{
+    return ACAPI_Goodies (APIAny_GetPropertyAutoTextKeyTableID, (void*) guid, (void*) keyGuidTable);
+}
+
 // The unplaced-node flag (APIdefs_Database.h): AC26 takes it as par2 of
 // APIDb_GetHotlinkNodeID and par3 of APIDb_GetHotlinkNodesID; AC25 has neither
 // (par2 is "---" and the node list respectively), so on 25 the flag is accepted
