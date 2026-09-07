@@ -202,6 +202,209 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
     return {};
 }
 
+GetAutoTextKeysCommand::GetAutoTextKeysCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAutoTextKeysCommand::GetName () const
+{
+    return "GetAutoTextKeys";
+}
+
+GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The element to retrieve context dependent autotext keys for (its own properties, plus the ones common to all element types, e.g. 'Element ID', 'Area'). When omitted, only the autotext keys common to all element types are returned."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetAutoTextKeysCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTextKeys": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The autotext's name, as shown in the Insert Autotext dialog of Archicad."
+                        },
+                        "key": {
+                            "type": "string",
+                            "description": "The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>', e.g. '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>'."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "key"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextKeys"
+        ]
+    })";
+}
+
+GS::ObjectState GetAutoTextKeysCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // guid can legitimately be APINULLGuid here (no elementId given) - per the DevKit doc this
+    // still returns the autotext keys common to all element types (e.g. "Element ID", "Area"),
+    // just not the ones specific to a single element's own type (e.g. "Thickness of the wall").
+    API_Guid guid = GetGuidFromArrayItem ("elementId", parameters);
+
+    GS::HashTable<GS::UniString, GS::UniString> keyTable;
+    GSErrCode err = ACAPI_AutoText_GetPropertyAutoTextKeyTable (&guid, &keyTable);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the autotext keys.");
+    }
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("autoTextKeys");
+
+    for (const auto& keyPair : keyTable) {
+        GS::ObjectState keyData;
+#ifdef ServerMainVers_2800
+        keyData.Add ("name", keyPair.key);
+        keyData.Add ("key", keyPair.value);
+#else
+        keyData.Add ("name", *keyPair.key);
+        keyData.Add ("key", *keyPair.value);
+#endif
+        listAdder (keyData);
+    }
+
+    return response;
+}
+
+GetAutoTextNameCommand::GetAutoTextNameCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetAutoTextNameCommand::GetName () const
+{
+    return "GetAutoTextName";
+}
+
+GS::Optional<GS::UniString> GetAutoTextNameCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "keys": {
+                "type": "array",
+                "description": "Autotext keys as returned by GetAutoTextKeys or GetProjectInfoFields (without the surrounding '<' and '>'), e.g. 'PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548' or 'PROJECTNAME'.",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "keys"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAutoTextNameCommand::GetResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoTextNames": {
+                "type": "array",
+                "description": "One result per input key, in the same order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The autotext's display name, as shown in the Insert Autotext dialog of Archicad."
+                        }
+                    }
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoTextNames"
+        ]
+    })";
+}
+
+// Resolves a single key against an already-fetched generic autotext list (avoids
+// re-enumerating the project info fields once per key when called from a batch).
+static GS::ObjectState ResolveAutoTextName (const GS::UniString& key, const GS::Array<GS::ArrayFB<GS::UniString, 3>>& genericAutoTexts)
+{
+    if (key.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Empty autotext key.");
+    }
+
+    static const GS::UniString propertyPrefix ("PROPERTY-");
+    if (key.BeginsWith (propertyPrefix)) {
+        // Property-based (context dependent) autotext key: everything after the prefix is the
+        // guid of a real property definition. A single direct lookup by guid - no need to
+        // enumerate every property definition in the project just to resolve one name.
+        const GS::UniString guidPart (key.ToCStr () + propertyPrefix.GetLength ());
+
+        API_PropertyDefinition definition = {};
+        definition.guid = APIGuidFromString (guidPart.ToCStr ());
+        GSErrCode err = ACAPI_Property_GetPropertyDefinition (definition);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to find a property definition for this autotext key.");
+        }
+        return GS::ObjectState ("name", definition.name);
+    }
+
+    // Generic (project-level) autotext key: the SDK has no single-key metadata lookup for
+    // these (ACAPI_AutoText_InterpretAutoText resolves the *value*, not the name), so the
+    // small, fixed list of project info fields is matched against the list fetched once
+    // upfront by the caller, instead of being re-fetched for every key in the batch.
+    for (const auto& autoText : genericAutoTexts) {
+        if (autoText[1] == key) {
+            return GS::ObjectState ("name", autoText[0]);
+        }
+    }
+
+    return CreateErrorResponse (APIERR_BADID, "No autotext found for this key.");
+}
+
+GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> keys;
+    if (!parameters.Get ("keys", keys) || keys.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'keys' parameter.");
+    }
+
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> genericAutoTexts;
+    ACAPI_AutoText_GetAutoTexts (&genericAutoTexts, APIAutoText_All);
+
+    GS::ObjectState response;
+    const auto& listAdder = response.AddList<GS::ObjectState> ("autoTextNames");
+    for (const GS::UniString& key : keys) {
+        listAdder (ResolveAutoTextName (key, genericAutoTexts));
+    }
+
+    return response;
+}
+
 CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
     CommandBase (CommonSchema::Used)
 {

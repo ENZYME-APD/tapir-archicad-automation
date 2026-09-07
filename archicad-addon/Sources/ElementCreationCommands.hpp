@@ -162,3 +162,44 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class ModifyTextsCommand : public CommandBase
+{
+public:
+    ModifyTextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyLabelsCommand : public CommandBase
+{
+public:
+    ModifyLabelsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Shared helpers for Text/Label style, content and leader-line fields - declared here so
+// GetDetailsOfElementsCommand (ElementCommands.cpp) can read them back via AddXDetails.
+namespace TextLabelDetails {
+
+void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly);
+void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
+
+// Reads memo.textContent/paragraphs[0]'s runs back into "text" (flat concatenation) and,
+// if there is more than one run, also into "runs" (array of TextRunDetails).
+void AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid);
+// Builds memo.textContent/paragraphs from either a "runs" array or a plain "text" string.
+GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters);
+
+void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label);
+void ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+
+void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label);
+void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+
+}
