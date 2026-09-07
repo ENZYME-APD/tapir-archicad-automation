@@ -1992,6 +1992,97 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
             "accuracy", unitPrefs.angle.accuracy));
 }
 
+static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)
+{
+    if (str == "EntireProject") {
+        result = API_EntireProject;
+    } else if (str == "VisibleElementsOnAllStories") {
+        result = API_VisibleElementsOnAllStories;
+    } else if (str == "AllElementsOnCurrentStory") {
+        result = API_AllElementsOnCurrentStorey;
+    } else if (str == "VisibleElementsOnCurrentStory") {
+        result = API_VisibleElementsOnCurrentStorey;
+    } else if (str == "SelectedElementsOnly") {
+        result = API_SelectedElementsOnly;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Saves the project as IFC with an export translator chosen by name, through the
+// Automate API. The add-on communication path in Execute cannot choose one: the IFC
+// add-on saves with the translator Archicad remembers from its own Save dialog, which
+// an automated caller can neither see nor set. The floor plan or the 3D window has to
+// be the front window, as for any IFC save.
+static GS::ObjectState SaveProjectAsIfcWithTranslator (const GS::ObjectState& parameters, IO::Location& ifcFileLocation, Int32 fileTypeRefCon, const GS::UniString& translatorName)
+{
+    // The Automate API saves plain IFC and one packed form: IFC ZIP from Archicad 27
+    // on, IFC XML before that.
+    API_IfcTypeID subType;
+    if (fileTypeRefCon == 1) {
+        subType = API_IFC;
+#ifdef ServerMainVers_2700
+    } else if (fileTypeRefCon == 3) {
+        subType = API_IFCZIP;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName needs a fileType of ifc or ifczip");
+#else
+    } else if (fileTypeRefCon == 2) {
+        subType = API_IFCXML;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName needs a fileType of ifc or ifcxml on this Archicad version");
+#endif
+    }
+
+    API_ElementsToIfcExportID elementsToExport = API_VisibleElementsOnAllStories;
+    GS::UniString elementsToExportStr;
+    if (parameters.Get ("elementsToExport", elementsToExportStr) && !ParseElementsToIfcExport (elementsToExportStr, elementsToExport)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport parameter is invalid");
+    }
+
+    GS::Array<API_IFCTranslatorIdentifier> translators;
+    GSErrCode err = ACAPI_IFC_GetIFCExportTranslatorsList (translators);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to list the IFC export translators of the project");
+    }
+
+    const API_IFCTranslatorIdentifier* translator = nullptr;
+    GS::UniString availableNames;
+    for (const API_IFCTranslatorIdentifier& candidate : translators) {
+        if (candidate.name == translatorName) {
+            translator = &candidate;
+        }
+        if (!availableNames.IsEmpty ()) {
+            availableNames += ", ";
+        }
+        availableNames += "\"" + candidate.name + "\"";
+    }
+    if (translator == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no IFC export translator named \"" + translatorName + "\". Its translators: " + availableNames);
+    }
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = APIFType_IfcFile;
+    fileSavePars.file = &ifcFileLocation;
+
+    API_SavePars_Ifc savePars = {};
+    savePars.subType = subType;
+    savePars.translatorIdentifier = *translator;
+    savePars.elementsToIfcExport = elementsToExport;
+    savePars.elementsSet = nullptr;
+#ifdef ServerMainVers_2600
+    savePars.includeBoundingBoxGeometry = false;
+#endif
+
+    err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the project as IFC");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 IFCFileOperationCommand::IFCFileOperationCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -2020,6 +2111,15 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
                 "type": "string",
                 "description": "The type of the IFC file. The default is 'ifc'.",
                 "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            },
+            "translatorName": {
+                "type": "string",
+                "description": "Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26)."
+            },
+            "elementsToExport": {
+                "type": "string",
+                "description": "Only for the save method, and only together with translatorName: which elements to export. The default is VisibleElementsOnAllStories.",
+                "enum": ["EntireProject", "VisibleElementsOnAllStories", "AllElementsOnCurrentStory", "VisibleElementsOnCurrentStory", "SelectedElementsOnly"]
             }
         },
         "additionalProperties": false,
@@ -2083,6 +2183,19 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
     if (ifcFileLocation.GetLastLocalName (&lastLocalName) != NoError) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is invalid");
     }
+    GS::UniString translatorName;
+    if (parameters.Get ("translatorName", translatorName) && !translatorName.IsEmpty ()) {
+        if (ioParams.method != IO_SAVEAS) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName is only valid with the save method");
+        }
+        return SaveProjectAsIfcWithTranslator (parameters, ifcFileLocation, ioParams.refCon, translatorName);
+    }
+    if (parameters.Contains ("elementsToExport")) {
+        // The add-on path below has no element filter, so a filter without a translator
+        // would be dropped without a word.
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport is only valid together with translatorName");
+    }
+
     ioParams.fileLoc = &ifcFileLocation;
     ioParams.saveFileIOName = &lastLocalName;
     ioParams.noDialog = true;
