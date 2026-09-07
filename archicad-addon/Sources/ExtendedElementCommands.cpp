@@ -6010,6 +6010,15 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("witnessForm", WitnessFormToString (dimElem.witnessForm));
                 witnessPoint.Add ("witnessVal", dimElem.witnessVal);
 
+                // The witness parameters, as CreateAssociativeDimensions takes them, so a dimension
+                // placed by hand can be read back to learn what an element type needs (#633).
+                witnessPoint.Add ("line", dimElem.base.base.line);
+                witnessPoint.Add ("inIndex", dimElem.base.base.inIndex);
+                witnessPoint.Add ("special", static_cast<Int32> (dimElem.base.base.special));
+                witnessPoint.Add ("nodeType", static_cast<Int32> (dimElem.base.base.node_typ));
+                witnessPoint.Add ("nodeStatus", static_cast<Int32> (dimElem.base.base.node_status));
+                witnessPoint.Add ("nodeId", static_cast<Int64> (dimElem.base.base.node_id));
+
                 const API_Guid& baseGuid = dimElem.base.base.guid;
                 if (baseGuid != APINULLGuid) {
                     witnessPoint.Add ("baseElementId", CreateGuidObjectState (baseGuid));

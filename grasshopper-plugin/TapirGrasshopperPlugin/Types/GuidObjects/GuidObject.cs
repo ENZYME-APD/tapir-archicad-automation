@@ -34,6 +34,16 @@ namespace TapirGrasshopperPlugin.Types.GuidObjects
 
             else
             {
+                // The wrapper types the element and design option components hand out
+                // (ElementGuidWrapper, DesignOptionGuidWrapper, ...) carry their id in an
+                // Id property rather than a Guid one (#636).
+                var idInfo = wrapper.Value.GetType().GetProperty("Id");
+                if (idInfo != null &&
+                    idInfo.GetValue(wrapper.Value, null) is T id)
+                {
+                    return id;
+                }
+
                 var propInfo = wrapper.Value.GetType().GetProperty("Guid");
 
                 if (propInfo == null)

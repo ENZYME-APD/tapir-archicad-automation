@@ -7930,13 +7930,18 @@
                 "name": {
                     "type": "string",
                     "description": "Name of the attribute."
+                },
+                "modificationTime": {
+                    "type": "integer",
+                    "description": "The last modification time of the attribute, in seconds since 1970-01-01 00:00:00 UTC (a GSTime), the same stamp the Attribute Manager writes as ModiTime into its XML export."
                 }
             },
             "additionalProperties": false,
             "required": [
                 "attributeId",
                 "index",
-                "name"
+                "name",
+                "modificationTime"
             ]
 
         }
@@ -8106,6 +8111,27 @@
                         },
                         "baseElementId": {
                             "$ref": "#/ElementId"
+                        },
+                        "line": {
+                            "type": "boolean",
+                            "description": "The witness parameters as CreateAssociativeDimensions takes them (API_Base): read a dimension placed by hand to learn the values an element type needs."
+                        },
+                        "inIndex": {
+                            "type": "integer",
+                            "description": "Subindex of the base element's node (API_Neig inIndex)."
+                        },
+                        "special": {
+                            "type": "integer"
+                        },
+                        "nodeType": {
+                            "type": "integer"
+                        },
+                        "nodeStatus": {
+                            "type": "integer"
+                        },
+                        "nodeId": {
+                            "type": "number",
+                            "description": "Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon."
                         }
                     }
                 }
