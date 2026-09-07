@@ -37,6 +37,10 @@ dimensions = aclib.RunTapirCommand ('CreateAssociativeDimensions', {
     ]
 }, debug = False)['elements']
 
+# Coordinates and values are recomputed by Archicad, so they are rounded before printing or comparing.
+def Rounded (coordinate):
+    return (round (coordinate['x'], 6), round (coordinate['y'], 6))
+
 def PrintDimensionData (dimensionId):
     data = aclib.RunTapirCommand ('GetDimensionData', {'elements': [dimensionId]}, debug = False)['dimensionsData'][0]
     print ('direction=({}, {}) witness points={}'.format (data['direction']['x'], data['direction']['y'], len (data['witnessPoints'])))
@@ -44,8 +48,8 @@ def PrintDimensionData (dimensionId):
         # baseElementId is missing when the witness point is not attached to any element.
         baseElementId = p.get ('baseElementId')
         baseElement = next ((i for i, wallId in enumerate (wallIds) if baseElementId is not None and wallId['guid'] == baseElementId['guid']), None)
-        print ('  wall {} at ({}, {}) value={} line={} inIndex={} special={} nodeType={} nodeStatus={} nodeId={}'.format (
-            baseElement, p['coordinate']['x'], p['coordinate']['y'], p['dimensionValue'],
+        print ('  wall {} at {} value={} line={} inIndex={} special={} nodeType={} nodeStatus={} nodeId={}'.format (
+            baseElement, Rounded (p['coordinate']), round (p['dimensionValue'], 6),
             p['line'], p['inIndex'], p['special'], p['nodeType'], p['nodeStatus'], p['nodeId']))
     return data
 
@@ -76,7 +80,7 @@ if all ('baseElementId' in p for p in data['witnessPoints']):
     }, debug = False)['elements']
     rebuiltData = PrintDimensionData (rebuilt[0])
     print ('rebuilt dimension measures the same: {}'.format (
-        [p['coordinate'] for p in rebuiltData['witnessPoints']] == [p['coordinate'] for p in data['witnessPoints']]))
+        [Rounded (p['coordinate']) for p in rebuiltData['witnessPoints']] == [Rounded (p['coordinate']) for p in data['witnessPoints']]))
 else:
     print ('not every witness point is attached to a wall, nothing to rebuild')
 
