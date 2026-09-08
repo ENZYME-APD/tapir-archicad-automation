@@ -1387,6 +1387,91 @@ GS::ObjectState SaveAsModuleFileCommand::Execute (const GS::ObjectState& paramet
     return CreateSuccessfulExecutionResult ();
 }
 
+SaveProjectAsArchiveCommand::SaveProjectAsArchiveCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveProjectAsArchiveCommand::GetName () const
+{
+    return "SaveProjectAsArchive";
+}
+
+GS::Optional<GS::UniString> SaveProjectAsArchiveCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "archiveFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .pla archive to write. An existing file is overwritten. The archive becomes the open project, as Save As does."
+            },
+            "includeLibraryParts": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the library parts the project uses go into the archive, which makes the archive usable as a linked library of another project."
+            },
+            "includeProperties": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the properties go into the archive."
+            },
+            "includeTextures": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the linked textures go into the archive."
+            },
+            "includeBackgroundPicture": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the background picture goes into the archive."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "archiveFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SaveProjectAsArchiveCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SaveProjectAsArchiveCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString archiveFilePath;
+    if (!parameters.Get ("archiveFilePath", archiveFilePath) || archiveFilePath.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "archiveFilePath is missing.");
+    }
+    IO::Location location (archiveFilePath);
+
+    bool includeLibraryParts = true;
+    bool includeProperties = true;
+    bool includeTextures = false;
+    bool includeBackgroundPicture = false;
+    parameters.Get ("includeLibraryParts", includeLibraryParts);
+    parameters.Get ("includeProperties", includeProperties);
+    parameters.Get ("includeTextures", includeTextures);
+    parameters.Get ("includeBackgroundPicture", includeBackgroundPicture);
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = APIFType_A_PlanFile;
+    fileSavePars.file = &location;
+
+    API_SavePars_Archive savePars = {};
+    savePars.picturesInTIFF = false;
+    savePars.texturesOn = includeTextures;
+    savePars.backgroundPictOn = includeBackgroundPicture;
+    savePars.propertiesOn = includeProperties;
+    savePars.libraryPartsOn = includeLibraryParts;
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the project as an archive: no project is open, or the file cannot be written.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
 GetGeoLocationCommand::GetGeoLocationCommand () :
     CommandBase (CommonSchema::Used)
 {
