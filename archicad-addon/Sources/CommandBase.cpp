@@ -505,6 +505,27 @@ API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& 
     return orientation;
 }
 
+GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType)
+{
+    switch (nameType) {
+        case APIName_ViewIdAndName:  return "ViewIdAndName";
+        case APIName_CustomName:     return "CustomName";
+        default:
+        case APIName_ViewOrSrcFileName: return "ViewOrSourceFileName";
+    }
+}
+
+API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue)
+{
+    if (str == "ViewIdAndName")
+        return APIName_ViewIdAndName;
+    if (str == "CustomName")
+        return APIName_CustomName;
+    if (str == "ViewOrSourceFileName")
+        return APIName_ViewOrSrcFileName;
+    return defaultValue;
+}
+
 void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName)
 {
     const auto& holes = os.AddList<GS::ObjectState> (holesFieldName);

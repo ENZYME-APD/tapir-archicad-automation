@@ -122,25 +122,6 @@ static API_ElemFilterFlags ConvertFilterStringToFlag (const GS::UniString& filte
     return APIFilt_None;
 }
 
-static GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType)
-{
-    switch (nameType) {
-        case APIName_ViewIdAndName:  return "ViewIdAndName";
-        case APIName_CustomName:     return "CustomName";
-        default:
-        case APIName_ViewOrSrcFileName: return "ViewOrSourceFileName";
-    }
-}
-
-static API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str)
-{
-    if (str == "ViewIdAndName")
-        return APIName_ViewIdAndName;
-    if (str == "CustomName")
-        return APIName_CustomName;
-    return APIName_ViewOrSrcFileName;
-}
-
 static GS::UniString DrawingNumberingTypeToString (API_NumberingTypeValues numberingType)
 {
     switch (numberingType) {

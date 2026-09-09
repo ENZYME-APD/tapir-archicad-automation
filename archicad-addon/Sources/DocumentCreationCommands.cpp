@@ -568,13 +568,38 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                     "properties": {
                         "navigatorItemId": { "$ref": "#/NavigatorItemId" },
                         "layoutDatabaseId": { "$ref": "#/DatabaseId" },
-                        "name": { "type": "string", "minLength": 1 },
+                        "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Custom title name of the new Drawing. Giving a name implies nameType CustomName unless nameType is set explicitly."
+                        },
+                        "nameType": {
+                            "type": "string",
+                            "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
+                            "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog). Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
+                        },
                         "position": { "$ref": "#/Coordinate2D" },
-                        "scale": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "scale": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Scale ratio applied to the drawing relative to its source view (API_DrawingType::ratio). Defaults to 1.0."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "Rotation angle of the drawing in radians. Defaults to the Drawing tool's current default."
+                        },
+                        "drawingScale": {
+                            "type": "number",
+                            "description": "The nominal scale of the drawing. Defaults to the Drawing tool's current default."
+                        },
+                        "modelOffset": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Offset of the model origin within the drawing. Defaults to the Drawing tool's current default."
+                        },
                         "clipPolygon": { "type": "array", "items": { "$ref": "#/Coordinate2D" }, "minItems": 3 }
                     },
                     "additionalProperties": false,
-                    "required": ["navigatorItemId", "name", "position"]
+                    "required": ["navigatorItemId", "position"]
                 }
             }
         },
@@ -615,9 +640,10 @@ static bool IsPlaceableAsDrawing (API_NavigatorItemTypeID itemType)
     }
 }
 
-// Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, name, position,
-// scale, optional clipPolygon). Shared by CreateDrawingsCommand and ChangeDrawingLinkCommand,
-// which synthesizes the same item shape from an existing Drawing's own current appearance.
+// Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, position, optional
+// name/nameType/scale/angle/drawingScale/modelOffset/clipPolygon). Shared by CreateDrawingsCommand
+// and ChangeDrawingLinkCommand, which synthesizes the same item shape from an existing Drawing's
+// own current appearance.
 static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
 {
     // The source has to be resolved and checked here, before anything is handed to
@@ -655,17 +681,23 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     }
 
     element.drawing.drawingGuid = sourceGuid;
-    SetCharProperty (&item, "name", element.drawing.name);
-    element.drawing.nameType = APIName_CustomName;
+    // An explicit nameType wins; a name alone means CustomName (the historic behavior of this
+    // command, when name was required); with neither, the Drawing tool's default is kept.
+    const bool hasName = SetCharProperty (&item, "name", element.drawing.name);
+    GS::UniString nameTypeStr;
+    if (item.Get ("nameType", nameTypeStr)) {
+        element.drawing.nameType = DrawingNameTypeFromString (nameTypeStr, element.drawing.nameType);
+    } else if (hasName) {
+        element.drawing.nameType = APIName_CustomName;
+    }
     element.drawing.anchorPoint = APIAnc_MM;
     element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
     if (!item.Get ("scale", element.drawing.ratio)) {
         element.drawing.ratio = 1.0;
     }
-    // Optional, not part of CreateDrawings' own public schema - only used internally by
-    // ChangeDrawingLink, which needs to set these at creation time rather than via a follow-up
+    // Optional; these must be set at creation time rather than via a follow-up
     // ACAPI_Element_Change (changing an element immediately after creating it, within the same
-    // undoable command, is unreliable).
+    // undoable command, is unreliable) - which is also why ChangeDrawingLink passes them here.
     item.Get ("angle", element.drawing.angle);
     item.Get ("drawingScale", element.drawing.drawingScale);
     const GS::ObjectState* modelOffsetState = item.Get ("modelOffset");
@@ -784,7 +816,7 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
 // references to the old guid (dimensions, markers, IDs) will need updating separately.
 //
 // All of the old Drawing's appearance (pos, angle, ratio, drawingScale, modelOffset,
-// clipPolygon) is set on the new element BEFORE creation (via CreateOneDrawing), not through
+// nameType, clipPolygon) is set on the new element BEFORE creation (via CreateOneDrawing), not through
 // a follow-up ACAPI_Element_Change - calling Change on an element immediately after creating
 // it, within the same undoable command, crashed Archicad's command layer in testing.
 //
@@ -906,6 +938,7 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             GS::ObjectState newDrawingItem;
             newDrawingItem.Add ("navigatorItemId", *navigatorItemIdState);
             newDrawingItem.Add ("name", GS::UniString (oldElement.drawing.name));
+            newDrawingItem.Add ("nameType", DrawingNameTypeToString (oldElement.drawing.nameType));
             newDrawingItem.Add ("position", Create2DCoordinateObjectState (oldElement.drawing.pos));
             newDrawingItem.Add ("scale", oldElement.drawing.ratio);
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
