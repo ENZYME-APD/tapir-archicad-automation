@@ -2006,6 +2006,11 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.drawing.poly.nArcs        = 0;
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, poly);
+                        } else if (typeSpecificDetails->Get ("isCutWithFrame", elem.drawing.isCutWithFrame)) {
+                            // No clipPolygon supplied: only the flag itself is changed. false clears
+                            // cropping and restores the full extent (#651); true re-enables whatever
+                            // clip polygon is still stored on the Drawing.
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isCutWithFrame);
                         }
                         if (typeSpecificDetails->Get ("drawingScale", elem.drawing.drawingScale)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, drawingScale);

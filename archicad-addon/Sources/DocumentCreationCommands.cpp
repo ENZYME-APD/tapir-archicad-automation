@@ -685,7 +685,15 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     const Int32 nClip = (Int32) clipCoords.GetSize ();
 
     API_ElementMemo memo = {};
-    if (nClip >= 3) {
+    if (nClip < 3) {
+        // No clip polygon requested. ACAPI_Element_GetDefaults filled isCutWithFrame from the
+        // Drawing tool defaults, which carry over the crop of the last manually placed Drawing -
+        // clear it explicitly so the new Drawing always shows its full, unclipped extent (#651).
+        element.drawing.isCutWithFrame = false;
+        element.drawing.poly.nSubPolys = 0;
+        element.drawing.poly.nCoords   = 0;
+        element.drawing.poly.nArcs     = 0;
+    } else {
         element.drawing.isCutWithFrame = true;
         element.drawing.poly.nSubPolys = 1;
         element.drawing.poly.nCoords   = nClip + 1;
