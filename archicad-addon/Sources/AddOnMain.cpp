@@ -1024,11 +1024,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CloneProjectMapItemToViewMapCommand> (
             navigatorCommands, "1.1.7",
-            "Clones Project Map viewpoints into the View Map, optionally into a specified folder."
+            "Clones Project Map viewpoints into a specified View Map folder or subset."
         );
         err |= RegisterCommand<CreateViewsInViewMapCommand> (
             navigatorCommands, "1.1.7",
-            "Creates independent (non-clone) navigator views in the View Map by copying database and settings from source items."
+            "Creates independent (non-clone) navigator views in a specified View Map folder or subset, by copying database and settings from source items."
         );
         err |= RegisterCommand<CreateViewMapFolderCommand> (
             navigatorCommands, "1.1.7",
