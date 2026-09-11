@@ -122,6 +122,8 @@ GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
 API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
 GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
 API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os);
+GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType);
+API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue = APIName_ViewOrSrcFileName);
 
 // Defined in ExtendedElementCommands.cpp (not ElementCommands.cpp, where it's called from) -
 // reading a Morph's body needs Model3D/MeshBody.hpp, which cannot be included in the same
