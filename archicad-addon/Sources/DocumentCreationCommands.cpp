@@ -903,6 +903,22 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
                 oldClip.Get ("clipPolygon", oldClipCoords);
             }
 
+#if defined (ServerMainVers_2700)
+            // Make the new source view current before creating the Drawing from it. A Drawing
+            // created while its source view has never been made current inherits a stale 2D
+            // transform instead of the one saved via SetViewSettings - ACAPI_View_GoToView
+            // resyncs it, the same way ChangeWindowCommand does. Best effort: GoToView only
+            // works on views, and some placeable sources (schedules, lists, viewpoints from
+            // the project map) may reject it - that must not fail the whole relink.
+            {
+                const API_Guid newSourceGuid = GetGuidFromObjectState (*navigatorItemIdState);
+                if (newSourceGuid != APINULLGuid) {
+                    const GS::UniString newSourceGuidStr = APIGuidToString (newSourceGuid);
+                    ACAPI_View_GoToView (newSourceGuidStr.ToCStr ().Get ());
+                }
+            }
+#endif
+
             if (startingDatabaseErr == NoError) {
                 err = ActivateLayoutDatabase (GetGuidFromObjectState (*layoutDatabaseIdState));
                 if (err != NoError) {
