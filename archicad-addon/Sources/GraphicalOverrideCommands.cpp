@@ -332,7 +332,19 @@ static GS::UniString ElemTypeCriterionXML (const ElemTypeInfo& info)
 // what the built-in "Classification - X" system rules use; 14 (not just 11 - "has no value" is a
 // different, unrelated operator) is its natural negation, matching an item and all its descendants
 // resp. excluding all of them.
-static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bool isNot)
+//
+// The classification SYSTEM name is by-name (HasNameId, like every custom property), not a fixed
+// guid - and, confirmed live cross-project, is NOT a universal constant: a project can contain
+// several classification systems (Archicad's own default, Uniclass, Omniclass, project-specific
+// ones, ...), and even Archicad's own default system's exact label can differ between projects/
+// versions (seen "Classification Archicad - 2.0" in one project, "Classification Archicad - v 2.0"
+// in another) - a mismatched name here silently discards the whole criterion, just like a
+// mismatched custom property/group name does. kDefaultClassificationSystemName is only a fallback
+// for the common case; callers targeting a different system must pass classificationSystem
+// explicitly.
+static const char* kDefaultClassificationSystemName = "Classification Archicad - 2.0";
+
+static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bool isNot, const GS::UniString& systemName)
 {
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
          + "<PropertyCriterion Mv=\"6\" Sv=\"0\">"
@@ -340,7 +352,7 @@ static GS::UniString ClassificationCriterionXML (const GS::UniString& itemId, bo
          +         "<PropertyDefinitionUserId Version=\"2\">"
          +             "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +             "<Guid>00000000-0000-0000-0000-000000000000</Guid>"
-         +             "<HasNameId>true</HasNameId><Name>Classification Archicad - 2.0</Name>"
+         +             "<HasNameId>true</HasNameId><Name>" + systemName + "</Name>"
          +             "<PropertyDefinitionGroupUserId Version=\"2\">"
          +                 "<PrimaryId>1</PrimaryId><HasGuidId>false</HasGuidId>"
          +                 "<Guid>00000000-0000-0000-0000-000000000000</Guid>"
@@ -794,6 +806,219 @@ static const char* kProjectZeroAltitudePropertyGuid = "5294566C-2BB7-4ADC-A6F7-F
 static const char* kGroundFloorAltitudePropertyGuid = "6EC682F2-34E5-419F-BC0E-4B1020A5DFC5";
 static const char* kRoofAltitudePropertyGuid       = "D204DBB0-D697-47F2-9FD6-EA988BBF35DF";
 
+// "MEP" (mechanical/electrical/plumbing element) criteria category - reverse-engineered from a
+// "TAPIR1" rule on Archicad 29. Only applicable to MEP elements (ducts, pipes, cable carriers, ...).
+// The 12 numeric fields all use the same generic 6-operator NumVariant pattern as Positionnement;
+// Description/Nom du materiau use the same 6-operator plain StringVariant pattern as ID et
+// Categories' "ID unique"/"Nom" - confirmed live for the "contains" operator on both, the rest of
+// the operator set matches by direct analogy with every other field using these two shared helpers.
+static const char* kMepPropertyGroupGuid           = "85599253-0EF2-4CA9-8086-A49B507DA053";
+static const char* kMepDiameterPropertyGuid        = "8CF9515E-3BE6-4D59-AD21-3534E75AEAA8";
+static const char* kMepDiameter2PropertyGuid       = "3B4312F8-C31F-493B-B19F-A2A07E908C3A";
+static const char* kMepDNPropertyGuid              = "4A94BDEC-3A8C-47F6-A7D0-BE1866CC8E69";
+static const char* kMepDN2PropertyGuid             = "9407DEA8-D393-41ED-91F3-3540F83B935F";
+static const char* kMepHeightPropertyGuid          = "F2074948-92A3-41C7-B036-6E8C31EA135F";
+static const char* kMepHeight2PropertyGuid         = "AA6A2A58-1AAE-49E7-B14F-080B8F1EADD9";
+static const char* kMepWidthPropertyGuid           = "8300E1CC-B910-44AB-AC3A-529D6863836E";
+static const char* kMepWidth2PropertyGuid          = "B4DD3D87-3231-4860-A15B-75451254B109";
+static const char* kMepAnglePropertyGuid           = "671B771B-2437-4649-BF49-0AFDA391739A";
+static const char* kMepCustomAnglePropertyGuid     = "6DA39F69-F58B-42C4-B260-27BD70A5B696";
+static const char* kMepInsulationThicknessPropertyGuid = "FE791816-C043-4878-B1A3-E96C0BE01D2F";
+static const char* kMepLengthPropertyGuid          = "F4D30EE5-C430-4CF9-BFA4-67DF4A4EE15A";
+static const char* kMepDescriptionPropertyGuid     = "DB605867-4DC8-458C-8159-83B12B539A1E";
+static const char* kMepMaterialNamePropertyGuid    = "8D4F0D8F-9915-4E89-90F6-340B0CC1BB20";
+
+// Wall-specific criteria - reverse-engineered from a "TESTTAPIR_MUR" rule on Archicad 29. Unlike
+// every category so far, these fields are scattered across FIVE different property groups: three
+// already-known ones (Positionnement, Construction, Plan et Coupe, ID et Categories, Surface et
+// Materiaux) plus two new ones only ever seen paired with wall-specific fields - kWallGeometryGroupGuid
+// ("Geometrie" tab fields specific to walls: thickness/height/width/angles/...) and
+// kAnalyticalModelGroupGuid (structural/FEM analytical-model fields: offsets, edge releases, member
+// type). All enum int values confirmed live, including wallMember2DPosition's 7 distinct values
+// (initially captured with all 7 rows left at the same default "Centre d'ame", re-captured after the
+// user set each row to a distinct value).
+static const char* kWallGeometryGroupGuid       = "554FDF95-B57F-427D-85F5-C00CFBF7406D";
+static const char* kAnalyticalModelGroupGuid    = "CD27E698-F857-47A6-833B-6F0F558DA5F5";
+
+static const char* kWallComplexityPropertyGuid           = "1BDC244B-242B-4DF9-A77C-20B079491495"; // Construction group
+static const char* kWallLevelOffsetPropertyGuid          = "015C36FD-F3C5-4AE0-AF60-EBC2935CC5E9"; // Positioning group
+static const char* kWallTopOffsetPropertyGuid            = "501D6492-507A-47D8-9158-EEA2F0882B7F"; // Positioning group
+static const char* kWallReferenceLinePositionPropertyGuid = "54FEFC6B-6BCA-4535-8311-BBE04203CB07"; // Positioning group
+static const char* kWallOutsideAnglePropertyGuid         = "7EF7271A-5EAB-4805-86AB-120869542EAA";
+static const char* kWallInsideAnglePropertyGuid          = "654377FC-E480-4C7A-9906-25892080710B";
+static const char* kWallThicknessPropertyGuid            = "AC754097-00D3-4301-9E20-328A4780FC72";
+static const char* kWallHeightPropertyGuid               = "7CAB47B5-D80B-4E2F-AB2B-71CF0BB57856";
+static const char* kWallProfileHeightPropertyGuid        = "7EDA68CA-D646-4180-B840-4327181C3E62";
+static const char* kWallHeightReversedPropertyGuid       = "E0B209EB-A5B1-4198-A86A-462F3BB59955";
+static const char* kWallWidthPropertyGuid                = "19A99799-5B44-4A6F-9904-F132D7A3F0AC";
+static const char* kWallProfileWidthPropertyGuid         = "A69ECF2A-DFEE-4B64-A1CF-C562F57FB503";
+static const char* kWallGeometryTypePropertyGuid         = "3FEBB287-6D09-4629-8F48-099D15927732";
+static const char* kWallReferenceLineOffsetAttrGuid      = "D625E555-CBB8-443E-BFC5-F29F575472F8"; // RealCriterion/AttributeCriterion pattern
+static const char* kWallTopLinePropertyGuid              = "E0FB1BED-9779-4547-839C-666C65B4F961"; // Plan et Coupe group
+static const char* kWallCutLinePropertyGuid              = "801FA71E-EAF1-44C5-B6F5-F85671367FB7"; // Plan et Coupe group
+static const char* kWallUncutLinePropertyGuid            = "B672C3D2-EC21-4D47-B0FE-FB34899D0CFF"; // Plan et Coupe group
+static const char* kWallHatchForegroundPenPropertyGuid   = "B9482485-AF7B-49A9-B012-553C4366EA86"; // Plan et Coupe group
+static const char* kWallContourPenPropertyGuid           = "51B1930E-12AB-4A8B-9C25-99BF0997FE4C"; // Plan et Coupe group
+static const char* kWallTopLinePenPropertyGuid           = "66B0FA67-6487-4585-9168-AD0F0586A213"; // Plan et Coupe group
+static const char* kWallCutHatchBackgroundPenPropertyGuid = "7AF8E5FF-4DC2-4869-9BED-14A2E8D8247D"; // Plan et Coupe group
+static const char* kWallHatchBackgroundPenPropertyGuid   = "ED2B9124-DE9C-46D9-9E42-9796ECB73C3F"; // Plan et Coupe group
+static const char* kWallUncutLinePenPropertyGuid         = "245B9933-064A-4B59-BE0A-F4517AE79E5D"; // Plan et Coupe group
+static const char* kWallOutsideSurfacePropertyGuid       = "CFD1BA5B-19BF-48CB-A007-03C017190DE7"; // Surface et Materiaux group
+static const char* kWallInsideSurfacePropertyGuid        = "ED36D500-8AC8-41AD-A316-5178D7786B16"; // Surface et Materiaux group
+static const char* kWallSideSurfacePropertyGuid          = "553149E3-242B-4686-8190-68C3BB122B64"; // Surface et Materiaux group
+static const char* kWallParentIdPropertyGuid             = "652333FC-B73A-4D25-92A2-ACAD3BCF847E"; // ID et Categories group3
+static const char* kWallConnectedOpeningIdsPropertyGuid  = "917EE466-F091-4794-AC4C-1ED044C9F802"; // ID et Categories group3
+static const char* kWallOffsetByRulesPropertyGuid        = "DCA1A33D-1D6C-4CB4-A990-DEB3B01DA49E";
+static const char* kWallOffsetZPropertyGuid              = "93B5A981-D743-4FEC-A489-09F91F447A76";
+static const char* kWallStretchByRulesPropertyGuid       = "905FAEF3-593E-4F83-BCF0-AC1627A44108";
+static const char* kWallEccentricityZPropertyGuid        = "7F16EAE4-5B31-4A44-AE56-1189FBBC22A1";
+static const char* kWallFilterHolesByRulesPropertyGuid   = "C48E5074-D773-49BD-8B87-AC1C5C816D41";
+static const char* kWallAnalyticalModelGenPropertyGuid   = "E9B2640D-9015-4491-A865-E973DD7A30FB";
+static const char* kWallManualMemberGeometryPropertyGuid = "EAC8026E-E1E8-45F3-837C-87A335198E18";
+static const char* kWallMember2DPositionPropertyGuid     = "A46FB1D3-7B44-4C8F-85D8-0D114D6B767D";
+static const char* kWallCustomEdgeReleasePropertyGuid    = "AD3AB9DB-8159-4BD6-9E35-8CCD6D6316EA";
+static const char* kWallUniformEdgeReleasesPropertyGuid  = "F376706F-E815-46C1-A5A4-02093870079E";
+static const char* kWallEdgeReleaseRotationPropertyGuid  = "D8F3EA74-9392-49E1-B3CF-B662304FFA1A";
+static const char* kWallEdgeReleaseTranslationPropertyGuid = "C83AA5B4-A409-4CC9-A4B1-A6DB3759C0E2";
+static const char* kWallMember2DFEMTypePropertyGuid      = "F97D67B1-F829-4BE0-A3F0-E89E0D990D1D";
+
+// "Decalage Ligne de Reference" uses an entirely different mechanism from every other numeric field
+// captured this session: a RealCriterion/AttributeCriterion pair (not PropertyCriterion), with its
+// own "Type" enum for the operator (1=is, 2=lessThan, 3=greaterThan, 4=isNot, 5=lessOrEqual,
+// 6=greaterOrEqual - NOT the usual 0-5 CriteriaOperatorEnum numbering) - confirmed live against all
+// 6 rows of a captured rule.
+static const char* kRealCriterionClassGuid = "52E38E9F-7E9F-44F1-A295-4873E529D52E";
+static const char* kRealConditionClassGuid = "43ACB724-3561-4277-98FA-456D782D6D67";
+
+static GS::UniString RealAttributeCriterionXML (const char* attributeGuid, double value, int realType)
+{
+    return GS::UniString ("<ClassGuid>") + kRealCriterionClassGuid + "</ClassGuid>"
+         + "<RealCriterion Mv=\"2\" Sv=\"0\">"
+         +     "<AttributeCriterion Mv=\"1\" Sv=\"0\"><AttributeGuid>" + attributeGuid + "</AttributeGuid></AttributeCriterion>"
+         +     "<ClassGuid>" + kRealConditionClassGuid + "</ClassGuid>"
+         +     "<RealSimpleCondition Mv=\"1\" Sv=\"0\"><Type>" + GS::UniString::Printf ("%d", realType) + "</Type>"
+         +         "<Value>" + GS::UniString::Printf ("%g", value) + "</Value></RealSimpleCondition>"
+         + "</RealCriterion>";
+}
+
+static bool TryEmitRealAttributeField (const GS::ObjectState& node, const char* fieldPrefix, const char* attributeGuid, GS::UniString& outXML)
+{
+    static const char* kSuffixes[] = { "", "Not", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual" };
+    static const int   kTypes[]    = { 1,   4,     2,          3,             5,             6 };
+    double value = 0.0;
+    for (int i = 0; i < 6; ++i) {
+        const GS::String fieldName = GS::String (fieldPrefix) + kSuffixes[i];
+        if (node.Get (fieldName, value)) {
+            outXML = WrapAsTrivialGroup (RealAttributeCriterionXML (attributeGuid, value, kTypes[i]));
+            return true;
+        }
+    }
+    return false;
+}
+
+// Column-specific criteria - reverse-engineered from a "TESTTAPIR_POTEAU" rule on Archicad 29. Most
+// of Column's fields turned out to be the exact same properties already captured for Wall (Height,
+// ProfileHeight, HeightReversed, Width, ProfileWidth, the 6 Plan et Coupe pens, TopLine, UncutLine,
+// ParentId, ConnectedOpeningIds, wallLevelOffset/wallTopOffset, and the analytical OffsetZ/
+// StretchByRules/EccentricityZ/AnalyticalModelGeneration fields) - reused as-is via their existing
+// "wallXxx" JSON field names rather than duplicated under new column-prefixed names, since the
+// underlying guid/group/XML shape is byte-identical. Only the genuinely column-specific fields below
+// are new. The user explicitly dropped the analytical/structural fields for Column as out of scope.
+static const char* kColumnCoatingTypePropertyGuid          = "2810579D-4FDE-4021-9A45-8909DC9491F4"; // Construction group
+static const char* kColumnInclinationAnglePropertyGuid     = "1A448310-F491-4C72-B457-29ED14337221";
+static const char* kColumnCrossSectionTypePropertyGuid     = "CD4B0B73-1D23-4C6C-A2E8-A9F785795ECE";
+static const char* kColumnCoreDiameterPropertyGuid         = "B801C842-A167-4C70-A333-521608A2E906";
+static const char* kColumnCoatingThicknessPropertyGuid     = "98E22B3A-C663-4249-8D85-BC5C4F32D487";
+static const char* kColumnBottomCrossSectionHeightCutPropertyGuid           = "8362B613-A280-448F-9A18-5CFFE7D2F396";
+static const char* kColumnBottomCrossSectionHeightPerpendicularPropertyGuid = "44B25D67-1443-48BD-823B-FED0F337EE2A";
+static const char* kColumnTopCrossSectionHeightCutPropertyGuid              = "2252E6BF-8732-44A2-BCBD-DEDB4755B401";
+static const char* kColumnTopCrossSectionHeightPerpendicularPropertyGuid    = "DA523AF3-DDF3-4CB3-918A-2E351AEDBF28";
+static const char* kColumnProfileCoreHeightPropertyGuid                     = "EC45A091-9916-48B0-8A8F-1EF9CD875558";
+static const char* kColumnCoreHeightDiameterRatioPropertyGuid               = "C9D4DA15-A7A7-4B5D-8E48-854F3D2A7053";
+static const char* kColumnBottomCrossSectionWidthCutPropertyGuid            = "AF929A6D-7987-4D67-85DB-54DCC4108C50";
+static const char* kColumnBottomCrossSectionWidthPerpendicularPropertyGuid  = "60229C62-3E47-4465-83E6-EAF08EAA58ED";
+static const char* kColumnTopCrossSectionWidthCutPropertyGuid               = "D802D20B-7C6E-4C3B-BD47-DF9B493275F6";
+static const char* kColumnTopCrossSectionWidthPerpendicularPropertyGuid     = "AC42946C-D4CF-429E-9B96-5EC771A70F34";
+static const char* kColumnCoreWidthPropertyGuid                             = "2E32E96D-6220-4AE2-86C2-FEDB45450DC2";
+static const char* kColumnProfileCoreWidthPropertyGuid                      = "98A67AD0-6B13-46CE-B675-7C121375FF89";
+static const char* kColumnCoveringHatchPropertyGuid         = "127C75B5-E910-499A-9ADC-D96C177EEE94"; // Plan et Coupe group
+static const char* kColumnCoatingHatchPropertyGuid          = "4D8A160B-C77F-457A-90B6-F5DC20DFA3D5"; // Plan et Coupe group
+static const char* kColumnCoreForegroundPenPropertyGuid           = "89E86F63-D06B-4C79-8FE9-3AA79367E01E";
+static const char* kColumnCoatingForegroundPenPropertyGuid        = "CDD27246-A306-441B-927C-B5B848057978";
+static const char* kColumnCoveringHatchForegroundPenPropertyGuid  = "080B21EF-26A0-4549-BA5D-4296CCD9DFAB";
+static const char* kColumnCoveringHatchBackgroundPenPropertyGuid  = "8DDAC1BD-539C-4770-A3CF-0AD197858016";
+static const char* kColumnCoatingBackgroundPenPropertyGuid        = "E6381AC7-4CBE-4017-9AE9-7B7323FB7901";
+static const char* kColumnCoreBackgroundPenPropertyGuid           = "B969A0F1-C258-4552-B231-D470AD8B9697";
+static const char* kColumnHiddenLinePenPropertyGuid               = "A707B974-39B9-43F5-8B6A-37157903265B";
+static const char* kColumnHiddenLineTypePropertyGuid        = "2DFDC696-E0E3-4122-A796-A872CB861ED2"; // Plan et Coupe group
+static const char* kColumnCoreSurfacePropertyGuid           = "782C3212-829A-4BBE-B0F3-278CFD3FD3C0"; // Surface et Materiaux group
+static const char* kColumnCoatingSurfacePropertyGuid        = "277C094D-89F6-4B93-BA37-82C7D3C619EC"; // Surface et Materiaux group
+static const char* kColumnExtrusionSurfacePropertyGuid      = "45CD5C6B-92AB-4872-B774-B6CC8E0920E0"; // Surface et Materiaux group
+
+// Beam-specific criteria - reverse-engineered from a "TESTTAPIR_POUTRE" rule on Archicad 29. Almost
+// every field turned out to be shared with Wall/Column (same guids, reused via their existing
+// "wallXxx"/"columnXxx" JSON field names) - only these 7 are genuinely new to Beam.
+static const char* kBeamAxisPenPropertyGuid          = "4A2025B4-8CDA-44F4-B4D1-0DA9FE50E8F4"; // Plan et Coupe group
+static const char* kBeamAxisLineTypePropertyGuid     = "E0E205E4-F84D-45A4-B9F4-90C61E87CFF3"; // Plan et Coupe group
+static const char* kBeamEndSurfacePropertyGuid       = "BA800584-43FD-458E-B644-A848E4B28268"; // Surface et Materiaux group
+static const char* kBeamRightSurfacePropertyGuid     = "F99C4755-8DD4-4740-AEE9-D6DF185BA2A7"; // Surface et Materiaux group
+static const char* kBeamLeftSurfacePropertyGuid      = "EC6BEC35-B802-4D08-96D1-5D40FB4754E3"; // Surface et Materiaux group
+static const char* kBeamBottomSurfacePropertyGuid    = "9592AFF2-C655-4E1A-8434-D5CC9409D609"; // Surface et Materiaux group
+static const char* kBeamTopSurfacePropertyGuid       = "8B571B29-384C-4D2C-A87F-594E60A6686F"; // Surface et Materiaux group
+
+// Slab-specific criteria - reverse-engineered from a "TESTTAPIR_DALLE" rule on Archicad 29. Again,
+// most fields are shared with Wall/Column/Beam (reused via their existing JSON field names) - only
+// these 5 are genuinely new to Slab.
+static const char* kSlabReferencePlaneLocationPropertyGuid = "EF2304F7-4AD4-4D29-AD23-904A92244982"; // Positionnement group
+static const char* kSlabEdgeAnglePropertyGuid               = "FF81335A-A237-44A5-9E22-02B07585DFE3"; // Geometrie group
+static const char* kSlabDefaultEdgeAnglePropertyGuid         = "B00BB8A0-2F90-4B15-B6EA-4FEFA4DE2DE1"; // Geometrie group
+static const char* kSlabCutLinePenPropertyGuid               = "34408308-7AE6-4A11-B4C4-DF041DB2C0DC"; // Plan et Coupe group
+static const char* kSlabConstructionMaterialFillPropertyGuid = "A9B69EE4-6AEE-4F29-B9E7-F8C4BA7ADB01"; // Plan et Coupe group
+
+// Roof-specific criteria - reverse-engineered from a "TESTTAPIR_TOIT" rule on Archicad 29. Again,
+// most fields are shared with Wall/Column/Beam/Slab (reused via their existing JSON field names,
+// including structureType, which Roof also exposes) - only these 7 are genuinely new to Roof.
+static const char* kRoofCutBodyTypePropertyGuid       = "7F100F87-6D8F-43AA-97B5-8194C600B3FE"; // Construction group
+static const char* kRoofLevelNumberPropertyGuid       = "599C4BCA-CC94-46F8-BF4B-EA787984CC4E"; // Construction group
+static const char* kRoofEaveOverhangTypePropertyGuid  = "00A1F4A4-B63C-4226-BB80-D4FFCEBDDC2E"; // Construction group
+static const char* kRoofEdgeAnglePropertyGuid         = "C06EA0C1-93EB-49A4-A3A0-AC0D842C778B"; // Geometrie group
+static const char* kRoofEaveOverhangPropertyGuid      = "7513211D-FB9D-45DE-9C1B-CFC9BBFD8E49"; // Geometrie group
+static const char* kRoofGeometryTypePropertyGuid      = "0E58BDFD-8B5F-443E-AD3F-15F92A53F65A"; // Geometrie group
+static const char* kRoofPitchPropertyGuid             = "96CA70EA-53AE-4966-9679-AE6699CD78E3"; // Geometrie group
+
+static GS::UniString NumListCriterionXML (const char* propertyGuid, double value, int numOp, const char* groupGuid)
+{
+    return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
+         + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
+         + PropertyHeaderXML (propertyGuid, groupGuid)
+         + "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", numOp) + "</CriteriaOperatorEnum>"
+         + "<Value><Variant Type=\"NumListVariant\"><Status>Normal</Status><ValueArray><ValueItem>" + GS::UniString::Printf ("%g", value) + "</ValueItem></ValueArray></Variant></Value>"
+         + "</VBEF::ConditionIO></PropertyCriterion>";
+}
+
+static bool TryEmitNumListField (const GS::ObjectState& node, const char* fieldPrefix, const char* propertyGuid, GS::UniString& outXML, const char* groupGuid)
+{
+    static const char* kSuffixes[] = { "", "Not", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual" };
+    static const int   kOps[]      = { 0,   1,     2,          3,             4,             5 };
+    double value = 0.0;
+    for (int i = 0; i < 6; ++i) {
+        const GS::String fieldName = GS::String (fieldPrefix) + kSuffixes[i];
+        if (node.Get (fieldName, value)) {
+            outXML = WrapAsTrivialGroup (NumListCriterionXML (propertyGuid, value, kOps[i], groupGuid));
+            return true;
+        }
+    }
+    return false;
+}
+
+// Shell-specific criteria - reverse-engineered from a "TESTTAPIR_COQUE" rule on Archicad 29. Again,
+// most fields are shared with Wall/Column/Beam/Slab/Roof (reused via their existing JSON field
+// names) - only these 3 are genuinely new to Shell. shellGeometryType's 3 values (Extrude/Revolved/
+// Ruled) were all confirmed live, re-captured after the user set each row to a distinct value.
+static const char* kShellCutBodyTypePropertyGuid  = "626C831E-F093-4983-A3C8-3723CE5D24D8"; // Construction group
+static const char* kShellTiltAnglePropertyGuid     = "1E6BCA80-2880-4D63-9DA2-CF8B66CA28A5"; // Geometrie group
+static const char* kShellGeometryTypePropertyGuid  = "5D862E7D-3DD8-4FEB-BC3F-090B3D96B27B"; // Geometrie group
+
 // "Plan et Coupe" (Plan and Section) criteria category - reverse-engineered from a "TAPIR3" rule.
 // Hachure/Type Ligne reference a real Fill/Line attribute (contains/does not contain only, like
 // layerCombination). Police/Stylo/Stylo Texte reference a font/pen by its plain numeric ID (no
@@ -820,6 +1045,16 @@ static GS::UniString NumPropertyCriterionXML (const char* propertyGuid, double v
          + "</VBEF::ConditionIO></PropertyCriterion>";
 }
 
+static GS::UniString IntPropertyCriterionXML (const char* propertyGuid, int value, int numOp, const char* groupGuid)
+{
+    return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
+         + "<PropertyCriterion Mv=\"6\" Sv=\"0\"><VBEF::ConditionIO Mv=\"2\" Sv=\"0\">"
+         + PropertyHeaderXML (propertyGuid, groupGuid)
+         + "<CriteriaOperatorEnum>" + GS::UniString::Printf ("%d", numOp) + "</CriteriaOperatorEnum>"
+         + "<Value><Variant Type=\"IntVariant\"><Status>Normal</Status><Value>" + GS::UniString::Printf ("%d", value) + "</Value></Variant></Value>"
+         + "</VBEF::ConditionIO></PropertyCriterion>";
+}
+
 static GS::UniString ModelElementLeafXML ()
 {
     return GS::UniString ("<ClassGuid>") + kModelElemClassGuid + "</ClassGuid>"
@@ -835,7 +1070,7 @@ static GS::UniString DrawingElementLeafXML ()
 // Tries each of the 6 numeric-comparison field name suffixes ("", "Not", "LessThan",
 // "GreaterThan", "LessOrEqual", "GreaterOrEqual") for fieldPrefix against node; if one is present,
 // emits the corresponding bare NumVariant PropertyCriterion into outXML and returns true (matched).
-static bool TryEmitNumField (const GS::ObjectState& node, const char* fieldPrefix, const char* propertyGuid, GS::UniString& outXML)
+static bool TryEmitNumField (const GS::ObjectState& node, const char* fieldPrefix, const char* propertyGuid, GS::UniString& outXML, const char* groupGuid = kPositioningPropertyGroupGuid)
 {
     static const char* kSuffixes[] = { "", "Not", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual" };
     static const int   kOps[]      = { 0,   1,     2,          3,             4,             5 };
@@ -843,7 +1078,25 @@ static bool TryEmitNumField (const GS::ObjectState& node, const char* fieldPrefi
     for (int i = 0; i < 6; ++i) {
         const GS::String fieldName = GS::String (fieldPrefix) + kSuffixes[i];
         if (node.Get (fieldName, value)) {
-            outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (propertyGuid, value, kOps[i], kPositioningPropertyGroupGuid));
+            outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (propertyGuid, value, kOps[i], groupGuid));
+            return true;
+        }
+    }
+    return false;
+}
+
+// Same idea as TryEmitNumField, but for fields that store an IntVariant (DN/2eme DN in the MEP
+// category) rather than a NumVariant - confirmed live these fail creation silently (rule accepted,
+// criterion discarded) when sent as NumVariant, unlike every other numeric MEP field.
+static bool TryEmitIntField (const GS::ObjectState& node, const char* fieldPrefix, const char* propertyGuid, GS::UniString& outXML, const char* groupGuid)
+{
+    static const char* kSuffixes[] = { "", "Not", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual" };
+    static const int   kOps[]      = { 0,   1,     2,          3,             4,             5 };
+    int value = 0;
+    for (int i = 0; i < 6; ++i) {
+        const GS::String fieldName = GS::String (fieldPrefix) + kSuffixes[i];
+        if (node.Get (fieldName, value)) {
+            outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (propertyGuid, value, kOps[i], groupGuid));
             return true;
         }
     }
@@ -852,7 +1105,7 @@ static bool TryEmitNumField (const GS::ObjectState& node, const char* fieldPrefi
 
 // Same idea as TryEmitNumField, for the 6-suffix string-comparison field family emitted as
 // StringListVariant (Surface et Materiaux category).
-static bool TryEmitStringListField (const GS::ObjectState& node, const char* fieldPrefix, const char* propertyGuid, GS::UniString& outXML)
+static bool TryEmitStringListField (const GS::ObjectState& node, const char* fieldPrefix, const char* propertyGuid, GS::UniString& outXML, const char* groupGuid = kSurfaceMaterialPropertyGroupGuid)
 {
     static const char* kSuffixes[] = { "Is", "IsNot", "Contains", "NotContains", "StartsWith", "EndsWith" };
     static const int   kOps[]      = { 0,     1,       6,          7,             8,            9 };
@@ -860,7 +1113,7 @@ static bool TryEmitStringListField (const GS::ObjectState& node, const char* fie
     for (int i = 0; i < 6; ++i) {
         const GS::String fieldName = GS::String (fieldPrefix) + kSuffixes[i];
         if (node.Get (fieldName, value)) {
-            outXML = WrapAsTrivialGroup (StringListCriterionXML (propertyGuid, value, kOps[i], kSurfaceMaterialPropertyGroupGuid));
+            outXML = WrapAsTrivialGroup (StringListCriterionXML (propertyGuid, value, kOps[i], groupGuid));
             return true;
         }
     }
@@ -1002,7 +1255,10 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (node.Get ("classification", classification) || node.Get ("classificationNot", classificationNot)) {
         const bool isNot = !classificationNot.IsEmpty ();
         const GS::UniString& itemId = isNot ? classificationNot : classification;
-        outXML = WrapAsTrivialGroup (ClassificationCriterionXML (itemId, isNot));
+        GS::UniString classificationSystem;
+        if (!node.Get ("classificationSystem", classificationSystem) || classificationSystem.IsEmpty ())
+            classificationSystem = kDefaultClassificationSystemName;
+        outXML = WrapAsTrivialGroup (ClassificationCriterionXML (itemId, isNot, classificationSystem));
         return true;
     }
 
@@ -1179,6 +1435,703 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     if (TryEmitNumField (node, "roofAltitude", kRoofAltitudePropertyGuid, outXML))
         return true;
+
+    if (TryEmitNumField (node, "mepDiameter", kMepDiameterPropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepDiameter2", kMepDiameter2PropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitIntField (node, "mepDN", kMepDNPropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitIntField (node, "mepDN2", kMepDN2PropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepHeight", kMepHeightPropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepHeight2", kMepHeight2PropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepWidth", kMepWidthPropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepWidth2", kMepWidth2PropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepAngle", kMepAnglePropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepCustomAngle", kMepCustomAnglePropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepInsulationThickness", kMepInsulationThicknessPropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "mepLength", kMepLengthPropertyGuid, outXML, kMepPropertyGroupGuid))
+        return true;
+    if (TryEmitStringField6Ops (node, "mepDescription", kMepDescriptionPropertyGuid, kMepPropertyGroupGuid, outXML))
+        return true;
+    if (TryEmitStringField6Ops (node, "mepMaterialName", kMepMaterialNamePropertyGuid, kMepPropertyGroupGuid, outXML))
+        return true;
+
+    GS::UniString wallComplexity, wallComplexityNot;
+    if (node.Get ("wallComplexity", wallComplexity) || node.Get ("wallComplexityNot", wallComplexityNot)) {
+        const bool isNot = !wallComplexityNot.IsEmpty ();
+        const GS::UniString& s = isNot ? wallComplexityNot : wallComplexity;
+        int value = 0;
+        if (s == "Straight")            value = 0;
+        else if (s == "Slanted")        value = 3;
+        else if (s == "DoubleSlanted")  value = 5;
+        else {
+            outError = "Invalid wallComplexity/wallComplexityNot '" + s + "'. Must be 'Straight', 'Slanted', or 'DoubleSlanted'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallComplexityPropertyGuid, value, kConstructionPropertyGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitNumField (node, "wallLevelOffset", kWallLevelOffsetPropertyGuid, outXML, kPositioningPropertyGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "wallTopOffset", kWallTopOffsetPropertyGuid, outXML, kPositioningPropertyGroupGuid))
+        return true;
+    GS::UniString wallRefLinePos, wallRefLinePosNot;
+    if (node.Get ("wallReferenceLinePosition", wallRefLinePos) || node.Get ("wallReferenceLinePositionNot", wallRefLinePosNot)) {
+        const bool isNot = !wallRefLinePosNot.IsEmpty ();
+        const GS::UniString& s = isNot ? wallRefLinePosNot : wallRefLinePos;
+        int value = 0;
+        if (s == "Outside")            value = 0;
+        else if (s == "Center")        value = 1;
+        else if (s == "Inside")        value = 2;
+        else if (s == "CoreOutside")   value = 3;
+        else if (s == "CoreCenter")    value = 4;
+        else if (s == "CoreInside")    value = 5;
+        else {
+            outError = "Invalid wallReferenceLinePosition/wallReferenceLinePositionNot '" + s + "'. Must be 'Outside', 'Center', 'Inside', 'CoreOutside', 'CoreCenter', or 'CoreInside'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallReferenceLinePositionPropertyGuid, value, kPositioningPropertyGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitNumField (node, "wallOutsideAngle", kWallOutsideAnglePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "wallInsideAngle", kWallInsideAnglePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "wallThickness", kWallThicknessPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "wallHeight", kWallHeightPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "wallProfileHeight", kWallProfileHeightPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    bool wallHeightReversed = false;
+    if (node.Get ("wallHeightReversed", wallHeightReversed)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallHeightReversedPropertyGuid, wallHeightReversed, kWallGeometryGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "wallWidth", kWallWidthPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "wallProfileWidth", kWallProfileWidthPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    GS::UniString wallGeometryType, wallGeometryTypeNot;
+    if (node.Get ("wallGeometryType", wallGeometryType) || node.Get ("wallGeometryTypeNot", wallGeometryTypeNot)) {
+        const bool isNot = !wallGeometryTypeNot.IsEmpty ();
+        const GS::UniString& s = isNot ? wallGeometryTypeNot : wallGeometryType;
+        int value = 0;
+        if (s == "Uniform")         value = 0;
+        else if (s == "Trapezoid")  value = 1;
+        else if (s == "Polygonal")  value = 3;
+        else {
+            outError = "Invalid wallGeometryType/wallGeometryTypeNot '" + s + "'. Must be 'Uniform', 'Trapezoid', or 'Polygonal'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallGeometryTypePropertyGuid, value, kWallGeometryGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitRealAttributeField (node, "wallReferenceLineOffset", kWallReferenceLineOffsetAttrGuid, outXML))
+        return true;
+
+    GS::UniString wallTopLine, wallTopLineNot, wallCutLine, wallCutLineNot, wallUncutLine, wallUncutLineNot;
+    if (node.Get ("wallTopLine", wallTopLine) || node.Get ("wallTopLineNot", wallTopLineNot)) {
+        const bool isNot = !wallTopLineNot.IsEmpty ();
+        const GS::UniString& name = isNot ? wallTopLineNot : wallTopLine;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, name, idx)) {
+            outError = "Unknown line type '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kWallTopLinePropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("wallCutLine", wallCutLine) || node.Get ("wallCutLineNot", wallCutLineNot)) {
+        const bool isNot = !wallCutLineNot.IsEmpty ();
+        const GS::UniString& name = isNot ? wallCutLineNot : wallCutLine;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, name, idx)) {
+            outError = "Unknown line type '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kWallCutLinePropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("wallUncutLine", wallUncutLine) || node.Get ("wallUncutLineNot", wallUncutLineNot)) {
+        const bool isNot = !wallUncutLineNot.IsEmpty ();
+        const GS::UniString& name = isNot ? wallUncutLineNot : wallUncutLine;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, name, idx)) {
+            outError = "Unknown line type '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kWallUncutLinePropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int wallHatchForegroundPen = 0, wallHatchForegroundPenNot = 0;
+    if (node.Get ("wallHatchForegroundPen", wallHatchForegroundPen) || node.Get ("wallHatchForegroundPenNot", wallHatchForegroundPenNot)) {
+        const bool isNot = node.Get ("wallHatchForegroundPenNot", wallHatchForegroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kWallHatchForegroundPenPropertyGuid, isNot ? wallHatchForegroundPenNot : wallHatchForegroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int wallContourPen = 0, wallContourPenNot = 0;
+    if (node.Get ("wallContourPen", wallContourPen) || node.Get ("wallContourPenNot", wallContourPenNot)) {
+        const bool isNot = node.Get ("wallContourPenNot", wallContourPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kWallContourPenPropertyGuid, isNot ? wallContourPenNot : wallContourPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int wallTopLinePen = 0, wallTopLinePenNot = 0;
+    if (node.Get ("wallTopLinePen", wallTopLinePen) || node.Get ("wallTopLinePenNot", wallTopLinePenNot)) {
+        const bool isNot = node.Get ("wallTopLinePenNot", wallTopLinePenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kWallTopLinePenPropertyGuid, isNot ? wallTopLinePenNot : wallTopLinePen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int wallCutHatchBackgroundPen = 0, wallCutHatchBackgroundPenNot = 0;
+    if (node.Get ("wallCutHatchBackgroundPen", wallCutHatchBackgroundPen) || node.Get ("wallCutHatchBackgroundPenNot", wallCutHatchBackgroundPenNot)) {
+        const bool isNot = node.Get ("wallCutHatchBackgroundPenNot", wallCutHatchBackgroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kWallCutHatchBackgroundPenPropertyGuid, isNot ? wallCutHatchBackgroundPenNot : wallCutHatchBackgroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int wallHatchBackgroundPen = 0, wallHatchBackgroundPenNot = 0;
+    if (node.Get ("wallHatchBackgroundPen", wallHatchBackgroundPen) || node.Get ("wallHatchBackgroundPenNot", wallHatchBackgroundPenNot)) {
+        const bool isNot = node.Get ("wallHatchBackgroundPenNot", wallHatchBackgroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kWallHatchBackgroundPenPropertyGuid, isNot ? wallHatchBackgroundPenNot : wallHatchBackgroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int wallUncutLinePen = 0, wallUncutLinePenNot = 0;
+    if (node.Get ("wallUncutLinePen", wallUncutLinePen) || node.Get ("wallUncutLinePenNot", wallUncutLinePenNot)) {
+        const bool isNot = node.Get ("wallUncutLinePenNot", wallUncutLinePenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kWallUncutLinePenPropertyGuid, isNot ? wallUncutLinePenNot : wallUncutLinePen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString wallOutsideSurface, wallOutsideSurfaceNot, wallInsideSurface, wallInsideSurfaceNot, wallSideSurface, wallSideSurfaceNot;
+    if (node.Get ("wallOutsideSurface", wallOutsideSurface) || node.Get ("wallOutsideSurfaceNot", wallOutsideSurfaceNot)) {
+        const bool isNot = !wallOutsideSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? wallOutsideSurfaceNot : wallOutsideSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kWallOutsideSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("wallInsideSurface", wallInsideSurface) || node.Get ("wallInsideSurfaceNot", wallInsideSurfaceNot)) {
+        const bool isNot = !wallInsideSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? wallInsideSurfaceNot : wallInsideSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kWallInsideSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("wallSideSurface", wallSideSurface) || node.Get ("wallSideSurfaceNot", wallSideSurfaceNot)) {
+        const bool isNot = !wallSideSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? wallSideSurfaceNot : wallSideSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kWallSideSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (TryEmitStringField6Ops (node, "wallParentId", kWallParentIdPropertyGuid, kIdCategoryGroupGuid3, outXML))
+        return true;
+    if (TryEmitStringListField (node, "wallConnectedOpeningIds", kWallConnectedOpeningIdsPropertyGuid, outXML, kIdCategoryGroupGuid3))
+        return true;
+    bool wallOffsetByRules = false;
+    if (node.Get ("wallOffsetByRules", wallOffsetByRules)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallOffsetByRulesPropertyGuid, wallOffsetByRules, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "wallOffsetZ", kWallOffsetZPropertyGuid, outXML, kAnalyticalModelGroupGuid))
+        return true;
+    bool wallStretchByRules = false;
+    if (node.Get ("wallStretchByRules", wallStretchByRules)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallStretchByRulesPropertyGuid, wallStretchByRules, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "wallEccentricityZ", kWallEccentricityZPropertyGuid, outXML, kAnalyticalModelGroupGuid))
+        return true;
+    bool wallFilterHolesByRules = false;
+    if (node.Get ("wallFilterHolesByRules", wallFilterHolesByRules)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallFilterHolesByRulesPropertyGuid, wallFilterHolesByRules, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    bool wallAnalyticalModelGeneration = false;
+    if (node.Get ("wallAnalyticalModelGeneration", wallAnalyticalModelGeneration)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallAnalyticalModelGenPropertyGuid, wallAnalyticalModelGeneration, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    bool wallManuallyEditedMemberGeometry = false;
+    if (node.Get ("wallManuallyEditedMemberGeometry", wallManuallyEditedMemberGeometry)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallManualMemberGeometryPropertyGuid, wallManuallyEditedMemberGeometry, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    GS::UniString columnCoatingType, columnCoatingTypeNot;
+    if (node.Get ("columnCoatingType", columnCoatingType) || node.Get ("columnCoatingTypeNot", columnCoatingTypeNot)) {
+        const bool isNot = !columnCoatingTypeNot.IsEmpty ();
+        const GS::UniString& s = isNot ? columnCoatingTypeNot : columnCoatingType;
+        int value = 0;
+        if (s == "Core")         value = 0;
+        else if (s == "Finish")  value = 1;
+        else if (s == "Other")   value = 2;
+        else {
+            outError = "Invalid columnCoatingType/columnCoatingTypeNot '" + s + "'. Must be 'Core', 'Finish', or 'Other'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kColumnCoatingTypePropertyGuid, value, kConstructionPropertyGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitNumField (node, "columnInclinationAngle", kColumnInclinationAnglePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    GS::UniString columnCrossSectionType;
+    if (node.Get ("columnCrossSectionType", columnCrossSectionType)) {
+        int value = 0;
+        if (columnCrossSectionType == "Rectangular")     value = 2;
+        else if (columnCrossSectionType == "Circular")   value = 1;
+        else if (columnCrossSectionType == "Profiled")   value = 3;
+        else {
+            outError = "Invalid columnCrossSectionType '" + columnCrossSectionType + "'. Must be 'Rectangular', 'Circular', or 'Profiled'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kColumnCrossSectionTypePropertyGuid, value, kWallGeometryGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "columnCoreDiameter", kColumnCoreDiameterPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnCoatingThickness", kColumnCoatingThicknessPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnBottomCrossSectionHeightCut", kColumnBottomCrossSectionHeightCutPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnBottomCrossSectionHeightPerpendicular", kColumnBottomCrossSectionHeightPerpendicularPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnTopCrossSectionHeightCut", kColumnTopCrossSectionHeightCutPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnTopCrossSectionHeightPerpendicular", kColumnTopCrossSectionHeightPerpendicularPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnProfileCoreHeight", kColumnProfileCoreHeightPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnCoreHeightDiameterRatio", kColumnCoreHeightDiameterRatioPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnBottomCrossSectionWidthCut", kColumnBottomCrossSectionWidthCutPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnBottomCrossSectionWidthPerpendicular", kColumnBottomCrossSectionWidthPerpendicularPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnTopCrossSectionWidthCut", kColumnTopCrossSectionWidthCutPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnTopCrossSectionWidthPerpendicular", kColumnTopCrossSectionWidthPerpendicularPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnCoreWidth", kColumnCoreWidthPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "columnProfileCoreWidth", kColumnProfileCoreWidthPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    GS::UniString columnCoveringHatch, columnCoveringHatchNot, columnCoatingHatch, columnCoatingHatchNot;
+    if (node.Get ("columnCoveringHatch", columnCoveringHatch) || node.Get ("columnCoveringHatchNot", columnCoveringHatchNot)) {
+        const bool isNot = !columnCoveringHatchNot.IsEmpty ();
+        const GS::UniString& name = isNot ? columnCoveringHatchNot : columnCoveringHatch;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_FilltypeID, name, idx)) {
+            outError = "Unknown fill '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kColumnCoveringHatchPropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("columnCoatingHatch", columnCoatingHatch) || node.Get ("columnCoatingHatchNot", columnCoatingHatchNot)) {
+        const bool isNot = !columnCoatingHatchNot.IsEmpty ();
+        const GS::UniString& name = isNot ? columnCoatingHatchNot : columnCoatingHatch;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_FilltypeID, name, idx)) {
+            outError = "Unknown fill '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kColumnCoatingHatchPropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int columnCoreForegroundPen = 0, columnCoreForegroundPenNot = 0;
+    if (node.Get ("columnCoreForegroundPen", columnCoreForegroundPen) || node.Get ("columnCoreForegroundPenNot", columnCoreForegroundPenNot)) {
+        const bool isNot = node.Get ("columnCoreForegroundPenNot", columnCoreForegroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kColumnCoreForegroundPenPropertyGuid, isNot ? columnCoreForegroundPenNot : columnCoreForegroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int columnCoatingForegroundPen = 0, columnCoatingForegroundPenNot = 0;
+    if (node.Get ("columnCoatingForegroundPen", columnCoatingForegroundPen) || node.Get ("columnCoatingForegroundPenNot", columnCoatingForegroundPenNot)) {
+        const bool isNot = node.Get ("columnCoatingForegroundPenNot", columnCoatingForegroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kColumnCoatingForegroundPenPropertyGuid, isNot ? columnCoatingForegroundPenNot : columnCoatingForegroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int columnCoveringHatchForegroundPen = 0, columnCoveringHatchForegroundPenNot = 0;
+    if (node.Get ("columnCoveringHatchForegroundPen", columnCoveringHatchForegroundPen) || node.Get ("columnCoveringHatchForegroundPenNot", columnCoveringHatchForegroundPenNot)) {
+        const bool isNot = node.Get ("columnCoveringHatchForegroundPenNot", columnCoveringHatchForegroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kColumnCoveringHatchForegroundPenPropertyGuid, isNot ? columnCoveringHatchForegroundPenNot : columnCoveringHatchForegroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int columnCoveringHatchBackgroundPen = 0, columnCoveringHatchBackgroundPenNot = 0;
+    if (node.Get ("columnCoveringHatchBackgroundPen", columnCoveringHatchBackgroundPen) || node.Get ("columnCoveringHatchBackgroundPenNot", columnCoveringHatchBackgroundPenNot)) {
+        const bool isNot = node.Get ("columnCoveringHatchBackgroundPenNot", columnCoveringHatchBackgroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kColumnCoveringHatchBackgroundPenPropertyGuid, isNot ? columnCoveringHatchBackgroundPenNot : columnCoveringHatchBackgroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int columnCoatingBackgroundPen = 0, columnCoatingBackgroundPenNot = 0;
+    if (node.Get ("columnCoatingBackgroundPen", columnCoatingBackgroundPen) || node.Get ("columnCoatingBackgroundPenNot", columnCoatingBackgroundPenNot)) {
+        const bool isNot = node.Get ("columnCoatingBackgroundPenNot", columnCoatingBackgroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kColumnCoatingBackgroundPenPropertyGuid, isNot ? columnCoatingBackgroundPenNot : columnCoatingBackgroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int columnCoreBackgroundPen = 0, columnCoreBackgroundPenNot = 0;
+    if (node.Get ("columnCoreBackgroundPen", columnCoreBackgroundPen) || node.Get ("columnCoreBackgroundPenNot", columnCoreBackgroundPenNot)) {
+        const bool isNot = node.Get ("columnCoreBackgroundPenNot", columnCoreBackgroundPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kColumnCoreBackgroundPenPropertyGuid, isNot ? columnCoreBackgroundPenNot : columnCoreBackgroundPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int columnHiddenLinePen = 0, columnHiddenLinePenNot = 0;
+    if (node.Get ("columnHiddenLinePen", columnHiddenLinePen) || node.Get ("columnHiddenLinePenNot", columnHiddenLinePenNot)) {
+        const bool isNot = node.Get ("columnHiddenLinePenNot", columnHiddenLinePenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kColumnHiddenLinePenPropertyGuid, isNot ? columnHiddenLinePenNot : columnHiddenLinePen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString columnHiddenLineType, columnHiddenLineTypeNot;
+    if (node.Get ("columnHiddenLineType", columnHiddenLineType) || node.Get ("columnHiddenLineTypeNot", columnHiddenLineTypeNot)) {
+        const bool isNot = !columnHiddenLineTypeNot.IsEmpty ();
+        const GS::UniString& name = isNot ? columnHiddenLineTypeNot : columnHiddenLineType;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, name, idx)) {
+            outError = "Unknown line type '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kColumnHiddenLineTypePropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString columnCoreSurface, columnCoreSurfaceNot, columnCoatingSurface, columnCoatingSurfaceNot, columnExtrusionSurface, columnExtrusionSurfaceNot;
+    if (node.Get ("columnCoreSurface", columnCoreSurface) || node.Get ("columnCoreSurfaceNot", columnCoreSurfaceNot)) {
+        const bool isNot = !columnCoreSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? columnCoreSurfaceNot : columnCoreSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kColumnCoreSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("columnCoatingSurface", columnCoatingSurface) || node.Get ("columnCoatingSurfaceNot", columnCoatingSurfaceNot)) {
+        const bool isNot = !columnCoatingSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? columnCoatingSurfaceNot : columnCoatingSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kColumnCoatingSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("columnExtrusionSurface", columnExtrusionSurface) || node.Get ("columnExtrusionSurfaceNot", columnExtrusionSurfaceNot)) {
+        const bool isNot = !columnExtrusionSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? columnExtrusionSurfaceNot : columnExtrusionSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kColumnExtrusionSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+
+    int beamAxisPen = 0, beamAxisPenNot = 0;
+    if (node.Get ("beamAxisPen", beamAxisPen) || node.Get ("beamAxisPenNot", beamAxisPenNot)) {
+        const bool isNot = node.Get ("beamAxisPenNot", beamAxisPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kBeamAxisPenPropertyGuid, isNot ? beamAxisPenNot : beamAxisPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString beamAxisLineType, beamAxisLineTypeNot;
+    if (node.Get ("beamAxisLineType", beamAxisLineType) || node.Get ("beamAxisLineTypeNot", beamAxisLineTypeNot)) {
+        const bool isNot = !beamAxisLineTypeNot.IsEmpty ();
+        const GS::UniString& name = isNot ? beamAxisLineTypeNot : beamAxisLineType;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, name, idx)) {
+            outError = "Unknown line type '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kBeamAxisLineTypePropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString beamEndSurface, beamEndSurfaceNot, beamRightSurface, beamRightSurfaceNot, beamLeftSurface, beamLeftSurfaceNot;
+    GS::UniString beamBottomSurface, beamBottomSurfaceNot, beamTopSurface, beamTopSurfaceNot;
+    if (node.Get ("beamEndSurface", beamEndSurface) || node.Get ("beamEndSurfaceNot", beamEndSurfaceNot)) {
+        const bool isNot = !beamEndSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? beamEndSurfaceNot : beamEndSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kBeamEndSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("beamRightSurface", beamRightSurface) || node.Get ("beamRightSurfaceNot", beamRightSurfaceNot)) {
+        const bool isNot = !beamRightSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? beamRightSurfaceNot : beamRightSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kBeamRightSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("beamLeftSurface", beamLeftSurface) || node.Get ("beamLeftSurfaceNot", beamLeftSurfaceNot)) {
+        const bool isNot = !beamLeftSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? beamLeftSurfaceNot : beamLeftSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kBeamLeftSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("beamBottomSurface", beamBottomSurface) || node.Get ("beamBottomSurfaceNot", beamBottomSurfaceNot)) {
+        const bool isNot = !beamBottomSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? beamBottomSurfaceNot : beamBottomSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kBeamBottomSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (node.Get ("beamTopSurface", beamTopSurface) || node.Get ("beamTopSurfaceNot", beamTopSurfaceNot)) {
+        const bool isNot = !beamTopSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? beamTopSurfaceNot : beamTopSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kBeamTopSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+
+    GS::UniString slabRefPlaneLoc, slabRefPlaneLocNot;
+    if (node.Get ("slabReferencePlaneLocation", slabRefPlaneLoc) || node.Get ("slabReferencePlaneLocationNot", slabRefPlaneLocNot)) {
+        const bool isNot = !slabRefPlaneLocNot.IsEmpty ();
+        const GS::UniString& s = isNot ? slabRefPlaneLocNot : slabRefPlaneLoc;
+        int value = 0;
+        if (s == "Top")             value = 0;
+        else if (s == "CoreTop")    value = 1;
+        else if (s == "CoreBottom") value = 2;
+        else if (s == "Bottom")     value = 3;
+        else {
+            outError = "Invalid slabReferencePlaneLocation/slabReferencePlaneLocationNot '" + s + "'. Must be 'Top', 'CoreTop', 'CoreBottom', or 'Bottom'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kSlabReferencePlaneLocationPropertyGuid, value, kPositioningPropertyGroupGuid, isNot));
+        return true;
+    }
+    GS::UniString slabEdgeAngle, slabEdgeAngleNot;
+    if (node.Get ("slabEdgeAngle", slabEdgeAngle) || node.Get ("slabEdgeAngleNot", slabEdgeAngleNot)) {
+        const bool isNot = !slabEdgeAngleNot.IsEmpty ();
+        const GS::UniString& s = isNot ? slabEdgeAngleNot : slabEdgeAngle;
+        int value = 0;
+        if (s == "Vertical")     value = 0;
+        else if (s == "Custom")  value = 3;
+        else {
+            outError = "Invalid slabEdgeAngle/slabEdgeAngleNot '" + s + "'. Must be 'Vertical' or 'Custom'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kSlabEdgeAnglePropertyGuid, value, kWallGeometryGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitNumField (node, "slabDefaultEdgeAngle", kSlabDefaultEdgeAnglePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    int slabCutLinePen = 0, slabCutLinePenNot = 0;
+    if (node.Get ("slabCutLinePen", slabCutLinePen) || node.Get ("slabCutLinePenNot", slabCutLinePenNot)) {
+        const bool isNot = node.Get ("slabCutLinePenNot", slabCutLinePenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kSlabCutLinePenPropertyGuid, isNot ? slabCutLinePenNot : slabCutLinePen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString slabConstructionMaterialFill, slabConstructionMaterialFillNot;
+    if (node.Get ("slabConstructionMaterialFill", slabConstructionMaterialFill) || node.Get ("slabConstructionMaterialFillNot", slabConstructionMaterialFillNot)) {
+        const bool isNot = !slabConstructionMaterialFillNot.IsEmpty ();
+        const GS::UniString& name = isNot ? slabConstructionMaterialFillNot : slabConstructionMaterialFill;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_FilltypeID, name, idx)) {
+            outError = "Unknown fill '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kSlabConstructionMaterialFillPropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+
+    GS::UniString roofCutBodyType, roofCutBodyTypeNot;
+    if (node.Get ("roofCutBodyType", roofCutBodyType) || node.Get ("roofCutBodyTypeNot", roofCutBodyTypeNot)) {
+        const bool isNot = !roofCutBodyTypeNot.IsEmpty ();
+        const GS::UniString& s = isNot ? roofCutBodyTypeNot : roofCutBodyType;
+        int value = 0;
+        if (s == "ContoursDown")            value = 2;
+        else if (s == "ReferenceLineDown")  value = 3;
+        else {
+            outError = "Invalid roofCutBodyType/roofCutBodyTypeNot '" + s + "'. Must be 'ContoursDown' or 'ReferenceLineDown'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kRoofCutBodyTypePropertyGuid, value, kConstructionPropertyGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitIntField (node, "roofLevelNumber", kRoofLevelNumberPropertyGuid, outXML, kConstructionPropertyGroupGuid))
+        return true;
+    GS::UniString roofEaveOverhangType;
+    if (node.Get ("roofEaveOverhangType", roofEaveOverhangType)) {
+        int value = 0;
+        if (roofEaveOverhangType == "Offset")      value = 1;
+        else if (roofEaveOverhangType == "Manual") value = 2;
+        else {
+            outError = "Invalid roofEaveOverhangType '" + roofEaveOverhangType + "'. Must be 'Offset' or 'Manual'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kRoofEaveOverhangTypePropertyGuid, value, kConstructionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString roofEdgeAngle, roofEdgeAngleNot;
+    if (node.Get ("roofEdgeAngle", roofEdgeAngle) || node.Get ("roofEdgeAngleNot", roofEdgeAngleNot)) {
+        const bool isNot = !roofEdgeAngleNot.IsEmpty ();
+        const GS::UniString& s = isNot ? roofEdgeAngleNot : roofEdgeAngle;
+        int value = 0;
+        if (s == "Vertical")           value = 0;
+        else if (s == "Perpendicular") value = 1;
+        else if (s == "Custom")        value = 3;
+        else {
+            outError = "Invalid roofEdgeAngle/roofEdgeAngleNot '" + s + "'. Must be 'Vertical', 'Perpendicular', or 'Custom'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kRoofEdgeAnglePropertyGuid, value, kWallGeometryGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitNumField (node, "roofEaveOverhang", kRoofEaveOverhangPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    GS::UniString roofGeometryType, roofGeometryTypeNot;
+    if (node.Get ("roofGeometryType", roofGeometryType) || node.Get ("roofGeometryTypeNot", roofGeometryTypeNot)) {
+        const bool isNot = !roofGeometryTypeNot.IsEmpty ();
+        const GS::UniString& s = isNot ? roofGeometryTypeNot : roofGeometryType;
+        int value = 0;
+        if (s == "SinglePanel")          value = 1;
+        else if (s == "MultiplePanels")  value = 2;
+        else {
+            outError = "Invalid roofGeometryType/roofGeometryTypeNot '" + s + "'. Must be 'SinglePanel' or 'MultiplePanels'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kRoofGeometryTypePropertyGuid, value, kWallGeometryGroupGuid, isNot));
+        return true;
+    }
+    if (TryEmitNumListField (node, "roofPitch", kRoofPitchPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+
+    GS::UniString shellCutBodyType;
+    if (node.Get ("shellCutBodyType", shellCutBodyType)) {
+        int value = 0;
+        if (shellCutBodyType == "Editable")           value = 1;
+        else if (shellCutBodyType == "ExtrudeUp")     value = 4;
+        else if (shellCutBodyType == "ExtrudeDown")   value = 5;
+        else {
+            outError = "Invalid shellCutBodyType '" + shellCutBodyType + "'. Must be 'Editable', 'ExtrudeUp', or 'ExtrudeDown'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kShellCutBodyTypePropertyGuid, value, kConstructionPropertyGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "shellTiltAngle", kShellTiltAnglePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    GS::UniString shellGeometryType;
+    if (node.Get ("shellGeometryType", shellGeometryType)) {
+        int value = 0;
+        if (shellGeometryType == "Extrude")       value = 1;
+        else if (shellGeometryType == "Revolved") value = 2;
+        else if (shellGeometryType == "Ruled")    value = 3;
+        else {
+            outError = "Invalid shellGeometryType '" + shellGeometryType + "'. Must be 'Extrude', 'Revolved', or 'Ruled'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kShellGeometryTypePropertyGuid, value, kWallGeometryGroupGuid));
+        return true;
+    }
+
+    GS::UniString wallMember2DPosition, wallMember2DPositionNot;
+    if (node.Get ("wallMember2DPosition", wallMember2DPosition) || node.Get ("wallMember2DPositionNot", wallMember2DPositionNot)) {
+        const bool isNot = !wallMember2DPositionNot.IsEmpty ();
+        const GS::UniString& s = isNot ? wallMember2DPositionNot : wallMember2DPosition;
+        int value = 0;
+        if (s == "Outside")            value = 1;
+        else if (s == "Center")        value = 2;
+        else if (s == "Inside")        value = 3;
+        else if (s == "CoreOutside")   value = 4;
+        else if (s == "CoreCenter")    value = 5;
+        else if (s == "CoreInside")    value = 6;
+        else if (s == "Custom")        value = 7;
+        else {
+            outError = "Invalid wallMember2DPosition/wallMember2DPositionNot '" + s + "'. Must be 'Outside', 'Center', 'Inside', 'CoreOutside', 'CoreCenter', 'CoreInside', or 'Custom'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallMember2DPositionPropertyGuid, value, kAnalyticalModelGroupGuid, isNot));
+        return true;
+    }
+    bool wallCustomEdgeRelease = false;
+    if (node.Get ("wallCustomEdgeRelease", wallCustomEdgeRelease)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallCustomEdgeReleasePropertyGuid, wallCustomEdgeRelease, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    bool wallUniformEdgeReleases = false;
+    if (node.Get ("wallUniformEdgeReleases", wallUniformEdgeReleases)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallUniformEdgeReleasesPropertyGuid, wallUniformEdgeReleases, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    GS::UniString wallEdgeReleaseRotation;
+    if (node.Get ("wallEdgeReleaseRotation", wallEdgeReleaseRotation)) {
+        int value = 0;
+        if (wallEdgeReleaseRotation == "Free")            value = 1;
+        else if (wallEdgeReleaseRotation == "Rigid")      value = 2;
+        else if (wallEdgeReleaseRotation == "Custom")     value = 3;
+        else {
+            outError = "Invalid wallEdgeReleaseRotation '" + wallEdgeReleaseRotation + "'. Must be 'Free', 'Rigid', or 'Custom'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallEdgeReleaseRotationPropertyGuid, value, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    GS::UniString wallEdgeReleaseTranslation;
+    if (node.Get ("wallEdgeReleaseTranslation", wallEdgeReleaseTranslation)) {
+        int value = 0;
+        if (wallEdgeReleaseTranslation == "Free")            value = 1;
+        else if (wallEdgeReleaseTranslation == "Rigid")      value = 2;
+        else if (wallEdgeReleaseTranslation == "Custom")     value = 3;
+        else {
+            outError = "Invalid wallEdgeReleaseTranslation '" + wallEdgeReleaseTranslation + "'. Must be 'Free', 'Rigid', or 'Custom'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallEdgeReleaseTranslationPropertyGuid, value, kAnalyticalModelGroupGuid));
+        return true;
+    }
+    GS::UniString wallMember2DFEMType;
+    if (node.Get ("wallMember2DFEMType", wallMember2DFEMType)) {
+        int value = 0;
+        if (wallMember2DFEMType == "Plate")          value = 1;
+        else if (wallMember2DFEMType == "Wall")      value = 2;
+        else if (wallMember2DFEMType == "Shell")     value = 3;
+        else {
+            outError = "Invalid wallMember2DFEMType '" + wallMember2DFEMType + "'. Must be 'Plate', 'Wall', or 'Shell'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallMember2DFEMTypePropertyGuid, value, kAnalyticalModelGroupGuid));
+        return true;
+    }
 
     GS::UniString hatchFill, hatchFillNot, lineAttribute, lineAttributeNot;
     GS::UniString fontIs, fontContains, fontNotContains;
@@ -1549,7 +2502,10 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
                "customPropertyBool ({name, group, equals|hasDefaultValue|hasCustomValue|isAvailable|isNotAvailable|isUndefined|isNotUndefined}), "
                "customPropertyString ({name, group, equals|notEquals|hasDefaultValue|...}), "
                "customPropertyNumber ({name, group, equals|notEquals|lessThan|greaterThan|lessOrEqual|greaterOrEqual|hasDefaultValue|...}), "
-               "customPropertyInteger ({name, group, equals|notEquals|lessThan|greaterThan|lessOrEqual|greaterOrEqual|hasDefaultValue|...}).";
+               "customPropertyInteger ({name, group, equals|notEquals|lessThan|greaterThan|lessOrEqual|greaterOrEqual|hasDefaultValue|...}), "
+               "mepDiameter(Not/LessThan/GreaterThan/LessOrEqual/GreaterOrEqual), mepDiameter2(...), mepDN(...), mepDN2(...), mepHeight(...), "
+               "mepHeight2(...), mepWidth(...), mepWidth2(...), mepAngle(...), mepCustomAngle(...), mepInsulationThickness(...), mepLength(...), "
+               "mepDescription(Is/IsNot/Contains/NotContains/StartsWith/EndsWith), mepMaterialName(...6 ops...).";
     return false;
 }
 
