@@ -838,16 +838,15 @@ static const char* kMepDescriptionPropertyGuid     = "DB605867-4DC8-458C-8159-83
 static const char* kMepMaterialNamePropertyGuid    = "8D4F0D8F-9915-4E89-90F6-340B0CC1BB20";
 
 // Wall-specific criteria - reverse-engineered from a "TESTTAPIR_MUR" rule on Archicad 29. Unlike
-// every category so far, these fields are scattered across FIVE different property groups: three
+// every category so far, these fields are scattered across several different property groups:
 // already-known ones (Positionnement, Construction, Plan et Coupe, ID et Categories, Surface et
-// Materiaux) plus two new ones only ever seen paired with wall-specific fields - kWallGeometryGroupGuid
-// ("Geometrie" tab fields specific to walls: thickness/height/width/angles/...) and
-// kAnalyticalModelGroupGuid (structural/FEM analytical-model fields: offsets, edge releases, member
-// type). All enum int values confirmed live, including wallMember2DPosition's 7 distinct values
-// (initially captured with all 7 rows left at the same default "Centre d'ame", re-captured after the
-// user set each row to a distinct value).
+// Materiaux) plus one new one only ever seen paired with wall-specific fields - kWallGeometryGroupGuid
+// ("Geometrie" tab fields specific to walls: thickness/height/width/angles/...).
+// Note: the structural/FEM analytical-model fields (offsets, edge releases, member type/position,
+// group guid CD27E698-F857-47A6-833B-6F0F558DA5F5) were reverse-engineered and briefly supported here
+// too, but were deliberately removed by user decision: too many rules for Column/Beam with no clear
+// "not covered" boundary, so analytical-model criteria are entirely out of scope for this generator.
 static const char* kWallGeometryGroupGuid       = "554FDF95-B57F-427D-85F5-C00CFBF7406D";
-static const char* kAnalyticalModelGroupGuid    = "CD27E698-F857-47A6-833B-6F0F558DA5F5";
 
 static const char* kWallComplexityPropertyGuid           = "1BDC244B-242B-4DF9-A77C-20B079491495"; // Construction group
 static const char* kWallLevelOffsetPropertyGuid          = "015C36FD-F3C5-4AE0-AF60-EBC2935CC5E9"; // Positioning group
@@ -877,19 +876,6 @@ static const char* kWallInsideSurfacePropertyGuid        = "ED36D500-8AC8-41AD-A
 static const char* kWallSideSurfacePropertyGuid          = "553149E3-242B-4686-8190-68C3BB122B64"; // Surface et Materiaux group
 static const char* kWallParentIdPropertyGuid             = "652333FC-B73A-4D25-92A2-ACAD3BCF847E"; // ID et Categories group3
 static const char* kWallConnectedOpeningIdsPropertyGuid  = "917EE466-F091-4794-AC4C-1ED044C9F802"; // ID et Categories group3
-static const char* kWallOffsetByRulesPropertyGuid        = "DCA1A33D-1D6C-4CB4-A990-DEB3B01DA49E";
-static const char* kWallOffsetZPropertyGuid              = "93B5A981-D743-4FEC-A489-09F91F447A76";
-static const char* kWallStretchByRulesPropertyGuid       = "905FAEF3-593E-4F83-BCF0-AC1627A44108";
-static const char* kWallEccentricityZPropertyGuid        = "7F16EAE4-5B31-4A44-AE56-1189FBBC22A1";
-static const char* kWallFilterHolesByRulesPropertyGuid   = "C48E5074-D773-49BD-8B87-AC1C5C816D41";
-static const char* kWallAnalyticalModelGenPropertyGuid   = "E9B2640D-9015-4491-A865-E973DD7A30FB";
-static const char* kWallManualMemberGeometryPropertyGuid = "EAC8026E-E1E8-45F3-837C-87A335198E18";
-static const char* kWallMember2DPositionPropertyGuid     = "A46FB1D3-7B44-4C8F-85D8-0D114D6B767D";
-static const char* kWallCustomEdgeReleasePropertyGuid    = "AD3AB9DB-8159-4BD6-9E35-8CCD6D6316EA";
-static const char* kWallUniformEdgeReleasesPropertyGuid  = "F376706F-E815-46C1-A5A4-02093870079E";
-static const char* kWallEdgeReleaseRotationPropertyGuid  = "D8F3EA74-9392-49E1-B3CF-B662304FFA1A";
-static const char* kWallEdgeReleaseTranslationPropertyGuid = "C83AA5B4-A409-4CC9-A4B1-A6DB3759C0E2";
-static const char* kWallMember2DFEMTypePropertyGuid      = "F97D67B1-F829-4BE0-A3F0-E89E0D990D1D";
 
 // "Decalage Ligne de Reference" uses an entirely different mechanism from every other numeric field
 // captured this session: a RealCriterion/AttributeCriterion pair (not PropertyCriterion), with its
@@ -928,11 +914,11 @@ static bool TryEmitRealAttributeField (const GS::ObjectState& node, const char* 
 // Column-specific criteria - reverse-engineered from a "TESTTAPIR_POTEAU" rule on Archicad 29. Most
 // of Column's fields turned out to be the exact same properties already captured for Wall (Height,
 // ProfileHeight, HeightReversed, Width, ProfileWidth, the 6 Plan et Coupe pens, TopLine, UncutLine,
-// ParentId, ConnectedOpeningIds, wallLevelOffset/wallTopOffset, and the analytical OffsetZ/
-// StretchByRules/EccentricityZ/AnalyticalModelGeneration fields) - reused as-is via their existing
+// ParentId, ConnectedOpeningIds, wallLevelOffset/wallTopOffset) - reused as-is via their existing
 // "wallXxx" JSON field names rather than duplicated under new column-prefixed names, since the
 // underlying guid/group/XML shape is byte-identical. Only the genuinely column-specific fields below
-// are new. The user explicitly dropped the analytical/structural fields for Column as out of scope.
+// are new. Analytical/structural (FEM) fields are entirely out of scope for this generator - see the
+// note above kWallGeometryGroupGuid.
 static const char* kColumnCoatingTypePropertyGuid          = "2810579D-4FDE-4021-9A45-8909DC9491F4"; // Construction group
 static const char* kColumnInclinationAnglePropertyGuid     = "1A448310-F491-4C72-B457-29ED14337221";
 static const char* kColumnCrossSectionTypePropertyGuid     = "CD4B0B73-1D23-4C6C-A2E8-A9F785795ECE";
@@ -1656,35 +1642,6 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     if (TryEmitStringListField (node, "wallConnectedOpeningIds", kWallConnectedOpeningIdsPropertyGuid, outXML, kIdCategoryGroupGuid3))
         return true;
-    bool wallOffsetByRules = false;
-    if (node.Get ("wallOffsetByRules", wallOffsetByRules)) {
-        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallOffsetByRulesPropertyGuid, wallOffsetByRules, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    if (TryEmitNumField (node, "wallOffsetZ", kWallOffsetZPropertyGuid, outXML, kAnalyticalModelGroupGuid))
-        return true;
-    bool wallStretchByRules = false;
-    if (node.Get ("wallStretchByRules", wallStretchByRules)) {
-        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallStretchByRulesPropertyGuid, wallStretchByRules, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    if (TryEmitNumField (node, "wallEccentricityZ", kWallEccentricityZPropertyGuid, outXML, kAnalyticalModelGroupGuid))
-        return true;
-    bool wallFilterHolesByRules = false;
-    if (node.Get ("wallFilterHolesByRules", wallFilterHolesByRules)) {
-        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallFilterHolesByRulesPropertyGuid, wallFilterHolesByRules, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    bool wallAnalyticalModelGeneration = false;
-    if (node.Get ("wallAnalyticalModelGeneration", wallAnalyticalModelGeneration)) {
-        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallAnalyticalModelGenPropertyGuid, wallAnalyticalModelGeneration, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    bool wallManuallyEditedMemberGeometry = false;
-    if (node.Get ("wallManuallyEditedMemberGeometry", wallManuallyEditedMemberGeometry)) {
-        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallManualMemberGeometryPropertyGuid, wallManuallyEditedMemberGeometry, kAnalyticalModelGroupGuid));
-        return true;
-    }
     GS::UniString columnCoatingType, columnCoatingTypeNot;
     if (node.Get ("columnCoatingType", columnCoatingType) || node.Get ("columnCoatingTypeNot", columnCoatingTypeNot)) {
         const bool isNot = !columnCoatingTypeNot.IsEmpty ();
@@ -2070,75 +2027,6 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
             return false;
         }
         outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kShellGeometryTypePropertyGuid, value, kWallGeometryGroupGuid));
-        return true;
-    }
-
-    GS::UniString wallMember2DPosition, wallMember2DPositionNot;
-    if (node.Get ("wallMember2DPosition", wallMember2DPosition) || node.Get ("wallMember2DPositionNot", wallMember2DPositionNot)) {
-        const bool isNot = !wallMember2DPositionNot.IsEmpty ();
-        const GS::UniString& s = isNot ? wallMember2DPositionNot : wallMember2DPosition;
-        int value = 0;
-        if (s == "Outside")            value = 1;
-        else if (s == "Center")        value = 2;
-        else if (s == "Inside")        value = 3;
-        else if (s == "CoreOutside")   value = 4;
-        else if (s == "CoreCenter")    value = 5;
-        else if (s == "CoreInside")    value = 6;
-        else if (s == "Custom")        value = 7;
-        else {
-            outError = "Invalid wallMember2DPosition/wallMember2DPositionNot '" + s + "'. Must be 'Outside', 'Center', 'Inside', 'CoreOutside', 'CoreCenter', 'CoreInside', or 'Custom'.";
-            return false;
-        }
-        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallMember2DPositionPropertyGuid, value, kAnalyticalModelGroupGuid, isNot));
-        return true;
-    }
-    bool wallCustomEdgeRelease = false;
-    if (node.Get ("wallCustomEdgeRelease", wallCustomEdgeRelease)) {
-        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallCustomEdgeReleasePropertyGuid, wallCustomEdgeRelease, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    bool wallUniformEdgeReleases = false;
-    if (node.Get ("wallUniformEdgeReleases", wallUniformEdgeReleases)) {
-        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kWallUniformEdgeReleasesPropertyGuid, wallUniformEdgeReleases, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    GS::UniString wallEdgeReleaseRotation;
-    if (node.Get ("wallEdgeReleaseRotation", wallEdgeReleaseRotation)) {
-        int value = 0;
-        if (wallEdgeReleaseRotation == "Free")            value = 1;
-        else if (wallEdgeReleaseRotation == "Rigid")      value = 2;
-        else if (wallEdgeReleaseRotation == "Custom")     value = 3;
-        else {
-            outError = "Invalid wallEdgeReleaseRotation '" + wallEdgeReleaseRotation + "'. Must be 'Free', 'Rigid', or 'Custom'.";
-            return false;
-        }
-        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallEdgeReleaseRotationPropertyGuid, value, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    GS::UniString wallEdgeReleaseTranslation;
-    if (node.Get ("wallEdgeReleaseTranslation", wallEdgeReleaseTranslation)) {
-        int value = 0;
-        if (wallEdgeReleaseTranslation == "Free")            value = 1;
-        else if (wallEdgeReleaseTranslation == "Rigid")      value = 2;
-        else if (wallEdgeReleaseTranslation == "Custom")     value = 3;
-        else {
-            outError = "Invalid wallEdgeReleaseTranslation '" + wallEdgeReleaseTranslation + "'. Must be 'Free', 'Rigid', or 'Custom'.";
-            return false;
-        }
-        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallEdgeReleaseTranslationPropertyGuid, value, kAnalyticalModelGroupGuid));
-        return true;
-    }
-    GS::UniString wallMember2DFEMType;
-    if (node.Get ("wallMember2DFEMType", wallMember2DFEMType)) {
-        int value = 0;
-        if (wallMember2DFEMType == "Plate")          value = 1;
-        else if (wallMember2DFEMType == "Wall")      value = 2;
-        else if (wallMember2DFEMType == "Shell")     value = 3;
-        else {
-            outError = "Invalid wallMember2DFEMType '" + wallMember2DFEMType + "'. Must be 'Plate', 'Wall', or 'Shell'.";
-            return false;
-        }
-        outXML = WrapAsTrivialGroup (IntEqualsPropertyCriterionXML (kWallMember2DFEMTypePropertyGuid, value, kAnalyticalModelGroupGuid));
         return true;
     }
 
