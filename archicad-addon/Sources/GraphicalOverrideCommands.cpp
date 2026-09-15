@@ -1020,6 +1020,52 @@ static const char* kShellCutBodyTypePropertyGuid  = "626C831E-F093-4983-A3C8-372
 static const char* kShellTiltAnglePropertyGuid     = "1E6BCA80-2880-4D63-9DA2-CF8B66CA28A5"; // Geometrie group
 static const char* kShellGeometryTypePropertyGuid  = "5D862E7D-3DD8-4FEB-BC3F-090B3D96B27B"; // Geometrie group
 
+// Door/Window/RoofWindow/Opening/CurtainWall/Stair-specific criteria - reverse-engineered from
+// "TESTTAPIR_PORTE", "TESTTAPIR_FENETRES", "TESTTAPIR_OUVERTURE DE TOIT", "TESTTAPIR_PERCEMENT",
+// "TESTTAPIR_MUR RIDEAU" and "TESTTAPIR_ESCALIER" rules on Archicad 29. Most fields turned out to
+// already be covered by existing generic properties (missingAttributes, missingLibraryPart,
+// roofConnected, altitudes, floorIndex, surface/surfaceName, hatchFill, lineAttribute) - only the
+// genuinely new fields below are added. "Garde-corps" (Railing) and "Zone" contributed nothing new
+// beyond linkedUpperStoryAbsolute/Relative (shared with Stair).
+// NOT YET IMPLEMENTED (deliberately, needs live disambiguation before guessing): "Etat de
+// renovation" (GuidVariant referencing a built-in renovation status item, unlike the existing
+// String-based renovationFilterIs/renovationFilterIsNot) and Opening's "Forme d'ouverture"/"Limites
+// d'ouverture"/"Orientation de l'Ouverture" (IntVariant enums whose captured value order does not
+// reliably map to their on-screen row order - see project memory before adding these).
+static const char* kLibraryPartNamePropertyGuid    = "432FA53A-B71E-404B-A9D5-F1964237A3EB"; // ID et Categories group3
+static const char* kSubTypeNamePropertyGuid        = "ADAB9A93-9B0C-4534-888F-154637E85B2F"; // ID et Categories group3
+static const char* kSillHeightPropertyGuid         = "5348DD2B-980F-4846-BB56-82F63E29D2D3"; // Positioning group
+static const char* kLintelHeightPropertyGuid       = "5E3A5950-FB8D-4C6B-90CC-4A0F800E4F3F"; // Positioning group
+static const char* kScreedThicknessPropertyGuid    = "B10B1591-80BC-4594-8EAD-67108D3BC681"; // Positioning group, 6 ops confirmed live
+static const char* kLinkedUpperStoryAbsolutePropertyGuid = "D7794904-7C0F-4DBF-B605-97E7ADF31398"; // Positioning group, equals only (captured value -31001 = "Non lie")
+static const char* kLinkedUpperStoryRelativePropertyGuid = "6AE32B74-2F68-4156-8A3C-526E3B0D0E5E"; // Positioning group, equals only
+static const char* kJambThickness1PropertyGuid     = "8B474B84-BBD0-42CE-A257-14AA9B799BB7"; // Geometrie group (Door/Window "Epaisseur Montant1")
+static const char* kJambThickness2PropertyGuid     = "97D11F04-F9EF-475D-A818-EF9597079C1D"; // Geometrie group ("Epaisseur Montant2")
+static const char* kOpeningEndSurfacePropertyGuid       = "BD0EB07B-0C2F-4982-8275-9B6F2EB85E12"; // Surface et Materiaux group
+static const char* kOpeningExtrusionSurfacePropertyGuid = "5FCAF13E-6CCF-4064-95FB-B0095EFE78C1"; // Surface et Materiaux group
+static const char* kCurtainWallPanelOffsetPropertyGuid   = "A18DF336-50A5-4F12-8636-5449D676ED55"; // Geometrie group
+static const char* kCurtainWallFrameCutLinePropertyGuid  = "9555ADAE-C62F-4D9D-B4E6-AAC60A6F5606"; // Plan et Coupe group
+static const char* kCurtainWallPanelCutLinePropertyGuid  = "5692D710-471B-4589-9270-D4498E91E74D"; // Plan et Coupe group
+static const char* kCurtainWallFrameCutLinePenPropertyGuid = "3FA0E6A3-EB0F-4339-B197-AAE3B51A1638"; // Plan et Coupe group
+static const char* kCurtainWallPanelCutLinePenPropertyGuid = "22EA110D-AE6C-4777-988D-C9AE77CE1CFA"; // Plan et Coupe group
+static const char* kStairRiserInclineAnglePropertyGuid = "4EAD33D3-191A-43AF-8840-BCD9DB58E50A"; // Geometrie group
+static const char* kStairMinHeadroomPropertyGuid       = "2F893F86-7AAE-45A2-8831-63277D8A0CE6"; // Geometrie group
+static const char* kStairInvalidHeightPropertyGuid     = "99822D1B-DB8F-43A4-A0E7-AD151C790608"; // Geometrie group
+static const char* kStairDefaultWidthPropertyGuid      = "DBD410FF-55E3-45CD-BDF6-73903377B406"; // Geometrie group
+static const char* kStairSlopePropertyGuid             = "01FBABBB-5B2B-41EE-9782-E675AA3A0858"; // Geometrie group
+// "Regles et normes" (Rules and Standards) group - brand new, first seen on Stair. Unlike the
+// well-established Geometrie/Positioning groups, none of these 7 fields got an exhaustive 6-operator
+// test live (all captured with a single "=" or "contains" row) - equals-only for now, matching
+// exactly what was captured, rather than assuming the same 6-op range as other numeric groups.
+static const char* kStairRulesGroupGuid          = "9056DEE6-79CD-479E-B272-DC3AF25C784A";
+static const char* kStairMaxRiserHeightPropertyGuid = "A9630A1F-96EB-4EA6-AC20-118159E87402";
+static const char* kStairMinRiserHeightPropertyGuid = "FDEA5248-5DDE-4C40-8EA0-F426483E4C87";
+static const char* kStairMaxGoingPropertyGuid       = "C3D20956-7F11-4335-B0EE-C07C913DEA8B";
+static const char* kStairMinGoingPropertyGuid       = "E9A114C9-F1A7-461D-8D5B-6F174E34D033";
+static const char* kStairRiserCountPropertyGuid     = "84F5ADA8-A634-4FDE-8FEE-B1FCC01265AB";
+static const char* kStairStepCountPropertyGuid      = "DA0BC1B5-CB21-49B6-B4BE-E558D6B8C8FD";
+static const char* kStairStepCountPerFlightPropertyGuid = "645C36B4-4191-4AD2-B9AB-A5AFDDDC1573";
+
 // "Plan et Coupe" (Plan and Section) criteria category - reverse-engineered from a "TAPIR3" rule.
 // Hachure/Type Ligne reference a real Fill/Line attribute (contains/does not contain only, like
 // layerCombination). Police/Stylo/Stylo Texte reference a font/pen by its plain numeric ID (no
@@ -2408,6 +2454,141 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
 
+    if (TryEmitStringField6Ops (node, "libraryPartName", kLibraryPartNamePropertyGuid, kIdCategoryGroupGuid3, outXML))
+        return true;
+    if (TryEmitStringListField (node, "subTypeName", kSubTypeNamePropertyGuid, outXML, kIdCategoryGroupGuid3))
+        return true;
+    if (TryEmitNumField (node, "sillHeight", kSillHeightPropertyGuid, outXML))
+        return true;
+    if (TryEmitNumField (node, "lintelHeight", kLintelHeightPropertyGuid, outXML))
+        return true;
+    if (TryEmitNumField (node, "screedThickness", kScreedThicknessPropertyGuid, outXML))
+        return true;
+    int linkedUpperStoryAbsolute = 0;
+    if (node.Get ("linkedUpperStoryAbsolute", linkedUpperStoryAbsolute)) {
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kLinkedUpperStoryAbsolutePropertyGuid, linkedUpperStoryAbsolute, 0, kPositioningPropertyGroupGuid));
+        return true;
+    }
+    int linkedUpperStoryRelative = 0;
+    if (node.Get ("linkedUpperStoryRelative", linkedUpperStoryRelative)) {
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kLinkedUpperStoryRelativePropertyGuid, linkedUpperStoryRelative, 0, kPositioningPropertyGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "jambThickness1", kJambThickness1PropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "jambThickness2", kJambThickness2PropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    GS::UniString openingEndSurface, openingEndSurfaceNot;
+    if (node.Get ("openingEndSurface", openingEndSurface) || node.Get ("openingEndSurfaceNot", openingEndSurfaceNot)) {
+        const bool isNot = !openingEndSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? openingEndSurfaceNot : openingEndSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kOpeningEndSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString openingExtrusionSurface, openingExtrusionSurfaceNot;
+    if (node.Get ("openingExtrusionSurface", openingExtrusionSurface) || node.Get ("openingExtrusionSurfaceNot", openingExtrusionSurfaceNot)) {
+        const bool isNot = !openingExtrusionSurfaceNot.IsEmpty ();
+        const GS::UniString& name = isNot ? openingExtrusionSurfaceNot : openingExtrusionSurface;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_MaterialID, name, idx)) {
+            outError = "Unknown surface '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kOpeningExtrusionSurfacePropertyGuid, idx, isNot, kSurfaceMaterialPropertyGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "curtainWallPanelOffset", kCurtainWallPanelOffsetPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    GS::UniString curtainWallFrameCutLine, curtainWallFrameCutLineNot;
+    if (node.Get ("curtainWallFrameCutLine", curtainWallFrameCutLine) || node.Get ("curtainWallFrameCutLineNot", curtainWallFrameCutLineNot)) {
+        const bool isNot = !curtainWallFrameCutLineNot.IsEmpty ();
+        const GS::UniString& name = isNot ? curtainWallFrameCutLineNot : curtainWallFrameCutLine;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, name, idx)) {
+            outError = "Unknown line type '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kCurtainWallFrameCutLinePropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    GS::UniString curtainWallPanelCutLine, curtainWallPanelCutLineNot;
+    if (node.Get ("curtainWallPanelCutLine", curtainWallPanelCutLine) || node.Get ("curtainWallPanelCutLineNot", curtainWallPanelCutLineNot)) {
+        const bool isNot = !curtainWallPanelCutLineNot.IsEmpty ();
+        const GS::UniString& name = isNot ? curtainWallPanelCutLineNot : curtainWallPanelCutLine;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_LinetypeID, name, idx)) {
+            outError = "Unknown line type '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kCurtainWallPanelCutLinePropertyGuid, idx, isNot, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int curtainWallFrameCutLinePen = 0, curtainWallFrameCutLinePenNot = 0;
+    if (node.Get ("curtainWallFrameCutLinePen", curtainWallFrameCutLinePen) || node.Get ("curtainWallFrameCutLinePenNot", curtainWallFrameCutLinePenNot)) {
+        const bool isNot = node.Get ("curtainWallFrameCutLinePenNot", curtainWallFrameCutLinePenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kCurtainWallFrameCutLinePenPropertyGuid, isNot ? curtainWallFrameCutLinePenNot : curtainWallFrameCutLinePen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    int curtainWallPanelCutLinePen = 0, curtainWallPanelCutLinePenNot = 0;
+    if (node.Get ("curtainWallPanelCutLinePen", curtainWallPanelCutLinePen) || node.Get ("curtainWallPanelCutLinePenNot", curtainWallPanelCutLinePenNot)) {
+        const bool isNot = node.Get ("curtainWallPanelCutLinePenNot", curtainWallPanelCutLinePenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kCurtainWallPanelCutLinePenPropertyGuid, isNot ? curtainWallPanelCutLinePenNot : curtainWallPanelCutLinePen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "stairRiserInclineAngle", kStairRiserInclineAnglePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "stairMinHeadroom", kStairMinHeadroomPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    bool stairInvalidHeight = false;
+    if (node.Get ("stairInvalidHeight", stairInvalidHeight)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kStairInvalidHeightPropertyGuid, stairInvalidHeight, kWallGeometryGroupGuid));
+        return true;
+    }
+    if (TryEmitNumField (node, "stairDefaultWidth", kStairDefaultWidthPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "stairSlope", kStairSlopePropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    double stairMaxRiserHeight = 0.0;
+    if (node.Get ("stairMaxRiserHeight", stairMaxRiserHeight)) {
+        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMaxRiserHeightPropertyGuid, stairMaxRiserHeight, 0, kStairRulesGroupGuid));
+        return true;
+    }
+    double stairMinRiserHeight = 0.0;
+    if (node.Get ("stairMinRiserHeight", stairMinRiserHeight)) {
+        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMinRiserHeightPropertyGuid, stairMinRiserHeight, 0, kStairRulesGroupGuid));
+        return true;
+    }
+    double stairMaxGoing = 0.0;
+    if (node.Get ("stairMaxGoing", stairMaxGoing)) {
+        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMaxGoingPropertyGuid, stairMaxGoing, 0, kStairRulesGroupGuid));
+        return true;
+    }
+    double stairMinGoing = 0.0;
+    if (node.Get ("stairMinGoing", stairMinGoing)) {
+        outXML = WrapAsTrivialGroup (NumPropertyCriterionXML (kStairMinGoingPropertyGuid, stairMinGoing, 0, kStairRulesGroupGuid));
+        return true;
+    }
+    int stairRiserCount = 0;
+    if (node.Get ("stairRiserCount", stairRiserCount)) {
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kStairRiserCountPropertyGuid, stairRiserCount, 0, kStairRulesGroupGuid));
+        return true;
+    }
+    int stairStepCount = 0;
+    if (node.Get ("stairStepCount", stairStepCount)) {
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kStairStepCountPropertyGuid, stairStepCount, 0, kStairRulesGroupGuid));
+        return true;
+    }
+    int stairStepCountPerFlight = 0;
+    if (node.Get ("stairStepCountPerFlight", stairStepCountPerFlight)) {
+        outXML = WrapAsTrivialGroup (IntListCriterionXML (kStairStepCountPerFlightPropertyGuid, stairStepCountPerFlight, 0, kStairRulesGroupGuid));
+        return true;
+    }
+
     outError = "A criterion node must contain exactly one of: and, or, elementType, classification, classificationNot, "
                "all3DTypes, all2DTypes, missingAttributes, missingLibraryPart, layer, layerNot, layerLocked, layerVisible, layerCombination, "
                "layerCombinationNot, layerNameIs, layerNameIsNot, layerNameContains, layerNameNotContains, layerNameStartsWith, layerNameEndsWith, "
@@ -2415,7 +2596,9 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
                "compositeStructureNameContains, compositeStructureNameNotContains, compositeStructureNameStartsWith, compositeStructureNameEndsWith, "
                "complexProfileNameIs, complexProfileNameIsNot, complexProfileNameContains, complexProfileNameNotContains, complexProfileNameStartsWith, "
                "complexProfileNameEndsWith, roofConnected, structureType, seaLevelAltitude(Not/LessThan/GreaterThan/LessOrEqual/GreaterOrEqual), "
-               "projectZeroAltitude(...), groundFloorAltitude(...), roofAltitude(...), floorIndex, hatchFill, hatchFillNot, lineAttribute, lineAttributeNot, "
+               "projectZeroAltitude(...), groundFloorAltitude(...), roofAltitude(...), floorIndex, sillHeight(...), lintelHeight(...), "
+               "screedThickness(...), linkedUpperStoryAbsolute, linkedUpperStoryRelative, libraryPartNameIs(/IsNot/Contains/NotContains/StartsWith/EndsWith), "
+               "subTypeNameIs(...), hatchFill, hatchFillNot, lineAttribute, lineAttributeNot, "
                "fontIs, fontContains, fontNotContains, penReplacement, penReplacementNot, linePenContains, linePenNotContains, "
                "hatchContourPen, hatchContourPenNot, "
                "textPenIs, textPenContains, textPenNotContains, constructionMaterial, constructionMaterialNot, surface, surfaceNot, "
