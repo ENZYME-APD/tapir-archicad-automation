@@ -399,6 +399,7 @@ static GS::UniString WrapAsTrivialGroup (const GS::UniString& leafXML)
 // resolve a name to an index via ACAPI_Attribute_GetAttributesByType at generation time.
 static const char* kModelViewPropertyGroupGuid = "517BE4C1-0FAF-4CA2-9C89-B631C2DEAFAE";
 static const char* kMissingAttributesPropertyGuid = "45D43C12-49F3-4818-A56B-C033DEA90C8B";
+static const char* kMissingLibraryPartPropertyGuid = "CF85835A-A655-4B72-9BBC-EE3F4441DB5B";
 static const char* kLayerPropertyGuid            = "0F43553E-58E7-4661-8CEB-8B4E5D2ED50A";
 static const char* kLayerLockedPropertyGuid      = "194656B7-E624-466F-A527-50804AB99E8D";
 static const char* kLayerVisiblePropertyGuid     = "708E442F-1EDF-4E5D-84F9-F97C66D68FE7";
@@ -812,6 +813,10 @@ static GS::UniString IntEqualsPropertyCriterionXML (const char* propertyGuid, in
 static const char* kPositioningPropertyGroupGuid   = "C42CED8B-DD12-4782-A0C5-8FF167D55DBB";
 static const char* kSeaLevelAltitudePropertyGuid   = "C35800B4-5126-405B-964B-EF0C43B1D2C2";
 static const char* kProjectZeroAltitudePropertyGuid = "5294566C-2BB7-4ADC-A6F7-F8E947B1E500";
+// "Placement story" - only ever seen live with the "=" operator (a single captured row); unlike
+// every other Positioning-group field, no evidence yet of "not-equal" support, so only equality is
+// exposed for now. Value is the same 0-based story/floor index used elsewhere in Tapir (floorIndex).
+static const char* kPlacementStoryPropertyGuid     = "792002ED-8D64-4DE4-877E-817D5CDF798F";
 static const char* kGroundFloorAltitudePropertyGuid = "6EC682F2-34E5-419F-BC0E-4B1020A5DFC5";
 static const char* kRoofAltitudePropertyGuid       = "D204DBB0-D697-47F2-9FD6-EA988BBF35DF";
 
@@ -860,6 +865,7 @@ static const char* kWallProfileHeightPropertyGuid        = "7EDA68CA-D646-4180-B
 static const char* kWallHeightReversedPropertyGuid       = "E0B209EB-A5B1-4198-A86A-462F3BB59955";
 static const char* kWallWidthPropertyGuid                = "19A99799-5B44-4A6F-9904-F132D7A3F0AC";
 static const char* kWallProfileWidthPropertyGuid         = "A69ECF2A-DFEE-4B64-A1CF-C562F57FB503";
+static const char* kObjectLengthPropertyGuid             = "DA895241-B437-4897-864C-F001FD704F64"; // Object's "A" (length) parameter, same Geometrie group
 static const char* kWallGeometryTypePropertyGuid         = "3FEBB287-6D09-4629-8F48-099D15927732";
 static const char* kWallReferenceLineOffsetAttrGuid      = "D625E555-CBB8-443E-BFC5-F29F575472F8"; // RealCriterion/AttributeCriterion pattern
 static const char* kWallTopLinePropertyGuid              = "E0FB1BED-9779-4547-839C-666C65B4F961"; // Plan et Coupe group
@@ -1029,6 +1035,9 @@ static const char* kPenReplacementPropertyGuid   = "2E2D1387-3642-4BAC-AE05-C16C
 static const char* kLinePenPropertyGuid          = "528B2B52-F122-4B1D-A0CA-5F3FFCE26BB2";
 static const char* kTextPenPropertyGuid          = "06FC1DC4-A694-49F5-A0F3-6A5BF1C3CCC0";
 static const char* kLineTypeAttrPropertyGuid     = "E8523625-0F5C-45DE-8A64-FD941F92F27F";
+// "Stylo Contour Hachure" (hatch contour pen) - unlike the generic "Stylo" field above (contains/does
+// not contain only), this one is is/is-not (numOp 0/1), like the wallXxx pen fields.
+static const char* kHatchContourPenPropertyGuid  = "58AA86FB-238C-4406-BDBF-D51345B68000";
 
 static GS::UniString NumPropertyCriterionXML (const char* propertyGuid, double value, int numOp, const char* groupGuid)
 {
@@ -1266,12 +1275,16 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
 
-    bool missingAttributes = false, layerLocked = false, layerVisible = false;
+    bool missingAttributes = false, missingLibraryPart = false, layerLocked = false, layerVisible = false;
     GS::UniString layer, layerNot, layerCombination, layerCombinationNot;
     GS::UniString layerNameIs, layerNameIsNot, layerNameContains, layerNameNotContains, layerNameStartsWith, layerNameEndsWith;
 
     if (node.Get ("missingAttributes", missingAttributes)) {
         outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kMissingAttributesPropertyGuid, missingAttributes));
+        return true;
+    }
+    if (node.Get ("missingLibraryPart", missingLibraryPart)) {
+        outXML = WrapAsTrivialGroup (BoolModelViewCriterionXML (kMissingLibraryPartPropertyGuid, missingLibraryPart));
         return true;
     }
     if (node.Get ("layerLocked", layerLocked)) {
@@ -1430,6 +1443,14 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     if (TryEmitNumField (node, "roofAltitude", kRoofAltitudePropertyGuid, outXML))
         return true;
+    int floorIndex = 0;
+    if (node.Get ("floorIndex", floorIndex)) {
+        // Uses IntPropertyCriterionXML (Value-wrapped Variant), not IntEqualsPropertyCriterionXML -
+        // confirmed live that ArchiCAD rejects (silently reduces to a match-all rule) the unwrapped
+        // form for this particular field, unlike every other IntEqualsPropertyCriterionXML user.
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kPlacementStoryPropertyGuid, floorIndex, 0, kPositioningPropertyGroupGuid));
+        return true;
+    }
 
     if (TryEmitNumField (node, "mepDiameter", kMepDiameterPropertyGuid, outXML, kMepPropertyGroupGuid))
         return true;
@@ -1515,6 +1536,8 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (TryEmitNumField (node, "wallWidth", kWallWidthPropertyGuid, outXML, kWallGeometryGroupGuid))
         return true;
     if (TryEmitNumField (node, "wallProfileWidth", kWallProfileWidthPropertyGuid, outXML, kWallGeometryGroupGuid))
+        return true;
+    if (TryEmitNumField (node, "objectLength", kObjectLengthPropertyGuid, outXML, kWallGeometryGroupGuid))
         return true;
     GS::UniString wallGeometryType, wallGeometryTypeNot;
     if (node.Get ("wallGeometryType", wallGeometryType) || node.Get ("wallGeometryTypeNot", wallGeometryTypeNot)) {
@@ -2120,6 +2143,12 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         outXML = WrapAsTrivialGroup (IntListCriterionXML (kTextPenPropertyGuid, textPenNotContains, 7, kPlanSectionPropertyGroupGuid));
         return true;
     }
+    int hatchContourPen = 0, hatchContourPenNot = 0;
+    if (node.Get ("hatchContourPen", hatchContourPen) || node.Get ("hatchContourPenNot", hatchContourPenNot)) {
+        const bool isNot = node.Get ("hatchContourPenNot", hatchContourPenNot);
+        outXML = WrapAsTrivialGroup (IntPropertyCriterionXML (kHatchContourPenPropertyGuid, isNot ? hatchContourPenNot : hatchContourPen, isNot ? 1 : 0, kPlanSectionPropertyGroupGuid));
+        return true;
+    }
 
     GS::UniString constructionMaterial, constructionMaterialNot, surface, surfaceNot;
 
@@ -2380,14 +2409,15 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     }
 
     outError = "A criterion node must contain exactly one of: and, or, elementType, classification, classificationNot, "
-               "all3DTypes, all2DTypes, missingAttributes, layer, layerNot, layerLocked, layerVisible, layerCombination, "
+               "all3DTypes, all2DTypes, missingAttributes, missingLibraryPart, layer, layerNot, layerLocked, layerVisible, layerCombination, "
                "layerCombinationNot, layerNameIs, layerNameIsNot, layerNameContains, layerNameNotContains, layerNameStartsWith, layerNameEndsWith, "
                "compositeStructure, compositeStructureNot, complexProfile, complexProfileNot, compositeStructureNameIs, compositeStructureNameIsNot, "
                "compositeStructureNameContains, compositeStructureNameNotContains, compositeStructureNameStartsWith, compositeStructureNameEndsWith, "
                "complexProfileNameIs, complexProfileNameIsNot, complexProfileNameContains, complexProfileNameNotContains, complexProfileNameStartsWith, "
                "complexProfileNameEndsWith, roofConnected, structureType, seaLevelAltitude(Not/LessThan/GreaterThan/LessOrEqual/GreaterOrEqual), "
-               "projectZeroAltitude(...), groundFloorAltitude(...), roofAltitude(...), hatchFill, hatchFillNot, lineAttribute, lineAttributeNot, "
+               "projectZeroAltitude(...), groundFloorAltitude(...), roofAltitude(...), floorIndex, hatchFill, hatchFillNot, lineAttribute, lineAttributeNot, "
                "fontIs, fontContains, fontNotContains, penReplacement, penReplacementNot, linePenContains, linePenNotContains, "
+               "hatchContourPen, hatchContourPenNot, "
                "textPenIs, textPenContains, textPenNotContains, constructionMaterial, constructionMaterialNot, surface, surfaceNot, "
                "constructionMaterialId(Is/IsNot/Contains/NotContains/StartsWith/EndsWith), constructionMaterialName(...), surfaceName(...), "
                "renovationFilterIs, renovationFilterIsNot, structuralFunction, structuralFunctionNot, position, positionNot, "
