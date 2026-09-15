@@ -8918,6 +8918,156 @@
             "DuctRouting", "CableCarrierRouting", "PipeRouting"
         ]
     },
+    "GraphicalOverrideOverriddenAttribute": {
+        "type": "object",
+        "description": "An attribute (line type, fill or material) that may be overridden by a graphical override rule.",
+        "properties": {
+            "overridden": {
+                "type": "boolean",
+                "description": "True if the rule overrides this attribute."
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId",
+                "description": "Required when 'overridden' is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "overridden" ]
+    },
+    "GraphicalOverrideOverriddenPen": {
+        "type": "object",
+        "description": "A pen that may be overridden by a graphical override rule.",
+        "properties": {
+            "overridden": {
+                "type": "boolean",
+                "description": "True if the rule overrides this pen."
+            },
+            "penIndex": {
+                "type": "integer",
+                "description": "Required when 'overridden' is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "overridden" ]
+    },
+    "GraphicalOverrideOverriddenPenOrRGB": {
+        "type": "object",
+        "description": "A pen or a plain RGB color that may be overridden by a graphical override rule. At most one of 'penIndex'/'rgbColor' is set.",
+        "properties": {
+            "overridden": {
+                "type": "boolean",
+                "description": "True if the rule overrides this pen/color."
+            },
+            "penIndex": {
+                "type": "integer"
+            },
+            "rgbColor": {
+                "$ref": "#/ColorRGB"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "overridden" ]
+    },
+    "GraphicalOverrideOverriddenAttributeOrRGB": {
+        "type": "object",
+        "description": "A material attribute or a plain RGB color that may be overridden by a graphical override rule. At most one of 'attributeId'/'rgbColor' is set.",
+        "properties": {
+            "overridden": {
+                "type": "boolean",
+                "description": "True if the rule overrides this material/color."
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "rgbColor": {
+                "$ref": "#/ColorRGB"
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "overridden" ]
+    },
+    "GraphicalOverrideFillTypeFlags": {
+        "type": "object",
+        "description": "Which fill-related contexts an overridden fill attribute or pen applies to.",
+        "properties": {
+            "overrideCutFill":      { "type": "boolean" },
+            "overrideCoverFill":    { "type": "boolean" },
+            "overrideDraftingFill": { "type": "boolean" }
+        },
+        "additionalProperties": false
+    },
+    "GraphicalOverrideSurfaceTypeFlags": {
+        "type": "object",
+        "description": "Which surface-related contexts an overridden material applies to.",
+        "properties": {
+            "overrideCutSurface":   { "type": "boolean" },
+            "overrideUncutSurface": { "type": "boolean" }
+        },
+        "additionalProperties": false
+    },
+    "GraphicalOverrideRuleStyle": {
+        "type": "object",
+        "description": "The visual substitution a graphical override rule applies to every element it matches (API_OverrideRuleStyle). Every field is independently overridable; a field with 'overridden: false' (or omitted) leaves that aspect of the element untouched.",
+        "properties": {
+            "lineType": {
+                "$ref": "#/GraphicalOverrideOverriddenAttribute",
+                "description": "Line type override (a Line Type attribute)."
+            },
+            "lineMarkerTextPen": {
+                "$ref": "#/GraphicalOverrideOverriddenPen",
+                "description": "Pen override for lines, markers and text."
+            },
+            "fillOverride": {
+                "$ref": "#/GraphicalOverrideOverriddenAttribute",
+                "description": "Fill type override (a Fill attribute)."
+            },
+            "fillType": {
+                "$ref": "#/GraphicalOverrideFillTypeFlags",
+                "description": "Which fill contexts 'fillOverride' applies to."
+            },
+            "fillForegroundPenOverride": {
+                "$ref": "#/GraphicalOverrideOverriddenPen",
+                "description": "Foreground pen override for the fill."
+            },
+            "fillTypeForegroundPen": {
+                "$ref": "#/GraphicalOverrideFillTypeFlags",
+                "description": "Which fill contexts 'fillForegroundPenOverride' applies to."
+            },
+            "fillBackgroundPenOverride": {
+                "$ref": "#/GraphicalOverrideOverriddenPenOrRGB",
+                "description": "Background pen (or plain color) override for the fill."
+            },
+            "fillTypeBackgroundPen": {
+                "$ref": "#/GraphicalOverrideFillTypeFlags",
+                "description": "Which fill contexts 'fillBackgroundPenOverride' applies to."
+            },
+            "surfaceOverride": {
+                "$ref": "#/GraphicalOverrideOverriddenAttributeOrRGB",
+                "description": "Surface material (or plain color) override, for 3D."
+            },
+            "surfaceType": {
+                "$ref": "#/GraphicalOverrideSurfaceTypeFlags",
+                "description": "Which surface contexts 'surfaceOverride' applies to."
+            },
+            "showSkinSeparators": {
+                "type": "boolean",
+                "description": "Show skin separator lines on a composite/profile structure's cut surface."
+            },
+            "overridePenColorAndThickness": {
+                "type": "boolean",
+                "description": "Override the color and line weight of pens too, not just which pen index is used."
+            },
+            "hiddenContours": {
+                "$ref": "#/GraphicalOverrideSurfaceTypeFlags",
+                "description": "Which surfaces get their hidden (dashed) contour lines suppressed."
+            },
+            "overrideContours": {
+                "type": "boolean",
+                "description": "Override contour line visibility at all."
+            }
+        },
+        "additionalProperties": false
+    },
     "GraphicalOverrideCriterion": {
         "type": "object",
         "description": "A structured graphical override rule criterion (alternative to a raw criterionXML string). Provide exactly one property. 'and'/'or' combine a FLAT list of other criteria (they cannot be nested inside one another - see their own description); 'elementType' filters by the tool an element was created with; 'classification'/'classificationNot' filter by an Archicad Classification System item ID (e.g. 'Slab', as shown in the Classification Manager); 'all3DTypes'/'all2DTypes' match every 3D resp. 2D element type; the remaining properties filter by the 'Model View' criteria category (layer and its attributes).",

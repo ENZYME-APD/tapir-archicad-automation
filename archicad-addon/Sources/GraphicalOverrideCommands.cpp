@@ -21,19 +21,26 @@ static GS::ObjectState RGBColorToOS (const API_RGBColor& c)
     return os;
 }
 
-static GS::ObjectState OverriddenAttributeToOS (const API_OverriddenAttribute& v)
+// attributeId is a guid (via GetAttributeGuidFromIndex/GetAttributeIndexFromGuid), not a raw
+// index, and the flag is named "overridden" not "isOverridden" - matching the convention already
+// established by CreateOverriddenMaterialObjectState/CreateOverriddenPenObjectState in
+// CommandBase.cpp for every other overridable-attribute field in Tapir's public API. Those
+// existing helpers can't be reused directly: they hardcode API_MaterialID, whereas a rule style's
+// overrides span three different attribute kinds (line type, fill, material), so the type is a
+// parameter here instead.
+static GS::ObjectState OverriddenAttributeToOS (const API_OverriddenAttribute& v, API_AttrTypeID attrType)
 {
     GS::ObjectState os;
-    os.Add ("isOverridden", v.hasValue);
+    os.Add ("overridden", v.hasValue);
     if (v.hasValue)
-        os.Add ("attributeIndex", GetAttributeIndex (v.value));
+        os.Add ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (attrType, v.value)));
     return os;
 }
 
 static GS::ObjectState OverriddenPenToOS (const API_OverriddenPen& v)
 {
     GS::ObjectState os;
-    os.Add ("isOverridden", v.hasValue);
+    os.Add ("overridden", v.hasValue);
     if (v.hasValue)
         os.Add ("penIndex", (int) v.value);
     return os;
@@ -42,7 +49,7 @@ static GS::ObjectState OverriddenPenToOS (const API_OverriddenPen& v)
 static GS::ObjectState OverriddenPenOrRGBToOS (const API_OverriddenPenOrRGB& v)
 {
     GS::ObjectState os;
-    os.Add ("isOverridden", v.hasValue);
+    os.Add ("overridden", v.hasValue);
     if (v.hasValue) {
         if (v.value.IsType<API_PenIndex> ())
             os.Add ("penIndex", (int) v.value.Get<API_PenIndex> ());
@@ -52,13 +59,13 @@ static GS::ObjectState OverriddenPenOrRGBToOS (const API_OverriddenPenOrRGB& v)
     return os;
 }
 
-static GS::ObjectState OverriddenAttributeOrRGBToOS (const API_OverriddenAttributeOrRGB& v)
+static GS::ObjectState OverriddenAttributeOrRGBToOS (const API_OverriddenAttributeOrRGB& v, API_AttrTypeID attrType)
 {
     GS::ObjectState os;
-    os.Add ("isOverridden", v.hasValue);
+    os.Add ("overridden", v.hasValue);
     if (v.hasValue) {
         if (v.value.IsType<API_AttributeIndex> ())
-            os.Add ("attributeIndex", GetAttributeIndex (v.value.Get<API_AttributeIndex> ()));
+            os.Add ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (attrType, v.value.Get<API_AttributeIndex> ())));
         else
             os.Add ("rgbColor", RGBColorToOS (v.value.Get<API_RGBColor> ()));
     }
@@ -85,15 +92,15 @@ static GS::ObjectState SurfaceTypeToOS (const API_OverriddenSurfaceType& v)
 static GS::ObjectState RuleStyleToOS (const API_OverrideRuleStyle& s)
 {
     GS::ObjectState os;
-    os.Add ("lineType",                     OverriddenAttributeToOS (s.lineType));
+    os.Add ("lineType",                     OverriddenAttributeToOS (s.lineType, API_LinetypeID));
     os.Add ("lineMarkerTextPen",            OverriddenPenToOS (s.lineMarkerTextPen));
-    os.Add ("fillOverride",                 OverriddenAttributeToOS (s.fillOverride));
+    os.Add ("fillOverride",                 OverriddenAttributeToOS (s.fillOverride, API_FilltypeID));
     os.Add ("fillType",                     FillTypeToOS (s.fillType));
     os.Add ("fillForegroundPenOverride",    OverriddenPenToOS (s.fillForegroundPenOverride));
     os.Add ("fillTypeForegroundPen",        FillTypeToOS (s.fillTypeForegroundPen));
     os.Add ("fillBackgroundPenOverride",    OverriddenPenOrRGBToOS (s.fillBackgroundPenOverride));
     os.Add ("fillTypeBackgroundPen",        FillTypeToOS (s.fillTypeBackgroundPen));
-    os.Add ("surfaceOverride",              OverriddenAttributeOrRGBToOS (s.surfaceOverride));
+    os.Add ("surfaceOverride",              OverriddenAttributeOrRGBToOS (s.surfaceOverride, API_MaterialID));
     os.Add ("surfaceType",                  SurfaceTypeToOS (s.surfaceType));
     os.Add ("showSkinSeparators",           s.showSkinSeparators);
     os.Add ("overridePenColorAndThickness", s.overridePenColorAndThickness);
@@ -115,16 +122,19 @@ static API_RGBColor RGBColorFromOS (const GS::ObjectState& os)
     return c;
 }
 
-static API_OverriddenAttribute OverriddenAttributeFromOS (const GS::ObjectState& os)
+static API_OverriddenAttribute OverriddenAttributeFromOS (const GS::ObjectState& os, API_AttrTypeID attrType)
 {
     API_OverriddenAttribute v;
     v.hasValue = false;
-    bool isOverridden = false;
-    os.Get ("isOverridden", isOverridden);
-    if (isOverridden) {
-        Int32 idx = 0;
-        os.Get ("attributeIndex", idx);
-        v = ACAPI_CreateAttributeIndex (idx);
+    bool overridden = false;
+    os.Get ("overridden", overridden);
+    if (overridden) {
+        GS::ObjectState attributeIdOs;
+        if (os.Get ("attributeId", attributeIdOs)) {
+            v = GetAttributeIndexFromGuid (attrType, GetGuidFromObjectState (attributeIdOs));
+        } else {
+            v = APINullValue;
+        }
     } else {
         v = APINullValue;
     }
@@ -135,9 +145,9 @@ static API_OverriddenPen OverriddenPenFromOS (const GS::ObjectState& os)
 {
     API_OverriddenPen v;
     v.hasValue = false;
-    bool isOverridden = false;
-    os.Get ("isOverridden", isOverridden);
-    if (isOverridden) {
+    bool overridden = false;
+    os.Get ("overridden", overridden);
+    if (overridden) {
         int penIdx = 0;
         os.Get ("penIndex", penIdx);
         v = (API_PenIndex) penIdx;
@@ -151,9 +161,9 @@ static API_OverriddenPenOrRGB OverriddenPenOrRGBFromOS (const GS::ObjectState& o
 {
     API_OverriddenPenOrRGB v;
     v.hasValue = false;
-    bool isOverridden = false;
-    os.Get ("isOverridden", isOverridden);
-    if (isOverridden) {
+    bool overridden = false;
+    os.Get ("overridden", overridden);
+    if (overridden) {
         int penIdx = -1;
         GS::ObjectState rgbOS;
         if (os.Get ("penIndex", penIdx)) {
@@ -165,17 +175,16 @@ static API_OverriddenPenOrRGB OverriddenPenOrRGBFromOS (const GS::ObjectState& o
     return v;
 }
 
-static API_OverriddenAttributeOrRGB OverriddenAttributeOrRGBFromOS (const GS::ObjectState& os)
+static API_OverriddenAttributeOrRGB OverriddenAttributeOrRGBFromOS (const GS::ObjectState& os, API_AttrTypeID attrType)
 {
     API_OverriddenAttributeOrRGB v;
     v.hasValue = false;
-    bool isOverridden = false;
-    os.Get ("isOverridden", isOverridden);
-    if (isOverridden) {
-        Int32 attrIdx = -1;
-        GS::ObjectState rgbOS;
-        if (os.Get ("attributeIndex", attrIdx)) {
-            v = ACAPI_CreateAttributeIndex (attrIdx);
+    bool overridden = false;
+    os.Get ("overridden", overridden);
+    if (overridden) {
+        GS::ObjectState attributeIdOs, rgbOS;
+        if (os.Get ("attributeId", attributeIdOs)) {
+            v = GetAttributeIndexFromGuid (attrType, GetGuidFromObjectState (attributeIdOs));
         } else if (os.Get ("rgbColor", rgbOS)) {
             v = RGBColorFromOS (rgbOS);
         }
@@ -205,15 +214,15 @@ static API_OverrideRuleStyle RuleStyleFromOS (const GS::ObjectState& os)
     API_OverrideRuleStyle s = {};
     GS::ObjectState fieldOS;
 
-    if (os.Get ("lineType", fieldOS))                  s.lineType                    = OverriddenAttributeFromOS (fieldOS);
+    if (os.Get ("lineType", fieldOS))                  s.lineType                    = OverriddenAttributeFromOS (fieldOS, API_LinetypeID);
     if (os.Get ("lineMarkerTextPen", fieldOS))         s.lineMarkerTextPen           = OverriddenPenFromOS (fieldOS);
-    if (os.Get ("fillOverride", fieldOS))              s.fillOverride                = OverriddenAttributeFromOS (fieldOS);
+    if (os.Get ("fillOverride", fieldOS))              s.fillOverride                = OverriddenAttributeFromOS (fieldOS, API_FilltypeID);
     if (os.Get ("fillType", fieldOS))                  s.fillType                    = FillTypeFromOS (fieldOS);
     if (os.Get ("fillForegroundPenOverride", fieldOS)) s.fillForegroundPenOverride   = OverriddenPenFromOS (fieldOS);
     if (os.Get ("fillTypeForegroundPen", fieldOS))     s.fillTypeForegroundPen       = FillTypeFromOS (fieldOS);
     if (os.Get ("fillBackgroundPenOverride", fieldOS)) s.fillBackgroundPenOverride   = OverriddenPenOrRGBFromOS (fieldOS);
     if (os.Get ("fillTypeBackgroundPen", fieldOS))     s.fillTypeBackgroundPen       = FillTypeFromOS (fieldOS);
-    if (os.Get ("surfaceOverride", fieldOS))           s.surfaceOverride             = OverriddenAttributeOrRGBFromOS (fieldOS);
+    if (os.Get ("surfaceOverride", fieldOS))           s.surfaceOverride             = OverriddenAttributeOrRGBFromOS (fieldOS, API_MaterialID);
     if (os.Get ("surfaceType", fieldOS))               s.surfaceType                 = SurfaceTypeFromOS (fieldOS);
     os.Get ("showSkinSeparators",           s.showSkinSeparators);
     os.Get ("overridePenColorAndThickness", s.overridePenColorAndThickness);
@@ -2586,7 +2595,7 @@ GS::String GetGraphicalOverrideCombinationsCommand::GetName () const
     return "GetGraphicalOverrideCombinations";
 }
 
-GS::Optional<GS::UniString> GetGraphicalOverrideCombinationsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetGraphicalOverrideCombinationsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2650,7 +2659,7 @@ GS::String GetGraphicalOverrideRuleGroupsCommand::GetName () const
     return "GetGraphicalOverrideRuleGroups";
 }
 
-GS::Optional<GS::UniString> GetGraphicalOverrideRuleGroupsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetGraphicalOverrideRuleGroupsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2706,7 +2715,7 @@ GS::ObjectState GetGraphicalOverrideRuleGroupsCommand::Execute (const GS::Object
 // ---------------------------------------------------------------------------
 
 GetGraphicalOverrideRulesCommand::GetGraphicalOverrideRulesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 GS::String GetGraphicalOverrideRulesCommand::GetName () const
@@ -2714,7 +2723,7 @@ GS::String GetGraphicalOverrideRulesCommand::GetName () const
     return "GetGraphicalOverrideRules";
 }
 
-GS::Optional<GS::UniString> GetGraphicalOverrideRulesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> GetGraphicalOverrideRulesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2727,7 +2736,7 @@ GS::Optional<GS::UniString> GetGraphicalOverrideRulesCommand::GetResponseSchema 
                         "ruleId":       { "type": "string" },
                         "name":         { "type": "string" },
                         "criterionXML": { "type": "string", "description": "XML defining when this rule applies. Export a rule from ArchiCAD to obtain the format." },
-                        "style":        { "type": "object" }
+                        "style":        { "$ref": "#/GraphicalOverrideRuleStyle" }
                     },
                     "additionalProperties": false,
                     "required": [ "ruleId", "name", "criterionXML", "style" ]
@@ -2793,7 +2802,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRuleGroupsCommand::GetInputPa
     })";
 }
 
-GS::Optional<GS::UniString> CreateGraphicalOverrideRuleGroupsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateGraphicalOverrideRuleGroupsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -2853,7 +2862,7 @@ GS::ObjectState CreateGraphicalOverrideRuleGroupsCommand::Execute (const GS::Obj
 // ---------------------------------------------------------------------------
 
 CreateGraphicalOverrideRulesCommand::CreateGraphicalOverrideRulesCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 GS::String CreateGraphicalOverrideRulesCommand::GetName () const
@@ -2875,7 +2884,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRulesCommand::GetInputParamet
                         "ruleGroupId":  { "type": "string", "description": "GUID of the rule group this rule belongs to." },
                         "criterionXML": { "type": "string", "description": "XML defining when this rule applies. Use GetGraphicalOverrideRules to obtain example XML. Ignored if 'criterion' is also given. Leave both out (or empty) to match every element." },
                         "criterion":    { "$ref": "#/GraphicalOverrideCriterion", "description": "Structured alternative to criterionXML - generated into the equivalent XML internally. Takes precedence over criterionXML if both are given." },
-                        "style":        { "type": "object", "description": "The graphical override style. Use GetGraphicalOverrideRules to obtain the structure." }
+                        "style":        { "$ref": "#/GraphicalOverrideRuleStyle", "description": "The graphical override style." }
                     },
                     "additionalProperties": false,
                     "required": [ "name", "ruleGroupId", "style" ]
@@ -2887,7 +2896,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRulesCommand::GetInputParamet
     })";
 }
 
-GS::Optional<GS::UniString> CreateGraphicalOverrideRulesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateGraphicalOverrideRulesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3004,7 +3013,7 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideCombinationsCommand::GetInput
     })";
 }
 
-GS::Optional<GS::UniString> CreateGraphicalOverrideCombinationsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> CreateGraphicalOverrideCombinationsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3098,7 +3107,7 @@ GS::Optional<GS::UniString> DeleteGraphicalOverrideRulesCommand::GetInputParamet
     })";
 }
 
-GS::Optional<GS::UniString> DeleteGraphicalOverrideRulesCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteGraphicalOverrideRulesCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3158,7 +3167,7 @@ GS::Optional<GS::UniString> DeleteGraphicalOverrideRuleGroupsCommand::GetInputPa
     })";
 }
 
-GS::Optional<GS::UniString> DeleteGraphicalOverrideRuleGroupsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteGraphicalOverrideRuleGroupsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
@@ -3218,7 +3227,7 @@ GS::Optional<GS::UniString> DeleteGraphicalOverrideCombinationsCommand::GetInput
     })";
 }
 
-GS::Optional<GS::UniString> DeleteGraphicalOverrideCombinationsCommand::GetResponseSchema () const
+GS::Optional<GS::UniString> DeleteGraphicalOverrideCombinationsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
