@@ -6954,7 +6954,7 @@
             },
             "height": {
                 "type": "number",
-                "description": "Story height, calculated as the level of the story above minus this story's level. Omitted for the topmost story, which has no story above."
+                "description": "Story height, calculated as the level of the story above minus this story's level. The topmost story gets its height from the virtual story that Archicad keeps above it in the story settings; only an Archicad that did not report that virtual story would leave the top story without a height."
             },
             "name": {
                 "type": "string",

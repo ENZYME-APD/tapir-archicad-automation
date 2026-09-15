@@ -11,6 +11,10 @@ namespace TapirGrasshopperPlugin.Types.Project
         [JsonProperty("level")]
         public double Level;
 
+        // Null when the add-on predates the field.
+        [JsonProperty("height")]
+        public double? Height;
+
         [JsonProperty("dispOnSections")]
         public bool DispOnSections;
     }
