@@ -4223,7 +4223,16 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
 GS::Optional<GS::UniString> DeleteElementsCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
     })";
 }
 
@@ -4232,17 +4241,60 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GSErrCode err = NoError;
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
-    ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
-        err = ACAPI_Element_Delete (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem));
+    GS::Array<bool> existedBeforeDelete;
+    GS::Array<API_Guid> guidsToDelete;
+    for (const API_Guid& elemGuid : elemGuids) {
+        API_Elem_Head elemHead = {};
+        const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
+        existedBeforeDelete.Push (exists);
+        if (exists) {
+            guidsToDelete.Push (elemGuid);
+        }
+    }
 
-        return err;
-    });
+    GSErrCode deleteErr = NoError;
+    if (!guidsToDelete.IsEmpty ()) {
+        ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
+            deleteErr = ACAPI_Element_Delete (guidsToDelete);
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to delete elements.");
+            return deleteErr;
+        });
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // ACAPI_Element_Delete reports NoError even when it skips elements it is
+    // not allowed to delete (locked layer, locked element, teamwork access),
+    // so success is decided per element by whether the element is really gone.
+    for (USize i = 0; i < elemGuids.GetSize (); ++i) {
+        const API_Guid& elemGuid = elemGuids[i];
+        if (!existedBeforeDelete[i]) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element does not exist."));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+            executionResults (CreateSuccessfulExecutionResult ());
+            continue;
+        }
+
+        API_Attribute layerAttr = {};
+        layerAttr.header.typeID = API_LayerID;
+        layerAttr.header.index = elemHead.layer;
+        if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
+            executionResults (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The element was not deleted, because its layer is locked."));
+        } else if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
+            executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The element was not deleted, because it is not editable."));
+        } else {
+            executionResults (CreateFailedExecutionResult (deleteErr != NoError ? deleteErr : APIERR_GENERAL, "Failed to delete the element."));
+        }
+    }
+
+    return response;
 }
 
 LockElementsCommand::LockElementsCommand () :
