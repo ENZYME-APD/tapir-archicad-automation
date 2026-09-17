@@ -836,7 +836,7 @@ static void FillNewStoryCmd (const GS::Array<GS::ObjectState>& stories, const GS
 
     GS::UniString name;
     stories[storyPos].Get ("name", name);
-    GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
+    GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
 }
 
 // A copy of what a story looks like right now. API_StoryInfo::data is a handle which every
@@ -1056,7 +1056,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         stories[i].Get ("name", name);
 
         if (currentStories[i].name != name) {
-            GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
+            GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
             storyCmd.action = APIStory_Rename;
 
             err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
