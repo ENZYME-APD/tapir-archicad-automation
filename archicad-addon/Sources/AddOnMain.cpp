@@ -281,6 +281,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.5.9",
             "Saves the given elements, or the current selection, as a hotlink module (.mod) file."
         );
+        err |= RegisterCommand<SaveProjectAsArchiveCommand> (
+            projectCommands, "1.5.10",
+            "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
+        );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
             "Gets the project calculation units."
