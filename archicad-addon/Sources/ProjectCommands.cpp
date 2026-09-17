@@ -763,6 +763,11 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
 
     short storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    // The array holds one record more than there are stories: the virtual story above
+    // the top one, whose level is where the top story ends (API_StoryInfo says it is
+    // there so that the height of the top story can be calculated). The record count
+    // comes from the handle itself, so a level is never read past the array.
+    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
     for (short i = 0; i < storyCount; i++) {
         const API_StoryType& story = (*storyInfo.data)[i];
         GS::ObjectState storyData;
@@ -772,7 +777,7 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
         storyData.Add ("floorId", story.floorId);
         storyData.Add ("dispOnSections", story.dispOnSections);
         storyData.Add ("level", story.level);
-        if (i + 1 < storyCount) {
+        if (i + 1 < recordCount) {
             storyData.Add ("height", (*storyInfo.data)[i + 1].level - story.level);
         }
         storyData.Add ("name", uName);
