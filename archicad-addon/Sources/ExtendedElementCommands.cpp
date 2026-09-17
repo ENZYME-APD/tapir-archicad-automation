@@ -1949,7 +1949,9 @@ bool ApplySlabDetails (API_Element& element, API_Element& mask, const GS::Object
         floorFillOs.Get ("use3DHatching", element.slab.use3DHatching);
         GS::ObjectState orientationOs;
         if (floorFillOs.Get ("orientation", orientationOs)) {
-            element.slab.hatchOrientation = GetHatchOrientationFromObjectState (orientationOs);
+            // Merge into the element's current orientation - omitted fields must keep their
+            // values instead of resetting to zero/Global (issue #662).
+            element.slab.hatchOrientation = GetHatchOrientationFromObjectState (orientationOs, element.slab.hatchOrientation);
         }
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, useFloorFill);
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillPen);
