@@ -869,7 +869,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<AddFilesToEmbeddedLibraryCommand> (
             libraryCommands, "1.2.2",
-            "Adds the given files into the embedded library."
+            "Adds the given files into the embedded library. With the overwriteExisting flag an embedded library item already existing on an outputPath is replaced (Archicad 27 or newer)."
+        );
+        err |= RegisterCommand<DeleteEmbeddedLibraryItemsCommand> (
+            libraryCommands, "1.5.10",
+            "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
         );
         err |= RegisterCommand<SetLibrariesCommand> (
             libraryCommands, "1.5.9",

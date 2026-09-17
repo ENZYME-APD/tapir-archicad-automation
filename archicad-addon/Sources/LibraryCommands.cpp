@@ -22,6 +22,10 @@ GS::Optional<GS::UniString> AddFilesToEmbeddedLibraryCommand::GetInputParameters
         "properties": {
             "files": {
                 "$ref": "#/LibraryFileAdditions"
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Optional. When true, an embedded library item already existing on an outputPath is deleted first, so the newly added file replaces the loaded library part. By default false: the existing loaded part stays in use. Requires Archicad 27 or newer."
             }
         },
         "additionalProperties": false,
@@ -60,6 +64,9 @@ GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    bool overwriteExisting = false;
+    parameters.Get ("overwriteExisting", overwriteExisting);
+
     GS::Array<GS::ObjectState> files;
     parameters.Get ("files", files);
 
@@ -79,6 +86,22 @@ GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState
 
 		IO::Location outputFileLoc = embeddedLibraryFolder;
 		outputFileLoc.AppendToLocal (IO::RelativeLocation (outputPath));
+
+        if (overwriteExisting && IO::File (outputFileLoc, IO::File::OnNotFound::Fail).GetStatus () == NoError) {
+#ifdef ServerMainVers_2700
+            const bool keepGSMFile = false;
+            const bool silentMode = true;
+            GSErrCode deleteErr = ACAPI_LibraryManagement_DeleteEmbeddedLibItem (&outputFileLoc, keepGSMFile, silentMode);
+            if (deleteErr != NoError) {
+                executionResults (CreateFailedExecutionResult (deleteErr, "Failed to delete the existing embedded library item before overwriting."));
+                continue;
+            }
+#else
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "The overwriteExisting flag requires Archicad 27 or newer."));
+            continue;
+#endif
+        }
+
         IO::Location outputFolder = outputFileLoc;
         if (outputFolder.DeleteLastLocalName () != NoError ||
             IO::fileSystem.CreateFolderTree (outputFolder) != NoError ||
@@ -137,6 +160,106 @@ GS::ObjectState AddFilesToEmbeddedLibraryCommand::Execute (const GS::ObjectState
     }
 
     return response;
+}
+
+DeleteEmbeddedLibraryItemsCommand::DeleteEmbeddedLibraryItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String DeleteEmbeddedLibraryItemsCommand::GetName () const
+{
+    return "DeleteEmbeddedLibraryItems";
+}
+
+GS::Optional<GS::UniString> DeleteEmbeddedLibraryItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "embeddedLibraryItems": {
+                "type": "array",
+                "description": "A list of embedded library items to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The relative path of the library item inside the embedded library, the same path AddFilesToEmbeddedLibrary takes as outputPath."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "embeddedLibraryItems"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteEmbeddedLibraryItemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    auto folderId = API_SpecFolderID::API_EmbeddedProjectLibraryFolderID;
+
+    IO::Location embeddedLibraryFolder;
+
+    if (ACAPI_ProjectSettings_GetSpecFolder (&folderId, &embeddedLibraryFolder) != NoError || IO::Folder (embeddedLibraryFolder).GetStatus () != NoError) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to get embedded library folder.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("embeddedLibraryItems", items);
+
+    for (const GS::ObjectState& item : items) {
+        GS::UniString path;
+        if (!item.Get ("path", path) || path.IsEmpty ()) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Missing path parameter."));
+            continue;
+        }
+
+        IO::Location itemLocation = embeddedLibraryFolder;
+        itemLocation.AppendToLocal (IO::RelativeLocation (path));
+
+        const bool keepGSMFile = false;
+        const bool silentMode = true;
+        GSErrCode err = ACAPI_LibraryManagement_DeleteEmbeddedLibItem (&itemLocation, keepGSMFile, silentMode);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, "Failed to delete the embedded library item on the given path."));
+            continue;
+        }
+
+        executionResults (CreateSuccessfulExecutionResult ());
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
 }
 
 GS::Optional<GS::UniString> GetLibrariesCommand::GetRawResponseSchema () const
