@@ -1,0 +1,25 @@
+Command: SaveProjectAsArchive
+Parameters:
+{
+    "archiveFilePath": "<PATH>tapir_save_project_example.pla"
+}
+Response:
+{
+    "success": true
+}
+Command: ChangeWindow
+Parameters:
+{
+    "windowType": "3DModel"
+}
+Response:
+{
+    "success": true
+}
+Command: SaveProject
+Parameters:
+{}
+Response:
+{
+    "success": true
+}

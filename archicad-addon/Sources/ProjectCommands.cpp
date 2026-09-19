@@ -1310,9 +1310,33 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
 
 GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_ProjectOperation_Save ();
+    // The parameterless save acts on the current database, so from a 3D or other
+    // non-plan window it tries to save that window's content - which has no file of
+    // its own - and fails (#681). Switch the CURRENT DATABASE - not the visible
+    // window - to the floor plan around the save, the same dance the window/door
+    // creation in ExtendedElementCommands.cpp does, and restore it on every exit
+    // path. A failed switch is not an error of its own: the save is attempted
+    // anyway and its real error code is returned.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    if (ACAPI_Database_GetCurrentDatabase (&previousDatabase) == NoError &&
+        previousDatabase.typeID != APIWind_FloorPlanID) {
+        API_DatabaseInfo floorPlanDatabase = {};
+        floorPlanDatabase.typeID = APIWind_FloorPlanID;
+        if (ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase) == NoError &&
+            ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase) == NoError) {
+            databaseSwitched = true;
+        }
+    }
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save ();
     if (err != NoError) {
-        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to save the project.");
+        return CreateFailedExecutionResult (err, "Failed to save the project.");
     }
     return CreateSuccessfulExecutionResult ();
 }
