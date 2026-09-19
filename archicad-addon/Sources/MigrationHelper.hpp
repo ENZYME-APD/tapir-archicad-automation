@@ -152,6 +152,11 @@ inline GSErrCode ACAPI_ProjectOperation_Save ()
     return ACAPI_Automate (APIDo_SaveID);
 }
 
+inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Ifc* formatPars)
+{
+    return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
+}
+
 inline GSErrCode ACAPI_ProjectOperation_Save (const API_FileSavePars* fileSavePars, const API_SavePars_Archive* formatPars)
 {
     return ACAPI_Automate (APIDo_SaveID, (void*) fileSavePars, (void*) formatPars);
@@ -430,7 +435,7 @@ inline GSErrCode ACAPI_IFC_GetIFCRelationshipData (API_IFCTranslatorIdentifier i
     return ACAPI_Goodies (APIAny_GetIFCRelationshipDataID, &ifcTranslator, &ifcRelationshipData);
 }
 
-inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier> ifcExportTranslators)
+inline GSErrCode ACAPI_IFC_GetIFCExportTranslatorsList (GS::Array<API_IFCTranslatorIdentifier>& ifcExportTranslators)
 {
     return ACAPI_Goodies (APIAny_GetIFCExportTranslatorsListID, &ifcExportTranslators);
 }

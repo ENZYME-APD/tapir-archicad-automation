@@ -840,7 +840,11 @@ GSErrCode Initialize (void)
         CommandGroup ifcCommands ("IFC Commands");
         err |= RegisterCommand<IFCFileOperationCommand> (
             ifcCommands, "1.2.6",
-            "Executes an IFC file operation."
+            "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use."
+        );
+        err |= RegisterCommand<GetIFCExportTranslatorsCommand> (
+            ifcCommands, "1.5.10",
+            "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName."
         );
         err |= RegisterCommand<GetElementsByIFCIdsCommand> (
             ifcCommands, "1.5.1",
