@@ -7374,7 +7374,7 @@
             },
             "height": {
                 "type": "number",
-                "description": "The character height in millimeters. Only applied to Text elements."
+                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
                 "type": "string",
