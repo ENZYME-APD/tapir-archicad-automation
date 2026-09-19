@@ -4243,21 +4243,10 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
-    GS::Array<bool> existedBeforeDelete;
-    GS::Array<API_Guid> guidsToDelete;
-    for (const API_Guid& elemGuid : elemGuids) {
-        API_Elem_Head elemHead = {};
-        const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
-        existedBeforeDelete.Push (exists);
-        if (exists) {
-            guidsToDelete.Push (elemGuid);
-        }
-    }
-
     GSErrCode deleteErr = NoError;
-    if (!guidsToDelete.IsEmpty ()) {
+    if (!elemGuids.IsEmpty ()) {
         ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
-            deleteErr = ACAPI_Element_Delete (guidsToDelete);
+            deleteErr = ACAPI_Element_Delete (elemGuids);
 
             return deleteErr;
         });
@@ -4268,14 +4257,11 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 
     // ACAPI_Element_Delete reports NoError even when it skips elements it is
     // not allowed to delete (locked layer, locked element, teamwork access),
-    // so success is decided per element by whether the element is really gone.
-    for (USize i = 0; i < elemGuids.GetSize (); ++i) {
-        const API_Guid& elemGuid = elemGuids[i];
-        if (!existedBeforeDelete[i]) {
-            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element does not exist."));
-            continue;
-        }
-
+    // so success is decided per element by whether the element is really gone
+    // afterwards. An element that is gone is the asked-for outcome however it
+    // got there: deleted by this call, deleted with its owner, or never in the
+    // project to begin with.
+    for (const API_Guid& elemGuid : elemGuids) {
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());

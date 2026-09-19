@@ -8,7 +8,8 @@ result per input element, decided by whether the element is really gone.
 The script places a hotspot on its own layer, locks the layer, and checks that
 DeleteElements reports a per-element failure while the element survives; then
 it unlocks the layer and checks that the same call succeeds and the element is
-gone. A guid that never existed must get its own failed result too.
+gone. A guid that is not in the project counts as gone, so it reports success -
+and it must not stop the rest of the batch from being deleted.
 
 Not part of the auto-discovered Examples/ (see test_examples.py +
 ExpectedOutputs/): it needs to mutate layer attributes and exits non-zero on a
@@ -83,12 +84,30 @@ details = run('GetDetailsOfElements', {
 })['detailsOfElements'][0]
 check('the element is gone after the successful delete', 'error' in details, str(details))
 
-# 5) A guid that never existed gets its own failed result.
+# 5) A guid that is not in the project reports success: the command answers
+# whether the element is gone, and that one is.
 result = run('DeleteElements', {
     'elements': [{'elementId': {'guid': 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'}}]
 })
-check('a nonexistent element reports a failed execution result',
-      result['executionResults'][0]['success'] is False, str(result))
+check('a guid that is not in the project reports success',
+      result['executionResults'][0]['success'] is True, str(result))
+
+# 6) A guid that is not in the project must not stop the others from being
+# deleted: the whole array goes to one ACAPI_Element_Delete call.
+created = run('CreateHotspots', {
+    'hotspotsData': [{'position': {'x': 1.0, 'y': 1.0}, 'layerIndex': layerIndex}]
+})
+survivorId = created['elements'][0]['elementId']
+result = run('DeleteElements', {'elements': [
+    {'elementId': {'guid': 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'}},
+    {'elementId': survivorId},
+]})
+check('a missing guid does not block the rest of the batch',
+      all(r['success'] is True for r in result['executionResults']), str(result))
+details = run('GetDetailsOfElements', {
+    'elements': [{'elementId': survivorId}]
+})['detailsOfElements'][0]
+check('the real element of that batch is gone', 'error' in details, str(details))
 
 print('{} passed, {} failed'.format(passes, fails))
 sys.exit(0 if fails == 0 else 1)
