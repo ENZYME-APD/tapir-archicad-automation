@@ -1,4 +1,4 @@
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
@@ -39,13 +39,13 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
             InBoolean(
                 "IncludeTextures",
-                "Include the textures in the archive.",
-                true);
+                "Include the textures in the archive. Off by default, as in the Archive dialog.",
+                false);
 
             InBoolean(
                 "IncludeBackgroundPicture",
-                "Include the background picture in the archive.",
-                true);
+                "Include the background picture in the archive. Off by default, as in the Archive dialog.",
+                false);
         }
 
         protected override void AddOutputs()
@@ -70,8 +70,8 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 ["archiveFilePath"] = archiveFilePath,
                 ["includeLibraryParts"] = da.GetOptional(1, true),
                 ["includeProperties"] = da.GetOptional(2, true),
-                ["includeTextures"] = da.GetOptional(3, true),
-                ["includeBackgroundPicture"] = da.GetOptional(4, true)
+                ["includeTextures"] = da.GetOptional(3, false),
+                ["includeBackgroundPicture"] = da.GetOptional(4, false)
             };
 
             if (!TryGetConvertedCadValues(
