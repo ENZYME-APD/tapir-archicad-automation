@@ -1225,21 +1225,24 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                         "description": "Optional pen index for the fill. By default the current pen is used."
                     },
                     "fillBackgroundPenIndex": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Optional pen index for the background of the fill. By default the current background pen is used."
                     },
                     "fillId": {
                         "$ref": "#/AttributeId",
                         "description": "Optional fill attribute. By default the current fill is used."
                     },
                     "buildingMaterialId": {
-                        "$ref": "#/AttributeId"
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material attribute, used instead of fillId when the hatch is a building material hatch."
                     },
                     "roomSpecial": {
                         "type": "integer",
                         "description": "Special area percent in a room (negative means OFF)."
                     },
                     "showArea": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "Optional. Show the area text of the hatch."
                     }
                 },
                 "additionalProperties": false,
