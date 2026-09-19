@@ -1310,27 +1310,30 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
 
 GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    // The parameterless save acts on the current database, so from a 3D or other
-    // non-plan window it tries to save that window's content - which has no file of
-    // its own - and fails (#681). Switch the CURRENT DATABASE - not the visible
-    // window - to the floor plan around the save, the same dance the window/door
-    // creation in ExtendedElementCommands.cpp does, and restore it on every exit
-    // path. A failed switch is not an error of its own: the save is attempted
-    // anyway and its real error code is returned.
-    API_DatabaseInfo previousDatabase = {};
-    bool databaseSwitched = false;
-    if (ACAPI_Database_GetCurrentDatabase (&previousDatabase) == NoError &&
-        previousDatabase.typeID != APIWind_FloorPlanID) {
-        API_DatabaseInfo floorPlanDatabase = {};
-        floorPlanDatabase.typeID = APIWind_FloorPlanID;
-        if (ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase) == NoError &&
-            ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase) == NoError) {
-            databaseSwitched = true;
-        }
+    // The parameterless save acts on the current window - "saves the content of
+    // the current window", ACAPI_Automate.h - so from a 3D, section or other
+    // non-plan window it tries to save that window's content, which has no file
+    // of its own, and answers APIERR_READONLY (#681). So the Floor Plan window
+    // is activated around the save and the previous window restored afterwards.
+    //
+    // Two shortcuts were measured on Archicad 29 and rejected. Switching only
+    // the current database leaves the save failing exactly as before. Saving
+    // as a plan file to the project's own location does work from the 3D
+    // window, but it also overwrites a project that Archicad opened read-only
+    // (a stale lock, another user editing it), where File > Save refuses -
+    // and API_ProjectInfo has no read-only flag to check first. The plain save
+    // keeps every one of those refusals, so it is the one to use.
+    API_WindowInfo previousWindow = {};
+    bool windowSwitched = false;
+    if (ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError &&
+        previousWindow.typeID != APIWind_FloorPlanID) {
+        API_WindowInfo floorPlanWindow = {};
+        floorPlanWindow.typeID = APIWind_FloorPlanID;
+        windowSwitched = ACAPI_Window_ChangeWindow (&floorPlanWindow) == NoError;
     }
-    const GS::OnExit restoreDatabase ([&] () {
-        if (databaseSwitched) {
-            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+    const GS::OnExit restoreWindow ([&] () {
+        if (windowSwitched) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
         }
     });
 
