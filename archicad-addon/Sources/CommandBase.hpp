@@ -241,3 +241,22 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
 
 bool LoadElementHeaderByGuid (const API_Guid& elementGuid, API_Elem_Head& elementHeader);
 bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeId);
+
+// ---------------------------------------------------------------------------
+// Crash-safe element bounds.
+//
+// ACAPI_Element_CalcBounds segfaults Archicad (null dereference in
+// SL::ACDrawEnvirBase::GetElemParameterQueryFactory, called from Ceil1Bound)
+// when it is asked for a Slab that is not drawn in the current window: the
+// slab is on another story than the one displayed, its layer is hidden, or the
+// current window / database is not a floor plan. For such slabs the bounds are
+// computed from the slab polygon instead.
+// ---------------------------------------------------------------------------
+
+// False when ACAPI_Element_CalcBounds could hit the missing draw environment.
+bool IsSafeForCalcBounds (const API_Elem_Head& elemHead);
+
+// ACAPI_Element_CalcBounds when that is safe, otherwise the slab polygon
+// (x/y from the memo polygon including arcs, z from level, offsetFromTop and
+// thickness). usedPolygon tells the caller which path produced the box.
+GSErrCode GetElementBoundsSafe (const API_Elem_Head& elemHead, API_Box3D& outBox, bool& usedPolygon);

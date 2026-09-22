@@ -1126,3 +1126,143 @@ void DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coor
     const double det = transformation.tmx[0] * transformation.tmx[5] - transformation.tmx[1] * transformation.tmx[4];
     mirrored = det < 0.0;
 }
+
+// ---------------------------------------------------------------------------
+// Crash-safe element bounds -- see CommandBase.hpp.
+// ---------------------------------------------------------------------------
+
+bool IsSafeForCalcBounds (const API_Elem_Head& elemHead)
+{
+    if (GetElemTypeId (elemHead) != API_SlabID) {
+        return true;
+    }
+
+    // Only a floor plan window with the floor plan database current has a draw
+    // environment for plan elements.
+    API_WindowInfo windowInfo = {};
+    if (ACAPI_Window_GetCurrentWindow (&windowInfo) != NoError || windowInfo.typeID != APIWind_FloorPlanID) {
+        return false;
+    }
+    API_DatabaseInfo dbInfo = {};
+    if (ACAPI_Database_GetCurrentDatabase (&dbInfo) != NoError || dbInfo.typeID != APIWind_FloorPlanID) {
+        return false;
+    }
+
+    // The home story must be the displayed story. Compared explicitly, because
+    // APIFilt_OnActFloor also accepts elements merely shown on the active story.
+    API_StoryInfo storyInfo = {};
+    if (ACAPI_ProjectSetting_GetStorySettings (&storyInfo) != NoError) {
+        return false;
+    }
+    const short activeStory = storyInfo.actStory;
+    BMKillHandle ((GSHandle*) &storyInfo.data);
+    if (elemHead.floorInd != activeStory) {
+        return false;
+    }
+
+    // Hidden layer, renovation filter or partial structure display: not drawn.
+    API_ElemFilterFlags drawnFlags = APIFilt_OnVisLayer;
+    drawnFlags |= APIFilt_OnActFloor;
+    drawnFlags |= APIFilt_IsVisibleByRenovation;
+    drawnFlags |= APIFilt_IsInStructureDisplay;
+    return ACAPI_Element_Filter (elemHead.guid, drawnFlags);
+}
+
+static void ExtendBoxXY (API_Box3D& box, double x, double y)
+{
+    if (x < box.xMin) box.xMin = x;
+    if (x > box.xMax) box.xMax = x;
+    if (y < box.yMin) box.yMin = y;
+    if (y > box.yMax) box.yMax = y;
+}
+
+// An arc from p1 to p2 with signed sweep 'angle' (positive = CCW) can bulge past
+// its end points: add the axis-extreme points that lie on the sweep.
+static void ExtendBoxWithArc (API_Box3D& box, const API_Coord& p1, const API_Coord& p2, double angle)
+{
+    constexpr double Pi = 3.14159265358979323846;
+    if (std::fabs (angle) < 1e-9) {
+        return;
+    }
+    const double dx = p2.x - p1.x;
+    const double dy = p2.y - p1.y;
+    const double chord = std::sqrt (dx * dx + dy * dy);
+    const double t = std::tan (angle / 2.0);
+    if (chord < 1e-12 || std::fabs (t) < 1e-12) {
+        return;
+    }
+    // The centre lies on the chord's left normal, h / tan (angle / 2) from the
+    // chord midpoint; a sweep above 180 degrees flips the sign by itself.
+    const double d  = (chord / 2.0) / t;
+    const double cx = (p1.x + p2.x) / 2.0 - dy / chord * d;
+    const double cy = (p1.y + p2.y) / 2.0 + dx / chord * d;
+    const double r  = std::sqrt ((p1.x - cx) * (p1.x - cx) + (p1.y - cy) * (p1.y - cy));
+    const double a1 = std::atan2 (p1.y - cy, p1.x - cx);
+    for (int k = 0; k < 4; ++k) {
+        const double phi = k * Pi / 2.0;
+        double delta = std::fmod ((angle > 0.0) ? (phi - a1) : (a1 - phi), 2.0 * Pi);
+        if (delta < 0.0) {
+            delta += 2.0 * Pi;
+        }
+        if (delta <= std::fabs (angle)) {
+            ExtendBoxXY (box, cx + r * std::cos (phi), cy + r * std::sin (phi));
+        }
+    }
+}
+
+static GSErrCode CalcSlabPolygonBounds (const API_Elem_Head& elemHead, API_Box3D& outBox)
+{
+    API_Element elem = {};
+    elem.header.guid = elemHead.guid;
+    GSErrCode err = ACAPI_Element_Get (&elem);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (elemHead.guid, &memo, APIMemoMask_Polygon);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.coords == nullptr) {
+        return APIERR_GENERAL;
+    }
+
+    const Int32 nCoords = (Int32) (BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord)) - 1;
+    if (nCoords < 1) {
+        return APIERR_GENERAL;
+    }
+
+    outBox.xMin = outBox.yMin = 1e30;
+    outBox.xMax = outBox.yMax = -1e30;
+    for (Int32 i = 1; i <= nCoords; ++i) {   // memo coords are 1-based
+        ExtendBoxXY (outBox, (*memo.coords)[i].x, (*memo.coords)[i].y);
+    }
+    if (memo.parcs != nullptr) {
+        const Int32 nArcs = (Int32) (BMhGetSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (API_PolyArc));
+        for (Int32 i = 0; i < nArcs; ++i) {
+            const API_PolyArc& arc = (*memo.parcs)[i];
+            if (arc.begIndex >= 1 && arc.begIndex <= nCoords && arc.endIndex >= 1 && arc.endIndex <= nCoords) {
+                ExtendBoxWithArc (outBox, (*memo.coords)[arc.begIndex], (*memo.coords)[arc.endIndex], arc.arcAngle);
+            }
+        }
+    }
+
+    const Stories stories = GetStories ();
+    const double top = GetZPos (elemHead.floorInd, elem.slab.level + elem.slab.offsetFromTop, stories);
+    outBox.zMax = top;
+    outBox.zMin = top - elem.slab.thickness;
+    return NoError;
+}
+
+GSErrCode GetElementBoundsSafe (const API_Elem_Head& elemHead, API_Box3D& outBox, bool& usedPolygon)
+{
+    outBox = {};
+    usedPolygon = !IsSafeForCalcBounds (elemHead);
+    if (usedPolygon) {
+        return CalcSlabPolygonBounds (elemHead, outBox);
+    }
+    API_Elem_Head head = elemHead;
+    return ACAPI_Element_CalcBounds (&head, &outBox);
+}

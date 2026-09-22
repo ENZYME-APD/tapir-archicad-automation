@@ -4067,6 +4067,10 @@
         "properties": {
             "boundingBox3D": {
                 "$ref": "#/BoundingBox3D"
+            },
+            "boundsSource": {
+                "type": "string",
+                "description": "Only present when the box was not computed by Archicad itself. 'polygon': a Slab that is not drawn in the current window (other story, hidden layer, non-floor-plan window), measured from its polygon, level and thickness."
             }
         },
         "additionalProperties": false,

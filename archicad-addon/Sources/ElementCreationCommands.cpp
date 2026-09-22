@@ -3520,7 +3520,10 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
     } else if (parentElemHead.guid != APINULLGuid) {
         API_Box3D box = {};
-        ACAPI_Element_CalcBounds (&parentElemHead, &box);
+        bool usedPolygon = false;
+        if (GetElementBoundsSafe (parentElemHead, box, usedPolygon) != NoError) {
+            return CreateErrorResponse (APIERR_GENERAL, "Could not get the bounds of the parent element; pass begCoordinate explicitly");
+        }
         element.label.begC.x = (box.xMin + box.xMax) / 2.0;
         element.label.begC.y = (box.yMin + box.yMax) / 2.0;
     } else {

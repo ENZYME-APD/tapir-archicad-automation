@@ -4165,6 +4165,7 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         const API_ElemTypeID typeID = GetElemTypeId (elemHead);
 
         API_Box3D box3D = {};
+        bool usedPolygon = false;
         if (typeID == API_RoofID || typeID == API_ZoneID) {
             err = CalculateSolidBodyBounds (elemHead, box3D);
         } else if (typeID == API_StairID) {
@@ -4175,7 +4176,9 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
                 err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
             }
         } else {
-            err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
+            // Not ACAPI_Element_CalcBounds directly: it crashes Archicad for a Slab
+            // that is not drawn in the current window (see GetElementBoundsSafe).
+            err = GetElementBoundsSafe (elemHead, box3D, usedPolygon);
         }
         if (err != NoError) {
             boundingBoxes3D (CreateErrorResponse (err, "Failed to get the 3D bounding box"));
@@ -4188,7 +4191,11 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
                                        "yMax", box3D.yMax,
                                        "zMin", box3D.zMin,
                                        "zMax", box3D.zMax);
-        boundingBoxes3D (GS::ObjectState ("boundingBox3D", boundingBox3D));
+        GS::ObjectState item ("boundingBox3D", boundingBox3D);
+        if (usedPolygon) {
+            item.Add ("boundsSource", GS::String ("polygon"));
+        }
+        boundingBoxes3D (item);
     }
 
     return response;
