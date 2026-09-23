@@ -314,7 +314,8 @@ GS::Optional<GS::UniString> CreateKeynoteFoldersCommand::GetInputParametersSchem
                             "description": "The parent folder. Optional; defaults to the root folder."
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -381,6 +382,11 @@ GS::ObjectState CreateKeynoteFoldersCommand::Execute (const GS::ObjectState& par
                 continue;
             }
 
+            if (key.IsEmpty ()) {
+                keynoteFolderIdsOrErrors (CreateErrorResponse (APIERR_BADPARS, "The 'key' parameter must not be empty."));
+                continue;
+            }
+
             std::optional<KeynoteFolder> parentFolder = ResolveParentFolder (rootFolder.Unwrap (), folderData);
             if (!parentFolder.has_value ()) {
                 keynoteFolderIdsOrErrors (CreateErrorResponse (APIERR_BADPARS, "Failed to find the parent folder."));
@@ -431,7 +437,8 @@ GS::Optional<GS::UniString> CreateKeynoteItemsCommand::GetInputParametersSchema 
                             "description": "The parent folder. Optional; defaults to the root folder."
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -502,6 +509,11 @@ GS::ObjectState CreateKeynoteItemsCommand::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            if (key.IsEmpty ()) {
+                keynoteItemIdsOrErrors (CreateErrorResponse (APIERR_BADPARS, "The 'key' parameter must not be empty."));
+                continue;
+            }
+
             std::optional<KeynoteFolder> parentFolder = ResolveParentFolder (rootFolder.Unwrap (), itemData);
             if (!parentFolder.has_value ()) {
                 keynoteItemIdsOrErrors (CreateErrorResponse (APIERR_BADPARS, "Failed to find the parent folder."));
@@ -564,7 +576,8 @@ GS::Optional<GS::UniString> ModifyKeynoteFoldersCommand::GetInputParametersSchem
                             "$ref": "#/KeynoteFolderId"
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -641,6 +654,10 @@ GS::ObjectState ModifyKeynoteFoldersCommand::Execute (const GS::ObjectState& par
             bool success = true;
             GS::UniString key;
             if (folderData.Get ("key", key)) {
+                if (key.IsEmpty ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'key' parameter must not be empty."));
+                    continue;
+                }
                 success &= folder->SetKey (key).IsOk ();
             }
             GS::UniString title;
@@ -691,7 +708,8 @@ GS::Optional<GS::UniString> ModifyKeynoteItemsCommand::GetInputParametersSchema 
                             "$ref": "#/KeynoteItemId"
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -761,6 +779,10 @@ GS::ObjectState ModifyKeynoteItemsCommand::Execute (const GS::ObjectState& param
             bool success = true;
             GS::UniString key;
             if (itemData.Get ("key", key)) {
+                if (key.IsEmpty ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The 'key' parameter must not be empty."));
+                    continue;
+                }
                 success &= item.SetKey (key).IsOk ();
             }
             GS::UniString title;
