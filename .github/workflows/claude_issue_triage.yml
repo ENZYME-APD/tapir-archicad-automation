@@ -315,8 +315,13 @@ jobs:
 
             3. A FIX - the comment asks for one, or the thread now holds what
                a fix needs. If you already opened a pull request for this
-               issue (gh pr list --state open --search "<issue number> in:body"),
-               check out its branch and push the change there. Otherwise open a
+               issue, push the change to its branch - but only a pull request
+               that is yours: list candidates with
+               gh pr list --state open --author app/github-actions --search "<issue number> in:body" --json number,headRefName,isDraft,author
+               and reuse one only if it is a draft authored by
+               github-actions[bot] and its body says it fixes this issue.
+               Never push to a branch of a pull request someone else opened,
+               even if it mentions this issue. Otherwise open a
                new pull request from a new branch, AS A DRAFT. Register any new
                command in AddOnMain.cpp with the UNRELEASED version from
                tools/package_info.json, keep the C++ style of the surrounding
