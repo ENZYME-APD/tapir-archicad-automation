@@ -2404,17 +2404,21 @@ var gCommands = [{
                             "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         },
+                        "circleBased": {
+                            "type": "boolean",
+                            "description": "True for a round beam cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments."
+                        },
                         "isWidthAndHeightLinked": {
                             "type": "boolean",
                             "description": "When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments."
                         },
                         "buildingMaterialId": {
                             "$ref": "#/AttributeId",
-                            "description": "Cross section building material. Applied to all segments."
+                            "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments."
                         },
                         "profileId": {
                             "$ref": "#/AttributeId",
-                            "description": "Switches the cross section to this custom extruded profile. Applied to all segments."
+                            "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         }
                     },
                     "additionalProperties": false,
@@ -4270,8 +4274,9 @@ var gCommands = [{
                         "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
-                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material. Applied to all segments." },
-                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile. Applied to all segments." },
+                        "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
+                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
+                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
                         "holes": {
                             "type": "array",
                             "description": "Replaces all holes currently placed on the beam.",

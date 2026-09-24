@@ -588,6 +588,7 @@ void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os)
     os.Add ("width", segment.nominalWidth);
     os.Add ("height", segment.nominalHeight);
     os.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+    os.Add ("circleBased", segment.circleBased);
     if (segment.modelElemStructureType == API_BasicStructure) {
         os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
     } else if (segment.modelElemStructureType == API_ProfileStructure) {
