@@ -29,9 +29,15 @@ name: Claude Issue Triage
 # monthly_release.yml tags and ships HEAD of main on a schedule, so a push
 # injected onto an unprotected main would reach the signed release assets
 # with no pull request or review in between. Confirm the rulesets are active
-# before merging. Cost is unbounded too: any account can
-# start 60-minute runs on the maintainer's subscription, one per issue at a
-# time but in parallel across issues.
+# before merging.
+#
+# Accepted residual, which no practical ruleset closes: an ordinary
+# fast-forward push of new commits onto another contributor's open pull
+# request branch stays legal, so only prompt text stops an injected comment
+# from planting a commit there. It would reach main when that author merges
+# or pushes again - review what lands on your own branches. Cost is
+# unbounded too: any account can start 60-minute runs on the maintainer's
+# subscription, one per issue at a time but in parallel across issues.
 #
 # Authenticates with a Claude Code OAuth token from a Pro or Max subscription:
 # run `claude setup-token` locally and store the result as the repository
