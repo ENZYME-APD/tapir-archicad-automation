@@ -325,8 +325,11 @@ jobs:
             echo "Nothing to resolve."
             exit 0
           fi
+          failed=0
           for id in $ids; do
-            thread=$(gh api graphql -F id="$id" -f query='
+            # A lookup failure (API error, or an id that names no node) is logged
+            # as such, with gh's own message, and fails the step at the end.
+            if ! thread=$(gh api graphql -F id="$id" -f query='
               query($id: ID!) {
                 node(id: $id) {
                   ... on PullRequestReviewThread {
@@ -335,7 +338,11 @@ jobs:
                     comments(first: 1) { nodes { author { login } } }
                   }
                 }
-              }' --jq '.data.node' 2>/dev/null || echo null)
+              }' --jq '.data.node'); then
+              echo "::error::could not look up $id - left open"
+              failed=1
+              continue
+            fi
             if [ "$(jq -r '.pullRequest.repository.nameWithOwner // ""' <<<"$thread")" != "$REPO" ] ||
                [ "$(jq -r '.pullRequest.number // ""' <<<"$thread")" != "$PR_NUMBER" ] ||
                [ "$(jq -r '.comments.nodes[0].author.login // ""' <<<"$thread")" != "github-actions" ]; then
@@ -350,6 +357,7 @@ jobs:
               mutation($id: ID!) { resolveReviewThread(input: {threadId: $id}) { thread { isResolved } } }' >/dev/null
             echo "resolved $id"
           done
+          exit "$failed"
 
 # Not merging
 # -----------
