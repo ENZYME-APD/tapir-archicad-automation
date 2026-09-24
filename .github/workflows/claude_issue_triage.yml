@@ -245,8 +245,11 @@ jobs:
             (the live list - not --search, whose index lags behind a draft
             opened moments ago) and if a draft authored by the Actions bot (gh
             may show it as `app/github-actions` or `github-actions[bot]`) has
-            `Fixes #<issue number>` in its body, check out its branch and push your change there instead of
-            opening a second one.
+            `Fixes #<issue number>` in its body, check out its branch and push
+            your change there instead of opening a second one. If that
+            branch is outside claude/, pushes to it are denied: say so in one
+            comment on the issue, linking that pull request, and stop rather
+            than opening a second one.
 
             Otherwise open a pull request from a new branch named
             claude/issue-<issue number>-<short-slug>, AS A DRAFT, pushed with
