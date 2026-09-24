@@ -268,9 +268,11 @@ jobs:
   # and writes or updates a fix when the comment asks for one or the thread now
   # has what a fix needs.
   #
-  # issue_comment also fires on pull request conversations; those are left to
-  # claude_pr_review.yml. Comments by bots are skipped so the bot never answers
-  # itself or the Discord issue bot.
+  # issue_comment also fires on pull request conversations; this job skips
+  # them. On main today nothing answers a PR comment - claude_pr_review.yml
+  # only gains a comment trigger (a re-review) with pull request #699.
+  # Comments by bots are skipped so the bot never answers itself or the
+  # Discord issue bot.
   reply:
     if: >
       github.event_name == 'issue_comment' &&
