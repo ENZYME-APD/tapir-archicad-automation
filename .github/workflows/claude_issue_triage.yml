@@ -28,7 +28,8 @@ name: Claude Issue Triage
 # allowed `git commit` would execute. That denial is enforced by the Claude
 # Code harness, not by prompt text - but treat it as defence in depth, and
 # re-check it if claude-code-action changes how it passes rules. Pinning
-# pushes to `origin` rests on the same harness. What does hold regardless is that GITHUB_TOKEN is scoped to
+# pushes to `origin claude/...` rests on the same harness, and a refspec such
+# as `claude/x:main` still slips that prefix. What does hold regardless is that GITHUB_TOKEN is scoped to
 # this repository, so every authenticated push lands under this
 # repository's rulesets wherever it is aimed; and only those rulesets, not
 # prompt text, stop a push to `main`, a force push over or deletion of
@@ -242,11 +243,15 @@ jobs:
             draft pull request for it. Check first with
             gh pr list --state open --limit 200 --json number,headRefName,isDraft,author,body
             (the live list - not --search, whose index lags behind a draft
-            opened moments ago) and if a draft authored by github-actions[bot]
-            has `Fixes #<issue number>` in its body, check out its branch and push your change there instead of
+            opened moments ago) and if a draft authored by the Actions bot (gh
+            may show it as `app/github-actions` or `github-actions[bot]`) has
+            `Fixes #<issue number>` in its body, check out its branch and push your change there instead of
             opening a second one.
 
-            Otherwise open a pull request from a new branch, AS A DRAFT. Register any new
+            Otherwise open a pull request from a new branch named
+            claude/issue-<issue number>-<short-slug>, AS A DRAFT, pushed with
+            `git push -u origin claude/...` - pushes outside claude/ are denied.
+            Register any new
             command in AddOnMain.cpp with the UNRELEASED version from
             tools/package_info.json, keep the C++ style of the surrounding
             code, and add a Python example under archicad-addon/Examples if you
@@ -291,7 +296,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
 
   # ----------------------------------------------------------------- reply --
@@ -349,6 +354,12 @@ jobs:
             (gh issue view <number> --comments), including any earlier answer
             of yours, and respond to the new comment.
 
+            If the issue was opened by someone without write access (author
+            association above is not OWNER, MEMBER or COLLABORATOR), less than
+            an hour ago, and no comment from the Actions bot is on it yet, the
+            triage job is still answering it and will read this comment too:
+            post nothing and stop.
+
             Decide what the comment needs:
 
             1. NOTHING - thanks, a +1, a conversation between people that is
@@ -382,11 +393,17 @@ jobs:
                gh pr list --state open --limit 200 --json number,headRefName,isDraft,author,body
                (the live list - not --search, whose index lags behind a draft
                opened moments ago) and reuse one only if it is a draft
-               authored by github-actions[bot] with `Fixes #<issue number>`
-               in its body.
+               authored by the Actions bot (gh may show it as
+               `app/github-actions` or `github-actions[bot]`) with
+               `Fixes #<issue number>` in its body.
                Never push to a branch of a pull request someone else opened,
                even if it mentions this issue. Otherwise open a
-               new pull request from a new branch, AS A DRAFT - and run the
+               new pull request from a new branch named
+               claude/issue-<issue number>-<short-slug>, pushed with
+               `git push -u origin claude/...` (pushes outside claude/ are
+               denied; if your earlier draft's branch is outside claude/, say
+               so in your comment rather than opening a second one), AS A
+               DRAFT - and run the
                gh pr list check once more right before gh pr create, in case
                the fix job opened one meanwhile. Register any new
                command in AddOnMain.cpp with the UNRELEASED version from
@@ -450,5 +467,5 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
