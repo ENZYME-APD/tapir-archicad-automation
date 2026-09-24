@@ -21,11 +21,14 @@ name: Claude Issue Triage
 # claude_auto_merge.yml never merges - and the tool allowlist below.
 #
 # What does NOT bound it, and must be set in the repository settings before
-# this is merged: the tool allowlist is NOT a security boundary. Edit and
-# Write are unrestricted, so a poisoned run can rewrite .git/config or drop
-# a .git/hooks script that an allowed `git commit` then executes - arbitrary
-# code with both tokens in its environment. Pinning pushes to `origin` is
-# therefore advisory too. What does hold is that GITHUB_TOKEN is scoped to
+# this is merged: the tool allowlist is NOT a security boundary on its own.
+# Edit and Write are denied under .git/, .github/, archicad-addon/Tools/ and
+# tools/ (--disallowedTools; an Edit rule covers Write too), which closes the
+# route of rewriting .git/config or planting a .git/hooks script that an
+# allowed `git commit` would execute. That denial is enforced by the Claude
+# Code harness, not by prompt text - but treat it as defence in depth, and
+# re-check it if claude-code-action changes how it passes rules. Pinning
+# pushes to `origin` rests on the same harness. What does hold regardless is that GITHUB_TOKEN is scoped to
 # this repository, so every authenticated push lands under this
 # repository's rulesets wherever it is aimed; and only those rulesets, not
 # prompt text, stop a push to `main`, a force push over or deletion of
@@ -289,6 +292,7 @@ jobs:
             --max-turns 120
             --model claude-fable-5
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
+            --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
 
   # ----------------------------------------------------------------- reply --
   # Runs on every new human comment on an issue, from anyone, with write access
@@ -447,3 +451,4 @@ jobs:
             --max-turns 120
             --model claude-fable-5
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
+            --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
