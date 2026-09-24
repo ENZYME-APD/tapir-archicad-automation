@@ -37,13 +37,16 @@ on:
     types: [created]
 
 # Anyone who can open an issue or comment on one can start a run, and a run
-# spends the maintainer's subscription. One at a time per issue, so a comment
-# waits for a triage or fix still running on the same issue. GitHub keeps only
-# the newest pending run per group, so a burst of comments collapses into one
-# run - which reads the whole thread anyway.
-concurrency:
-  group: claude-issue-${{ github.event.issue.number }}
-  cancel-in-progress: false
+# spends the maintainer's subscription, so runs on one issue go one at a time.
+#
+# The limit is set per job, not here: GitHub keeps only the newest pending run
+# in a group, and a workflow-level group would let any comment event - even one
+# whose job is then skipped, such as a bot's comment - cancel a pending
+# `claude-fix` run or a pending reply. Job-level groups apply only to jobs that
+# actually run. Triage and fix share one group; replies have their own, so a
+# burst of comments collapses into one reply (which reads the whole thread
+# anyway) without ever displacing a fix. A reply may therefore run alongside a
+# triage or fix on the same issue.
 
 jobs:
   # ---------------------------------------------------------------- triage --
@@ -59,6 +62,9 @@ jobs:
       !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    concurrency:
+      group: claude-issue-${{ github.event.issue.number }}
+      cancel-in-progress: false
     permissions:
       contents: read   # checkout only - this job never pushes
       issues: write    # to comment and to close what is already fixed
@@ -162,6 +168,9 @@ jobs:
        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    concurrency:
+      group: claude-issue-${{ github.event.issue.number }}
+      cancel-in-progress: false
     permissions:
       contents: write        # to push a fix branch
       issues: write          # to report back on the issue
@@ -257,6 +266,9 @@ jobs:
       github.event.comment.user.type != 'Bot'
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    concurrency:
+      group: claude-issue-${{ github.event.issue.number }}-reply
+      cancel-in-progress: false
     permissions:
       contents: write        # to push a fix branch
       issues: write          # to answer on the issue
