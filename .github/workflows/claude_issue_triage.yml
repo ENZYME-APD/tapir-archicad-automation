@@ -223,6 +223,13 @@ jobs:
             loaded - ask for precisely that in one comment and stop. In either
             case open no pull request.
 
+            A comment on the issue may already have had the reply job open a
+            draft pull request for it. Check first with
+            gh pr list --state open --author app/github-actions --search "<issue number> in:body" --json number,headRefName,isDraft,author
+            and if a draft authored by github-actions[bot] says it fixes this
+            issue, check out its branch and push your change there instead of
+            opening a second one.
+
             Otherwise open a pull request from a new branch, AS A DRAFT. Register any new
             command in AddOnMain.cpp with the UNRELEASED version from
             tools/package_info.json, keep the C++ style of the surrounding
@@ -266,7 +273,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(gh pr create:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
 
   # ----------------------------------------------------------------- reply --
   # Runs on every new human comment on an issue, from anyone, with write access
@@ -340,10 +347,13 @@ jobs:
                above is OWNER, MEMBER or COLLABORATOR. In either case, until
                that job has posted its outcome on the issue - a link to its
                pull request, or why it opened none - it is most likely still
-               writing the fix: say so instead of opening a second one. But
-               if you already said that earlier in this thread and the fix
-               job has still posted nothing since, it has died (timeout or
-               failure) - go ahead and write the fix yourself. If
+               writing the fix: say so instead of opening a second one. Treat
+               it as dead (timeout or failure) and write the fix yourself only
+               when it has still posted nothing more than two hours after your
+               first such note in this thread - or, for a collaborator's issue,
+               two hours after the issue was opened. It can queue behind a
+               triage run and then work for up to an hour, so a shorter gap
+               proves nothing. If
                you already opened a pull request for this
                issue, push the change to its branch - but only a pull request
                that is yours: list candidates with
