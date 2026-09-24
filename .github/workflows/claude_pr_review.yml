@@ -147,15 +147,19 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .review-context
-          gh api graphql -F owner="${REPO%/*}" -F name="${REPO#*/}" -F number="$PR_NUMBER" -f query='
-            query($owner: String!, $name: String!, $number: Int!) {
+          # Every thread, page by page - a long discussion can pass 100. Each
+          # thread's replies are capped at its first 100, which is plenty for
+          # deciding whether it is settled.
+          gh api graphql --paginate -F owner="${REPO%/*}" -F name="${REPO#*/}" -F number="$PR_NUMBER" -f query='
+            query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
               repository(owner: $owner, name: $name) {
                 pullRequest(number: $number) {
-                  reviewThreads(first: 100) {
+                  reviewThreads(first: 100, after: $endCursor) {
                     nodes {
                       id isResolved isOutdated path line
-                      comments(first: 30) { nodes { author { login } body createdAt } }
+                      comments(first: 100) { nodes { author { login } body createdAt } }
                     }
+                    pageInfo { hasNextPage endCursor }
                   }
                 }
               }
@@ -163,7 +167,7 @@ jobs:
                       | select(.comments.nodes[0].author.login == "github-actions")
                       | {id, isResolved, isOutdated, path, line,
                          comments: [.comments.nodes[] | {author: .author.login, body, createdAt}]}]' \
-            > .review-context/threads.json
+            | jq -s 'add // []' > .review-context/threads.json
           jq -n --arg event "$EVENT_NAME" --arg author "$COMMENT_AUTHOR" --arg body "$COMMENT_BODY" \
                 --arg path "$COMMENT_PATH" --arg line "$COMMENT_LINE" \
             '{event: $event, comment: (if $author == "" then null
@@ -312,9 +316,10 @@ jobs:
           STARTED_AT: ${{ steps.pr.outputs.started_at }}
         run: |
           set -euo pipefail
-          summary=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
-            --jq ".[] | select(.user.login == \"github-actions[bot]\" and .created_at >= \"$STARTED_AT\") | .body" \
-            | grep -o 'claude-review-resolve:[^>]*' | tail -n 1 || true)
+          # An API failure must fail the step, not read as "nothing to resolve".
+          bodies=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and .created_at >= \"$STARTED_AT\") | .body")
+          summary=$(grep -o 'claude-review-resolve:[^>]*' <<<"$bodies" | tail -n 1 || true)
           ids=$(grep -oE 'PRRT_[A-Za-z0-9_-]+' <<<"$summary" | sort -u || true)
           if [ -z "$ids" ]; then
             echo "Nothing to resolve."
