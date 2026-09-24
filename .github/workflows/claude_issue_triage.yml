@@ -21,11 +21,15 @@ name: Claude Issue Triage
 # claude_auto_merge.yml never merges - and the tool allowlist below.
 #
 # What does NOT bound it, and must be set in the repository settings before
-# this is merged: pushes are pinned to `origin`, so every push stays under
-# this repository's rulesets, but `git push origin` still takes any refspec,
-# so only prompt text keeps an injected comment from pushing to `main`,
-# force-pushing over or
-# deleting another contributor's branch, or pushing a tag. Add rulesets that
+# this is merged: the tool allowlist is NOT a security boundary. Edit and
+# Write are unrestricted, so a poisoned run can rewrite .git/config or drop
+# a .git/hooks script that an allowed `git commit` then executes - arbitrary
+# code with both tokens in its environment. Pinning pushes to `origin` is
+# therefore advisory too. What does hold is that GITHUB_TOKEN is scoped to
+# this repository, so every authenticated push lands under this
+# repository's rulesets wherever it is aimed; and only those rulesets, not
+# prompt text, stop a push to `main`, a force push over or deletion of
+# another contributor's branch, or a tag. Add rulesets that
 # block direct pushes to `main`, block force pushes and deletions on all
 # branches, and restrict tag creation. The `main` rule is load-bearing:
 # monthly_release.yml tags and ships HEAD of main on a schedule, so a push
@@ -40,10 +44,10 @@ name: Claude Issue Triage
 # or pushes again - review what lands on your own branches.
 #
 # Second accepted residual: the run's environment holds
-# CLAUDE_CODE_OAUTH_TOKEN, and shell expansion inside an allowed command's
-# arguments (a commit message, a comment body) could copy it into content
-# that is then pushed or posted publicly. Only prompt text prevents that. If
-# it ever leaks, revoke it and run `claude setup-token` again. Cost is
+# CLAUDE_CODE_OAUTH_TOKEN, and the arbitrary-code path above (or plain shell
+# expansion inside an allowed command's arguments) could copy it into content
+# that is then pushed or posted publicly. Nothing in this file prevents that.
+# If it ever leaks, revoke it and run `claude setup-token` again. Cost is
 # unbounded too: any account can start 60-minute runs on the maintainer's
 # subscription, one per issue at a time but in parallel across issues.
 #
@@ -396,7 +400,8 @@ jobs:
 
             4. ALREADY FIXED - only if you confirm yourself, from the code and
                history on main, that the reported defect is gone. Name the
-               commit or PR that fixed it and close the issue. A comment
+               commit or PR that fixed it and close the issue with exactly
+               `gh issue close <issue number> --reason completed`. A comment
                claiming it is fixed is not enough on its own.
 
             Post at most one comment, written once you have finished. No
@@ -438,4 +443,4 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }}:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
