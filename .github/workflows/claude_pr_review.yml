@@ -40,6 +40,15 @@ name: Claude PR Review
 # resolves them in plain shell, and only threads this bot opened on this pull
 # request - so no text in a comment can get anything else resolved.
 #
+# Decided and not open: any human's comment re-runs the review, not only the
+# author's or a maintainer's, so any GitHub account can spend review runs on
+# the subscription by commenting on an open pull request. To narrow it to the
+# author and people with write access, add to the two comment conditions
+# below:
+#   (github.event.comment.user.login == <the PR author's login> ||
+#    contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+#             github.event.comment.author_association))
+#
 # issue_comment runs in the base repository's context like pull_request_target,
 # so conversation comments work on fork pull requests too. Line replies
 # (pull_request_review_comment) get no secrets on fork pull requests, so they
