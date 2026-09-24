@@ -37,7 +37,13 @@ name: Claude Issue Triage
 # fast-forward push of new commits onto another contributor's open pull
 # request branch stays legal, so only prompt text stops an injected comment
 # from planting a commit there. It would reach main when that author merges
-# or pushes again - review what lands on your own branches. Cost is
+# or pushes again - review what lands on your own branches.
+#
+# Second accepted residual: the run's environment holds
+# CLAUDE_CODE_OAUTH_TOKEN, and shell expansion inside an allowed command's
+# arguments (a commit message, a comment body) could copy it into content
+# that is then pushed or posted publicly. Only prompt text prevents that. If
+# it ever leaks, revoke it and run `claude setup-token` again. Cost is
 # unbounded too: any account can start 60-minute runs on the maintainer's
 # subscription, one per issue at a time but in parallel across issues.
 #
@@ -336,7 +342,10 @@ jobs:
 
             1. NOTHING - thanks, a +1, a conversation between people that is
                not addressed to you, or a point you already answered. Post
-               nothing and stop.
+               nothing and stop - unless an earlier comment in the thread
+               still has no answer from you. Runs for a burst of comments
+               collapse into one, so that comment's own run may never have
+               happened: handle it as if it were the new comment.
 
             2. AN ANSWER - a question, or new information such as the Archicad
                version or the JSON that was sent. Answer it in one comment.
