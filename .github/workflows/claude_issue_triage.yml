@@ -25,7 +25,11 @@ name: Claude Issue Triage
 # keeps an injected comment from pushing to `main`, force-pushing over or
 # deleting another contributor's branch, or pushing a tag. Add rulesets that
 # block direct pushes to `main`, block force pushes and deletions on all
-# branches, and restrict tag creation. Cost is unbounded too: any account can
+# branches, and restrict tag creation. The `main` rule is load-bearing:
+# monthly_release.yml tags and ships HEAD of main on a schedule, so a push
+# injected onto an unprotected main would reach the signed release assets
+# with no pull request or review in between. Confirm the rulesets are active
+# before merging. Cost is unbounded too: any account can
 # start 60-minute runs on the maintainer's subscription, one per issue at a
 # time but in parallel across issues.
 #
@@ -303,6 +307,7 @@ jobs:
             ISSUE NUMBER: ${{ github.event.issue.number }}
             NEW COMMENT ID: ${{ github.event.comment.id }}
             NEW COMMENT AUTHOR: ${{ github.event.comment.user.login }}
+            ISSUE AUTHOR ASSOCIATION: ${{ github.event.issue.author_association }}
 
             Someone just commented on this issue of the Tapir Archicad
             automation package. Read CLAUDE.md first for the layout and the
@@ -322,9 +327,12 @@ jobs:
                precisely that.
 
             3. A FIX - the comment asks for one, or the thread now holds what
-               a fix needs. If the issue carries the `claude-fix` label and
-               no pull request of yours exists yet, the fix job is most likely
-               still writing it - say so instead of opening a second one. If
+               a fix needs. The separate fix job also works on this issue if
+               it carries the `claude-fix` label, or if its author association
+               above is OWNER, MEMBER or COLLABORATOR. In either case, until
+               that job has posted its outcome on the issue - a link to its
+               pull request, or why it opened none - it is most likely still
+               writing the fix: say so instead of opening a second one. If
                you already opened a pull request for this
                issue, push the change to its branch - but only a pull request
                that is yours: list candidates with
