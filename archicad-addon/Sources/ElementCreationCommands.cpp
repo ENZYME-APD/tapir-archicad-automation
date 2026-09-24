@@ -3501,7 +3501,8 @@ void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_L
 static void CalcLabelParentBounds (const API_Elem_Head& parentElemHead, API_Box3D& box)
 {
     if (GetElemTypeId (parentElemHead) != API_SlabID) {
-        ACAPI_Element_CalcBounds (&parentElemHead, &box);
+        // const_cast: before AC27 ACAPI_Element_CalcBounds maps to ACAPI_Database, which takes void*
+        ACAPI_Element_CalcBounds (const_cast<API_Elem_Head*> (&parentElemHead), &box);
         return;
     }
 
