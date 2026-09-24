@@ -21,8 +21,10 @@ name: Claude Issue Triage
 # claude_auto_merge.yml never merges - and the tool allowlist below.
 #
 # What does NOT bound it, and must be set in the repository settings before
-# this is merged: `Bash(git push:*)` matches any refspec, so only prompt text
-# keeps an injected comment from pushing to `main`, force-pushing over or
+# this is merged: pushes are pinned to `origin`, so every push stays under
+# this repository's rulesets, but `git push origin` still takes any refspec,
+# so only prompt text keeps an injected comment from pushing to `main`,
+# force-pushing over or
 # deleting another contributor's branch, or pushing a tag. Add rulesets that
 # block direct pushes to `main`, block force pushes and deletions on all
 # branches, and restrict tag creation. The `main` rule is load-bearing:
@@ -273,7 +275,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
 
   # ----------------------------------------------------------------- reply --
   # Runs on every new human comment on an issue, from anyone, with write access
@@ -423,4 +425,4 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }}:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin:*),Bash(git push -u origin:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }}:*)"
