@@ -251,7 +251,9 @@ jobs:
             Open it as a draft for that reason, and say in the pull request
             body, in the first paragraph, that it has not been built or
             reviewed and that a maintainer must push a commit to it or reopen
-            it by hand to start the checks.
+            it by hand to start the checks. The body must also contain the
+            line `Fixes #<issue number>` - later runs find this pull request
+            by that number, and without it they open a duplicate.
 
             Rules that matter here:
 
@@ -328,7 +330,7 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             ISSUE NUMBER: ${{ github.event.issue.number }}
-            NEW COMMENT ID: ${{ github.event.comment.id }}
+            NEW COMMENT POSTED AT: ${{ github.event.comment.created_at }}
             NEW COMMENT AUTHOR: ${{ github.event.comment.user.login }}
             ISSUE AUTHOR ASSOCIATION: ${{ github.event.issue.author_association }}
 
@@ -388,7 +390,9 @@ jobs:
                on it. Say in the pull request body, in the first paragraph,
                that it has not been built or reviewed and that a maintainer
                must push a commit to it or reopen it by hand to start the
-               checks.
+               checks. The body must also contain the line
+               `Fixes #<issue number>` - later runs find this pull request by
+               that number, and without it they open a duplicate.
 
             4. ALREADY FIXED - only if you confirm yourself, from the code and
                history on main, that the reported defect is gone. Name the
