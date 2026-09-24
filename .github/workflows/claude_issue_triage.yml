@@ -29,8 +29,12 @@ name: Claude Issue Triage
 # Code harness, not by prompt text - but treat it as defence in depth, and
 # re-check it if claude-code-action changes how it passes rules. Pinning
 # pushes to `origin claude/...` rests on the same harness, and a refspec such
-# as `claude/x:main` still slips that prefix. What does hold regardless is that GITHUB_TOKEN is scoped to
-# this repository, so every authenticated push lands under this
+# as `claude/x:main` still slips that prefix. Fetches are pinned to
+# `origin` too, but `git fetch origin refs/pull/<n>/head` still imports a
+# fork's commits, and an allowed `git checkout <sha> -- <path>` could then
+# place files under the denied directories - the missing `workflows`
+# permission and the draft-only path bound that. What does hold regardless
+# is that GITHUB_TOKEN is scoped to this repository, so every authenticated push lands under this
 # repository's rulesets wherever it is aimed; and only those rulesets, not
 # prompt text, stop a push to `main`, a force push over or deletion of
 # another contributor's branch, or a tag. Add rulesets that
@@ -80,7 +84,9 @@ on:
 # actually run. Triage and fix share one group; replies have their own, so a
 # burst of comments collapses into one reply (which reads the whole thread
 # anyway) without ever displacing a fix. A reply may therefore run alongside a
-# triage or fix on the same issue.
+# triage or fix on the same issue, so a comment on a fresh issue can get a
+# reply as well as the triage answer - accepted, since the alternative
+# (standing down while triage runs) can drop a comment neither job reads.
 
 jobs:
   # ---------------------------------------------------------------- triage --
@@ -299,7 +305,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
 
   # ----------------------------------------------------------------- reply --
@@ -356,12 +362,6 @@ jobs:
             conventions, then read the issue and its whole comment thread
             (gh issue view <number> --comments), including any earlier answer
             of yours, and respond to the new comment.
-
-            If the issue was opened by someone without write access (author
-            association above is not OWNER, MEMBER or COLLABORATOR), less than
-            an hour ago, and no comment from the Actions bot is on it yet, the
-            triage job is still answering it and will read this comment too:
-            post nothing and stop.
 
             Decide what the comment needs:
 
@@ -470,5 +470,5 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch origin:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
