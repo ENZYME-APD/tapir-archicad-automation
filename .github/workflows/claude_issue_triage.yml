@@ -334,7 +334,10 @@ jobs:
                above is OWNER, MEMBER or COLLABORATOR. In either case, until
                that job has posted its outcome on the issue - a link to its
                pull request, or why it opened none - it is most likely still
-               writing the fix: say so instead of opening a second one. If
+               writing the fix: say so instead of opening a second one. But
+               if you already said that earlier in this thread and the fix
+               job has still posted nothing since, it has died (timeout or
+               failure) - go ahead and write the fix yourself. If
                you already opened a pull request for this
                issue, push the change to its branch - but only a pull request
                that is yours: list candidates with
