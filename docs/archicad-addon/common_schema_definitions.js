@@ -4812,6 +4812,10 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "Cross section height of the beam (all segments)."
             },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round beam cross section, false for rectangular."
+            },
             "isWidthAndHeightLinked": {
                 "type": "boolean",
                 "description": "When true, Archicad keeps width and height equal - set to false via ModifyBeams/CreateBeams to give them independent values."
