@@ -1123,6 +1123,10 @@ static bool ParseDefaultValue (const GS::ObjectState& defaultValue, API_Property
                     GS::UniString valueStr;
                     enumValueId->Get (enumValueIdTypeStr.ToCStr ().Get (), valueStr);
                     definition.defaultValue.basicValue.singleVariant.variant.guidValue = FindEnumValueGuid (definition.possibleEnumValues, enumValueIdTypeStr, valueStr);
+                    if (definition.defaultValue.basicValue.singleVariant.variant.guidValue == APINULLGuid) {
+                        error = GS::UniString::Printf ("defaultValue/basicDefaultValue/value/%T is missing or invalid", enumValueIdTypeStr.ToPrintf ());
+                        return false;
+                    }
                 }
                 break;
             case API_PropertyMultipleChoiceEnumerationCollectionType:
