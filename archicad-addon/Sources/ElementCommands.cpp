@@ -870,7 +870,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             detailsOfElement.Add ("drawIndex", static_cast<short> (elem.header.drwIndex));
         }
         if (isFieldRequested ("hotlinkId") && elem.header.hotlinkGuid != APINULLGuid) {
-            detailsOfElement.Add ("hotlinkId", CreateElementIdObjectState (elem.header.hotlinkGuid));
+            detailsOfElement.Add ("hotlinkId", CreateGuidObjectState (elem.header.hotlinkGuid));
         }
 
         if (isFieldRequested ("id")) {
