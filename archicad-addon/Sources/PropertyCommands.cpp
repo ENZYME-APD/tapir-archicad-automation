@@ -1784,3 +1784,87 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
 
     return response;
 }
+
+UpdatePropertyGroupsCommand::UpdatePropertyGroupsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String UpdatePropertyGroupsCommand::GetName () const
+{
+    return "UpdatePropertyGroups";
+}
+
+GS::Optional<GS::UniString> UpdatePropertyGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyGroups": {
+                "type": "array",
+                "description": "The custom property groups to update. Only the fields given change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "propertyGroupId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "propertyGroups" ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdatePropertyGroupsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    })";
+}
+
+GS::ObjectState UpdatePropertyGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> propertyGroups;
+    parameters.Get ("propertyGroups", propertyGroups);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("UpdatePropertyGroups", [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : propertyGroups) {
+            const GS::ObjectState* groupId = item.Get ("propertyGroupId");
+            if (groupId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "propertyGroupId is missing"));
+                continue;
+            }
+            API_PropertyGroup group;
+            group.guid = GetGuidFromObjectState (*groupId);
+            if (ACAPI_Property_GetPropertyGroup (group) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "property group not found"));
+                continue;
+            }
+            if (group.groupType != API_PropertyCustomGroupType) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "built-in property groups cannot be changed"));
+                continue;
+            }
+            item.Get ("name", group.name);
+            item.Get ("description", group.description);
+            const GSErrCode err = ACAPI_Property_ChangePropertyGroup (group);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, DescribeDefinitionChangeError (err)));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}

@@ -698,6 +698,10 @@ GSErrCode Initialize (void)
             propertyCommands, "1.5.4",
             "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder)."
         );
+        err |= RegisterCommand<UpdatePropertyGroupsCommand> (
+            propertyCommands, "1.5.9",
+            "Updates the name and/or description of existing Custom Property Groups, keeping their guid."
+        );
         AddCommandGroup (propertyCommands);
     }
 
