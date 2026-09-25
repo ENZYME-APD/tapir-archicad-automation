@@ -19,7 +19,9 @@ name: Claude Issue Triage
 # allowed `git commit` would execute. That denial is enforced by the Claude
 # Code harness, not by prompt text - but treat it as defence in depth, and
 # re-check it if claude-code-action changes how it passes rules. Pinning
-# pushes to `origin claude/...` rests on the same harness, and a refspec such
+# pushes to `origin claude/...` (a `*` wildcard rule - the `:*` form only
+# matches whole words, so it never matched `claude/<branch>` and refused every
+# push) rests on the same harness, and a refspec such
 # as `claude/x:main` still slips that prefix. Fetches are pinned to
 # `origin` too, but `git fetch origin refs/pull/<n>/head` still imports a
 # fork's commits, and an allowed `git checkout <sha> -- <path>` could then
@@ -194,7 +196,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
 
   # ----------------------------------------------------------------- reply --
@@ -356,5 +358,5 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch origin:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/:*),Bash(git push -u origin claude/:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git fetch origin:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
