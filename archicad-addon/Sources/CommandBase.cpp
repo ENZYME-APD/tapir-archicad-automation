@@ -89,6 +89,20 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+// Plain wording for the errors the Change* / Import property and classification calls
+// return, so a caller sees why a definition edit was refused without an error table.
+GS::UniString DescribeDefinitionChangeError (GSErrCode err)
+{
+    switch (err) {
+        case APIERR_NOACCESSRIGHT:   return "no access right: in Teamwork this needs the right to modify properties or classifications";
+        case APIERR_NAMEALREADYUSED: return "the name is already used in the target group or system";
+        case APIERR_BADVALUE:        return "an enum option or the default value is not one of the allowed options";
+        case APIERR_BADID:           return "an id does not refer to an existing property, group or classification item";
+        case APIERR_BADPARS:         return "inconsistent definition, for example a default value that does not match the property type";
+        default:                     return GS::UniString::Printf ("Archicad refused the change (error %d)", (int) err);
+    }
+}
+
 API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
 {
     GS::String guid;
