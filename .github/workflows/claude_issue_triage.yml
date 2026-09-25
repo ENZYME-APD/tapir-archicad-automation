@@ -125,16 +125,19 @@ jobs:
             `claude-fix`. Read CLAUDE.md first for the conventions, then read
             the issue and any comments on it.
 
-            Fixing it is the job, but do not force it. If it is a question or
-            a feature request rather than a defect, answer it in one comment
-            (and implement it only if it is small and clearly wanted). If the
-            issue is ALREADY FIXED on main - confirmed yourself from the code
-            and history - say so in one comment naming the commit and close it
-            with exactly `gh issue close <issue number> --reason completed`. If you genuinely cannot tell what is wrong without something
-            only the reporter has - the Archicad version and build, the exact
-            JSON sent, whether the project is Teamwork, which libraries are
-            loaded - ask for precisely that in one comment and stop. In either
-            case open no pull request.
+            Fixing it is the job, but do not force it.
+            - A QUESTION, or a feature request that is not small and clearly
+              wanted: answer it in one comment and open no pull request. A
+              small, clearly wanted feature is implemented like a fix below.
+            - ALREADY FIXED on main, confirmed yourself from the code and
+              history: say so in one comment naming the commit, close it with
+              exactly `gh issue close <issue number> --reason completed`, and
+              open no pull request.
+            - You genuinely cannot tell what is wrong without something only
+              the reporter has - the Archicad version and build, the exact JSON
+              sent, whether the project is Teamwork, which libraries are
+              loaded: ask for precisely that in one comment, open no pull
+              request, and stop.
 
             A comment on the issue may already have had the reply job open a
             draft pull request for it. Check first with
@@ -196,7 +199,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model claude-fable-5
-            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin claude/*),Bash(git push -u origin claude/*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git fetch origin:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh issue view ${{ github.event.issue.number }}:*),Bash(gh issue comment ${{ github.event.issue.number }}:*),Bash(gh issue close ${{ github.event.issue.number }} --reason:*)"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./tools/**)"
 
   # ----------------------------------------------------------------- reply --
