@@ -2769,6 +2769,23 @@
                 "items": {
                     "type": "string"
                 }
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "propertyDescription": {
+                "type": "string"
+            },
+            "defaultValueDisplay": {
+                "type": "string",
+                "description": "The basic default value as text. Only for custom, non expression-based properties whose default is set."
+            },
+            "availability": {
+                "type": "array",
+                "description": "Classification items a custom property is available for.",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
             }
         },
         "additionalProperties": false,

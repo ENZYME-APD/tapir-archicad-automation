@@ -173,82 +173,6 @@ public:
     virtual API_AngleTypeID GetAngleType () const { return API_AngleTypeID::DecimalDegree; }
 };
 
-GetAllPropertiesCommand::GetAllPropertiesCommand () :
-    CommandBase (CommonSchema::Used)
-{
-}
-
-GS::String GetAllPropertiesCommand::GetName () const
-{
-    return "GetAllProperties";
-}
-
-GS::Optional<GS::UniString> GetAllPropertiesCommand::GetRawResponseSchema () const
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "properties": {
-                "type": "array",
-                "description": "A list of property identifiers.",
-                "items": {
-                    "$ref": "#/PropertyDetails"
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "properties"
-        ]
-    })";
-}
-
-GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
-{
-    GS::ObjectState response;
-    auto propertyAdder = response.AddList<GS::ObjectState> ("properties");
-
-    GS::Array<API_PropertyGroup> groups;
-    ACAPI_Property_GetPropertyGroups (groups);
-    for (const API_PropertyGroup& group : groups) {
-        GS::Array<API_PropertyDefinition> definitions;
-        ACAPI_Property_GetPropertyDefinitions (group.guid, definitions);
-        for (const API_PropertyDefinition& definition : definitions) {
-            GS::ObjectState details;
-
-            GS::ObjectState propertyId;
-            propertyId.Add ("guid", APIGuidToString (definition.guid));
-            details.Add ("propertyId", propertyId);
-
-            details.Add ("propertyType", GetPropertyTypeString (definition.definitionType));
-            details.Add ("propertyGroupName", group.name);
-            details.Add ("propertyName", definition.name);
-            details.Add ("propertyCollectionType", GetPropertyTypeString (definition.collectionType));
-            details.Add ("propertyValueType", GetPropertyTypeString (definition.valueType));
-            details.Add ("propertyMeasureType", GetPropertyTypeString (definition.measureType));
-            details.Add ("propertyIsEditable", definition.canValueBeEditable);
-            details.Add ("isExpressionBased", definition.defaultValue.hasExpression);
-
-            if (!definition.possibleEnumValues.IsEmpty ()) {
-                const auto& enumValueList = details.AddList<GS::ObjectState> ("possibleEnumValues");
-                for (const API_SingleEnumerationVariant& variant : definition.possibleEnumValues) {
-                    enumValueList (CreateEnumValueObjectState (variant));
-                }
-            }
-            if (definition.defaultValue.hasExpression) {
-                const auto& expressionList = details.AddList<GS::UniString> ("expressions");
-                for (const GS::UniString& expr : definition.defaultValue.propertyExpressions) {
-                    expressionList (expr);
-                }
-            }
-
-            propertyAdder (details);
-        }
-    }
-
-    return response;
-}
-
 constexpr uint32_t PackTypes (API_PropertyCollectionType colType, API_VariantType valType)
 {
     return (static_cast<uint32_t> (colType) << 16) | static_cast<uint32_t> (valType);
@@ -289,6 +213,125 @@ static GSErrCode GetPropertyValueString (const API_Property& propertyValue, GS::
         default:
             return ACAPI_Property_GetPropertyValueString (propertyValue, &resultString);
     }
+}
+
+GetAllPropertiesCommand::GetAllPropertiesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetAllPropertiesCommand::GetName () const
+{
+    return "GetAllProperties";
+}
+
+GS::Optional<GS::UniString> GetAllPropertiesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "properties": {
+                "type": "array",
+                "description": "A list of property identifiers.",
+                "items": {
+                    "$ref": "#/PropertyDetails"
+                }
+            },
+            "propertyGroups": {
+                "type": "array",
+                "description": "Every property group, including empty ones.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "isCustom": { "type": "boolean" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "propertyGroupId", "name", "isCustom" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    })";
+}
+
+GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::ObjectState response;
+    auto propertyAdder = response.AddList<GS::ObjectState> ("properties");
+
+    GS::Array<API_PropertyGroup> groups;
+    ACAPI_Property_GetPropertyGroups (groups);
+    const auto& groupList = response.AddList<GS::ObjectState> ("propertyGroups");
+    for (const API_PropertyGroup& group : groups) {
+        GS::ObjectState groupDetails;
+        groupDetails.Add ("propertyGroupId", CreateGuidObjectState (group.guid));
+        groupDetails.Add ("name", group.name);
+        groupDetails.Add ("description", group.description);
+        groupDetails.Add ("isCustom", group.groupType == API_PropertyCustomGroupType);
+        groupList (groupDetails);
+
+        GS::Array<API_PropertyDefinition> definitions;
+        ACAPI_Property_GetPropertyDefinitions (group.guid, definitions);
+        for (const API_PropertyDefinition& definition : definitions) {
+            GS::ObjectState details;
+
+            GS::ObjectState propertyId;
+            propertyId.Add ("guid", APIGuidToString (definition.guid));
+            details.Add ("propertyId", propertyId);
+
+            details.Add ("propertyType", GetPropertyTypeString (definition.definitionType));
+            details.Add ("propertyGroupName", group.name);
+            details.Add ("propertyName", definition.name);
+            details.Add ("propertyCollectionType", GetPropertyTypeString (definition.collectionType));
+            details.Add ("propertyValueType", GetPropertyTypeString (definition.valueType));
+            details.Add ("propertyMeasureType", GetPropertyTypeString (definition.measureType));
+            details.Add ("propertyIsEditable", definition.canValueBeEditable);
+            details.Add ("isExpressionBased", definition.defaultValue.hasExpression);
+            details.Add ("propertyGroupId", CreateGuidObjectState (group.guid));
+            details.Add ("propertyDescription", definition.description);
+            if (definition.definitionType == API_PropertyCustomDefinitionType) {
+                if (!definition.defaultValue.hasExpression &&
+                    definition.defaultValue.basicValue.variantStatus == API_VariantStatusNormal) {
+                    API_Property defaultProperty;
+                    defaultProperty.definition = definition;
+                    defaultProperty.isDefault = true;
+                    defaultProperty.status = API_Property_HasValue;
+                    defaultProperty.value = definition.defaultValue.basicValue;
+                    GS::UniString defaultString;
+                    if (GetPropertyValueString (defaultProperty, defaultString) == NoError) {
+                        details.Add ("defaultValueDisplay", defaultString);
+                    }
+                }
+                const auto& availabilityList = details.AddList<GS::ObjectState> ("availability");
+                for (const API_Guid& itemGuid : definition.availability) {
+                    availabilityList (CreateIdObjectState ("classificationItemId", itemGuid));
+                }
+            }
+
+            if (!definition.possibleEnumValues.IsEmpty ()) {
+                const auto& enumValueList = details.AddList<GS::ObjectState> ("possibleEnumValues");
+                for (const API_SingleEnumerationVariant& variant : definition.possibleEnumValues) {
+                    enumValueList (CreateEnumValueObjectState (variant));
+                }
+            }
+            if (definition.defaultValue.hasExpression) {
+                const auto& expressionList = details.AddList<GS::UniString> ("expressions");
+                for (const GS::UniString& expr : definition.defaultValue.propertyExpressions) {
+                    expressionList (expr);
+                }
+            }
+
+            propertyAdder (details);
+        }
+    }
+
+    return response;
 }
 
 GetPropertyValuesOfElementsCommand::GetPropertyValuesOfElementsCommand () :
