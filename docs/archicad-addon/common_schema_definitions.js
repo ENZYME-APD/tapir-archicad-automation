@@ -2769,6 +2769,39 @@ var gSchemaDefinitions = {
                 "items": {
                     "type": "string"
                 }
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "propertyDescription": {
+                "type": "string"
+            },
+            "defaultValueDisplay": {
+                "type": "string",
+                "description": "The basic default value as text. Only for custom, non expression-based properties whose default is set."
+            },
+            "availability": {
+                "type": "array",
+                "description": "Classification items a custom property is available for.",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "defaultEnumValueIds": {
+                "type": "array",
+                "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": {
+                            "$ref": "#/Guid"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid"
+                    ]
+                }
             }
         },
         "additionalProperties": false,
