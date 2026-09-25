@@ -574,3 +574,183 @@ GS::ObjectState DeleteClassificationItemsCommand::Execute (const GS::ObjectState
 
     return response;
 }
+
+UpdateClassificationSystemsCommand::UpdateClassificationSystemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String UpdateClassificationSystemsCommand::GetName () const
+{
+    return "UpdateClassificationSystems";
+}
+
+GS::Optional<GS::UniString> UpdateClassificationSystemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationSystems": {
+                "type": "array",
+                "description": "The classification systems to update. Only the fields given change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationSystemId": { "$ref": "#/ClassificationSystemId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "source": { "type": "string" },
+                        "version": { "type": "string" },
+                        "date": { "$ref": "#/Date" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationSystemId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationSystems" ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdateClassificationSystemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    })";
+}
+
+GS::ObjectState UpdateClassificationSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> systems;
+    parameters.Get ("classificationSystems", systems);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("UpdateClassificationSystems", [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : systems) {
+            const GS::ObjectState* systemId = item.Get ("classificationSystemId");
+            if (systemId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
+                continue;
+            }
+            API_ClassificationSystem system;
+            system.guid = GetGuidFromObjectState (*systemId);
+            if (ACAPI_Classification_GetClassificationSystem (system) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "classification system not found"));
+                continue;
+            }
+            item.Get ("name", system.name);
+            item.Get ("description", system.description);
+            item.Get ("source", system.source);
+            item.Get ("version", system.editionVersion);
+            GS::UniString date;
+            if (item.Get ("date", date)) {
+                unsigned int year = 0, month = 0, day = 0;
+                if (date.SScanf ("%4u-%2u-%2u", &year, &month, &day) != 3) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "date must be YYYY-MM-DD"));
+                    continue;
+                }
+#ifdef ServerMainVers_2900
+                system.editionDate = std::chrono::year_month_day (std::chrono::year (year), std::chrono::month (month), std::chrono::day (day));
+#else
+                system.editionDate = GSDateRecord ((unsigned short) year, (unsigned short) month, (unsigned short) day);
+#endif
+            }
+            const GSErrCode err = ACAPI_Classification_ChangeClassificationSystem (system);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, DescribeDefinitionChangeError (err)));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+UpdateClassificationItemsCommand::UpdateClassificationItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String UpdateClassificationItemsCommand::GetName () const
+{
+    return "UpdateClassificationItems";
+}
+
+GS::Optional<GS::UniString> UpdateClassificationItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "classificationItems": {
+                "type": "array",
+                "description": "The classification items to update. Only the fields given change; items keep their guid and their parent.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationItemId": { "$ref": "#/ClassificationItemId" },
+                        "id": { "type": "string", "description": "The new code of the item, e.g. 21.10." },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationItemId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationItems" ]
+    })";
+}
+
+GS::Optional<GS::UniString> UpdateClassificationItemsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    })";
+}
+
+GS::ObjectState UpdateClassificationItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("classificationItems", items);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("UpdateClassificationItems", [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : items) {
+            const GS::ObjectState* itemId = item.Get ("classificationItemId");
+            if (itemId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationItemId is missing"));
+                continue;
+            }
+            API_ClassificationItem classificationItem;
+            classificationItem.guid = GetGuidFromObjectState (*itemId);
+            if (ACAPI_Classification_GetClassificationItem (classificationItem) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "classification item not found"));
+                continue;
+            }
+            item.Get ("id", classificationItem.id);
+            item.Get ("name", classificationItem.name);
+            item.Get ("description", classificationItem.description);
+            const GSErrCode err = ACAPI_Classification_ChangeClassificationItem (classificationItem);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, DescribeDefinitionChangeError (err)));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}

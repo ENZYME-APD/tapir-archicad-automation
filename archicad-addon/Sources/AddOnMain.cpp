@@ -732,6 +732,14 @@ GSErrCode Initialize (void)
             classificationCommands, "1.5.2",
             "Deletes the given Classification Items."
         );
+        err |= RegisterCommand<UpdateClassificationSystemsCommand> (
+            classificationCommands, "1.5.9",
+            "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid."
+        );
+        err |= RegisterCommand<UpdateClassificationItemsCommand> (
+            classificationCommands, "1.5.9",
+            "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent."
+        );
         AddCommandGroup (classificationCommands);
     }
 
