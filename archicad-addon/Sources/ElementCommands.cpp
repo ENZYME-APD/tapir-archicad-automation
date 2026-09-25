@@ -4165,7 +4165,15 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         const API_ElemTypeID typeID = GetElemTypeId (elemHead);
 
         API_Box3D box3D = {};
-        if (typeID == API_RoofID || typeID == API_ZoneID) {
+        if (typeID == API_RoofID || typeID == API_ZoneID || typeID == API_SlabID) {
+            // The Slab is routed here to avoid a crash, not for precision: for a Slab,
+            // ACAPI_Element_CalcBounds goes through Archicad's 2D bound calculation, which
+            // dereferences the current window's draw environment - null when the slab is not
+            // drawn in that window (another story is displayed, its layer is hidden, or a
+            // non-floor-plan window is active), so Archicad dies with a SIGSEGV instead of
+            // returning an error (#686). Deliberately no CalcBounds fallback for the Slab:
+            // the situations that leave it without a solid body are the very ones in which
+            // CalcBounds crashes.
             err = CalculateSolidBodyBounds (elemHead, box3D);
         } else if (typeID == API_StairID) {
             err = CalculateStairBounds (elemHead, box3D);
