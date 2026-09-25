@@ -6,6 +6,7 @@
 
 #include "ObjectState.hpp"
 #include "BiHashTable.hpp"
+#include "HashSet.hpp"
 
 #include <vector>
 #include <map>
@@ -49,6 +50,18 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+
+// Adds {"guid": ...} to `list` for every guid in `from` that is not in `minus`. The import
+// commands use it to report what an import created and removed.
+template <typename List>
+void AddGuidDifference (const GS::HashSet<API_Guid>& from, const GS::HashSet<API_Guid>& minus, const List& list)
+{
+    for (const API_Guid& guid : from) {
+        if (!minus.Contains (guid)) {
+            list (GS::ObjectState ("guid", APIGuidToString (guid)));
+        }
+    }
+}
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);

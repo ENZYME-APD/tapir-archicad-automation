@@ -1911,3 +1911,84 @@ GS::ObjectState UpdatePropertyGroupsCommand::Execute (const GS::ObjectState& par
 
     return response;
 }
+
+// The import calls return only an error code. What they did is read off the
+// definitions before and after: a guid-preserving replace is in neither list.
+static GS::HashSet<API_Guid> AllCustomPropertyGuids ()
+{
+    GS::HashSet<API_Guid> guids;
+    GS::Array<API_PropertyGroup> groups;
+    ACAPI_Property_GetPropertyGroups (groups);
+    for (const API_PropertyGroup& group : groups) {
+        GS::Array<API_PropertyDefinition> definitions;
+        ACAPI_Property_GetPropertyDefinitions (group.guid, definitions);
+        for (const API_PropertyDefinition& d : definitions) {
+            if (d.definitionType == API_PropertyCustomDefinitionType) {
+                guids.Add (d.guid);
+            }
+        }
+    }
+    return guids;
+}
+
+ImportPropertiesXmlCommand::ImportPropertiesXmlCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ImportPropertiesXmlCommand::GetName () const
+{
+    return "ImportPropertiesXml";
+}
+
+GS::Optional<GS::UniString> ImportPropertiesXmlCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "xml": { "type": "string", "description": "A Property Manager export (XML) to import." },
+            "conflictPolicy": { "type": "string", "enum": [ "append", "replace", "skip" ], "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one." }
+        },
+        "additionalProperties": false,
+        "required": [ "xml", "conflictPolicy" ]
+    })";
+}
+
+GS::Optional<GS::UniString> ImportPropertiesXmlCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": { "$ref": "#/ExecutionResult" },
+            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+        },
+        "additionalProperties": false,
+        "required": [ "executionResult", "created", "removed" ]
+    })";
+}
+
+GS::ObjectState ImportPropertiesXmlCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString xml, policyStr;
+    parameters.Get ("xml", xml);
+    parameters.Get ("conflictPolicy", policyStr);
+    const API_PropertyDefinitionNameConflictResolutionPolicy policy =
+        policyStr == "replace" ? API_ReplaceConflictingProperties :
+        policyStr == "skip"    ? API_SkipConflictingProperties :
+                                 API_AppendConflictingProperties;
+
+    GS::ObjectState response;
+    const GS::HashSet<API_Guid> before = AllCustomPropertyGuids ();
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("ImportPropertiesXml", [&]() -> GSErrCode {
+        err = ACAPI_Property_Import (xml, policy);
+        return err;
+    });
+    const GS::HashSet<API_Guid> after = AllCustomPropertyGuids ();
+
+    response.Add ("executionResult", err == NoError ? CreateSuccessfulExecutionResult ()
+                                                    : CreateFailedExecutionResult (err, err == APIERR_BADPARS ? GS::UniString ("invalid property XML") : DescribeDefinitionChangeError (err)));
+    AddGuidDifference (after, before, response.AddList<GS::ObjectState> ("created"));
+    AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
+    return response;
+}

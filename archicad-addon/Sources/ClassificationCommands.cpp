@@ -754,3 +754,96 @@ GS::ObjectState UpdateClassificationItemsCommand::Execute (const GS::ObjectState
 
     return response;
 }
+
+static void AddClassificationItemGuids (const GS::Array<API_ClassificationItem>& items, GS::HashSet<API_Guid>& guids)
+{
+    for (const API_ClassificationItem& item : items) {
+        guids.Add (item.guid);
+        GS::Array<API_ClassificationItem> children;
+        if (ACAPI_Classification_GetClassificationItemChildren (item.guid, children) == NoError) {
+            AddClassificationItemGuids (children, guids);
+        }
+    }
+}
+
+// Every classification system and item guid, to tell what an import created and removed.
+static GS::HashSet<API_Guid> AllClassificationGuids ()
+{
+    GS::HashSet<API_Guid> guids;
+    GS::Array<API_ClassificationSystem> systems;
+    ACAPI_Classification_GetClassificationSystems (systems);
+    for (const API_ClassificationSystem& system : systems) {
+        guids.Add (system.guid);
+        GS::Array<API_ClassificationItem> roots;
+        if (ACAPI_Classification_GetClassificationSystemRootItems (system.guid, roots) == NoError) {
+            AddClassificationItemGuids (roots, guids);
+        }
+    }
+    return guids;
+}
+
+ImportClassificationsXmlCommand::ImportClassificationsXmlCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ImportClassificationsXmlCommand::GetName () const
+{
+    return "ImportClassificationsXml";
+}
+
+GS::Optional<GS::UniString> ImportClassificationsXmlCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "xml": { "type": "string", "description": "A Classification Manager export (XML) to import." },
+            "systemConflictPolicy": { "type": "string", "enum": [ "merge", "replace", "skip" ], "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one." },
+            "itemConflictPolicy": { "type": "string", "enum": [ "replace", "skip" ], "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one." }
+        },
+        "additionalProperties": false,
+        "required": [ "xml", "systemConflictPolicy", "itemConflictPolicy" ]
+    })";
+}
+
+GS::Optional<GS::UniString> ImportClassificationsXmlCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResult": { "$ref": "#/ExecutionResult" },
+            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+        },
+        "additionalProperties": false,
+        "required": [ "executionResult", "created", "removed" ]
+    })";
+}
+
+GS::ObjectState ImportClassificationsXmlCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString xml, systemPolicyStr, itemPolicyStr;
+    parameters.Get ("xml", xml);
+    parameters.Get ("systemConflictPolicy", systemPolicyStr);
+    parameters.Get ("itemConflictPolicy", itemPolicyStr);
+    const API_ClassificationSystemNameConflictResolutionPolicy systemPolicy =
+        systemPolicyStr == "replace" ? API_ReplaceConflictingSystems :
+        systemPolicyStr == "skip"    ? API_SkipConflictingSystems :
+                                       API_MergeConflictingSystems;
+    const API_ClassificationItemNameConflictResolutionPolicy itemPolicy =
+        itemPolicyStr == "replace" ? API_ReplaceConflictingItems : API_SkipConflicitingItems;
+
+    GS::ObjectState response;
+    const GS::HashSet<API_Guid> before = AllClassificationGuids ();
+    GSErrCode err = NoError;
+    ACAPI_CallUndoableCommand ("ImportClassificationsXml", [&]() -> GSErrCode {
+        err = ACAPI_Classification_Import (xml, systemPolicy, itemPolicy);
+        return err;
+    });
+    const GS::HashSet<API_Guid> after = AllClassificationGuids ();
+
+    response.Add ("executionResult", err == NoError ? CreateSuccessfulExecutionResult ()
+                                                    : CreateFailedExecutionResult (err, err == APIERR_BADPARS ? GS::UniString ("invalid classification XML") : DescribeDefinitionChangeError (err)));
+    AddGuidDifference (after, before, response.AddList<GS::ObjectState> ("created"));
+    AddGuidDifference (before, after, response.AddList<GS::ObjectState> ("removed"));
+    return response;
+}
