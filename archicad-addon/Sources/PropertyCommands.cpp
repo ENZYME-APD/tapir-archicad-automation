@@ -312,6 +312,21 @@ GS::ObjectState GetAllPropertiesCommand::Execute (const GS::ObjectState& /*param
                 for (const API_Guid& itemGuid : definition.availability) {
                     availabilityList (CreateIdObjectState ("classificationItemId", itemGuid));
                 }
+                // The option guids an enum default holds. The display text above joins the
+                // options of a multi-choice default, and two options can share a text, so a
+                // caller checking "is this option the default" needs the guids.
+                if (!definition.defaultValue.hasExpression &&
+                    definition.defaultValue.basicValue.variantStatus == API_VariantStatusNormal) {
+                    if (definition.collectionType == API_PropertySingleChoiceEnumerationCollectionType) {
+                        const auto& ids = details.AddList<GS::ObjectState> ("defaultEnumValueIds");
+                        ids (CreateGuidObjectState (definition.defaultValue.basicValue.singleVariant.variant.guidValue));
+                    } else if (definition.collectionType == API_PropertyMultipleChoiceEnumerationCollectionType) {
+                        const auto& ids = details.AddList<GS::ObjectState> ("defaultEnumValueIds");
+                        for (const API_Variant& v : definition.defaultValue.basicValue.listVariant.variants) {
+                            ids (CreateGuidObjectState (v.guidValue));
+                        }
+                    }
+                }
             }
 
             if (!definition.possibleEnumValues.IsEmpty ()) {
@@ -1802,11 +1817,22 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
             // say which rule was broken instead.
             if (!definition.defaultValue.hasExpression &&
                 definition.defaultValue.basicValue.variantStatus == API_VariantStatusNormal &&
-                definition.collectionType == API_PropertySingleChoiceEnumerationCollectionType) {
-                bool defaultStillThere = false;
-                for (const API_SingleEnumerationVariant& v : definition.possibleEnumValues) {
-                    if (v.keyVariant.guidValue == definition.defaultValue.basicValue.singleVariant.variant.guidValue) {
-                        defaultStillThere = true;
+                (definition.collectionType == API_PropertySingleChoiceEnumerationCollectionType ||
+                 definition.collectionType == API_PropertyMultipleChoiceEnumerationCollectionType)) {
+                auto isOption = [&] (const API_Guid& guid) {
+                    for (const API_SingleEnumerationVariant& v : definition.possibleEnumValues) {
+                        if (v.keyVariant.guidValue == guid) {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+                bool defaultStillThere = true;
+                if (definition.collectionType == API_PropertySingleChoiceEnumerationCollectionType) {
+                    defaultStillThere = isOption (definition.defaultValue.basicValue.singleVariant.variant.guidValue);
+                } else {
+                    for (const API_Variant& v : definition.defaultValue.basicValue.listVariant.variants) {
+                        defaultStillThere = defaultStillThere && isOption (v.guidValue);
                     }
                 }
                 if (!defaultStillThere) {

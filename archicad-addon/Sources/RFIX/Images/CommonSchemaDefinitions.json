@@ -2786,6 +2786,22 @@
                 "items": {
                     "$ref": "#/ClassificationItemIdArrayItem"
                 }
+            },
+            "defaultEnumValueIds": {
+                "type": "array",
+                "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": {
+                            "$ref": "#/Guid"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid"
+                    ]
+                }
             }
         },
         "additionalProperties": false,
