@@ -8612,7 +8612,7 @@ var gSchemaDefinitions = {
     },
     "FloorFill": {
         "type": "object",
-        "description": "Floor plan cover fill settings of a Slab.",
+        "description": "Floor plan cover fill settings of a Slab. When modifying an element, omitted properties keep their current values.",
         "properties": {
             "use": {
                 "type": "boolean",
@@ -8635,19 +8635,11 @@ var gSchemaDefinitions = {
                 "$ref": "#/HatchOrientation"
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "use",
-            "foregroundPen",
-            "backgroundPen",
-            "fillId",
-            "use3DHatching",
-            "orientation"
-        ]
+        "additionalProperties": false
     },
     "HatchOrientation": {
         "type": "object",
-        "description": "Orientation and distortion parameters of a fill.",
+        "description": "Orientation and distortion parameters of a fill. When modifying an element, omitted properties keep their current values.",
         "properties": {
             "type": {
                 "type": "string",
@@ -8683,16 +8675,7 @@ var gSchemaDefinitions = {
                 "description": "Radius for circular fill distortion, used when type is Centered."
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "type",
-            "origin",
-            "matrix00",
-            "matrix10",
-            "matrix01",
-            "matrix11",
-            "innerRadius"
-        ]
+        "additionalProperties": false
     },
     "OverriddenMaterial": {
         "type": "object",
