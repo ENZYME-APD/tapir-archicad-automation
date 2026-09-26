@@ -1426,6 +1426,8 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
             err = ACAPI_Database_DeleteDatabase (&dbInfo);
         } else if (navItem.itemType == API_SubSetNavItem) {
             err = APIERR_NOTSUPPORTED;
+        } else if (navItem.mapId == API_ProjectMap) {
+            err = ACAPI_Navigator_DeleteNavigatorVPItem (&guid);
         } else {
             bool silentMode = true;
             err = ACAPI_Navigator_DeleteNavigatorView (&guid, &silentMode);
