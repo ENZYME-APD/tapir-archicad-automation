@@ -4231,7 +4231,16 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
 GS::Optional<GS::UniString> DeleteElementsCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
     })";
 }
 
@@ -4240,17 +4249,46 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GSErrCode err = NoError;
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
-    ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
-        err = ACAPI_Element_Delete (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem));
+    GSErrCode deleteErr = NoError;
+    if (!elemGuids.IsEmpty ()) {
+        ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
+            deleteErr = ACAPI_Element_Delete (elemGuids);
 
-        return err;
-    });
+            return deleteErr;
+        });
+    }
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to delete elements.");
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // ACAPI_Element_Delete reports NoError even when it skips elements it is
+    // not allowed to delete (locked layer, locked element, teamwork access),
+    // so success is decided per element by whether the element is really gone
+    // afterwards. An element that is gone is the asked-for outcome however it
+    // got there: deleted by this call, deleted with its owner, or never in the
+    // project to begin with.
+    for (const API_Guid& elemGuid : elemGuids) {
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+            executionResults (CreateSuccessfulExecutionResult ());
+            continue;
+        }
+
+        API_Attribute layerAttr = {};
+        layerAttr.header.typeID = API_LayerID;
+        layerAttr.header.index = elemHead.layer;
+        if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
+            executionResults (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The element was not deleted, because its layer is locked."));
+        } else if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
+            executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The element was not deleted, because it is not editable."));
+        } else {
+            executionResults (CreateFailedExecutionResult (deleteErr != NoError ? deleteErr : APIERR_GENERAL, "Failed to delete the element."));
+        }
+    }
+
+    return response;
 }
 
 LockElementsCommand::LockElementsCommand () :
