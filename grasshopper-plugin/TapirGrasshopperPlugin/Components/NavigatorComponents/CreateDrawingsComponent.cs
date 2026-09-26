@@ -32,7 +32,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             InTexts(
                 "Names",
-                "Names of the drawings (input only 1 to use the same name for all).");
+                "Names of the drawings (input only 1 to use the same name for all). Optional; " +
+                "a name implies the CustomName name type unless NameTypes is given.");
 
             InPoints(
                 "Positions",
@@ -50,7 +51,24 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "ClipPolygons",
                 "Clip polygon points for each drawing (one branch per drawing, at least 3 points; empty branch = no clipping). Optional.");
 
-            SetOptionality(new[] { 3, 4, 5 });
+            InTexts(
+                "NameTypes",
+                "How the title name of each drawing is assembled: ViewOrSourceFileName, ViewIdAndName or CustomName " +
+                "(input only 1 to use the same value for all). Optional.");
+
+            InNumbers(
+                "Angles",
+                "Rotation angle of each drawing in radians (input only 1 to use the same value for all). Optional.");
+
+            InNumbers(
+                "DrawingScales",
+                "The nominal scale of each drawing (input only 1 to use the same value for all). Optional.");
+
+            InPoints(
+                "ModelOffsets",
+                "Offset of the model origin within each drawing (only X and Y are used; input only 1 to use the same value for all). Optional.");
+
+            SetOptionality(new[] { 1, 3, 4, 5, 6, 7, 8, 9 });
         }
 
         protected override void AddOutputs()
@@ -73,12 +91,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            if (!da.TryGetList(
-                    1,
-                    out List<string> names))
-            {
-                return;
-            }
+            da.TryGetList(
+                1,
+                out List<string> names);
+            names = names ?? new List<string>();
 
             if (!da.TryGetList(
                     2,
@@ -87,11 +103,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            if (names.Count != 1 &&
+            if (names.Count > 1 &&
                 names.Count != navWrappers.Count)
             {
                 this.AddError(
-                    "The size of the input Names must be 1 or equal to the size of the input NavigatorItemGuids.");
+                    "The size of the input Names must be 0, 1 or equal to the size of the input NavigatorItemGuids.");
                 return;
             }
 
@@ -133,6 +149,40 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 5,
                 out GH_Structure<IGH_Goo> clipTree);
 
+            da.TryGetList(
+                6,
+                out List<string> nameTypes);
+            nameTypes = nameTypes ?? new List<string>();
+            da.TryGetList(
+                7,
+                out List<double> angles);
+            angles = angles ?? new List<double>();
+            da.TryGetList(
+                8,
+                out List<double> drawingScales);
+            drawingScales = drawingScales ?? new List<double>();
+            da.TryGetList(
+                9,
+                out List<Point3d> modelOffsets);
+            modelOffsets = modelOffsets ?? new List<Point3d>();
+
+            foreach (var pair in new (string Name, int Count)[]
+                     {
+                         ("NameTypes", nameTypes.Count),
+                         ("Angles", angles.Count),
+                         ("DrawingScales", drawingScales.Count),
+                         ("ModelOffsets", modelOffsets.Count)
+                     })
+            {
+                if (pair.Count > 1 &&
+                    pair.Count != navWrappers.Count)
+                {
+                    this.AddError(
+                        $"The size of the input {pair.Name} must be 0, 1 or equal to the size of the input NavigatorItemGuids.");
+                    return;
+                }
+            }
+
             var items = new JArray();
             for (var i = 0; i < navWrappers.Count; i++)
             {
@@ -148,13 +198,42 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 var item = new JObject
                 {
                     ["navigatorItemId"] = new JObject { ["guid"] = navId.Guid },
-                    ["name"] = names[names.Count == 1 ? 0 : i],
                     ["position"] = new JObject
                     {
                         ["x"] = position.X,
                         ["y"] = position.Y
                     }
                 };
+
+                if (names.Count > 0)
+                {
+                    item["name"] = names[names.Count == 1 ? 0 : i];
+                }
+
+                if (nameTypes.Count > 0)
+                {
+                    item["nameType"] = nameTypes[nameTypes.Count == 1 ? 0 : i];
+                }
+
+                if (angles.Count > 0)
+                {
+                    item["angle"] = angles[angles.Count == 1 ? 0 : i];
+                }
+
+                if (drawingScales.Count > 0)
+                {
+                    item["drawingScale"] = drawingScales[drawingScales.Count == 1 ? 0 : i];
+                }
+
+                if (modelOffsets.Count > 0)
+                {
+                    var modelOffset = modelOffsets[modelOffsets.Count == 1 ? 0 : i];
+                    item["modelOffset"] = new JObject
+                    {
+                        ["x"] = modelOffset.X,
+                        ["y"] = modelOffset.Y
+                    };
+                }
 
                 if (scales.Count > 0)
                 {

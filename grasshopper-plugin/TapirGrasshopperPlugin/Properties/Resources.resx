@@ -991,4 +991,19 @@
   <data name="IFCElementsToExport" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\IFCElementsToExport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="UpdatePropertyGroups" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdatePropertyGroups.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateClassificationSystems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateClassificationSystems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateClassificationItems" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateClassificationItems.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ImportPropertiesXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ImportPropertiesXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ImportClassificationsXml" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ImportClassificationsXml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
