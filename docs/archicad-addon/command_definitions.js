@@ -5704,6 +5704,21 @@ var gCommands = [{
                 "items": {
                     "$ref": "#/PropertyDetails"
                 }
+            },
+            "propertyGroups": {
+                "type": "array",
+                "description": "Every property group, including empty ones.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "isCustom": { "type": "boolean" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "propertyGroupId", "name", "isCustom" ]
+                }
             }
         },
         "additionalProperties": false,
@@ -5968,43 +5983,78 @@ var gCommands = [{
             },{
                 "name": "UpdatePropertyDefinitions",
                 "version": "1.5.4",
-                "description": "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property.",
+                "description": "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder).",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "propertyDefinitions": {
                 "type": "array",
-                "description": "The property definitions to update.",
+                "description": "The property definitions to update. Only the fields given change; the definition keeps its guid, so element values survive.",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "propertyId": {
-                            "$ref": "#/PropertyId"
-                        },
+                        "propertyId": { "$ref": "#/PropertyId" },
+                        "name": { "type": "string", "description": "New name of the property." },
+                        "description": { "type": "string", "description": "New description of the property." },
+                        "groupId": { "$ref": "#/PropertyGroupId", "description": "Move the property into this custom property group." },
+                        "defaultValue": { "$ref": "#/PropertyDefaultValue", "description": "New default value: a basic value or expressions. Switching between the two is allowed." },
                         "expressions": {
                             "type": "array",
                             "description": "The new expression strings for the property. Only for expression-based properties.",
-                            "items": {
-                                "type": "string"
-                            },
+                            "items": { "type": "string" },
                             "minItems": 1
+                        },
+                        "availability": {
+                            "type": "object",
+                            "description": "Classification items the property is available for: set replaces the list, add and remove edit it.",
+                            "properties": {
+                                "set": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } },
+                                "add": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } },
+                                "remove": { "type": "array", "items": { "$ref": "#/ClassificationItemIdArrayItem" } }
+                            },
+                            "additionalProperties": false
                         },
                         "possibleEnumValues": {
                             "$ref": "#/EnumValuesToAdd",
                             "description": "The enum values to add to an enumeration property. Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
+                        },
+                        "renameEnumValues": {
+                            "type": "array",
+                            "description": "Change the text of existing enum options. The option keeps its identifier, so element values follow the new text.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "enumValueId": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] },
+                                    "displayValue": { "type": "string" },
+                                    "nonLocalizedValue": { "type": "string" }
+                                },
+                                "additionalProperties": false,
+                                "required": [ "enumValueId", "displayValue" ]
+                            }
+                        },
+                        "removeEnumValues": {
+                            "type": "array",
+                            "description": "Enum options to remove. Elements holding a removed option lose that value.",
+                            "items": {
+                                "type": "object",
+                                "properties": { "enumValueId": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+                                "additionalProperties": false,
+                                "required": [ "enumValueId" ]
+                            }
+                        },
+                        "enumOrder": {
+                            "type": "array",
+                            "description": "Every option's display text, once, in the new order (applied after rename, remove and add).",
+                            "items": { "type": "string" }
                         }
                     },
                     "additionalProperties": false,
-                    "required": [
-                        "propertyId"
-                    ]
+                    "required": [ "propertyId" ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": [
-            "propertyDefinitions"
-        ]
+        "required": [ "propertyDefinitions" ]
     },
                 "outputScheme": {
         "type": "object",
@@ -6017,6 +6067,60 @@ var gCommands = [{
         "required": [
             "executionResults"
         ]
+    }
+            },{
+                "name": "UpdatePropertyGroups",
+                "version": "1.5.10",
+                "description": "Updates the name and/or description of existing Custom Property Groups, keeping their guid.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyGroups": {
+                "type": "array",
+                "description": "The custom property groups to update. Only the fields given change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyGroupId": { "$ref": "#/PropertyGroupId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "propertyGroupId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "propertyGroups" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    }
+            },{
+                "name": "ImportPropertiesXml",
+                "version": "1.5.10",
+                "description": "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "xml": { "type": "string", "description": "A Property Manager export (XML) to import." },
+            "conflictPolicy": { "type": "string", "enum": [ "append", "replace", "skip" ], "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one." }
+        },
+        "additionalProperties": false,
+        "required": [ "xml", "conflictPolicy" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResult": { "$ref": "#/ExecutionResult" },
+            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+        },
+        "additionalProperties": false,
+        "required": [ "executionResult", "created", "removed" ]
     }
             }]
         },{
@@ -6193,6 +6297,96 @@ var gCommands = [{
         "required": [
             "executionResults"
         ]
+    }
+            },{
+                "name": "UpdateClassificationSystems",
+                "version": "1.5.10",
+                "description": "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "classificationSystems": {
+                "type": "array",
+                "description": "The classification systems to update. Only the fields given change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationSystemId": { "$ref": "#/ClassificationSystemId" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "source": { "type": "string" },
+                        "version": { "type": "string" },
+                        "date": { "$ref": "#/Date" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationSystemId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationSystems" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    }
+            },{
+                "name": "UpdateClassificationItems",
+                "version": "1.5.10",
+                "description": "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "classificationItems": {
+                "type": "array",
+                "description": "The classification items to update. Only the fields given change; items keep their guid and their parent.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "classificationItemId": { "$ref": "#/ClassificationItemId" },
+                        "id": { "type": "string", "description": "The new code of the item, e.g. 21.10." },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "classificationItemId" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationItems" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": { "executionResults": { "$ref": "#/ExecutionResults" } },
+        "additionalProperties": false,
+        "required": [ "executionResults" ]
+    }
+            },{
+                "name": "ImportClassificationsXml",
+                "version": "1.5.10",
+                "description": "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "xml": { "type": "string", "description": "A Classification Manager export (XML) to import." },
+            "systemConflictPolicy": { "type": "string", "enum": [ "merge", "replace", "skip" ], "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one." },
+            "itemConflictPolicy": { "type": "string", "enum": [ "replace", "skip" ], "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one." }
+        },
+        "additionalProperties": false,
+        "required": [ "xml", "systemConflictPolicy", "itemConflictPolicy" ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResult": { "$ref": "#/ExecutionResult" },
+            "created": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } },
+            "removed": { "type": "array", "items": { "type": "object", "properties": { "guid": { "$ref": "#/Guid" } }, "additionalProperties": false, "required": [ "guid" ] } }
+        },
+        "additionalProperties": false,
+        "required": [ "executionResult", "created", "removed" ]
     }
             }]
         },{

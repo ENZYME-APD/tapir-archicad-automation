@@ -696,7 +696,15 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
             propertyCommands, "1.5.4",
-            "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property."
+            "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder)."
+        );
+        err |= RegisterCommand<UpdatePropertyGroupsCommand> (
+            propertyCommands, "1.5.10",
+            "Updates the name and/or description of existing Custom Property Groups, keeping their guid."
+        );
+        err |= RegisterCommand<ImportPropertiesXmlCommand> (
+            propertyCommands, "1.5.10",
+            "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
         AddCommandGroup (propertyCommands);
     }
@@ -727,6 +735,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteClassificationItemsCommand> (
             classificationCommands, "1.5.2",
             "Deletes the given Classification Items."
+        );
+        err |= RegisterCommand<UpdateClassificationSystemsCommand> (
+            classificationCommands, "1.5.10",
+            "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid."
+        );
+        err |= RegisterCommand<UpdateClassificationItemsCommand> (
+            classificationCommands, "1.5.10",
+            "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent."
+        );
+        err |= RegisterCommand<ImportClassificationsXmlCommand> (
+            classificationCommands, "1.5.10",
+            "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed."
         );
         AddCommandGroup (classificationCommands);
     }
