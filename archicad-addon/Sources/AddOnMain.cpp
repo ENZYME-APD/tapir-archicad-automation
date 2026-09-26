@@ -42,6 +42,7 @@
 #include "SolidElementOperationCommands.hpp"
 #include "MEPCommands.hpp"
 #include "KeynoteCommands.hpp"
+#include "GraphicalOverrideCommands.hpp"
 
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
@@ -1277,6 +1278,49 @@ GSErrCode Initialize (void)
         );
         AddCommandGroup (scriptUICommands);
     }
+
+#ifdef ServerMainVers_2700
+    { // Graphical Override Commands - ACAPI_GraphicalOverride_* functions require Archicad 27+
+        CommandGroup graphicalOverrideCommands ("Graphical Override Commands");
+        err |= RegisterCommand<GetGraphicalOverrideCombinationsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Returns all graphical override combinations with their contained rule IDs."
+        );
+        err |= RegisterCommand<GetGraphicalOverrideRuleGroupsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Returns all graphical override rule groups with their contained rule IDs in order."
+        );
+        err |= RegisterCommand<GetGraphicalOverrideRulesCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Returns all graphical override rules with their criterion XML and style."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideRuleGroupsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Creates graphical override rule groups with the given names."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideRulesCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Creates graphical override rules with the given names, criterion XML, and style. Note: fillBackgroundPenOverride.penIndex=0 (transparent background) is rejected by the ArchiCAD API; use isOverridden:false or an RGB color instead."
+        );
+        err |= RegisterCommand<CreateGraphicalOverrideCombinationsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Creates graphical override combinations with the given names and rule lists."
+        );
+        err |= RegisterCommand<DeleteGraphicalOverrideRulesCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Deletes the given graphical override rules by ID."
+        );
+        err |= RegisterCommand<DeleteGraphicalOverrideRuleGroupsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Deletes the given graphical override rule groups (and all rules they contain) by ID."
+        );
+        err |= RegisterCommand<DeleteGraphicalOverrideCombinationsCommand> (
+            graphicalOverrideCommands, "1.5.7",
+            "Deletes the given graphical override combinations by ID."
+        );
+        AddCommandGroup (graphicalOverrideCommands);
+    }
+#endif // ServerMainVers_2700
 
     { // Developer Commands
         CommandGroup developerCommands ("Developer Commands");
