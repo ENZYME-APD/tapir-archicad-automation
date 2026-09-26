@@ -167,6 +167,23 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml` — PR build
   checks for each component.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
+- `monthly_release.yml` — tags and releases `main` monthly; fails if the Add-On
+  sources changed since `docs/archicad-addon` was last regenerated with
+  `GenerateDocumentation` (never hand-edit those docs to pass it).
+- `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and
+  every new human comment on an issue (`reply` job), from anyone, runs Claude with
+  write access: it answers, closes verified already-fixed issues, or opens a **draft**
+  PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`. No label is needed;
+  applying `claude-fix` re-runs `fix` on an existing issue. Its header documents the
+  security bounds and the repository rulesets they rely on.
+- `claude_pr_review.yml` — the PR review bot. Reviews on open/push and re-reviews on
+  any human PR comment, without re-posting open findings, and resolves the threads it
+  opened once the change or the discussion settles them.
+- `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
+  authors that touch no release-critical path (never the bots' own PRs).
+- `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
+  requests in the project's Discord channels (see
+  [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
 
 ## Installation (end users)
 
