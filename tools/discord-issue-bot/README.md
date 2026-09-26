@@ -51,10 +51,12 @@ re-enable it and run the workflow once manually with the *lookback
 minutes* input raised to cover the gap.
 
 Because the issues are created with the workflow's own `GITHUB_TOKEN`,
-they do not trigger other workflows: the automatic Claude issue triage
-never runs on them (the reporter is on Discord and would not see its
-answer anyway). A maintainer can still apply the `claude-fix` label to
-have a fix attempted, exactly as for hand-written issues.
+they do not trigger other workflows: the Claude issue bot
+(`claude_issue_triage.yml`) does not run when they are opened (the
+reporter is on Discord and would not see its answer anyway). Anyone can
+still start it on such an issue by commenting on it, or a maintainer can
+apply the `claude-fix` label, to have it answered or a fix attempted as a
+draft pull request.
 
 ## One-time setup
 
