@@ -18,10 +18,14 @@ gdlParametersResponse = aclib.RunTapirCommand(
 
 
 # Array (1D/2D) GDL parameters can be changed in two ways:
-# - a list value resizes the array to match the given values
+# - a list value changes every item at once
 #     1D: 'value': [1, 2, 3]
 #     2D: 'value': [[11, 12], [21, 22]]
-# - 'index1' (and 'index2' for 2D arrays, both 1-based) changes a single item without resizing
+#   The list must have exactly as many values as the parameter has items - 'dimension1' x
+#   'dimension2' as reported by GetGDLParametersOfElements. Resizing an array parameter is not
+#   supported and is rejected with an error; a wrongly sized list used to be accepted and left the
+#   element with parameters that could no longer be read back.
+# - 'index1' (and 'index2' for 2D arrays, both 1-based) changes a single item
 #     'index1': 2, 'value': 5
 # This example sets the first array parameter of each element to its current value.
 elementsWithArrayParameters = []
