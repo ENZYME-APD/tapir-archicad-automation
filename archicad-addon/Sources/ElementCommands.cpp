@@ -996,6 +996,22 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddBeamSectionFromMemo (elem.header.guid, typeSpecificDetails);
             } break;
 
+            case API_BeamSegmentID: {
+                const API_AssemblySegmentData& segment = elem.beamSegment.assemblySegmentData;
+                if (elem.beamSegment.owner != APINULLGuid) {
+                    typeSpecificDetails.Add ("ownerElementId", CreateGuidObjectState (elem.beamSegment.owner));
+                }
+                typeSpecificDetails.Add ("structureType", StructureTypeToString (segment.modelElemStructureType));
+                typeSpecificDetails.Add ("width", segment.nominalWidth);
+                typeSpecificDetails.Add ("height", segment.nominalHeight);
+                typeSpecificDetails.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+                if (segment.modelElemStructureType == API_BasicStructure) {
+                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
+                } else if (segment.modelElemStructureType == API_ProfileStructure) {
+                    typeSpecificDetails.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
+                }
+            } break;
+
             case API_SlabID:
                 typeSpecificDetails.Add ("structureType", StructureTypeToString (elem.slab.modelElemStructureType));
                 typeSpecificDetails.Add ("thickness", elem.slab.thickness);
@@ -1070,6 +1086,23 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.column.coverFillTransformationType, elem.column.coverFillTransformation));
                 AddColumnSectionFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
+
+            case API_ColumnSegmentID: {
+                const API_AssemblySegmentData& segment = elem.columnSegment.assemblySegmentData;
+                if (elem.columnSegment.owner != APINULLGuid) {
+                    typeSpecificDetails.Add ("ownerElementId", CreateGuidObjectState (elem.columnSegment.owner));
+                }
+                typeSpecificDetails.Add ("structureType", StructureTypeToString (segment.modelElemStructureType));
+                typeSpecificDetails.Add ("width", segment.nominalWidth);
+                typeSpecificDetails.Add ("depth", segment.nominalHeight);
+                typeSpecificDetails.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+                typeSpecificDetails.Add ("circleBased", segment.circleBased);
+                if (segment.modelElemStructureType == API_BasicStructure) {
+                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
+                } else if (segment.modelElemStructureType == API_ProfileStructure) {
+                    typeSpecificDetails.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
+                }
+            } break;
 
             case API_DoorID:
             case API_WindowID:

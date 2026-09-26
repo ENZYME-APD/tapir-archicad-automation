@@ -5130,6 +5130,91 @@
             "bottomOffset"
         ]
     },
+    "ColumnSegmentDetails": {
+        "type": "object",
+        "description": "Details of a ColumnSegment subelement of a Column.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "The Column element the segment belongs to."
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Profile" ]
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Cross section depth (height) of the segment."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "depth",
+            "isWidthAndHeightLinked",
+            "circleBased"
+        ]
+    },
+    "BeamSegmentDetails": {
+        "type": "object",
+        "description": "Details of a BeamSegment subelement of a Beam.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "The Beam element the segment belongs to."
+            },
+            "structureType": {
+                "type": "string",
+                "enum": [ "Basic", "Profile" ]
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment."
+            },
+            "height": {
+                "type": "number",
+                "description": "Cross section height of the segment."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "height",
+            "isWidthAndHeightLinked"
+        ]
+    },
     "DetailWorksheetDetails": {
         "type": "object",
         "properties": {
@@ -6592,6 +6677,12 @@
             },
             {
                 "$ref": "#/ColumnDetails"
+            },
+            {
+                "$ref": "#/ColumnSegmentDetails"
+            },
+            {
+                "$ref": "#/BeamSegmentDetails"
             },
             {
                 "$ref": "#/DetailWorksheetDetails"
