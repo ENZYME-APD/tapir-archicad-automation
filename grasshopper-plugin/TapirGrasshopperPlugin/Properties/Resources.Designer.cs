@@ -2584,5 +2584,29 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap SaveProjectAsArchive
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SaveProjectAsArchive", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetIFCExportTranslators
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCExportTranslators", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap IFCElementsToExport
+        {
+            get {
+                object obj = ResourceManager.GetObject ("IFCElementsToExport", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }
