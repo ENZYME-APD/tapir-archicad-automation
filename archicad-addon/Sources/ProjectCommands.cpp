@@ -1310,9 +1310,36 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
 
 GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_ProjectOperation_Save ();
+    // The parameterless save acts on the current window - "saves the content of
+    // the current window", ACAPI_Automate.h - so from a 3D, section or other
+    // non-plan window it tries to save that window's content, which has no file
+    // of its own, and answers APIERR_READONLY (#681). So the Floor Plan window
+    // is activated around the save and the previous window restored afterwards.
+    //
+    // Two shortcuts were measured on Archicad 29 and rejected. Switching only
+    // the current database leaves the save failing exactly as before. Saving
+    // as a plan file to the project's own location does work from the 3D
+    // window, but it also overwrites a project that Archicad opened read-only
+    // (a stale lock, another user editing it), where File > Save refuses -
+    // and API_ProjectInfo has no read-only flag to check first. The plain save
+    // keeps every one of those refusals, so it is the one to use.
+    API_WindowInfo previousWindow = {};
+    bool windowSwitched = false;
+    if (ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError &&
+        previousWindow.typeID != APIWind_FloorPlanID) {
+        API_WindowInfo floorPlanWindow = {};
+        floorPlanWindow.typeID = APIWind_FloorPlanID;
+        windowSwitched = ACAPI_Window_ChangeWindow (&floorPlanWindow) == NoError;
+    }
+    const GS::OnExit restoreWindow ([&] () {
+        if (windowSwitched) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
+        }
+    });
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save ();
     if (err != NoError) {
-        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to save the project.");
+        return CreateFailedExecutionResult (err, "Failed to save the project.");
     }
     return CreateSuccessfulExecutionResult ();
 }
