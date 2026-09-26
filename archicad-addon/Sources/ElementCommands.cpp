@@ -2047,7 +2047,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("angle", elem.text.angle)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, angle);
                         }
-                        if (typeSpecificDetails->Get ("height", elem.text.size)) {
+                        const bool heightChanged = typeSpecificDetails->Get ("height", elem.text.size);
+                        if (heightChanged) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, size);
                         }
                         GS::UniString justification;
@@ -2061,7 +2062,33 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             // and the paragraphs memo is rebuilt as a single paragraph/run, so any
                             // per-run formatting of the old content is dropped and the element becomes
                             // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
+                            // A new height given alongside is carried into the rebuilt run via elem.text.size.
                             SetTextContentAndParagraphs (clipMemo, elem.text, text);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
+                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            hasMemoChanges = true;
+                        } else if (heightChanged) {
+                            // A multistyle Text (which every UI-placed or Tapir-created Text is) takes
+                            // its character height from the per-run sizes in the paragraphs memo, not
+                            // from API_TextType::size, so masking size alone is silently ignored (see
+                            // ModifyTexts). Rebuild the content from its read-back with the new height
+                            // merged into every run; the runs' own pen/font/faces/effects are kept.
+                            GS::ObjectState heightStyle;
+                            heightStyle.Add ("height", elem.text.size);
+                            GS::ObjectState contentParams;
+                            auto contentError = TextLabelDetails::ReadContentForStyleOnlyModify (elem.header.guid, heightStyle, contentParams);
+                            if (!contentError.HasValue ()) {
+                                contentError = TextLabelDetails::ApplyTextContent (clipMemo, elem.text, contentParams);
+                            }
+                            if (contentError.HasValue ()) {
+                                ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                executionResults (CreateFailedExecutionResult (*contentError));
+                                continue;
+                            }
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
