@@ -43,9 +43,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # 5 Archicad versions x 2 platforms - update together with the build
-  # matrix in archicad_addon.yml.
-  EXPECTED_ASSETS: 10
+  # 5 Archicad versions x 2 platforms + the Win and Mac installer
+  # executables - update together with the build matrix and the installer
+  # jobs in archicad_addon.yml.
+  EXPECTED_ASSETS: 12
 
 jobs:
   release:

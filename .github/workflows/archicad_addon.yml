@@ -10,10 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  # When adding or removing an Archicad version in the matrices below, also
-  # update EXPECTED_ASSETS in monthly_release.yml - it is the number of
-  # release assets (Win + Mac per version) the monthly release waits for
-  # before publishing.
+  # When adding or removing an Archicad version in the matrices below, or an
+  # installer job, also update EXPECTED_ASSETS in monthly_release.yml - it is
+  # the number of release assets (Win + Mac per version, plus the Win + Mac
+  # installer executables) the monthly release waits for before publishing.
   build_win:
     strategy:
       matrix:
@@ -115,5 +115,83 @@ jobs:
         draft: true
         allowUpdates: true
         # Same guard as the Windows job: only drafts may be updated.
+        updateOnlyUnreleased: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+  build_installer_win:
+    runs-on: [ windows-2022 ]
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Install PyInstaller
+      run: pip install pyinstaller
+    - name: Build Installer
+      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --distpath dist archicad-addon/Installer/tapir_installer.py
+    - name: Rename Installer
+      run: Move-Item dist/TapirInstaller.exe dist/TapirInstaller_Win.exe
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Installer Win
+        path: dist/TapirInstaller_Win.exe
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: dist/TapirInstaller_Win.exe
+        draft: true
+        allowUpdates: true
+        # Same guard as the add-on jobs: only drafts may be updated.
+        updateOnlyUnreleased: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+  build_installer_mac:
+    runs-on: [ macos-latest ]
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Install PyInstaller
+      run: pip install pyinstaller
+    - name: Build Installer
+      run: pyinstaller --noconfirm --windowed --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.icns --osx-bundle-identifier com.enzyme-apd.tapir-installer --distpath dist archicad-addon/Installer/tapir_installer.py
+    - name: Code sign and notarize
+      run: |
+        echo ${{ secrets.CODE_SIGN_CERT }} | base64 --decode > certificate.p12
+        ./archicad-addon/Tools/code_sign_and_notarize.sh \
+          certificate.p12 \
+          ${{ secrets.CODE_SIGN_CERT_PWD }} \
+          "Developer ID Application: enzyme apd Limited (${{ secrets.TEAM_ID }})" \
+          archicad-addon/Installer/installer.entitlements \
+          ${{ secrets.APPLE_ID }} \
+          ${{ secrets.APPLE_ID_PWD }} \
+          ${{ secrets.TEAM_ID }} \
+          dist/TapirInstaller.app
+    - name: Verify Signature
+      run: |
+        spctl -a -vv dist/TapirInstaller.app
+        xcrun stapler validate dist/TapirInstaller.app
+    - name: Create zip file
+      run: ditto -c -k --keepParent dist/TapirInstaller.app dist/TapirInstaller_Mac.zip
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapir Installer Mac
+        path: dist/TapirInstaller_Mac.zip
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: dist/TapirInstaller_Mac.zip
+        draft: true
+        allowUpdates: true
+        # Same guard as the add-on jobs: only drafts may be updated.
         updateOnlyUnreleased: true
         token: ${{ secrets.GITHUB_TOKEN }}
