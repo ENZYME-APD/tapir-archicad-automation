@@ -3491,6 +3491,33 @@ void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_L
 
 } // namespace TextLabelDetails
 
+// For a Slab, ACAPI_Element_CalcBounds goes through Archicad's 2D bound calculation, which
+// dereferences the current window's draw environment - null when the slab is not drawn in
+// that window (another story is displayed, its layer is hidden, or a non-floor-plan window
+// is active), so Archicad dies with a SIGSEGV instead of returning an error (#686). A Slab's
+// 2D extent is the extent of its polygon, so take it from the element memo instead - that is
+// available no matter what the current window shows. Curved slab edges bulge slightly beyond
+// the polygon vertices, but for a default label position the vertex extent is close enough.
+static void CalcLabelParentBounds (const API_Elem_Head& parentElemHead, API_Box3D& box)
+{
+    if (GetElemTypeId (parentElemHead) != API_SlabID) {
+        // const_cast: before AC27 ACAPI_Element_CalcBounds maps to ACAPI_Database, which takes void*
+        ACAPI_Element_CalcBounds (const_cast<API_Elem_Head*> (&parentElemHead), &box);
+        return;
+    }
+
+    bool isFirstCoord = true;
+    for (const PolygonData& polygon : GetPolygonsFromMemoCoords (parentElemHead.guid)) {
+        for (const API_Coord& coord : polygon.coords) {
+            if (isFirstCoord || coord.x < box.xMin) box.xMin = coord.x;
+            if (isFirstCoord || coord.x > box.xMax) box.xMax = coord.x;
+            if (isFirstCoord || coord.y < box.yMin) box.yMin = coord.y;
+            if (isFirstCoord || coord.y > box.yMax) box.yMax = coord.y;
+            isFirstCoord = false;
+        }
+    }
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -3520,7 +3547,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
     } else if (parentElemHead.guid != APINULLGuid) {
         API_Box3D box = {};
-        ACAPI_Element_CalcBounds (&parentElemHead, &box);
+        CalcLabelParentBounds (parentElemHead, box);
         element.label.begC.x = (box.xMin + box.xMax) / 2.0;
         element.label.begC.y = (box.yMin + box.yMax) / 2.0;
     } else {

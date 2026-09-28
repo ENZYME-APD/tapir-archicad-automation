@@ -51,3 +51,21 @@ aclib.RunTapirCommand ('SetDetailsOfElements', {
 })
 
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': elements})
+
+# Change only the character height of the Text: the new height is written into every run
+# of the content (issue #682 - a bare height change used to be silently ignored, because a
+# multistyle Text takes its height from the runs, not from the element-level size field).
+aclib.RunTapirCommand ('SetDetailsOfElements', {
+    'elementsWithDetails': [
+        {
+            'elementId': elements[0]['elementId'],
+            'details': {
+                'typeSpecificDetails': {
+                    'height': 5.0
+                }
+            }
+        }
+    ]
+})
+
+aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': elements})
