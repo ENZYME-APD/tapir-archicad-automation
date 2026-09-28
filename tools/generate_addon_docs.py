@@ -526,7 +526,7 @@ class _FunctionState:
             return NO_VALUE
         if value in ('true', 'false'):
             return value == 'true'
-        if value in ('GS::UniString', 'GS::String', 'GS::Optional<GS::UniString>') and self.Peek () == ('op', '('):
+        if value in ('GS::UniString', 'GS::String') and self.Peek () == ('op', '('):
             args = self.Arguments ()
             if len (args) != 1:
                 self.Fail ('string constructor')
