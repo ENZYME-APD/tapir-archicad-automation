@@ -240,8 +240,10 @@ class AutomaticNumbering:
                 "propertyValue": {"value": self._format(start + offset)},
             } for offset, item in enumerate(items)]
             results = run_tapir("SetPropertyValuesOfElements", {"elementPropertyValues": values}).get("executionResults", [])
-        for offset, item in enumerate(items):
-            item["currentId"] = self._format(start + offset)
+        # the results follow the order of items; only the successful ones got the new ID
+        for offset, (item, result) in enumerate(zip(items, results)):
+            if "error" not in result:
+                item["currentId"] = self._format(start + offset)
         self._update_preview()
         errors = item_errors(results)
         if errors:
