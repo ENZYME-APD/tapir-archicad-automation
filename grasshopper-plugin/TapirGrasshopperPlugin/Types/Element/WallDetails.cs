@@ -15,6 +15,12 @@ namespace TapirGrasshopperPlugin.Types.Element
         public double Height;
     }
 
+    public class SetTextDetails
+    {
+        [JsonProperty("text")]
+        public string Text;
+    }
+
     public class TypedDetails<T>
     {
         [JsonProperty("typeSpecificDetails")]

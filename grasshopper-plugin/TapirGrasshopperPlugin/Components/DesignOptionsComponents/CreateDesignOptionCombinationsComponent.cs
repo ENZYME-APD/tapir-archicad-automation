@@ -52,9 +52,11 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 return;
             }
 
+            // A generic parameter hands its tree out as IGH_Goo; asking for GH_ObjectWrapper
+            // makes GetDataTree throw (#634). The items are converted one by one below.
             if (!da.TryGetTree(
                     1,
-                    out GH_Structure<GH_ObjectWrapper> activeOptionsTree))
+                    out GH_Structure<IGH_Goo> activeOptionsTree))
             {
                 return;
             }
@@ -69,8 +71,9 @@ namespace TapirGrasshopperPlugin.Components.DesignOptionsComponents
                 var activeDesignOptions = new List<DesignOptionGuidWrapper>();
                 if (i < activeOptionsTree.Branches.Count)
                 {
-                    foreach (var wrapper in activeOptionsTree.Branches[i])
+                    foreach (var goo in activeOptionsTree.Branches[i])
                     {
+                        var wrapper = goo as GH_ObjectWrapper ?? new GH_ObjectWrapper(goo);
                         var option = GuidWrapper<DesignOptionGuid, DesignOptionGuidWrapper>
                             .CreateFromGhWrapper(wrapper);
                         if (option == null)

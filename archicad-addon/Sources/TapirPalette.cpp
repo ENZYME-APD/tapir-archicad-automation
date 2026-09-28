@@ -778,7 +778,9 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 return;
             }
             command = uvCommand;
-            argv = {"run", "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())};
+            argv = {"run"};
+            argv.Append (uvManager.GetPythonSelectionArgs ());
+            argv.Append ({"--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())});
             if (popUpItemData.repo != nullptr && !popUpItemData.repo->token.IsEmpty ()) {
                 argv.Append ({"--token", popUpItemData.repo->token});
             }
@@ -1005,7 +1007,9 @@ bool TapirPalette::UpdateAddOn ()
     GS::UniString filePath;
     fileLoc.ToPath (&filePath);
 
-    const GS::Array<GS::UniString> argv = { "run", "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ()), "--downloadUrl", VersionChecker::LatestVersionDownloadUrl (), "--addOnLocation", addOnLocationStr};
+    GS::Array<GS::UniString> argv = { "run" };
+    argv.Append (uvManager.GetPythonSelectionArgs ());
+    argv.Append ({ "--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ()), "--downloadUrl", VersionChecker::LatestVersionDownloadUrl (), "--addOnLocation", addOnLocationStr});
 
     constexpr bool redirectStandardOutput = false;
     constexpr bool redirectStandardInput = false;

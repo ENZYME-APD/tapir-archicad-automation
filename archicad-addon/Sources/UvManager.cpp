@@ -197,6 +197,41 @@ GS::UniString UvManager::GetUvExecutablePath ()
     return GS::EmptyUniString;
 }
 
+static bool LooksLikeFilePath (const GS::UniString& pythonLocation)
+{
+    return pythonLocation.Contains ("/") || pythonLocation.Contains ("\\");
+}
+
+GS::Array<GS::UniString> UvManager::GetPythonSelectionArgs ()
+{
+    const GS::UniString& pythonLocationFromConfigFile = Config::Instance ().pythonLocation ();
+    if (pythonLocationFromConfigFile.IsEmpty ()) {
+        return {};
+    }
+
+    // The configured value is forwarded to 'uv' as-is, so it can be either a path to
+    // an interpreter or a request like "3.12" or "python3.12". Only paths are checked here.
+    if (LooksLikeFilePath (pythonLocationFromConfigFile)) {
+        bool exists = false;
+        if (IO::fileSystem.Contains (IO::Location (pythonLocationFromConfigFile), &exists) != NoError || !exists) {
+            static bool alertOnce = true;
+            if (alertOnce) {
+                DGAlert (DG_WARNING, "Configured Python Interpreter Not Found",
+                    GS::UniString::Printf (
+                        "The Python interpreter path configured in Tapir settings does not exist:\n\n%T\n\n"
+                        "'uv' will select a Python interpreter automatically.",
+                        pythonLocationFromConfigFile.ToPrintf ()),
+                    "", "OK");
+                alertOnce = false;
+            }
+            return {};
+        }
+    }
+
+    ACAPI_WriteReport ("Tapir runs Python scripts with the configured interpreter: %T", false, pythonLocationFromConfigFile.ToPrintf ());
+    return { "--python", pythonLocationFromConfigFile };
+}
+
 bool UvManager::AttemptAutomaticInstallation ()
 {
     ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "INFO: Attempting to run the official uv installer script...", false);

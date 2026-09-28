@@ -1501,6 +1501,14 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     itemOS.Add ("customName",    item.customName);
     itemOS.Add ("isIndependent", item.isIndependent);
 
+    // The navigator item this one was created from: the Project Map item
+    // behind a view, or the source view behind a placed Drawing's Layout Book
+    // entry. Only present when the item has such a source; Project Map items
+    // never do.
+    if (item.sourceGuid != APINULLGuid) {
+        itemOS.Add ("sourceNavigatorItemId", CreateGuidObjectState (item.sourceGuid));
+    }
+
     item.mapId = mapId;
     GS::Array<API_NavigatorItem> children;
     if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) == NoError && !children.IsEmpty ()) {
@@ -1533,10 +1541,33 @@ GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetInputParametersSchem
                 "type": "string",
                 "enum": ["PublicViewMap", "ProjectMap", "LayoutBook", "PublisherSets"],
                 "description": "The navigator map to retrieve."
+            },
+            "publisherSetName": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The name of the publisher set to retrieve. Used only when navigatorMapId is PublisherSets. Without it the first publisher set is returned."
             }
         },
         "additionalProperties": false,
         "required": ["navigatorMapId"]
+    })";
+}
+
+// NavigatorItem refers back to itself through NavigatorItemArrayItem, which is
+// what the children recursion needs. Only the documentation reads this schema -
+// see the comment on CommandBase::GetResponseSchema - and its renderer stops at
+// a reference it is already resolving, so the cycle is safe here.
+GS::Optional<GS::UniString> GetNavigatorItemTreeCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemTree": {
+                "$ref": "#/NavigatorItem"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["navigatorItemTree"]
     })";
 }
 
@@ -1550,16 +1581,32 @@ GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& par
     else if (navigatorMapIdStr == "LayoutBook")    mapId = API_LayoutMap;
     else if (navigatorMapIdStr == "PublisherSets") mapId = API_PublisherSets;
 
-    API_NavigatorSet navSet = {};
-    navSet.mapId = mapId;
-    Int32 idx = 0;
-    GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&navSet, &idx);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get navigator set.");
+    API_Guid rootGuid = APINULLGuid;
+    if (mapId == API_PublisherSets && parameters.Contains ("publisherSetName")) {
+        // A project can hold several publisher sets, and the index passed to
+        // ACAPI_Navigator_GetNavigatorSet selects between them. Looking the
+        // set up by name lets the caller reach any of them, not just the first.
+        GS::UniString publisherSetName;
+        parameters.Get ("publisherSetName", publisherSetName);
+
+        const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable ();
+        if (!publisherSetNameGuidTable.ContainsKey (publisherSetName)) {
+            return CreateErrorResponse (Error, "Not valid publisher set name.");
+        }
+        rootGuid = publisherSetNameGuidTable.Get (publisherSetName);
+    } else {
+        API_NavigatorSet navSet = {};
+        navSet.mapId = mapId;
+        Int32 idx = 0;
+        GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&navSet, &idx);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get navigator set.");
+        }
+        rootGuid = navSet.rootGuid;
     }
 
     API_NavigatorItem rootItem = {};
-    err = ACAPI_Navigator_GetNavigatorItem (&navSet.rootGuid, &rootItem);
+    GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&rootGuid, &rootItem);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get root navigator item.");
     }

@@ -62,6 +62,10 @@ namespace TapirGrasshopperPlugin.Types.Attributes
 
         [JsonProperty("name")]
         public string Name;
+
+        // Seconds since 1970-01-01 00:00:00 UTC.
+        [JsonProperty("modificationTime")]
+        public long ModificationTime;
     }
 
     public class AttributeDetailsObject
