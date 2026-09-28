@@ -43,4 +43,82 @@ namespace TapirGrasshopperPlugin.Types.Element
         [JsonProperty("classificationItemIds")]
         public List<ClassificationItemGuidWrapper> ClassificationItemIds;
     }
+
+    // Only the fields given change; the others are left out of the JSON.
+    public class ClassificationSystemUpdate
+    {
+        [JsonProperty("classificationSystemId")]
+        public ClassificationGuid ClassificationSystemId;
+
+        [JsonProperty(
+            "name",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Name;
+
+        [JsonProperty(
+            "description",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Description;
+
+        [JsonProperty(
+            "source",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Source;
+
+        [JsonProperty(
+            "version",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Version;
+
+        [JsonProperty(
+            "date",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Date;
+    }
+
+    public class UpdateClassificationSystemsParameters
+    {
+        [JsonProperty("classificationSystems")]
+        public List<ClassificationSystemUpdate> ClassificationSystems;
+    }
+
+    // Only the fields given change; the others are left out of the JSON.
+    public class ClassificationItemUpdate
+    {
+        [JsonProperty("classificationItemId")]
+        public ClassificationGuid ClassificationItemId;
+
+        [JsonProperty(
+            "id",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Id;
+
+        [JsonProperty(
+            "name",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Name;
+
+        [JsonProperty(
+            "description",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Description;
+    }
+
+    public class UpdateClassificationItemsParameters
+    {
+        [JsonProperty("classificationItems")]
+        public List<ClassificationItemUpdate> ClassificationItems;
+    }
+
+    public class ImportClassificationsXmlParameters
+    {
+        [JsonProperty("xml")]
+        public string Xml;
+
+        [JsonProperty("systemConflictPolicy")]
+        public string SystemConflictPolicy;
+
+        [JsonProperty("itemConflictPolicy")]
+        public string ItemConflictPolicy;
+    }
 }

@@ -66,8 +66,37 @@ for i, pt in enumerate(poly):
 assert after["details"].get("isCutWithFrame") is True, "isCutWithFrame should be True"
 assert len(poly) == 4, f"Expected 4 points (triangle + closing), got {len(poly)}"
 
-# 5. Clean up
-del_result = run("DeleteElements", {"elements": [drawing_ref]})
+# 5. Clear the crop again via SetDetailsOfElements with isCutWithFrame: false
+set_result = run("SetDetailsOfElements", {"elementsWithDetails": [{
+    "elementId": drawing_ref["elementId"],
+    "details": {"typeSpecificDetails": {"isCutWithFrame": False}},
+}]})
+print(f"SetDetailsOfElements result: {set_result}")
+
+cleared = run("GetDetailsOfElements", {"elements": [drawing_ref]})["detailsOfElements"][0]
+print(f"isCutWithFrame after clearing: {cleared['details'].get('isCutWithFrame')}")
+assert cleared["details"].get("isCutWithFrame") is False, "isCutWithFrame should be False after clearing"
+assert cleared["details"].get("clipPolygon") is None, "clipPolygon should be absent after clearing"
+
+# 6. Create a Drawing WITHOUT a clip polygon - it must be uncropped regardless
+#    of the Drawing tool defaults left behind by any earlier (manual) placement
+create_result2 = run("CreateDrawings", {"drawingsData": [{
+    "navigatorItemId": nav_item_id,
+    "layoutDatabaseId": layout_db_id,
+    "name": "TestUnclippedDrawing",
+    "position": {"x": cx + 0.3, "y": cy},
+}]})
+created2 = create_result2["elements"][0]
+assert "elementId" in created2, f"CreateDrawings failed: {created2}"
+unclipped_ref = created2
+print(f"Created Drawing without clipPolygon: {unclipped_ref['elementId']}")
+
+unclipped = run("GetDetailsOfElements", {"elements": [unclipped_ref]})["detailsOfElements"][0]
+print(f"isCutWithFrame without clipPolygon: {unclipped['details'].get('isCutWithFrame')}")
+assert unclipped["details"].get("isCutWithFrame") is False, "isCutWithFrame should be False without clipPolygon"
+
+# 7. Clean up
+del_result = run("DeleteElements", {"elements": [drawing_ref, unclipped_ref]})
 print(f"Delete: {del_result}")
 
-print("\nPASS: CreateDrawings with clipPolygon OK")
+print("\nPASS: CreateDrawings with clipPolygon and clearing isCutWithFrame OK")

@@ -763,6 +763,11 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
 
     short storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
+    // The array holds one record more than there are stories: the virtual story above
+    // the top one, whose level is where the top story ends (API_StoryInfo says it is
+    // there so that the height of the top story can be calculated). The record count
+    // comes from the handle itself, so a level is never read past the array.
+    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
     for (short i = 0; i < storyCount; i++) {
         const API_StoryType& story = (*storyInfo.data)[i];
         GS::ObjectState storyData;
@@ -772,7 +777,7 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
         storyData.Add ("floorId", story.floorId);
         storyData.Add ("dispOnSections", story.dispOnSections);
         storyData.Add ("level", story.level);
-        if (i + 1 < storyCount) {
+        if (i + 1 < recordCount) {
             storyData.Add ("height", (*storyInfo.data)[i + 1].level - story.level);
         }
         storyData.Add ("name", uName);
@@ -836,7 +841,7 @@ static void FillNewStoryCmd (const GS::Array<GS::ObjectState>& stories, const GS
 
     GS::UniString name;
     stories[storyPos].Get ("name", name);
-    GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
+    GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
 }
 
 // A copy of what a story looks like right now. API_StoryInfo::data is a handle which every
@@ -1056,7 +1061,7 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
         stories[i].Get ("name", name);
 
         if (currentStories[i].name != name) {
-            GS::snuprintf (storyCmd.uName, sizeof (storyCmd.uName), name.ToCStr ());
+            GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
             storyCmd.action = APIStory_Rename;
 
             err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
@@ -1305,9 +1310,36 @@ GS::Optional<GS::UniString> SaveProjectCommand::GetRawResponseSchema () const
 
 GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_ProjectOperation_Save ();
+    // The parameterless save acts on the current window - "saves the content of
+    // the current window", ACAPI_Automate.h - so from a 3D, section or other
+    // non-plan window it tries to save that window's content, which has no file
+    // of its own, and answers APIERR_READONLY (#681). So the Floor Plan window
+    // is activated around the save and the previous window restored afterwards.
+    //
+    // Two shortcuts were measured on Archicad 29 and rejected. Switching only
+    // the current database leaves the save failing exactly as before. Saving
+    // as a plan file to the project's own location does work from the 3D
+    // window, but it also overwrites a project that Archicad opened read-only
+    // (a stale lock, another user editing it), where File > Save refuses -
+    // and API_ProjectInfo has no read-only flag to check first. The plain save
+    // keeps every one of those refusals, so it is the one to use.
+    API_WindowInfo previousWindow = {};
+    bool windowSwitched = false;
+    if (ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError &&
+        previousWindow.typeID != APIWind_FloorPlanID) {
+        API_WindowInfo floorPlanWindow = {};
+        floorPlanWindow.typeID = APIWind_FloorPlanID;
+        windowSwitched = ACAPI_Window_ChangeWindow (&floorPlanWindow) == NoError;
+    }
+    const GS::OnExit restoreWindow ([&] () {
+        if (windowSwitched) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
+        }
+    });
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save ();
     if (err != NoError) {
-        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to save the project.");
+        return CreateFailedExecutionResult (err, "Failed to save the project.");
     }
     return CreateSuccessfulExecutionResult ();
 }
@@ -1383,6 +1415,91 @@ GS::ObjectState SaveAsModuleFileCommand::Execute (const GS::ObjectState& paramet
     const GSErrCode err = ACAPI_ProjectOperation_SaveAsModuleFile (&location, heads.IsEmpty () ? nullptr : &heads);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to save the module file: no elements to save (nothing selected?), the current window is not a model window, or the file cannot be written.");
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+SaveProjectAsArchiveCommand::SaveProjectAsArchiveCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SaveProjectAsArchiveCommand::GetName () const
+{
+    return "SaveProjectAsArchive";
+}
+
+GS::Optional<GS::UniString> SaveProjectAsArchiveCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "archiveFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .pla archive to write. An existing file is overwritten. The archive becomes the open project, as Save As does."
+            },
+            "includeLibraryParts": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the library parts the project uses go into the archive, which makes the archive usable as a linked library of another project."
+            },
+            "includeProperties": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the properties go into the archive."
+            },
+            "includeTextures": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the linked textures go into the archive."
+            },
+            "includeBackgroundPicture": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the background picture goes into the archive."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "archiveFilePath"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SaveProjectAsArchiveCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SaveProjectAsArchiveCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString archiveFilePath;
+    if (!parameters.Get ("archiveFilePath", archiveFilePath) || archiveFilePath.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "archiveFilePath is missing.");
+    }
+    IO::Location location (archiveFilePath);
+
+    bool includeLibraryParts = true;
+    bool includeProperties = true;
+    bool includeTextures = false;
+    bool includeBackgroundPicture = false;
+    parameters.Get ("includeLibraryParts", includeLibraryParts);
+    parameters.Get ("includeProperties", includeProperties);
+    parameters.Get ("includeTextures", includeTextures);
+    parameters.Get ("includeBackgroundPicture", includeBackgroundPicture);
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = APIFType_A_PlanFile;
+    fileSavePars.file = &location;
+
+    API_SavePars_Archive savePars = {};
+    savePars.picturesInTIFF = false;
+    savePars.texturesOn = includeTextures;
+    savePars.backgroundPictOn = includeBackgroundPicture;
+    savePars.propertiesOn = includeProperties;
+    savePars.libraryPartsOn = includeLibraryParts;
+
+    const GSErrCode err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the project as an archive: no project is open, or the file cannot be written.");
     }
     return CreateSuccessfulExecutionResult ();
 }
@@ -1902,6 +2019,97 @@ GS::ObjectState GetCalculationUnitsCommand::Execute (const GS::ObjectState& /*pa
             "accuracy", unitPrefs.angle.accuracy));
 }
 
+static bool ParseElementsToIfcExport (const GS::UniString& str, API_ElementsToIfcExportID& result)
+{
+    if (str == "EntireProject") {
+        result = API_EntireProject;
+    } else if (str == "VisibleElementsOnAllStories") {
+        result = API_VisibleElementsOnAllStories;
+    } else if (str == "AllElementsOnCurrentStory") {
+        result = API_AllElementsOnCurrentStorey;
+    } else if (str == "VisibleElementsOnCurrentStory") {
+        result = API_VisibleElementsOnCurrentStorey;
+    } else if (str == "SelectedElementsOnly") {
+        result = API_SelectedElementsOnly;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Saves the project as IFC with an export translator chosen by name, through the
+// Automate API. The add-on communication path in Execute cannot choose one: the IFC
+// add-on saves with the translator Archicad remembers from its own Save dialog, which
+// an automated caller can neither see nor set. The floor plan or the 3D window has to
+// be the front window, as for any IFC save.
+static GS::ObjectState SaveProjectAsIfcWithTranslator (const GS::ObjectState& parameters, IO::Location& ifcFileLocation, Int32 fileTypeRefCon, const GS::UniString& translatorName)
+{
+    // The Automate API saves plain IFC and one packed form: IFC ZIP from Archicad 27
+    // on, IFC XML before that.
+    API_IfcTypeID subType;
+    if (fileTypeRefCon == 1) {
+        subType = API_IFC;
+#ifdef ServerMainVers_2700
+    } else if (fileTypeRefCon == 3) {
+        subType = API_IFCZIP;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName needs a fileType of ifc or ifczip");
+#else
+    } else if (fileTypeRefCon == 2) {
+        subType = API_IFCXML;
+    } else {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName needs a fileType of ifc or ifcxml on this Archicad version");
+#endif
+    }
+
+    API_ElementsToIfcExportID elementsToExport = API_VisibleElementsOnAllStories;
+    GS::UniString elementsToExportStr;
+    if (parameters.Get ("elementsToExport", elementsToExportStr) && !ParseElementsToIfcExport (elementsToExportStr, elementsToExport)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport parameter is invalid");
+    }
+
+    GS::Array<API_IFCTranslatorIdentifier> translators;
+    GSErrCode err = ACAPI_IFC_GetIFCExportTranslatorsList (translators);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to list the IFC export translators of the project");
+    }
+
+    const API_IFCTranslatorIdentifier* translator = nullptr;
+    GS::UniString availableNames;
+    for (const API_IFCTranslatorIdentifier& candidate : translators) {
+        if (candidate.name == translatorName) {
+            translator = &candidate;
+        }
+        if (!availableNames.IsEmpty ()) {
+            availableNames += ", ";
+        }
+        availableNames += "\"" + candidate.name + "\"";
+    }
+    if (translator == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no IFC export translator named \"" + translatorName + "\". Its translators: " + availableNames);
+    }
+
+    API_FileSavePars fileSavePars = {};
+    fileSavePars.fileTypeID = APIFType_IfcFile;
+    fileSavePars.file = &ifcFileLocation;
+
+    API_SavePars_Ifc savePars = {};
+    savePars.subType = subType;
+    savePars.translatorIdentifier = *translator;
+    savePars.elementsToIfcExport = elementsToExport;
+    savePars.elementsSet = nullptr;
+#ifdef ServerMainVers_2600
+    savePars.includeBoundingBoxGeometry = false;
+#endif
+
+    err = ACAPI_ProjectOperation_Save (&fileSavePars, &savePars);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to save the project as IFC");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 IFCFileOperationCommand::IFCFileOperationCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1930,6 +2138,15 @@ GS::Optional<GS::UniString> IFCFileOperationCommand::GetInputParametersSchema ()
                 "type": "string",
                 "description": "The type of the IFC file. The default is 'ifc'.",
                 "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            },
+            "translatorName": {
+                "type": "string",
+                "description": "Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26)."
+            },
+            "elementsToExport": {
+                "type": "string",
+                "description": "Only for the save method, and only together with translatorName: which elements to export. The default is VisibleElementsOnAllStories.",
+                "enum": ["EntireProject", "VisibleElementsOnAllStories", "AllElementsOnCurrentStory", "VisibleElementsOnCurrentStory", "SelectedElementsOnly"]
             }
         },
         "additionalProperties": false,
@@ -1993,6 +2210,19 @@ GS::ObjectState IFCFileOperationCommand::Execute (const GS::ObjectState& paramet
     if (ifcFileLocation.GetLastLocalName (&lastLocalName) != NoError) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "ifcFilePath parameter is invalid");
     }
+    GS::UniString translatorName;
+    if (parameters.Get ("translatorName", translatorName) && !translatorName.IsEmpty ()) {
+        if (ioParams.method != IO_SAVEAS) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "translatorName is only valid with the save method");
+        }
+        return SaveProjectAsIfcWithTranslator (parameters, ifcFileLocation, ioParams.refCon, translatorName);
+    }
+    if (parameters.Contains ("elementsToExport")) {
+        // The add-on path below has no element filter, so a filter without a translator
+        // would be dropped without a word.
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToExport is only valid together with translatorName");
+    }
+
     ioParams.fileLoc = &ifcFileLocation;
     ioParams.saveFileIOName = &lastLocalName;
     ioParams.noDialog = true;

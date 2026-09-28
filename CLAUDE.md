@@ -47,7 +47,8 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
 builtin-scripts/         Bundled automation scripts
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference)
-tools/                   Version bump scripts (update_version.py), package_info.json
+tools/                   Version bump scripts (update_version.py), package_info.json,
+                         Add-On docs generator (generate_addon_docs.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -87,7 +88,9 @@ sandbox/                 Experiments / scratch
 4. Add a Python example under [archicad-addon/Examples/](archicad-addon/Examples/) and,
    if it should be tested, expected output under `Test/ExpectedOutputs/`.
 5. Docs at <https://enzyme-apd.github.io/...> are generated from the registered
-   descriptions (via the `GenerateDocumentation` developer command).
+   descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
+   needed; same output as the `GenerateDocumentation` developer command). The monthly
+   release regenerates them automatically; run it yourself to update them earlier.
 6. Bump the version consistently (see Versioning below) when releasing.
 
 ## Building the Add-On
@@ -167,6 +170,23 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml` — PR build
   checks for each component.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
+- `monthly_release.yml` — tags and releases `main` monthly; first regenerates
+  `docs/archicad-addon` with `tools/generate_addon_docs.py` and pushes it to `main`
+  when it changed (never hand-edit those docs).
+- `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and
+  every new human comment on an issue (`reply` job), from anyone, runs Claude with
+  write access: it answers, closes verified already-fixed issues, or opens a **draft**
+  PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`. No label is needed;
+  applying `claude-fix` re-runs `fix` on an existing issue. Its header documents the
+  security bounds and the repository rulesets they rely on.
+- `claude_pr_review.yml` — the PR review bot. Reviews on open/push and re-reviews on
+  any human PR comment, without re-posting open findings, and resolves the threads it
+  opened once the change or the discussion settles them.
+- `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
+  authors that touch no release-critical path (never the bots' own PRs).
+- `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
+  requests in the project's Discord channels (see
+  [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
 
 ## Installation (end users)
 

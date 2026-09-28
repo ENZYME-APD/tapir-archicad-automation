@@ -626,3 +626,68 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
 
     return response;
 }
+
+GetIFCExportTranslatorsCommand::GetIFCExportTranslatorsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetIFCExportTranslatorsCommand::GetName () const
+{
+    return "GetIFCExportTranslators";
+}
+
+GS::Optional<GS::UniString> GetIFCExportTranslatorsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "translators": {
+                "type": "array",
+                "description": "The IFC export translators of the project, the preview translator first.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the translator, as the IFC Translators dialog shows it."
+                        },
+                        "preview": {
+                            "type": "boolean",
+                            "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "preview"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "translators"
+        ]
+    })";
+}
+
+GS::ObjectState GetIFCExportTranslatorsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_IFCTranslatorIdentifier> translators;
+    const GSErrCode err = ACAPI_IFC_GetIFCExportTranslatorsList (translators);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the IFC export translators of the project");
+    }
+
+    GS::ObjectState response;
+    const auto& translatorList = response.AddList<GS::ObjectState> ("translators");
+    for (UIndex i = 0; i < translators.GetSize (); ++i) {
+        GS::ObjectState item;
+        item.Add ("name", translators[i].name);
+        item.Add ("preview", i == 0);
+        translatorList (item);
+    }
+
+    return response;
+}
