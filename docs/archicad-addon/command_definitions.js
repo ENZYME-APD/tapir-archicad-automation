@@ -2056,7 +2056,7 @@ var gCommands = [{
             },{
                 "name": "DeleteElements",
                 "version": "1.2.1",
-                "description": "Deletes elements.",
+                "description": "Deletes elements. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -2070,7 +2070,16 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
     }
             },{
                 "name": "LockElements",
