@@ -101,14 +101,38 @@ class UnusedViewCleaner:
         tree = self.unused_tree(guids)
         if not tree:
             return 0
-        created = run_command("API.CreateViewMapFolder", {
-            "folderParameters": {"name": folder_name},
-            "parentNavigatorItemId": tree["navigatorItem"]["navigatorItemId"],
-        })
-        root_for_unused_views = created["createdFolderNavigatorItemId"]
+        self._index_existing_folders()
+        root_for_unused_views = self._folder(tree["navigatorItem"]["navigatorItemId"], folder_name)
         for child in tree["navigatorItem"].get("children", []):
             self.process_unused_tree(root_for_unused_views, child)
         return self.moved_views
+
+    def _index_existing_folders(self) -> None:
+        """ The folders already in the View Map, so a later run moves views into
+        them instead of creating a second folder with the same name. """
+        self.existing_folders: dict[str, dict[str, Guid]] = {}
+
+        def walk(item: NavigatorItem) -> None:
+            children = [c["navigatorItem"] for c in item.get("children", [])]
+            self.existing_folders[item["navigatorItemId"]["guid"]] = {
+                c["name"]: c["navigatorItemId"] for c in children if c["type"] == "FolderItem"}
+            for child in children:
+                walk(child)
+
+        view_map_tree = run_command("API.GetNavigatorItemTree", {"navigatorTreeId": {"type": "ViewMap"}})
+        walk(view_map_tree["navigatorTree"]["rootItem"])
+
+    def _folder(self, parent_guid: Guid, name: str) -> Guid:
+        """ The folder called name under parent, created when it does not exist yet. """
+        siblings = self.existing_folders.setdefault(parent_guid["guid"], {})
+        if name not in siblings:
+            created = run_command("API.CreateViewMapFolder", {
+                "folderParameters": {"name": name},
+                "parentNavigatorItemId": parent_guid,
+            })
+            siblings[name] = created["createdFolderNavigatorItemId"]
+            self.existing_folders[siblings[name]["guid"]] = {}
+        return siblings[name]
 
     def process_unused_tree(self, parent_guid: Guid, current_branch: NavigatorItemWrapper) -> None:
         node_processor = self.node_processors[current_branch["navigatorItem"]["type"]]
@@ -119,11 +143,7 @@ class UnusedViewCleaner:
                 self.process_unused_tree(new_parent_guid, child)
 
     def process_folder_node(self, parent_guid: Guid, folder_node: NavigatorItemWrapper) -> Guid:
-        created = run_command("API.CreateViewMapFolder", {
-            "folderParameters": {"name": folder_node["navigatorItem"]["name"]},
-            "parentNavigatorItemId": parent_guid,
-        })
-        return created["createdFolderNavigatorItemId"]
+        return self._folder(parent_guid, folder_node["navigatorItem"]["name"])
 
     def process_view_node(self, parent_guid: Guid, view_node: NavigatorItemWrapper) -> None:
         run_command("API.MoveNavigatorItem", {
@@ -307,8 +327,10 @@ class UnusedViewCleanerWindow:
             return
         with self.window.busy(f"Moving {len(guids)} view(s)..."):
             moved = self.cleaner.move(guids, folder_name)
-        self.move_button.state(["disabled"])
-        self.window.set_status(f"Moved {moved} view(s) into \"{folder_name}\". Press Analyze again to refresh the list.", "ok")
+        # the moved views now live under the target folder, which analyze skips,
+        # so the list shows only what is still left to clean up
+        self.analyze()
+        self.window.set_status(f"Moved {moved} view(s) into \"{folder_name}\".", "ok")
 
     def run(self) -> None:
         self.window.run(on_start=self.analyze)

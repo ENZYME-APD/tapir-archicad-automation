@@ -172,6 +172,7 @@ class AutomaticNumbering:
 
         polylines = [(e, d) for e, d in zip(selected, details) if d.get("type") == "PolyLine"]
         others = [(e, d) for e, d in zip(selected, details) if d.get("type") != "PolyLine" and "error" not in d]
+        unreadable = sum(1 for d in details if "error" in d)
 
         if len(polylines) != 1:
             self.polyline_label.configure(text="none selected" if not polylines else f"{len(polylines)} selected, select only one",
@@ -199,10 +200,10 @@ class AutomaticNumbering:
         with self.window.busy("Measuring the elements..."):
             boxes = run_tapir("Get3DBoundingBoxes", {"elements": [e for e, _ in others]}).get("boundingBoxes3D", [])
 
-        skipped = 0
+        no_extent = 0
         for (element, detail), box in zip(others, boxes):
             if "boundingBox3D" not in box:
-                skipped += 1
+                no_extent += 1
                 continue
             bb = box["boundingBox3D"]
             center = ((bb["xMin"] + bb["xMax"]) / 2, (bb["yMin"] + bb["yMax"]) / 2)
@@ -213,9 +214,11 @@ class AutomaticNumbering:
                 "position": position_along_polyline(points, center),
             })
         self.ordered.sort(key=lambda item: item["position"])
+        reasons = [f"{no_extent} without 3D extent"] if no_extent else []
+        reasons += [f"{unreadable} unreadable"] if unreadable else []
         self.elements_label.configure(
-            text=f"{len(self.ordered)}" + (f"  ({skipped} skipped: no 3D extent)" if skipped else ""),
-            foreground="#a15c00" if skipped else "")
+            text=f"{len(self.ordered)}" + (f"  (skipped: {', '.join(reasons)})" if reasons else ""),
+            foreground="#a15c00" if reasons else "")
         self._update_preview()
 
     def _element_id_property(self) -> dict:
