@@ -422,6 +422,7 @@ GS::ObjectState GetAutoTextNameCommand::Execute (const GS::ObjectState& paramete
 // ACAPI_AutoText_DeleteAnAutoText returns NoError for an id that matches nothing (#667).
 // The create/delete commands therefore verify their effect against the actual autotext
 // list instead of trusting the returned error code.
+#ifndef ServerMainVers_3000
 static GSErrCode GetAutoTextIds (GS::HashSet<GS::UniString>& autoTextIds)
 {
     GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
@@ -435,6 +436,7 @@ static GSErrCode GetAutoTextIds (GS::HashSet<GS::UniString>& autoTextIds)
     }
     return NoError;
 }
+#endif
 
 CreateProjectInfoFieldsCommand::CreateProjectInfoFieldsCommand () :
     CommandBase (CommonSchema::Used)
