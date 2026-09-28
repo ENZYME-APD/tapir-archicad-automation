@@ -2769,6 +2769,39 @@ var gSchemaDefinitions = {
                 "items": {
                     "type": "string"
                 }
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "propertyDescription": {
+                "type": "string"
+            },
+            "defaultValueDisplay": {
+                "type": "string",
+                "description": "The basic default value as text. Only for custom, non expression-based properties whose default is set."
+            },
+            "availability": {
+                "type": "array",
+                "description": "Classification items a custom property is available for.",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "defaultEnumValueIds": {
+                "type": "array",
+                "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": {
+                            "$ref": "#/Guid"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid"
+                    ]
+                }
             }
         },
         "additionalProperties": false,
@@ -4232,6 +4265,10 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "True when the item is independent, that is when its link to the Project Map is broken."
             },
+            "sourceNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The identifier of the navigator item this one was created from: the Project Map item behind a view, or the source view behind a placed Drawing's Layout Book entry. Missing when the item has no such source; Project Map items never do."
+            },
             "children": {
                 "type": "array",
                 "description": "The children of the navigator item. Missing when the item has no children.",
@@ -4811,6 +4848,10 @@ var gSchemaDefinitions = {
             "height": {
                 "type": "number",
                 "description": "Cross section height of the beam (all segments)."
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round beam cross section, false for rectangular."
             },
             "isWidthAndHeightLinked": {
                 "type": "boolean",
@@ -6950,7 +6991,7 @@ var gSchemaDefinitions = {
             },
             "height": {
                 "type": "number",
-                "description": "Story height, calculated as the level of the story above minus this story's level. Omitted for the topmost story, which has no story above."
+                "description": "Story height, calculated as the level of the story above minus this story's level. The topmost story gets its height from the virtual story that Archicad keeps above it in the story settings; only an Archicad that did not report that virtual story would leave the top story without a height."
             },
             "name": {
                 "type": "string",
@@ -7311,9 +7352,13 @@ var gSchemaDefinitions = {
                 "$ref": "#/Coordinate2D",
                 "description": "Offset of the model origin within the drawing."
             },
+            "isCutWithFrame": {
+                "type": "boolean",
+                "description": "Whether the drawing is clipped by a custom polygon. Set to false to clear an existing crop and restore the drawing's full auto-fit extent. Only consulted when no clipPolygon is supplied in the same call - supplying a clipPolygon always enables clipping. Setting it to true without a clipPolygon merely re-enables the clip polygon already stored on the Drawing."
+            },
             "clipPolygon": {
                 "type": "array",
-                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (useDrawingPolyClip).",
+                "description": "Polygon (in model coordinates) used to clip the drawing view. At least 3 points. Setting this also enables polygon clipping (isCutWithFrame becomes true); to remove clipping, set isCutWithFrame to false instead.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 },
@@ -7366,7 +7411,7 @@ var gSchemaDefinitions = {
             },
             "height": {
                 "type": "number",
-                "description": "The character height in millimeters. Only applied to Text elements."
+                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
                 "type": "string",

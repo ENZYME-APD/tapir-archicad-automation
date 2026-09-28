@@ -34,3 +34,26 @@ for view in overridden:
         view['customUiId'],
         view['customName'],
         view['isIndependent']))
+
+# Every item that was created from another navigator item carries the source
+# item's id. On a placed Drawing's Layout Book entry it identifies the view or
+# schedule the Drawing was made from - the drawing element's own
+# navigatorItemId (elem.drawing.drawingGuid) is an autotext id and does not
+# resolve to a navigator item, so this is the only way back to the source. The
+# source id can be fed to the official GetNavigatorItemsType command to tell
+# e.g. schedule-based Drawings from story-based ones.
+layoutBookTree = aclib.RunTapirCommand ('GetNavigatorItemTree', {
+    'navigatorMapId': 'LayoutBook'
+})['navigatorItemTree']
+
+drawings = [
+    item for item in CollectItems (layoutBookTree, [])
+    if item['type'] == 'DrawingItem'
+]
+
+print ('{} drawings in the layout book:'.format (len (drawings)))
+for drawing in drawings:
+    sourceId = drawing.get ('sourceNavigatorItemId')
+    print ('  {} (source: {})'.format (
+        drawing['name'],
+        sourceId['guid'] if sourceId is not None else 'none'))

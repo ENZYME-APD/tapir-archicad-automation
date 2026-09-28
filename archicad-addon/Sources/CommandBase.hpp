@@ -6,6 +6,7 @@
 
 #include "ObjectState.hpp"
 #include "BiHashTable.hpp"
+#include "HashSet.hpp"
 
 #include <vector>
 #include <map>
@@ -48,6 +49,19 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
 // The FailedExecutionResult shape for an error already built with CreateErrorResponse.
 GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse);
 GS::ObjectState CreateSuccessfulExecutionResult ();
+GS::UniString DescribeDefinitionChangeError (GSErrCode err);
+
+// Adds {"guid": ...} to `list` for every guid in `from` that is not in `minus`. The import
+// commands use it to report what an import created and removed.
+template <typename List>
+void AddGuidDifference (const GS::HashSet<API_Guid>& from, const GS::HashSet<API_Guid>& minus, const List& list)
+{
+    for (const API_Guid& guid : from) {
+        if (!minus.Contains (guid)) {
+            list (GS::ObjectState ("guid", APIGuidToString (guid)));
+        }
+    }
+}
 
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 API_Guid    GetGuidFromArrayItem (const GS::String& idFieldName, const GS::ObjectState& os);
@@ -122,6 +136,8 @@ GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
 API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
 GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
 API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os);
+GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType);
+API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue = APIName_ViewOrSrcFileName);
 
 // Defined in ExtendedElementCommands.cpp (not ElementCommands.cpp, where it's called from) -
 // reading a Morph's body needs Model3D/MeshBody.hpp, which cannot be included in the same
