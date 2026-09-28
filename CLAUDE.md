@@ -47,7 +47,8 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
 builtin-scripts/         Bundled automation scripts
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference)
-tools/                   Version bump scripts (update_version.py), package_info.json
+tools/                   Version bump scripts (update_version.py), package_info.json,
+                         Add-On docs generator (generate_addon_docs.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -87,7 +88,9 @@ sandbox/                 Experiments / scratch
 4. Add a Python example under [archicad-addon/Examples/](archicad-addon/Examples/) and,
    if it should be tested, expected output under `Test/ExpectedOutputs/`.
 5. Docs at <https://enzyme-apd.github.io/...> are generated from the registered
-   descriptions (via the `GenerateDocumentation` developer command).
+   descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
+   needed; same output as the `GenerateDocumentation` developer command). The monthly
+   release regenerates them automatically; run it yourself to update them earlier.
 6. Bump the version consistently (see Versioning below) when releasing.
 
 ## Building the Add-On
@@ -167,9 +170,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml` — PR build
   checks for each component.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
-- `monthly_release.yml` — tags and releases `main` monthly; fails if the Add-On
-  sources changed since `docs/archicad-addon` was last regenerated with
-  `GenerateDocumentation` (never hand-edit those docs to pass it).
+- `monthly_release.yml` — tags and releases `main` monthly; first regenerates
+  `docs/archicad-addon` with `tools/generate_addon_docs.py` and pushes it to `main`
+  when it changed (never hand-edit those docs).
 - `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
   write access: it answers, closes verified already-fixed issues, or opens a **draft**

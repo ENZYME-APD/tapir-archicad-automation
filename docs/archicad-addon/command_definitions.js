@@ -801,6 +801,42 @@ var gCommands = [{
         "$ref": "#/ExecutionResult"
     }
             },{
+                "name": "SaveProjectAsArchive",
+                "version": "1.5.10",
+                "description": "Saves the open project as an archive (.pla) file, with the library parts it uses inside.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "archiveFilePath": {
+                "type": "string",
+                "description": "Absolute path of the .pla archive to write. An existing file is overwritten. The archive becomes the open project, as Save As does."
+            },
+            "includeLibraryParts": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the library parts the project uses go into the archive, which makes the archive usable as a linked library of another project."
+            },
+            "includeProperties": {
+                "type": "boolean",
+                "description": "Optional, true by default. Whether the properties go into the archive."
+            },
+            "includeTextures": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the linked textures go into the archive."
+            },
+            "includeBackgroundPicture": {
+                "type": "boolean",
+                "description": "Optional, false by default. Whether the background picture goes into the archive."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "archiveFilePath"
+        ]
+    },
+                "outputScheme": {
+        "$ref": "#/ExecutionResult"
+    }
+            },{
                 "name": "GetCalculationUnits",
                 "version": "1.4.0",
                 "description": "Gets the project calculation units.",
@@ -8210,7 +8246,7 @@ var gCommands = [{
             "commands": [{
                 "name": "IFCFileOperation",
                 "version": "1.2.6",
-                "description": "Executes an IFC file operation.",
+                "description": "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -8227,6 +8263,15 @@ var gCommands = [{
                 "type": "string",
                 "description": "The type of the IFC file. The default is 'ifc'.",
                 "enum": ["ifc", "ifcxml", "ifczip", "ifcxmlzip"]
+            },
+            "translatorName": {
+                "type": "string",
+                "description": "Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26)."
+            },
+            "elementsToExport": {
+                "type": "string",
+                "description": "Only for the save method, and only together with translatorName: which elements to export. The default is VisibleElementsOnAllStories.",
+                "enum": ["EntireProject", "VisibleElementsOnAllStories", "AllElementsOnCurrentStory", "VisibleElementsOnCurrentStory", "SelectedElementsOnly"]
             }
         },
         "additionalProperties": false,
@@ -8237,6 +8282,42 @@ var gCommands = [{
     },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "GetIFCExportTranslators",
+                "version": "1.5.10",
+                "description": "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "translators": {
+                "type": "array",
+                "description": "The IFC export translators of the project, the preview translator first.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the translator, as the IFC Translators dialog shows it."
+                        },
+                        "preview": {
+                            "type": "boolean",
+                            "description": "Whether this is the preview translator, the one the IFC properties of elements are previewed with."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "preview"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "translators"
+        ]
     }
             },{
                 "name": "GetElementsByIFCIds",
@@ -8426,17 +8507,63 @@ var gCommands = [{
             },{
                 "name": "AddFilesToEmbeddedLibrary",
                 "version": "1.2.2",
-                "description": "Adds the given files into the embedded library.",
+                "description": "Adds the given files into the embedded library. With the overwriteExisting flag an embedded library item already existing on an outputPath is replaced (Archicad 27 or newer).",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "files": {
                 "$ref": "#/LibraryFileAdditions"
+            },
+            "overwriteExisting": {
+                "type": "boolean",
+                "description": "Optional. When true, an embedded library item already existing on an outputPath is deleted first, so the newly added file replaces the loaded library part. By default false: the existing loaded part stays in use. Requires Archicad 27 or newer."
             }
         },
         "additionalProperties": false,
         "required": [
             "files"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "DeleteEmbeddedLibraryItems",
+                "version": "1.5.10",
+                "description": "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "embeddedLibraryItems": {
+                "type": "array",
+                "description": "A list of embedded library items to delete.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The relative path of the library item inside the embedded library, the same path AddFilesToEmbeddedLibrary takes as outputPath."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "embeddedLibraryItems"
         ]
     },
                 "outputScheme": {
@@ -8889,13 +9016,38 @@ var gCommands = [{
                     "properties": {
                         "navigatorItemId": { "$ref": "#/NavigatorItemId" },
                         "layoutDatabaseId": { "$ref": "#/DatabaseId" },
-                        "name": { "type": "string", "minLength": 1 },
+                        "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Custom title name of the new Drawing. Giving a name implies nameType CustomName unless nameType is set explicitly."
+                        },
+                        "nameType": {
+                            "type": "string",
+                            "enum": ["ViewOrSourceFileName", "ViewIdAndName", "CustomName"],
+                            "description": "How the drawing's title name is assembled (Identification tabpage of the Drawing Settings dialog). Defaults to CustomName when name is given, otherwise to the Drawing tool's current default."
+                        },
                         "position": { "$ref": "#/Coordinate2D" },
-                        "scale": { "type": "number", "exclusiveMinimum": 0.0 },
+                        "scale": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Scale ratio applied to the drawing relative to its source view (API_DrawingType::ratio). Defaults to 1.0."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "Rotation angle of the drawing in radians. Defaults to the Drawing tool's current default."
+                        },
+                        "drawingScale": {
+                            "type": "number",
+                            "description": "The nominal scale of the drawing. Defaults to the Drawing tool's current default."
+                        },
+                        "modelOffset": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Offset of the model origin within the drawing. Defaults to the Drawing tool's current default."
+                        },
                         "clipPolygon": { "type": "array", "items": { "$ref": "#/Coordinate2D" }, "minItems": 3 }
                     },
                     "additionalProperties": false,
-                    "required": ["navigatorItemId", "name", "position"]
+                    "required": ["navigatorItemId", "position"]
                 }
             }
         },
@@ -10635,7 +10787,8 @@ var gCommands = [{
                             "description": "The parent folder. Optional; defaults to the root folder."
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -10684,7 +10837,8 @@ var gCommands = [{
                             "description": "The parent folder. Optional; defaults to the root folder."
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -10737,7 +10891,8 @@ var gCommands = [{
                             "$ref": "#/KeynoteFolderId"
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
@@ -10787,7 +10942,8 @@ var gCommands = [{
                             "$ref": "#/KeynoteItemId"
                         },
                         "key": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "title": {
                             "type": "string"
