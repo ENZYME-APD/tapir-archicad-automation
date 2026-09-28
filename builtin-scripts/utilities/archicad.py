@@ -31,7 +31,8 @@ def is_alive() -> bool:
         result = aclib.RunCommand("API.IsAlive", {})
     except (urllib.error.URLError, ConnectionError, OSError):
         return False
-    return bool(result and result.get("isAlive"))
+    # a succeeded answer means Archicad is there; only an explicit false says otherwise
+    return result is not None and result.get("isAlive", True) is not False
 
 
 def run_command(command: str, parameters: dict | None = None) -> dict:

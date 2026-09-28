@@ -325,11 +325,15 @@ class UnusedViewCleanerWindow:
                 SCRIPT_NAME, f"Move {len(guids)} view(s) into the \"{folder_name}\" folder of the View Map?\n\n"
                              "The folder structure of the moved views is repeated inside it."):
             return
-        with self.window.busy(f"Moving {len(guids)} view(s)..."):
-            moved = self.cleaner.move(guids, folder_name)
-        # the moved views now live under the target folder, which analyze skips,
-        # so the list shows only what is still left to clean up
-        self.analyze()
+        try:
+            with self.window.busy(f"Moving {len(guids)} view(s)..."):
+                self.cleaner.move(guids, folder_name)
+        finally:
+            # the moved views now live under the target folder, which analyze
+            # skips, so the list shows only what is still left to clean up -
+            # also after a failure part way, when some views were moved already
+            moved = self.cleaner.moved_views
+            self.analyze()
         self.window.set_status(f"Moved {moved} view(s) into \"{folder_name}\".", "ok")
 
     def run(self) -> None:
