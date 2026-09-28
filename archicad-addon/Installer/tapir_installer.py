@@ -128,13 +128,21 @@ def CollectCandidatesFromProgramFilesFolders (installations, programFilesFolders
     for programFilesFolder in programFilesFolders:
         if not os.path.isdir (programFilesFolder):
             continue
-        for vendorFolderName in os.listdir (programFilesFolder):
+        try:
+            vendorFolderNames = os.listdir (programFilesFolder)
+        except OSError:
+            continue
+        for vendorFolderName in vendorFolderNames:
             if not vendorFolderName.lower ().startswith ('graphisoft'):
                 continue
             vendorFolderPath = os.path.join (programFilesFolder, vendorFolderName)
             if not os.path.isdir (vendorFolderPath):
                 continue
-            for folderName in os.listdir (vendorFolderPath):
+            try:
+                folderNames = os.listdir (vendorFolderPath)
+            except OSError:
+                continue
+            for folderName in folderNames:
                 AddInstallationCandidate (installations, folderName, os.path.join (vendorFolderPath, folderName))
 
 
@@ -162,12 +170,20 @@ def DetectArchicadInstallationsMac (mockRootPath = None):
     if not os.path.isdir (applicationsFolderPath):
         return installations
     foldersToScan = [applicationsFolderPath]
-    for folderName in os.listdir (applicationsFolderPath):
+    try:
+        applicationsFolderNames = os.listdir (applicationsFolderPath)
+    except OSError:
+        return installations
+    for folderName in applicationsFolderNames:
         folderPath = os.path.join (applicationsFolderPath, folderName)
         if os.path.isdir (folderPath) and not folderName.endswith ('.app'):
             foldersToScan.append (folderPath)
     for folderToScan in foldersToScan:
-        for folderName in os.listdir (folderToScan):
+        try:
+            folderNames = os.listdir (folderToScan)
+        except OSError:
+            continue
+        for folderName in folderNames:
             AddInstallationCandidate (installations, folderName, os.path.join (folderToScan, folderName))
     return installations
 
@@ -330,14 +346,19 @@ def InstallAddOn (addOnsFolderPath, downloadedFilePath):
 
 
 def UninstallAddOn (addOnsFolderPath):
+    # Removes the Tapir subfolder and also the stray copies from earlier
+    # manual installs, otherwise Archicad would keep loading the add-on.
     tapirFolderPath = os.path.join (addOnsFolderPath, TAPIR_SUBFOLDER_NAME)
-    if not os.path.lexists (tapirFolderPath):
+    pathsToRemove = [path for path in [tapirFolderPath] + GetStrayTapirAddOnPaths (addOnsFolderPath) if os.path.lexists (path)]
+    if len (pathsToRemove) == 0:
         return False
     try:
-        RemovePath (tapirFolderPath)
+        for pathToRemove in pathsToRemove:
+            RemovePath (pathToRemove)
     except PermissionError:
         if IsUsingMacOS ():
-            RunShellCommandWithAdminPrivilegesMac ('rm -rf {0}'.format (shlex.quote (tapirFolderPath)))
+            RunShellCommandWithAdminPrivilegesMac (' && '.join (
+                ['rm -rf {0}'.format (shlex.quote (pathToRemove)) for pathToRemove in pathsToRemove]))
         else:
             raise InstallerError ('Permission denied. Close Archicad if it is running, or run the installer as administrator.')
     return True
@@ -460,13 +481,20 @@ def RunGuiInstaller (args):
             self.after (0, function)
 
         def InitializeInBackground (self):
-            installations = DetectArchicadInstallations (args.mockRootPath)
-            self.RunOnUiThread (lambda : self.ShowInstallations (installations))
+            try:
+                installations = DetectArchicadInstallations (args.mockRootPath)
+                self.RunOnUiThread (lambda : self.ShowInstallations (installations))
+            except Exception as e:
+                errorText = 'Failed to detect Archicad installations: {0}'.format (e)
+                self.RunOnUiThread (lambda : self.ShowDetectionError (errorText))
             try:
                 releaseInfo = GetLatestReleaseInfo ()
                 self.RunOnUiThread (lambda : self.ShowReleaseInfo (releaseInfo))
             except InstallerError as e:
-                self.RunOnUiThread (lambda : self.ShowReleaseError (str (e)))
+                # 'e' is unbound once the except block ends, so the message is
+                # captured before the lambda runs later on the UI thread.
+                releaseErrorText = str (e)
+                self.RunOnUiThread (lambda : self.ShowReleaseError (releaseErrorText))
 
         def ShowInstallations (self, installations):
             self.detectionLabel.grid_forget ()
@@ -486,6 +514,10 @@ def RunGuiInstaller (args):
                 row.statusLabel = tkinter.Label (self.rowsFrame, text = '', width = 32, anchor = 'w')
                 row.statusLabel.grid (row = rowIndex, column = 1, sticky = 'w')
                 self.rows.append (row)
+            self.UpdateButtonStates ()
+
+        def ShowDetectionError (self, errorText):
+            self.detectionLabel.configure (text = errorText, fg = 'red')
             self.UpdateButtonStates ()
 
         def ShowReleaseInfo (self, releaseInfo):
