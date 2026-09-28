@@ -66,7 +66,9 @@ namespace TapirGrasshopperPlugin.Components
         protected abstract string ArrayKey { get; }
 
         // When set, the field values are written into a nested object with
-        // this key instead of the item itself (e.g. "meshData").
+        // this key instead of the item itself (e.g. "meshData"). A field's
+        // JsonKey may itself be a dotted path ("style.penIndex") to reach a
+        // nested object of the item.
         protected virtual string ItemWrapKey => null;
 
         // The typed detail fields of the command.
@@ -179,10 +181,31 @@ namespace TapirGrasshopperPlugin.Components
                         $"Invalid value in the {field.InputName} input.");
                     return false;
                 }
-                targets[i][field.JsonKey] = token;
+                SetField(targets[i], field.JsonKey, token);
             }
 
             return true;
+        }
+
+        // Writes a value under a possibly nested key: "style.penIndex" goes into
+        // the item's "style" object, created when missing.
+        private static void SetField(
+            JObject target,
+            string jsonKey,
+            JToken token)
+        {
+            var path = jsonKey.Split('.');
+            var container = target;
+            for (var i = 0; i < path.Length - 1; i++)
+            {
+                if (!(container[path[i]] is JObject child))
+                {
+                    child = new JObject();
+                    container[path[i]] = child;
+                }
+                container = child;
+            }
+            container[path[path.Length - 1]] = token;
         }
 
         protected override void Solve(

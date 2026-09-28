@@ -3,6 +3,8 @@
 #include "SchemaDefinitions.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cmath>
+
 constexpr double EPS = 0.001;
 constexpr const char* CommandNamespace = "TapirCommand";
 
@@ -74,10 +76,31 @@ GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniS
     return error;
 }
 
+GS::ObjectState CreateFailedExecutionResult (const GS::ObjectState& errorResponse)
+{
+    GS::ObjectState result = errorResponse;
+    result.Add ("success", false);
+    return result;
+}
+
 GS::ObjectState CreateSuccessfulExecutionResult ()
 {
     return GS::ObjectState (
         "success", true);
+}
+
+// Plain wording for the errors the Change* / Import property and classification calls
+// return, so a caller sees why a definition edit was refused without an error table.
+GS::UniString DescribeDefinitionChangeError (GSErrCode err)
+{
+    switch (err) {
+        case APIERR_NOACCESSRIGHT:   return "no access right: in Teamwork this needs the right to modify properties or classifications";
+        case APIERR_NAMEALREADYUSED: return "the name is already used in the target group or system";
+        case APIERR_BADVALUE:        return "an enum option or the default value is not one of the allowed options";
+        case APIERR_BADID:           return "an id does not refer to an existing property, group or classification item";
+        case APIERR_BADPARS:         return "inconsistent definition, for example a default value that does not match the property type";
+        default:                     return GS::UniString::Printf ("Archicad refused the change (error %d)", (int) err);
+    }
 }
 
 API_Guid GetGuidFromObjectState (const GS::ObjectState& os)
@@ -496,6 +519,27 @@ API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& 
     return orientation;
 }
 
+GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType)
+{
+    switch (nameType) {
+        case APIName_ViewIdAndName:  return "ViewIdAndName";
+        case APIName_CustomName:     return "CustomName";
+        default:
+        case APIName_ViewOrSrcFileName: return "ViewOrSourceFileName";
+    }
+}
+
+API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_NameTypeValues defaultValue)
+{
+    if (str == "ViewIdAndName")
+        return APIName_ViewIdAndName;
+    if (str == "CustomName")
+        return APIName_CustomName;
+    if (str == "ViewOrSourceFileName")
+        return APIName_ViewOrSrcFileName;
+    return defaultValue;
+}
+
 void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName)
 {
     const auto& holes = os.AddList<GS::ObjectState> (holesFieldName);
@@ -558,6 +602,7 @@ void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os)
     os.Add ("width", segment.nominalWidth);
     os.Add ("height", segment.nominalHeight);
     os.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+    os.Add ("circleBased", segment.circleBased);
     if (segment.modelElemStructureType == API_BasicStructure) {
         os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
     } else if (segment.modelElemStructureType == API_ProfileStructure) {
@@ -659,6 +704,21 @@ bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>&
         outCoords.Pop ();
     }
     return true;
+}
+
+GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& holes)
+{
+    for (UIndex holeIndex = 0; holeIndex < holes.GetSize (); ++holeIndex) {
+        GS::Array<GS::ObjectState> holeCoords;
+        GS::Array<GS::ObjectState> holeArcs;
+        if (!GetHoleGeometry (holes[holeIndex], holeCoords, holeArcs)) {
+            return GS::UniString::Printf ("Invalid hole at index %d: each hole must be an object with a 'polygonOutline' (or legacy 'polygonCoordinates') coordinate array.", (int) holeIndex);
+        }
+        if (holeCoords.GetSize () < 3) {
+            return GS::UniString::Printf ("Invalid hole at index %d: the hole outline must contain at least 3 coordinates.", (int) holeIndex);
+        }
+    }
+    return {};
 }
 
 GS::ObjectState CreateIdObjectState (const GS::String& idFieldName, const API_Guid& guid)
@@ -1043,4 +1103,41 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
         return false;
     }
     return GetElemTypeId (header) == expectedTypeId;
+}
+
+
+API_Tranmat CreateHotlinkTransformation (const API_Coord3D& origin, double rotationAngle, bool mirrored)
+{
+    API_Tranmat transformation = {};
+    const double co = std::cos (rotationAngle);
+    const double si = std::sin (rotationAngle);
+    const double mx = mirrored ? -1.0 : 1.0;
+
+    transformation.tmx[0]  = co * mx;
+    transformation.tmx[1]  = -si;
+    transformation.tmx[2]  = 0.0;
+    transformation.tmx[3]  = origin.x;
+
+    transformation.tmx[4]  = si * mx;
+    transformation.tmx[5]  = co;
+    transformation.tmx[6]  = 0.0;
+    transformation.tmx[7]  = origin.y;
+
+    transformation.tmx[8]  = 0.0;
+    transformation.tmx[9]  = 0.0;
+    transformation.tmx[10] = 1.0;
+    transformation.tmx[11] = origin.z;
+
+    return transformation;
+}
+
+void DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coord3D& origin, double& rotationAngle, bool& mirrored)
+{
+    origin = { transformation.tmx[3], transformation.tmx[7], transformation.tmx[11] };
+    // The image of the local Y axis is the second column, (-sin, cos), and a
+    // mirror of the local X axis leaves it alone - so the angle reads off it
+    // regardless of mirroring, and the mirror reads off the determinant.
+    rotationAngle = std::atan2 (-transformation.tmx[1], transformation.tmx[5]);
+    const double det = transformation.tmx[0] * transformation.tmx[5] - transformation.tmx[1] * transformation.tmx[4];
+    mirrored = det < 0.0;
 }

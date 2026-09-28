@@ -563,10 +563,43 @@ namespace TapirGrasshopperPlugin.Properties
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap LabelDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("LabelDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SetTextDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetTextDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap SetWallDetails
         {
             get {
                 object obj = ResourceManager.GetObject ("SetWallDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap TextDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("TextDetails", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
@@ -2428,6 +2461,190 @@ namespace TapirGrasshopperPlugin.Properties
         {
             get {
                 object obj = ResourceManager.GetObject ("CreateInteriorElevations", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPointFromUser
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPointFromUser", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateHotlinkNodes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateHotlinkNodes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateHotlinkInstances
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateHotlinkInstances", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ChangeHotlinkInstances
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ChangeHotlinkInstances", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SaveAsModuleFile
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SaveAsModuleFile", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLibraries
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap AddLibraries
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AddLibraries", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap TrimElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("TrimElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RemoveElementTrims
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RemoveElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetElementTrims
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetElementTrims", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyTexts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyTexts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyLabels
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyLabels", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAutoTextKeys
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAutoTextKeys", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAutoTextName
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAutoTextName", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RoofDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RoofDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SaveProjectAsArchive
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SaveProjectAsArchive", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetIFCExportTranslators
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetIFCExportTranslators", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap IFCElementsToExport
+        {
+            get {
+                object obj = ResourceManager.GetObject ("IFCElementsToExport", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap UpdatePropertyGroups
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UpdatePropertyGroups", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap UpdateClassificationSystems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UpdateClassificationSystems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap UpdateClassificationItems
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UpdateClassificationItems", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ImportPropertiesXml
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ImportPropertiesXml", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ImportClassificationsXml
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ImportClassificationsXml", resourceCulture);
                 return ((System.Drawing.Bitmap) (obj));
             }
         }

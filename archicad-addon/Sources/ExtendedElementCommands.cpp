@@ -706,34 +706,20 @@ void AddSectionAssociativePoint (
     points.Push (point);
 }
 
-GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
+GS::Optional<GS::UniString> AppendSectionAssociativeDimensionPoints (
     const GS::ObjectState& data,
+    SectionAssociativeDimensionPreset preset,
+    const API_Guid& sectionElementGuid,
     GS::Array<AssociativeDimensionPoint>& points,
     API_Vector& defaultDirection)
 {
-    const GS::ObjectState* sectionElementId = data.Get ("sectionElementId");
-    if (sectionElementId == nullptr) {
-        return "Missing required field 'sectionElementId'.";
-    }
-
     API_Element sectionElement = {};
     API_Element parentElement = {};
     {
-        auto error = LoadSectionElementAndParent (GetGuidFromObjectState (*sectionElementId), sectionElement, parentElement);
+        auto error = LoadSectionElementAndParent (sectionElementGuid, sectionElement, parentElement);
         if (error.HasValue ()) {
             return error;
         }
-    }
-
-    GS::UniString presetName;
-    if (!data.Get ("preset", presetName)) {
-        return "Missing required field 'preset'.";
-    }
-
-    SectionAssociativeDimensionPreset preset;
-    auto error = ParseSectionAssociativeDimensionPreset (presetName, preset);
-    if (error.HasValue ()) {
-        return error;
     }
 
     auto requireParentType = [&] (std::initializer_list<API_ElemTypeID> allowedTypes, const char* message) -> GS::Optional<GS::UniString> {
@@ -873,6 +859,52 @@ GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
     return {};
 }
 
+GS::Optional<GS::UniString> BuildSectionAssociativeDimensionPoints (
+    const GS::ObjectState& data,
+    GS::Array<AssociativeDimensionPoint>& points,
+    API_Vector& defaultDirection)
+{
+    GS::Array<API_Guid> sectionElementGuids;
+    const GS::ObjectState* sectionElementId = data.Get ("sectionElementId");
+    GS::Array<GS::ObjectState> sectionElementIds;
+    const bool hasSectionElementIds = data.Get ("sectionElementIds", sectionElementIds);
+    if (sectionElementId != nullptr && hasSectionElementIds) {
+        return "Only one of 'sectionElementId' and 'sectionElementIds' can be given.";
+    }
+    if (sectionElementId != nullptr) {
+        sectionElementGuids.Push (GetGuidFromObjectState (*sectionElementId));
+    } else {
+        for (const GS::ObjectState& sectionElementIdItem : sectionElementIds) {
+            sectionElementGuids.Push (GetGuidFromObjectState (sectionElementIdItem));
+        }
+    }
+    if (sectionElementGuids.IsEmpty ()) {
+        return "Missing required field 'sectionElementId' or 'sectionElementIds'.";
+    }
+
+    GS::UniString presetName;
+    if (!data.Get ("preset", presetName)) {
+        return "Missing required field 'preset'.";
+    }
+
+    SectionAssociativeDimensionPreset preset;
+    {
+        auto error = ParseSectionAssociativeDimensionPreset (presetName, preset);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    for (const API_Guid& sectionElementGuid : sectionElementGuids) {
+        auto error = AppendSectionAssociativeDimensionPoints (data, preset, sectionElementGuid, points, defaultDirection);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    return {};
+}
+
 GS::ObjectState CreateElementListResponse (const GS::Array<GS::ObjectState>& elementResults)
 {
     GS::ObjectState response;
@@ -942,6 +974,11 @@ GS::Optional<GS::UniString> BuildSlabMemoFromGeometry (
 
     if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
         polygonOutline.Pop ();
+    }
+
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
     }
 
     const API_Polygon oldPoly = element.slab.poly;
@@ -1130,6 +1167,12 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     }
     if (memo.coords == nullptr || memo.pends == nullptr) {
         return "Slab has no polygon data to modify.";
+    }
+    // Validate before Step 1 below deletes the existing holes - a mis-shaped hole entry must fail
+    // the item instead of being skipped after the original holes are already gone.
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
     }
 
     // A from-scratch memo rebuild (matching CreateSlabs, and BuildMeshPolyMemoFromGeometry's own
@@ -1330,6 +1373,11 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         polygonOutline.Pop ();
     }
 
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
+    }
+
     element.roof.u.polyRoof.pivotPolygon.nCoords = polygonOutline.GetSize () + 1;
     element.roof.u.polyRoof.pivotPolygon.nSubPolys = 1;
     element.roof.u.polyRoof.pivotPolygon.nArcs = polygonArcs.GetSize ();
@@ -1401,6 +1449,11 @@ GS::Optional<GS::UniString> BuildPlaneRoofMemoFromGeometry (
 
     if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
         polygonOutline.Pop ();
+    }
+
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
     }
 
     element.roof.u.planeRoof.poly.nCoords = polygonOutline.GetSize () + 1;
@@ -2293,11 +2346,13 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
 {
     auto width = GetOptionalDouble (details, "width");
     auto height = GetOptionalDouble (details, "height");
+    bool circleBased = false;
+    const bool hasCircleBased = details.Get ("circleBased", circleBased);
     bool isWidthAndHeightLinked = false;
     const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
     const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = details.Get ("profileId");
-    if (!width.HasValue () && !height.HasValue () && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr) {
+    if (!width.HasValue () && !height.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr) {
         return true;
     }
 
@@ -2319,9 +2374,13 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
         if (height.HasValue ()) {
             segment.nominalHeight = height.Get ();
         }
+        if (hasCircleBased) {
+            segment.circleBased = circleBased;
+        }
         if (profileIdOs != nullptr) {
             segment.modelElemStructureType = API_ProfileStructure;
             segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+            segment.circleBased = false;
         } else if (buildingMaterialIdOs != nullptr) {
             segment.modelElemStructureType = API_BasicStructure;
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
@@ -3081,6 +3140,18 @@ bool ApplyWindowOrDoorDetails (API_Element& element, API_Element& mask, const GS
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.oSide);
         changed = true;
     }
+    bool reveal = false;
+    if (details.Get ("reveal", reveal)) {
+        element.window.reveal = reveal;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, reveal);
+        changed = true;
+    }
+    auto revealDepthOffset = GetOptionalDouble (details, "revealDepthOffset");
+    if (revealDepthOffset.HasValue ()) {
+        element.window.revealDepthOffset = revealDepthOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthOffset);
+        changed = true;
+    }
     return changed;
 }
 
@@ -3520,17 +3591,21 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "description": "Optional anchor point of the beam cross section on a 3x3 grid.",
                             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"]
                         },
+                        "circleBased": {
+                            "type": "boolean",
+                            "description": "True for a round beam cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments."
+                        },
                         "isWidthAndHeightLinked": {
                             "type": "boolean",
                             "description": "When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments."
                         },
                         "buildingMaterialId": {
                             "$ref": "#/AttributeId",
-                            "description": "Cross section building material. Applied to all segments."
+                            "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments."
                         },
                         "profileId": {
                             "$ref": "#/AttributeId",
-                            "description": "Switches the cross section to this custom extruded profile. Applied to all segments."
+                            "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         }
                     },
                     "additionalProperties": false,
@@ -3596,12 +3671,14 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 
     auto width = GetOptionalDouble (parameters, "width");
     auto height = GetOptionalDouble (parameters, "height");
+    bool circleBased = false;
+    const bool hasCircleBased = parameters.Get ("circleBased", circleBased);
     bool isWidthAndHeightLinked = false;
     const bool hasIsWidthAndHeightLinked = parameters.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
     const GS::ObjectState* buildingMaterialIdOs = parameters.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = parameters.Get ("profileId");
 
-    if ((width.HasValue () || height.HasValue () || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr) && memo.beamSegments != nullptr) {
+    if ((width.HasValue () || height.HasValue () || hasCircleBased || hasIsWidthAndHeightLinked || buildingMaterialIdOs != nullptr || profileIdOs != nullptr) && memo.beamSegments != nullptr) {
         GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
         for (GSSize i = 0; i < nSegments; ++i) {
             API_AssemblySegmentData& segment = memo.beamSegments[i].assemblySegmentData;
@@ -3614,9 +3691,13 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
             if (height.HasValue ()) {
                 segment.nominalHeight = height.Get ();
             }
+            if (hasCircleBased) {
+                segment.circleBased = circleBased;
+            }
             if (profileIdOs != nullptr) {
                 segment.modelElemStructureType = API_ProfileStructure;
                 segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+                segment.circleBased = false;
             } else if (buildingMaterialIdOs != nullptr) {
                 segment.modelElemStructureType = API_BasicStructure;
                 segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
@@ -3686,6 +3767,10 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "number",
                             "description": "Depth (going) of each tread.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "finishVisible": {
+                            "type": "boolean",
+                            "description": "Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled."
                         }
                     },
                     "additionalProperties": false,
@@ -3710,6 +3795,16 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     parameters.Get ("zCoordinate", zCoordinate);
     const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (parameters, "floorIndex", zCoordinate, stories);
     element.header.floorInd = floorIndexAndOffset.first;
+    element.stair.basePlane.basePoint.z = floorIndexAndOffset.second;
+
+    bool finishVisible = true;
+    if (parameters.Get ("finishVisible", finishVisible)) {
+        element.stair.finishVisible = finishVisible;
+        for (int role = 0; role < API_StairPartRoleNum; ++role) {
+            element.stair.tread[role].visible = finishVisible;
+            element.stair.riser[role].visible = finishVisible;
+        }
+    }
 
     auto totalHeight = GetOptionalDouble (parameters, "totalHeight");
     if (totalHeight.HasValue ()) {
@@ -4925,7 +5020,16 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                 "items": {
                     "type": "object",
                     "properties": {
-                        "sectionElementId": { "$ref": "#/ElementId" },
+                        "sectionElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The identifier of a single section element. Only one of sectionElementId and sectionElementIds can be given."
+                        },
+                        "sectionElementIds": {
+                            "type": "array",
+                            "items": { "$ref": "#/ElementId" },
+                            "minItems": 1,
+                            "description": "A list of section elements whose preset points are merged into one continuous dimension chain. Only one of sectionElementId and sectionElementIds can be given."
+                        },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "preset": {
                             "type": "string",
@@ -4951,7 +5055,7 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                         "placeOnTop": { "type": "boolean" }
                     },
                     "additionalProperties": false,
-                    "required": ["sectionElementId", "referencePoint", "preset"]
+                    "required": ["referencePoint", "preset"]
                 }
             }
         },
@@ -5350,8 +5454,9 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
-                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material. Applied to all segments." },
-                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile. Applied to all segments." },
+                        "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
+                        "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
+                        "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
                         "holes": {
                             "type": "array",
                             "description": "Replaces all holes currently placed on the beam.",
@@ -5413,7 +5518,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool changed = ApplyBeamDetails (element, mask, item);
-            const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
 
             GS::Array<GS::ObjectState> holes;
             if (item.Get ("holes", holes)) {
@@ -5514,7 +5619,8 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                         "polygonOutline": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 3
+                            "minItems": 3,
+                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed."
                         },
                         "polygonArcs": {
                             "type": "array",
@@ -5921,6 +6027,15 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("witnessForm", WitnessFormToString (dimElem.witnessForm));
                 witnessPoint.Add ("witnessVal", dimElem.witnessVal);
 
+                // The witness parameters, as CreateAssociativeDimensions takes them, so a dimension
+                // placed by hand can be read back to learn what an element type needs (#633).
+                witnessPoint.Add ("line", dimElem.base.base.line);
+                witnessPoint.Add ("inIndex", dimElem.base.base.inIndex);
+                witnessPoint.Add ("special", static_cast<Int32> (dimElem.base.base.special));
+                witnessPoint.Add ("nodeType", static_cast<Int32> (dimElem.base.base.node_typ));
+                witnessPoint.Add ("nodeStatus", static_cast<Int32> (dimElem.base.base.node_status));
+                witnessPoint.Add ("nodeId", static_cast<Int64> (dimElem.base.base.node_id));
+
                 const API_Guid& baseGuid = dimElem.base.base.guid;
                 if (baseGuid != APINULLGuid) {
                     witnessPoint.Add ("baseElementId", CreateGuidObjectState (baseGuid));
@@ -6074,7 +6189,9 @@ GS::Optional<GS::UniString> ModifyWindowsCommand::GetInputParametersSchema () co
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -6154,7 +6271,9 @@ GS::Optional<GS::UniString> ModifyDoorsCommand::GetInputParametersSchema () cons
                         "centerOffset": { "type": "number", "minimum": 0.0 },
                         "reflected": { "type": "boolean" },
                         "refSide": { "type": "boolean" },
-                        "oSide": { "type": "boolean" }
+                        "oSide": { "type": "boolean" },
+                        "reveal": { "type": "boolean", "description": "Turn the reveal on or off." },
+                        "revealDepthOffset": { "type": "number", "description": "Distance the frame plane is moved across the wall thickness, along the wall normal." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -6797,6 +6916,11 @@ GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     }
     if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
         polygonCoordinates.Pop ();
+    }
+
+    auto holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
     }
 
     elem.mesh.poly.nCoords   = polygonCoordinates.GetSize () + 1;

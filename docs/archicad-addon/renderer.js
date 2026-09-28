@@ -37,6 +37,24 @@ function ResolveReferences(schemaDefinitions, parentNode, parentKey, resolvedKey
     }
 }
 
+function EnsureRenderableSchemas(node, visitedNodes) {
+    if (node === null || typeof node !== 'object' || visitedNodes.has(node)) {
+        return;
+    }
+    visitedNodes.add(node);
+    if (Array.isArray(node.required) && typeof node.properties !== 'object') {
+        // JSONSchemaView reads schema.properties[name] for every required name and
+        // throws when properties is missing (e.g. a oneOf branch that only lists
+        // required fields), which would abort rendering of all commands after it.
+        node.properties = {};
+    }
+    for (let key in node) {
+        if (node.hasOwnProperty(key)) {
+            EnsureRenderableSchemas(node[key], visitedNodes);
+        }
+    }
+}
+
 function CreateSchemaElement(parentElement, title, schema, schemaDefinitions) {
     if (schema === null) {
         return;
@@ -47,6 +65,7 @@ function CreateSchemaElement(parentElement, title, schema, schemaDefinitions) {
         schema: schema
     };
     ResolveReferences(schemaDefinitions, resolvedObject, 'schema', new Set());
+    EnsureRenderableSchemas(resolvedObject.schema, new Set());
     let view = new JSONSchemaView(resolvedObject.schema);
     schemeContainer.appendChild(view.render());
 }
@@ -75,7 +94,13 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
         CreateElement(parentElement, 'div', 'group_name', group.name);
         for (command of group.commands) {
             let commandContainer = CreateElement(parentElement, 'details', 'command_container', null);
-            RenderCommand(commandContainer, command, schemaDefinitions);
+            try {
+                RenderCommand(commandContainer, command, schemaDefinitions);
+            } catch (error) {
+                // One broken schema must not blank out every command after it.
+                CreateElement(commandContainer, 'div', 'command_description', 'Failed to render the schemas of this command.');
+                console.error('Failed to render command ' + command.name, error);
+            }
         }
     }
 }
