@@ -107,7 +107,8 @@ class ScriptWindow:
     @contextlib.contextmanager
     def busy(self, text: str):
         """ Shows text in the status line and disables the buttons while a long call runs. """
-        states = [str(b["state"]) for b in self._button_widgets]
+        # instate, not b["state"]: the -state option does not follow b.state([...])
+        was_disabled = [b.instate(["disabled"]) for b in self._button_widgets]
         for b in self._button_widgets:
             b.state(["disabled"])
         self.root.configure(cursor="watch")
@@ -116,9 +117,9 @@ class ScriptWindow:
         try:
             yield
         finally:
-            for b, state in zip(self._button_widgets, states):
+            for b, disabled in zip(self._button_widgets, was_disabled):
                 if b.winfo_exists():
-                    b.state(["!disabled"] if state != "disabled" else ["disabled"])
+                    b.state(["disabled"] if disabled else ["!disabled"])
             self.root.configure(cursor="")
 
     def guarded(self, action: Callable[[], None]) -> Callable[[], None]:
