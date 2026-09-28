@@ -374,7 +374,9 @@ class _FunctionState:
 
     def SkipStatement (self):
         # Skips exactly one statement without running it; a nested if takes
-        # its own else along, the caller's else is left to the caller.
+        # its own else along, the caller's else is left to the caller. A loop
+        # or switch is its header plus one statement; do ... while (...);
+        # ends at its own ';' like a plain statement.
         token = self.Peek ()
         if token == ('ident', 'if'):
             self.Next ()
@@ -383,6 +385,11 @@ class _FunctionState:
             if self.Peek () == ('ident', 'else'):
                 self.Next ()
                 self.SkipStatement ()
+            return
+        if token[0] == 'ident' and token[1] in ('while', 'for', 'switch'):
+            self.Next ()
+            self.SkipBalanced ('(', ')')
+            self.SkipStatement ()
             return
         if token == ('op', '{'):
             self.SkipBalanced ('{', '}')
