@@ -74,3 +74,21 @@ def select_elements(element_ids: list[ElementId]) -> None:
         "removeElementsFromSelection": [e for e in current if e["elementId"]["guid"] not in wanted],
         "addElementsToSelection": element_ids,
     })
+
+
+_details_fields_supported = True
+
+
+def get_details_of_elements(elements: list[ElementId], fields: list[str]) -> list[dict]:
+    """ GetDetailsOfElements limited to the given fields, which skips the costly
+    ones (floorPlanPolygons) the script does not need. Add-Ons before 1.5.9 do
+    not know the fields parameter and reject the call; they get the plain one. """
+    global _details_fields_supported
+    if not elements:
+        return []
+    if _details_fields_supported:
+        try:
+            return run_tapir("GetDetailsOfElements", {"elements": elements, "fields": fields}).get("detailsOfElements", [])
+        except ArchicadError:
+            _details_fields_supported = False
+    return run_tapir("GetDetailsOfElements", {"elements": elements}).get("detailsOfElements", [])

@@ -17,7 +17,7 @@ import math
 import tkinter as tk
 from tkinter import ttk
 
-from utilities.archicad import item_errors, run_tapir, select_elements
+from utilities.archicad import get_details_of_elements, item_errors, run_tapir, select_elements
 from utilities.ui import ScriptWindow, make_tree, require_archicad
 
 SCRIPT_NAME = "Non-orthogonal Wall Finder"
@@ -121,7 +121,7 @@ class OrthoWallFinder:
                 transformation = run_tapir("GetView2DTransformations").get("transformations", [{}])[0]
                 view_rotation = math.degrees(transformation.get("rotation", 0.0))
 
-            details = run_tapir("GetDetailsOfElements", {"elements": walls}).get("detailsOfElements", []) if walls else []
+            details = get_details_of_elements(walls, ["id", "floorIndex", "details"])
 
         self.faulty_walls = []
         for wall, detail in zip(walls, details):

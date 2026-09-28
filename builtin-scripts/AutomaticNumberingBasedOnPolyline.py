@@ -18,7 +18,7 @@ import math
 import tkinter as tk
 from tkinter import ttk
 
-from utilities.archicad import ArchicadError, item_errors, run_command, run_tapir
+from utilities.archicad import ArchicadError, get_details_of_elements, item_errors, run_command, run_tapir
 from utilities.ui import ScriptWindow, make_tree, require_archicad
 
 SCRIPT_NAME = "Automatic Numbering Based on Polyline"
@@ -168,7 +168,7 @@ class AutomaticNumbering:
         self.number_button.state(["disabled"])
         with self.window.busy("Reading the selection..."):
             selected = run_tapir("GetSelectedElements").get("elements", [])
-            details = run_tapir("GetDetailsOfElements", {"elements": selected}).get("detailsOfElements", []) if selected else []
+            details = get_details_of_elements(selected, ["type", "id", "details"])
 
         polylines = [(e, d) for e, d in zip(selected, details) if d.get("type") == "PolyLine"]
         others = [(e, d) for e, d in zip(selected, details) if d.get("type") != "PolyLine" and "error" not in d]
