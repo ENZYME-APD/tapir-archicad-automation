@@ -41,6 +41,9 @@ DOCS_DIR = os.path.join (REPO_ROOT, 'docs', 'archicad-addon')
 BUILD_ALL_SCRIPT = os.path.join (REPO_ROOT, 'archicad-addon', 'Tools', 'build_all_win.bat')
 
 
+DOCUMENTED_METHODS = ('GetName', 'GetInputParametersSchema', 'GetRawResponseSchema')
+
+
 class GeneratorError (Exception):
     pass
 
@@ -206,6 +209,17 @@ class Sources:
             self.cpp[os.path.basename (path)] = Preprocess (ReadText (path), acVersion)
         self.hpp = '\n'.join (Preprocess (ReadText (p), acVersion) for p in sorted (glob.glob (os.path.join (SOURCES_DIR, '*.hpp'))))
         self.allCpp = '\n'.join (self.cpp.values ())
+        self.CheckNoInlineDefinitions ()
+
+    def CheckNoInlineDefinitions (self):
+        # Only Class::Method definitions are looked up, so a method defined
+        # in a class body would be skipped for the base class's version.
+        pattern = re.compile (r'(?<![\w:])(?<!::\s)(' + '|'.join (DOCUMENTED_METHODS) + r')\s*\(\s*\)\s*const\b[^;{}]*\{')
+        for text in [self.hpp] + list (self.cpp.values ()):
+            for m in pattern.finditer (text):
+                classes = re.findall (r'\b(?:class|struct)\s+(\w+)', text[:m.start ()])
+                raise GeneratorError ('%s is defined inside the class body (%s); define it as Class::%s in a .cpp file' % (
+                    m.group (1), classes[-1] if classes else 'unknown class', m.group (1)))
 
     def FindFunction (self, qualifiedName, file=None):
         # Returns (parameter names, body tokens) of a function definition.
