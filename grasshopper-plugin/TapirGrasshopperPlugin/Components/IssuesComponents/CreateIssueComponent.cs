@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Issues;
@@ -54,11 +55,16 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
-            if (!da.TryCreate(
+            // Unset means a top-level issue; a given value that is not an
+            // issue is an error, not silently a top-level issue.
+            IssueGuid parentIssueId = null;
+            if (da.TryGet(
                     1,
-                    out IssueGuid parentIssueId))
+                    out GH_ObjectWrapper parentWrapper) &&
+                !parentWrapper.TryBuildObject(out parentIssueId))
             {
-                parentIssueId = null;
+                this.AddError("ParentIssueGuid is not a valid issue identifier.");
+                return;
             }
 
             var tagText = da.GetOptional<string>(
