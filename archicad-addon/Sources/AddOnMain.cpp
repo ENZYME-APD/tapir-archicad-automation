@@ -281,6 +281,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.5.9",
             "Saves the given elements, or the current selection, as a hotlink module (.mod) file."
         );
+        err |= RegisterCommand<SaveProjectAsArchiveCommand> (
+            projectCommands, "1.5.10",
+            "Saves the open project as an archive (.pla) file, with the library parts it uses inside."
+        );
         err |= RegisterCommand<GetCalculationUnitsCommand> (
             projectCommands, "1.4.0",
             "Gets the project calculation units."
@@ -380,7 +384,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
-            "Deletes elements."
+            "Deletes elements. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) gets a failed execution result instead of being skipped silently."
         );
         err |= RegisterCommand<LockElementsCommand> (
             elementCommands, "1.5.2",
@@ -692,7 +696,15 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
             propertyCommands, "1.5.4",
-            "Updates existing Custom Property Definitions: the expression(s) of an expression-based property, or the possible enum values of an enumeration property."
+            "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder)."
+        );
+        err |= RegisterCommand<UpdatePropertyGroupsCommand> (
+            propertyCommands, "1.5.10",
+            "Updates the name and/or description of existing Custom Property Groups, keeping their guid."
+        );
+        err |= RegisterCommand<ImportPropertiesXmlCommand> (
+            propertyCommands, "1.5.10",
+            "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed."
         );
         AddCommandGroup (propertyCommands);
     }
@@ -723,6 +735,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteClassificationItemsCommand> (
             classificationCommands, "1.5.2",
             "Deletes the given Classification Items."
+        );
+        err |= RegisterCommand<UpdateClassificationSystemsCommand> (
+            classificationCommands, "1.5.10",
+            "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid."
+        );
+        err |= RegisterCommand<UpdateClassificationItemsCommand> (
+            classificationCommands, "1.5.10",
+            "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent."
+        );
+        err |= RegisterCommand<ImportClassificationsXmlCommand> (
+            classificationCommands, "1.5.10",
+            "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed."
         );
         AddCommandGroup (classificationCommands);
     }
@@ -836,7 +860,11 @@ GSErrCode Initialize (void)
         CommandGroup ifcCommands ("IFC Commands");
         err |= RegisterCommand<IFCFileOperationCommand> (
             ifcCommands, "1.2.6",
-            "Executes an IFC file operation."
+            "Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use."
+        );
+        err |= RegisterCommand<GetIFCExportTranslatorsCommand> (
+            ifcCommands, "1.5.10",
+            "Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName."
         );
         err |= RegisterCommand<GetElementsByIFCIdsCommand> (
             ifcCommands, "1.5.1",
@@ -869,7 +897,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<AddFilesToEmbeddedLibraryCommand> (
             libraryCommands, "1.2.2",
-            "Adds the given files into the embedded library."
+            "Adds the given files into the embedded library. With the overwriteExisting flag an embedded library item already existing on an outputPath is replaced (Archicad 27 or newer)."
+        );
+        err |= RegisterCommand<DeleteEmbeddedLibraryItemsCommand> (
+            libraryCommands, "1.5.10",
+            "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
         );
         err |= RegisterCommand<SetLibrariesCommand> (
             libraryCommands, "1.5.9",

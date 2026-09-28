@@ -2769,6 +2769,39 @@
                 "items": {
                     "type": "string"
                 }
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "propertyDescription": {
+                "type": "string"
+            },
+            "defaultValueDisplay": {
+                "type": "string",
+                "description": "The basic default value as text. Only for custom, non expression-based properties whose default is set."
+            },
+            "availability": {
+                "type": "array",
+                "description": "Classification items a custom property is available for.",
+                "items": {
+                    "$ref": "#/ClassificationItemIdArrayItem"
+                }
+            },
+            "defaultEnumValueIds": {
+                "type": "array",
+                "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": {
+                            "$ref": "#/Guid"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid"
+                    ]
+                }
             }
         },
         "additionalProperties": false,
@@ -4815,6 +4848,10 @@
             "height": {
                 "type": "number",
                 "description": "Cross section height of the beam (all segments)."
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round beam cross section, false for rectangular."
             },
             "isWidthAndHeightLinked": {
                 "type": "boolean",
@@ -7045,7 +7082,7 @@
             },
             "height": {
                 "type": "number",
-                "description": "Story height, calculated as the level of the story above minus this story's level. Omitted for the topmost story, which has no story above."
+                "description": "Story height, calculated as the level of the story above minus this story's level. The topmost story gets its height from the virtual story that Archicad keeps above it in the story settings; only an Archicad that did not report that virtual story would leave the top story without a height."
             },
             "name": {
                 "type": "string",
@@ -7465,7 +7502,7 @@
             },
             "height": {
                 "type": "number",
-                "description": "The character height in millimeters. Only applied to Text elements."
+                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
                 "type": "string",

@@ -870,7 +870,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             detailsOfElement.Add ("drawIndex", static_cast<short> (elem.header.drwIndex));
         }
         if (isFieldRequested ("hotlinkId") && elem.header.hotlinkGuid != APINULLGuid) {
-            detailsOfElement.Add ("hotlinkId", CreateElementIdObjectState (elem.header.hotlinkGuid));
+            detailsOfElement.Add ("hotlinkId", CreateGuidObjectState (elem.header.hotlinkGuid));
         }
 
         if (isFieldRequested ("id")) {
@@ -2080,7 +2080,8 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("angle", elem.text.angle)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, angle);
                         }
-                        if (typeSpecificDetails->Get ("height", elem.text.size)) {
+                        const bool heightChanged = typeSpecificDetails->Get ("height", elem.text.size);
+                        if (heightChanged) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, size);
                         }
                         GS::UniString justification;
@@ -2094,7 +2095,33 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             // and the paragraphs memo is rebuilt as a single paragraph/run, so any
                             // per-run formatting of the old content is dropped and the element becomes
                             // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
+                            // A new height given alongside is carried into the rebuilt run via elem.text.size.
                             SetTextContentAndParagraphs (clipMemo, elem.text, text);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_TextType, height);
+                            memoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+                            hasMemoChanges = true;
+                        } else if (heightChanged) {
+                            // A multistyle Text (which every UI-placed or Tapir-created Text is) takes
+                            // its character height from the per-run sizes in the paragraphs memo, not
+                            // from API_TextType::size, so masking size alone is silently ignored (see
+                            // ModifyTexts). Rebuild the content from its read-back with the new height
+                            // merged into every run; the runs' own pen/font/faces/effects are kept.
+                            GS::ObjectState heightStyle;
+                            heightStyle.Add ("height", elem.text.size);
+                            GS::ObjectState contentParams;
+                            auto contentError = TextLabelDetails::ReadContentForStyleOnlyModify (elem.header.guid, heightStyle, contentParams);
+                            if (!contentError.HasValue ()) {
+                                contentError = TextLabelDetails::ApplyTextContent (clipMemo, elem.text, contentParams);
+                            }
+                            if (contentError.HasValue ()) {
+                                ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                executionResults (CreateFailedExecutionResult (*contentError));
+                                continue;
+                            }
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nLine);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, useEolPos);
                             ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
@@ -4198,7 +4225,15 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         const API_ElemTypeID typeID = GetElemTypeId (elemHead);
 
         API_Box3D box3D = {};
-        if (typeID == API_RoofID || typeID == API_ZoneID) {
+        if (typeID == API_RoofID || typeID == API_ZoneID || typeID == API_SlabID) {
+            // The Slab is routed here to avoid a crash, not for precision: for a Slab,
+            // ACAPI_Element_CalcBounds goes through Archicad's 2D bound calculation, which
+            // dereferences the current window's draw environment - null when the slab is not
+            // drawn in that window (another story is displayed, its layer is hidden, or a
+            // non-floor-plan window is active), so Archicad dies with a SIGSEGV instead of
+            // returning an error (#686). Deliberately no CalcBounds fallback for the Slab:
+            // the situations that leave it without a solid body are the very ones in which
+            // CalcBounds crashes.
             err = CalculateSolidBodyBounds (elemHead, box3D);
         } else if (typeID == API_StairID) {
             err = CalculateStairBounds (elemHead, box3D);
@@ -4256,7 +4291,16 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
 GS::Optional<GS::UniString> DeleteElementsCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
     })";
 }
 
@@ -4265,17 +4309,46 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
 
-    GSErrCode err = NoError;
+    const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
-    ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
-        err = ACAPI_Element_Delete (elements.Transform<API_Guid> (GetGuidFromElementsArrayItem));
+    GSErrCode deleteErr = NoError;
+    if (!elemGuids.IsEmpty ()) {
+        ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
+            deleteErr = ACAPI_Element_Delete (elemGuids);
 
-        return err;
-    });
+            return deleteErr;
+        });
+    }
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to delete elements.");
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // ACAPI_Element_Delete reports NoError even when it skips elements it is
+    // not allowed to delete (locked layer, locked element, teamwork access),
+    // so success is decided per element by whether the element is really gone
+    // afterwards. An element that is gone is the asked-for outcome however it
+    // got there: deleted by this call, deleted with its owner, or never in the
+    // project to begin with.
+    for (const API_Guid& elemGuid : elemGuids) {
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+            executionResults (CreateSuccessfulExecutionResult ());
+            continue;
+        }
+
+        API_Attribute layerAttr = {};
+        layerAttr.header.typeID = API_LayerID;
+        layerAttr.header.index = elemHead.layer;
+        if (ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Locked) != 0) {
+            executionResults (CreateFailedExecutionResult (APIERR_LOCKEDLAY, "The element was not deleted, because its layer is locked."));
+        } else if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
+            executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The element was not deleted, because it is not editable."));
+        } else {
+            executionResults (CreateFailedExecutionResult (deleteErr != NoError ? deleteErr : APIERR_GENERAL, "Failed to delete the element."));
+        }
+    }
+
+    return response;
 }
 
 LockElementsCommand::LockElementsCommand () :
