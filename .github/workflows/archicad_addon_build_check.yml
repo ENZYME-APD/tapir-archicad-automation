@@ -3,6 +3,17 @@ name: Archicad Add-On Build Check
 on: [push, pull_request]
 
 jobs:
+  generate_docs:
+    # The monthly release regenerates docs/archicad-addon with this script;
+    # running it here reports schema code it cannot evaluate on the PR that
+    # adds it instead of at release time.
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Generate the docs
+      run: python3 tools/generate_addon_docs.py
+
   build_win:
     strategy:
       fail-fast: false

@@ -318,17 +318,29 @@ dc2 = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': c2guid}}]
 check('Column profileId round-trips after Modify', profileId, dc2.get('profileId'))
 print()
 
-print('TEST -- Beam: isWidthAndHeightLinked (independent width/height), buildingMaterialId, profileId')
+print('TEST -- Beam: circleBased, isWidthAndHeightLinked (independent width/height), buildingMaterialId, profileId')
 rb = run('CreateBeams', {'beamsData': [{
     'begCoordinate': {'x': 4130, 'y': 0}, 'endCoordinate': {'x': 4150, 'y': 0}, 'zCoordinate': 0,
-    'width': 0.2, 'height': 0.4, 'isWidthAndHeightLinked': False, 'buildingMaterialId': materialId,
+    'width': 0.2, 'height': 0.4, 'circleBased': False, 'isWidthAndHeightLinked': False, 'buildingMaterialId': materialId,
+}, {
+    'begCoordinate': {'x': 4130, 'y': 2}, 'endCoordinate': {'x': 4150, 'y': 2}, 'zCoordinate': 0,
+    'width': 0.3, 'circleBased': True,
 }]})
 b2guid = rb['elements'][0]['elementId']['guid']
-created.append(b2guid)
+b3guid = rb['elements'][1]['elementId']['guid']
+created.extend([b2guid, b3guid])
 db = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': b2guid}}]})['detailsOfElements'][0]['details']
 check('Beam independent width', 0.2, db.get('width'))
 check('Beam independent height', 0.4, db.get('height'))
+check('Beam circleBased False', False, db.get('circleBased'))
 check('Beam buildingMaterialId round-trips', materialId, db.get('buildingMaterialId'))
+db3 = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': b3guid}}]})['detailsOfElements'][0]['details']
+check('circular Beam created next to rectangular one in the same call', True, db3.get('circleBased'))
+
+r = run('ModifyBeams', {'beamsWithDetails': [{'elementId': {'guid': b3guid}, 'circleBased': False}]})
+check('ModifyBeams circleBased to False succeeds', True, r['executionResults'][0].get('success'))
+db3 = run('GetDetailsOfElements', {'elements': [{'elementId': {'guid': b3guid}}]})['detailsOfElements'][0]['details']
+check('Beam circleBased False after Modify', False, db3.get('circleBased'))
 
 r = run('ModifyBeams', {'beamsWithDetails': [{'elementId': {'guid': b2guid}, 'profileId': profileId}]})
 check('ModifyBeams to profileId succeeds', True, r['executionResults'][0].get('success'))

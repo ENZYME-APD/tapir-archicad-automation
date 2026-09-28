@@ -5,10 +5,9 @@ name: Monthly Release
 # on a monthly schedule:
 #
 #   1. Skip when nothing changed since the last release tag.
-#   2. Check that the generated docs were updated since the last release when
-#      Add-On sources changed (docs are regenerated with the
-#      GenerateDocumentation command in a running Archicad, which CI cannot
-#      do - a stale docs folder fails the run with instructions).
+#   2. Regenerate docs/archicad-addon from the Add-On sources
+#      (tools/generate_addon_docs.py, no Archicad needed) and push the
+#      result to main when it changed, so the release tags current docs.
 #   3. Tag HEAD with the current version from tools/package_info.json - the
 #      sources already carry this version, per the project's convention.
 #   4. Start the two existing release pipelines (Add-On build + release,
@@ -29,8 +28,8 @@ on:
     - cron: '0 6 1 * *'   # 06:00 UTC on the 1st of every month
   workflow_dispatch:
     inputs:
-      skip_docs_check:
-        description: Release even if the generated docs look stale
+      skip_docs_update:
+        description: Release without regenerating docs/archicad-addon (only when the generator fails)
         type: boolean
         default: false
       dry_run:
@@ -167,37 +166,37 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Check that the generated docs are up to date
-        if: steps.plan.outputs.release == 'true' && inputs.skip_docs_check != true
+      - name: Regenerate the docs
+        # A resumed release keeps its tag, which already fixed the docs.
+        if: steps.plan.outputs.release == 'true' && steps.plan.outputs.tag_exists != 'true' && inputs.skip_docs_update != true
         run: |
           set -eu
-          LAST_TAG='${{ steps.plan.outputs.last_tag }}'
-          # The docs are generated from the registered command schemas, so
-          # they only need regenerating when the Add-On sources changed
-          # (AddOnVersion.hpp changes on every release and does not count).
-          # Ancestry, not timestamps, decides staleness: commit dates
-          # misorder long-lived branches merged after a docs regeneration.
-          # Sources commits not reachable from the newest docs commit are
-          # exactly the changes the regenerated docs cannot have seen. Git
-          # cannot tell a real regeneration from a hand edit to a docs file,
-          # so any docs/archicad-addon commit resets the anchor - the fix for
-          # a failure here is always a full GenerateDocumentation run, never
-          # touching a single docs file to appease the check.
-          DOCS_COMMIT=$(git log -1 --format=%H "$LAST_TAG"..HEAD -- 'docs/archicad-addon')
-          SINCE="${DOCS_COMMIT:-$LAST_TAG}"
-          STALE=$(git log -1 --format=%H "$SINCE"..HEAD -- \
-            'archicad-addon/Sources' ':(exclude)archicad-addon/Sources/AddOnVersion.hpp')
-          if [ -n "$STALE" ]; then
-            echo "::error::The Add-On sources changed since $LAST_TAG after the last update of" \
-                 "docs/archicad-addon. Run the full GenerateDocumentation command in Archicad and" \
-                 "commit the regenerated docs (hand-editing a docs file only hides the staleness" \
-                 "from this check), then re-run this workflow. If the regeneration produces no" \
-                 "changes, the sources changes did not affect the docs - release by dispatching" \
-                 "this workflow manually with 'skip_docs_check' (an empty commit does not reset" \
-                 "this check; only a commit touching docs/archicad-addon does)."
+          # The same output the GenerateDocumentation command writes in a
+          # running Archicad, computed from the sources. It exits with an
+          # error when it meets schema code it cannot evaluate, never with
+          # guessed docs - fix the generator (or dispatch this workflow with
+          # 'skip_docs_update') in that case.
+          python3 tools/generate_addon_docs.py
+          if git diff --quiet -- docs/archicad-addon; then
+            echo "docs/archicad-addon is up to date."
+            exit 0
+          fi
+          git diff --stat -- docs/archicad-addon
+          if [ '${{ inputs.dry_run }}' = 'true' ]; then
+            echo "DRY RUN: docs/archicad-addon would be regenerated and pushed to main." >> "$GITHUB_STEP_SUMMARY"
+            git checkout -- docs/archicad-addon
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Regenerate the Add-On docs" -- docs/archicad-addon
+          # No rebase here: the tag goes on HEAD next, and a rebase would
+          # pull in commits the plan step above never looked at.
+          if ! git push origin HEAD:main; then
+            echo "::error::main moved while the docs were regenerated - re-run this workflow."
             exit 1
           fi
-          echo "Docs check passed."
+          echo "Regenerated docs/archicad-addon and pushed it to main." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report the dry run
         if: steps.plan.outputs.release == 'true' && inputs.dry_run == true
