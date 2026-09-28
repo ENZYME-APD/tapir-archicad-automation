@@ -10682,7 +10682,7 @@ var gCommands = [{
                     },
                     "additionalProperties": false,
                     "required": [
-                        "elementId",
+                        "designOptionId",
                         "setName"
                     ]
                 }

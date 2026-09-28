@@ -22,6 +22,21 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
             InText(
                 "Name",
                 "Name.");
+
+            InGeneric(
+                "ParentIssueGuid",
+                "The new issue is created under this issue. Optional.");
+
+            InText(
+                "TagText",
+                "Tag text of the new issue. Optional.");
+
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2
+                });
         }
 
         protected override void AddOutputs()
@@ -39,9 +54,26 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 return;
             }
 
+            if (!da.TryCreate(
+                    1,
+                    out IssueGuid parentIssueId))
+            {
+                parentIssueId = null;
+            }
+
+            var tagText = da.GetOptional<string>(
+                2,
+                null);
+
+            if (string.IsNullOrEmpty(tagText))
+            {
+                tagText = null;
+            }
+
+            // The unset optional fields are null, which is not sent.
             if (!TryGetConvertedCadValues(
                     CommandName,
-                    new { name },
+                    new { name, parentIssueId, tagText },
                     ToAddOn,
                     JHelp.Deserialize<IssueGuidWrapper>,
                     out IssueGuidWrapper response))
