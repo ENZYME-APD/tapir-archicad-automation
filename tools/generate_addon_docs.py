@@ -544,7 +544,7 @@ def Printf (fmt, args):
     result = ''
     argIndex = 0
     pos = 0
-    for m in re.finditer (r'%(%|[-+ #0]*\d*(?:\.\d+)?[a-zA-Z])', fmt):
+    for m in re.finditer (r'%(%|[-+ #0]*\d*(?:\.\d+)?(?:ls|[a-zA-Z]))', fmt):
         result += fmt[pos:m.start ()]
         pos = m.end ()
         spec = m.group (1)
